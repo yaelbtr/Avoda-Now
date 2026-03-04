@@ -1,27 +1,25 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Briefcase, HardHat, ArrowLeft } from "lucide-react";
+import { Briefcase, HardHat, Loader2 } from "lucide-react";
 
 interface RoleSelectionScreenProps {
   onSelected: (mode: "worker" | "employer") => void;
 }
 
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
-  const [selected, setSelected] = useState<"worker" | "employer" | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
 
   const setModeMutation = trpc.user.setMode.useMutation({
-    onSuccess: () => {
-      if (selected) onSelected(selected);
+    onSuccess: (_, vars) => {
+      onSelected(vars.mode);
     },
-    onSettled: () => setLoading(false),
+    onSettled: () => setLoading(null),
   });
 
-  const handleConfirm = () => {
-    if (!selected) return;
-    setLoading(true);
-    setModeMutation.mutate({ mode: selected });
+  const handleSelect = (mode: "worker" | "employer") => {
+    if (loading) return;
+    setLoading(mode);
+    setModeMutation.mutate({ mode });
   };
 
   return (
@@ -35,22 +33,23 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
         <p className="text-muted-foreground mt-2 text-sm">בחר כיצד תרצה להשתמש בפלטפורמה</p>
       </div>
 
-      {/* Role cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mb-8">
+      {/* Role cards — click = immediate action */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
         {/* Worker card */}
         <button
-          onClick={() => setSelected("worker")}
-          className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-md focus:outline-none ${
-            selected === "worker"
+          onClick={() => handleSelect("worker")}
+          disabled={!!loading}
+          className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-lg focus:outline-none active:scale-[0.98] ${
+            loading === "worker"
               ? "border-primary bg-primary/5 shadow-md"
-              : "border-border bg-card hover:border-primary/50"
-          }`}
+              : "border-border bg-card hover:border-orange-400 hover:bg-orange-50"
+          } disabled:opacity-70`}
         >
-          {selected === "worker" && (
-            <div className="absolute top-3 left-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-white text-xs font-bold">✓</span>
+          {loading === "worker" ? (
+            <div className="absolute top-3 left-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
-          )}
+          ) : null}
           <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center mb-4">
             <HardHat className="h-7 w-7 text-orange-600" />
           </div>
@@ -69,18 +68,19 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
         {/* Employer card */}
         <button
-          onClick={() => setSelected("employer")}
-          className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-md focus:outline-none ${
-            selected === "employer"
+          onClick={() => handleSelect("employer")}
+          disabled={!!loading}
+          className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-lg focus:outline-none active:scale-[0.98] ${
+            loading === "employer"
               ? "border-primary bg-primary/5 shadow-md"
-              : "border-border bg-card hover:border-primary/50"
-          }`}
+              : "border-border bg-card hover:border-blue-400 hover:bg-blue-50"
+          } disabled:opacity-70`}
         >
-          {selected === "employer" && (
-            <div className="absolute top-3 left-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-white text-xs font-bold">✓</span>
+          {loading === "employer" ? (
+            <div className="absolute top-3 left-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
-          )}
+          ) : null}
           <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
             <Briefcase className="h-7 w-7 text-blue-600" />
           </div>
@@ -98,22 +98,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
         </button>
       </div>
 
-      {/* Confirm button */}
-      <Button
-        size="lg"
-        onClick={handleConfirm}
-        disabled={!selected || loading}
-        className="w-full max-w-md gap-2 text-base"
-      >
-        {loading ? (
-          <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-        ) : (
-          <ArrowLeft className="h-5 w-5" />
-        )}
-        {selected === "worker" ? "כניסה כמחפש עבודה" : selected === "employer" ? "כניסה כמעסיק" : "בחר תפקיד להמשך"}
-      </Button>
-
-      <p className="text-xs text-muted-foreground mt-4 text-center">
+      <p className="text-xs text-muted-foreground mt-6 text-center">
         ניתן לשנות את הבחירה בכל עת מהתפריט
       </p>
     </div>

@@ -58,24 +58,17 @@ class TwilioVerifyProvider implements SmsProvider {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/Verifications`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: this.authHeader,
-        },
-        body: new URLSearchParams({
-          To: phone,
-          Channel: "sms",
-          Locale: "he",
-        }).toString(),
-      });
-
+      // Attempt with CustomFriendlyName first (requires feature enabled in Twilio Console)
+      const res = await this.postVerification(phone, true);
       const body = await res.json() as { status?: string; message?: string; code?: number };
 
       if (!res.ok) {
+        // 60204 = CustomFriendlyName not allowed on this service → retry without it
+        if (body.code === 60204) {
+          console.warn("[TwilioVerify] CustomFriendlyName not enabled, retrying without it");
+          return this.sendOtpWithoutFriendlyName(phone);
+        }
         console.error("[TwilioVerify] sendOtp failed:", body);
-        // Twilio error 60200 = invalid phone number
         if (body.code === 60200) {
           return { success: false, error: "מספר הטלפון אינו תקין" };
         }
@@ -85,6 +78,43 @@ class TwilioVerifyProvider implements SmsProvider {
       return { success: true };
     } catch (err) {
       console.error("[TwilioVerify] sendOtp network error:", err);
+      return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
+    }
+  }
+
+  private postVerification(phone: string, withFriendlyName: boolean): Promise<Response> {
+    const params: Record<string, string> = {
+      To: phone,
+      Channel: "sms",
+      Locale: "he",
+    };
+    if (withFriendlyName) {
+      params["CustomFriendlyName"] = "JobNow";
+    }
+    return fetch(`${this.baseUrl}/Verifications`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: this.authHeader,
+      },
+      body: new URLSearchParams(params).toString(),
+    });
+  }
+
+  private async sendOtpWithoutFriendlyName(phone: string): Promise<OtpSendResult> {
+    try {
+      const res = await this.postVerification(phone, false);
+      const body = await res.json() as { status?: string; message?: string; code?: number };
+      if (!res.ok) {
+        console.error("[TwilioVerify] sendOtp (no friendly name) failed:", body);
+        if (body.code === 60200) {
+          return { success: false, error: "מספר הטלפון אינו תקין" };
+        }
+        return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[TwilioVerify] sendOtp fallback network error:", err);
       return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
     }
   }

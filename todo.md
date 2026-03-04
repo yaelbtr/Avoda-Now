@@ -119,3 +119,6 @@
 
 ## Bug Fix — OTP Send Failure After Hebrew Locale Change
 - [x] Fixed: Twilio error 60204 — removed CustomFriendlyName (not supported on standard Verify service), kept Locale=he
+
+## CustomFriendlyName Re-add
+- [x] Add CustomFriendlyName=JobNow to sendOtp with automatic 60204 fallback retry (sends without it if feature not enabled)

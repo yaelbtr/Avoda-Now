@@ -45,15 +45,33 @@ describe("TwilioVerifyProvider.sendOtp", () => {
     expect(body.get("Locale")).toBe("he");
   });
 
-  it("does not send CustomFriendlyName (not supported by default Verify service)", async () => {
+  it("sends CustomFriendlyName=JobNow in the first attempt", async () => {
     mockFetch.mockResolvedValue(makeSuccessResponse());
 
     await smsProvider.sendOtp("+972501234567");
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = new URLSearchParams(init.body as string);
-    // CustomFriendlyName causes error 60204 on standard Verify services
-    expect(body.get("CustomFriendlyName")).toBeNull();
+    expect(body.get("CustomFriendlyName")).toBe("JobNow");
+  });
+
+  it("retries without CustomFriendlyName when Twilio returns 60204", async () => {
+    // First call: 60204 error
+    mockFetch
+      .mockResolvedValueOnce(makeErrorResponse(60204, "Custom friendly name not allowed"))
+      // Second call: success
+      .mockResolvedValueOnce(makeSuccessResponse());
+
+    const result = await smsProvider.sendOtp("+972501234567");
+
+    expect(result.success).toBe(true);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // Second call must NOT include CustomFriendlyName
+    const [, secondInit] = mockFetch.mock.calls[1] as [string, RequestInit];
+    const secondBody = new URLSearchParams(secondInit.body as string);
+    expect(secondBody.get("CustomFriendlyName")).toBeNull();
+    // But must still include Locale=he
+    expect(secondBody.get("Locale")).toBe("he");
   });
 
   it("sends Channel=sms in the request body", async () => {

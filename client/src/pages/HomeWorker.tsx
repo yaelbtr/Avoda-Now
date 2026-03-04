@@ -3,12 +3,11 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
-import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import {
   Search, MapPin, Loader2, ChevronLeft, Flame, Zap,
-  CheckCircle2, Phone, HardHat, Map, List, User,
+  CheckCircle2, Phone, Map, List, ArrowLeft, Briefcase,
 } from "lucide-react";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
@@ -37,7 +36,7 @@ interface HomeWorkerProps {
 
 export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [, navigate] = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { resetUserMode } = useUserMode();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -117,66 +116,114 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   return (
     <div dir="rtl">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="hero-gradient text-white">
-        <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-1.5 text-sm font-medium mb-5">
-            <HardHat className="h-4 w-4 text-orange-300" />
-            מצב עובד — מחפש עבודה
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
-            מצא עבודה היום
-            <br />
-            <span className="text-yellow-300">– תתחיל לעבוד עכשיו</span>
-          </h1>
-          <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
-            עבודות זמניות ודחופות באזורך — צור קשר ישיר עם המעסיק
-          </p>
+      <section
+        className="relative overflow-hidden text-white"
+        style={{
+          background: "linear-gradient(135deg, oklch(0.30 0.16 265) 0%, oklch(0.22 0.20 280) 60%, oklch(0.18 0.22 300) 100%)",
+        }}
+      >
+        {/* Decorative blobs */}
+        <div
+          className="pointer-events-none absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, oklch(0.65 0.18 200) 0%, transparent 70%)" }}
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 right-0 w-64 h-64 rounded-full opacity-15"
+          style={{ background: "radial-gradient(circle, oklch(0.75 0.20 75) 0%, transparent 70%)" }}
+        />
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-5">
+        <div className="relative max-w-2xl mx-auto px-4 pt-10 pb-8">
+          {/* Top label */}
+          <div className="flex justify-center mb-6">
+            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-semibold backdrop-blur-sm">
+              <Briefcase className="h-4 w-4 text-blue-300" />
+              מצא עבודה זמנית באזורך — היום
+            </span>
+          </div>
+
+          {/* Headline */}
+          <div className="text-center mb-6">
+            <h1 className="text-4xl sm:text-5xl font-black leading-tight tracking-tight mb-3">
+              עבודות דחופות
+              <br />
+              <span
+                className="inline-block mt-1"
+                style={{
+                  background: "linear-gradient(90deg, oklch(0.92 0.18 75), oklch(0.85 0.22 55))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                מחכות לך עכשיו
+              </span>
+            </h1>
+            <p className="text-white/70 text-base max-w-sm mx-auto leading-relaxed">
+              קשר ישיר עם מעסיקים — ללא תיווך, ללא עמלות
+            </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto mb-6">
             <Button
               size="lg"
-              className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2"
+              className="flex-1 font-bold text-base h-13 gap-2 shadow-lg shadow-black/20"
+              style={{ background: "linear-gradient(135deg, oklch(0.75 0.20 75), oklch(0.68 0.22 55))", color: "oklch(0.15 0.01 250)", border: "none" }}
               onClick={() => navigate("/find-jobs")}
             >
-              <Search className="h-5 w-5" /> חפש עבודה עכשיו
+              <Search className="h-5 w-5" />
+              חפש עבודה עכשיו
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2"
+              className="flex-1 border-white/30 bg-white/10 text-white hover:bg-white/20 font-bold text-base h-13 gap-2 backdrop-blur-sm"
               onClick={() => navigate("/jobs-today")}
             >
-              <Flame className="h-5 w-5" /> עבודות להיום
+              <Flame className="h-5 w-5 text-orange-300" />
+              עבודות להיום
             </Button>
           </div>
 
-          {/* Availability toggle */}
-          <button
-            onClick={handleAvailabilityToggle}
-            disabled={availabilityLoading}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border-2 ${
-              isAvailable
-                ? "bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/30"
-                : "bg-white/10 border-white/30 text-white hover:bg-white/20"
-            }`}
-          >
-            {availabilityLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? "bg-white animate-pulse" : "bg-white/50"}`} />
-            )}
-            {isAvailable ? "✅ אני פנוי לעבוד עכשיו — לחץ לביטול" : "🟢 אני פנוי לעבוד עכשיו"}
-          </button>
+          {/* Availability card */}
+          <div className="max-w-sm mx-auto">
+            <button
+              onClick={handleAvailabilityToggle}
+              disabled={availabilityLoading}
+              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl border transition-all duration-200 ${
+                isAvailable
+                  ? "bg-green-500/20 border-green-400/50 hover:bg-green-500/30"
+                  : "bg-white/8 border-white/20 hover:bg-white/15"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {availabilityLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+                ) : (
+                  <span className={`relative flex h-3 w-3`}>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                    <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                  </span>
+                )}
+                <span className="font-semibold text-sm text-white">
+                  {isAvailable ? "אני פנוי לעבוד עכשיו" : "סמן את עצמך כזמין"}
+                </span>
+              </div>
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isAvailable ? "bg-green-400/30 text-green-200" : "bg-white/15 text-white/70"}`}>
+                {isAvailable ? "פעיל" : "לחץ לסימון"}
+              </span>
+            </button>
+          </div>
 
           {/* Profile shortcut */}
           {isAuthenticated && (
-            <div className="mt-3">
+            <div className="text-center mt-3">
               <button
                 onClick={() => navigate("/worker-profile")}
-                className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors"
+                className="inline-flex items-center gap-1.5 text-white/50 hover:text-white/80 text-xs transition-colors"
               >
-                <User className="h-3.5 w-3.5" />
-                עדכן פרופיל עובד
+                עדכן קטגוריות מועדפות לקבלת התראות
+                <ArrowLeft className="h-3 w-3" />
               </button>
             </div>
           )}

@@ -156,3 +156,19 @@
 - [x] Request size limit: max 10kb body for /api/trpc endpoints
 - [x] Suspicious pattern detection: block sequential ID enumeration (15+ sequential IDs in 10s)
 - [x] Vitest tests for security middleware: 13 tests (bot detection + anti-enumeration + exports)
+
+## Admin Panel & Full RBAC Implementation (Completed)
+- [x] Audit existing RBAC gaps vs requirements
+- [x] Admin tRPC procedures: list all jobs, approve/reject, hide job
+- [x] Admin tRPC procedures: list all users, block/unblock user
+- [x] Admin tRPC procedures: view all reports, resolve report
+- [x] Admin tRPC procedures: system statistics (total jobs, users, reports)
+- [x] Admin panel page /admin: jobs moderation list with approve/reject/hide actions
+- [x] Admin panel page /admin: reported jobs queue with approve/delete actions
+- [x] Admin panel page /admin: user management with block/unblock/promote
+- [x] Admin panel page /admin: stats dashboard (6 KPI cards)
+- [x] Backend: adminProcedure middleware (role=admin check, FORBIDDEN for non-admins)
+- [x] Backend: job owner OR admin can edit/delete jobs (enforced server-side)
+- [x] Frontend: admin nav link visible only to admins (desktop + mobile)
+- [x] Frontend: redirect non-admins from /admin with 403 message
+- [x] Vitest tests: 19 admin RBAC tests (guest/user/admin access patterns)

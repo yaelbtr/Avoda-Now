@@ -25,10 +25,26 @@ import {
   updateUserLastSignedIn,
 } from "./db";
 import {
+  adminApproveJob,
+  adminBlockUser,
+  adminClearJobReports,
+  adminDeleteJob,
+  adminGetAllJobs,
+  adminGetAllReports,
+  adminGetAllUsers,
+  adminGetReportedJobs,
+  adminGetStats,
+  adminRejectJob,
+  adminSetJobStatus,
+  adminSetUserRole,
+  adminUnblockUser,
+} from "./adminDb";
+import {
   isValidIsraeliPhone,
   normalizeIsraeliPhone,
   smsProvider,
 } from "./smsProvider";
+import { adminProcedure } from "./_core/trpc";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -307,12 +323,76 @@ const jobsRouter = router({
     }),
 });
 
+// ─── Admin Router ─────────────────────────────────────────────────────────────
+
+const adminRouter = router({
+  /** Dashboard statistics */
+  stats: adminProcedure.query(async () => adminGetStats()),
+
+  /** All jobs with optional status filter */
+  listJobs: adminProcedure
+    .input(z.object({ status: z.string().optional(), limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllJobs(input.limit ?? 100, input.status)),
+
+  /** Jobs under review (reported 3+ times) */
+  reportedJobs: adminProcedure.query(async () => adminGetReportedJobs()),
+
+  /** Approve a job — set status=active, clear report count */
+  approveJob: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input }) => { await adminApproveJob(input.jobId); return { success: true }; }),
+
+  /** Reject/hide a job — set status=closed */
+  rejectJob: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input }) => { await adminRejectJob(input.jobId); return { success: true }; }),
+
+  /** Delete any job */
+  deleteJob: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input }) => { await adminDeleteJob(input.jobId); return { success: true }; }),
+
+  /** Set any job status */
+  setJobStatus: adminProcedure
+    .input(z.object({ jobId: z.number(), status: z.enum(["active", "closed", "expired", "under_review"]) }))
+    .mutation(async ({ input }) => { await adminSetJobStatus(input.jobId, input.status); return { success: true }; }),
+
+  /** All reports with job info */
+  listReports: adminProcedure.query(async () => adminGetAllReports()),
+
+  /** Clear reports for a job after resolving */
+  clearReports: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input }) => { await adminClearJobReports(input.jobId); return { success: true }; }),
+
+  /** All users */
+  listUsers: adminProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllUsers(input.limit ?? 200)),
+
+  /** Block a user */
+  blockUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => { await adminBlockUser(input.userId); return { success: true }; }),
+
+  /** Unblock a user */
+  unblockUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => { await adminUnblockUser(input.userId); return { success: true }; }),
+
+  /** Set user role */
+  setUserRole: adminProcedure
+    .input(z.object({ userId: z.number(), role: z.enum(["user", "admin"]) }))
+    .mutation(async ({ input }) => { await adminSetUserRole(input.userId, input.role); return { success: true }; }),
+});
+
 // ─── App Router ───────────────────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
   jobs: jobsRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;

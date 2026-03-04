@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Briefcase, User, LogOut, PlusCircle, Menu, X } from "lucide-react";
+import { Briefcase, User, LogOut, PlusCircle, Menu, X, Shield } from "lucide-react";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -78,6 +78,14 @@ export default function Navbar() {
                         <span>פרסם משרה</span>
                       </Link>
                     </DropdownMenuItem>
+                    {user?.role === "admin" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center gap-2 cursor-pointer w-full">
+                          <Shield className="h-4 w-4 shrink-0" />
+                          <span>פאנל ניהול</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={logout}
                       className="text-destructive focus:text-destructive flex items-center gap-2"
@@ -132,6 +140,16 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                   >
                     המשרות שלי
+                  </span>
+                </Link>
+              )}
+              {isAuthenticated && user?.role === "admin" && (
+                <Link href="/admin">
+                  <span
+                    className="block px-3 py-2.5 rounded-md text-sm font-medium text-primary hover:bg-primary/10 text-right"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    פאנל ניהול
                   </span>
                 </Link>
               )}

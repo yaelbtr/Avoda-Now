@@ -14,6 +14,7 @@ import PostJob from "./pages/PostJob";
 import MyJobs from "./pages/MyJobs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Admin from "./pages/Admin";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/my-jobs" component={MyJobs} />
           <Route path="/terms" component={Terms} />
           <Route path="/privacy" component={Privacy} />
+          <Route path="/admin" component={Admin} />
           <Route path="/404" component={NotFound} />
           <Route component={NotFound} />
         </Switch>

@@ -241,8 +241,8 @@ export default function Home() {
       {/* ── Live Stats ───────────────────────────────────────────────────── */}
       <LiveStats />
 
-      {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
-      {(urgentJobs.length > 0 || urgentQuery.isLoading) && (
+      {/* ── Urgent Jobs — shown to workers and guests, hidden for employers ── */}
+      {userMode !== "employer" && (urgentJobs.length > 0 || urgentQuery.isLoading) && (
         <section className="max-w-2xl mx-auto px-4 pt-6">
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
@@ -277,8 +277,8 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Jobs for Today ───────────────────────────────────────────────── */}
-      {todayJobs.length > 0 && (
+      {/* ── Jobs for Today — shown to workers and guests, hidden for employers ── */}
+      {userMode !== "employer" && todayJobs.length > 0 && (
         <section className="max-w-2xl mx-auto px-4 pt-4">
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
@@ -309,8 +309,8 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Wartime & Passover ───────────────────────────────────────────── */}
-      <section className="max-w-2xl mx-auto px-4 pt-4">
+      {/* ── Wartime & Passover — shown to workers and guests, hidden for employers ── */}
+      {userMode !== "employer" && <section className="max-w-2xl mx-auto px-4 pt-4">
         <div className="bg-gradient-to-br from-purple-50 to-amber-50 border border-purple-200 rounded-2xl p-4">
           <h2 className="text-lg font-bold text-purple-800 mb-3 flex items-center gap-2">
             🆘 סיוע בזמן חירום ועבודות לפסח
@@ -364,7 +364,52 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </section>}
+
+      {/* ── Employer section: Available Workers ─────────────────────────── */}
+      {userMode === "employer" && (
+        <section className="max-w-2xl mx-auto px-4 pt-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-blue-700 flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-500" />
+                עובדים זמינים עכשיו
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/available-workers")}
+                className="gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-100 text-xs"
+              >
+                כל העובדים
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <p className="text-sm text-blue-700 mb-4">
+              מצא עובדים זמינים באזורך ופרסם משרה — ללא עמלות
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                size="sm"
+                onClick={handlePostJob}
+                className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                <Zap className="h-4 w-4" />
+                פרסם משרה דחופה
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/available-workers")}
+                className="flex-1 gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                <Users className="h-4 w-4" />
+                עובדים זמינים
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Categories ───────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 py-6">
@@ -385,8 +430,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Nearby / Latest jobs ─────────────────────────────────────────── */}
-      <section className="max-w-2xl mx-auto px-4 pb-8">
+      {/* ── Nearby / Latest jobs — shown to workers and guests, hidden for employers ── */}
+      {userMode !== "employer" && <section className="max-w-2xl mx-auto px-4 pb-8">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             {userLat ? (
@@ -491,7 +536,7 @@ export default function Home() {
             </Button>
           </div>
         )}
-      </section>
+      </section>}
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <section className="bg-muted/50 border-y border-border">
@@ -514,21 +559,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA for employers ────────────────────────────────────────────── */}
-      <section className="max-w-2xl mx-auto px-4 py-8 text-center">
-        <h2 className="text-xl font-bold text-foreground mb-2">צריך עובד עכשיו?</h2>
-        <p className="text-muted-foreground mb-4 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
-          <Button size="lg" onClick={handlePostJob} className="gap-2 flex-1">
-            <Zap className="h-5 w-5" />
-            פרסם עבודה דחופה
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate("/available-workers")} className="gap-2 flex-1">
-            <Users className="h-5 w-5" />
-            עובדים זמינים
-          </Button>
-        </div>
-      </section>
+      {/* ── CTA for employers — shown to employers and guests, hidden for workers ── */}
+      {userMode !== "worker" && (
+        <section className="max-w-2xl mx-auto px-4 py-8 text-center">
+          <h2 className="text-xl font-bold text-foreground mb-2">צריך עובד עכשיו?</h2>
+          <p className="text-muted-foreground mb-4 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
+            <Button size="lg" onClick={handlePostJob} className="gap-2 flex-1">
+              <Zap className="h-5 w-5" />
+              פרסם עבודה דחופה
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/available-workers")} className="gap-2 flex-1">
+              <Users className="h-5 w-5" />
+              עובדים זמינים
+            </Button>
+          </div>
+        </section>
+      )}
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
     </div>

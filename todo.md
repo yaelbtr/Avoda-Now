@@ -308,3 +308,4 @@
 - [x] Clear localStorage role on logout so role selection screen shows on next login
 - [x] Add "reset role" button in Navbar dropdown and WorkerProfile page
 - [x] PostJob: phone number must be taken from logged-in user, not entered manually
+- [x] Home page: sections not filtered by role (worker/employer)

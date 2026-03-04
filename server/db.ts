@@ -107,6 +107,12 @@ export async function getUserMode(id: number): Promise<"worker" | "employer" | n
   return result[0]?.userMode ?? null;
 }
 
+export async function clearUserMode(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ userMode: null }).where(eq(users.id, id));
+}
+
 export async function getWorkerProfile(id: number) {
   const db = await getDb();
   if (!db) return null;

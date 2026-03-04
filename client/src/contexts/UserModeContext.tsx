@@ -46,6 +46,7 @@ interface UserModeContextValue {
   userMode: UserMode;
   isLoadingMode: boolean;
   setUserMode: (mode: "worker" | "employer") => void;
+  resetUserMode: () => void;
   needsRoleSelection: boolean;
 }
 
@@ -53,6 +54,7 @@ const UserModeContext = createContext<UserModeContextValue>({
   userMode: null,
   isLoadingMode: false,
   setUserMode: () => {},
+  resetUserMode: () => {},
   needsRoleSelection: false,
 });
 
@@ -95,6 +97,12 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     onSuccess: (_, vars) => {
       setLocalMode(vars.mode);
       saveRoleToStorage(vars.mode, userId);
+      modeQuery.refetch();
+    },
+  });
+
+  const resetModeMutation = trpc.user.resetMode.useMutation({
+    onSuccess: () => {
       modeQuery.refetch();
     },
   });
@@ -150,8 +158,18 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Clears the current role so the role selection screen is shown again
+  const resetUserMode = () => {
+    setLocalMode(null);
+    clearRoleFromStorage();
+    setHasChecked(false);
+    if (isAuthenticated) {
+      resetModeMutation.mutate();
+    }
+  };
+
   return (
-    <UserModeContext.Provider value={{ userMode, isLoadingMode, setUserMode, needsRoleSelection }}>
+    <UserModeContext.Provider value={{ userMode, isLoadingMode, setUserMode, resetUserMode, needsRoleSelection }}>
       {children}
     </UserModeContext.Provider>
   );

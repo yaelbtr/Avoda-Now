@@ -36,6 +36,7 @@ import {
   getUserMode,
   getWorkerProfile,
   updateWorkerProfile,
+  clearUserMode,
 } from "./db";
 import {
   adminApproveJob,
@@ -520,6 +521,12 @@ const userRouter = router({
       await setUserMode(ctx.user.id, input.mode);
       return { success: true };
     }),
+
+  /** Reset the user's mode so the role selection screen is shown again */
+  resetMode: protectedProcedure.mutation(async ({ ctx }) => {
+    await clearUserMode(ctx.user.id);
+    return { success: true };
+  }),
 
   /** Get the current user's worker profile */
   getProfile: protectedProcedure.query(async ({ ctx }) => {

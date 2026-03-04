@@ -24,11 +24,12 @@ import {
   Flame,
   Users,
   RefreshCw,
+  RotateCcw,
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { userMode, setUserMode } = useUserMode();
+  const { userMode, setUserMode, resetUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
@@ -188,6 +189,15 @@ export default function Navbar() {
                       </span>
                     </DropdownMenuItem>
 
+                    {/* Reset role — shows role selection screen again */}
+                    <DropdownMenuItem
+                      onClick={resetUserMode}
+                      className="flex items-center gap-2 text-muted-foreground"
+                    >
+                      <RotateCcw className="h-4 w-4 shrink-0" />
+                      <span>אפס בחירת תפקיד</span>
+                    </DropdownMenuItem>
+
                     {user?.role === "admin" && (
                       <DropdownMenuItem asChild>
                         <Link href="/admin" className="flex items-center gap-2 cursor-pointer w-full">
@@ -263,6 +273,16 @@ export default function Navbar() {
                     className="block w-full text-right px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                   >
                     🔄 {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      resetUserMode();
+                      setMobileOpen(false);
+                    }}
+                    className="block w-full text-right px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+                  >
+                    🔁 אפס בחירת תפקיד
                   </button>
 
                   {user?.role === "admin" && (

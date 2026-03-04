@@ -302,3 +302,6 @@
 - [x] DB: add workerProfile fields to users (preferredCategories JSON, preferredCity, bio)
 - [x] Server: user.getProfile and user.updateProfile procedures
 - [x] City autocomplete: Google Places API suggestions when typing city name
+
+## Bug (Mar 5 2026)
+- [x] Role selection screen (worker/employer) not shown after login — fixed: server mode is now authoritative after first fetch, stale localStorage no longer hides the screen

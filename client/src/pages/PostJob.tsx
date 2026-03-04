@@ -26,7 +26,7 @@ const schema = z.object({
   address: z.string().min(2, "נדרשת כתובת"),
   salary: z.string().optional(),
   salaryType: z.string(),
-  contactPhone: z.string().min(9, "מספר טלפון לא תקין"),
+  // contactPhone is NOT in the form — taken from logged-in user on the server
   contactName: z.string().min(2, "נדרש שם"),
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
@@ -50,7 +50,7 @@ function generateCaptcha() {
 
 export default function PostJob() {
   const [, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { userMode, setUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
@@ -82,7 +82,6 @@ export default function PostJob() {
       address: urlParams.get("address") || "",
       salary: urlParams.get("salary") || "",
       contactName: urlParams.get("contactName") || "",
-      contactPhone: urlParams.get("contactPhone") || "",
       businessName: urlParams.get("businessName") || "",
       workingHours: urlParams.get("workingHours") || "",
       startDateTime: urlParams.get("startDateTime") || "",
@@ -185,7 +184,7 @@ export default function PostJob() {
       longitude: lng,
       salary: data.salary ? parseFloat(data.salary) : undefined,
       salaryType: data.salaryType as Parameters<typeof createJob.mutate>[0]["salaryType"],
-      contactPhone: data.contactPhone,
+      // contactPhone is taken from the logged-in user on the server
       contactName: data.contactName,
       businessName: data.businessName || undefined,
       workingHours: data.workingHours || undefined,
@@ -553,16 +552,15 @@ export default function PostJob() {
           </div>
 
           <div>
-            <Label htmlFor="contactPhone">טלפון *</Label>
-            <Input
+            <Label htmlFor="contactPhone">טלפון ליצירת קשר</Label>
+            <div
               id="contactPhone"
-              type="tel"
-              placeholder="050-0000000"
               dir="ltr"
-              {...register("contactPhone")}
-              className="mt-1"
-            />
-            {errors.contactPhone && <p className="text-destructive text-xs mt-1">{errors.contactPhone.message}</p>}
+              className="mt-1 flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-muted text-muted-foreground text-sm select-none"
+            >
+              📱 {user?.phone ?? "יופיע אוטומטית מהחשבון"}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">הטלפון נלקח אוטומטית מחשבוןך</p>
           </div>
 
           <div>

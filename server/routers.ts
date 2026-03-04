@@ -204,7 +204,7 @@ const jobInputSchema = z.object({
   longitude: z.number(),
   salary: z.number().optional(),
   salaryType: z.enum(["hourly", "daily", "monthly", "volunteer"]).default("hourly"),
-  contactPhone: z.string().min(9),
+  contactPhone: z.string().min(9).optional(),
   contactName: z.string().min(2),
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
@@ -256,6 +256,15 @@ const jobsRouter = router({
   create: protectedProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
+      // Phone must come from the authenticated user — never trust client-supplied phone
+      const contactPhone = ctx.user.phone ?? input.contactPhone;
+      if (!contactPhone) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "לא נמצא מספר טלפון בחשבונך. אנא התחבר מחדש.",
+        });
+      }
+
       const activeCount = await countActiveJobsByUser(ctx.user.id);
       if (activeCount >= 3) {
         throw new TRPCError({
@@ -274,6 +283,7 @@ const jobsRouter = router({
 
       const job = await createJob({
         ...input,
+        contactPhone, // always from authenticated user
         city,
         latitude: input.latitude.toString(),
         longitude: input.longitude.toString(),

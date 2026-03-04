@@ -77,6 +77,9 @@ export const jobs = mysqlTable("jobs", {
     "retail",
     "events",
     "volunteer",
+    "emergency_support",
+    "passover_jobs",
+    "reserve_families",
     "other",
   ]).notNull(),
   address: varchar("address", { length: 300 }).notNull(),
@@ -94,6 +97,8 @@ export const jobs = mysqlTable("jobs", {
   startDateTime: timestamp("startDateTime"),
   /** Urgent flag: employer needs a worker immediately → shown at top of listings */
   isUrgent: boolean("isUrgent").default(false).notNull(),
+  /** Local business badge: shown on job card as "עסק מקומי" */
+  isLocalBusiness: boolean("isLocalBusiness").default(false).notNull(),
   /** When the 6-hour reminder was sent to the employer */
   reminderSentAt: timestamp("reminderSentAt"),
   /** Why the job was closed */

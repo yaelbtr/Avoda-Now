@@ -189,7 +189,7 @@ const jobInputSchema = z.object({
   category: z.enum([
     "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
     "security", "construction", "childcare", "eldercare", "retail",
-    "events", "volunteer", "other",
+    "events", "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
   ]),
   address: z.string().min(2),
   city: z.string().optional(),
@@ -205,6 +205,7 @@ const jobInputSchema = z.object({
   workersNeeded: z.number().int().min(1).default(1),
   activeDuration: z.enum(["1", "3", "7"]).default("1"),
   isUrgent: z.boolean().default(false),
+  isLocalBusiness: z.boolean().default(false),
   jobTags: z.array(z.string()).optional(),
   /** ISO string for exact start date/time */
   startDateTime: z.string().datetime({ offset: true }).optional(),
@@ -272,6 +273,7 @@ const jobsRouter = router({
         salary: input.salary?.toString(),
         expiresAt,
         isUrgent: input.isUrgent ?? false,
+        isLocalBusiness: input.isLocalBusiness ?? false,
         startDateTime: input.startDateTime ? new Date(input.startDateTime) : null,
         postedBy: ctx.user.id,
         status: "active",

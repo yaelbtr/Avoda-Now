@@ -10,6 +10,8 @@ import {
   formatDistance,
   getStartTimeLabel,
   isJobToday,
+  WARTIME_CATEGORIES,
+  SEASONAL_CATEGORIES,
 } from "@shared/categories";
 
 interface JobCardProps {
@@ -26,6 +28,7 @@ interface JobCardProps {
     startTime: string;
     startDateTime?: Date | string | null;
     isUrgent?: boolean | null;
+    isLocalBusiness?: boolean | null;
     workersNeeded: number;
     createdAt: Date | string;
     expiresAt?: Date | string | null;
@@ -103,6 +106,8 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
   const isToday = isJobToday(job.startDateTime, job.startTime);
   const hasPhone = isAuthenticated && !!job.contactPhone;
   const countdown = expiryCountdown(job.expiresAt);
+  const isWartime = WARTIME_CATEGORIES.includes(job.category as typeof WARTIME_CATEGORIES[number]);
+  const isSeasonal = SEASONAL_CATEGORIES.includes(job.category as typeof SEASONAL_CATEGORIES[number]);
 
   const handleRestrictedAction = (message: string) => {
     if (onLoginRequired) onLoginRequired(message);
@@ -130,6 +135,26 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
               {isToday && !job.isUrgent && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-500 text-white shrink-0">
                   🔥 להיום
+                </span>
+              )}
+              {isWartime && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-purple-600 text-white shrink-0">
+                  🆘 חירום
+                </span>
+              )}
+              {isSeasonal && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white shrink-0">
+                  🫓 פסח
+                </span>
+              )}
+              {job.isLocalBusiness && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500 text-white shrink-0">
+                  🏢 עסק מקומי
+                </span>
+              )}
+              {isVolunteer && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-600 text-white shrink-0">
+                  💚 התנדבות
                 </span>
               )}
             </div>

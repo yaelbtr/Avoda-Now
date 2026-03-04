@@ -57,6 +57,13 @@
       "when": 1772654497355,
       "tag": "0007_orange_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1772657476436,
+      "tag": "0008_wandering_inertia",
+      "breakpoints": true
     }
   ]
 }

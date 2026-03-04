@@ -263,6 +263,63 @@ export default function Home() {
         </section>
       )}
 
+      {/* ── Wartime & Passover ───────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-4 pt-4">
+        <div className="bg-gradient-to-br from-purple-50 to-amber-50 border border-purple-200 rounded-2xl p-4">
+          <h2 className="text-lg font-bold text-purple-800 mb-3 flex items-center gap-2">
+            🆘 סיוע בזמן חירום ועבודות לפסח
+          </h2>
+          <p className="text-sm text-purple-700 mb-4">
+            עבודות התנדבותיות ובתשלום לסיוע לקהילה, למשפחות מילואימניקים, ולקראת הפסח
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { value: "emergency_support", label: "סיוע בזמן חירום", icon: "🆘", desc: "חלוקת מזון, אריזה לחיילים, עזרה לקשישים", color: "purple" },
+              { value: "reserve_families", label: "משפחות מילואימניקים", icon: "🪖", desc: "עזרה למשפחות שבניהן במילואים", color: "purple" },
+              { value: "passover_jobs", label: "עבודות לפסח", icon: "🫓", desc: "ניקוי, אריזה, מחסן, משלוחים", color: "amber" },
+              { value: "volunteer", label: "התנדבות", icon: "💚", desc: "עבודה ללא תשלום — למען הקהילה", color: "green" },
+            ].map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => navigate(`/find-jobs?category=${cat.value}`)}
+                className={`flex items-start gap-2 p-3 rounded-xl border-2 text-right transition-all hover:scale-[1.02] ${
+                  cat.color === "purple" ? "bg-purple-50 border-purple-200 hover:border-purple-400" :
+                  cat.color === "amber" ? "bg-amber-50 border-amber-200 hover:border-amber-400" :
+                  "bg-green-50 border-green-200 hover:border-green-400"
+                }`}
+              >
+                <span className="text-2xl shrink-0">{cat.icon}</span>
+                <div>
+                  <p className={`text-xs font-bold leading-tight ${
+                    cat.color === "purple" ? "text-purple-800" :
+                    cat.color === "amber" ? "text-amber-800" : "text-green-800"
+                  }`}>{cat.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{cat.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex gap-2 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 gap-1.5"
+              onClick={() => navigate("/find-jobs?help=1")}
+            >
+              🆘 צריך עזרה היום
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs border-green-300 text-green-700 hover:bg-green-50 gap-1.5"
+              onClick={handlePostJob}
+            >
+              💚 פרסם משרת התנדבות
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* ── Categories ───────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 py-6">
         <h2 className="text-xl font-bold text-foreground mb-4 text-right">חפש לפי קטגוריה</h2>

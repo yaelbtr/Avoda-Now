@@ -11,8 +11,17 @@ export const JOB_CATEGORIES = [
   { value: "retail", label: "קמעונאות", icon: "🛍️" },
   { value: "events", label: "אירועים", icon: "🎉" },
   { value: "volunteer", label: "התנדבות", icon: "💚" },
+  { value: "emergency_support", label: "סיוע בזמן חירום", icon: "🆘" },
+  { value: "passover_jobs", label: "עבודות לפסח", icon: "🫓" },
+  { value: "reserve_families", label: "עזרה למשפחות מילואימניקים", icon: "🪖" },
   { value: "other", label: "אחר", icon: "💼" },
 ] as const;
+
+// Categories that are wartime/emergency related — shown with priority banner
+export const WARTIME_CATEGORIES = ["emergency_support", "reserve_families"] as const;
+
+// Categories that are seasonal (Passover) — shown with seasonal banner
+export const SEASONAL_CATEGORIES = ["passover_jobs"] as const;
 
 export type CategoryValue = (typeof JOB_CATEGORIES)[number]["value"];
 

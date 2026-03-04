@@ -23,6 +23,7 @@ export default function FindJobs() {
   const [searchText, setSearchText] = useState("");
   const [showTodayOnly, setShowTodayOnly] = useState(false);
   const [showUrgentOnly, setShowUrgentOnly] = useState(params.get("urgent") === "1");
+  const [showHelpToday, setShowHelpToday] = useState(params.get("help") === "1");
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [, navigate] = useLocation();
@@ -95,6 +96,16 @@ export default function FindJobs() {
     jobs = jobs.filter((j) => (j as { isUrgent?: boolean | null }).isUrgent);
   }
 
+  // "צריך עזרה היום" — urgent OR today + emergency/reserve categories
+  if (showHelpToday) {
+    const HELP_CATS = ["emergency_support", "reserve_families", "volunteer"];
+    jobs = jobs.filter((j) => {
+      const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
+      const isHelpCat = HELP_CATS.includes(j.category);
+      return isUrgentJob || isHelpCat;
+    });
+  }
+
   // Sort urgent jobs to top
   jobs = [...jobs].sort((a, b) => {
     const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
@@ -154,8 +165,19 @@ export default function FindJobs() {
           )}
         </div>
 
-        {/* Urgent + Today filters */}
+        {/* Special filters */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Help today — wartime/emergency */}
+          <button
+            onClick={() => { setShowHelpToday(!showHelpToday); if (!showHelpToday) { setShowUrgentOnly(false); setShowTodayOnly(false); } }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+              showHelpToday
+                ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+                : "border-purple-300 text-purple-700 hover:bg-purple-50"
+            }`}
+          >
+            🆘 צריך עזרה היום
+          </button>
           <button
             onClick={() => setShowUrgentOnly(!showUrgentOnly)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
@@ -185,6 +207,53 @@ export default function FindJobs() {
               עמוד עבודות להיום המלא ←
             </button>
           )}
+        </div>
+
+        {/* Wartime / Passover quick-filters */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2 text-right">סינון מיוחד</p>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setCategory(category === "emergency_support" ? "all" : "emergency_support")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "emergency_support"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
+              }`}
+            >
+              🆘 סיוע בזמן חירום
+            </button>
+            <button
+              onClick={() => setCategory(category === "reserve_families" ? "all" : "reserve_families")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "reserve_families"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
+              }`}
+            >
+              🪖 משפחות מילואימניקים
+            </button>
+            <button
+              onClick={() => setCategory(category === "passover_jobs" ? "all" : "passover_jobs")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "passover_jobs"
+                  ? "bg-amber-500 text-white border-amber-500"
+                  : "border-amber-300 text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              🫓 עבודות לפסח
+            </button>
+            <button
+              onClick={() => setCategory(category === "volunteer" ? "all" : "volunteer")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "volunteer"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "border-green-300 text-green-700 hover:bg-green-50"
+              }`}
+            >
+              💚 התנדבות
+            </button>
+          </div>
         </div>
 
         {/* Category filter */}

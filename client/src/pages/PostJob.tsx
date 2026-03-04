@@ -34,6 +34,8 @@ const schema = z.object({
   workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
+  isLocalBusiness: z.boolean().optional(),
+  isVolunteer: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -87,6 +89,8 @@ export default function PostJob() {
 
   const salaryType = watch("salaryType");
   const isUrgent = watch("isUrgent");
+  const isLocalBusiness = watch("isLocalBusiness");
+  const isVolunteer = watch("isVolunteer");
 
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
@@ -188,6 +192,7 @@ export default function PostJob() {
       workersNeeded: parseInt(data.workersNeeded),
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
+      isLocalBusiness: data.isLocalBusiness ?? false,
     });
   };
 
@@ -428,6 +433,47 @@ export default function PostJob() {
             <p className="text-xs text-muted-foreground mt-1">
               אם תמלא שדה זה, המשרה תסומן כג׳ "עבודה להיום" כאשר ההתחלה בתוך 24 שעות
             </p>
+          </div>
+
+          {/* Volunteer mode toggle */}
+          <div
+            onClick={() => {
+              const next = !isVolunteer;
+              setValue("isVolunteer", next);
+              if (next) setValue("salaryType", "volunteer");
+              else setValue("salaryType", "hourly");
+            }}
+            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isVolunteer ? "border-green-400 bg-green-50" : "border-border hover:border-green-300"}`}
+          >
+            <div>
+              <p className={`font-semibold text-sm ${isVolunteer ? "text-green-700" : "text-foreground"}`}>
+                💚 זו עבודת התנדבות — ללא תשלום
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                משרה התנדבותית — עזרה לקהילה, חירום, משפחות מילואימניקים
+              </p>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isVolunteer ? "border-green-500 bg-green-500" : "border-muted-foreground"}`}>
+              {isVolunteer && <span className="text-white text-xs">✓</span>}
+            </div>
+          </div>
+
+          {/* Local business toggle */}
+          <div
+            onClick={() => setValue("isLocalBusiness", !isLocalBusiness)}
+            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isLocalBusiness ? "border-blue-400 bg-blue-50" : "border-border hover:border-blue-300"}`}
+          >
+            <div>
+              <p className={`font-semibold text-sm ${isLocalBusiness ? "text-blue-700" : "text-foreground"}`}>
+                🏢 עסק מקומי
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                יוצג badge "עסק מקומי" על כרטיס העבודה
+              </p>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isLocalBusiness ? "border-blue-500 bg-blue-500" : "border-muted-foreground"}`}>
+              {isLocalBusiness && <span className="text-white text-xs">✓</span>}
+            </div>
           </div>
 
           {/* Urgent toggle */}

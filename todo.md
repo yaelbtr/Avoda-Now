@@ -240,3 +240,14 @@
 - [x] /available-workers page for employers to see nearby available workers
 - [x] Navbar: added "עובדים זמינים" link
 - [x] Tests: 83 tests passing (7 test files)
+
+## Wartime & Passover Adaptation
+- [x] Add categories: emergency_support, passover_jobs, reserve_families
+- [x] DB: add isLocalBusiness boolean to jobs table
+- [x] PostJob: volunteer mode toggle (salaryType=volunteer already exists, make prominent)
+- [x] PostJob: local business badge toggle
+- [x] PostJob: new categories in category selector
+- [x] JobCard: "עסק מקומי" badge
+- [x] FindJobs: "צריך עזרה היום" filter (urgent + today combined)
+- [x] FindJobs: emergency/Passover category quick-filters
+- [x] Homepage: wartime/Passover section with emergency categories

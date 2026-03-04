@@ -1,0 +1,2 @@
+ALTER TABLE `jobs` MODIFY COLUMN `category` enum('delivery','warehouse','agriculture','kitchen','cleaning','security','construction','childcare','eldercare','retail','events','volunteer','emergency_support','passover_jobs','reserve_families','other') NOT NULL;--> statement-breakpoint
+ALTER TABLE `jobs` ADD `isLocalBusiness` boolean DEFAULT false NOT NULL;

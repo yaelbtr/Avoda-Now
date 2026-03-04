@@ -88,3 +88,7 @@
 - [x] Update AuthContext to use new OTP procedures
 - [x] Error messages in Hebrew (SMS failure, wrong code)
 - [x] Vitest tests for OTP flow (15 tests passing)
+
+## Bug Fixes
+
+- [x] Fix phone number validation — expanded to support all Israeli formats (050-058, 02, 03, 04, 08, 09, +972, 972)

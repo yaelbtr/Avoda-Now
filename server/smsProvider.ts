@@ -131,23 +131,33 @@ export const smsProvider: SmsProvider = new TwilioVerifyProvider();
 // ─── Phone number utilities ───────────────────────────────────────────────────
 
 /**
- * Normalize an Israeli phone number to E.164 format (+972XXXXXXXXX).
- * Accepts: 05X-XXXXXXX, 05XXXXXXXX, +9725XXXXXXXX, 9725XXXXXXXX
- * Throws if the number cannot be normalized.
+ * Normalize any Israeli phone number to E.164 format (+972XXXXXXXXX).
+ *
+ * Accepted formats:
+ *   05X-XXXXXXX   (local mobile, with or without dash)
+ *   05XXXXXXXX    (local mobile, 10 digits)
+ *   0X-XXXXXXX    (local landline)
+ *   +972XXXXXXXXX (already E.164)
+ *   972XXXXXXXXX  (international without +)
+ *   5XXXXXXXX     (9 digits, missing leading 0)
  */
 export function normalizeIsraeliPhone(raw: string): string {
-  const digits = raw.replace(/[\s\-().+]/g, "");
+  // Strip all non-digit characters except leading +
+  const stripped = raw.trim();
+  const digits = stripped.replace(/[\s\-().]/g, "").replace(/^\+/, "");
 
-  // Already in international format
-  if (digits.startsWith("972") && digits.length === 12) {
+  // Already in international format: 972 + 9 digits = 12 digits total
+  if (digits.startsWith("972") && digits.length >= 11 && digits.length <= 13) {
     return `+${digits}`;
   }
-  // Local format starting with 0
-  if (digits.startsWith("0") && digits.length === 10) {
+
+  // Local Israeli format: starts with 0, 9-10 digits
+  if (digits.startsWith("0") && digits.length >= 9 && digits.length <= 10) {
     return `+972${digits.slice(1)}`;
   }
-  // Already stripped of leading 0 but missing country code
-  if (digits.length === 9 && digits.startsWith("5")) {
+
+  // Stripped of leading 0: 8-9 digits starting with 2-9
+  if (!digits.startsWith("0") && !digits.startsWith("9") && digits.length >= 8 && digits.length <= 9) {
     return `+972${digits}`;
   }
 
@@ -155,8 +165,11 @@ export function normalizeIsraeliPhone(raw: string): string {
 }
 
 /**
- * Basic validation: E.164 format, Israeli mobile (05X).
+ * Validate that a phone is in E.164 format and plausibly Israeli.
+ * Accepts mobile (05X) and landline (02/03/04/08/09) numbers.
+ * Deliberately permissive — Twilio will reject truly invalid numbers.
  */
 export function isValidIsraeliPhone(e164: string): boolean {
-  return /^\+9725\d{8}$/.test(e164);
+  // Must start with +972 and have 11-13 total chars
+  return /^\+972[2-9]\d{7,9}$/.test(e164);
 }

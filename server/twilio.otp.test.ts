@@ -29,12 +29,17 @@ vi.mock("./smsProvider", () => ({
     verifyOtp: vi.fn(),
   },
   normalizeIsraeliPhone: vi.fn((raw: string) => {
-    const digits = raw.replace(/[\s\-().+]/g, "");
-    if (digits.startsWith("0") && digits.length === 10) return `+972${digits.slice(1)}`;
-    if (digits.startsWith("972") && digits.length === 12) return `+${digits}`;
+    const stripped = raw.trim();
+    const digits = stripped.replace(/[\s\-().]/g, "").replace(/^\+/, "");
+    // Already in international format
+    if (digits.startsWith("972") && digits.length >= 11 && digits.length <= 13) return `+${digits}`;
+    // Local Israeli format: starts with 0, 9-10 digits
+    if (digits.startsWith("0") && digits.length >= 9 && digits.length <= 10) return `+972${digits.slice(1)}`;
+    // Stripped of leading 0: 8-9 digits starting with 2-9
+    if (!digits.startsWith("0") && !digits.startsWith("9") && digits.length >= 8 && digits.length <= 9) return `+972${digits}`;
     throw new Error("מספר טלפון לא תקין");
   }),
-  isValidIsraeliPhone: vi.fn((e164: string) => /^\+9725\d{8}$/.test(e164)),
+  isValidIsraeliPhone: vi.fn((e164: string) => /^\+972[2-9]\d{7,9}$/.test(e164)),
 }));
 
 import * as db from "./db";
@@ -76,26 +81,70 @@ describe("normalizeIsraeliPhone", () => {
     expect(normalizeIsraeliPhone("050-1234567")).toBe("+972501234567");
   });
 
-  it("normalizes 05XXXXXXXX format", () => {
+  it("normalizes 05XXXXXXXX format (no dash)", () => {
     expect(normalizeIsraeliPhone("0501234567")).toBe("+972501234567");
   });
 
-  it("passes through +972 format", () => {
+  it("normalizes 052-XXXXXXX format", () => {
+    expect(normalizeIsraeliPhone("052-3456789")).toBe("+972523456789");
+  });
+
+  it("normalizes 054-XXXXXXX format", () => {
+    expect(normalizeIsraeliPhone("054-9876543")).toBe("+972549876543");
+  });
+
+  it("normalizes 058-XXXXXXX format", () => {
+    expect(normalizeIsraeliPhone("058-1234567")).toBe("+972581234567");
+  });
+
+  it("passes through +972 E.164 format", () => {
     expect(normalizeIsraeliPhone("+972501234567")).toBe("+972501234567");
   });
 
-  it("throws for invalid numbers", () => {
+  it("normalizes 972XXXXXXXXX (no plus)", () => {
+    expect(normalizeIsraeliPhone("972501234567")).toBe("+972501234567");
+  });
+
+  it("normalizes landline 02-XXXXXXX", () => {
+    expect(normalizeIsraeliPhone("02-1234567")).toBe("+97221234567");
+  });
+
+  it("normalizes landline 03-XXXXXXX", () => {
+    expect(normalizeIsraeliPhone("03-9876543")).toBe("+97239876543");
+  });
+
+  it("throws for clearly invalid numbers", () => {
     expect(() => normalizeIsraeliPhone("123")).toThrow();
   });
 });
 
 describe("isValidIsraeliPhone", () => {
-  it("accepts valid Israeli mobile", () => {
+  it("accepts valid Israeli mobile 050", () => {
     expect(isValidIsraeliPhone("+972501234567")).toBe(true);
   });
 
-  it("rejects landline", () => {
-    expect(isValidIsraeliPhone("+97231234567")).toBe(false);
+  it("accepts valid Israeli mobile 052", () => {
+    expect(isValidIsraeliPhone("+972523456789")).toBe(true);
+  });
+
+  it("accepts valid Israeli mobile 054", () => {
+    expect(isValidIsraeliPhone("+972549876543")).toBe(true);
+  });
+
+  it("accepts valid Israeli landline 02", () => {
+    expect(isValidIsraeliPhone("+97221234567")).toBe(true);
+  });
+
+  it("accepts valid Israeli landline 03", () => {
+    expect(isValidIsraeliPhone("+97239876543")).toBe(true);
+  });
+
+  it("rejects non-Israeli number", () => {
+    expect(isValidIsraeliPhone("+12125551234")).toBe(false);
+  });
+
+  it("rejects number without +972 prefix", () => {
+    expect(isValidIsraeliPhone("0501234567")).toBe(false);
   });
 });
 

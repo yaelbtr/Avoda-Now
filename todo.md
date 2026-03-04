@@ -312,3 +312,4 @@
 - [x] Create HomeWorker.tsx — dedicated worker home screen
 - [x] Create HomeEmployer.tsx — dedicated employer home screen
 - [x] Route Home.tsx to correct home based on userMode
+- [x] Fix: Google Maps JS API loaded multiple times on /post-job causing errors

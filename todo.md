@@ -122,3 +122,11 @@
 
 ## CustomFriendlyName Re-add
 - [x] Add CustomFriendlyName=JobNow to sendOtp with automatic 60204 fallback retry (sends without it if feature not enabled)
+
+## OTP UX Improvements
+- [x] 6 separate digit input boxes with auto-advance cursor
+- [x] autocomplete="one-time-code" and inputmode="numeric" for SMS autofill
+- [x] 30-second resend countdown timer
+- [x] Phone normalization: 0501234567 → +972501234567 (server-side via smsProvider)
+- [x] 30-day session persistence: JWT expiresIn=30d + cookie maxAge=30 days
+- [x] Enforce OTP length = 6 digits before submit (auto-submit on last digit)

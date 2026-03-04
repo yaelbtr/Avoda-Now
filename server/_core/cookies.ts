@@ -21,9 +21,11 @@ function isSecureRequest(req: Request) {
   return protoList.some(proto => proto.trim().toLowerCase() === "https");
 }
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 export function getSessionCookieOptions(
   req: Request
-): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
+): Pick<CookieOptions, "domain" | "httpOnly" | "maxAge" | "path" | "sameSite" | "secure"> {
   // const hostname = req.hostname;
   // const shouldSetDomain =
   //   hostname &&
@@ -41,6 +43,7 @@ export function getSessionCookieOptions(
 
   return {
     httpOnly: true,
+    maxAge: THIRTY_DAYS_MS,
     path: "/",
     sameSite: "none",
     secure: isSecureRequest(req),

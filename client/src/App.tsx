@@ -21,7 +21,24 @@ import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 import WorkerProfile from "./pages/WorkerProfile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "./contexts/AuthContext";
+import { ensureMapsLoaded } from "@/lib/mapsLoader";
+
+/**
+ * Invisible component that preloads the Google Maps script in the background
+ * as soon as the user is authenticated. This ensures the script is already
+ * cached when the user navigates to /post-job or any map-enabled page.
+ */
+function MapsPreloader() {
+  const { isAuthenticated } = useAuth();
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    // Fire-and-forget: load Maps in the background, ignore errors
+    ensureMapsLoaded().catch(() => {});
+  }, [isAuthenticated]);
+  return null;
+}
 
 function Router() {
   const { needsRoleSelection, setUserMode, userMode } = useUserMode();
@@ -84,6 +101,7 @@ function App() {
           <AuthProvider>
             <UserModeProvider>
               <Toaster position="top-center" dir="rtl" />
+              <MapsPreloader />
               <Router />
             </UserModeProvider>
           </AuthProvider>

@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `city` varchar(100);\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `activeDuration` enum('1','3','7') NOT NULL DEFAULT '7';\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `expiresAt` timestamp NULL;\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `reportCount` int NOT NULL DEFAULT 0;\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `jobTags` json;\nALTER TABLE `users` ADD COLUMN IF NOT EXISTS `workerTags` json;\nALTER TABLE `jobs` MODIFY COLUMN `status` enum('active','closed','expired','under_review') NOT NULL DEFAULT 'active';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `city` varchar(100);\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `activeDuration` enum('1','3','7') NOT NULL DEFAULT '7';\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `expiresAt` timestamp NULL;\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `reportCount` int NOT NULL DEFAULT 0;\nALTER TABLE `jobs` ADD COLUMN IF NOT EXISTS `jobTags` json;\nALTER TABLE `users` ADD COLUMN IF NOT EXISTS `workerTags` json;\nALTER TABLE `jobs` MODIFY COLUMN `status` enum('active','closed','expired','under_review') NOT NULL DEFAULT 'active';\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4389
+}

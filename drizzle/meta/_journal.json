@@ -1,5 +1,34 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772635667781,
+      "tag": "0000_fast_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772635834167,
+      "tag": "0001_last_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772636417933,
+      "tag": "0002_fine_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1772636441329,
+      "tag": "0003_kind_ender_wiggin",
+      "breakpoints": true
+    }
+  ]
 }

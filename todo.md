@@ -142,3 +142,17 @@
 - [x] MyJobs: redirect guests to login with message
 - [x] Login prompt modal: show "כדי ליצור קשר עם המעסיק יש להתחבר למערכת"
 - [x] After login: reveal phone numbers and contact buttons (phone returned only for authenticated users)
+
+## Security Protections Against Scraping & Bots
+- [x] Global API rate limiting: max 60 requests/min per IP (express-rate-limit)
+- [x] Jobs list rate limiting: max 20 requests/min per IP
+- [x] Authenticated endpoints: max 30 requests/min per user (via global limit)
+- [x] Bot detection: block known scraper User-Agents (python-requests, scrapy, curl, headless, puppeteer, etc.)
+- [x] Pagination enforcement: max 20 jobs per request, no unlimited dumps
+- [x] Phone numbers: never returned in bulk list endpoints (only in getById for auth users)
+- [x] Security headers: helmet (X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy)
+- [x] robots.txt: disallow /api/*, /admin/, /post-job, /my-jobs for all crawlers
+- [x] CORS: trust proxy enabled for accurate IP detection
+- [x] Request size limit: max 10kb body for /api/trpc endpoints
+- [x] Suspicious pattern detection: block sequential ID enumeration (15+ sequential IDs in 10s)
+- [x] Vitest tests for security middleware: 13 tests (bot detection + anti-enumeration + exports)

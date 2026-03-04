@@ -7,6 +7,14 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import {
+  securityHeaders,
+  globalRateLimit,
+  jobsListRateLimit,
+  otpRateLimit,
+  botDetection,
+  antiEnumeration,
+} from "../security";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -30,9 +38,35 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
+
+  // ── Trust proxy: required for accurate IP detection behind load balancers ───
+  app.set("trust proxy", 1);
+
+  // ── Security headers (helmet) ─────────────────────────────────────────────
+  app.use(securityHeaders);
+
+  // ── Body size limit: 10kb for API, larger only for file upload routes ─────
+  app.use("/api/trpc", express.json({ limit: "10kb" }));
+  app.use("/api/trpc", express.urlencoded({ limit: "10kb", extended: true }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // ── Global rate limit: 60 req/min per IP ─────────────────────────────────
+  app.use("/api/trpc", globalRateLimit);
+
+  // ── Bot detection: block known scraper User-Agents ────────────────────────
+  app.use("/api/trpc", botDetection);
+
+  // ── Anti-enumeration: detect sequential ID scanning ──────────────────────
+  app.use("/api/trpc", antiEnumeration);
+
+  // ── Stricter limits on jobs list endpoints ────────────────────────────────
+  app.use("/api/trpc/jobs.list", jobsListRateLimit);
+  app.use("/api/trpc/jobs.search", jobsListRateLimit);
+
+  // ── OTP endpoint rate limit: 5 req/hour per IP ───────────────────────────
+  app.use("/api/trpc/auth.sendOtp", otpRateLimit);
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

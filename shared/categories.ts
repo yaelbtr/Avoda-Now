@@ -10,11 +10,15 @@ export const JOB_CATEGORIES = [
   { value: "eldercare", label: "טיפול בקשישים", icon: "🧓" },
   { value: "retail", label: "קמעונאות", icon: "🛍️" },
   { value: "events", label: "אירועים", icon: "🎉" },
-  { value: "volunteer", label: "התנדבות", icon: "💚" },
-  { value: "emergency_support", label: "סיוע בזמן חירום", icon: "🆘" },
-  { value: "passover_jobs", label: "עבודות לפסח", icon: "🫓" },
-  { value: "reserve_families", label: "עזרה למשפחות מילואימניקים", icon: "🪖" },
   { value: "other", label: "אחר", icon: "💼" },
+] as const;
+
+// Special categories shown separately with highlighted styling
+export const SPECIAL_CATEGORIES = [
+  { value: "emergency_support", label: "סיוע בזמן חירום", icon: "🆘", color: "purple" },
+  { value: "reserve_families", label: "משפחות מילואימניקים", icon: "🪖", color: "purple" },
+  { value: "passover_jobs", label: "עבודות לפסח", icon: "🫓", color: "amber" },
+  { value: "volunteer", label: "התנדבות", icon: "💚", color: "green" },
 ] as const;
 
 // Categories that are wartime/emergency related — shown with priority banner

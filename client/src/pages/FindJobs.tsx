@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
-import { JOB_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
+import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import { MapPin, Search, Loader2, Briefcase, LocateFixed, Flame } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -212,47 +212,27 @@ export default function FindJobs() {
               </button>
             ))}
 
-            {/* Special highlighted categories — wartime / Passover / volunteer */}
-            <button
-              onClick={() => setCategory(category === "emergency_support" ? "all" : "emergency_support")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "emergency_support"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100"
-              }`}
-            >
-              🇧🇦 סיוע בזמן חירום
-            </button>
-            <button
-              onClick={() => setCategory(category === "reserve_families" ? "all" : "reserve_families")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "reserve_families"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100"
-              }`}
-            >
-              🪖 משפחות מילואימניקים
-            </button>
-            <button
-              onClick={() => setCategory(category === "passover_jobs" ? "all" : "passover_jobs")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "passover_jobs"
-                  ? "bg-amber-500 text-white border-amber-500"
-                  : "border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-100"
-              }`}
-            >
-              🪳 עבודות לפסח
-            </button>
-            <button
-              onClick={() => setCategory(category === "volunteer" ? "all" : "volunteer")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "volunteer"
-                  ? "bg-green-600 text-white border-green-600"
-                  : "border-green-400 text-green-700 bg-green-50 hover:bg-green-100"
-              }`}
-            >
-              💚 התנדבות
-            </button>
+            {/* Special highlighted categories — rendered once, dynamically */}
+            {SPECIAL_CATEGORIES.map((cat) => {
+              const colorMap: Record<string, { active: string; inactive: string }> = {
+                purple: { active: "bg-purple-600 text-white border-purple-600", inactive: "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100" },
+                amber:  { active: "bg-amber-500 text-white border-amber-500",   inactive: "border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-100" },
+                green:  { active: "bg-green-600 text-white border-green-600",   inactive: "border-green-400 text-green-700 bg-green-50 hover:bg-green-100" },
+              };
+              const colors = colorMap[cat.color] ?? colorMap.purple;
+              const isActive = category === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setCategory(isActive ? "all" : cat.value)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                    isActive ? colors.active : colors.inactive
+                  }`}
+                >
+                  {cat.icon} {cat.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

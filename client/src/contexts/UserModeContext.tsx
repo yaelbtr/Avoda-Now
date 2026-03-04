@@ -79,6 +79,8 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
       setLocalMode(null);
       setHasChecked(false);
       setLocalInitialized(false);
+      // Clear stored role so the role selection screen always appears on next login
+      clearRoleFromStorage();
     }
   }, [userId, isAuthenticated, localInitialized]);
 

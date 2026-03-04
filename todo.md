@@ -251,3 +251,12 @@
 - [x] FindJobs: "צריך עזרה היום" filter (urgent + today combined)
 - [x] FindJobs: emergency/Passover category quick-filters
 - [x] Homepage: wartime/Passover section with emergency categories
+
+## Real-Time Activity & Nearby Jobs
+- [x] Server: getLiveStats procedure (available workers, new jobs last hour)
+- [x] Server: getActivityFeed procedure (recent job posts + available workers)
+- [x] UI: ActivityTicker component with horizontal scroll animation
+- [x] UI: LiveStats bar on homepage (auto-refresh every 45s)
+- [x] UI: Nearby jobs section with 1/3/5 km radius selector
+- [x] UI: Distance display on job cards in nearby section
+- [x] UI: Optional map view for nearby jobs

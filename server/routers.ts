@@ -30,6 +30,8 @@ import {
   updateJob,
   updateJobStatus,
   updateUserLastSignedIn,
+  getLiveStats,
+  getActivityFeed,
 } from "./db";
 import {
   adminApproveJob,
@@ -485,7 +487,23 @@ const workersRouter = router({
     }),
 });
 
-// ─── App Router ───────────────────────────────────────────────────────────────
+//// ─── Live Stats Router ─────────────────────────────────────────────────────
+
+const liveStatsRouter = router({
+  /** Real-time platform stats: available workers, new jobs last hour, urgent jobs */
+  stats: publicProcedure.query(async () => {
+    return getLiveStats();
+  }),
+
+  /** Recent activity feed for the ticker: new jobs + newly available workers */
+  feed: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(50).default(20) }).optional())
+    .query(async ({ input }) => {
+      return getActivityFeed(input?.limit ?? 20);
+    }),
+});
+
+// ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
@@ -493,6 +511,7 @@ export const appRouter = router({
   jobs: jobsRouter,
   workers: workersRouter,
   admin: adminRouter,
+  live: liveStatsRouter,
 });
 
 export type AppRouter = typeof appRouter;

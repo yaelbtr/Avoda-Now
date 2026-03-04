@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame, Zap, CheckCircle2, Users, Phone } from "lucide-react";
+import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame, Zap, CheckCircle2, Users, Phone, Map, List } from "lucide-react";
+import ActivityTicker from "@/components/ActivityTicker";
+import LiveStats from "@/components/LiveStats";
+import NearbyJobsMap from "@/components/NearbyJobsMap";
 
 const CATEGORIES = [
   { value: "kitchen", label: "מסעדות", icon: "🍳" },
@@ -32,6 +35,9 @@ export default function Home() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [nearbyRadius, setNearbyRadius] = useState(5);
+  const [showMap, setShowMap] = useState(false);
+  const [geoRequested, setGeoRequested] = useState(false);
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);
@@ -60,8 +66,8 @@ export default function Home() {
   const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
   const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
   const nearbyQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: 20, limit: 6 },
-    { enabled: true }
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: nearbyRadius, limit: 12 },
+    { enabled: !!userLat }
   );
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
@@ -79,6 +85,16 @@ export default function Home() {
   const jobs = userLat ? (nearbyQuery.data ?? []) : (latestQuery.data ?? []);
   const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
   const isAvailable = !!workerStatusQuery.data;
+
+  const requestGeo = () => {
+    setGeoRequested(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); },
+        () => {}
+      );
+    }
+  };
 
   const handleAvailabilityToggle = () => {
     if (!isAuthenticated) { requireLogin("כדי לסמן זמינות יש להתחבר למערכת"); return; }
@@ -177,23 +193,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Stats bar ────────────────────────────────────────────────────── */}
-      <section className="bg-white border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex justify-around text-center">
-            {[
-              { label: "עובדים מצאו עבודה", value: "+1,000" },
-              { label: "מעסיקים", value: "+200" },
-              { label: "משרות פעילות", value: "+500" },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="text-xl font-bold text-primary">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+       {/* ── Activity Ticker ───────────────────────────────────────────────── */}
+      <ActivityTicker />
+
+      {/* ── Live Stats ───────────────────────────────────────────────────── */}
+      <LiveStats />
 
       {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
       {(urgentJobs.length > 0 || urgentQuery.isLoading) && (
@@ -341,10 +345,10 @@ export default function Home() {
 
       {/* ── Nearby / Latest jobs ─────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             {userLat ? (
-              <><MapPin className="h-5 w-5 text-primary" />משרות קרובות אליך</>
+              <><MapPin className="h-5 w-5 text-primary" />עבודות קרובות אליך עכשיו</>
             ) : (
               <><Briefcase className="h-5 w-5 text-primary" />משרות אחרונות</>
             )}
@@ -355,14 +359,70 @@ export default function Home() {
           </Button>
         </div>
 
+        {/* Geo permission prompt */}
+        {!userLat && !geoRequested && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
+            <MapPin className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-blue-800 mb-1">רוצה לראות עבודות קרובות אליך?</p>
+            <p className="text-xs text-blue-600 mb-3">אפשר גישה למיקום להצגת עבודות באזור שלך</p>
+            <Button size="sm" onClick={requestGeo} className="gap-2">
+              <MapPin className="h-4 w-4" />
+              אפשר גישה למיקום
+            </Button>
+          </div>
+        )}
+
+        {/* Radius selector + map toggle (only when location is available) */}
+        {userLat && (
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="text-xs text-muted-foreground">רדיוס:</span>
+            {[1, 3, 5].map((km) => (
+              <button
+                key={km}
+                onClick={() => setNearbyRadius(km)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                  nearbyRadius === km
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border text-muted-foreground hover:border-primary"
+                }`}
+              >
+                {km} ק"מ
+              </button>
+            ))}
+            <div className="mr-auto flex gap-1">
+              <button
+                onClick={() => setShowMap(false)}
+                className={`p-1.5 rounded-lg border transition-colors ${
+                  !showMap ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground"
+                }`}
+                title="רשימה"
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setShowMap(true)}
+                className={`p-1.5 rounded-lg border transition-colors ${
+                  showMap ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground"
+                }`}
+                title="מפה"
+              >
+                <Map className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : jobs.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">אין משרות כרגע</p>
-            <Button className="mt-4" onClick={handlePostJob}>פרסם משרה</Button>
+            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p className="font-medium">אין משרות בטווח {nearbyRadius} ק"מ</p>
+            <p className="text-xs mt-1">נסה להרחיב את הרדיוס או לחפש בכל המשרות</p>
+            <Button className="mt-4" onClick={() => navigate("/find-jobs")}>כל המשרות</Button>
           </div>
+        ) : showMap && userLat ? (
+          <NearbyJobsMap jobs={jobs} userLat={userLat} userLng={userLng!} />
         ) : (
           <div className="space-y-3">
             {jobs.map((job) => (
@@ -381,7 +441,7 @@ export default function Home() {
           </div>
         )}
 
-        {!isLoading && jobs.length > 0 && (
+        {!isLoading && !showMap && jobs.length > 0 && (
           <div className="mt-6 text-center">
             <Button variant="outline" onClick={() => navigate("/find-jobs")} className="gap-2">
               <Search className="h-4 w-4" />

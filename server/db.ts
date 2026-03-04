@@ -471,3 +471,117 @@ export async function reportJob(data: InsertJobReport) {
     await db.update(jobs).set({ status: "under_review" }).where(eq(jobs.id, data.jobId));
   }
 }
+
+// ─── Live Stats & Activity Feed ──────────────────────────────────────────────
+
+/**
+ * Returns real-time platform statistics:
+ * - availableWorkers: workers with active availability right now
+ * - newJobsLastHour: jobs posted in the last 60 minutes
+ * - urgentJobsNow: currently active urgent jobs
+ */
+export async function getLiveStats() {
+  const db = await getDb();
+  if (!db) return { availableWorkers: 0, newJobsLastHour: 0, urgentJobsNow: 0 };
+
+  const now = new Date();
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+  const [workerRows, newJobRows, urgentRows] = await Promise.all([
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(workerAvailability)
+      .where(gte(workerAvailability.availableUntil, now)),
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(jobs)
+      .where(
+        and(
+          or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+          gte(jobs.createdAt, oneHourAgo)
+        )!
+      ),
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(jobs)
+      .where(
+        and(
+          eq(jobs.status, "active"),
+          eq(jobs.isUrgent, true)
+        )!
+      ),
+  ]);
+
+  return {
+    availableWorkers: Number(workerRows[0]?.count ?? 0),
+    newJobsLastHour: Number(newJobRows[0]?.count ?? 0),
+    urgentJobsNow: Number(urgentRows[0]?.count ?? 0),
+  };
+}
+
+/**
+ * Returns a feed of recent activity for the ticker:
+ * - Recent job posts (last 2 hours)
+ * - Recently available workers (last 1 hour)
+ * Returns up to `limit` items sorted by recency.
+ */
+export async function getActivityFeed(limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+  const [recentJobs, recentWorkers] = await Promise.all([
+    db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        city: jobs.city,
+        salary: jobs.salary,
+        salaryType: jobs.salaryType,
+        isUrgent: jobs.isUrgent,
+        category: jobs.category,
+        createdAt: jobs.createdAt,
+      })
+      .from(jobs)
+      .where(
+        and(
+          or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+          gte(jobs.createdAt, twoHoursAgo)
+        )!
+      )
+      .orderBy(desc(jobs.createdAt))
+      .limit(limit),
+    db
+      .select({
+        id: workerAvailability.id,
+        city: workerAvailability.city,
+        note: workerAvailability.note,
+        createdAt: workerAvailability.createdAt,
+      })
+      .from(workerAvailability)
+      .where(
+        and(
+          gte(workerAvailability.availableUntil, now),
+          gte(workerAvailability.createdAt, oneHourAgo)
+        )!
+      )
+      .orderBy(desc(workerAvailability.createdAt))
+      .limit(10),
+  ]);
+
+  type FeedItem =
+    | { type: "job"; id: number; title: string; city: string | null; salary: string | null; salaryType: string; isUrgent: boolean | null; category: string; createdAt: Date }
+    | { type: "worker"; id: number; city: string | null; note: string | null; createdAt: Date };
+
+  const feed: FeedItem[] = [
+    ...recentJobs.map((j) => ({ type: "job" as const, ...j })),
+    ...recentWorkers.map((w) => ({ type: "worker" as const, ...w })),
+  ];
+
+  // Sort by recency
+  feed.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return feed.slice(0, limit);
+}

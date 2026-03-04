@@ -209,57 +209,11 @@ export default function FindJobs() {
           )}
         </div>
 
-        {/* Wartime / Passover quick-filters */}
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2 text-right">סינון מיוחד</p>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => setCategory(category === "emergency_support" ? "all" : "emergency_support")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "emergency_support"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
-              }`}
-            >
-              🆘 סיוע בזמן חירום
-            </button>
-            <button
-              onClick={() => setCategory(category === "reserve_families" ? "all" : "reserve_families")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "reserve_families"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
-              }`}
-            >
-              🪖 משפחות מילואימניקים
-            </button>
-            <button
-              onClick={() => setCategory(category === "passover_jobs" ? "all" : "passover_jobs")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "passover_jobs"
-                  ? "bg-amber-500 text-white border-amber-500"
-                  : "border-amber-300 text-amber-700 hover:bg-amber-50"
-              }`}
-            >
-              🫓 עבודות לפסח
-            </button>
-            <button
-              onClick={() => setCategory(category === "volunteer" ? "all" : "volunteer")}
-              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
-                category === "volunteer"
-                  ? "bg-green-600 text-white border-green-600"
-                  : "border-green-300 text-green-700 hover:bg-green-50"
-              }`}
-            >
-              💚 התנדבות
-            </button>
-          </div>
-        </div>
-
-        {/* Category filter */}
+        {/* Category filter — includes special highlighted categories */}
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2 text-right">קטגוריה</p>
           <div className="flex flex-wrap gap-1.5">
+            {/* "All" chip */}
             <button
               onClick={() => setCategory("all")}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
@@ -270,6 +224,8 @@ export default function FindJobs() {
             >
               הכל
             </button>
+
+            {/* Regular categories */}
             {JOB_CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
@@ -283,6 +239,48 @@ export default function FindJobs() {
                 {cat.icon} {cat.label}
               </button>
             ))}
+
+            {/* Special highlighted categories — wartime / Passover / volunteer */}
+            <button
+              onClick={() => setCategory(category === "emergency_support" ? "all" : "emergency_support")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "emergency_support"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100"
+              }`}
+            >
+              🇧🇦 סיוע בזמן חירום
+            </button>
+            <button
+              onClick={() => setCategory(category === "reserve_families" ? "all" : "reserve_families")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "reserve_families"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100"
+              }`}
+            >
+              🪖 משפחות מילואימניקים
+            </button>
+            <button
+              onClick={() => setCategory(category === "passover_jobs" ? "all" : "passover_jobs")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "passover_jobs"
+                  ? "bg-amber-500 text-white border-amber-500"
+                  : "border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-100"
+              }`}
+            >
+              🪳 עבודות לפסח
+            </button>
+            <button
+              onClick={() => setCategory(category === "volunteer" ? "all" : "volunteer")}
+              className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                category === "volunteer"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "border-green-400 text-green-700 bg-green-50 hover:bg-green-100"
+              }`}
+            >
+              💚 התנדבות
+            </button>
           </div>
         </div>
       </div>

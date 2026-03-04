@@ -34,6 +34,8 @@ import {
   getActivityFeed,
   setUserMode,
   getUserMode,
+  getWorkerProfile,
+  updateWorkerProfile,
 } from "./db";
 import {
   adminApproveJob,
@@ -516,6 +518,32 @@ const userRouter = router({
     .input(z.object({ mode: z.enum(["worker", "employer"]) }))
     .mutation(async ({ ctx, input }) => {
       await setUserMode(ctx.user.id, input.mode);
+      return { success: true };
+    }),
+
+  /** Get the current user's worker profile */
+  getProfile: protectedProcedure.query(async ({ ctx }) => {
+    const profile = await getWorkerProfile(ctx.user.id);
+    return profile;
+  }),
+
+  /** Update the current user's worker profile */
+  updateProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2).max(100).optional(),
+        preferredCategories: z.array(z.string()).optional(),
+        preferredCity: z.string().max(100).nullable().optional(),
+        workerBio: z.string().max(500).nullable().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await updateWorkerProfile(ctx.user.id, {
+        name: input.name,
+        preferredCategories: input.preferredCategories,
+        preferredCity: input.preferredCity,
+        workerBio: input.workerBio,
+      });
       return { success: true };
     }),
 });

@@ -293,3 +293,12 @@
 
 ## Bug Fix
 - [x] Role selection screen not shown after OTP login
+
+## New Features (Mar 5 2026)
+- [x] Animation: fade-out role selection screen, slide-in homepage
+- [x] Welcome screen: personalized "ברוך הבא" with 3 targeted job cards after role selection
+- [x] localStorage role fallback: persist chosen role so returning users skip selection
+- [x] Worker profile page: preferred categories, preferred area, bio
+- [x] DB: add workerProfile fields to users (preferredCategories JSON, preferredCity, bio)
+- [x] Server: user.getProfile and user.updateProfile procedures
+- [x] City autocomplete: Google Places API suggestions when typing city name

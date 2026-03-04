@@ -107,6 +107,40 @@ export async function getUserMode(id: number): Promise<"worker" | "employer" | n
   return result[0]?.userMode ?? null;
 }
 
+export async function getWorkerProfile(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      phone: users.phone,
+      preferredCategories: users.preferredCategories,
+      preferredCity: users.preferredCity,
+      workerBio: users.workerBio,
+      workerTags: users.workerTags,
+    })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function updateWorkerProfile(
+  id: number,
+  data: { preferredCategories?: string[]; preferredCity?: string | null; workerBio?: string | null; name?: string | null }
+) {
+  const db = await getDb();
+  if (!db) return;
+  const updateSet: Record<string, unknown> = {};
+  if (data.preferredCategories !== undefined) updateSet.preferredCategories = data.preferredCategories;
+  if (data.preferredCity !== undefined) updateSet.preferredCity = data.preferredCity;
+  if (data.workerBio !== undefined) updateSet.workerBio = data.workerBio;
+  if (data.name !== undefined) updateSet.name = data.name;
+  if (Object.keys(updateSet).length === 0) return;
+  await db.update(users).set(updateSet).where(eq(users.id, id));
+}
+
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────
 
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour

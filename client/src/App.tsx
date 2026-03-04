@@ -9,6 +9,7 @@ import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
+import WelcomeScreen from "./components/WelcomeScreen";
 import Home from "./pages/Home";
 import FindJobs from "./pages/FindJobs";
 import JobDetails from "./pages/JobDetails";
@@ -19,15 +20,37 @@ import Privacy from "./pages/Privacy";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
+import WorkerProfile from "./pages/WorkerProfile";
+import { useState } from "react";
 
 function Router() {
-  const { needsRoleSelection, setUserMode } = useUserMode();
+  const { needsRoleSelection, setUserMode, userMode } = useUserMode();
+  // Track whether to show the welcome screen after role selection
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeMode, setWelcomeMode] = useState<"worker" | "employer" | null>(null);
+
+  const handleRoleSelected = (mode: "worker" | "employer") => {
+    setUserMode(mode);
+    setWelcomeMode(mode);
+    setShowWelcome(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
       {/* Role selection overlay — shown when authenticated but no mode chosen */}
       {needsRoleSelection && (
-        <RoleSelectionScreen onSelected={setUserMode} />
+        <RoleSelectionScreen onSelected={handleRoleSelected} />
+      )}
+
+      {/* Welcome screen — shown once after role selection */}
+      {showWelcome && welcomeMode && (
+        <WelcomeScreen
+          mode={welcomeMode}
+          onDismiss={() => {
+            setShowWelcome(false);
+            setWelcomeMode(null);
+          }}
+        />
       )}
 
       <Navbar />
@@ -43,6 +66,7 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/jobs-today" component={JobsToday} />
           <Route path="/available-workers" component={AvailableWorkers} />
+          <Route path="/worker-profile" component={WorkerProfile} />
           <Route path="/404" component={NotFound} />
           <Route component={NotFound} />
         </Switch>

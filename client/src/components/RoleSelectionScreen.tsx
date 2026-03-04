@@ -8,24 +8,40 @@ interface RoleSelectionScreenProps {
 
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
   const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
+  const [exiting, setExiting] = useState(false);
 
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
-      onSelected(vars.mode);
+      // Trigger fade-out animation before calling onSelected
+      setExiting(true);
+      setTimeout(() => {
+        onSelected(vars.mode);
+      }, 400); // matches CSS transition duration
     },
     onSettled: () => setLoading(null),
   });
 
   const handleSelect = (mode: "worker" | "employer") => {
-    if (loading) return;
+    if (loading || exiting) return;
     setLoading(mode);
     setModeMutation.mutate({ mode });
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center px-6 py-12" dir="rtl">
+    <div
+      className={`fixed inset-0 z-50 bg-background flex flex-col items-center justify-center px-6 py-12 transition-opacity duration-400 ${
+        exiting ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
+      style={{ transitionDuration: "400ms" }}
+      dir="rtl"
+    >
       {/* Logo / branding */}
-      <div className="mb-8 text-center">
+      <div
+        className={`mb-8 text-center transition-transform duration-400 ${
+          exiting ? "-translate-y-8" : "translate-y-0"
+        }`}
+        style={{ transitionDuration: "400ms" }}
+      >
         <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Briefcase className="h-8 w-8 text-primary-foreground" />
         </div>
@@ -34,11 +50,16 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
       </div>
 
       {/* Role cards — click = immediate action */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md transition-all duration-400 ${
+          exiting ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        }`}
+        style={{ transitionDuration: "400ms" }}
+      >
         {/* Worker card */}
         <button
           onClick={() => handleSelect("worker")}
-          disabled={!!loading}
+          disabled={!!loading || exiting}
           className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-lg focus:outline-none active:scale-[0.98] ${
             loading === "worker"
               ? "border-primary bg-primary/5 shadow-md"
@@ -69,7 +90,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
         {/* Employer card */}
         <button
           onClick={() => handleSelect("employer")}
-          disabled={!!loading}
+          disabled={!!loading || exiting}
           className={`relative rounded-2xl border-2 p-6 text-right transition-all duration-200 hover:shadow-lg focus:outline-none active:scale-[0.98] ${
             loading === "employer"
               ? "border-primary bg-primary/5 shadow-md"

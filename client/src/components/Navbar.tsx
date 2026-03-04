@@ -142,6 +142,12 @@ export default function Navbar() {
                             <span>עבודות להיום</span>
                           </Link>
                         </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/worker-profile" className="flex items-center gap-2 cursor-pointer w-full">
+                            <User className="h-4 w-4 shrink-0" />
+                            <span>הפרופיל שלי</span>
+                          </Link>
+                        </DropdownMenuItem>
                       </>
                     )}
 

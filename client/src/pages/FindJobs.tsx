@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
+import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import { MapPin, Search, Loader2, Briefcase, LocateFixed, Flame, X, Navigation, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
@@ -59,7 +60,6 @@ export default function FindJobs() {
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [showCityInput, setShowCityInput] = useState(false);
-  const [geocoding, setGeocoding] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showUrgentToday, setShowUrgentToday] = useState(
     params.get("urgent") === "1" || params.get("help") === "1"
@@ -121,32 +121,14 @@ export default function FindJobs() {
     setShowLocationDialog(true);
   };
 
-  const handleCitySearch = async () => {
-    if (!citySearch.trim()) return;
-    setGeocoding(true);
-    try {
-      // Use Google Maps Geocoding via the Maps proxy
-      const res = await fetch(
-        `/api/maps/geocode?address=${encodeURIComponent(citySearch + ", ישראל")}`
-      );
-      if (!res.ok) throw new Error("geocode failed");
-      const data = await res.json();
-      if (data.results && data.results.length > 0) {
-        const loc = data.results[0].geometry.location;
-        setUserLat(loc.lat);
-        setUserLng(loc.lng);
-        saveLocationCache(loc.lat, loc.lng);
-        setShowCityInput(false);
-        setAutoExpandedRadius(false);
-        toast.success(`מציג עבודות קרוב ל${citySearch}`);
-      } else {
-        toast.error("לא נמצאה העיר — נסה שם אחר");
-      }
-    } catch {
-      toast.error("שגיאה בחיפוש מיקום");
-    } finally {
-      setGeocoding(false);
-    }
+  // Called when user selects a city from autocomplete
+  const handleCitySelect = (city: string, lat: number, lng: number) => {
+    setUserLat(lat);
+    setUserLng(lng);
+    saveLocationCache(lat, lng);
+    setShowCityInput(false);
+    setAutoExpandedRadius(false);
+    toast.success(`מציג עבודות קרוב ל${city}`);
   };
 
   const searchQuery = trpc.jobs.search.useQuery(
@@ -275,7 +257,7 @@ export default function FindJobs() {
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
               showUrgentToday
                 ? "bg-red-500 text-white border-red-500 shadow-sm"
-                : "border-red-300 text-red-600 bg-red-50 hover:bg-red-100"
+                : "border-red-200 text-red-600 hover:bg-red-50"
             }`}
           >
             <Flame className="h-4 w-4" />
@@ -418,24 +400,21 @@ export default function FindJobs() {
               </div>
             )}
 
-            {/* Manual city input */}
+            {/* City autocomplete input */}
             {showCityInput && (
-              <div className="flex gap-2 items-center">
-                <div className="relative flex-1">
-                  <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                  <Input
-                    ref={cityInputRef}
-                    placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
+              <div className="flex gap-2 items-start">
+                <div className="flex-1">
+                  <CityAutocomplete
                     value={citySearch}
-                    onChange={(e) => setCitySearch(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleCitySearch()}
-                    className="pr-10 text-right text-sm"
+                    onChange={setCitySearch}
+                    onSelect={handleCitySelect}
+                    inputRef={cityInputRef}
                   />
                 </div>
-                <Button size="sm" onClick={handleCitySearch} disabled={geocoding || !citySearch.trim()}>
-                  {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : "חפש"}
-                </Button>
-                <button onClick={() => { setShowCityInput(false); setCitySearch(""); }} className="text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => { setShowCityInput(false); setCitySearch(""); }}
+                  className="text-muted-foreground hover:text-foreground mt-2"
+                >
                   <X className="h-4 w-4" />
                 </button>
               </div>

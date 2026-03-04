@@ -32,6 +32,12 @@ export const users = mysqlTable("users", {
   userMode: mysqlEnum("userMode", ["worker", "employer"]),
   /** JSON array of normalized skill/interest tags for future AI matching */
   workerTags: json("workerTags").$type<string[]>(),
+  /** Worker's preferred job categories (JSON array of category values) */
+  preferredCategories: json("preferredCategories").$type<string[]>(),
+  /** Worker's preferred city / area */
+  preferredCity: varchar("preferredCity", { length: 100 }),
+  /** Short bio / note from worker */
+  workerBio: text("workerBio"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

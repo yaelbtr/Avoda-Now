@@ -4,6 +4,24 @@ import { useAuth } from "./AuthContext";
 
 type UserMode = "worker" | "employer" | null;
 
+const LS_KEY = "avoda_now_role";
+
+function loadRoleFromStorage(): UserMode {
+  try {
+    const v = localStorage.getItem(LS_KEY);
+    if (v === "worker" || v === "employer") return v;
+  } catch {}
+  return null;
+}
+
+function saveRoleToStorage(mode: "worker" | "employer") {
+  try { localStorage.setItem(LS_KEY, mode); } catch {}
+}
+
+function clearRoleFromStorage() {
+  try { localStorage.removeItem(LS_KEY); } catch {}
+}
+
 interface UserModeContextValue {
   userMode: UserMode;
   isLoadingMode: boolean;
@@ -20,7 +38,8 @@ const UserModeContext = createContext<UserModeContextValue>({
 
 export function UserModeProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [localMode, setLocalMode] = useState<UserMode>(null);
+  // Initialise from localStorage so returning users never see the modal again
+  const [localMode, setLocalMode] = useState<UserMode>(() => loadRoleFromStorage());
   // Track whether we've completed at least one successful fetch
   const [hasChecked, setHasChecked] = useState(false);
 
@@ -35,6 +54,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
       setLocalMode(vars.mode);
+      saveRoleToStorage(vars.mode);
       modeQuery.refetch();
     },
   });
@@ -49,15 +69,17 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     }
     if (!isAuthenticated) {
       setHasChecked(false);
+      // Don't clear localStorage on logout — keep role as fallback for next login
     }
   }, [isAuthenticated, modeQuery.isLoading, hasChecked]);
 
   // Only show loading on the very first fetch, not on subsequent refetches
-  const isLoadingMode = isAuthenticated && !hasChecked;
+  const isLoadingMode = isAuthenticated && !hasChecked && localMode === null;
   const needsRoleSelection = isAuthenticated && !isLoadingMode && userMode === null;
 
   const setUserMode = (mode: "worker" | "employer") => {
     setLocalMode(mode);
+    saveRoleToStorage(mode);
     if (isAuthenticated) {
       setModeMutation.mutate({ mode });
     }
@@ -65,7 +87,10 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
 
   // Sync localMode from server when it loads
   useEffect(() => {
-    if (serverMode) setLocalMode(serverMode);
+    if (serverMode) {
+      setLocalMode(serverMode);
+      saveRoleToStorage(serverMode);
+    }
   }, [serverMode]);
 
   return (

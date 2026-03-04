@@ -290,3 +290,6 @@
 - [x] localStorage caching of location (1 hour TTL)
 - [x] Clear-location button (X) when location is active
 - [x] Update button labels: "הצג עבודות קרובות אלי" / "ממוין לפי מרחק ממך"
+
+## Bug Fix
+- [x] Role selection screen not shown after OTP login

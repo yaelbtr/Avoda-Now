@@ -21,11 +21,15 @@ const UserModeContext = createContext<UserModeContextValue>({
 export function UserModeProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [localMode, setLocalMode] = useState<UserMode>(null);
+  // Track whether we've completed at least one successful fetch
+  const [hasChecked, setHasChecked] = useState(false);
 
   // Fetch mode from server when authenticated
   const modeQuery = trpc.user.getMode.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
+    // Keep previous data during refetch so we don't flash isLoading=true
+    placeholderData: (prev) => prev,
   });
 
   const setModeMutation = trpc.user.setMode.useMutation({
@@ -37,7 +41,19 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
 
   const serverMode = modeQuery.data?.mode ?? null;
   const userMode: UserMode = isAuthenticated ? (serverMode ?? localMode) : localMode;
-  const isLoadingMode = isAuthenticated && modeQuery.isLoading;
+
+  // Mark as checked once the first fetch completes (success or error)
+  useEffect(() => {
+    if (isAuthenticated && !modeQuery.isLoading && !hasChecked) {
+      setHasChecked(true);
+    }
+    if (!isAuthenticated) {
+      setHasChecked(false);
+    }
+  }, [isAuthenticated, modeQuery.isLoading, hasChecked]);
+
+  // Only show loading on the very first fetch, not on subsequent refetches
+  const isLoadingMode = isAuthenticated && !hasChecked;
   const needsRoleSelection = isAuthenticated && !isLoadingMode && userMode === null;
 
   const setUserMode = (mode: "worker" | "employer") => {

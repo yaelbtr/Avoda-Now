@@ -91,13 +91,15 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
     onSuccess: () => {
       setStep("success");
       setTimeout(async () => {
-        // Refresh auth state first
+        // Refresh auth state first so isAuthenticated becomes true
         await refetch();
         // Invalidate all cached queries so phone numbers and auth-gated data refresh
-        await queryClient.invalidateQueries();
-        toast.success("התחברת בהצלחא! 🎉");
+        // Do NOT await invalidateQueries — let it run in background so the modal
+        // closes quickly and RoleSelectionScreen can render immediately
+        queryClient.invalidateQueries();
+        toast.success("התחברת בהצלחה! 🎉");
         onClose();
-      }, 1200);
+      }, 800);
     },
     onError: (e) => {
       toast.error(e.message);

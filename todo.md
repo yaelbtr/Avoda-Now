@@ -309,3 +309,6 @@
 - [x] Add "reset role" button in Navbar dropdown and WorkerProfile page
 - [x] PostJob: phone number must be taken from logged-in user, not entered manually
 - [x] Home page: sections not filtered by role (worker/employer)
+- [x] Create HomeWorker.tsx — dedicated worker home screen
+- [x] Create HomeEmployer.tsx — dedicated employer home screen
+- [x] Route Home.tsx to correct home based on userMode

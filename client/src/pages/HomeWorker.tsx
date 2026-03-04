@@ -7,8 +7,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import {
   Search, MapPin, Loader2, ChevronLeft, Flame, Zap,
-  CheckCircle2, Phone, Map, List, ArrowLeft, Briefcase,
+  CheckCircle2, Phone, Map, List, ArrowLeft, Briefcase, Info,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
@@ -187,32 +193,55 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           {/* Availability card */}
           <div className="max-w-sm mx-auto">
-            <button
-              onClick={handleAvailabilityToggle}
-              disabled={availabilityLoading}
-              className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl border transition-all duration-200 ${
-                isAvailable
-                  ? "bg-green-500/20 border-green-400/50 hover:bg-green-500/30"
-                  : "bg-white/8 border-white/20 hover:bg-white/15"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {availabilityLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-white/70" />
-                ) : (
-                  <span className={`relative flex h-3 w-3`}>
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
-                    <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
-                  </span>
-                )}
-                <span className="font-semibold text-sm text-white">
-                  {isAvailable ? "אני פנוי לעבוד עכשיו" : "סמן את עצמך כזמין"}
-                </span>
-              </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isAvailable ? "bg-green-400/30 text-green-200" : "bg-white/15 text-white/70"}`}>
-                {isAvailable ? "פעיל" : "לחץ לסימון"}
-              </span>
-            </button>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleAvailabilityToggle}
+                    disabled={availabilityLoading}
+                    className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl border transition-all duration-200 ${
+                      isAvailable
+                        ? "bg-green-500/20 border-green-400/50 hover:bg-green-500/30"
+                        : "bg-white/8 border-white/20 hover:bg-white/15"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {availabilityLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+                      ) : (
+                        <span className={`relative flex h-3 w-3`}>
+                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                          <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                        </span>
+                      )}
+                      <span className="font-semibold text-sm text-white">
+                        {isAvailable ? "אני פנוי לעבוד עכשיו" : "סמן את עצמך כזמין"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isAvailable ? "bg-green-400/30 text-green-200" : "bg-white/15 text-white/70"}`}>
+                        {isAvailable ? "פעיל" : "לחץ לסימון"}
+                      </span>
+                      <Info className="h-4 w-4 text-white/40 shrink-0" />
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="max-w-xs text-right leading-relaxed p-3"
+                  dir="rtl"
+                >
+                  <p className="font-semibold mb-1 text-sm">
+                    {isAvailable ? "אתה מסומן כזמין כעת" : "מה זה אומר?"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isAvailable
+                      ? "מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים. הזמינות תתבטל אוטומטית לאחר 4 שעות, או לחץ שוב לביטול מיידי."
+                      : "לחיצה תוסיף אותך לרשימת העובדים הזמינים שמעסיקים רואים. המיקום שלך יישמר, הזמינות תהיה פעילה ל-4 שעות, ומעסיקים יוכלו לפנות אליך ישירות."}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {/* Profile shortcut */}

@@ -318,3 +318,4 @@
 - [x] Dynamic Navbar per role: worker sees Find/Today/Profile, employer sees PostJob/MyJobs/Workers
 - [x] Push notifications to workers when a new job matches their preferred category and area
 - [x] Redesign HomeWorker hero section — stronger visual hierarchy, inviting UI
+- [x] Add tooltip to availability toggle button explaining what it does

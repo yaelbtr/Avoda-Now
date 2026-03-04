@@ -71,3 +71,20 @@
 - [x] Job card buttons: WhatsApp, Phone, Share
 - [x] Complete MyJobs page
 - [x] Complete Terms and Privacy pages
+
+## Twilio SMS OTP Authentication
+
+- [x] Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID secrets
+- [x] Update users table: phone (unique), status, lastLoginAt
+- [x] SMS provider abstraction layer (smsProvider.ts) for easy switching
+- [x] Twilio Verify: sendOtp procedure (POST /Verifications)
+- [x] Twilio Verify: verifyOtp procedure (POST /VerificationCheck)
+- [x] Rate limiting: max 5 OTP requests per phone per hour
+- [x] Rate limiting: max 3 verification attempts per phone
+- [x] IP-based rate limiting for abuse prevention
+- [x] E.164 phone number normalization (+972...)
+- [x] Session creation after successful OTP verification
+- [x] Update LoginModal: phone entry screen + OTP entry screen
+- [x] Update AuthContext to use new OTP procedures
+- [x] Error messages in Hebrew (SMS failure, wrong code)
+- [x] Vitest tests for OTP flow (15 tests passing)

@@ -10,13 +10,23 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+/**
+ * Users authenticated via Twilio SMS OTP.
+ * phone is the primary identity — stored in E.164 format (+972XXXXXXXXX).
+ * openId is kept for backward-compat with the OAuth context layer but is
+ * set to the phone number for phone-auth users.
+ */
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
+  /** Manus OAuth openId OR phone number (for phone-auth users). Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
+  /** E.164 phone number, e.g. +972501234567. Unique per user. */
+  phone: varchar("phone", { length: 20 }).unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
-  phone: varchar("phone", { length: 20 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
+  /** active | suspended */
+  status: mysqlEnum("status", ["active", "suspended"]).default("active").notNull(),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   /** JSON array of normalized skill/interest tags for future AI matching */
   workerTags: json("workerTags").$type<string[]>(),
@@ -28,17 +38,27 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-export const otpCodes = mysqlTable("otp_codes", {
+/**
+ * Rate-limiting table for OTP send requests.
+ * Tracks how many times a phone (or IP) has requested an OTP in the last hour.
+ * Twilio handles the actual OTP code storage and verification.
+ */
+export const otpRateLimit = mysqlTable("otp_rate_limit", {
   id: int("id").autoincrement().primaryKey(),
+  /** E.164 phone number being rate-limited */
   phone: varchar("phone", { length: 20 }).notNull(),
-  code: varchar("code", { length: 6 }).notNull(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  used: boolean("used").default(false).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  /** IP address of the requester */
+  ip: varchar("ip", { length: 45 }),
+  /** Number of OTP send attempts in the current window */
+  sendCount: int("sendCount").default(1).notNull(),
+  /** Number of verification attempts (wrong code) */
+  verifyAttempts: int("verifyAttempts").default(0).notNull(),
+  /** Window start — reset after 1 hour */
+  windowStart: timestamp("windowStart").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type OtpCode = typeof otpCodes.$inferSelect;
-export type InsertOtpCode = typeof otpCodes.$inferInsert;
+export type OtpRateLimit = typeof otpRateLimit.$inferSelect;
 
 export const jobs = mysqlTable("jobs", {
   id: int("id").autoincrement().primaryKey(),

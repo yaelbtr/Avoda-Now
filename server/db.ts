@@ -3,12 +3,11 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertJob,
   InsertJobReport,
-  InsertOtpCode,
   InsertUser,
   Job,
   jobReports,
   jobs,
-  otpCodes,
+  otpRateLimit,
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -93,37 +92,61 @@ export async function updateUserLastSignedIn(id: number) {
   await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
 }
 
-// ─── OTP ─────────────────────────────────────────────────────────────────────
+// ─── OTP Rate Limiting ────────────────────────────────────────────────────────
 
-export async function createOtp(phone: string, code: string, expiresAt: Date) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.insert(otpCodes).values({ phone, code, expiresAt, used: false });
-}
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_SEND_PER_HOUR = 5;
+const MAX_VERIFY_ATTEMPTS = 3;
 
-export async function getValidOtp(phone: string, code: string) {
+/** Returns the current rate-limit record for a phone, or null if window expired */
+async function getRateLimitRecord(phone: string) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db
     .select()
-    .from(otpCodes)
-    .where(
-      and(
-        eq(otpCodes.phone, phone),
-        eq(otpCodes.code, code),
-        eq(otpCodes.used, false),
-        gte(otpCodes.expiresAt, new Date())
-      )
-    )
-    .orderBy(desc(otpCodes.createdAt))
+    .from(otpRateLimit)
+    .where(eq(otpRateLimit.phone, phone))
     .limit(1);
-  return result[0];
+  const record = result[0];
+  if (!record) return null;
+  // If window has expired, delete and return null
+  if (Date.now() - record.windowStart.getTime() > RATE_WINDOW_MS) {
+    await db.delete(otpRateLimit).where(eq(otpRateLimit.phone, phone));
+    return null;
+  }
+  return record;
 }
 
-export async function markOtpUsed(id: number) {
+/** Check and increment OTP send rate limit. Returns true if allowed. */
+export async function checkAndIncrementSendRate(phone: string, ip?: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return true; // fail open if DB unavailable
+  const record = await getRateLimitRecord(phone);
+  if (!record) {
+    await db.insert(otpRateLimit).values({ phone, ip: ip ?? null, sendCount: 1, verifyAttempts: 0, windowStart: new Date() });
+    return true;
+  }
+  if (record.sendCount >= MAX_SEND_PER_HOUR) return false;
+  await db.update(otpRateLimit).set({ sendCount: record.sendCount + 1 }).where(eq(otpRateLimit.phone, phone));
+  return true;
+}
+
+/** Check and increment verify attempt count. Returns true if allowed. */
+export async function checkAndIncrementVerifyAttempts(phone: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return true;
+  const record = await getRateLimitRecord(phone);
+  if (!record) return true; // no record = first attempt, allowed
+  if (record.verifyAttempts >= MAX_VERIFY_ATTEMPTS) return false;
+  await db.update(otpRateLimit).set({ verifyAttempts: record.verifyAttempts + 1 }).where(eq(otpRateLimit.phone, phone));
+  return true;
+}
+
+/** Reset verify attempts after successful verification */
+export async function resetRateLimit(phone: string) {
   const db = await getDb();
   if (!db) return;
-  await db.update(otpCodes).set({ used: true }).where(eq(otpCodes.id, id));
+  await db.delete(otpRateLimit).where(eq(otpRateLimit.phone, phone));
 }
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
@@ -135,12 +158,7 @@ export async function expireOldJobs() {
   await db
     .update(jobs)
     .set({ status: "expired" })
-    .where(
-      and(
-        eq(jobs.status, "active"),
-        lte(jobs.expiresAt, new Date())
-      )
-    );
+    .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, new Date())));
 }
 
 /** Count active jobs for a user (for spam limit) */
@@ -174,9 +192,7 @@ export async function getActiveJobs(limit = 50, category?: string) {
   const db = await getDb();
   if (!db) return [];
   await expireOldJobs();
-  const conditions = [
-    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-  ];
+  const conditions = [or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!];
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
   }
@@ -211,12 +227,11 @@ export async function getJobsNearLocation(
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
     sql`${distanceExpr} <= ${radiusKm}`,
   ];
-
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
   }
 
-  const rows = await db
+  return db
     .select({
       id: jobs.id,
       title: jobs.title,
@@ -248,8 +263,6 @@ export async function getJobsNearLocation(
     .where(and(...conditions))
     .orderBy(distanceExpr, desc(jobs.createdAt))
     .limit(limit);
-
-  return rows;
 }
 
 export async function getMyJobs(userId: number) {
@@ -282,14 +295,7 @@ export async function reportJob(data: InsertJobReport) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(jobReports).values(data);
-
-  // Increment report count and check threshold
-  await db
-    .update(jobs)
-    .set({ reportCount: sql`${jobs.reportCount} + 1` })
-    .where(eq(jobs.id, data.jobId));
-
-  // If 3+ reports → under_review
+  await db.update(jobs).set({ reportCount: sql`${jobs.reportCount} + 1` }).where(eq(jobs.id, data.jobId));
   const updated = await db.select({ reportCount: jobs.reportCount }).from(jobs).where(eq(jobs.id, data.jobId)).limit(1);
   if ((updated[0]?.reportCount ?? 0) >= 3) {
     await db.update(jobs).set({ status: "under_review" }).where(eq(jobs.id, data.jobId));

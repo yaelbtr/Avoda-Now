@@ -7,9 +7,10 @@ import { ENV } from "./_core/env";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
+  checkAndIncrementSendRate,
+  checkAndIncrementVerifyAttempts,
   countActiveJobsByUser,
   createJob,
-  createOtp,
   createUserByPhone,
   deleteJob,
   getActiveJobs,
@@ -17,13 +18,17 @@ import {
   getJobsNearLocation,
   getMyJobs,
   getUserByPhone,
-  getValidOtp,
-  markOtpUsed,
   reportJob,
+  resetRateLimit,
   updateJob,
   updateJobStatus,
   updateUserLastSignedIn,
 } from "./db";
+import {
+  isValidIsraeliPhone,
+  normalizeIsraeliPhone,
+  smsProvider,
+} from "./smsProvider";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -36,33 +41,106 @@ const authRouter = router({
     return { success: true } as const;
   }),
 
+  /**
+   * Step 1: Send OTP via Twilio Verify.
+   * Normalizes phone to E.164, enforces rate limits, then calls Twilio.
+   */
   sendOtp: publicProcedure
-    .input(z.object({ phone: z.string().min(9).max(15) }))
-    .mutation(async ({ input }) => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-      await createOtp(input.phone, code, expiresAt);
-      console.log(`[OTP] Phone: ${input.phone} → Code: ${code}`);
-      return { success: true, devCode: process.env.NODE_ENV === "development" ? code : undefined };
+    .input(z.object({ phone: z.string().min(9).max(20) }))
+    .mutation(async ({ input, ctx }) => {
+      // Normalize to E.164
+      let phone: string;
+      try {
+        phone = normalizeIsraeliPhone(input.phone);
+      } catch {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין. הכנס מספר ישראלי תקין." });
+      }
+
+      if (!isValidIsraeliPhone(phone)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין. הכנס מספר נייד ישראלי." });
+      }
+
+      // IP-based + phone-based rate limiting
+      const ip = ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim()
+        ?? ctx.req.socket?.remoteAddress
+        ?? "unknown";
+
+      const allowed = await checkAndIncrementSendRate(phone, ip);
+      if (!allowed) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
+        });
+      }
+
+      // Send via Twilio Verify
+      const result = await smsProvider.sendOtp(phone);
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות.",
+        });
+      }
+
+      return { success: true, phone };
     }),
 
+  /**
+   * Step 2: Verify OTP via Twilio Verify.
+   * On success, creates or updates user and issues a session JWT.
+   */
   verifyOtp: publicProcedure
-    .input(z.object({ phone: z.string(), code: z.string().length(6), name: z.string().optional() }))
+    .input(
+      z.object({
+        phone: z.string().min(9).max(20),
+        code: z.string().min(4).max(8),
+        name: z.string().max(100).optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
-      const otp = await getValidOtp(input.phone, input.code);
-      if (!otp) throw new TRPCError({ code: "BAD_REQUEST", message: "קוד שגוי או פג תוקף" });
+      // Normalize phone
+      let phone: string;
+      try {
+        phone = normalizeIsraeliPhone(input.phone);
+      } catch {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+      }
 
-      await markOtpUsed(otp.id);
+      // Check verify attempt rate limit
+      const attemptAllowed = await checkAndIncrementVerifyAttempts(phone);
+      if (!attemptAllowed) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "מספר הניסיונות המרבי הגיע. בקש קוד חדש.",
+        });
+      }
 
-      let user = await getUserByPhone(input.phone);
+      // Verify with Twilio
+      const result = await smsProvider.verifyOtp(phone, input.code);
+
+      if (!result.success || !result.approved) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.error ?? "קוד האימות שגוי.",
+        });
+      }
+
+      // Reset rate limit on success
+      await resetRateLimit(phone);
+
+      // Find or create user
+      let user = await getUserByPhone(phone);
       if (!user) {
-        user = await createUserByPhone(input.phone, input.name);
+        user = await createUserByPhone(phone, input.name);
       } else {
         await updateUserLastSignedIn(user.id);
       }
 
-      if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה ביצירת משתמש" });
+      if (!user) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה ביצירת משתמש" });
+      }
 
+      // Issue session JWT (30 days)
       const secret = new TextEncoder().encode(ENV.cookieSecret);
       const token = await new SignJWT({
         sub: user.openId,
@@ -112,9 +190,7 @@ const jobInputSchema = z.object({
 const jobsRouter = router({
   list: publicProcedure
     .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
-    .query(async ({ input }) => {
-      return getActiveJobs(input.limit ?? 50, input.category);
-    }),
+    .query(async ({ input }) => getActiveJobs(input.limit ?? 50, input.category)),
 
   search: publicProcedure
     .input(
@@ -126,9 +202,9 @@ const jobsRouter = router({
         limit: z.number().optional(),
       })
     )
-    .query(async ({ input }) => {
-      return getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50);
-    }),
+    .query(async ({ input }) =>
+      getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50)
+    ),
 
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
@@ -141,7 +217,6 @@ const jobsRouter = router({
   create: protectedProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
-      // Anti-spam: max 3 active jobs per user
       const activeCount = await countActiveJobsByUser(ctx.user.id);
       if (activeCount >= 3) {
         throw new TRPCError({
@@ -152,8 +227,6 @@ const jobsRouter = router({
 
       const durationDays = parseInt(input.activeDuration);
       const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
-
-      // Extract city from address (first segment before comma)
       const city = input.city ?? input.address.split(",")[0].trim();
 
       const job = await createJob({
@@ -175,9 +248,7 @@ const jobsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
-      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const updateData: Record<string, unknown> = { ...input.data };
       if (input.data.latitude !== undefined) updateData.latitude = input.data.latitude.toString();
       if (input.data.longitude !== undefined) updateData.longitude = input.data.longitude.toString();
@@ -191,9 +262,7 @@ const jobsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
-      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await updateJobStatus(input.id, ctx.user.id, input.status);
       return { success: true };
     }),
@@ -203,16 +272,12 @@ const jobsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
-      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await deleteJob(input.id, ctx.user.id);
       return { success: true };
     }),
 
-  myJobs: protectedProcedure.query(async ({ ctx }) => {
-    return getMyJobs(ctx.user.id);
-  }),
+  myJobs: protectedProcedure.query(async ({ ctx }) => getMyJobs(ctx.user.id)),
 
   report: publicProcedure
     .input(
@@ -225,17 +290,11 @@ const jobsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
-
-      const ip = ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0] ??
-        ctx.req.socket?.remoteAddress ?? "unknown";
-
-      await reportJob({
-        jobId: input.jobId,
-        reason: input.reason,
-        reporterPhone: input.reporterPhone,
-        reporterIp: ip,
-      });
-
+      const ip =
+        ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0] ??
+        ctx.req.socket?.remoteAddress ??
+        "unknown";
+      await reportJob({ jobId: input.jobId, reason: input.reason, reporterPhone: input.reporterPhone, reporterIp: ip });
       return { success: true };
     }),
 });

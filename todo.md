@@ -130,3 +130,15 @@
 - [x] Phone normalization: 0501234567 → +972501234567 (server-side via smsProvider)
 - [x] 30-day session persistence: JWT expiresIn=30d + cookie maxAge=30 days
 - [x] Enforce OTP length = 6 digits before submit (auto-submit on last digit)
+
+## User Permissions & Access Control (Completed)
+- [x] Backend: strip contactPhone from job responses for unauthenticated users
+- [x] Backend: strip contactPhone from job list (search/nearby) for guests
+- [x] JobCard: hide phone, show "התחבר לראות מספר" button for guests
+- [x] JobCard: disable WhatsApp/Phone buttons for guests with login prompt
+- [x] JobDetails: hide phone, show masked placeholder for guests
+- [x] JobDetails: disable Report button for guests
+- [x] PostJob: redirect guests to login with message
+- [x] MyJobs: redirect guests to login with message
+- [x] Login prompt modal: show "כדי ליצור קשר עם המעסיק יש להתחבר למערכת"
+- [x] After login: reveal phone numbers and contact buttons (phone returned only for authenticated users)

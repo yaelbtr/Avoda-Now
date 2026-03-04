@@ -3,13 +3,31 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
+import LoginModal from "@/components/LoginModal";
+import { useAuth } from "@/contexts/AuthContext";
 import { JOB_CATEGORIES } from "@shared/categories";
 import { Search, Briefcase, MapPin, Loader2, ChevronLeft } from "lucide-react";
 
 export default function Home() {
   const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
+
+  const requireLogin = (message: string) => {
+    setLoginMessage(message);
+    setLoginOpen(true);
+  };
+
+  const handlePostJob = () => {
+    if (!isAuthenticated) {
+      requireLogin("כדי לפרסם משרה יש להתחבר למערכת");
+      return;
+    }
+    navigate("/post-job");
+  };
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -59,7 +77,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2"
-              onClick={() => navigate("/post-job")}
+              onClick={handlePostJob}
             >
               <Briefcase className="h-5 w-5" />
               אני מחפש עובדים
@@ -153,6 +171,7 @@ export default function Home() {
                   distance: "distance" in job ? (job as { distance: number }).distance : undefined,
                 }}
                 showDistance={!!userLat}
+                onLoginRequired={requireLogin}
               />
             ))}
           </div>
@@ -173,12 +192,18 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 py-8 text-center">
           <h2 className="text-xl font-bold text-foreground mb-2">יש לך עסק?</h2>
           <p className="text-muted-foreground mb-4">פרסם משרה בחינם ומצא עובדים תוך דקות</p>
-          <Button size="lg" onClick={() => navigate("/post-job")} className="gap-2">
+          <Button size="lg" onClick={handlePostJob} className="gap-2">
             <Briefcase className="h-5 w-5" />
             פרסם משרה עכשיו
           </Button>
         </div>
       </section>
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        message={loginMessage}
+      />
     </div>
   );
 }

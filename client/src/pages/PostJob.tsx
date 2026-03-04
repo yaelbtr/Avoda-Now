@@ -167,6 +167,30 @@ export default function PostJob() {
     });
   };
 
+  // Guest guard — show login prompt instead of form
+  if (!isAuthenticated) {
+    return (
+      <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <Shield className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה</h2>
+        <p className="text-muted-foreground mb-6">
+          כדי לפרסם משרה יש להתחבר למערכת עם מספר טלפון
+        </p>
+        <Button size="lg" className="gap-2" onClick={() => setLoginOpen(true)}>
+          <Shield className="h-5 w-5" />
+          התחבר למערכת
+        </Button>
+        <LoginModal
+          open={loginOpen}
+          onClose={() => setLoginOpen(false)}
+          message="כדי לפרסם משרה יש להתחבר למערכת"
+        />
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center" dir="rtl">

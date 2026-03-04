@@ -1,7 +1,8 @@
 import { Link } from "wouter";
-import { MapPin, Clock, Users, Share2, Phone, ChevronLeft } from "lucide-react";
+import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -19,7 +20,7 @@ interface JobCardProps {
     city?: string | null;
     salary?: string | null;
     salaryType: string;
-    contactPhone: string;
+    contactPhone: string | null;
     businessName?: string | null;
     startTime: string;
     workersNeeded: number;
@@ -27,6 +28,7 @@ interface JobCardProps {
     distance?: number;
   };
   showDistance?: boolean;
+  onLoginRequired?: (message: string) => void;
 }
 
 const SITE_URL = "https://job-now.manus.space";
@@ -55,9 +57,17 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-export default function JobCard({ job, showDistance = false }: JobCardProps) {
+export default function JobCard({ job, showDistance = false, onLoginRequired }: JobCardProps) {
+  const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
+  const hasPhone = isAuthenticated && !!job.contactPhone;
+
+  const handleRestrictedAction = (message: string) => {
+    if (onLoginRequired) {
+      onLoginRequired(message);
+    }
+  };
 
   return (
     <div className="bg-card rounded-xl border border-border p-4 card-hover shadow-sm" dir="rtl">
@@ -84,9 +94,8 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
         </div>
       </div>
 
-      {/* Meta row — all RTL */}
+      {/* Meta row */}
       <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-3">
-        {/* City + Distance */}
         <span className="flex items-center gap-1 font-medium text-foreground">
           <MapPin className="h-3 w-3 text-primary shrink-0" />
           {cityDisplay}
@@ -96,47 +105,57 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
             </span>
           )}
         </span>
-
-        {/* Job type / category */}
         <Badge variant="secondary" className="text-xs py-0 h-4 px-1.5">
           {getCategoryLabel(job.category)}
         </Badge>
-
-        {/* Start time */}
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3 shrink-0" />
           {getStartTimeLabel(job.startTime)}
         </span>
-
-        {/* Workers */}
         <span className="flex items-center gap-1">
           <Users className="h-3 w-3 shrink-0" />
           {job.workersNeeded} עובדים
         </span>
       </div>
 
-      {/* Action buttons — RTL order: WhatsApp | Phone | Share | Details */}
+      {/* Action buttons */}
       <div className="flex gap-1.5 flex-wrap" dir="rtl">
-        <Button
-          size="sm"
-          className="gap-1.5 text-xs flex-1 min-w-0"
-          style={{ backgroundColor: "#25D366", color: "white" }}
-          onClick={() => contactViaWhatsApp(job.contactPhone, job.title)}
-        >
-          <WhatsAppIcon />
-          <span className="truncate">וואטסאפ</span>
-        </Button>
+        {hasPhone ? (
+          /* ── Authenticated: show real contact buttons ── */
+          <>
+            <Button
+              size="sm"
+              className="gap-1.5 text-xs flex-1 min-w-0"
+              style={{ backgroundColor: "#25D366", color: "white" }}
+              onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
+            >
+              <WhatsAppIcon />
+              <span className="truncate">וואטסאפ</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs flex-1 min-w-0"
+              onClick={() => callPhone(job.contactPhone!)}
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">התקשר</span>
+            </Button>
+          </>
+        ) : (
+          /* ── Guest: show locked button with login prompt ── */
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 text-xs flex-1 min-w-0 border-dashed text-muted-foreground"
+            onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+          >
+            <Lock className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">התחבר לראות טלפון</span>
+          </Button>
+        )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 text-xs flex-1 min-w-0"
-          onClick={() => callPhone(job.contactPhone)}
-        >
-          <Phone className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">התקשר</span>
-        </Button>
-
+        {/* Share — always visible */}
         <Button
           variant="ghost"
           size="icon"
@@ -149,7 +168,6 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
 
         <Link href={`/job/${job.id}`}>
           <Button variant="outline" size="sm" className="gap-1 text-xs">
-            {/* ChevronLeft points LEFT — correct for RTL "go to details" */}
             <ChevronLeft className="h-3 w-3" />
             פרטים
           </Button>

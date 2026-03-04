@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
+import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import { MapPin, Search, Loader2, Briefcase, LocateFixed } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,13 @@ export default function FindJobs() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
+
+  const requireLogin = (message: string) => {
+    setLoginMessage(message);
+    setLoginOpen(true);
+  };
 
   const getLocation = () => {
     setLocating(true);
@@ -187,10 +195,17 @@ export default function FindJobs() {
                 distance: "distance" in job ? (job as { distance: number }).distance : undefined,
               }}
               showDistance={!!userLat}
+              onLoginRequired={requireLogin}
             />
           ))}
         </div>
       )}
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        message={loginMessage}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/Map";
@@ -10,13 +11,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
-  Briefcase, DollarSign, Loader2, AlertCircle, Flag, CheckCircle2
+  Briefcase, DollarSign, Loader2, AlertCircle, Flag, CheckCircle2,
+  Lock,
 } from "lucide-react";
 import {
   getCategoryIcon, getCategoryLabel, formatSalary,
   getStartTimeLabel, formatDistance
 } from "@shared/categories";
 import { toast } from "sonner";
+import LoginModal from "@/components/LoginModal";
 
 const SITE_URL = "https://job-now.manus.space";
 
@@ -48,10 +51,7 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
     setMeta("og:type", "article");
     setMeta("og:site_name", "Job-Now");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-
-    return () => {
-      document.title = "Job-Now | מצא עבודה או עובדים עכשיו";
-    };
+    return () => { document.title = "Job-Now | מצא עבודה או עובדים עכשיו"; };
   }, [title, description, jobId]);
   return null;
 }
@@ -60,14 +60,20 @@ export default function JobDetails() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const jobId = parseInt(params.id ?? "0");
+  const { isAuthenticated } = useAuth();
 
-  const { data: job, isLoading, error } = trpc.jobs.getById.useQuery({ id: jobId }, { enabled: !!jobId });
+  const { data: job, isLoading, error } = trpc.jobs.getById.useQuery(
+    { id: jobId },
+    { enabled: !!jobId }
+  );
 
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reported, setReported] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
@@ -78,11 +84,7 @@ export default function JobDetails() {
   }, []);
 
   const reportMutation = trpc.jobs.report.useMutation({
-    onSuccess: () => {
-      setReported(true);
-      setReportOpen(false);
-      toast.success("הדיווח נשלח. תודה!");
-    },
+    onSuccess: () => { setReported(true); setReportOpen(false); toast.success("הדיווח נשלח. תודה!"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -94,6 +96,12 @@ export default function JobDetails() {
     map.setCenter({ lat, lng });
     map.setZoom(15);
     new google.maps.Marker({ position: { lat, lng }, map, title: job.title });
+  };
+
+  /** Show login modal with a contextual message */
+  const requireLogin = (message: string) => {
+    setLoginMessage(message);
+    setLoginOpen(true);
   };
 
   if (isLoading) {
@@ -118,6 +126,13 @@ export default function JobDetails() {
   const lng = parseFloat(job.longitude as string);
   const isVolunteer = job.salaryType === "volunteer";
   const jobUrl = `${SITE_URL}/job/${job.id}`;
+  const shareText = encodeURIComponent(`מצאתי עבודה באתר Job-Now 💼\n${job.title}\n${jobUrl}`);
+
+  // Phone is only available when authenticated (server strips it for guests)
+  const hasPhone = isAuthenticated && !!job.contactPhone;
+  const cleanPhone = hasPhone ? job.contactPhone!.replace(/\D/g, "") : "";
+  const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
+  const contactText = encodeURIComponent(`שלום, ראיתי את המשרה "${job.title}" באתר Job-Now ואני מעוניין/ת.`);
 
   const distance = userLat && userLng
     ? (() => {
@@ -133,16 +148,11 @@ export default function JobDetails() {
       })()
     : null;
 
-  const shareText = encodeURIComponent(`מצאתי עבודה באתר Job-Now 💼\n${job.title}\n${jobUrl}`);
-  const contactText = encodeURIComponent(`שלום, ראיתי את המשרה "${job.title}" באתר Job-Now ואני מעוניין/ת.`);
-  const cleanPhone = job.contactPhone.replace(/\D/g, "");
-  const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
 
-      {/* Back — ChevronRight points right, which is "back" direction in RTL */}
+      {/* Back */}
       <button
         onClick={() => navigate("/find-jobs")}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-5 transition-colors"
@@ -229,46 +239,82 @@ export default function JobDetails() {
         />
       </div>
 
-      {/* Contact */}
+      {/* Contact section */}
       <div className="bg-card rounded-xl border border-border p-5 mb-4 shadow-sm">
         <h2 className="font-semibold text-foreground mb-1">פרטי יצירת קשר</h2>
-        <p className="text-sm text-muted-foreground mb-4 text-right">
+        <p className="text-sm text-muted-foreground mb-4">
           <span className="font-medium text-foreground">{job.contactName}</span>
-          {" · "}
-          <span dir="ltr" style={{ unicodeBidi: 'embed' }}>{job.contactPhone}</span>
         </p>
-        <div className="flex flex-col gap-2">
-          <a
-            href={`https://wa.me/${intlPhone}?text=${contactText}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+
+        {isAuthenticated && hasPhone ? (
+          /* ── Authenticated: show full contact options ── */
+          <div className="flex flex-col gap-2">
+            {/* Phone number display */}
+            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 mb-1">
+              <Phone className="h-4 w-4 text-primary shrink-0" />
+              <span dir="ltr" className="font-medium text-foreground text-sm">{job.contactPhone}</span>
+            </div>
+            <a
+              href={`https://wa.me/${intlPhone}?text=${contactText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button size="lg" className="w-full gap-2 text-white" style={{ backgroundColor: "#25D366" }}>
+                <WhatsAppIcon size="lg" />
+                שלח הודעה בוואטסאפ
+              </Button>
+            </a>
+            <a href={`tel:${job.contactPhone}`}>
+              <Button size="lg" variant="outline" className="w-full gap-2">
+                <Phone className="h-5 w-5" />
+                התקשר עכשיו
+              </Button>
+            </a>
+          </div>
+        ) : (
+          /* ── Guest: show locked state with login prompt ── */
+          <div className="space-y-3">
+            {/* Masked phone placeholder */}
+            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 border border-dashed border-border">
+              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground text-sm tracking-widest">05X-XXX-XXXX</span>
+            </div>
             <Button
               size="lg"
-              className="w-full gap-2 text-white"
-              style={{ backgroundColor: "#25D366" }}
+              className="w-full gap-2"
+              onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+            >
+              <Lock className="h-4 w-4" />
+              התחבר כדי לראות מספר טלפון
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full gap-2"
+              style={{ borderColor: "#25D366", color: "#25D366" }}
+              onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
             >
               <WhatsAppIcon size="lg" />
-              שלח הודעה בוואטסאפ
+              התחבר כדי לשלוח וואטסאפ
             </Button>
-          </a>
-          <a href={`tel:${job.contactPhone}`}>
-            <Button size="lg" variant="outline" className="w-full gap-2">
-              <Phone className="h-5 w-5" />
-              התקשר עכשיו
-            </Button>
-          </a>
-          <a
-            href={`https://wa.me/?text=${shareText}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button size="lg" variant="ghost" className="w-full gap-2 text-muted-foreground">
-              <Share2 className="h-5 w-5" />
-              שתף משרה זו בוואטסאפ
-            </Button>
-          </a>
-        </div>
+            <p className="text-xs text-muted-foreground text-center">
+              כדי ליצור קשר עם המעסיק יש להתחבר למערכת
+            </p>
+          </div>
+        )}
+
+        {/* Share button — always visible */}
+        <a
+          href={`https://wa.me/?text=${shareText}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mt-2"
+        >
+          <Button size="lg" variant="ghost" className="w-full gap-2 text-muted-foreground">
+            <Share2 className="h-5 w-5" />
+            שתף משרה זו בוואטסאפ
+          </Button>
+        </a>
       </div>
 
       {/* Report */}
@@ -280,7 +326,13 @@ export default function JobDetails() {
           </div>
         ) : (
           <button
-            onClick={() => setReportOpen(true)}
+            onClick={() => {
+              if (!isAuthenticated) {
+                requireLogin("כדי לדווח על משרה יש להתחבר למערכת");
+                return;
+              }
+              setReportOpen(true);
+            }}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors mx-auto"
           >
             <Flag className="h-3.5 w-3.5" />
@@ -317,6 +369,27 @@ export default function JobDetails() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Login Modal with contextual message */}
+      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl" dir="rtl">
+          <div className="bg-primary/5 border-b border-border px-6 py-4 text-center">
+            <Lock className="h-8 w-8 text-primary mx-auto mb-2" />
+            <p className="font-semibold text-foreground">{loginMessage}</p>
+          </div>
+          <div className="p-0">
+            <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Standalone login modal (used for the login prompt) */}
+      {loginOpen && (
+        <LoginModal
+          open={loginOpen}
+          onClose={() => setLoginOpen(false)}
+        />
+      )}
     </div>
   );
 }

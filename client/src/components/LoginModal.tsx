@@ -10,6 +10,7 @@ import { Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft } from "lucide-react
 interface LoginModalProps {
   open: boolean;
   onClose: () => void;
+  message?: string;
 }
 
 /** Normalize Israeli phone for display */
@@ -24,7 +25,7 @@ function formatPhoneDisplay(raw: string): string {
 const RESEND_COOLDOWN_SEC = 30;
 const OTP_LENGTH = 6;
 
-export default function LoginModal({ open, onClose }: LoginModalProps) {
+export default function LoginModal({ open, onClose, message }: LoginModalProps) {
   const [step, setStep] = useState<"phone" | "otp" | "success">("phone");
   const [phone, setPhone] = useState("");
   const [normalizedPhone, setNormalizedPhone] = useState("");
@@ -186,6 +187,9 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                 </div>
               </div>
               <DialogDescription className="text-right text-sm">
+                {message ? (
+                  <span className="font-medium text-foreground block mb-1">{message}</span>
+                ) : null}
                 הכנס מספר טלפון ישראלי ונשלח לך קוד אימות
               </DialogDescription>
             </DialogHeader>

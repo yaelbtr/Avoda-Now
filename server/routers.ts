@@ -190,7 +190,11 @@ const jobInputSchema = z.object({
 const jobsRouter = router({
   list: publicProcedure
     .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
-    .query(async ({ input }) => getActiveJobs(input.limit ?? 50, input.category)),
+    .query(async ({ input, ctx }) => {
+      const jobs = await getActiveJobs(input.limit ?? 50, input.category);
+      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
+      return jobs;
+    }),
 
   search: publicProcedure
     .input(
@@ -202,15 +206,19 @@ const jobsRouter = router({
         limit: z.number().optional(),
       })
     )
-    .query(async ({ input }) =>
-      getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50)
-    ),
+    .query(async ({ input, ctx }) => {
+      const jobs = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50);
+      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
+      return jobs;
+    }),
 
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      // Never expose phone to unauthenticated users
+      if (!ctx.user) return { ...job, contactPhone: null };
       return job;
     }),
 

@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `userMode` enum('worker','employer');

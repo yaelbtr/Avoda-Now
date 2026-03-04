@@ -32,6 +32,8 @@ import {
   updateUserLastSignedIn,
   getLiveStats,
   getActivityFeed,
+  setUserMode,
+  getUserMode,
 } from "./db";
 import {
   adminApproveJob,
@@ -503,6 +505,21 @@ const liveStatsRouter = router({
     }),
 });
 
+// ─── User Mode Router ───────────────────────────────────────────────
+
+const userRouter = router({
+  getMode: protectedProcedure.query(async ({ ctx }) => {
+    const mode = await getUserMode(ctx.user.id);
+    return { mode };
+  }),
+  setMode: protectedProcedure
+    .input(z.object({ mode: z.enum(["worker", "employer"]) }))
+    .mutation(async ({ ctx, input }) => {
+      await setUserMode(ctx.user.id, input.mode);
+      return { success: true };
+    }),
+});
+
 // ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -512,6 +529,7 @@ export const appRouter = router({
   workers: workersRouter,
   admin: adminRouter,
   live: liveStatsRouter,
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;

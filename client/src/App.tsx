@@ -5,8 +5,10 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import Home from "./pages/Home";
 import FindJobs from "./pages/FindJobs";
 import JobDetails from "./pages/JobDetails";
@@ -19,8 +21,15 @@ import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 
 function Router() {
+  const { needsRoleSelection, setUserMode } = useUserMode();
+
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
+      {/* Role selection overlay — shown when authenticated but no mode chosen */}
+      {needsRoleSelection && (
+        <RoleSelectionScreen onSelected={setUserMode} />
+      )}
+
       <Navbar />
       <main className="flex-1">
         <Switch>
@@ -49,8 +58,10 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <AuthProvider>
-            <Toaster position="top-center" dir="rtl" />
-            <Router />
+            <UserModeProvider>
+              <Toaster position="top-center" dir="rtl" />
+              <Router />
+            </UserModeProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

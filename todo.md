@@ -260,3 +260,24 @@
 - [x] UI: Nearby jobs section with 1/3/5 km radius selector
 - [x] UI: Distance display on job cards in nearby section
 - [x] UI: Optional map view for nearby jobs
+
+## Role-Based UI (Worker / Employer)
+- [ ] DB: add userMode enum (worker/employer) to users table
+- [ ] Server: getUserMode and setUserMode procedures
+- [ ] UI: RoleSelectionScreen shown on first visit or after login if no mode set
+- [ ] UI: Navbar adapts links based on userMode
+- [ ] UI: Navbar shows role-switcher button
+- [ ] UI: Home page shows worker-specific sections for workers
+- [ ] UI: Home page shows employer-specific sections for employers
+- [ ] UI: FindJobs accessible to workers; PostJob accessible to employers
+- [ ] UI: Available workers page accessible to employers only
+
+## Role-Based UI — Completed (Mar 4 2026)
+- [x] DB: add userMode field (worker/employer) to users table
+- [x] Server: user.getMode and user.setMode procedures
+- [x] Context: UserModeContext with global userMode state
+- [x] UI: RoleSelectionScreen shown after login when no mode chosen
+- [x] Navbar: role-specific links, role badge, role-switcher in dropdown
+- [x] Home: role-specific hero title, CTA buttons, availability toggle visibility
+- [x] PostJob: worker-mode guard with prompt to switch to employer
+- [x] All 83 tests passing

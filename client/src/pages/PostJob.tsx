@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserMode } from "@/contexts/UserModeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,7 @@ import {
 import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -50,6 +51,7 @@ function generateCaptcha() {
 export default function PostJob() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const { userMode, setUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
@@ -216,6 +218,26 @@ export default function PostJob() {
           onClose={() => setLoginOpen(false)}
           message="כדי לפרסם משרה יש להתחבר למערכת"
         />
+      </div>
+    );
+  }
+
+  // Worker guard — if user chose worker mode, show a prompt to switch to employer
+  if (isAuthenticated && userMode === "worker") {
+    return (
+      <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
+          <Briefcase className="h-8 w-8 text-orange-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — למעסיקים</h2>
+        <p className="text-muted-foreground mb-6">
+          אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם משרה, עבור למצב מעסיק.
+        </p>
+        <Button size="lg" className="gap-2" onClick={() => setUserMode("employer")}>
+          <Briefcase className="h-5 w-5" />
+          עבור למצב מעסיק ופרסם משרה
+        </Button>
+        <p className="text-xs text-muted-foreground mt-4">תוכל לחזור למצב עובד בכל עת מהתפריט</p>
       </div>
     );
   }

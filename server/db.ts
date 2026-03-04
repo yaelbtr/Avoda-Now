@@ -94,6 +94,19 @@ export async function updateUserLastSignedIn(id: number) {
   await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
 }
 
+export async function setUserMode(id: number, mode: "worker" | "employer") {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ userMode: mode }).where(eq(users.id, id));
+}
+
+export async function getUserMode(id: number): Promise<"worker" | "employer" | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select({ userMode: users.userMode }).from(users).where(eq(users.id, id)).limit(1);
+  return result[0]?.userMode ?? null;
+}
+
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────
 
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour

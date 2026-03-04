@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserMode } from "@/contexts/UserModeContext";
 import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame, Zap, CheckCircle2, Users, Phone, Map, List } from "lucide-react";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
@@ -30,6 +31,7 @@ const HOW_IT_WORKS = [
 export default function Home() {
   const [, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
+  const { userMode } = useUserMode();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -132,64 +134,104 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             לוח דרושים פעיל — עבודות מיידיות
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
-            עבודות זמניות באזור שלך
-            <br />
-            <span className="text-yellow-300">– להתחיל היום</span>
-          </h1>
-          <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
-            חבר בין מעסיקים שצריכים עובדים עכשיו לאנשים שפנויים לעבוד עכשיו
-          </p>
+          {/* Role-specific title */}
+          {userMode === "worker" ? (
+            <>
+              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
+                מצא עבודה היום
+                <br />
+                <span className="text-yellow-300">– תתחיל לעבוד עכשיו</span>
+              </h1>
+              <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
+                עבודות זמניות ודחופות באזורך — צור קשר ישיר עם המעסיק
+              </p>
+            </>
+          ) : userMode === "employer" ? (
+            <>
+              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
+                מצא עובד תוך דקות
+                <br />
+                <span className="text-yellow-300">– פרסם עכשיו</span>
+              </h1>
+              <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
+                פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
+                עבודות זמניות באזור שלך
+                <br />
+                <span className="text-yellow-300">– להתחיל היום</span>
+              </h1>
+              <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
+                חבר בין מעסיקים שצריכים עובדים עכשיו לאנשים שפנויים לעבוד עכשיו
+              </p>
+            </>
+          )}
 
-          {/* Main CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-4">
-            <Button
-              size="lg"
-              className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2"
-              onClick={() => navigate("/find-jobs")}
-            >
-              <Search className="h-5 w-5" />
-              אני מחפש עבודה עכשיו
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2"
-              onClick={handlePostJob}
-            >
-              <Zap className="h-5 w-5" />
-              פרסם עבודה דחופה
-            </Button>
-          </div>
+          {/* Role-specific CTA buttons */}
+          {userMode === "worker" ? (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-4">
+              <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2" onClick={() => navigate("/find-jobs")}>
+                <Search className="h-5 w-5" /> חפש עבודה עכשיו
+              </Button>
+              <Button size="lg" variant="outline" className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2" onClick={() => navigate("/jobs-today")}>
+                <Flame className="h-5 w-5" /> עבודות להיום
+              </Button>
+            </div>
+          ) : userMode === "employer" ? (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-4">
+              <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2" onClick={handlePostJob}>
+                <Zap className="h-5 w-5" /> פרסם עבודה דחופה
+              </Button>
+              <Button size="lg" variant="outline" className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2" onClick={() => navigate("/available-workers")}>
+                <Users className="h-5 w-5" /> עובדים זמינים
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-4">
+              <Button size="lg" className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2" onClick={() => navigate("/find-jobs")}>
+                <Search className="h-5 w-5" /> אני מחפש עבודה עכשיו
+              </Button>
+              <Button size="lg" variant="outline" className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2" onClick={handlePostJob}>
+                <Zap className="h-5 w-5" /> פרסם עבודה דחופה
+              </Button>
+            </div>
+          )}
 
-          {/* Availability toggle */}
-          <button
-            onClick={handleAvailabilityToggle}
-            disabled={availabilityLoading}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border-2 ${
-              isAvailable
-                ? "bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/30"
-                : "bg-white/10 border-white/30 text-white hover:bg-white/20"
-            }`}
-          >
-            {availabilityLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? "bg-white animate-pulse" : "bg-white/50"}`} />
-            )}
-            {isAvailable ? "✅ אני פנוי לעבוד עכשיו — לחץ לביטול" : "🟢 אני פנוי לעבוד עכשיו"}
-          </button>
-
-          {/* WhatsApp shortcut */}
-          <div className="mt-3">
+          {/* Availability toggle — workers only */}
+          {userMode !== "employer" && (
             <button
-              onClick={handleWhatsAppPublish}
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors"
+              onClick={handleAvailabilityToggle}
+              disabled={availabilityLoading}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border-2 ${
+                isAvailable
+                  ? "bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/30"
+                  : "bg-white/10 border-white/30 text-white hover:bg-white/20"
+              }`}
             >
-              <MessageCircle className="h-3.5 w-3.5 text-green-400" />
-              פרסם עבודה דרך WhatsApp
+              {availabilityLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? "bg-white animate-pulse" : "bg-white/50"}`} />
+              )}
+              {isAvailable ? "✅ אני פנוי לעבוד עכשיו — לחץ לביטול" : "🟢 אני פנוי לעבוד עכשיו"}
             </button>
-          </div>
+          )}
+
+          {/* WhatsApp shortcut — employers only */}
+          {userMode !== "worker" && (
+            <div className="mt-3">
+              <button
+                onClick={handleWhatsAppPublish}
+                className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors"
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-green-400" />
+                פרסם עבודה דרך WhatsApp
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

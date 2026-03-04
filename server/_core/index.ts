@@ -15,6 +15,7 @@ import {
   botDetection,
   antiEnumeration,
 } from "../security";
+import { makeRequest } from "./map";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -66,6 +67,18 @@ async function startServer() {
 
   // ── OTP endpoint rate limit: 5 req/hour per IP ───────────────────────────
   app.use("/api/trpc/auth.sendOtp", otpRateLimit);
+
+  // ── Geocode proxy for city search ──────────────────────────────────────────
+  app.get("/api/maps/geocode", async (req, res) => {
+    try {
+      const address = req.query.address as string;
+      if (!address) return res.status(400).json({ error: "address required" });
+      const data = await makeRequest("/maps/api/geocode/json", { address });
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "geocode failed" });
+    }
+  });
 
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);

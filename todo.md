@@ -281,3 +281,12 @@
 - [x] Home: role-specific hero title, CTA buttons, availability toggle visibility
 - [x] PostJob: worker-mode guard with prompt to switch to employer
 - [x] All 83 tests passing
+
+## Location UX Improvements
+- [x] Location permission explanation dialog before browser prompt
+- [x] Manual city search fallback when permission denied
+- [x] Distance badge on each job card when location is active
+- [x] Smart radius auto-expand when 0 results found
+- [x] localStorage caching of location (1 hour TTL)
+- [x] Clear-location button (X) when location is active
+- [x] Update button labels: "הצג עבודות קרובות אלי" / "ממוין לפי מרחק ממך"

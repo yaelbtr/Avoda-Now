@@ -177,7 +177,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
           <MapPin className="h-3 w-3 text-primary shrink-0" />
           {cityDisplay}
           {showDistance && job.distance !== undefined && (
-            <span className="text-primary font-semibold mr-0.5">· {formatDistance(job.distance)}</span>
+            <span className="inline-flex items-center gap-0.5 bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded-full text-xs mr-0.5">📍 {formatDistance(job.distance)} ממך</span>
           )}
         </span>
         <Badge variant="secondary" className="text-xs py-0 h-4 px-1.5">

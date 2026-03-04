@@ -172,3 +172,10 @@
 - [x] Frontend: admin nav link visible only to admins (desktop + mobile)
 - [x] Frontend: redirect non-admins from /admin with 403 message
 - [x] Vitest tests: 19 admin RBAC tests (guest/user/admin access patterns)
+
+## Growth Features
+- [x] Feature 1: "פרסם עבודה דרך WhatsApp" button on homepage hero section
+- [x] Feature 1: "פרסם עבודה דרך WhatsApp" button on post-job page
+- [x] Feature 1: Pre-filled WhatsApp message with job template fields
+- [x] Feature 2: "פרסם עבודה דומה" button on job details page
+- [x] Feature 2: Pre-fill post-job form with existing job data via URL query params

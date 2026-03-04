@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,7 @@ import {
 import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -59,9 +59,27 @@ export default function PostJob() {
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaError, setCaptchaError] = useState(false);
 
+  // Read URL params for duplicate-job pre-fill
+  const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const isDuplicate = !!urlParams.get("from");
+
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { salaryType: "hourly", startTime: "flexible", workersNeeded: "1", activeDuration: "7" },
+    defaultValues: {
+      salaryType: (urlParams.get("salaryType") as FormData["salaryType"]) || "hourly",
+      startTime: (urlParams.get("startTime") as FormData["startTime"]) || "flexible",
+      workersNeeded: urlParams.get("workersNeeded") || "1",
+      activeDuration: "7",
+      title: urlParams.get("title") || "",
+      description: urlParams.get("description") || "",
+      category: urlParams.get("category") || "",
+      address: urlParams.get("address") || "",
+      salary: urlParams.get("salary") || "",
+      contactName: urlParams.get("contactName") || "",
+      contactPhone: urlParams.get("contactPhone") || "",
+      businessName: urlParams.get("businessName") || "",
+      workingHours: urlParams.get("workingHours") || "",
+    },
   });
 
   const salaryType = watch("salaryType");
@@ -201,10 +219,43 @@ export default function PostJob() {
     );
   }
 
+  const handleWhatsAppPublish = () => {
+    const message = encodeURIComponent(
+      `שלום, אני רוצה לפרסם עבודה:
+
+שם העסק:
+סוג העבודה:
+מיקום:
+שכר:
+טלפון ליצירת קשר:`
+    );
+    window.open(`https://wa.me/?text=${message}`, "_blank");
+  };
+
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-foreground mb-2 text-right">פרסם משרה</h1>
+      <div className="flex items-start justify-between mb-2">
+        <button
+          type="button"
+          onClick={handleWhatsAppPublish}
+          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
+        >
+          <MessageCircle className="h-4 w-4" />
+          פרסם דרך WhatsApp
+        </button>
+        <h1 className="text-2xl font-bold text-foreground text-right">פרסם משרה</h1>
+      </div>
       <p className="text-muted-foreground mb-6 text-sm text-right">מלא את הפרטים ומצא עובדים תוך דקות</p>
+
+      {/* Duplicate notice */}
+      {isDuplicate && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center gap-3 text-sm">
+          <Copy className="h-4 w-4 text-blue-500 shrink-0" />
+          <span className="text-blue-700">
+            הטופס מולא מראש עם פרטי המשרה הקודמת. ערוך ופרסם.
+          </span>
+        </div>
+      )}
 
       {/* Limit notice */}
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5 flex items-center gap-3 text-sm">

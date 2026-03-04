@@ -6,7 +6,7 @@ import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { JOB_CATEGORIES } from "@shared/categories";
-import { Search, Briefcase, MapPin, Loader2, ChevronLeft } from "lucide-react";
+import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle } from "lucide-react";
 
 export default function Home() {
   const [, navigate] = useLocation();
@@ -27,6 +27,19 @@ export default function Home() {
       return;
     }
     navigate("/post-job");
+  };
+
+  const handleWhatsAppPublish = () => {
+    const message = encodeURIComponent(
+      `שלום, אני רוצה לפרסם עבודה:
+
+שם העסק:
+סוג העבודה:
+מיקום:
+שכר:
+טלפון ליצירת קשר:`
+    );
+    window.open(`https://wa.me/?text=${message}`, "_blank");
   };
 
   useEffect(() => {
@@ -82,6 +95,16 @@ export default function Home() {
               <Briefcase className="h-5 w-5" />
               אני מחפש עובדים
             </Button>
+          </div>
+          {/* WhatsApp publish shortcut */}
+          <div className="mt-4">
+            <button
+              onClick={handleWhatsAppPublish}
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors underline-offset-2 hover:underline"
+            >
+              <MessageCircle className="h-4 w-4 text-green-400" />
+              פרסם עבודה דרך WhatsApp
+            </button>
           </div>
         </div>
       </section>

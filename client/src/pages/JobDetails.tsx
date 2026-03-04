@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
   Briefcase, DollarSign, Loader2, AlertCircle, Flag, CheckCircle2,
-  Lock,
+  Lock, Copy,
 } from "lucide-react";
 import {
   getCategoryIcon, getCategoryLabel, formatSalary,
@@ -315,6 +315,34 @@ export default function JobDetails() {
             שתף משרה זו בוואטסאפ
           </Button>
         </a>
+      </div>
+
+      {/* Duplicate job button */}
+      <div className="mb-4">
+        <button
+          onClick={() => {
+            const params = new URLSearchParams({
+              from: String(job.id),
+              title: job.title,
+              description: job.description,
+              category: job.category,
+              address: job.address,
+              salary: job.salary ? String(job.salary) : "",
+              salaryType: job.salaryType ?? "hourly",
+              contactName: job.contactName,
+              contactPhone: job.contactPhone ?? "",
+              businessName: job.businessName ?? "",
+              workingHours: job.workingHours ?? "",
+              startTime: job.startTime ?? "flexible",
+              workersNeeded: String(job.workersNeeded ?? 1),
+            });
+            navigate(`/post-job?${params.toString()}`);
+          }}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary/5 transition-colors text-sm font-medium"
+        >
+          <Copy className="h-4 w-4" />
+          פרסם עבודה דומה
+        </button>
       </div>
 
       {/* Report */}

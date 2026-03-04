@@ -21,9 +21,9 @@ export default function FindJobs() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [showTodayOnly, setShowTodayOnly] = useState(false);
-  const [showUrgentOnly, setShowUrgentOnly] = useState(params.get("urgent") === "1");
-  const [showHelpToday, setShowHelpToday] = useState(params.get("help") === "1");
+  const [showUrgentToday, setShowUrgentToday] = useState(
+    params.get("urgent") === "1" || params.get("help") === "1"
+  );
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [, navigate] = useLocation();
@@ -70,16 +70,13 @@ export default function FindJobs() {
 
   const todayQuery = trpc.jobs.listToday.useQuery(
     { category: category === "all" ? undefined : category, limit: 50 },
-    { enabled: showTodayOnly }
+    { enabled: showUrgentToday }
   );
 
   type AnyJob = NonNullable<typeof searchQuery.data>[number] | NonNullable<typeof listQuery.data>[number];
-  let jobs: AnyJob[] = showTodayOnly
-    ? (todayQuery.data ?? [])
-    : userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
-  const isLoading = showTodayOnly
-    ? todayQuery.isLoading
-    : userLat ? searchQuery.isLoading : listQuery.isLoading;
+  // Base job list: when urgentToday is on, merge today-jobs + urgent jobs from main list
+  let jobs: AnyJob[] = userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
+  const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
 
   if (searchText.trim()) {
     const q = searchText.toLowerCase();
@@ -91,18 +88,17 @@ export default function FindJobs() {
     );
   }
 
-  // Filter urgent only
-  if (showUrgentOnly) {
-    jobs = jobs.filter((j) => (j as { isUrgent?: boolean | null }).isUrgent);
-  }
-
-  // "צריך עזרה היום" — urgent OR today + emergency/reserve categories
-  if (showHelpToday) {
-    const HELP_CATS = ["emergency_support", "reserve_families", "volunteer"];
+  // "דחוף להיום" — isUrgent OR startDateTime within 24h
+  if (showUrgentToday) {
+    const now = Date.now();
+    const in24h = now + 24 * 60 * 60 * 1000;
+    const todayJobIds = new Set((todayQuery.data ?? []).map((j) => j.id));
     jobs = jobs.filter((j) => {
       const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
-      const isHelpCat = HELP_CATS.includes(j.category);
-      return isUrgentJob || isHelpCat;
+      const isToday = todayJobIds.has(j.id);
+      const startDt = (j as { startDateTime?: string | null }).startDateTime;
+      const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
+      return isUrgentJob || isToday || startsWithin24h;
     });
   }
 
@@ -165,47 +161,23 @@ export default function FindJobs() {
           )}
         </div>
 
-        {/* Special filters */}
+        {/* Unified urgent-today filter */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Help today — wartime/emergency */}
           <button
-            onClick={() => { setShowHelpToday(!showHelpToday); if (!showHelpToday) { setShowUrgentOnly(false); setShowTodayOnly(false); } }}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
-              showHelpToday
-                ? "bg-purple-600 text-white border-purple-600 shadow-sm"
-                : "border-purple-300 text-purple-700 hover:bg-purple-50"
+            onClick={() => setShowUrgentToday(!showUrgentToday)}
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+              showUrgentToday
+                ? "bg-red-500 text-white border-red-500 shadow-md"
+                : "border-red-400 text-red-600 hover:bg-red-50"
             }`}
           >
-            🆘 צריך עזרה היום
+            <Flame className="h-4 w-4" />
+            דחוף להיום
           </button>
-          <button
-            onClick={() => setShowUrgentOnly(!showUrgentOnly)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
-              showUrgentOnly
-                ? "bg-red-500 text-white border-red-500 shadow-sm"
-                : "border-red-300 text-red-600 hover:bg-red-50"
-            }`}
-          >
-            ⚡ דחוף עכשיו
-          </button>
-          <button
-            onClick={() => setShowTodayOnly(!showTodayOnly)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
-              showTodayOnly
-                ? "bg-red-500 text-white border-red-500 shadow-sm"
-                : "border-red-300 text-red-600 hover:bg-red-50"
-            }`}
-          >
-            <Flame className="h-3.5 w-3.5" />
-            עבודות להיום
-          </button>
-          {showTodayOnly && (
-            <button
-              onClick={() => navigate("/jobs-today")}
-              className="text-xs text-red-600 underline underline-offset-2 hover:text-red-700"
-            >
-              עמוד עבודות להיום המלא ←
-            </button>
+          {showUrgentToday && (
+            <span className="text-xs text-muted-foreground">
+              מציג עבודות דחופות ועבודות שמתחילות בשעות הקרובות
+            </span>
           )}
         </div>
 

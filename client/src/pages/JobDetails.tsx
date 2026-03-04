@@ -18,7 +18,7 @@ import {
 } from "@shared/categories";
 import { toast } from "sonner";
 
-const SITE_URL = "https://job-now.co.il";
+const SITE_URL = "https://job-now.manus.space";
 
 const WhatsAppIcon = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
   const cls = size === "lg" ? "h-5 w-5" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
@@ -142,7 +142,7 @@ export default function JobDetails() {
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
 
-      {/* Back */}
+      {/* Back — ChevronRight points right, which is "back" direction in RTL */}
       <button
         onClick={() => navigate("/find-jobs")}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-5 transition-colors"
@@ -232,10 +232,10 @@ export default function JobDetails() {
       {/* Contact */}
       <div className="bg-card rounded-xl border border-border p-5 mb-4 shadow-sm">
         <h2 className="font-semibold text-foreground mb-1">פרטי יצירת קשר</h2>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-muted-foreground mb-4 text-right">
           <span className="font-medium text-foreground">{job.contactName}</span>
           {" · "}
-          <span dir="ltr">{job.contactPhone}</span>
+          <span dir="ltr" style={{ unicodeBidi: 'embed' }}>{job.contactPhone}</span>
         </p>
         <div className="flex flex-col gap-2">
           <a
@@ -305,7 +305,7 @@ export default function JobDetails() {
             rows={3}
             className="resize-none"
           />
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-start" dir="rtl">
             <Button variant="ghost" onClick={() => setReportOpen(false)}>ביטול</Button>
             <Button
               variant="destructive"

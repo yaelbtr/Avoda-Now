@@ -29,7 +29,7 @@ interface JobCardProps {
   showDistance?: boolean;
 }
 
-const SITE_URL = "https://job-now.co.il";
+const SITE_URL = "https://job-now.manus.space";
 
 export function shareJobOnWhatsApp(jobTitle: string, jobId: number) {
   const text = encodeURIComponent(
@@ -60,30 +60,31 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
   const cityDisplay = job.city ?? job.address.split(",")[0];
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4 card-hover shadow-sm">
-      {/* Header */}
+    <div className="bg-card rounded-xl border border-border p-4 card-hover shadow-sm" dir="rtl">
+      {/* Header: icon + title on RIGHT, salary on LEFT */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 min-w-0">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
             {getCategoryIcon(job.category)}
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-foreground text-base leading-tight truncate">
+            <h3 className="font-semibold text-foreground text-base leading-tight truncate text-right">
               {job.title}
             </h3>
             {job.businessName && (
-              <p className="text-xs text-muted-foreground truncate mt-0.5">{job.businessName}</p>
+              <p className="text-xs text-muted-foreground truncate mt-0.5 text-right">{job.businessName}</p>
             )}
           </div>
         </div>
+        {/* Salary badge — left side in RTL */}
         <div className="shrink-0 text-left">
-          <span className={`text-sm font-semibold ${isVolunteer ? "text-green-600" : "text-primary"}`}>
+          <span className={`text-sm font-semibold whitespace-nowrap ${isVolunteer ? "text-green-600" : "text-primary"}`}>
             {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
           </span>
         </div>
       </div>
 
-      {/* Meta row */}
+      {/* Meta row — all RTL */}
       <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-3">
         {/* City + Distance */}
         <span className="flex items-center gap-1 font-medium text-foreground">
@@ -114,8 +115,8 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
         </span>
       </div>
 
-      {/* Action buttons: WhatsApp | Phone | Share | Details */}
-      <div className="flex gap-1.5 flex-wrap">
+      {/* Action buttons — RTL order: WhatsApp | Phone | Share | Details */}
+      <div className="flex gap-1.5 flex-wrap" dir="rtl">
         <Button
           size="sm"
           className="gap-1.5 text-xs flex-1 min-w-0"
@@ -148,8 +149,9 @@ export default function JobCard({ job, showDistance = false }: JobCardProps) {
 
         <Link href={`/job/${job.id}`}>
           <Button variant="outline" size="sm" className="gap-1 text-xs">
-            פרטים
+            {/* ChevronLeft points LEFT — correct for RTL "go to details" */}
             <ChevronLeft className="h-3 w-3" />
+            פרטים
           </Button>
         </Link>
       </div>

@@ -93,3 +93,26 @@
 
 - [x] Fix phone number validation — expanded to support all Israeli formats (050-058, 02, 03, 04, 08, 09, +972, 972)
 - [x] Fix persistent "מספר הטלפון אינו תקין" — root cause: TWILIO_VERIFY_SERVICE_SID was set to Account SID (AC...) instead of Verify Service SID (VA...)
+
+## RTL / Hebrew Layout Fixes
+
+- [x] Global CSS: ensure dir=rtl on html, body; Heebo font; text-align: right defaults
+- [x] Fix Navbar: logo on right, nav links on left, RTL flex direction
+- [x] Fix Footer: RTL columns, text alignment
+- [x] Fix LoginModal: RTL form layout, labels, inputs
+- [x] Fix JobCard: RTL card layout, button order, text alignment
+- [x] Fix Home page: hero, category grid, stats — all RTL
+- [x] Fix FindJobs page: filters on right, results RTL
+- [x] Fix JobDetails page: RTL layout, map position, action buttons
+- [x] Fix PostJob page: form labels right-aligned, inputs RTL
+- [x] Fix MyJobs page: RTL table/cards
+- [x] Fix shadcn/ui Select, Input, Textarea, Dialog, DropdownMenu for RTL
+- [x] Fix all icons: directional icons (arrows, chevrons) correct for RTL context
+
+## SMS Customization
+- [ ] Set Twilio sender name to "Avoda-Now"
+- [ ] Set Hebrew OTP message: "Avoda-Now: קוד האימות שלך הוא {CODE}"
+
+## Hebrew SMS Locale
+- [x] Add Locale=he to Twilio Verify sendOtp request
+- [x] Add CustomFriendlyName=JobNow to Twilio Verify sendOtp request

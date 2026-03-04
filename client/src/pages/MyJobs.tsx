@@ -85,8 +85,8 @@ export default function MyJobs() {
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">המשרות שלי</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-bold text-foreground text-right">המשרות שלי</h1>
+          <p className="text-sm text-muted-foreground mt-0.5 text-right">
             {activeJobs.length}/3 משרות פעילות
           </p>
         </div>
@@ -100,8 +100,8 @@ export default function MyJobs() {
       {activeJobs.length > 0 && (
         <div className="bg-card rounded-xl border border-border p-4 mb-5">
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="font-medium">משרות פעילות</span>
             <span className="text-muted-foreground">{activeJobs.length} מתוך 3</span>
+            <span className="font-medium">משרות פעילות</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
@@ -243,7 +243,7 @@ export default function MyJobs() {
               האם אתה בטוח שברצונך למחוק את המשרה? פעולה זו אינה ניתנת לביטול.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse gap-2">
+          <AlertDialogFooter className="flex-row gap-2 sm:flex-row" dir="rtl">
             <AlertDialogCancel>ביטול</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

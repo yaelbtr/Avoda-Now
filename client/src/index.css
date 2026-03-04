@@ -126,10 +126,35 @@
   html {
     direction: rtl;
     font-family: 'Heebo', sans-serif;
+    text-align: right;
   }
   body {
     @apply bg-background text-foreground font-sans;
     direction: rtl;
+    text-align: right;
+  }
+  /* Ensure all inputs respect RTL */
+  input:not([dir="ltr"]),
+  textarea:not([dir="ltr"]) {
+    text-align: right;
+    direction: rtl;
+  }
+  /* Flip directional icons for RTL */
+  [data-rtl-flip] {
+    transform: scaleX(-1);
+  }
+  /* Ensure all Radix portals (dropdowns, popovers, tooltips) inherit RTL */
+  [data-radix-popper-content-wrapper] {
+    direction: rtl;
+  }
+  /* Sonner toasts RTL */
+  [data-sonner-toaster] {
+    direction: rtl;
+    text-align: right;
+  }
+  /* Badge text alignment */
+  [data-slot="badge"] {
+    text-align: right;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

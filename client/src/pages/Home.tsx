@@ -88,7 +88,7 @@ export default function Home() {
 
       {/* Categories */}
       <section className="max-w-2xl mx-auto px-4 py-8">
-        <h2 className="text-xl font-bold text-foreground mb-4">חפש לפי קטגוריה</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4 text-right">חפש לפי קטגוריה</h2>
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
           {JOB_CATEGORIES.map((cat) => (
             <button
@@ -121,6 +121,7 @@ export default function Home() {
               </>
             )}
           </h2>
+          {/* "כל המשרות" button — on LEFT side in RTL */}
           <Button variant="ghost" size="sm" onClick={() => navigate("/find-jobs")} className="gap-1 text-primary">
             כל המשרות
             <ChevronLeft className="h-4 w-4" />

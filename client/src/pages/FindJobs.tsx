@@ -3,7 +3,6 @@ import { useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import JobCard from "@/components/JobCard";
 import { JOB_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import { MapPin, Search, Loader2, Briefcase, LocateFixed } from "lucide-react";
@@ -60,7 +59,6 @@ export default function FindJobs() {
   let jobs: AnyJob[] = userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
 
-  // Client-side text filter
   if (searchText.trim()) {
     const q = searchText.toLowerCase();
     jobs = jobs.filter(
@@ -73,23 +71,23 @@ export default function FindJobs() {
 
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-foreground mb-6">חפש עבודה</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6 text-right">חפש עבודה</h1>
 
       {/* Filters */}
       <div className="bg-card rounded-xl border border-border p-4 mb-6 space-y-4">
-        {/* Search text */}
+        {/* Search text — icon on RIGHT for RTL */}
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="שליחויות, מחסן, חקלאות, מטבח..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="pr-10"
+            className="pr-10 text-right"
           />
         </div>
 
         {/* Location */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
             variant={userLat ? "default" : "outline"}
             size="sm"
@@ -125,7 +123,7 @@ export default function FindJobs() {
 
         {/* Category filter */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">קטגוריה</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2 text-right">קטגוריה</p>
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setCategory("all")}
@@ -154,9 +152,9 @@ export default function FindJobs() {
         </div>
       </div>
 
-      {/* Results */}
+      {/* Results header */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground text-right">
           {isLoading ? "מחפש..." : `${jobs.length} משרות נמצאו`}
         </p>
         {userLat && (

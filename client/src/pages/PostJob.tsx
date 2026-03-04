@@ -179,8 +179,8 @@ export default function PostJob() {
 
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-foreground mb-2">פרסם משרה</h1>
-      <p className="text-muted-foreground mb-6 text-sm">מלא את הפרטים ומצא עובדים תוך דקות</p>
+      <h1 className="text-2xl font-bold text-foreground mb-2 text-right">פרסם משרה</h1>
+      <p className="text-muted-foreground mb-6 text-sm text-right">מלא את הפרטים ומצא עובדים תוך דקות</p>
 
       {/* Limit notice */}
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5 flex items-center gap-3 text-sm">
@@ -193,7 +193,7 @@ export default function PostJob() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Basic info */}
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground">פרטי המשרה</h2>
+          <h2 className="font-semibold text-foreground text-right">פרטי המשרה</h2>
 
           <div>
             <Label htmlFor="title">כותרת המשרה *</Label>
@@ -276,7 +276,7 @@ export default function PostJob() {
 
         {/* Salary & timing */}
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground">שכר ושעות</h2>
+          <h2 className="font-semibold text-foreground text-right">שכר ושעות</h2>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -361,7 +361,7 @@ export default function PostJob() {
 
         {/* Contact */}
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground">פרטי יצירת קשר</h2>
+          <h2 className="font-semibold text-foreground text-right">פרטי יצירת קשר</h2>
 
           <div>
             <Label htmlFor="contactName">שם איש קשר *</Label>
@@ -394,7 +394,7 @@ export default function PostJob() {
             <Shield className="h-4 w-4 text-primary" />
             אימות אנטי-ספאם
           </h2>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-muted-foreground mb-3 text-right">
             פתור: <strong className="text-foreground text-base">{captcha.a} + {captcha.b} = ?</strong>
           </p>
           <Input
@@ -404,7 +404,7 @@ export default function PostJob() {
             onChange={(e) => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
             className={`max-w-32 ${captchaError ? "border-destructive" : ""}`}
           />
-          {captchaError && <p className="text-destructive text-xs mt-1">תשובה שגויה, נסה שוב</p>}
+          {captchaError && <p className="text-destructive text-xs mt-1 text-right">תשובה שגויה, נסה שוב</p>}
         </div>
 
         <Button

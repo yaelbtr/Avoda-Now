@@ -64,7 +64,12 @@ class TwilioVerifyProvider implements SmsProvider {
           "Content-Type": "application/x-www-form-urlencoded",
           Authorization: this.authHeader,
         },
-        body: new URLSearchParams({ To: phone, Channel: "sms" }).toString(),
+        body: new URLSearchParams({
+          To: phone,
+          Channel: "sms",
+          Locale: "he",
+          CustomFriendlyName: "JobNow",
+        }).toString(),
       });
 
       const body = await res.json() as { status?: string; message?: string; code?: number };

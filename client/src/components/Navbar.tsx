@@ -25,10 +25,10 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border shadow-sm" dir="rtl">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex items-center justify-between h-14">
-            {/* Logo */}
+            {/* Logo — rightmost in RTL */}
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg hero-gradient flex items-center justify-center">
                 <Briefcase className="h-4 w-4 text-white" />
@@ -36,7 +36,7 @@ export default function Navbar() {
               <span className="font-bold text-lg text-foreground">Job-Now</span>
             </Link>
 
-            {/* Desktop nav */}
+            {/* Desktop nav — center */}
             <nav className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
@@ -53,7 +53,7 @@ export default function Navbar() {
               ))}
             </nav>
 
-            {/* Auth actions */}
+            {/* Auth actions — leftmost in RTL */}
             <div className="flex items-center gap-2">
               {isAuthenticated ? (
                 <DropdownMenu>
@@ -65,25 +65,25 @@ export default function Navbar() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="start" className="w-48" style={{ direction: "rtl", textAlign: "right" }}>
                     <DropdownMenuItem asChild>
-                      <Link href="/my-jobs" className="flex items-center gap-2 cursor-pointer">
-                        <Briefcase className="h-4 w-4" />
-                        המשרות שלי
+                      <Link href="/my-jobs" className="flex items-center gap-2 cursor-pointer w-full">
+                        <Briefcase className="h-4 w-4 shrink-0" />
+                        <span>המשרות שלי</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/post-job" className="flex items-center gap-2 cursor-pointer">
-                        <PlusCircle className="h-4 w-4" />
-                        פרסם משרה
+                      <Link href="/post-job" className="flex items-center gap-2 cursor-pointer w-full">
+                        <PlusCircle className="h-4 w-4 shrink-0" />
+                        <span>פרסם משרה</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={logout}
-                      className="text-destructive focus:text-destructive"
+                      className="text-destructive focus:text-destructive flex items-center gap-2"
                     >
-                      <LogOut className="h-4 w-4 ml-2" />
-                      התנתק
+                      <LogOut className="h-4 w-4 shrink-0" />
+                      <span>התנתק</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -99,6 +99,7 @@ export default function Navbar() {
                 size="icon"
                 className="md:hidden"
                 onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="תפריט"
               >
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
@@ -108,12 +109,12 @@ export default function Navbar() {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-white">
+          <div className="md:hidden border-t border-border bg-white" dir="rtl">
             <nav className="max-w-2xl mx-auto px-4 py-2 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span
-                    className={`block px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                    className={`block px-3 py-2.5 rounded-md text-sm font-medium transition-colors text-right ${
                       location === link.href
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -127,12 +128,20 @@ export default function Navbar() {
               {isAuthenticated && (
                 <Link href="/my-jobs">
                   <span
-                    className="block px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="block px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted text-right"
                     onClick={() => setMobileOpen(false)}
                   >
                     המשרות שלי
                   </span>
                 </Link>
+              )}
+              {isAuthenticated && (
+                <button
+                  onClick={() => { logout(); setMobileOpen(false); }}
+                  className="block w-full text-right px-3 py-2.5 rounded-md text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+                >
+                  התנתק
+                </button>
               )}
             </nav>
           </div>

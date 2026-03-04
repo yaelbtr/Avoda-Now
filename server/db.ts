@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, or, sql, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertJob,
@@ -9,6 +9,8 @@ import {
   jobs,
   otpRateLimit,
   users,
+  workerAvailability,
+  InsertWorkerAvailability,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -155,10 +157,24 @@ export async function resetRateLimit(phone: string) {
 export async function expireOldJobs() {
   const db = await getDb();
   if (!db) return;
+  const now = new Date();
+  // Expire jobs past their expiresAt
   await db
     .update(jobs)
-    .set({ status: "expired" })
-    .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, new Date())));
+    .set({ status: "expired", closedReason: "expired" })
+    .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, now)));
+  // Auto-hide jobs with no reminder response: created > 9h ago, no reminderSentAt update within 3h
+  const nineHoursAgo = new Date(now.getTime() - 9 * 60 * 60 * 1000);
+  await db
+    .update(jobs)
+    .set({ status: "expired", closedReason: "expired" })
+    .where(
+      and(
+        eq(jobs.status, "active"),
+        lte(jobs.createdAt, nineHoursAgo),
+        sql`${jobs.reminderSentAt} IS NOT NULL`
+      )
+    );
 }
 
 /** Count active jobs for a user (for spam limit) */
@@ -287,6 +303,160 @@ export async function updateJob(id: number, userId: number, data: Partial<Insert
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(jobs).set(data).where(and(eq(jobs.id, id), eq(jobs.postedBy, userId)));
+}
+
+/** Get urgent jobs (isUrgent=true), sorted by createdAt desc */
+export async function getUrgentJobs(limit = 20, category?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  await expireOldJobs();
+  const conditions = [
+    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+    eq(jobs.isUrgent, true),
+  ];
+  if (category && category !== "all") {
+    conditions.push(eq(jobs.category, category as Job["category"]));
+  }
+  return db
+    .select()
+    .from(jobs)
+    .where(and(...conditions))
+    .orderBy(desc(jobs.createdAt))
+    .limit(limit);
+}
+
+/** Mark a job as filled by the owner */
+export async function markJobFilled(jobId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(jobs)
+    .set({ status: "closed", closedReason: "found_worker" })
+    .where(and(eq(jobs.id, jobId), eq(jobs.postedBy, userId)));
+}
+
+/** Send reminder for a job (mark reminderSentAt) */
+export async function markReminderSent(jobId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(jobs).set({ reminderSentAt: new Date() }).where(eq(jobs.id, jobId));
+}
+
+/** Get active jobs that need a reminder (created 6+ hours ago, no reminder sent yet) */
+export async function getJobsNeedingReminder() {
+  const db = await getDb();
+  if (!db) return [];
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+  return db
+    .select()
+    .from(jobs)
+    .where(
+      and(
+        eq(jobs.status, "active"),
+        lte(jobs.createdAt, sixHoursAgo),
+        sql`${jobs.reminderSentAt} IS NULL`
+      )
+    )
+    .limit(100);
+}
+
+// ─── Worker Availability ──────────────────────────────────────────────────────
+
+/** Set or update a worker's availability (upsert by userId) */
+export async function setWorkerAvailable(data: InsertWorkerAvailability) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Delete old record for this user first
+  await db.delete(workerAvailability).where(eq(workerAvailability.userId, data.userId));
+  await db.insert(workerAvailability).values(data);
+}
+
+/** Remove a worker's availability */
+export async function setWorkerUnavailable(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(workerAvailability).where(eq(workerAvailability.userId, userId));
+}
+
+/** Get current availability record for a user */
+export async function getWorkerAvailability(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(workerAvailability)
+    .where(and(eq(workerAvailability.userId, userId), gte(workerAvailability.availableUntil, now)))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Get available workers near a location, sorted by distance */
+export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+
+  const distanceExpr = sql<number>`
+    (6371 * acos(
+      cos(radians(${lat})) * cos(radians(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
+      * cos(radians(CAST(${workerAvailability.longitude} AS DECIMAL(10,7))) - radians(${lng}))
+      + sin(radians(${lat})) * sin(radians(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
+    ))
+  `;
+
+  return db
+    .select({
+      id: workerAvailability.id,
+      userId: workerAvailability.userId,
+      latitude: workerAvailability.latitude,
+      longitude: workerAvailability.longitude,
+      city: workerAvailability.city,
+      note: workerAvailability.note,
+      availableUntil: workerAvailability.availableUntil,
+      createdAt: workerAvailability.createdAt,
+      userName: users.name,
+      userPhone: users.phone,
+      distance: distanceExpr,
+    })
+    .from(workerAvailability)
+    .innerJoin(users, eq(workerAvailability.userId, users.id))
+    .where(
+      and(
+        gte(workerAvailability.availableUntil, now),
+        sql`${distanceExpr} <= ${radiusKm}`
+      )
+    )
+    .orderBy(distanceExpr)
+    .limit(limit);
+}
+
+/** Get jobs whose startDateTime is within the next 24 hours (or startTime='today') */
+export async function getTodayJobs(limit = 50, category?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  await expireOldJobs();
+  const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  const conditions = [
+    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+    or(
+      // Exact timestamp within next 24 hours
+      and(gte(jobs.startDateTime, now), lte(jobs.startDateTime, in24h))!,
+      // Legacy enum value "today"
+      eq(jobs.startTime, "today"),
+    )!,
+  ];
+  if (category && category !== "all") {
+    conditions.push(eq(jobs.category, category as Job["category"]));
+  }
+  return db
+    .select()
+    .from(jobs)
+    .where(and(...conditions))
+    .orderBy(jobs.startDateTime, desc(jobs.createdAt))
+    .limit(limit);
 }
 
 // ─── Reports ─────────────────────────────────────────────────────────────────

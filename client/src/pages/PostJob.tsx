@@ -30,6 +30,7 @@ const schema = z.object({
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
   startTime: z.string(),
+  startDateTime: z.string().optional(),
   workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
 });
@@ -79,6 +80,7 @@ export default function PostJob() {
       contactPhone: urlParams.get("contactPhone") || "",
       businessName: urlParams.get("businessName") || "",
       workingHours: urlParams.get("workingHours") || "",
+      startDateTime: urlParams.get("startDateTime") || "",
     },
   });
 
@@ -180,6 +182,7 @@ export default function PostJob() {
       businessName: data.businessName || undefined,
       workingHours: data.workingHours || undefined,
       startTime: data.startTime as Parameters<typeof createJob.mutate>[0]["startTime"],
+      startDateTime: data.startDateTime ? new Date(data.startDateTime).toISOString() : undefined,
       workersNeeded: parseInt(data.workersNeeded),
       activeDuration: data.activeDuration,
     });
@@ -406,6 +409,22 @@ export default function PostJob() {
                 className="mt-1"
               />
             </div>
+          </div>
+
+          {/* Exact start date/time for urgent jobs */}
+          <div>
+            <Label htmlFor="startDateTime">
+              🔥 תאריך ושעת התחלה מדויקים (אופציונלי)
+            </Label>
+            <Input
+              id="startDateTime"
+              type="datetime-local"
+              {...register("startDateTime")}
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              אם תמלא שדה זה, המשרה תסומן כג׳ "עבודה להיום" כאשר ההתחלה בתוך 24 שעות
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

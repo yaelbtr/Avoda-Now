@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { SignJWT } from "jose";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
+import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
@@ -17,6 +17,7 @@ import {
   getJobById,
   getJobsNearLocation,
   getMyJobs,
+  getTodayJobs,
   getUserByPhone,
   reportJob,
   resetRateLimit,
@@ -156,19 +157,16 @@ const authRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה ביצירת משתמש" });
       }
 
-      // Issue session JWT (30 days)
-      const secret = new TextEncoder().encode(ENV.cookieSecret);
-      const token = await new SignJWT({
-        sub: user.openId,
-        id: user.id,
-        phone: user.phone,
-        name: user.name,
-        role: user.role,
-      })
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .setExpirationTime("30d")
-        .sign(secret);
+      // Issue session JWT using the same format sdk.verifySession expects:
+      // { openId, appId, name } — must match SDKServer.verifySession field checks
+      const token = await sdk.signSession(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name ?? user.phone ?? "",
+        },
+        { expiresInMs: 30 * 24 * 60 * 60 * 1000 } // 30 days
+      );
 
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
@@ -201,6 +199,8 @@ const jobInputSchema = z.object({
   workersNeeded: z.number().int().min(1).default(1),
   activeDuration: z.enum(["1", "3", "7"]).default("7"),
   jobTags: z.array(z.string()).optional(),
+  /** ISO string for exact start date/time */
+  startDateTime: z.string().datetime({ offset: true }).optional(),
 });
 
 const jobsRouter = router({
@@ -260,6 +260,7 @@ const jobsRouter = router({
         longitude: input.longitude.toString(),
         salary: input.salary?.toString(),
         expiresAt,
+        startDateTime: input.startDateTime ? new Date(input.startDateTime) : null,
         postedBy: ctx.user.id,
         status: "active",
         jobTags: input.jobTags ?? [input.category],
@@ -302,6 +303,15 @@ const jobsRouter = router({
     }),
 
   myJobs: protectedProcedure.query(async ({ ctx }) => getMyJobs(ctx.user.id)),
+
+  /** Jobs starting within the next 24 hours */
+  listToday: publicProcedure
+    .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
+    .query(async ({ input, ctx }) => {
+      const jobs = await getTodayJobs(input.limit ?? 50, input.category);
+      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
+      return jobs;
+    }),
 
   report: publicProcedure
     .input(

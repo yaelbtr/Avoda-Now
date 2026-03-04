@@ -6,7 +6,7 @@ import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { JOB_CATEGORIES } from "@shared/categories";
-import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle } from "lucide-react";
+import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame } from "lucide-react";
 
 export default function Home() {
   const [, navigate] = useLocation();
@@ -57,9 +57,11 @@ export default function Home() {
   );
 
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
+  const todayQuery = trpc.jobs.listToday.useQuery({ limit: 3 });
 
   const jobs = userLat ? (nearbyQuery.data ?? []) : (latestQuery.data ?? []);
   const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
+  const todayJobs = todayQuery.data ?? [];
 
   return (
     <div dir="rtl">
@@ -126,6 +128,42 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Today's Jobs Banner */}
+      {todayJobs.length > 0 && (
+        <section className="max-w-2xl mx-auto px-4 pt-6">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
+                <Flame className="h-5 w-5 text-red-500" />
+                עבודות להיום
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/jobs-today")}
+                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-100 text-xs"
+              >
+                כל העבודות להיום
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {todayJobs.slice(0, 3).map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={{
+                    ...job,
+                    salary: job.salary ?? null,
+                    businessName: job.businessName ?? null,
+                  }}
+                  onLoginRequired={requireLogin}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories */}
       <section className="max-w-2xl mx-auto px-4 py-8">

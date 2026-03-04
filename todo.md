@@ -179,3 +179,41 @@
 - [x] Feature 1: Pre-filled WhatsApp message with job template fields
 - [x] Feature 2: "פרסם עבודה דומה" button on job details page
 - [x] Feature 2: Pre-fill post-job form with existing job data via URL query params
+
+## Instant Jobs Platform Adaptation
+- [ ] DB: add isUrgent boolean to jobs table
+- [ ] DB: change default activeDuration to 1 day (24h auto-expiry)
+- [ ] DB: add workerAvailability table (userId, lat, lng, availableUntil, note)
+- [ ] Server: getUrgentJobs query helper
+- [ ] Server: jobs.list — sort urgent jobs to top
+- [ ] Server: workers.setAvailable mutation (stores lat/lng + 4h window)
+- [ ] Server: workers.setUnavailable mutation
+- [ ] Server: workers.getNearby query (returns workers available within radius)
+- [ ] Server: jobs.create — enforce 24h expiry as default (activeDuration=1)
+- [ ] UI: "אני פנוי לעבוד עכשיו" button on homepage and navbar
+- [ ] UI: Worker availability status indicator (green dot when available)
+- [ ] UI: "צריך עובד עכשיו" toggle on PostJob form
+- [ ] UI: Urgent badge on job cards (🚨 עדיפות)
+- [ ] UI: Urgent jobs sorted to top in job listings
+- [ ] UI: /available-workers page for employers (sorted by distance)
+- [ ] UI: Job cards show expiry countdown
+- [ ] UI: Simplified contact — only Phone + WhatsApp buttons
+
+## Full Platform Rebuild — Instant Jobs
+- [ ] DB: add reminderSentAt timestamp to jobs (tracks 6h reminder)
+- [ ] DB: add closedReason enum to jobs (found_worker / expired / manual)
+- [ ] Server: expiry — urgent jobs expire in 12h, normal in 24h (default)
+- [ ] Server: jobs.create — set expiresAt based on isUrgent (12h vs 24h)
+- [ ] Server: jobs.markFilled mutation — sets status=closed, closedReason=found_worker
+- [ ] Server: background job — hide posts with no response after 9h (6h reminder + 3h grace)
+- [ ] Server: workers.setAvailable / setUnavailable / getNearby procedures
+- [ ] UI: Redesigned homepage — new hero, urgent section, today jobs, categories, how-it-works
+- [ ] UI: WhatsApp share button on every job page with pre-filled Hebrew message
+- [ ] UI: Open Graph meta tags on /job/:id pages (og:title, og:description, og:url)
+- [ ] UI: Urgent badge "🚨 דחוף" on job cards
+- [ ] UI: Relative time display "פורסם לפני שעה" on job cards
+- [ ] UI: Expiry countdown on job cards "פג תוקף בעוד 3 שעות"
+- [ ] UI: "מצאתי עובד" button for job owner on job details page
+- [ ] UI: "אני פנוי לעבוד עכשיו" prominent button on homepage
+- [ ] UI: PostJob — urgent toggle "צריך עובד עכשיו" (sets isUrgent=true, 12h expiry)
+- [ ] UI: PostJob — default activeDuration = 1 day

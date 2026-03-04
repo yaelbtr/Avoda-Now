@@ -90,10 +90,18 @@ export const jobs = mysqlTable("jobs", {
   businessName: varchar("businessName", { length: 200 }),
   workingHours: varchar("workingHours", { length: 100 }),
   startTime: mysqlEnum("startTime", ["today", "tomorrow", "this_week", "flexible"]).default("flexible").notNull(),
+  /** Exact date/time when the job starts. If within 24h from now → badge "עבודה להיום" */
+  startDateTime: timestamp("startDateTime"),
+  /** Urgent flag: employer needs a worker immediately → shown at top of listings */
+  isUrgent: boolean("isUrgent").default(false).notNull(),
+  /** When the 6-hour reminder was sent to the employer */
+  reminderSentAt: timestamp("reminderSentAt"),
+  /** Why the job was closed */
+  closedReason: mysqlEnum("closedReason", ["found_worker", "expired", "manual"]),
   workersNeeded: int("workersNeeded").default(1).notNull(),
   postedBy: int("postedBy").references(() => users.id),
-  /** Duration in days: 1, 3, or 7 */
-  activeDuration: mysqlEnum("activeDuration", ["1", "3", "7"]).default("7").notNull(),
+  /** Duration in days: 1, 3, or 7. Default is 1 (24 hours) for instant jobs */
+  activeDuration: mysqlEnum("activeDuration", ["1", "3", "7"]).default("1").notNull(),
   /** Computed expiry timestamp = createdAt + activeDuration days */
   expiresAt: timestamp("expiresAt"),
   status: mysqlEnum("status", ["active", "closed", "expired", "under_review"]).default("active").notNull(),
@@ -118,3 +126,28 @@ export const jobReports = mysqlTable("job_reports", {
 
 export type JobReport = typeof jobReports.$inferSelect;
 export type InsertJobReport = typeof jobReports.$inferInsert;
+
+/**
+ * Tracks workers who are currently available to work.
+ * Availability expires automatically after availableUntil timestamp.
+ * Workers can set a note (e.g. "available in Tel Aviv area").
+ */
+export const workerAvailability = mysqlTable("worker_availability", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  /** Worker's current latitude */
+  latitude: decimal("latitude", { precision: 10, scale: 7 }).notNull(),
+  /** Worker's current longitude */
+  longitude: decimal("longitude", { precision: 10, scale: 7 }).notNull(),
+  /** City name for display */
+  city: varchar("city", { length: 100 }),
+  /** Optional note from worker */
+  note: varchar("note", { length: 200 }),
+  /** Availability expires at this time (default: 4 hours from now) */
+  availableUntil: timestamp("availableUntil").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WorkerAvailability = typeof workerAvailability.$inferSelect;
+export type InsertWorkerAvailability = typeof workerAvailability.$inferInsert;

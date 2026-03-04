@@ -58,6 +58,23 @@ export function formatDistance(km: number): string {
   return `${km.toFixed(1)} ק"מ`;
 }
 
+/**
+ * Returns true if the job is starting within the next 24 hours.
+ * Checks both the exact startDateTime timestamp and the legacy startTime enum.
+ */
+export function isJobToday(
+  startDateTime: Date | string | null | undefined,
+  startTime: string
+): boolean {
+  if (startTime === "today") return true;
+  if (!startDateTime) return false;
+  const dt = startDateTime instanceof Date ? startDateTime : new Date(startDateTime);
+  if (isNaN(dt.getTime())) return false;
+  const now = Date.now();
+  const diff = dt.getTime() - now;
+  return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
+}
+
 export function formatSalary(salary: string | null | undefined, salaryType: string): string {
   if (!salary || salaryType === "volunteer") return "התנדבות";
   const num = parseFloat(salary);

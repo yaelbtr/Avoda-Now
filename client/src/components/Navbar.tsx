@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Briefcase, User, LogOut, PlusCircle, Menu, X, Shield } from "lucide-react";
+import { Briefcase, User, LogOut, PlusCircle, Menu, X, Shield, Flame } from "lucide-react";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -20,6 +20,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "בית" },
     { href: "/find-jobs", label: "חפש עבודה" },
+    { href: "/jobs-today", label: "🔥 להיום" },
     { href: "/post-job", label: "פרסם משרה" },
   ];
 

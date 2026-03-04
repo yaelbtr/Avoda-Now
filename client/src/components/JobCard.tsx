@@ -9,6 +9,7 @@ import {
   formatSalary,
   formatDistance,
   getStartTimeLabel,
+  isJobToday,
 } from "@shared/categories";
 
 interface JobCardProps {
@@ -23,6 +24,7 @@ interface JobCardProps {
     contactPhone: string | null;
     businessName?: string | null;
     startTime: string;
+    startDateTime?: Date | string | null;
     workersNeeded: number;
     createdAt: Date | string;
     distance?: number;
@@ -61,6 +63,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
+  const isToday = isJobToday(job.startDateTime, job.startTime);
   const hasPhone = isAuthenticated && !!job.contactPhone;
 
   const handleRestrictedAction = (message: string) => {
@@ -78,9 +81,16 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
             {getCategoryIcon(job.category)}
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-foreground text-base leading-tight truncate text-right">
-              {job.title}
-            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-foreground text-base leading-tight truncate text-right">
+                {job.title}
+              </h3>
+              {isToday && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white shrink-0 animate-pulse">
+                  🔥 עבודה להיום
+                </span>
+              )}
+            </div>
             {job.businessName && (
               <p className="text-xs text-muted-foreground truncate mt-0.5 text-right">{job.businessName}</p>
             )}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, KeyboardEvent, ClipboardEvent } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -35,6 +36,7 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { refetch } = useAuth();
+  const queryClient = useQueryClient();
 
   // ── Timer helpers ────────────────────────────────────────────────────────────
   const startResendTimer = useCallback(() => {
@@ -88,11 +90,14 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
   const verifyOtp = trpc.auth.verifyOtp.useMutation({
     onSuccess: () => {
       setStep("success");
-      setTimeout(() => {
-        toast.success("התחברת בהצלחה! 🎉");
-        refetch();
+      setTimeout(async () => {
+        // Refresh auth state first
+        await refetch();
+        // Invalidate all cached queries so phone numbers and auth-gated data refresh
+        await queryClient.invalidateQueries();
+        toast.success("התחברת בהצלחא! 🎉");
         onClose();
-      }, 1400);
+      }, 1200);
     },
     onError: (e) => {
       toast.error(e.message);

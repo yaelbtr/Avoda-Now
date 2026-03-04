@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
-import { MapPin, Search, Loader2, Briefcase, LocateFixed } from "lucide-react";
+import { MapPin, Search, Loader2, Briefcase, LocateFixed, Flame } from "lucide-react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
 
 export default function FindJobs() {
@@ -20,8 +21,10 @@ export default function FindJobs() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [showTodayOnly, setShowTodayOnly] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  const [, navigate] = useLocation();
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);
@@ -63,9 +66,18 @@ export default function FindJobs() {
     { enabled: !userLat }
   );
 
+  const todayQuery = trpc.jobs.listToday.useQuery(
+    { category: category === "all" ? undefined : category, limit: 50 },
+    { enabled: showTodayOnly }
+  );
+
   type AnyJob = NonNullable<typeof searchQuery.data>[number] | NonNullable<typeof listQuery.data>[number];
-  let jobs: AnyJob[] = userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
-  const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
+  let jobs: AnyJob[] = showTodayOnly
+    ? (todayQuery.data ?? [])
+    : userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
+  const isLoading = showTodayOnly
+    ? todayQuery.isLoading
+    : userLat ? searchQuery.isLoading : listQuery.isLoading;
 
   if (searchText.trim()) {
     const q = searchText.toLowerCase();
@@ -126,6 +138,29 @@ export default function FindJobs() {
                 </button>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Today filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowTodayOnly(!showTodayOnly)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+              showTodayOnly
+                ? "bg-red-500 text-white border-red-500 shadow-sm"
+                : "border-red-300 text-red-600 hover:bg-red-50"
+            }`}
+          >
+            <Flame className="h-3.5 w-3.5" />
+            עבודות להיום
+          </button>
+          {showTodayOnly && (
+            <button
+              onClick={() => navigate("/jobs-today")}
+              className="text-xs text-red-600 underline underline-offset-2 hover:text-red-700"
+            >
+              עמוד עבודות להיום המלא ←
+            </button>
           )}
         </div>
 

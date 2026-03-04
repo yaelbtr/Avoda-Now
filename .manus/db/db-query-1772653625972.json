@@ -1,0 +1,140 @@
+{
+  "query": "SELECT COLUMN_NAME, DATA_TYPE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'jobs' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT COLUMN_NAME, DATA_TYPE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'jobs' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "DATA_TYPE": "text",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "category",
+      "DATA_TYPE": "enum",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "address",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "latitude",
+      "DATA_TYPE": "decimal",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "longitude",
+      "DATA_TYPE": "decimal",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "salary",
+      "DATA_TYPE": "decimal",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "salaryType",
+      "DATA_TYPE": "enum",
+      "COLUMN_DEFAULT": "hourly"
+    },
+    {
+      "COLUMN_NAME": "contactPhone",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "contactName",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "businessName",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "workingHours",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "startTime",
+      "DATA_TYPE": "enum",
+      "COLUMN_DEFAULT": "flexible"
+    },
+    {
+      "COLUMN_NAME": "workersNeeded",
+      "DATA_TYPE": "int",
+      "COLUMN_DEFAULT": "1"
+    },
+    {
+      "COLUMN_NAME": "postedBy",
+      "DATA_TYPE": "int",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "status",
+      "DATA_TYPE": "enum",
+      "COLUMN_DEFAULT": "active"
+    },
+    {
+      "COLUMN_NAME": "createdAt",
+      "DATA_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    },
+    {
+      "COLUMN_NAME": "updatedAt",
+      "DATA_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    },
+    {
+      "COLUMN_NAME": "city",
+      "DATA_TYPE": "varchar",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "activeDuration",
+      "DATA_TYPE": "enum",
+      "COLUMN_DEFAULT": "1"
+    },
+    {
+      "COLUMN_NAME": "expiresAt",
+      "DATA_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "reportCount",
+      "DATA_TYPE": "int",
+      "COLUMN_DEFAULT": "0"
+    },
+    {
+      "COLUMN_NAME": "jobTags",
+      "DATA_TYPE": "json",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "startDateTime",
+      "DATA_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "isUrgent",
+      "DATA_TYPE": "tinyint",
+      "COLUMN_DEFAULT": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tDATA_TYPE\tCOLUMN_DEFAULT\nid\tint\tNULL\ntitle\tvarchar\tNULL\ndescription\ttext\tNULL\ncategory\tenum\tNULL\naddress\tvarchar\tNULL\nlatitude\tdecimal\tNULL\nlongitude\tdecimal\tNULL\nsalary\tdecimal\tNULL\nsalaryType\tenum\thourly\ncontactPhone\tvarchar\tNULL\ncontactName\tvarchar\tNULL\nbusinessName\tvarchar\tNULL\nworkingHours\tvarchar\tNULL\nstartTime\tenum\tflexible\nworkersNeeded\tint\t1\npostedBy\tint\tNULL\nstatus\tenum\tactive\ncreatedAt\ttimestamp\tCURRENT_TIMESTAMP\nupdatedAt\ttimestamp\tCURRENT_TIMESTAMP\ncity\tvarchar\tNULL\nactiveDuration\tenum\t1\nexpiresAt\ttimestamp\tNULL\nreportCount\tint\t0\njobTags\tjson\tNULL\nstartDateTime\ttimestamp\tNULL\nisUrgent\ttinyint\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1505
+}

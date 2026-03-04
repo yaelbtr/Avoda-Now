@@ -116,3 +116,6 @@
 ## Hebrew SMS Locale
 - [x] Add Locale=he to Twilio Verify sendOtp request
 - [x] Add CustomFriendlyName=JobNow to Twilio Verify sendOtp request
+
+## Bug Fix — OTP Send Failure After Hebrew Locale Change
+- [x] Fixed: Twilio error 60204 — removed CustomFriendlyName (not supported on standard Verify service), kept Locale=he

@@ -45,14 +45,15 @@ describe("TwilioVerifyProvider.sendOtp", () => {
     expect(body.get("Locale")).toBe("he");
   });
 
-  it("sends CustomFriendlyName=JobNow in the request body", async () => {
+  it("does not send CustomFriendlyName (not supported by default Verify service)", async () => {
     mockFetch.mockResolvedValue(makeSuccessResponse());
 
     await smsProvider.sendOtp("+972501234567");
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = new URLSearchParams(init.body as string);
-    expect(body.get("CustomFriendlyName")).toBe("JobNow");
+    // CustomFriendlyName causes error 60204 on standard Verify services
+    expect(body.get("CustomFriendlyName")).toBeNull();
   });
 
   it("sends Channel=sms in the request body", async () => {

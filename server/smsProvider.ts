@@ -68,7 +68,6 @@ class TwilioVerifyProvider implements SmsProvider {
           To: phone,
           Channel: "sms",
           Locale: "he",
-          CustomFriendlyName: "JobNow",
         }).toString(),
       });
 

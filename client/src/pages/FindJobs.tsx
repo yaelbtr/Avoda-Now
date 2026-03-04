@@ -114,78 +114,43 @@ export default function FindJobs() {
       <h1 className="text-2xl font-bold text-foreground mb-6 text-right">חפש עבודה</h1>
 
       {/* Filters */}
-      <div className="bg-card rounded-xl border border-border p-4 mb-6 space-y-4">
-        {/* Search text — icon on RIGHT for RTL */}
+      <div className="bg-card rounded-xl border border-border p-4 mb-6 space-y-5" dir="rtl">
+
+        {/* 1. Search */}
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="שליחויות, מחסן, חקלאות, מטבח..."
+            placeholder="חפש לפי תפקיד, עיר או מילת מפתח..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="pr-10 text-right"
           />
         </div>
 
-        {/* Location */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            variant={userLat ? "default" : "outline"}
-            size="sm"
-            onClick={getLocation}
-            disabled={locating}
-            className="gap-2 shrink-0"
-          >
-            {locating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LocateFixed className="h-4 w-4" />
-            )}
-            {userLat ? "מיקום פעיל" : "השתמש במיקום שלי"}
-          </Button>
-          {userLat && (
-            <div className="flex gap-1.5 flex-wrap">
-              {RADIUS_OPTIONS.map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => setRadiusKm(r.value)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    radiusKm === r.value
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Unified urgent-today filter */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* 2. Quick filter: urgent today */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">סינון מהיר</p>
           <button
             onClick={() => setShowUrgentToday(!showUrgentToday)}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
               showUrgentToday
-                ? "bg-red-500 text-white border-red-500 shadow-md"
-                : "border-red-400 text-red-600 hover:bg-red-50"
+                ? "bg-red-500 text-white border-red-500 shadow-sm"
+                : "border-red-300 text-red-600 bg-red-50 hover:bg-red-100"
             }`}
           >
             <Flame className="h-4 w-4" />
             דחוף להיום
+            <span className="text-xs font-normal opacity-80">— עבודות דחופות ועבודות שמתחילות היום</span>
           </button>
-          {showUrgentToday && (
-            <span className="text-xs text-muted-foreground">
-              מציג עבודות דחופות ועבודות שמתחילות בשעות הקרובות
-            </span>
-          )}
         </div>
 
-        {/* Category filter — includes special highlighted categories */}
+        {/* Divider */}
+        <hr className="border-border" />
+
+        {/* 3. Category */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2 text-right">קטגוריה</p>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">קטגוריה</p>
           <div className="flex flex-wrap gap-1.5">
-            {/* "All" chip */}
             <button
               onClick={() => setCategory("all")}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
@@ -196,8 +161,6 @@ export default function FindJobs() {
             >
               הכל
             </button>
-
-            {/* Regular categories */}
             {JOB_CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
@@ -211,8 +174,13 @@ export default function FindJobs() {
                 {cat.icon} {cat.label}
               </button>
             ))}
+          </div>
+        </div>
 
-            {/* Special highlighted categories — rendered once, dynamically */}
+        {/* 4. Special categories — wartime / Passover / volunteer */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">קטגוריות מיוחדות</p>
+          <div className="flex flex-wrap gap-2">
             {SPECIAL_CATEGORIES.map((cat) => {
               const colorMap: Record<string, { active: string; inactive: string }> = {
                 purple: { active: "bg-purple-600 text-white border-purple-600", inactive: "border-purple-400 text-purple-700 bg-purple-50 hover:bg-purple-100" },
@@ -225,7 +193,7 @@ export default function FindJobs() {
                 <button
                   key={cat.value}
                   onClick={() => setCategory(isActive ? "all" : cat.value)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-colors ${
                     isActive ? colors.active : colors.inactive
                   }`}
                 >
@@ -235,6 +203,41 @@ export default function FindJobs() {
             })}
           </div>
         </div>
+
+        {/* 5. Location */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">מיקום</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant={userLat ? "default" : "outline"}
+              size="sm"
+              onClick={getLocation}
+              disabled={locating}
+              className="gap-2 shrink-0"
+            >
+              {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+              {userLat ? "מיקום פעיל" : "אתר עבודות קרוב אלי"}
+            </Button>
+            {userLat && (
+              <div className="flex gap-1.5 flex-wrap">
+                {RADIUS_OPTIONS.map((r) => (
+                  <button
+                    key={r.value}
+                    onClick={() => setRadiusKm(r.value)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      radiusKm === r.value
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* Results header */}

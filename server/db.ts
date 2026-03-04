@@ -638,3 +638,66 @@ export async function getActivityFeed(limit = 20) {
   feed.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   return feed.slice(0, limit);
 }
+
+// ─── Worker Notifications ─────────────────────────────────────────────────────
+
+/**
+ * Find workers who have set a preferredCategory matching the given job category,
+ * and optionally a preferredCity matching the job city.
+ * Returns up to `limit` workers that have a phone number (required for SMS).
+ *
+ * Matching rules:
+ *  - Category: worker's preferredCategories JSON array contains the job category
+ *  - City: worker's preferredCity equals the job city (case-insensitive), OR job city is null
+ *  - Worker must have a phone number to receive the SMS
+ *  - Excludes the job poster themselves
+ */
+export async function getWorkersMatchingJob(
+  jobCategory: string,
+  jobCity: string | null | undefined,
+  excludeUserId: number,
+  limit = 100
+): Promise<Array<{ id: number; phone: string; name: string | null; preferredCity: string | null }>> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows = await db
+    .select({
+      id: users.id,
+      phone: users.phone,
+      name: users.name,
+      preferredCity: users.preferredCity,
+      preferredCategories: users.preferredCategories,
+    })
+    .from(users)
+    .where(
+      and(
+        eq(users.userMode, "worker"),
+        eq(users.status, "active"),
+        sql`${users.phone} IS NOT NULL`,
+        sql`${users.preferredCategories} IS NOT NULL`,
+        sql`${users.id} != ${excludeUserId}`
+      )
+    )
+    .limit(500); // fetch a wider set, then filter in JS for JSON array matching
+
+  // Filter by category match (JSON array contains jobCategory)
+  const categoryMatches = rows.filter((r) => {
+    const cats = r.preferredCategories as string[] | null;
+    return Array.isArray(cats) && cats.includes(jobCategory);
+  });
+
+  // Filter by city match if job has a city
+  const cityMatches = jobCity
+    ? categoryMatches.filter(
+        (r) =>
+          !r.preferredCity ||
+          r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
+      )
+    : categoryMatches;
+
+  return cityMatches
+    .filter((r) => !!r.phone)
+    .slice(0, limit)
+    .map((r) => ({ id: r.id, phone: r.phone!, name: r.name, preferredCity: r.preferredCity }));
+}

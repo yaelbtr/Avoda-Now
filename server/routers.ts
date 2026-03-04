@@ -37,7 +37,9 @@ import {
   getWorkerProfile,
   updateWorkerProfile,
   clearUserMode,
+  getWorkersMatchingJob,
 } from "./db";
+import { sendJobAlerts } from "./sms";
 import {
   adminApproveJob,
   adminBlockUser,
@@ -296,6 +298,20 @@ const jobsRouter = router({
         status: "active",
         jobTags: input.jobTags ?? [input.category],
       });
+
+      // Fire-and-forget: notify matching workers via SMS (does not block the response)
+      getWorkersMatchingJob(input.category, city, ctx.user.id)
+        .then((workers) =>
+          sendJobAlerts(
+            workers,
+            { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id }
+          )
+        )
+        .then((sent) => {
+          if (sent > 0) console.log(`[JobAlert] Sent SMS to ${sent} matching workers for job #${job.id}`);
+        })
+        .catch((err) => console.warn("[JobAlert] Error sending job alerts:", err));
+
       return job;
     }),
 

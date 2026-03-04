@@ -314,3 +314,6 @@
 - [x] Route Home.tsx to correct home based on userMode
 - [x] Fix: Google Maps JS API loaded multiple times on /post-job causing errors
 - [x] Preload Google Maps script in background immediately after user login
+- [x] Geocoding cache: save results in sessionStorage to avoid duplicate calls
+- [x] Dynamic Navbar per role: worker sees Find/Today/Profile, employer sees PostJob/MyJobs/Workers
+- [x] Push notifications to workers when a new job matches their preferred category and area

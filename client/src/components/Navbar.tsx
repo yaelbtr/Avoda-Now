@@ -34,23 +34,24 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
 
-  // Worker nav links
+  // Worker nav links (desktop — shown in top bar)
   const workerLinks = [
-    { href: "/find-jobs", label: "חפש עבודה", icon: "🔍" },
-    { href: "/jobs-today", label: "עבודות להיום", icon: "🔥" },
+    { href: "/find-jobs", label: "חפש עבודה" },
+    { href: "/jobs-today", label: "עבודות להיום" },
+    { href: "/worker-profile", label: "פרופיל" },
   ];
 
   // Employer nav links
   const employerLinks = [
-    { href: "/post-job", label: "פרסם משרה", icon: "➕" },
-    { href: "/available-workers", label: "עובדים זמינים", icon: "👥" },
-    { href: "/my-jobs", label: "המשרות שלי", icon: "📋" },
+    { href: "/post-job", label: "פרסם משרה" },
+    { href: "/my-jobs", label: "המשרות שלי" },
+    { href: "/available-workers", label: "עובדים זמינים" },
   ];
 
   // Guest / no-mode links
   const guestLinks = [
-    { href: "/find-jobs", label: "חפש עבודה", icon: "🔍" },
-    { href: "/post-job", label: "פרסם משרה", icon: "➕" },
+    { href: "/find-jobs", label: "חפש עבודה" },
+    { href: "/post-job", label: "פרסם משרה" },
   ];
 
   const navLinks = !isAuthenticated
@@ -98,7 +99,7 @@ export default function Navbar() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
-                    {link.icon} {link.label}
+                    {link.label}
                   </span>
                 </Link>
               ))}
@@ -258,7 +259,7 @@ export default function Navbar() {
                     }`}
                     onClick={() => setMobileOpen(false)}
                   >
-                    {link.icon} {link.label}
+                    {link.label}
                   </span>
                 </Link>
               ))}

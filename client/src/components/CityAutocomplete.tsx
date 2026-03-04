@@ -4,6 +4,8 @@
  * Uses the Google Maps Places library (already loaded by Map.tsx proxy) to provide
  * real-time city suggestions as the user types. Falls back to a plain input if the
  * Maps API is unavailable.
+ *
+ * Geocoding results are cached in sessionStorage to avoid duplicate API calls.
  */
 
 /// <reference types="@types/google.maps" />
@@ -12,6 +14,32 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, X } from "lucide-react";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
+
+// ─── sessionStorage geocoding cache ─────────────────────────────────────────
+
+const GEO_CACHE_PREFIX = "geo_cache_";
+
+interface GeoResult {
+  lat: number;
+  lng: number;
+  city: string;
+}
+
+function getCachedGeo(placeId: string): GeoResult | null {
+  try {
+    const raw = sessionStorage.getItem(GEO_CACHE_PREFIX + placeId);
+    if (raw) return JSON.parse(raw) as GeoResult;
+  } catch {}
+  return null;
+}
+
+function setCachedGeo(placeId: string, result: GeoResult) {
+  try {
+    sessionStorage.setItem(GEO_CACHE_PREFIX + placeId, JSON.stringify(result));
+  } catch {}
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Suggestion {
   placeId: string;
@@ -27,6 +55,8 @@ interface CityAutocompleteProps {
   className?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function CityAutocomplete({
   value,
@@ -123,14 +153,27 @@ export default function CityAutocomplete({
     setSuggestions([]);
     setShowDropdown(false);
 
-    // Geocode the selected place to get lat/lng
+    // Check sessionStorage cache first — avoids a round-trip to the Geocoding API
+    const cached = getCachedGeo(suggestion.placeId);
+    if (cached) {
+      onSelect(cached.city, cached.lat, cached.lng);
+      return;
+    }
+
+    // Not cached — call Geocoding API and store result
     if (geocoder.current) {
       geocoder.current.geocode(
         { placeId: suggestion.placeId },
         (results, status) => {
           if (status === "OK" && results && results[0]) {
             const loc = results[0].geometry.location;
-            onSelect(suggestion.mainText, loc.lat(), loc.lng());
+            const result: GeoResult = {
+              city: suggestion.mainText,
+              lat: loc.lat(),
+              lng: loc.lng(),
+            };
+            setCachedGeo(suggestion.placeId, result);
+            onSelect(result.city, result.lat, result.lng);
           }
         }
       );

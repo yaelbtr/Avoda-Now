@@ -2,6 +2,11 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
+// Mock sms module to prevent real SMS sends in tests
+vi.mock("./sms", () => ({
+  sendJobAlerts: vi.fn().mockResolvedValue(0),
+}));
+
 // Mock all DB helpers
 vi.mock("./db", () => ({
   countActiveJobsByUser: vi.fn(),
@@ -14,6 +19,7 @@ vi.mock("./db", () => ({
   deleteJob: vi.fn(),
   updateJob: vi.fn(),
   reportJob: vi.fn(),
+  getWorkersMatchingJob: vi.fn().mockResolvedValue([]),
   createOtp: vi.fn(),
   getValidOtp: vi.fn(),
   markOtpUsed: vi.fn(),

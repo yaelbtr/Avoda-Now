@@ -21,6 +21,7 @@ export default function Navbar() {
     { href: "/", label: "בית" },
     { href: "/find-jobs", label: "חפש עבודה" },
     { href: "/jobs-today", label: "🔥 להיום" },
+    { href: "/available-workers", label: "👥 עובדים זמינים" },
     { href: "/post-job", label: "פרסם משרה" },
   ];
 

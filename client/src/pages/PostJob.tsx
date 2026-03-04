@@ -33,6 +33,7 @@ const schema = z.object({
   startDateTime: z.string().optional(),
   workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
+  isUrgent: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -85,6 +86,7 @@ export default function PostJob() {
   });
 
   const salaryType = watch("salaryType");
+  const isUrgent = watch("isUrgent");
 
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
@@ -185,6 +187,7 @@ export default function PostJob() {
       startDateTime: data.startDateTime ? new Date(data.startDateTime).toISOString() : undefined,
       workersNeeded: parseInt(data.workersNeeded),
       activeDuration: data.activeDuration,
+      isUrgent: data.isUrgent ?? false,
     });
   };
 
@@ -427,10 +430,28 @@ export default function PostJob() {
             </p>
           </div>
 
+          {/* Urgent toggle */}
+          <div
+            onClick={() => setValue("isUrgent", !isUrgent)}
+            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isUrgent ? "border-red-400 bg-red-50" : "border-border hover:border-red-300"}`}
+          >
+            <div>
+              <p className={`font-semibold text-sm ${isUrgent ? "text-red-700" : "text-foreground"}`}>
+                ⚡ צריך עובד עכשיו — משרה דחופה
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                יוצג ראשון ברשימה · תפוג אחרי 12 שעות
+              </p>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isUrgent ? "border-red-500 bg-red-500" : "border-muted-foreground"}`}>
+              {isUrgent && <span className="text-white text-xs">✓</span>}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>משך פרסום</Label>
-              <Select defaultValue="7" onValueChange={(v) => setValue("activeDuration", v as "1" | "3" | "7")}>
+              <Select defaultValue="1" onValueChange={(v) => setValue("activeDuration", v as "1" | "3" | "7")}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>

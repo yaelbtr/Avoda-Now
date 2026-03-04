@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
   Briefcase, DollarSign, Loader2, AlertCircle, Flag, CheckCircle2,
-  Lock, Copy,
+  Lock, Copy, Zap, Timer,
 } from "lucide-react";
 import {
   getCategoryIcon, getCategoryLabel, formatSalary,
@@ -60,7 +60,7 @@ export default function JobDetails() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const jobId = parseInt(params.id ?? "0");
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const { data: job, isLoading, error } = trpc.jobs.getById.useQuery(
     { id: jobId },
@@ -85,6 +85,11 @@ export default function JobDetails() {
 
   const reportMutation = trpc.jobs.report.useMutation({
     onSuccess: () => { setReported(true); setReportOpen(false); toast.success("הדיווח נשלח. תודה!"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const markFilledMutation = trpc.jobs.markFilled.useMutation({
+    onSuccess: () => { toast.success("המשרה סוגרה בהצלחה! 🎉"); navigate("/my-jobs"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -148,6 +153,22 @@ export default function JobDetails() {
       })()
     : null;
 
+  const isOwner = isAuthenticated && user?.id === job.postedBy;
+
+  // Expiry countdown
+  const expiryMs = job.expiresAt ? new Date(job.expiresAt).getTime() - Date.now() : null;
+  const expiryText = expiryMs !== null
+    ? expiryMs <= 0 ? "פג תוקף"
+      : expiryMs < 3600000 ? `פג תוקף בעוד ${Math.floor(expiryMs / 60000)} דקות`
+      : expiryMs < 21600000 ? `פג תוקף בעוד ${Math.floor(expiryMs / 3600000)} שעות`
+      : null
+    : null;
+
+  // WhatsApp share with proper format
+  const shareJobText = encodeURIComponent(
+    "עבודה זמנית:" + "\n" + job.title + "\n" + (job.city ?? job.address.split(",")[0]) + "\n" + (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
+  );
+
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
@@ -173,11 +194,23 @@ export default function JobDetails() {
               <p className="text-base text-muted-foreground mt-0.5">{job.businessName}</p>
             )}
             <div className="flex flex-wrap gap-2 mt-2">
+              {job.isUrgent && (
+                <Badge className="bg-red-500 text-white gap-1 flex items-center">
+                  <Zap className="h-3 w-3 fill-white" />
+                  דחוף — צריך עובד עכשיו
+                </Badge>
+              )}
               <Badge variant="secondary">{getCategoryLabel(job.category)}</Badge>
               <Badge variant={job.status === "active" ? "default" : "secondary"}>
                 {job.status === "active" ? "פעיל" : job.status === "under_review" ? "בבדיקה" : "סגור"}
               </Badge>
               {isVolunteer && <Badge className="bg-green-100 text-green-700 border-green-200">💚 התנדבות</Badge>}
+              {expiryText && (
+                <Badge className="bg-orange-100 text-orange-700 border-orange-200 gap-1 flex items-center">
+                  <Timer className="h-3 w-3" />
+                  {expiryText}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -305,17 +338,36 @@ export default function JobDetails() {
 
         {/* Share button — always visible */}
         <a
-          href={`https://wa.me/?text=${shareText}`}
+          href={`https://wa.me/?text=${shareJobText}`}
           target="_blank"
           rel="noopener noreferrer"
           className="block mt-2"
         >
           <Button size="lg" variant="ghost" className="w-full gap-2 text-muted-foreground">
             <Share2 className="h-5 w-5" />
-            שתף משרה זו בוואטסאפ
+            שתף עבודה ב-WhatsApp
           </Button>
         </a>
       </div>
+
+      {/* Mark as filled — only for job owner */}
+      {isOwner && job.status === "active" && (
+        <div className="mb-4">
+          <Button
+            size="lg"
+            className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => markFilledMutation.mutate({ id: job.id })}
+            disabled={markFilledMutation.isPending}
+          >
+            {markFilledMutation.isPending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <CheckCircle2 className="h-5 w-5" />
+            )}
+            מצאתי עובד — סגור משרה
+          </Button>
+        </div>
+      )}
 
       {/* Duplicate job button */}
       <div className="mb-4">

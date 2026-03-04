@@ -11,13 +11,19 @@ import {
   checkAndIncrementVerifyAttempts,
   countActiveJobsByUser,
   createJob,
-  createUserByPhone,
   deleteJob,
   getActiveJobs,
   getJobById,
   getJobsNearLocation,
   getMyJobs,
   getTodayJobs,
+  getUrgentJobs,
+  markJobFilled,
+  setWorkerAvailable,
+  setWorkerUnavailable,
+  getWorkerAvailability,
+  getNearbyWorkers,
+  createUserByPhone,
   getUserByPhone,
   reportJob,
   resetRateLimit,
@@ -197,7 +203,8 @@ const jobInputSchema = z.object({
   workingHours: z.string().optional(),
   startTime: z.enum(["today", "tomorrow", "this_week", "flexible"]).default("flexible"),
   workersNeeded: z.number().int().min(1).default(1),
-  activeDuration: z.enum(["1", "3", "7"]).default("7"),
+  activeDuration: z.enum(["1", "3", "7"]).default("1"),
+  isUrgent: z.boolean().default(false),
   jobTags: z.array(z.string()).optional(),
   /** ISO string for exact start date/time */
   startDateTime: z.string().datetime({ offset: true }).optional(),
@@ -249,8 +256,12 @@ const jobsRouter = router({
         });
       }
 
+      // Urgent jobs expire in 12h, normal jobs use activeDuration (default 1 day)
       const durationDays = parseInt(input.activeDuration);
-      const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+      const expiresMs = input.isUrgent
+        ? 12 * 60 * 60 * 1000
+        : durationDays * 24 * 60 * 60 * 1000;
+      const expiresAt = new Date(Date.now() + expiresMs);
       const city = input.city ?? input.address.split(",")[0].trim();
 
       const job = await createJob({
@@ -260,6 +271,7 @@ const jobsRouter = router({
         longitude: input.longitude.toString(),
         salary: input.salary?.toString(),
         expiresAt,
+        isUrgent: input.isUrgent ?? false,
         startDateTime: input.startDateTime ? new Date(input.startDateTime) : null,
         postedBy: ctx.user.id,
         status: "active",
@@ -311,6 +323,26 @@ const jobsRouter = router({
       const jobs = await getTodayJobs(input.limit ?? 50, input.category);
       if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
       return jobs;
+    }),
+
+  /** Urgent jobs (isUrgent=true), sorted by newest */
+  listUrgent: publicProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input, ctx }) => {
+      const jobs = await getUrgentJobs(input.limit ?? 20);
+      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
+      return jobs;
+    }),
+
+  /** Mark a job as filled — only the job owner can do this */
+  markFilled: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const job = await getJobById(input.id);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND" });
+      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+      await markJobFilled(input.id, ctx.user.id);
+      return { success: true };
     }),
 
   report: publicProcedure
@@ -396,12 +428,68 @@ const adminRouter = router({
     .mutation(async ({ input }) => { await adminSetUserRole(input.userId, input.role); return { success: true }; }),
 });
 
+// ─── Workers Router ──────────────────────────────────────────────────────────
+
+const workersRouter = router({
+  /** Set current user as available to work */
+  setAvailable: protectedProcedure
+    .input(z.object({
+      latitude: z.number(),
+      longitude: z.number(),
+      city: z.string().optional(),
+      note: z.string().max(200).optional(),
+      durationHours: z.number().default(4),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const availableUntil = new Date(Date.now() + input.durationHours * 60 * 60 * 1000);
+      await setWorkerAvailable({
+        userId: ctx.user.id,
+        latitude: input.latitude.toString(),
+        longitude: input.longitude.toString(),
+        city: input.city ?? null,
+        note: input.note ?? null,
+        availableUntil,
+      });
+      return { success: true, availableUntil };
+    }),
+
+  /** Remove current user's availability */
+  setUnavailable: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      await setWorkerUnavailable(ctx.user.id);
+      return { success: true };
+    }),
+
+  /** Get current user's availability status */
+  myStatus: protectedProcedure
+    .query(async ({ ctx }) => {
+      const status = await getWorkerAvailability(ctx.user.id);
+      return status;
+    }),
+
+  /** Get available workers near a location (for employers) */
+  nearby: publicProcedure
+    .input(z.object({
+      lat: z.number(),
+      lng: z.number(),
+      radiusKm: z.number().default(20),
+      limit: z.number().optional(),
+    }))
+    .query(async ({ input, ctx }) => {
+      const workers = await getNearbyWorkers(input.lat, input.lng, input.radiusKm, input.limit ?? 50);
+      // Only show phone to authenticated users
+      if (!ctx.user) return workers.map(w => ({ ...w, userPhone: null }));
+      return workers;
+    }),
+});
+
 // ─── App Router ───────────────────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
   jobs: jobsRouter,
+  workers: workersRouter,
   admin: adminRouter,
 });
 

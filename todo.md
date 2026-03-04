@@ -217,3 +217,26 @@
 - [ ] UI: "אני פנוי לעבוד עכשיו" prominent button on homepage
 - [ ] UI: PostJob — urgent toggle "צריך עובד עכשיו" (sets isUrgent=true, 12h expiry)
 - [ ] UI: PostJob — default activeDuration = 1 day
+
+## Completed (Mar 4 2026)
+- [x] Auth fix: JWT now uses openId/appId/name fields matching sdk.verifySession
+- [x] Auth fix: invalidateQueries after OTP login so UI refreshes immediately
+- [x] DB schema: isUrgent, reminderSentAt, closedReason, startDateTime fields
+- [x] DB schema: workerAvailability table
+- [x] Server: listUrgent procedure (isUrgent=true jobs)
+- [x] Server: markFilled procedure (owner closes job)
+- [x] Server: workers router (setAvailable, setUnavailable, myStatus, nearby)
+- [x] Server: urgent jobs expire in 12h, normal in activeDuration days
+- [x] Homepage: full redesign with hero, urgent jobs section, today jobs, categories, how-it-works
+- [x] Homepage: availability toggle button "אני פנוי לעבוד עכשיו"
+- [x] JobCard: urgent badge (red "דחוף"), today badge (orange "להיום"), relative time, expiry countdown
+- [x] JobCard: WhatsApp share with proper format (job title, location, salary, URL)
+- [x] JobCard: direct call and WhatsApp contact buttons
+- [x] JobDetails: urgent badge, expiry countdown, mark-filled button for owner
+- [x] JobDetails: WhatsApp share with proper message format
+- [x] PostJob: isUrgent toggle "צריך עובד עכשיו"
+- [x] PostJob: activeDuration default changed to 1 day
+- [x] FindJobs: urgent filter "⚡ דחוף עכשיו", urgent jobs sorted to top
+- [x] /available-workers page for employers to see nearby available workers
+- [x] Navbar: added "עובדים זמינים" link
+- [x] Tests: 83 tests passing (7 test files)

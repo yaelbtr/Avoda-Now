@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
+import AvailableWorkers from "./pages/AvailableWorkers";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/privacy" component={Privacy} />
           <Route path="/admin" component={Admin} />
           <Route path="/jobs-today" component={JobsToday} />
+          <Route path="/available-workers" component={AvailableWorkers} />
           <Route path="/404" component={NotFound} />
           <Route component={NotFound} />
         </Switch>

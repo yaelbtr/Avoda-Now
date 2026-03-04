@@ -22,6 +22,7 @@ export default function FindJobs() {
   const [locating, setLocating] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showTodayOnly, setShowTodayOnly] = useState(false);
+  const [showUrgentOnly, setShowUrgentOnly] = useState(params.get("urgent") === "1");
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [, navigate] = useLocation();
@@ -89,6 +90,18 @@ export default function FindJobs() {
     );
   }
 
+  // Filter urgent only
+  if (showUrgentOnly) {
+    jobs = jobs.filter((j) => (j as { isUrgent?: boolean | null }).isUrgent);
+  }
+
+  // Sort urgent jobs to top
+  jobs = [...jobs].sort((a, b) => {
+    const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+    const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+    return bUrgent - aUrgent;
+  });
+
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold text-foreground mb-6 text-right">חפש עבודה</h1>
@@ -141,8 +154,18 @@ export default function FindJobs() {
           )}
         </div>
 
-        {/* Today filter */}
+        {/* Urgent + Today filters */}
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowUrgentOnly(!showUrgentOnly)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+              showUrgentOnly
+                ? "bg-red-500 text-white border-red-500 shadow-sm"
+                : "border-red-300 text-red-600 hover:bg-red-50"
+            }`}
+          >
+            ⚡ דחוף עכשיו
+          </button>
           <button
             onClick={() => setShowTodayOnly(!showTodayOnly)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${

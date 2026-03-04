@@ -5,16 +5,33 @@ import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { JOB_CATEGORIES } from "@shared/categories";
-import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame } from "lucide-react";
+import { Search, Briefcase, MapPin, Loader2, ChevronLeft, MessageCircle, Flame, Zap, CheckCircle2, Users, Phone } from "lucide-react";
+
+const CATEGORIES = [
+  { value: "kitchen", label: "מסעדות", icon: "🍳" },
+  { value: "warehouse", label: "מחסנים", icon: "📦" },
+  { value: "delivery", label: "שליחויות", icon: "🚴" },
+  { value: "events", label: "אירועים", icon: "🎉" },
+  { value: "retail", label: "חנויות", icon: "🛍️" },
+  { value: "cleaning", label: "ניקיון", icon: "🧹" },
+  { value: "construction", label: "בנייה", icon: "🏗️" },
+  { value: "agriculture", label: "חקלאות", icon: "🌾" },
+];
+
+const HOW_IT_WORKS = [
+  { icon: Search, step: "1", title: "מצא עבודה", desc: "חפש לפי קטגוריה, מיקום, או עיין בעבודות הדחופות" },
+  { icon: Phone, step: "2", title: "צור קשר", desc: "התקשר ישירות למעסיק או שלח הודעת WhatsApp בלחיצה אחת" },
+  { icon: CheckCircle2, step: "3", title: "התחל לעבוד", desc: "הגע למקום ותתחיל לעבוד — לרוב עוד באותו יום" },
+];
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);
@@ -22,23 +39,12 @@ export default function Home() {
   };
 
   const handlePostJob = () => {
-    if (!isAuthenticated) {
-      requireLogin("כדי לפרסם משרה יש להתחבר למערכת");
-      return;
-    }
+    if (!isAuthenticated) { requireLogin("כדי לפרסם משרה יש להתחבר למערכת"); return; }
     navigate("/post-job");
   };
 
   const handleWhatsAppPublish = () => {
-    const message = encodeURIComponent(
-      `שלום, אני רוצה לפרסם עבודה:
-
-שם העסק:
-סוג העבודה:
-מיקום:
-שכר:
-טלפון ליצירת קשר:`
-    );
+    const message = encodeURIComponent(`שלום, אני רוצה לפרסם עבודה:\n\nשם העסק:\nסוג העבודה:\nמיקום:\nשכר:\nטלפון ליצירת קשר:`);
     window.open(`https://wa.me/?text=${message}`, "_blank");
   };
 
@@ -51,42 +57,83 @@ export default function Home() {
     }
   }, []);
 
+  const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
+  const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
   const nearbyQuery = trpc.jobs.search.useQuery(
     { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: 20, limit: 6 },
     { enabled: true }
   );
-
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
-  const todayQuery = trpc.jobs.listToday.useQuery({ limit: 3 });
+  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
+  const setAvailableMutation = trpc.workers.setAvailable.useMutation({
+    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
+    onError: () => setAvailabilityLoading(false),
+  });
+  const setUnavailableMutation = trpc.workers.setUnavailable.useMutation({
+    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
+    onError: () => setAvailabilityLoading(false),
+  });
 
+  const urgentJobs = urgentQuery.data ?? [];
+  const todayJobs = todayQuery.data ?? [];
   const jobs = userLat ? (nearbyQuery.data ?? []) : (latestQuery.data ?? []);
   const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
-  const todayJobs = todayQuery.data ?? [];
+  const isAvailable = !!workerStatusQuery.data;
+
+  const handleAvailabilityToggle = () => {
+    if (!isAuthenticated) { requireLogin("כדי לסמן זמינות יש להתחבר למערכת"); return; }
+    setAvailabilityLoading(true);
+    if (isAvailable) {
+      setUnavailableMutation.mutate();
+    } else {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setAvailableMutation.mutate({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              city: undefined,
+              durationHours: 4,
+            });
+          },
+          () => {
+            // Fallback: use default Israel center
+            setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: 4 });
+          }
+        );
+      } else {
+        setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: 4 });
+      }
+    }
+  };
 
   return (
     <div dir="rtl">
-      {/* Hero */}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="hero-gradient text-white">
-        <div className="max-w-2xl mx-auto px-4 py-14 text-center">
+        <div className="max-w-2xl mx-auto px-4 py-12 text-center">
           <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-1.5 text-sm font-medium mb-5">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            לוח דרושים פעיל
+            לוח דרושים פעיל — עבודות מיידיות
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
-            מצא עבודה או עובדים{" "}
-            <span className="text-yellow-300">עכשיו</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
+            עבודות זמניות באזור שלך
+            <br />
+            <span className="text-yellow-300">– להתחיל היום</span>
           </h1>
-          <p className="text-lg text-white/80 mb-8 max-w-md mx-auto">
-            עבודות זמניות, שליחויות, חקלאות, מטבח ועוד — קרוב אליך
+          <p className="text-base text-white/80 mb-7 max-w-md mx-auto">
+            חבר בין מעסיקים שצריכים עובדים עכשיו לאנשים שפנויים לעבוד עכשיו
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
+
+          {/* Main CTA buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-4">
             <Button
               size="lg"
               className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2"
               onClick={() => navigate("/find-jobs")}
             >
               <Search className="h-5 w-5" />
-              אני מחפש עבודה
+              אני מחפש עבודה עכשיו
             </Button>
             <Button
               size="lg"
@@ -94,31 +141,50 @@ export default function Home() {
               className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2"
               onClick={handlePostJob}
             >
-              <Briefcase className="h-5 w-5" />
-              אני מחפש עובדים
+              <Zap className="h-5 w-5" />
+              פרסם עבודה דחופה
             </Button>
           </div>
-          {/* WhatsApp publish shortcut */}
-          <div className="mt-4">
+
+          {/* Availability toggle */}
+          <button
+            onClick={handleAvailabilityToggle}
+            disabled={availabilityLoading}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border-2 ${
+              isAvailable
+                ? "bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/30"
+                : "bg-white/10 border-white/30 text-white hover:bg-white/20"
+            }`}
+          >
+            {availabilityLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? "bg-white animate-pulse" : "bg-white/50"}`} />
+            )}
+            {isAvailable ? "✅ אני פנוי לעבוד עכשיו — לחץ לביטול" : "🟢 אני פנוי לעבוד עכשיו"}
+          </button>
+
+          {/* WhatsApp shortcut */}
+          <div className="mt-3">
             <button
               onClick={handleWhatsAppPublish}
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors underline-offset-2 hover:underline"
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors"
             >
-              <MessageCircle className="h-4 w-4 text-green-400" />
+              <MessageCircle className="h-3.5 w-3.5 text-green-400" />
               פרסם עבודה דרך WhatsApp
             </button>
           </div>
         </div>
       </section>
 
-      {/* Stats bar */}
+      {/* ── Stats bar ────────────────────────────────────────────────────── */}
       <section className="bg-white border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex justify-around text-center">
             {[
-              { label: "משרות פעילות", value: "500+" },
-              { label: "מעסיקים", value: "200+" },
-              { label: "עובדים מצאו עבודה", value: "1,000+" },
+              { label: "עובדים מצאו עבודה", value: "+1,000" },
+              { label: "מעסיקים", value: "+200" },
+              { label: "משרות פעילות", value: "+500" },
             ].map((stat) => (
               <div key={stat.label}>
                 <div className="text-xl font-bold text-primary">{stat.value}</div>
@@ -129,34 +195,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Today's Jobs Banner */}
-      {todayJobs.length > 0 && (
+      {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
+      {(urgentJobs.length > 0 || urgentQuery.isLoading) && (
         <section className="max-w-2xl mx-auto px-4 pt-6">
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
-                <Flame className="h-5 w-5 text-red-500" />
+                <Zap className="h-5 w-5 text-red-500 fill-red-500" />
+                עבודות שצריך אליהן עובדים עכשיו
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/find-jobs?urgent=1")}
+                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-100 text-xs"
+              >
+                כל הדחופות
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            {urgentQuery.isLoading ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-red-500" /></div>
+            ) : (
+              <div className="space-y-2">
+                {urgentJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
+                    onLoginRequired={requireLogin}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── Jobs for Today ───────────────────────────────────────────────── */}
+      {todayJobs.length > 0 && (
+        <section className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-orange-700 flex items-center gap-2">
+                <Flame className="h-5 w-5 text-orange-500" />
                 עבודות להיום
               </h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/jobs-today")}
-                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-100 text-xs"
+                className="gap-1 text-orange-600 hover:text-orange-700 hover:bg-orange-100 text-xs"
               >
                 כל העבודות להיום
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
             </div>
             <div className="space-y-2">
-              {todayJobs.slice(0, 3).map((job) => (
+              {todayJobs.map((job) => (
                 <JobCard
                   key={job.id}
-                  job={{
-                    ...job,
-                    salary: job.salary ?? null,
-                    businessName: job.businessName ?? null,
-                  }}
+                  job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
                   onLoginRequired={requireLogin}
                 />
               ))}
@@ -165,11 +263,11 @@ export default function Home() {
         </section>
       )}
 
-      {/* Categories */}
-      <section className="max-w-2xl mx-auto px-4 py-8">
+      {/* ── Categories ───────────────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-4 py-6">
         <h2 className="text-xl font-bold text-foreground mb-4 text-right">חפש לפי קטגוריה</h2>
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-          {JOB_CATEGORIES.map((cat) => (
+        <div className="grid grid-cols-4 gap-2">
+          {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
               onClick={() => navigate(`/find-jobs?category=${cat.value}`)}
@@ -184,23 +282,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Nearby / Latest jobs */}
-      <section className="max-w-2xl mx-auto px-4 pb-10">
+      {/* ── Nearby / Latest jobs ─────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-4 pb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             {userLat ? (
-              <>
-                <MapPin className="h-5 w-5 text-primary" />
-                משרות קרובות אליך
-              </>
+              <><MapPin className="h-5 w-5 text-primary" />משרות קרובות אליך</>
             ) : (
-              <>
-                <Briefcase className="h-5 w-5 text-primary" />
-                משרות אחרונות
-              </>
+              <><Briefcase className="h-5 w-5 text-primary" />משרות אחרונות</>
             )}
           </h2>
-          {/* "כל המשרות" button — on LEFT side in RTL */}
           <Button variant="ghost" size="sm" onClick={() => navigate("/find-jobs")} className="gap-1 text-primary">
             כל המשרות
             <ChevronLeft className="h-4 w-4" />
@@ -208,17 +299,12 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+          <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : jobs.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium">אין משרות כרגע</p>
-            <p className="text-sm mt-1">היה הראשון לפרסם משרה!</p>
-            <Button className="mt-4" onClick={() => navigate("/post-job")}>
-              פרסם משרה
-            </Button>
+            <Button className="mt-4" onClick={handlePostJob}>פרסם משרה</Button>
           </div>
         ) : (
           <div className="space-y-3">
@@ -248,23 +334,44 @@ export default function Home() {
         )}
       </section>
 
-      {/* CTA banner */}
-      <section className="bg-primary/5 border-y border-primary/10">
-        <div className="max-w-2xl mx-auto px-4 py-8 text-center">
-          <h2 className="text-xl font-bold text-foreground mb-2">יש לך עסק?</h2>
-          <p className="text-muted-foreground mb-4">פרסם משרה בחינם ומצא עובדים תוך דקות</p>
-          <Button size="lg" onClick={handlePostJob} className="gap-2">
-            <Briefcase className="h-5 w-5" />
-            פרסם משרה עכשיו
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <section className="bg-muted/50 border-y border-border">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <h2 className="text-xl font-bold text-foreground mb-6 text-center">איך זה עובד?</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
+              <div key={step} className="text-center">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 relative">
+                  <Icon className="h-5 w-5 text-primary" />
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                    {step}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-sm text-foreground mb-1">{title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA for employers ────────────────────────────────────────────── */}
+      <section className="max-w-2xl mx-auto px-4 py-8 text-center">
+        <h2 className="text-xl font-bold text-foreground mb-2">צריך עובד עכשיו?</h2>
+        <p className="text-muted-foreground mb-4 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות</p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
+          <Button size="lg" onClick={handlePostJob} className="gap-2 flex-1">
+            <Zap className="h-5 w-5" />
+            פרסם עבודה דחופה
+          </Button>
+          <Button size="lg" variant="outline" onClick={() => navigate("/available-workers")} className="gap-2 flex-1">
+            <Users className="h-5 w-5" />
+            עובדים זמינים
           </Button>
         </div>
       </section>
 
-      <LoginModal
-        open={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        message={loginMessage}
-      />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
     </div>
   );
 }

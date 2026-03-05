@@ -375,3 +375,8 @@
 - [x] Add Framer Motion stagger animations to job cards
 - [x] Add glassmorphism styling to MyJobs page
 - [x] Add animated empty state
+
+## Carousel Improvements (Mar 6 2026)
+- [x] Make carousel cards smaller
+- [x] Remove workers count from carousel cards
+- [x] Add auto-scroll to carousel

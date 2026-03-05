@@ -87,7 +87,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         onClick={() => setOpen(true)}
         whileHover={{ scale: 1.02, y: -3 }}
         whileTap={{ scale: 0.97 }}
-        className="w-full text-right rounded-3xl p-4 focus:outline-none overflow-hidden relative"
+        className="w-full text-right rounded-2xl p-3 focus:outline-none overflow-hidden relative"
         aria-label={`פתח פרטים: ${job.title}`}
         style={{
           background: "linear-gradient(135deg, oklch(0.16 0.025 265) 0%, oklch(0.14 0.020 275) 100%)",
@@ -102,8 +102,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         />
 
         {/* Top row: badge + category icon */}
-        <div className="flex items-start justify-between mb-3 relative">
-          <span className="text-2xl">{catIcon}</span>
+        <div className="flex items-start justify-between mb-2 relative">
+          <span className="text-xl">{catIcon}</span>
           {badge === "urgent" && (
             <span
               className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
@@ -133,12 +133,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         </div>
 
         {/* Title */}
-        <h3 className="font-bold text-base text-white leading-snug mb-1 line-clamp-2">
+        <h3 className="font-bold text-sm text-white leading-snug mb-0.5 line-clamp-1">
           {job.title}
         </h3>
 
         {/* Category */}
-        <p className="text-xs text-white/40 mb-3">{catLabel}</p>
+        <p className="text-xs text-white/40 mb-2">{catLabel}</p>
 
         {/* Key details */}
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
@@ -156,14 +156,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
               {salaryStr}
             </span>
           )}
-          <span className="flex items-center gap-1 text-white/50">
-            <Users className="h-3 w-3 shrink-0" />
-            {job.workersNeeded} עובדים
-          </span>
+
         </div>
 
         {/* Posted time */}
-        <p className="text-xs text-white/25 mt-2">{relativeTime(job.createdAt)}</p>
+        <p className="text-xs text-white/25 mt-1.5">{relativeTime(job.createdAt)}</p>
       </motion.button>
 
       {/* ── Full detail bottom sheet ──────────────────────────────────── */}

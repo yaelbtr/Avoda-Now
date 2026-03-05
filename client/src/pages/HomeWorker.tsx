@@ -63,6 +63,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
+  const autoScrollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const isPausedRef = React.useRef(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -71,6 +73,28 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         () => {}
       );
     }
+  }, []);
+
+  // Auto-scroll carousel every 3 seconds
+  useEffect(() => {
+    const startAutoScroll = () => {
+      autoScrollRef.current = setInterval(() => {
+        if (isPausedRef.current) return;
+        const el = document.getElementById("job-carousel");
+        if (!el) return;
+        const cardWidth = 220 + 12; // max-w-[220px] + gap-3
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        if (el.scrollLeft >= maxScroll - 4) {
+          el.scrollTo({ left: 0, behavior: "smooth" });
+          setActiveCarouselIdx(0);
+        } else {
+          el.scrollBy({ left: -cardWidth, behavior: "smooth" });
+          setActiveCarouselIdx((i) => i + 1);
+        }
+      }, 3000);
+    };
+    startAutoScroll();
+    return () => { if (autoScrollRef.current) clearInterval(autoScrollRef.current); };
   }, []);
 
   const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
@@ -441,6 +465,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   id="job-carousel"
                   className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory"
                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                  onMouseEnter={() => { isPausedRef.current = true; }}
+                  onMouseLeave={() => { isPausedRef.current = false; }}
+                  onTouchStart={() => { isPausedRef.current = true; }}
+                  onTouchEnd={() => { setTimeout(() => { isPausedRef.current = false; }, 2000); }}
                   onScroll={(e) => {
                     const el = e.currentTarget;
                     const cardWidth = el.scrollWidth / total;
@@ -449,7 +477,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   }}
                 >
                   {allCarouselJobs.map(({ job, badge }) => (
-                    <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-[78vw] max-w-[300px]">
+                    <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-[58vw] max-w-[220px]">
                       <CarouselJobCard
                         job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
                         badge={badge}

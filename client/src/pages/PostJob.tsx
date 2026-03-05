@@ -18,6 +18,8 @@ import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import ConfettiCelebration from "@/components/ConfettiCelebration";
 
 const schema = z.object({
   title: z.string().min(2, "נדרש כותרת"),
@@ -243,11 +245,102 @@ export default function PostJob() {
 
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center" dir="rtl">
-        <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-foreground mb-2">המשרה פורסמה!</h2>
-        <p className="text-muted-foreground">מעביר אותך לדף המשרה...</p>
-      </div>
+      <>
+        {/* Full-screen confetti burst */}
+        <ConfettiCelebration count={180} duration={3500} />
+
+        {/* Celebration card */}
+        <div
+          className="min-h-screen flex items-center justify-center px-4"
+          dir="rtl"
+          style={{ background: "oklch(0.10 0.015 265)" }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+            className="text-center max-w-sm w-full"
+            style={{
+              background: "oklch(1 0 0 / 5%)",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              border: "1px solid oklch(1 0 0 / 12%)",
+              borderRadius: "1.5rem",
+              padding: "2.5rem 2rem",
+            }}
+          >
+            {/* Animated checkmark ring */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.2 }}
+              className="mx-auto mb-6 flex items-center justify-center"
+              style={{
+                width: 88,
+                height: 88,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, oklch(0.60 0.22 160) 0%, oklch(0.52 0.22 150) 100%)",
+                boxShadow: "0 0 40px oklch(0.60 0.22 160 / 0.5), 0 0 80px oklch(0.60 0.22 160 / 0.2)",
+              }}
+            >
+              <CheckCircle2 className="h-10 w-10 text-white" />
+            </motion.div>
+
+            {/* Title */}
+            <motion.h2
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+              className="text-3xl font-black mb-2"
+              style={{ color: "oklch(0.95 0.005 80)" }}
+            >
+              🎉 המשרה פורסמה!
+            </motion.h2>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.4 }}
+              className="text-base mb-1"
+              style={{ color: "oklch(1 0 0 / 55%)" }}
+            >
+              עובדים יוכלו לראות אותה עכשיו
+            </motion.p>
+
+            {/* Redirect notice */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="text-sm"
+              style={{ color: "oklch(1 0 0 / 30%)" }}
+            >
+              מעביר אותך לדף המשרה...
+            </motion.p>
+
+            {/* Animated progress bar */}
+            <motion.div
+              className="mt-6 rounded-full overflow-hidden"
+              style={{
+                height: 4,
+                background: "oklch(1 0 0 / 8%)",
+              }}
+            >
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ delay: 0.5, duration: 2.0, ease: "linear" }}
+                style={{
+                  height: "100%",
+                  borderRadius: "9999px",
+                  background: "linear-gradient(90deg, oklch(0.60 0.22 160) 0%, oklch(0.72 0.22 240) 100%)",
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        </div>
+      </>
     );
   }
 

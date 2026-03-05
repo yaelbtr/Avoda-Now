@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer } from "lucide-react";
+import { motion } from "framer-motion";
+import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getCategoryIcon,
@@ -69,7 +69,6 @@ export function callPhone(phone: string) {
   window.location.href = `tel:${phone}`;
 }
 
-/** Returns a relative time string like "פורסם לפני שעה" */
 function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
@@ -81,7 +80,6 @@ function relativeTime(date: Date | string): string {
   return `פורסם לפני ${days === 1 ? "יום" : days + " ימים"}`;
 }
 
-/** Returns expiry countdown like "פג תוקף בעוד 3 שעות" or null if not expiring soon */
 function expiryCountdown(expiresAt: Date | string | null | undefined): string | null {
   if (!expiresAt) return null;
   const ms = new Date(expiresAt).getTime() - Date.now();
@@ -90,7 +88,7 @@ function expiryCountdown(expiresAt: Date | string | null | undefined): string | 
   const mins = Math.floor((ms % 3600000) / 60000);
   if (hrs === 0) return `פג תוקף בעוד ${mins} דקות`;
   if (hrs < 6) return `פג תוקף בעוד ${hrs} שעות`;
-  return null; // Don't show if more than 6 hours
+  return null;
 }
 
 const WhatsAppIcon = () => (
@@ -114,75 +112,167 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
   };
 
   return (
-    <div className={`bg-card rounded-xl border p-4 card-hover shadow-sm ${job.isUrgent ? "border-red-300 bg-red-50/30" : "border-border"}`} dir="rtl">
+    <motion.div
+      whileHover={{ y: -2, scale: 1.005 }}
+      transition={{ duration: 0.2 }}
+      className="rounded-2xl p-4 relative overflow-hidden"
+      style={{
+        background: job.isUrgent
+          ? "linear-gradient(135deg, oklch(0.16 0.03 25) 0%, oklch(0.14 0.02 265) 100%)"
+          : "linear-gradient(135deg, oklch(0.15 0.022 265) 0%, oklch(0.13 0.018 275) 100%)",
+        border: job.isUrgent
+          ? "1px solid oklch(0.65 0.22 25 / 0.3)"
+          : "1px solid oklch(1 0 0 / 8%)",
+        boxShadow: job.isUrgent
+          ? "0 4px 20px oklch(0.65 0.22 25 / 0.12)"
+          : "0 4px 16px oklch(0 0 0 / 0.2)",
+      }}
+      dir="rtl"
+    >
+      {/* Subtle corner glow for urgent */}
+      {job.isUrgent && (
+        <div
+          className="absolute -top-4 -right-4 w-16 h-16 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, oklch(0.65 0.22 25 / 0.2) 0%, transparent 70%)" }}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+            style={{
+              background: "oklch(1 0 0 / 6%)",
+              border: "1px solid oklch(1 0 0 / 8%)",
+            }}
+          >
             {getCategoryIcon(job.category)}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-semibold text-foreground text-base leading-tight text-right">
+              <h3 className="font-semibold text-white text-base leading-tight text-right">
                 {job.title}
               </h3>
               {job.isUrgent && (
-                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white shrink-0">
-                  <Zap className="h-3 w-3 fill-white" />
+                <span
+                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.65 0.22 25 / 0.2)",
+                    color: "oklch(0.80 0.18 25)",
+                    border: "1px solid oklch(0.65 0.22 25 / 0.35)",
+                  }}
+                >
+                  <Zap className="h-3 w-3" />
                   דחוף
                 </span>
               )}
               {isToday && !job.isUrgent && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-500 text-white shrink-0">
-                  🔥 להיום
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.78 0.17 65 / 0.15)",
+                    color: "oklch(0.88 0.14 75)",
+                    border: "1px solid oklch(0.78 0.17 65 / 0.3)",
+                  }}
+                >
+                  <Flame className="h-3 w-3" />
+                  להיום
                 </span>
               )}
               {isWartime && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-purple-600 text-white shrink-0">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.55 0.22 280 / 0.2)",
+                    color: "oklch(0.75 0.18 280)",
+                    border: "1px solid oklch(0.55 0.22 280 / 0.3)",
+                  }}
+                >
                   🆘 חירום
                 </span>
               )}
               {isSeasonal && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white shrink-0">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.78 0.17 65 / 0.15)",
+                    color: "oklch(0.88 0.14 75)",
+                    border: "1px solid oklch(0.78 0.17 65 / 0.25)",
+                  }}
+                >
                   🫓 פסח
                 </span>
               )}
               {job.isLocalBusiness && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500 text-white shrink-0">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.62 0.22 255 / 0.15)",
+                    color: "oklch(0.80 0.18 240)",
+                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
+                  }}
+                >
                   🏢 עסק מקומי
                 </span>
               )}
               {isVolunteer && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-600 text-white shrink-0">
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0"
+                  style={{
+                    background: "oklch(0.65 0.22 160 / 0.15)",
+                    color: "oklch(0.75 0.18 160)",
+                    border: "1px solid oklch(0.65 0.22 160 / 0.25)",
+                  }}
+                >
                   💚 התנדבות
                 </span>
               )}
             </div>
             {job.businessName && (
-              <p className="text-xs text-muted-foreground truncate mt-0.5 text-right">{job.businessName}</p>
+              <p className="text-xs text-white/35 truncate mt-0.5 text-right">{job.businessName}</p>
             )}
           </div>
         </div>
         {/* Salary */}
         <div className="shrink-0 text-left">
-          <span className={`text-sm font-semibold whitespace-nowrap ${isVolunteer ? "text-green-600" : "text-primary"}`}>
+          <span
+            className="text-sm font-bold whitespace-nowrap"
+            style={{
+              color: isVolunteer ? "oklch(0.75 0.18 160)" : "oklch(0.75 0.18 160)",
+            }}
+          >
             {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
           </span>
         </div>
       </div>
 
       {/* Meta row */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-2">
-        <span className="flex items-center gap-1 font-medium text-foreground">
-          <MapPin className="h-3 w-3 text-primary shrink-0" />
+      <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-white/45 mb-2">
+        <span className="flex items-center gap-1 font-medium text-white/70">
+          <MapPin className="h-3 w-3 text-blue-400 shrink-0" />
           {cityDisplay}
           {showDistance && job.distance !== undefined && (
-            <span className="inline-flex items-center gap-0.5 bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded-full text-xs mr-0.5">📍 {formatDistance(job.distance)} ממך</span>
+            <span
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold mr-0.5"
+              style={{
+                background: "oklch(0.62 0.22 255 / 0.15)",
+                color: "oklch(0.80 0.18 240)",
+              }}
+            >
+              📍 {formatDistance(job.distance)} ממך
+            </span>
           )}
         </span>
-        <Badge variant="secondary" className="text-xs py-0 h-4 px-1.5">
+        <span
+          className="px-1.5 py-0.5 rounded-full text-xs"
+          style={{
+            background: "oklch(1 0 0 / 6%)",
+            color: "oklch(1 0 0 / 45%)",
+          }}
+        >
           {getCategoryLabel(job.category)}
-        </Badge>
+        </span>
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3 shrink-0" />
           {getStartTimeLabel(job.startTime)}
@@ -194,10 +284,13 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
       </div>
 
       {/* Time info row */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+      <div className="flex items-center justify-between text-xs text-white/25 mb-3">
         <span>{relativeTime(job.createdAt)}</span>
         {countdown && (
-          <span className={`flex items-center gap-1 font-medium ${countdown === "פג תוקף" ? "text-destructive" : "text-orange-600"}`}>
+          <span
+            className="flex items-center gap-1 font-medium"
+            style={{ color: countdown === "פג תוקף" ? "oklch(0.65 0.22 25)" : "oklch(0.78 0.17 65)" }}
+          >
             <Timer className="h-3 w-3 shrink-0" />
             {countdown}
           </span>
@@ -208,30 +301,48 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
       <div className="flex gap-1.5 flex-wrap" dir="rtl">
         {hasPhone ? (
           <>
-            <Button
-              size="sm"
-              className="gap-1.5 text-xs flex-1 min-w-0"
-              style={{ backgroundColor: "#25D366", color: "white" }}
-              onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
-            >
-              <WhatsAppIcon />
-              <span className="truncate">וואטסאפ</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs flex-1 min-w-0"
-              onClick={() => callPhone(job.contactPhone!)}
-            >
-              <Phone className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">התקשר</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
+              <Button
+                size="sm"
+                className="gap-1.5 text-xs w-full"
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.52 0.18 155) 0%, oklch(0.45 0.16 160) 100%)",
+                  border: "none",
+                  color: "white",
+                }}
+                onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
+              >
+                <WhatsAppIcon />
+                <span className="truncate">וואטסאפ</span>
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs w-full"
+                style={{
+                  background: "oklch(1 0 0 / 6%)",
+                  border: "1px solid oklch(1 0 0 / 12%)",
+                  color: "oklch(1 0 0 / 65%)",
+                }}
+                onClick={() => callPhone(job.contactPhone!)}
+              >
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">התקשר</span>
+              </Button>
+            </motion.div>
           </>
         ) : (
           <Button
             size="sm"
             variant="outline"
-            className="gap-1.5 text-xs flex-1 min-w-0 border-dashed text-muted-foreground"
+            className="gap-1.5 text-xs flex-1 min-w-0"
+            style={{
+              background: "oklch(1 0 0 / 4%)",
+              border: "1px dashed oklch(1 0 0 / 15%)",
+              color: "oklch(1 0 0 / 35%)",
+            }}
             onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
           >
             <Lock className="h-3.5 w-3.5 shrink-0" />
@@ -239,11 +350,11 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
           </Button>
         )}
 
-        {/* Share */}
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-primary"
+          className="h-8 w-8 shrink-0"
+          style={{ color: "oklch(1 0 0 / 30%)" }}
           onClick={() => shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType)}
           title="שתף ב-WhatsApp"
         >
@@ -251,12 +362,21 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
         </Button>
 
         <Link href={`/job/${job.id}`}>
-          <Button variant="outline" size="sm" className="gap-1 text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs"
+            style={{
+              background: "oklch(1 0 0 / 5%)",
+              border: "1px solid oklch(1 0 0 / 10%)",
+              color: "oklch(1 0 0 / 50%)",
+            }}
+          >
             <ChevronLeft className="h-3 w-3" />
             פרטים
           </Button>
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -328,3 +328,24 @@
 - [x] Carousel: compact job card showing only essential info (title, category, location, salary, badge)
 - [x] Carousel: navigation arrows + dot indicators
 - [x] Carousel: click opens full job detail bottom sheet with all info and actions
+
+## Full UI Redesign (Mar 5 2026)
+- [ ] Install Framer Motion and collect background images
+- [ ] Redesign global theme: dark/gradient palette, premium fonts, base CSS
+- [ ] Redesign RoleSelectionScreen + WelcomeScreen with animations and hero imagery
+- [ ] Redesign HomeWorker: animated hero, glassmorphism cards, motion effects
+- [ ] Redesign HomeEmployer: premium layout, animated stats, motion effects
+- [ ] Redesign Navbar, JobCard, CarouselJobCard with micro-interactions
+
+## UI Redesign — Premium Dark Theme (Mar 6 2026)
+- [x] Install Framer Motion for animations
+- [x] Global dark theme: index.css with OKLCH color palette, Heebo/Rubik fonts
+- [x] RoleSelectionScreen: animated glassmorphism cards, floating orbs, gradient logo
+- [x] HomeWorker: animated hero with floating orbs, glassmorphism job cards, Framer Motion
+- [x] HomeEmployer: premium dark layout, animated stats, glassmorphism cards
+- [x] Navbar: dark glassmorphism, animated mobile menu, gradient logo, role badges
+- [x] JobCard: dark glassmorphism, Framer Motion hover effects, premium badge styling
+- [x] CarouselJobCard: dark glassmorphism tile, animated hover, premium bottom sheet
+- [x] ActivityTicker: dark theme with green live indicator
+- [x] LiveStats: dark glassmorphism stat cards with accent colors
+- [x] Footer: dark gradient with gradient logo

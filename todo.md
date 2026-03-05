@@ -380,3 +380,7 @@
 - [x] Make carousel cards smaller
 - [x] Remove workers count from carousel cards
 - [x] Add auto-scroll to carousel
+
+## Worker Carousel in HomeEmployer (Mar 6 2026)
+- [x] Create WorkerCarouselCard component
+- [x] Integrate auto-scroll worker carousel into HomeEmployer

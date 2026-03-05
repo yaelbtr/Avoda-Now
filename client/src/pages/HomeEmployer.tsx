@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
-import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
+import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
+import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 
 const HOW_IT_WORKS_EMPLOYER = [
   { icon: Plus, step: "1", title: "פרסם משרה", desc: "מלא פרטי המשרה — סוג עבודה, מיקום, שכר ושעות" },
@@ -28,6 +29,9 @@ export default function HomeEmployer() {
   const [loginMessage, setLoginMessage] = useState("");
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
+  const [activeWorkerIdx, setActiveWorkerIdx] = useState(0);
+  const workerAutoScrollRef = React.useRef<ReturnType<typeof setInterval> | null>(null); // eslint-disable-line
+  const workerPausedRef = React.useRef(false); // eslint-disable-line
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -36,6 +40,25 @@ export default function HomeEmployer() {
         () => {}
       );
     }
+  }, []);
+
+  // Auto-scroll worker carousel every 3 seconds
+  useEffect(() => {
+    workerAutoScrollRef.current = setInterval(() => {
+      if (workerPausedRef.current) return;
+      const el = document.getElementById("worker-carousel");
+      if (!el) return;
+      const cardWidth = 180 + 12; // max-w-[180px] + gap-3
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        setActiveWorkerIdx(0);
+      } else {
+        el.scrollBy({ left: -cardWidth, behavior: "smooth" });
+        setActiveWorkerIdx((i) => i + 1);
+      }
+    }, 3000);
+    return () => { if (workerAutoScrollRef.current) clearInterval(workerAutoScrollRef.current); };
   }, []);
 
   const requireLogin = (msg: string) => { setLoginMessage(msg); setLoginOpen(true); };
@@ -343,7 +366,9 @@ export default function HomeEmployer() {
           </div>
 
           {workersQuery.isLoading ? (
-            <JobCardSkeletonList count={2} />
+            <div className="px-1 py-2">
+              <CarouselSkeletonRow count={3} />
+            </div>
           ) : workers.length === 0 ? (
             <div className="text-center py-6">
               <HardHat className="h-10 w-10 mx-auto mb-2 text-green-400/30" />
@@ -351,49 +376,48 @@ export default function HomeEmployer() {
               <p className="text-xs text-white/25 mt-1">פרסם משרה ועובדים יפנו אליך</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {workers.slice(0, 6).map((worker, i) => (
-                <motion.div
-                  key={worker.userId}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.07, duration: 0.3 }}
-                  className="rounded-2xl p-3 flex items-center gap-3"
-                  style={{
-                    background: "oklch(1 0 0 / 5%)",
-                    border: "1px solid oklch(1 0 0 / 8%)",
-                  }}
-                >
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: "linear-gradient(135deg, oklch(0.65 0.22 160 / 0.3) 0%, oklch(0.55 0.20 155 / 0.2) 100%)",
-                      border: "1px solid oklch(0.65 0.22 160 / 0.3)",
-                    }}
-                  >
-                    <HardHat className="h-4 w-4 text-green-400" />
+            <div className="relative">
+              {/* Carousel track */}
+              <div
+                id="worker-carousel"
+                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                onMouseEnter={() => { workerPausedRef.current = true; }}
+                onMouseLeave={() => { workerPausedRef.current = false; }}
+                onTouchStart={() => { workerPausedRef.current = true; }}
+                onTouchEnd={() => { setTimeout(() => { workerPausedRef.current = false; }, 2000); }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const cardWidth = el.scrollWidth / workers.length;
+                  const idx = Math.round(el.scrollLeft / cardWidth);
+                  setActiveWorkerIdx(idx);
+                }}
+              >
+                {workers.map((worker, i) => (
+                  <div key={worker.userId} className="snap-start shrink-0 w-[52vw] max-w-[180px]">
+                    <WorkerCarouselCard worker={worker} index={i} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-white truncate">
-                      {worker.userName ?? "עובד זמין"}
-                    </p>
-                    <p className="text-xs text-white/40 truncate">
-                      {worker.city ?? "אזור לא ידוע"}
-                      {worker.note ? ` · ${worker.note}` : ""}
-                    </p>
-                  </div>
-                  <span
-                    className="shrink-0 text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{
-                      background: "oklch(0.65 0.22 160 / 0.2)",
-                      color: "oklch(0.75 0.18 160)",
-                      border: "1px solid oklch(0.65 0.22 160 / 0.25)",
-                    }}
-                  >
-                    זמין
-                  </span>
-                </motion.div>
-              ))}
+                ))}
+              </div>
+
+              {/* Dot indicators */}
+              {workers.length > 1 && (
+                <div className="flex justify-center gap-1.5 mt-2">
+                  {workers.map((_, i) => (
+                    <span
+                      key={i}
+                      className="inline-block rounded-full transition-all duration-300"
+                      style={{
+                        width: i === activeWorkerIdx ? "16px" : "8px",
+                        height: "8px",
+                        background: i === activeWorkerIdx
+                          ? "oklch(0.65 0.22 160)"
+                          : "oklch(1 0 0 / 20%)",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

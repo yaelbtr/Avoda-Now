@@ -360,3 +360,8 @@
 - [x] Integrate skeletons into FindJobs loading state (3-4 skeleton cards)
 - [x] Integrate skeletons into HomeWorker loading state
 - [x] Integrate skeletons into HomeEmployer loading state
+
+## Page Transitions (Mar 6 2026)
+- [x] Create PageTransition wrapper component with Framer Motion
+- [x] Integrate AnimatePresence into App.tsx routing
+- [x] Ensure transitions work correctly for all routes

@@ -384,3 +384,13 @@
 ## Worker Carousel in HomeEmployer (Mar 6 2026)
 - [x] Create WorkerCarouselCard component
 - [x] Integrate auto-scroll worker carousel into HomeEmployer
+
+## Light Theme Redesign (Mar 6 2026)
+- [ ] Update index.css to light theme (white bg, blue #3c83f6 accent, Inter font)
+- [ ] Redesign RoleSelectionScreen to match mockup
+- [ ] Update Navbar to light theme
+- [ ] Redesign HomeWorker to light theme (pending mockup)
+- [ ] Redesign HomeEmployer to light theme (pending mockup)
+- [ ] Redesign FindJobs to light theme (pending mockup)
+- [ ] Redesign JobDetails to light theme (pending mockup)
+- [ ] Redesign remaining pages to light theme (pending mockups)

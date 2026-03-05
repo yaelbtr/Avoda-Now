@@ -105,7 +105,7 @@ export default function HomeEmployer() {
       </section>
 
       <ActivityTicker />
-      <LiveStats />
+      <LiveStats mode="employer" />
 
       {/* ── My Active Jobs ───────────────────────────────────────────────── */}
       {isAuthenticated && (

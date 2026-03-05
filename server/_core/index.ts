@@ -16,6 +16,8 @@ import {
   antiEnumeration,
 } from "../security";
 import { makeRequest } from "./map";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent } from "../db";
+import { sendSms } from "../sms";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -110,3 +112,25 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
+// ── Availability expiry reminder: run every 5 minutes ────────────────────────
+// Sends an SMS to workers whose availability expires in ~30 minutes.
+setInterval(async () => {
+  try {
+    const expiring = await getWorkersWithExpiringAvailability();
+    for (const worker of expiring) {
+      const minutesLeft = Math.round((worker.availableUntil.getTime() - Date.now()) / 60_000);
+      const msg =
+        `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.
+` +
+        `להארכת הזמינות כנס ל: https://job-now.manus.space`;
+      const result = await sendSms(worker.phone, msg);
+      if (result.success) {
+        await markAvailabilityReminderSent(worker.availabilityId);
+        console.log(`[Reminder] Sent expiry SMS to worker ${worker.userId}`);
+      }
+    }
+  } catch (err) {
+    console.warn("[Reminder] Error sending availability expiry reminders:", err);
+  }
+}, 5 * 60 * 1000); // every 5 minutes

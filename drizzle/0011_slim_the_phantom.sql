@@ -1,0 +1,1 @@
+ALTER TABLE `worker_availability` ADD `reminderSentAt` timestamp;

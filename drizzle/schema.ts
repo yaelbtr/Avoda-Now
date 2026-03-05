@@ -158,6 +158,8 @@ export const workerAvailability = mysqlTable("worker_availability", {
   note: varchar("note", { length: 200 }),
   /** Availability expires at this time (default: 4 hours from now) */
   availableUntil: timestamp("availableUntil").notNull(),
+  /** Timestamp when the 30-min expiry reminder SMS was sent */
+  reminderSentAt: timestamp("reminderSentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

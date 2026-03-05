@@ -1,9 +1,14 @@
 import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
 
-export default function LiveStats() {
+interface LiveStatsProps {
+  /** "worker" hides the available-workers card; "employer" shows all three */
+  mode?: "worker" | "employer";
+}
+
+export default function LiveStats({ mode = "worker" }: LiveStatsProps) {
   const statsQuery = trpc.live.stats.useQuery(undefined, {
-    refetchInterval: 45_000, // refresh every 45 seconds
+    refetchInterval: 45_000,
     staleTime: 30_000,
   });
 
@@ -21,7 +26,7 @@ export default function LiveStats() {
 
   if (!stats) return null;
 
-  const items = [
+  const allItems = [
     {
       icon: "👷",
       value: stats.availableWorkers,
@@ -30,6 +35,7 @@ export default function LiveStats() {
       bg: "bg-green-50",
       border: "border-green-200",
       pulse: stats.availableWorkers > 0,
+      employerOnly: true,
     },
     {
       icon: "📢",
@@ -39,6 +45,7 @@ export default function LiveStats() {
       bg: "bg-blue-50",
       border: "border-blue-200",
       pulse: false,
+      employerOnly: false,
     },
     {
       icon: "⚡",
@@ -48,8 +55,11 @@ export default function LiveStats() {
       bg: "bg-red-50",
       border: "border-red-200",
       pulse: stats.urgentJobsNow > 0,
+      employerOnly: false,
     },
   ];
+
+  const items = allItems.filter((item) => !item.employerOnly || mode === "employer");
 
   return (
     <div className="bg-white border-b border-border" dir="rtl">

@@ -701,3 +701,56 @@ export async function getWorkersMatchingJob(
     .slice(0, limit)
     .map((r) => ({ id: r.id, phone: r.phone!, name: r.name, preferredCity: r.preferredCity }));
 }
+
+/** Get workers whose availability expires in the next 25–35 minutes and haven't been reminded yet.
+ *  Used by the expiry reminder job to send a "30 min left" SMS.
+ */
+export async function getWorkersWithExpiringAvailability(): Promise<
+  Array<{ userId: number; phone: string; name: string | null; availableUntil: Date; availabilityId: number }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+  const windowStart = new Date(now.getTime() + 25 * 60 * 1000); // 25 min from now
+  const windowEnd = new Date(now.getTime() + 35 * 60 * 1000);   // 35 min from now
+
+  const rows = await db
+    .select({
+      userId: workerAvailability.userId,
+      availableUntil: workerAvailability.availableUntil,
+      availabilityId: workerAvailability.id,
+      reminderSentAt: workerAvailability.reminderSentAt,
+      phone: users.phone,
+      name: users.name,
+    })
+    .from(workerAvailability)
+    .innerJoin(users, eq(workerAvailability.userId, users.id))
+    .where(
+      and(
+        gte(workerAvailability.availableUntil, windowStart),
+        lte(workerAvailability.availableUntil, windowEnd),
+        sql`${workerAvailability.reminderSentAt} IS NULL`
+      )
+    );
+
+  return rows
+    .filter((r) => !!r.phone)
+    .map((r) => ({
+      userId: r.userId,
+      phone: r.phone!,
+      name: r.name,
+      availableUntil: r.availableUntil,
+      availabilityId: r.availabilityId,
+    }));
+}
+
+/** Mark that a reminder SMS was sent for a specific availability record */
+export async function markAvailabilityReminderSent(availabilityId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(workerAvailability)
+    .set({ reminderSentAt: new Date() })
+    .where(eq(workerAvailability.id, availabilityId));
+}

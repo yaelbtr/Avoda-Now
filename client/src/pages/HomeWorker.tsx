@@ -15,6 +15,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
@@ -50,6 +57,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [nearbyRadius, setNearbyRadius] = useState(5);
   const [showMap, setShowMap] = useState(false);
   const [geoRequested, setGeoRequested] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [durationOpen, setDurationOpen] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -95,27 +105,35 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
   const handleAvailabilityToggle = () => {
     if (!isAuthenticated) { onLoginRequired("כדי לסמן זמינות יש להתחבר למערכת"); return; }
-    setAvailabilityLoading(true);
     if (isAvailable) {
+      setAvailabilityLoading(true);
       setUnavailableMutation.mutate();
     } else {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setAvailableMutation.mutate({
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-              city: undefined,
-              durationHours: 4,
-            });
-          },
-          () => {
-            setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: 4 });
-          }
-        );
-      } else {
-        setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: 4 });
-      }
+      // Show duration picker before marking available
+      setDurationOpen(true);
+    }
+  };
+
+  const confirmAvailability = (hours: 2 | 4 | 8) => {
+    setSelectedDuration(hours);
+    setDurationOpen(false);
+    setAvailabilityLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setAvailableMutation.mutate({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            city: undefined,
+            durationHours: hours,
+          });
+        },
+        () => {
+          setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: hours });
+        }
+      );
+    } else {
+      setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: hours });
     }
   };
 
@@ -193,55 +211,59 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           {/* Availability card */}
           <div className="max-w-sm mx-auto">
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleAvailabilityToggle}
-                    disabled={availabilityLoading}
-                    className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl border transition-all duration-200 ${
-                      isAvailable
-                        ? "bg-green-500/20 border-green-400/50 hover:bg-green-500/30"
-                        : "bg-white/8 border-white/20 hover:bg-white/15"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {availabilityLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-white/70" />
-                      ) : (
-                        <span className={`relative flex h-3 w-3`}>
-                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
-                          <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+            <div className="flex items-center gap-2">
+              {/* Main toggle */}
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleAvailabilityToggle}
+                      disabled={availabilityLoading}
+                      className={`flex-1 flex items-center justify-between px-5 py-3.5 rounded-2xl border transition-all duration-200 ${
+                        isAvailable
+                          ? "bg-green-500/20 border-green-400/50 hover:bg-green-500/30"
+                          : "bg-white/8 border-white/20 hover:bg-white/15"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {availabilityLoading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+                        ) : (
+                          <span className="relative flex h-3 w-3">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                            <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-400" : "bg-white/40"}`} />
+                          </span>
+                        )}
+                        <span className="font-semibold text-sm text-white">
+                          {isAvailable ? `פנוי לעבוד — ${selectedDuration}ש'` : "סמן את עצמך כזמין"}
                         </span>
-                      )}
-                      <span className="font-semibold text-sm text-white">
-                        {isAvailable ? "אני פנוי לעבוד עכשיו" : "סמן את עצמך כזמין"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                      </div>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isAvailable ? "bg-green-400/30 text-green-200" : "bg-white/15 text-white/70"}`}>
-                        {isAvailable ? "פעיל" : "לחץ לסימון"}
+                        {isAvailable ? "פעיל" : "לחץ"}
                       </span>
-                      <Info className="h-4 w-4 text-white/40 shrink-0" />
-                    </div>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  className="max-w-xs text-right leading-relaxed p-3"
-                  dir="rtl"
-                >
-                  <p className="font-semibold mb-1 text-sm">
-                    {isAvailable ? "אתה מסומן כזמין כעת" : "מה זה אומר?"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {isAvailable
-                      ? "מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים. הזמינות תתבטל אוטומטית לאחר 4 שעות, או לחץ שוב לביטול מיידי."
-                      : "לחיצה תוסיף אותך לרשימת העובדים הזמינים שמעסיקים רואים. המיקום שלך יישמר, הזמינות תהיה פעילה ל-4 שעות, ומעסיקים יוכלו לפנות אליך ישירות."}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    </button>
+                  </TooltipTrigger>
+                  {/* Desktop tooltip */}
+                  <TooltipContent side="bottom" className="max-w-xs text-right leading-relaxed p-3" dir="rtl">
+                    <p className="font-semibold mb-1 text-sm">{isAvailable ? "אתה מסומן כזמין" : "מה זה אומר?"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isAvailable
+                        ? `מעסיקים באזורך רואים אותך. הזמינות תתבטל אוטומטית לאחר ${selectedDuration} שעות, או לחץ שוב לביטול.`
+                        : "תבחר כמה שעות אתה פנוי ותוסף לרשימת העובדים הזמינים."}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {/* Info button — opens Dialog (works on mobile too) */}
+              <button
+                onClick={() => setInfoOpen(true)}
+                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition-colors"
+                aria-label="מידע נוסף"
+              >
+                <Info className="h-4 w-4 text-white/70" />
+              </button>
+            </div>
           </div>
 
           {/* Profile shortcut */}
@@ -260,7 +282,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       </section>
 
       <ActivityTicker />
-      <LiveStats />
+      <LiveStats mode="worker" />
 
       {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
       {(urgentJobs.length > 0 || urgentQuery.isLoading) && (
@@ -513,13 +535,70 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Switch to employer ───────────────────────────────────────────── */}
+      {/* ── Switch to employer ─────────────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 py-6 text-center">
         <p className="text-sm text-muted-foreground mb-2">גם מעסיק? עבור למצב מעסיק</p>
         <Button variant="outline" size="sm" onClick={resetUserMode} className="gap-2">
           🔄 שנה תפקיד
         </Button>
       </section>
+
+      {/* ── Info Dialog (mobile-friendly) ──────────────────────────────────────────── */}
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent dir="rtl" className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-right">
+              {isAvailable ? "אתה מסומן כזמין כעת" : 'מה זה "סמן עצמך כזמין"?'}
+            </DialogTitle>
+            <DialogDescription className="text-right leading-relaxed">
+              {isAvailable ? (
+                <span>
+                  מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים ויכולים לפנות אליך ישירות.
+                  הזמינות תתבטל אוטומטית לאחר {selectedDuration} שעות, או לחץ שוב על הכפתור לביטול מיידי.
+                </span>
+              ) : (
+                <span>
+                  לחיצה תוסיף אותך לרשימת העובדים הזמינים שמעסיקים רואים.
+                  <br /><br />
+                  כשתסמן זמינות:
+                  <br />• המיקום שלך יישמר כדי שמעסיקים באזורך יראו אותך ראשון
+                  <br />• תבחר כמה שעות אתה פנוי (2, 4, או 8 שעות)
+                  <br />• מעסיקים יוכלו לפנות אליך ישירות דרך הטלפון
+                  <br />• הזמינות תתבטל אוטומטית בסוף הזמן שבחרת
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end mt-2">
+            <Button onClick={() => setInfoOpen(false)} size="sm">סגור</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Duration Picker Dialog ──────────────────────────────────────────────────── */}
+      <Dialog open={durationOpen} onOpenChange={setDurationOpen}>
+        <DialogContent dir="rtl" className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-right">כמה שעות אתה פנוי?</DialogTitle>
+            <DialogDescription className="text-right">
+              בחר את משך הזמינות. הזמינות תתבטל אוטומטית בסוף הזמן.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-3 mt-2">
+            {([2, 4, 8] as const).map((h) => (
+              <button
+                key={h}
+                onClick={() => confirmAvailability(h)}
+                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all font-bold text-foreground"
+              >
+                <span className="text-2xl font-extrabold text-primary">{h}</span>
+                <span className="text-xs text-muted-foreground mt-1">שעות</span>
+              </button>
+            ))}
+          </div>
+          <Button variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

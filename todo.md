@@ -319,3 +319,8 @@
 - [x] Push notifications to workers when a new job matches their preferred category and area
 - [x] Redesign HomeWorker hero section — stronger visual hierarchy, inviting UI
 - [x] Add tooltip to availability toggle button explaining what it does
+- [x] Move "available workers in area" stat card from HomeWorker to HomeEmployer only
+- [x] Fix LiveStats: hide available-workers card from worker view (employer only)
+- [x] Mobile tooltip: add Info Dialog for availability button on touch devices
+- [x] Availability duration selector: let worker choose 2/4/8 hours before marking
+- [x] SMS reminder 30 min before availability expires with extend option

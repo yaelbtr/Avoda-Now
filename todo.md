@@ -324,3 +324,4 @@
 - [x] Mobile tooltip: add Info Dialog for availability button on touch devices
 - [x] Availability duration selector: let worker choose 2/4/8 hours before marking
 - [x] SMS reminder 30 min before availability expires with extend option
+- [x] Merge urgent+today job sections into a single horizontal carousel in HomeWorker

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -285,70 +285,69 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       <LiveStats mode="worker" />
 
       {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
-      {(urgentJobs.length > 0 || urgentQuery.isLoading) && (
-        <section className="max-w-2xl mx-auto px-4 pt-6">
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-red-500 fill-red-500" />
-                עבודות שצריך אליהן עובדים עכשיו
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/find-jobs?urgent=1")}
-                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-100 text-xs"
-              >
-                כל הדחופות
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            {urgentQuery.isLoading ? (
-              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-red-500" /></div>
-            ) : (
-              <div className="space-y-2">
-                {urgentJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
-                    onLoginRequired={onLoginRequired}
-                  />
-                ))}
-              </div>
-            )}
+      {(urgentJobs.length > 0 || todayJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
+        <section className="pt-6">
+          {/* Section header */}
+          <div className="max-w-2xl mx-auto px-4 flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Zap className="h-5 w-5 text-red-500 fill-red-500" />
+              עבודות דחופות ולהיום
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/find-jobs?urgent=1")}
+              className="gap-1 text-muted-foreground hover:text-foreground text-xs"
+            >
+              כל העבודות
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
           </div>
-        </section>
-      )}
 
-      {/* ── Jobs for Today ───────────────────────────────────────────────── */}
-      {todayJobs.length > 0 && (
-        <section className="max-w-2xl mx-auto px-4 pt-4">
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-orange-700 flex items-center gap-2">
-                <Flame className="h-5 w-5 text-orange-500" />
-                עבודות להיום
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/jobs-today")}
-                className="gap-1 text-orange-600 hover:text-orange-700 hover:bg-orange-100 text-xs"
-              >
-                כל העבודות להיום
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
+          {/* Horizontal scroll carousel — hide scrollbar */}
+          {(urgentQuery.isLoading || todayQuery.isLoading) ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-            <div className="space-y-2">
-              {todayJobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
-                  onLoginRequired={onLoginRequired}
-                />
+          ) : (
+            <div
+              className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+            >
+              {/* Urgent jobs first — red badge */}
+              {urgentJobs.map((job) => (
+                <div key={`urgent-${job.id}`} className="snap-start shrink-0 w-[85vw] max-w-sm">
+                  <div className="relative">
+                    <span className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow pointer-events-none">
+                      <Zap className="h-3 w-3 fill-white" />
+                      דחוף
+                    </span>
+                    <JobCard
+                      job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
+                      onLoginRequired={onLoginRequired}
+                    />
+                  </div>
+                </div>
               ))}
+              {/* Today jobs (deduplicated) — orange badge */}
+              {todayJobs
+                .filter((j) => !urgentJobs.some((u) => u.id === j.id))
+                .map((job) => (
+                  <div key={`today-${job.id}`} className="snap-start shrink-0 w-[85vw] max-w-sm">
+                    <div className="relative">
+                      <span className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow pointer-events-none">
+                        <Flame className="h-3 w-3" />
+                        להיום
+                      </span>
+                      <JobCard
+                        job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
+                        onLoginRequired={onLoginRequired}
+                      />
+                    </div>
+                  </div>
+                ))}
             </div>
-          </div>
+          )}
         </section>
       )}
 

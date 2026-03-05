@@ -325,3 +325,6 @@
 - [x] Availability duration selector: let worker choose 2/4/8 hours before marking
 - [x] SMS reminder 30 min before availability expires with extend option
 - [x] Merge urgent+today job sections into a single horizontal carousel in HomeWorker
+- [x] Carousel: compact job card showing only essential info (title, category, location, salary, badge)
+- [x] Carousel: navigation arrows + dot indicators
+- [x] Carousel: click opens full job detail bottom sheet with all info and actions

@@ -23,6 +23,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import ActivityTicker from "@/components/ActivityTicker";
+import CarouselJobCard from "@/components/CarouselJobCard";
 import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 
@@ -60,6 +61,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
+  const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -285,71 +287,112 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       <LiveStats mode="worker" />
 
       {/* ── Urgent Jobs ──────────────────────────────────────────────────── */}
-      {(urgentJobs.length > 0 || todayJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
-        <section className="pt-6">
-          {/* Section header */}
-          <div className="max-w-2xl mx-auto px-4 flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <Zap className="h-5 w-5 text-red-500 fill-red-500" />
-              עבודות דחופות ולהיום
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/find-jobs?urgent=1")}
-              className="gap-1 text-muted-foreground hover:text-foreground text-xs"
-            >
-              כל העבודות
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-
-          {/* Horizontal scroll carousel — hide scrollbar */}
-          {(urgentQuery.isLoading || todayQuery.isLoading) ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      {(urgentJobs.length > 0 || todayJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (() => {
+        const allCarouselJobs = [
+          ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
+          ...todayJobs
+            .filter((j) => !urgentJobs.some((u) => u.id === j.id))
+            .map((j) => ({ job: j, badge: "today" as const })),
+        ];
+        const total = allCarouselJobs.length;
+        return (
+          <section className="pt-6">
+            {/* Section header */}
+            <div className="max-w-2xl mx-auto px-4 flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Zap className="h-5 w-5 text-red-500 fill-red-500" />
+                עבודות דחופות ולהיום
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/find-jobs?urgent=1")}
+                className="gap-1 text-muted-foreground hover:text-foreground text-xs"
+              >
+                כל העבודות
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
             </div>
-          ) : (
-            <div
-              className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
-            >
-              {/* Urgent jobs first — red badge */}
-              {urgentJobs.map((job) => (
-                <div key={`urgent-${job.id}`} className="snap-start shrink-0 w-[85vw] max-w-sm">
-                  <div className="relative">
-                    <span className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow pointer-events-none">
-                      <Zap className="h-3 w-3 fill-white" />
-                      דחוף
-                    </span>
-                    <JobCard
-                      job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
-                      onLoginRequired={onLoginRequired}
-                    />
-                  </div>
-                </div>
-              ))}
-              {/* Today jobs (deduplicated) — orange badge */}
-              {todayJobs
-                .filter((j) => !urgentJobs.some((u) => u.id === j.id))
-                .map((job) => (
-                  <div key={`today-${job.id}`} className="snap-start shrink-0 w-[85vw] max-w-sm">
-                    <div className="relative">
-                      <span className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow pointer-events-none">
-                        <Flame className="h-3 w-3" />
-                        להיום
-                      </span>
-                      <JobCard
+
+            {/* Carousel with arrows */}
+            {(urgentQuery.isLoading || todayQuery.isLoading) ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="relative">
+                {/* Left arrow (prev in RTL = next visually) */}
+                {activeCarouselIdx < total - 1 && (
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("job-carousel");
+                      if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+                      setActiveCarouselIdx((i) => Math.min(i + 1, total - 1));
+                    }}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/90 border border-border shadow-md hover:bg-muted transition-colors"
+                    aria-label="הקודם"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                )}
+                {/* Right arrow (next in RTL = prev visually) */}
+                {activeCarouselIdx > 0 && (
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("job-carousel");
+                      if (el) el.scrollBy({ left: 300, behavior: "smooth" });
+                      setActiveCarouselIdx((i) => Math.max(i - 1, 0));
+                    }}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/90 border border-border shadow-md hover:bg-muted transition-colors"
+                    aria-label="הבא"
+                  >
+                    <ChevronLeft className="h-4 w-4 rotate-180" />
+                  </button>
+                )}
+
+                {/* Scrollable track */}
+                <div
+                  id="job-carousel"
+                  className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                  onScroll={(e) => {
+                    const el = e.currentTarget;
+                    const cardWidth = el.scrollWidth / total;
+                    const idx = Math.round(el.scrollLeft / cardWidth);
+                    setActiveCarouselIdx(idx);
+                  }}
+                >
+                  {allCarouselJobs.map(({ job, badge }) => (
+                    <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-[78vw] max-w-[300px]">
+                      <CarouselJobCard
                         job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
+                        badge={badge}
                         onLoginRequired={onLoginRequired}
                       />
                     </div>
+                  ))}
+                </div>
+
+                {/* Dot indicators */}
+                {total > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-2">
+                    {allCarouselJobs.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`inline-block rounded-full transition-all duration-200 ${
+                          i === activeCarouselIdx
+                            ? "w-4 h-2 bg-primary"
+                            : "w-2 h-2 bg-muted-foreground/30"
+                        }`}
+                      />
+                    ))}
                   </div>
-                ))}
-            </div>
-          )}
-        </section>
-      )}
+                )}
+              </div>
+            )}
+          </section>
+        );
+      })()}
 
       {/* ── Wartime & Passover ───────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pt-4">

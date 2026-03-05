@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/Map";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import {
   getCategoryIcon, getCategoryLabel, formatSalary,
-  getStartTimeLabel, formatDistance
+  getStartTimeLabel, formatDistance,
 } from "@shared/categories";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
@@ -36,11 +36,7 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
   useEffect(() => {
     const setMeta = (property: string, content: string) => {
       let el = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement | null;
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute("property", property);
-        document.head.appendChild(el);
-      }
+      if (!el) { el = document.createElement("meta"); el.setAttribute("property", property); document.head.appendChild(el); }
       el.setAttribute("content", content);
     };
     const jobUrl = `${SITE_URL}/job/${jobId}`;
@@ -55,6 +51,24 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
   }, [title, description, jobId]);
   return null;
 }
+
+// ── Glassmorphism style helpers ─────────────────────────────────────────────
+const glassCard: React.CSSProperties = {
+  background: "oklch(1 0 0 / 5%)",
+  backdropFilter: "blur(16px) saturate(180%)",
+  WebkitBackdropFilter: "blur(16px) saturate(180%)",
+  border: "1px solid oklch(1 0 0 / 10%)",
+  borderRadius: "1rem",
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.45 },
+  }),
+};
 
 export default function JobDetails() {
   const params = useParams<{ id: string }>();
@@ -103,26 +117,46 @@ export default function JobDetails() {
     new google.maps.Marker({ position: { lat, lng }, map, title: job.title });
   };
 
-  /** Show login modal with a contextual message */
-  const requireLogin = (message: string) => {
-    setLoginMessage(message);
-    setLoginOpen(true);
-  };
+  const requireLogin = (message: string) => { setLoginMessage(message); setLoginOpen(true); };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div
+        className="flex flex-col items-center justify-center min-h-[60vh] gap-4"
+        style={{ background: "oklch(0.10 0.015 265)" }}
+      >
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center"
+          style={{
+            background: "oklch(0.62 0.22 255 / 0.1)",
+            border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+          }}
+        >
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "oklch(0.72 0.22 240)" }} />
+        </div>
+        <p className="text-sm" style={{ color: "oklch(1 0 0 / 35%)" }}>טוען פרטי משרה...</p>
       </div>
     );
   }
 
   if (error || !job) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center" dir="rtl">
-        <AlertCircle className="h-12 w-12 mx-auto mb-3 text-destructive opacity-60" />
-        <p className="font-medium text-lg">משרה לא נמצאה</p>
-        <Button className="mt-4" onClick={() => navigate("/find-jobs")}>חזור לחיפוש</Button>
+      <div
+        className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4"
+        style={{ background: "oklch(0.10 0.015 265)" }}
+        dir="rtl"
+      >
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center"
+          style={{
+            background: "oklch(0.60 0.22 25 / 0.1)",
+            border: "1px solid oklch(0.60 0.22 25 / 0.2)",
+          }}
+        >
+          <AlertCircle className="h-8 w-8" style={{ color: "oklch(0.65 0.22 25)" }} />
+        </div>
+        <p className="font-semibold text-lg" style={{ color: "oklch(0.95 0.005 80)" }}>משרה לא נמצאה</p>
+        <Button onClick={() => navigate("/find-jobs")}>חזור לחיפוש</Button>
       </div>
     );
   }
@@ -132,8 +166,6 @@ export default function JobDetails() {
   const isVolunteer = job.salaryType === "volunteer";
   const jobUrl = `${SITE_URL}/job/${job.id}`;
   const shareText = encodeURIComponent(`מצאתי עבודה באתר Job-Now 💼\n${job.title}\n${jobUrl}`);
-
-  // Phone is only available when authenticated (server strips it for guests)
   const hasPhone = isAuthenticated && !!job.contactPhone;
   const cleanPhone = hasPhone ? job.contactPhone!.replace(/\D/g, "") : "";
   const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
@@ -144,18 +176,13 @@ export default function JobDetails() {
         const R = 6371;
         const dLat = ((lat - userLat) * Math.PI) / 180;
         const dLon = ((lng - userLng) * Math.PI) / 180;
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((userLat * Math.PI) / 180) *
-            Math.cos((lat * Math.PI) / 180) *
-            Math.sin(dLon / 2) ** 2;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos((userLat * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       })()
     : null;
 
   const isOwner = isAuthenticated && user?.id === job.postedBy;
 
-  // Expiry countdown
   const expiryMs = job.expiresAt ? new Date(job.expiresAt).getTime() - Date.now() : null;
   const expiryText = expiryMs !== null
     ? expiryMs <= 0 ? "פג תוקף"
@@ -164,264 +191,501 @@ export default function JobDetails() {
       : null
     : null;
 
-  // WhatsApp share with proper format
   const shareJobText = encodeURIComponent(
-    "עבודה זמנית:" + "\n" + job.title + "\n" + (job.city ?? job.address.split(",")[0]) + "\n" + (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
+    "עבודה זמנית:" + "\n" + job.title + "\n" + (job.city ?? job.address.split(",")[0]) + "\n" +
+    (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
   );
 
   return (
-    <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
-
-      {/* Back */}
-      <button
-        onClick={() => navigate("/find-jobs")}
-        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-5 transition-colors"
-      >
-        <ChevronRight className="h-4 w-4" />
-        חזור לחיפוש
-      </button>
-
-      {/* Header card */}
-      <div className="bg-card rounded-xl border border-border p-5 mb-4 shadow-sm">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-3xl shrink-0">
-            {getCategoryIcon(job.category)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground leading-tight">{job.title}</h1>
-            {job.businessName && (
-              <p className="text-base text-muted-foreground mt-0.5">{job.businessName}</p>
-            )}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {job.isUrgent && (
-                <Badge className="bg-red-500 text-white gap-1 flex items-center">
-                  <Zap className="h-3 w-3 fill-white" />
-                  דחוף — צריך עובד עכשיו
-                </Badge>
-              )}
-              <Badge variant="secondary">{getCategoryLabel(job.category)}</Badge>
-              <Badge variant={job.status === "active" ? "default" : "secondary"}>
-                {job.status === "active" ? "פעיל" : job.status === "under_review" ? "בבדיקה" : "סגור"}
-              </Badge>
-              {isVolunteer && <Badge className="bg-green-100 text-green-700 border-green-200">💚 התנדבות</Badge>}
-              {expiryText && (
-                <Badge className="bg-orange-100 text-orange-700 border-orange-200 gap-1 flex items-center">
-                  <Timer className="h-3 w-3" />
-                  {expiryText}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Details grid */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">{job.city ?? job.address.split(",")[0]}</span>
-          </div>
-          {distance !== null && (
-            <div className="flex items-center gap-2 text-primary font-medium">
-              <MapPin className="h-4 w-4 shrink-0" />
-              {formatDistance(distance)} ממך
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Clock className="h-4 w-4 text-primary shrink-0" />
-            {getStartTimeLabel(job.startTime)}
-            {job.workingHours && ` · ${job.workingHours}`}
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Users className="h-4 w-4 text-primary shrink-0" />
-            {job.workersNeeded} עובדים דרושים
-          </div>
-          <div className="flex items-center gap-2 col-span-2">
-            <DollarSign className="h-4 w-4 text-primary shrink-0" />
-            <span className={`font-semibold ${isVolunteer ? "text-green-600" : "text-foreground"}`}>
-              {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Description */}
-      <div className="bg-card rounded-xl border border-border p-5 mb-4 shadow-sm">
-        <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Briefcase className="h-4 w-4 text-primary" />
-          תיאור המשרה
-        </h2>
-        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-sm">
-          {job.description}
-        </p>
-      </div>
-
-      {/* Map */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden mb-4 shadow-sm">
-        <div className="p-4 border-b border-border">
-          <h2 className="font-semibold text-foreground flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            מיקום — {job.address}
-          </h2>
-        </div>
-        <MapView
-          onMapReady={handleMapReady}
-          initialCenter={{ lat, lng }}
-          initialZoom={15}
-          className="h-52"
+    <div
+      dir="rtl"
+      className="min-h-screen"
+      style={{ background: "oklch(0.10 0.015 265)" }}
+    >
+      {/* ── Floating background orbs ── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 500, height: 500,
+            top: -120, right: -100,
+            background: "radial-gradient(circle, oklch(0.62 0.22 255 / 0.07) 0%, transparent 70%)",
+            filter: "blur(40px)",
+          }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: 350, height: 350,
+            bottom: 50, left: -80,
+            background: "radial-gradient(circle, oklch(0.78 0.17 65 / 0.05) 0%, transparent 70%)",
+            filter: "blur(40px)",
+          }}
         />
       </div>
 
-      {/* Contact section */}
-      <div className="bg-card rounded-xl border border-border p-5 mb-4 shadow-sm">
-        <h2 className="font-semibold text-foreground mb-1">פרטי יצירת קשר</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          <span className="font-medium text-foreground">{job.contactName}</span>
-        </p>
+      <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
 
-        {isAuthenticated && hasPhone ? (
-          /* ── Authenticated: show full contact options ── */
-          <div className="flex flex-col gap-2">
-            {/* Phone number display */}
-            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 mb-1">
-              <Phone className="h-4 w-4 text-primary shrink-0" />
-              <span dir="ltr" className="font-medium text-foreground text-sm">{job.contactPhone}</span>
-            </div>
-            <a
-              href={`https://wa.me/${intlPhone}?text=${contactText}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button size="lg" className="w-full gap-2 text-white" style={{ backgroundColor: "#25D366" }}>
-                <WhatsAppIcon size="lg" />
-                שלח הודעה בוואטסאפ
-              </Button>
-            </a>
-            <a href={`tel:${job.contactPhone}`}>
-              <Button size="lg" variant="outline" className="w-full gap-2">
-                <Phone className="h-5 w-5" />
-                התקשר עכשיו
-              </Button>
-            </a>
-          </div>
-        ) : (
-          /* ── Guest: show locked state with login prompt ── */
-          <div className="space-y-3">
-            {/* Masked phone placeholder */}
-            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 border border-dashed border-border">
-              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground text-sm tracking-widest">05X-XXX-XXXX</span>
-            </div>
-            <Button
-              size="lg"
-              className="w-full gap-2"
-              onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-            >
-              <Lock className="h-4 w-4" />
-              התחבר כדי לראות מספר טלפון
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full gap-2"
-              style={{ borderColor: "#25D366", color: "#25D366" }}
-              onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-            >
-              <WhatsAppIcon size="lg" />
-              התחבר כדי לשלוח וואטסאפ
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              כדי ליצור קשר עם המעסיק יש להתחבר למערכת
-            </p>
-          </div>
-        )}
+      <div className="relative max-w-2xl mx-auto px-4 py-8" style={{ zIndex: 1 }}>
 
-        {/* Share button — always visible */}
-        <a
-          href={`https://wa.me/?text=${shareJobText}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mt-2"
+        {/* ── Back button ── */}
+        <motion.button
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => navigate("/find-jobs")}
+          className="flex items-center gap-1 text-sm mb-6 transition-colors"
+          style={{ color: "oklch(1 0 0 / 40%)" }}
+          whileHover={{ color: "oklch(0.95 0.005 80)" } as never}
         >
-          <Button size="lg" variant="ghost" className="w-full gap-2 text-muted-foreground">
-            <Share2 className="h-5 w-5" />
-            שתף עבודה ב-WhatsApp
-          </Button>
-        </a>
-      </div>
+          <ChevronRight className="h-4 w-4" />
+          חזור לחיפוש
+        </motion.button>
 
-      {/* Mark as filled — only for job owner */}
-      {isOwner && job.status === "active" && (
-        <div className="mb-4">
-          <Button
-            size="lg"
-            className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
-            onClick={() => markFilledMutation.mutate({ id: job.id })}
-            disabled={markFilledMutation.isPending}
-          >
-            {markFilledMutation.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <CheckCircle2 className="h-5 w-5" />
+        {/* ── Header card ── */}
+        <motion.div
+          custom={0}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ ...glassCard, padding: "1.25rem", marginBottom: "1rem" }}
+        >
+          <div className="flex items-start gap-4 mb-4">
+            {/* Category icon */}
+            <div
+              className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.62 0.22 255 / 0.15) 0%, oklch(0.55 0.25 280 / 0.15) 100%)",
+                border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+              }}
+            >
+              {getCategoryIcon(job.category)}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h1
+                className="text-xl font-black leading-tight mb-1"
+                style={{ color: "oklch(0.95 0.005 80)" }}
+              >
+                {job.title}
+              </h1>
+              {job.businessName && (
+                <p className="text-sm mb-2" style={{ color: "oklch(1 0 0 / 50%)" }}>
+                  {job.businessName}
+                </p>
+              )}
+
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2">
+                {job.isUrgent && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                    style={{
+                      background: "linear-gradient(135deg, oklch(0.60 0.22 25) 0%, oklch(0.55 0.25 15) 100%)",
+                      color: "white",
+                      boxShadow: "0 0 12px oklch(0.60 0.22 25 / 0.4)",
+                    }}
+                  >
+                    <Zap className="h-3 w-3 fill-white" />
+                    דחוף — צריך עובד עכשיו
+                  </span>
+                )}
+                <span
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{
+                    background: "oklch(0.62 0.22 255 / 0.12)",
+                    color: "oklch(0.72 0.22 240)",
+                    border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+                  }}
+                >
+                  {getCategoryLabel(job.category)}
+                </span>
+                <span
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={job.status === "active" ? {
+                    background: "oklch(0.65 0.22 160 / 0.12)",
+                    color: "oklch(0.68 0.20 160)",
+                    border: "1px solid oklch(0.65 0.22 160 / 0.25)",
+                  } : {
+                    background: "oklch(1 0 0 / 6%)",
+                    color: "oklch(1 0 0 / 40%)",
+                    border: "1px solid oklch(1 0 0 / 10%)",
+                  }}
+                >
+                  {job.status === "active" ? "פעיל" : job.status === "under_review" ? "בבדיקה" : "סגור"}
+                </span>
+                {isVolunteer && (
+                  <span
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: "oklch(0.65 0.22 160 / 0.1)",
+                      color: "oklch(0.68 0.20 160)",
+                      border: "1px solid oklch(0.65 0.22 160 / 0.2)",
+                    }}
+                  >
+                    💚 התנדבות
+                  </span>
+                )}
+                {expiryText && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: "oklch(0.72 0.18 65 / 0.1)",
+                      color: "oklch(0.78 0.17 65)",
+                      border: "1px solid oklch(0.72 0.18 65 / 0.2)",
+                    }}
+                  >
+                    <Timer className="h-3 w-3" />
+                    {expiryText}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Details grid */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2" style={{ color: "oklch(1 0 0 / 55%)" }}>
+              <MapPin className="h-4 w-4 shrink-0" style={{ color: "oklch(0.72 0.22 240)" }} />
+              <span className="truncate">{job.city ?? job.address.split(",")[0]}</span>
+            </div>
+            {distance !== null && (
+              <div className="flex items-center gap-2 font-medium" style={{ color: "oklch(0.72 0.22 240)" }}>
+                <MapPin className="h-4 w-4 shrink-0" />
+                {formatDistance(distance)} ממך
+              </div>
             )}
-            מצאתי עובד — סגור משרה
-          </Button>
-        </div>
-      )}
-
-      {/* Duplicate job button */}
-      <div className="mb-4">
-        <button
-          onClick={() => {
-            const params = new URLSearchParams({
-              from: String(job.id),
-              title: job.title,
-              description: job.description,
-              category: job.category,
-              address: job.address,
-              salary: job.salary ? String(job.salary) : "",
-              salaryType: job.salaryType ?? "hourly",
-              contactName: job.contactName,
-              contactPhone: job.contactPhone ?? "",
-              businessName: job.businessName ?? "",
-              workingHours: job.workingHours ?? "",
-              startTime: job.startTime ?? "flexible",
-              workersNeeded: String(job.workersNeeded ?? 1),
-            });
-            navigate(`/post-job?${params.toString()}`);
-          }}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary/5 transition-colors text-sm font-medium"
-        >
-          <Copy className="h-4 w-4" />
-          פרסם עבודה דומה
-        </button>
-      </div>
-
-      {/* Report */}
-      <div className="text-center pb-4">
-        {reported ? (
-          <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-            <CheckCircle2 className="h-4 w-4" />
-            הדיווח נשלח. תודה!
+            <div className="flex items-center gap-2" style={{ color: "oklch(1 0 0 / 55%)" }}>
+              <Clock className="h-4 w-4 shrink-0" style={{ color: "oklch(0.72 0.22 240)" }} />
+              {getStartTimeLabel(job.startTime)}
+              {job.workingHours && ` · ${job.workingHours}`}
+            </div>
+            <div className="flex items-center gap-2" style={{ color: "oklch(1 0 0 / 55%)" }}>
+              <Users className="h-4 w-4 shrink-0" style={{ color: "oklch(0.72 0.22 240)" }} />
+              {job.workersNeeded} עובדים דרושים
+            </div>
+            <div className="flex items-center gap-2 col-span-2">
+              <DollarSign className="h-4 w-4 shrink-0" style={{ color: "oklch(0.72 0.22 240)" }} />
+              <span
+                className="font-semibold"
+                style={{ color: isVolunteer ? "oklch(0.68 0.20 160)" : "oklch(0.88 0.14 75)" }}
+              >
+                {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
+              </span>
+            </div>
           </div>
-        ) : (
-          <button
-            onClick={() => {
-              if (!isAuthenticated) {
-                requireLogin("כדי לדווח על משרה יש להתחבר למערכת");
-                return;
-              }
-              setReportOpen(true);
-            }}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors mx-auto"
+        </motion.div>
+
+        {/* ── Description ── */}
+        <motion.div
+          custom={1}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ ...glassCard, padding: "1.25rem", marginBottom: "1rem" }}
+        >
+          <h2
+            className="font-bold mb-3 flex items-center gap-2"
+            style={{ color: "oklch(0.95 0.005 80)" }}
           >
-            <Flag className="h-3.5 w-3.5" />
-            דווח על משרה חשודה
-          </button>
-        )}
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{
+                background: "oklch(0.62 0.22 255 / 0.12)",
+                border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+              }}
+            >
+              <Briefcase className="h-3.5 w-3.5" style={{ color: "oklch(0.72 0.22 240)" }} />
+            </div>
+            תיאור המשרה
+          </h2>
+          <p
+            className="leading-relaxed whitespace-pre-wrap text-sm"
+            style={{ color: "oklch(1 0 0 / 60%)" }}
+          >
+            {job.description}
+          </p>
+        </motion.div>
+
+        {/* ── Map ── */}
+        <motion.div
+          custom={2}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ ...glassCard, overflow: "hidden", marginBottom: "1rem" }}
+        >
+          <div
+            className="p-4 flex items-center gap-2"
+            style={{ borderBottom: "1px solid oklch(1 0 0 / 8%)" }}
+          >
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{
+                background: "oklch(0.62 0.22 255 / 0.12)",
+                border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+              }}
+            >
+              <MapPin className="h-3.5 w-3.5" style={{ color: "oklch(0.72 0.22 240)" }} />
+            </div>
+            <h2 className="font-bold text-sm" style={{ color: "oklch(0.95 0.005 80)" }}>
+              מיקום — {job.address}
+            </h2>
+          </div>
+          <MapView
+            onMapReady={handleMapReady}
+            initialCenter={{ lat, lng }}
+            initialZoom={15}
+            className="h-52"
+          />
+        </motion.div>
+
+        {/* ── Contact section ── */}
+        <motion.div
+          custom={3}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ ...glassCard, padding: "1.25rem", marginBottom: "1rem" }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{
+                background: "oklch(0.62 0.22 255 / 0.12)",
+                border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+              }}
+            >
+              <Phone className="h-3.5 w-3.5" style={{ color: "oklch(0.72 0.22 240)" }} />
+            </div>
+            <h2 className="font-bold" style={{ color: "oklch(0.95 0.005 80)" }}>פרטי יצירת קשר</h2>
+          </div>
+          <p className="text-sm mb-4" style={{ color: "oklch(1 0 0 / 55%)" }}>
+            <span className="font-medium" style={{ color: "oklch(0.95 0.005 80)" }}>{job.contactName}</span>
+          </p>
+
+          {isAuthenticated && hasPhone ? (
+            <div className="flex flex-col gap-2">
+              {/* Phone number display */}
+              <div
+                className="flex items-center gap-2 rounded-xl px-3 py-2 mb-1"
+                style={{
+                  background: "oklch(0.62 0.22 255 / 0.08)",
+                  border: "1px solid oklch(0.62 0.22 255 / 0.15)",
+                }}
+              >
+                <Phone className="h-4 w-4 shrink-0" style={{ color: "oklch(0.72 0.22 240)" }} />
+                <span dir="ltr" className="font-medium text-sm" style={{ color: "oklch(0.95 0.005 80)" }}>
+                  {job.contactPhone}
+                </span>
+              </div>
+              <motion.a
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                href={`https://wa.me/${intlPhone}?text=${contactText}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <button
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all"
+                  style={{
+                    background: "linear-gradient(135deg, #25D366 0%, #1da851 100%)",
+                    boxShadow: "0 0 20px #25D366 / 0.3",
+                  }}
+                >
+                  <WhatsAppIcon size="lg" />
+                  שלח הודעה בוואטסאפ
+                </button>
+              </motion.a>
+              <motion.a
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                href={`tel:${job.contactPhone}`}
+              >
+                <button
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all"
+                  style={{
+                    background: "oklch(0.62 0.22 255 / 0.1)",
+                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
+                    color: "oklch(0.72 0.22 240)",
+                  }}
+                >
+                  <Phone className="h-5 w-5" />
+                  התקשר עכשיו
+                </button>
+              </motion.a>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Masked phone */}
+              <div
+                className="flex items-center gap-2 rounded-xl px-3 py-2"
+                style={{
+                  background: "oklch(1 0 0 / 4%)",
+                  border: "1px dashed oklch(1 0 0 / 12%)",
+                }}
+              >
+                <Lock className="h-4 w-4 shrink-0" style={{ color: "oklch(1 0 0 / 30%)" }} />
+                <span className="text-sm tracking-widest" style={{ color: "oklch(1 0 0 / 30%)" }}>
+                  05X-XXX-XXXX
+                </span>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                  boxShadow: "0 0 20px oklch(0.62 0.22 255 / 0.25)",
+                }}
+                onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+              >
+                <Lock className="h-4 w-4" />
+                התחבר כדי לראות מספר טלפון
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all"
+                style={{
+                  background: "#25D366 / 0.08",
+                  border: "1px solid #25D366",
+                  color: "#25D366",
+                }}
+                onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+              >
+                <WhatsAppIcon size="lg" />
+                התחבר כדי לשלוח וואטסאפ
+              </motion.button>
+              <p className="text-xs text-center" style={{ color: "oklch(1 0 0 / 30%)" }}>
+                כדי ליצור קשר עם המעסיק יש להתחבר למערכת
+              </p>
+            </div>
+          )}
+
+          {/* Share — always visible */}
+          <motion.a
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            href={`https://wa.me/?text=${shareJobText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-3"
+          >
+            <button
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: "oklch(1 0 0 / 4%)",
+                border: "1px solid oklch(1 0 0 / 10%)",
+                color: "oklch(1 0 0 / 45%)",
+              }}
+            >
+              <Share2 className="h-4 w-4" />
+              שתף עבודה ב-WhatsApp
+            </button>
+          </motion.a>
+        </motion.div>
+
+        {/* ── Owner: mark as filled ── */}
+        <AnimatePresence>
+          {isOwner && job.status === "active" && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              className="mb-4"
+            >
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.60 0.22 160) 0%, oklch(0.52 0.22 150) 100%)",
+                  boxShadow: "0 0 20px oklch(0.60 0.22 160 / 0.3)",
+                }}
+                onClick={() => markFilledMutation.mutate({ id: job.id })}
+                disabled={markFilledMutation.isPending}
+              >
+                {markFilledMutation.isPending
+                  ? <Loader2 className="h-5 w-5 animate-spin" />
+                  : <CheckCircle2 className="h-5 w-5" />}
+                מצאתי עובד — סגור משרה
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Duplicate job ── */}
+        <motion.div
+          custom={4}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-4"
+        >
+          <motion.button
+            whileHover={{ scale: 1.01, borderColor: "oklch(0.62 0.22 255 / 0.5)" }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              const p = new URLSearchParams({
+                from: String(job.id),
+                title: job.title,
+                description: job.description,
+                category: job.category,
+                address: job.address,
+                salary: job.salary ? String(job.salary) : "",
+                salaryType: job.salaryType ?? "hourly",
+                contactName: job.contactName,
+                contactPhone: job.contactPhone ?? "",
+                businessName: job.businessName ?? "",
+                workingHours: job.workingHours ?? "",
+                startTime: job.startTime ?? "flexible",
+                workersNeeded: String(job.workersNeeded ?? 1),
+              });
+              navigate(`/post-job?${p.toString()}`);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all"
+            style={{
+              border: "1px dashed oklch(0.62 0.22 255 / 0.3)",
+              color: "oklch(0.72 0.22 240)",
+              background: "oklch(0.62 0.22 255 / 0.04)",
+            }}
+          >
+            <Copy className="h-4 w-4" />
+            פרסם עבודה דומה
+          </motion.button>
+        </motion.div>
+
+        {/* ── Report ── */}
+        <motion.div
+          custom={5}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-center pb-4"
+        >
+          {reported ? (
+            <div className="flex items-center justify-center gap-2 text-sm" style={{ color: "oklch(0.68 0.20 160)" }}>
+              <CheckCircle2 className="h-4 w-4" />
+              הדיווח נשלח. תודה!
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                if (!isAuthenticated) { requireLogin("כדי לדווח על משרה יש להתחבר למערכת"); return; }
+                setReportOpen(true);
+              }}
+              className="flex items-center gap-1.5 text-xs mx-auto transition-colors"
+              style={{ color: "oklch(1 0 0 / 25%)" }}
+            >
+              <Flag className="h-3.5 w-3.5" />
+              דווח על משרה חשודה
+            </button>
+          )}
+        </motion.div>
       </div>
 
-      {/* Report Dialog */}
+      {/* ── Report Dialog ── */}
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogContent className="max-w-sm" dir="rtl">
           <DialogHeader>
@@ -433,7 +697,7 @@ export default function JobDetails() {
           <Textarea
             placeholder="תאר בקצרה את הבעיה (אופציונלי)"
             value={reportReason}
-            onChange={(e) => setReportReason(e.target.value)}
+            onChange={e => setReportReason(e.target.value)}
             rows={3}
             className="resize-none"
           />
@@ -450,26 +714,12 @@ export default function JobDetails() {
         </DialogContent>
       </Dialog>
 
-      {/* Login Modal with contextual message */}
-      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-        <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl" dir="rtl">
-          <div className="bg-primary/5 border-b border-border px-6 py-4 text-center">
-            <Lock className="h-8 w-8 text-primary mx-auto mb-2" />
-            <p className="font-semibold text-foreground">{loginMessage}</p>
-          </div>
-          <div className="p-0">
-            <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Standalone login modal (used for the login prompt) */}
-      {loginOpen && (
-        <LoginModal
-          open={loginOpen}
-          onClose={() => setLoginOpen(false)}
-        />
-      )}
+      {/* ── Login Modal ── */}
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        message={loginMessage}
+      />
     </div>
   );
 }

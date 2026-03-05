@@ -349,3 +349,7 @@
 - [x] ActivityTicker: dark theme with green live indicator
 - [x] LiveStats: dark glassmorphism stat cards with accent colors
 - [x] Footer: dark gradient with gradient logo
+
+## UI Redesign — FindJobs & JobDetails (Mar 6 2026)
+- [x] FindJobs: glassmorphism filter panel, animated hero, staggered job list with Framer Motion
+- [x] JobDetails: glassmorphism layout, animated sections, premium action buttons

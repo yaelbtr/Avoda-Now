@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
+import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 
 const HOW_IT_WORKS_EMPLOYER = [
   { icon: Plus, step: "1", title: "פרסם משרה", desc: "מלא פרטי המשרה — סוג עבודה, מיקום, שכר ושעות" },
@@ -214,9 +215,7 @@ export default function HomeEmployer() {
             </div>
 
             {myJobsQuery.isLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-              </div>
+              <JobCardSkeletonList count={2} />
             ) : myJobs.length === 0 ? (
               <div className="text-center py-6">
                 <Briefcase className="h-10 w-10 mx-auto mb-2 text-blue-400/40" />
@@ -344,9 +343,7 @@ export default function HomeEmployer() {
           </div>
 
           {workersQuery.isLoading ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-green-400" />
-            </div>
+            <JobCardSkeletonList count={2} />
           ) : workers.length === 0 ? (
             <div className="text-center py-6">
               <HardHat className="h-10 w-10 mx-auto mb-2 text-green-400/30" />

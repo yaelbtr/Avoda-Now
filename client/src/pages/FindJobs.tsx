@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
+import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
@@ -639,18 +640,7 @@ export default function FindJobs() {
 
         {/* ── Job list ── */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center"
-              style={{
-                background: "oklch(0.62 0.22 255 / 0.1)",
-                border: "1px solid oklch(0.62 0.22 255 / 0.2)",
-              }}
-            >
-              <Loader2 className="h-7 w-7 animate-spin" style={{ color: "oklch(0.72 0.22 240)" }} />
-            </div>
-            <p className="text-sm" style={{ color: "oklch(1 0 0 / 35%)" }}>מחפש משרות...</p>
-          </div>
+          <JobCardSkeletonList count={4} />
         ) : jobs.length === 0 && !autoExpandedRadius ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

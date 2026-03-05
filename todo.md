@@ -353,3 +353,10 @@
 ## UI Redesign — FindJobs & JobDetails (Mar 6 2026)
 - [x] FindJobs: glassmorphism filter panel, animated hero, staggered job list with Framer Motion
 - [x] JobDetails: glassmorphism layout, animated sections, premium action buttons
+
+## Skeleton Loading (Mar 6 2026)
+- [x] Create JobCardSkeleton component with shimmer animation
+- [x] Create CarouselJobCardSkeleton component with shimmer animation
+- [x] Integrate skeletons into FindJobs loading state (3-4 skeleton cards)
+- [x] Integrate skeletons into HomeWorker loading state
+- [x] Integrate skeletons into HomeEmployer loading state

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import ActivityTicker from "@/components/ActivityTicker";
 import CarouselJobCard from "@/components/CarouselJobCard";
+import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 
@@ -396,8 +397,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </div>
 
             {(urgentQuery.isLoading || todayQuery.isLoading) ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+              <div className="px-4 py-2">
+                <CarouselSkeletonRow count={3} />
               </div>
             ) : (
               <div className="relative">
@@ -650,9 +651,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         )}
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-white/30" />
-          </div>
+          <JobCardSkeletonList count={3} />
         ) : jobs.length === 0 ? (
           <div className="text-center py-12 text-white/40">
             <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />

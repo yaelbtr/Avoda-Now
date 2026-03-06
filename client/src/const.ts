@@ -17,7 +17,7 @@ export const popReturnPath = (): string | null => {
 };
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
-export const getLoginUrl = () => {
+export const getLoginUrl = (provider?: string) => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
@@ -28,6 +28,10 @@ export const getLoginUrl = () => {
   url.searchParams.set("redirectUri", redirectUri);
   url.searchParams.set("state", state);
   url.searchParams.set("type", "signIn");
+  if (provider) url.searchParams.set("provider", provider);
 
   return url.toString();
 };
+
+/** Shorthand: login URL that pre-selects the Google provider */
+export const getGoogleLoginUrl = () => getLoginUrl("google");

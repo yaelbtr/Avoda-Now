@@ -464,3 +464,7 @@
 - [x] Fix onDismiss (X button) in WelcomeScreen: navigate worker to / and employer to /post-job
 - [x] Save pre-login return path (sessionStorage) and restore it after successful OTP login
 - [x] Add smooth slide-down exit animation in WelcomeScreen (fade + translateY) for natural page reveal
+
+## Google One-Tap Login & Guest Banner
+- [x] Add Google login button to LoginModal alongside OTP (with divider, Google SVG logo, redirects via getGoogleLoginUrl)
+- [x] Build persistent guest login banner shown at top of all pages for unauthenticated users (GuestLoginBanner.tsx, dismissible via sessionStorage)

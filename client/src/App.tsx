@@ -9,6 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
 import PageTransition from "./components/PageTransition";
@@ -73,6 +74,7 @@ function Router() {
       )}
 
       <Navbar />
+      <GuestLoginBanner />
 
       {/*
         AnimatePresence must wrap the animated children directly.

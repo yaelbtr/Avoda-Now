@@ -394,3 +394,6 @@
 - [ ] Redesign FindJobs to light theme (pending mockup)
 - [ ] Redesign JobDetails to light theme (pending mockup)
 - [ ] Redesign remaining pages to light theme (pending mockups)
+
+## Bug Fix (Mar 6 2026)
+- [x] Fix RoleSelectionScreen click behavior (card click not triggering role selection)

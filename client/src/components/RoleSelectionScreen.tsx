@@ -132,6 +132,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     מציאת עבודה בקלות ובמהירות. הגש מועמדות למשרות המבטיחות ביותר בלחיצת כפתור אחת.
                   </p>
                   <button
+                    onClick={(e) => { e.stopPropagation(); handleSelect("worker"); }}
                     disabled={!!loading || exiting}
                     className="w-full py-3 rounded-lg font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
                     style={{
@@ -190,6 +191,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     גיוס יעיל והתאמה מהירה. מצא את המועמדים המושלמים לעסק שלך תוך זמן קצר בעזרת טכנולוגיה חכמה.
                   </p>
                   <button
+                    onClick={(e) => { e.stopPropagation(); handleSelect("employer"); }}
                     disabled={!!loading || exiting}
                     className="w-full py-3 rounded-lg font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
                     style={{

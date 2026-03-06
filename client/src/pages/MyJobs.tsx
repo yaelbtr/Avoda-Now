@@ -21,13 +21,19 @@ import { Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { toast } from "sonner";
+import {
+  C_BRAND as BRAND, C_BRAND_SUBTLE, C_SUCCESS as SUCCESS,
+  C_WARNING as WARNING, C_DANGER, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
+  C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
+  C_TEXT_ON_DARK_FAINT as TEXT_FAINT, C_PAGE_BG_HEX,
+} from "@/lib/colors";
 
 // ── Glassmorphism helpers ─────────────────────────────────────────────────────
 const glassCard: React.CSSProperties = {
-  background: "oklch(1 0 0 / 5%)",
+  background: C_DARK_CARD,
   backdropFilter: "blur(16px) saturate(180%)",
   WebkitBackdropFilter: "blur(16px) saturate(180%)",
-  border: "1px solid oklch(1 0 0 / 10%)",
+  border: `1px solid ${C_DARK_CARD_BORDER}`,
   borderRadius: "1rem",
 };
 
@@ -90,28 +96,28 @@ const cardVariants = {
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; glow?: string }> = {
   active: {
     label: "פעיל",
-    bg: "oklch(0.65 0.22 160 / 0.12)",
-    color: "oklch(0.68 0.20 160)",
-    border: "oklch(0.65 0.22 160 / 0.3)",
-    glow: "0 0 10px oklch(0.65 0.22 160 / 0.2)",
+    bg: `${SUCCESS} / 0.12`,
+    color: SUCCESS,
+    border: `${SUCCESS} / 0.3`,
+    glow: `0 0 10px ${SUCCESS} / 0.2`,
   },
   closed: {
     label: "סגור",
-    bg: "oklch(1 0 0 / 5%)",
-    color: "oklch(1 0 0 / 40%)",
-    border: "oklch(1 0 0 / 12%)",
+    bg: C_DARK_CARD,
+    color: TEXT_FAINT,
+    border: C_DARK_CARD_BORDER,
   },
   expired: {
     label: "פג תוקף",
-    bg: "oklch(0.72 0.18 65 / 0.1)",
-    color: "oklch(0.78 0.17 65)",
-    border: "oklch(0.72 0.18 65 / 0.25)",
+    bg: `${WARNING} / 0.1`,
+    color: WARNING,
+    border: `${WARNING} / 0.25`,
   },
   under_review: {
     label: "בבדיקה",
-    bg: "oklch(0.62 0.22 255 / 0.1)",
-    color: "oklch(0.72 0.22 240)",
-    border: "oklch(0.62 0.22 255 / 0.25)",
+    bg: `${BRAND} / 0.1`,
+    color: C_BRAND_SUBTLE,
+    border: `${BRAND} / 0.25`,
   },
 };
 
@@ -140,7 +146,7 @@ export default function MyJobs() {
   // ── Auth loading ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f7f8]">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: C_PAGE_BG_HEX }}>
         <BrandLoader size="lg" label="טוען..." />
       </div>
     );
@@ -151,7 +157,7 @@ export default function MyJobs() {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-4"
-        style={{ background: "oklch(0.10 0.015 265)" }}
+        style={{ background: C_DARK_BG }}
         dir="rtl"
       >
         <motion.div
@@ -163,19 +169,19 @@ export default function MyJobs() {
         >
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: "oklch(0.62 0.22 255 / 0.1)", border: "1px solid oklch(0.62 0.22 255 / 0.2)" }}
+            style={{ background: `${BRAND}1a`, border: `1px solid ${BRAND}33` }}
           >
-            <Briefcase className="h-8 w-8" style={{ color: "oklch(0.72 0.22 240)" }} />
+            <Briefcase className="h-8 w-8" style={{ color: C_BRAND_SUBTLE }} />
           </div>
-          <h2 className="text-xl font-black mb-2" style={{ color: "oklch(0.95 0.005 80)" }}>כניסה נדרשת</h2>
-          <p className="text-sm mb-6" style={{ color: "oklch(1 0 0 / 45%)" }}>התחבר כדי לנהל את המשרות שלך</p>
+          <h2 className="text-xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>כניסה נדרשת</h2>
+          <p className="text-sm mb-6" style={{ color: TEXT_MID }}>התחבר כדי לנהל את המשרות שלך</p>
           <Button
             onClick={() => setLoginOpen(true)}
             className="w-full"
             style={{
-              background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+              background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
               border: "none",
-              boxShadow: "0 0 20px oklch(0.62 0.22 255 / 0.25)",
+              boxShadow: `0 0 20px ${BRAND} / 0.25`,
             }}
           >
             כניסה / הרשמה
@@ -192,7 +198,7 @@ export default function MyJobs() {
     <div
       dir="rtl"
       className="min-h-screen"
-      style={{ background: "oklch(0.10 0.015 265)" }}
+      style={{ background: C_DARK_BG }}
     >
       {/* ── Floating background orbs ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
@@ -201,7 +207,8 @@ export default function MyJobs() {
           style={{
             width: 400, height: 400,
             top: -80, right: -80,
-            background: "radial-gradient(circle, oklch(0.62 0.22 255 / 0.06) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${BRAND} / 0.06 0%, transparent 70%)`,
+
             filter: "blur(40px)",
           }}
         />
@@ -210,7 +217,8 @@ export default function MyJobs() {
           style={{
             width: 300, height: 300,
             bottom: 100, left: -60,
-            background: "radial-gradient(circle, oklch(0.65 0.22 160 / 0.05) 0%, transparent 70%)",
+            background: `radial-gradient(circle, ${SUCCESS} / 0.05 0%, transparent 70%)`,
+
             filter: "blur(40px)",
           }}
         />
@@ -226,10 +234,10 @@ export default function MyJobs() {
           className="flex items-center justify-between mb-6"
         >
           <div>
-            <h1 className="text-2xl font-black" style={{ color: "oklch(0.95 0.005 80)" }}>
+            <h1 className="text-2xl font-black" style={{ color: TEXT_BRIGHT }}>
               המשרות שלי
             </h1>
-            <p className="text-sm mt-0.5" style={{ color: "oklch(1 0 0 / 40%)" }}>
+            <p className="text-sm mt-0.5" style={{ color: TEXT_FAINT }}>
               {isLoading ? "טוען..." : `${activeJobs.length}/3 משרות פעילות`}
             </p>
           </div>
@@ -239,9 +247,9 @@ export default function MyJobs() {
               size="sm"
               className="gap-2"
               style={{
-                background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
                 border: "none",
-                boxShadow: "0 0 16px oklch(0.62 0.22 255 / 0.3)",
+                boxShadow: `0 0 16px ${BRAND} / 0.3`,
               }}
             >
               <PlusCircle className="h-4 w-4" />
@@ -261,12 +269,12 @@ export default function MyJobs() {
               style={{ ...glassCard, padding: "1rem", marginBottom: "1.25rem" }}
             >
               <div className="flex items-center justify-between text-sm mb-2">
-                <span style={{ color: "oklch(1 0 0 / 40%)" }}>{activeJobs.length} מתוך 3</span>
-                <span className="font-semibold" style={{ color: "oklch(0.95 0.005 80)" }}>משרות פעילות</span>
+                <span style={{ color: TEXT_FAINT }}>{activeJobs.length} מתוך 3</span>
+                <span className="font-semibold" style={{ color: TEXT_BRIGHT }}>משרות פעילות</span>
               </div>
               <div
                 className="rounded-full overflow-hidden"
-                style={{ height: 6, background: "oklch(1 0 0 / 8%)" }}
+                style={{ height: 6, background: C_DARK_CARD }}
               >
                 <motion.div
                   initial={{ width: 0 }}
@@ -276,8 +284,9 @@ export default function MyJobs() {
                     height: "100%",
                     borderRadius: "9999px",
                     background: activeJobs.length >= 3
-                      ? "linear-gradient(90deg, oklch(0.60 0.22 25) 0%, oklch(0.65 0.22 15) 100%)"
-                      : "linear-gradient(90deg, oklch(0.62 0.22 255) 0%, oklch(0.65 0.22 160) 100%)",
+                      ? `linear-gradient(90deg, ${C_DANGER} 0%, oklch(0.65 0.22 15) 100%)`
+                      : `linear-gradient(90deg, ${BRAND} 0%, ${SUCCESS} 100%)`,
+
                   }}
                 />
               </div>
@@ -286,7 +295,7 @@ export default function MyJobs() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-xs mt-2"
-                  style={{ color: "oklch(0.65 0.22 25)" }}
+                  style={{ color: C_DANGER }}
                 >
                   הגעת למגבלה — סגור משרה כדי לפרסם חדשה.
                 </motion.p>
@@ -324,16 +333,16 @@ export default function MyJobs() {
               transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
               className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5"
               style={{
-                background: "oklch(0.62 0.22 255 / 0.08)",
-                border: "1px solid oklch(0.62 0.22 255 / 0.15)",
+                background: `${BRAND}14`,
+                border: `1px solid ${BRAND}26`,
               }}
             >
-              <Briefcase className="h-10 w-10" style={{ color: "oklch(0.62 0.22 255 / 0.4)" }} />
+              <Briefcase className="h-10 w-10" style={{ color: `${BRAND}66` }} />
             </motion.div>
-            <p className="font-bold text-lg mb-1" style={{ color: "oklch(0.95 0.005 80)" }}>
+            <p className="font-bold text-lg mb-1" style={{ color: TEXT_BRIGHT }}>
               אין לך משרות עדיין
             </p>
-            <p className="text-sm mb-6" style={{ color: "oklch(1 0 0 / 35%)" }}>
+            <p className="text-sm mb-6" style={{ color: TEXT_FAINT }}>
               פרסם את המשרה הראשונה שלך ומצא עובדים תוך דקות
             </p>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
@@ -341,9 +350,9 @@ export default function MyJobs() {
                 onClick={() => navigate("/post-job")}
                 className="gap-2"
                 style={{
-                  background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                  background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
                   border: "none",
-                  boxShadow: "0 0 20px oklch(0.62 0.22 255 / 0.25)",
+                  boxShadow: `0 0 20px ${BRAND} / 0.25`,
                 }}
               >
                 <PlusCircle className="h-4 w-4" />
@@ -525,7 +534,7 @@ export default function MyJobs() {
                           size="sm"
                           className="gap-1.5 text-xs"
                           onClick={() => setDeleteId(job.id)}
-                          style={{ color: "oklch(0.65 0.22 25)" }}
+                          style={{ color: C_DANGER }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           מחק

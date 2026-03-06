@@ -16,6 +16,12 @@ import {
 } from "@shared/categories";
 import { useAuth } from "@/contexts/AuthContext";
 import { contactViaWhatsApp, callPhone, shareJobOnWhatsApp } from "@/components/JobCard";
+import {
+  C_DANGER as DANGER, C_WARNING as WARNING,
+  C_SUCCESS as SUCCESS,
+  C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
+  C_TEXT_ON_DARK_MID,
+} from "@/lib/colors";
 
 interface CarouselJob {
   id: number;
@@ -76,9 +82,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
   };
 
   const isUrgent = badge === "urgent";
-  const accentColor = isUrgent ? "oklch(0.65 0.22 25)" : "oklch(0.78 0.17 65)";
-  const accentBg = isUrgent ? "oklch(0.65 0.22 25 / 0.15)" : "oklch(0.78 0.17 65 / 0.12)";
-  const accentBorder = isUrgent ? "oklch(0.65 0.22 25 / 0.3)" : "oklch(0.78 0.17 65 / 0.25)";
+  const accentColor = isUrgent ? DANGER : WARNING;
+  const accentBg = isUrgent ? `${DANGER} / 0.15` : `${WARNING} / 0.12`;
+  const accentBorder = isUrgent ? `${DANGER} / 0.3` : `${WARNING} / 0.25`;
 
   return (
     <>
@@ -90,9 +96,10 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         className="w-full text-right rounded-2xl p-3 focus:outline-none overflow-hidden relative"
         aria-label={`פתח פרטים: ${job.title}`}
         style={{
-          background: "linear-gradient(135deg, oklch(0.16 0.025 265) 0%, oklch(0.14 0.020 275) 100%)",
+          background: `linear-gradient(135deg, ${C_DARK_BG} 0%, oklch(0.14 0.020 275) 100%)`,
+
           border: `1px solid ${accentBorder}`,
-          boxShadow: `0 4px 20px oklch(0 0 0 / 0.3), inset 0 1px 0 oklch(1 0 0 / 0.06)`,
+          boxShadow: "0 4px 20px oklch(0 0 0 / 0.3), inset 0 1px 0 oklch(1 0 0 / 0.06)",
         }}
       >
         {/* Subtle glow in corner */}
@@ -108,9 +115,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             <span
               className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
               style={{
-                background: "oklch(0.65 0.22 25 / 0.2)",
-                color: "oklch(0.80 0.18 25)",
-                border: "1px solid oklch(0.65 0.22 25 / 0.35)",
+                background: `${DANGER}33`,
+                color: `oklch(0.80 0.18 25)`,
+                border: `1px solid ${DANGER}59`,
               }}
             >
               <Zap className="h-3 w-3" />
@@ -121,9 +128,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             <span
               className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
               style={{
-                background: "oklch(0.78 0.17 65 / 0.15)",
+                background: `${WARNING}26`,
                 color: "oklch(0.88 0.14 75)",
-                border: "1px solid oklch(0.78 0.17 65 / 0.3)",
+                border: `1px solid ${WARNING}4d`,
               }}
             >
               <Flame className="h-3 w-3" />
@@ -151,7 +158,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {salaryStr && (
             <span
               className="font-bold"
-              style={{ color: "oklch(0.75 0.18 160)" }}
+              style={{ color: SUCCESS }}
             >
               {salaryStr}
             </span>
@@ -170,8 +177,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           className="rounded-t-3xl max-h-[90vh] overflow-y-auto"
           dir="rtl"
           style={{
-            background: "oklch(0.13 0.02 265)",
-            border: "1px solid oklch(1 0 0 / 10%)",
+            background: C_DARK_BG,
+            border: `1px solid ${C_DARK_CARD_BORDER}`,
             borderBottom: "none",
           }}
         >
@@ -186,9 +193,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
                 <span
                   className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
                   style={{
-                    background: "oklch(0.65 0.22 25 / 0.2)",
+                    background: `${DANGER}33`,
                     color: "oklch(0.80 0.18 25)",
-                    border: "1px solid oklch(0.65 0.22 25 / 0.35)",
+                    border: `1px solid ${DANGER}59`,
                   }}
                 >
                   <Zap className="h-3 w-3" />
@@ -199,9 +206,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
                 <span
                   className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
                   style={{
-                    background: "oklch(0.78 0.17 65 / 0.15)",
+                    background: `${WARNING}26`,
                     color: "oklch(0.88 0.14 75)",
-                    border: "1px solid oklch(0.78 0.17 65 / 0.3)",
+                    border: `1px solid ${WARNING}4d`,
                   }}
                 >
                   <Flame className="h-3 w-3" />
@@ -215,8 +222,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           <div
             className="space-y-3 mb-6 rounded-2xl p-4"
             style={{
-              background: "oklch(1 0 0 / 4%)",
-              border: "1px solid oklch(1 0 0 / 8%)",
+              background: C_DARK_CARD,
+              border: `1px solid ${C_DARK_CARD_BORDER}`,
             }}
           >
             <div className="flex items-center gap-2 text-sm text-white/70">

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { C_BORDER, C_SHIMMER_BASE, C_SURFACE_HEX, S_CARD } from "@/lib/colors";
 
 // ── Shimmer block (light theme) ───────────────────────────────────────────────
 function Shimmer({
@@ -19,7 +20,7 @@ function Shimmer({
         width,
         height,
         borderRadius: rounded,
-        background: "#e2e8f0",
+        background: C_SHIMMER_BASE,
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
@@ -45,11 +46,11 @@ export default function JobCardSkeleton() {
   return (
     <div
       style={{
-        background: "white",
-        border: "1px solid #e2e8f0",
+        background: C_SURFACE_HEX,
+        border: `1px solid ${C_BORDER}`,
         borderRadius: "1rem",
         padding: "1rem",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        boxShadow: S_CARD,
       }}
       dir="rtl"
     >
@@ -102,11 +103,11 @@ export function CarouselJobCardSkeleton() {
   return (
     <div
       style={{
-        background: "white",
-        border: "1px solid #e2e8f0",
+        background: C_SURFACE_HEX,
+        border: `1px solid ${C_BORDER}`,
         borderRadius: "1rem",
         padding: "1rem",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        boxShadow: S_CARD,
         width: 220,
         flexShrink: 0,
       }}

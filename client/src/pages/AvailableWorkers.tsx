@@ -7,6 +7,7 @@ import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, L
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
+import { C_WHATSAPP } from "@/lib/colors";
 
 function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -210,7 +211,7 @@ export default function AvailableWorkers() {
                         <Button
                           size="sm"
                           className="flex-1 gap-1.5 text-xs text-white"
-                          style={{ backgroundColor: "#25D366" }}
+                          style={{ backgroundColor: C_WHATSAPP }}
                           onClick={() => contactWorker(worker.userPhone, worker.userName ?? "עובד")}
                         >
                           <MessageCircle className="h-3.5 w-3.5" />

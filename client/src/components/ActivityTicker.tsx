@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { formatSalary } from "@shared/categories";
+import {
+  C_DARK_BG as DARK_BG, C_SUCCESS as SUCCESS_GREEN,
+  C_TEXT_ON_DARK_MID as TEXT_MID, C_TEXT_ON_DARK_FAINT as TEXT_FAINT,
+  C_DARK_CARD as DARK_CARD, C_DARK_CARD_BORDER as DARK_CARD_BORDER,
+} from "@/lib/colors";
 
 type FeedItem = {
   type: "job" | "worker";
@@ -77,21 +82,21 @@ export default function ActivityTicker() {
       dir="rtl"
       style={{
         height: "36px",
-        background: "oklch(0.14 0.025 265)",
-        borderBottom: "1px solid oklch(1 0 0 / 8%)",
+        background: DARK_BG,
+        borderBottom: `1px solid ${DARK_CARD_BORDER}`,
       }}
     >
       <div className="max-w-2xl mx-auto px-4 h-full flex items-center gap-3">
         {/* Live indicator */}
         <span
           className="flex items-center gap-1.5 shrink-0 text-xs font-bold"
-          style={{ color: "oklch(0.75 0.18 160)" }}
+          style={{ color: SUCCESS_GREEN }}
         >
           <span
             className="w-2 h-2 rounded-full shrink-0"
             style={{
-              background: "oklch(0.65 0.22 160)",
-              boxShadow: "0 0 6px oklch(0.65 0.22 160 / 0.6)",
+              background: SUCCESS_GREEN,
+              boxShadow: `0 0 6px ${SUCCESS_GREEN}99`,
               animation: "pulse-ring 2s infinite",
             }}
           />
@@ -99,14 +104,14 @@ export default function ActivityTicker() {
         </span>
         <span
           className="w-px h-4 shrink-0"
-          style={{ background: "oklch(1 0 0 / 12%)" }}
+          style={{ background: DARK_CARD }}
         />
         {/* Rotating message */}
         <div className="flex-1 overflow-hidden">
           <p
             className="text-sm font-medium whitespace-nowrap truncate"
             style={{
-              color: "oklch(1 0 0 / 65%)",
+              color: TEXT_MID,
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "translateY(0)" : "translateY(-4px)",
               transition: "opacity 0.4s ease, transform 0.4s ease",
@@ -118,7 +123,7 @@ export default function ActivityTicker() {
         {/* Counter */}
         <span
           className="shrink-0 text-xs"
-          style={{ color: "oklch(1 0 0 / 25%)" }}
+          style={{ color: TEXT_FAINT }}
         >
           {currentIndex + 1}/{messages.length}
         </span>

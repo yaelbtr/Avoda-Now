@@ -16,6 +16,10 @@ import {
 import BrandLoader from "@/components/BrandLoader";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import {
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
+  C_DANGER_HEX, C_TEXT_MUTED, C_SUCCESS_HEX,
+} from "@/lib/colors";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
@@ -331,14 +335,14 @@ export default function FindJobs() {
                 onClick={() => setCategory("all")}
                 className="px-3 py-1 rounded-full text-xs font-medium transition-all"
                 style={category === "all" ? {
-                  background: "#3c83f6",
+                  background: C_BRAND_HEX,
                   color: "white",
-                  border: "1px solid #3c83f6",
-                  boxShadow: "0 2px 8px rgba(60,131,246,0.3)",
+                  border: `1px solid ${C_BRAND_HEX}`,
+                  boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
                 } : {
-                  background: "#f5f7f8",
-                  color: "#64748b",
-                  border: "1px solid #e2e8f0",
+                  background: C_PAGE_BG_HEX,
+                  color: C_TEXT_MUTED,
+                  border: `1px solid ${C_BORDER}`,
                 }}
               >
                 הכל
@@ -349,12 +353,12 @@ export default function FindJobs() {
                   onClick={() => setCategory(cat.value)}
                   className="px-3 py-1 rounded-full text-xs font-medium transition-all"
                   style={category === cat.value ? {
-                    background: "#3c83f6",
+                    background: C_BRAND_HEX,
                     color: "white",
-                    border: "1px solid #3c83f6",
-                    boxShadow: "0 2px 8px rgba(60,131,246,0.3)",
+                    border: `1px solid ${C_BRAND_HEX}`,
+                    boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
                   } : {
-                    background: "#f5f7f8",
+                    background: C_BRAND_HEX,
                     color: "#64748b",
                     border: "1px solid #e2e8f0",
                   }}
@@ -487,13 +491,14 @@ export default function FindJobs() {
                         onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
                         className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
                         style={radiusKm === r.value ? {
-                          background: "#3c83f6",
+                          background: C_BRAND_HEX,
                           color: "white",
                           border: "1px solid #3c83f6",
                         } : {
-                          background: "#f5f7f8",
-                          color: "#64748b",
-                          border: "1px solid #e2e8f0",
+                    background: C_PAGE_BG_HEX,
+                    color: C_TEXT_MUTED,
+                    border: `1px solid ${C_BORDER}`,
+
                         }}
                       >
                         {r.label}

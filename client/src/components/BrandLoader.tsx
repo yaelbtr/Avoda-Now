@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Briefcase } from "lucide-react";
+import { C_BRAND, C_BRAND_LIGHT, C_BRAND_MID, C_PAGE_BG } from "@/lib/colors";
 
-const BLUE = "oklch(0.58 0.20 255)";
-const BLUE_LIGHT = "oklch(0.94 0.03 255)";
-const BLUE_MID = "oklch(0.75 0.12 255)";
+const BLUE = C_BRAND;
+const BLUE_LIGHT = C_BRAND_LIGHT;
+const BLUE_MID = C_BRAND_MID;
 
 interface BrandLoaderProps {
   /** Size variant */
@@ -136,7 +137,7 @@ export default function BrandLoader({ size = "md", label, fullPage = false }: Br
     return (
       <motion.div
         className="fixed inset-0 z-50 flex items-center justify-center"
-        style={{ background: "oklch(0.97 0.006 247)" }}
+        style={{ background: C_PAGE_BG }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

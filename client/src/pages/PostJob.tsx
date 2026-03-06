@@ -20,6 +20,11 @@ import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
+import {
+  C_SUCCESS as SUCCESS, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
+  C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
+  C_TEXT_ON_DARK_FAINT as TEXT_FAINT, C_BRAND as BRAND,
+} from "@/lib/colors";
 
 const schema = z.object({
   title: z.string().min(2, "נדרש כותרת"),
@@ -253,7 +258,7 @@ export default function PostJob() {
         <div
           className="min-h-screen flex items-center justify-center px-4"
           dir="rtl"
-          style={{ background: "oklch(0.10 0.015 265)" }}
+          style={{ background: C_DARK_BG }}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.7, y: 40 }}
@@ -261,10 +266,10 @@ export default function PostJob() {
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
             className="text-center max-w-sm w-full"
             style={{
-              background: "oklch(1 0 0 / 5%)",
+              background: C_DARK_CARD,
               backdropFilter: "blur(20px) saturate(180%)",
               WebkitBackdropFilter: "blur(20px) saturate(180%)",
-              border: "1px solid oklch(1 0 0 / 12%)",
+              border: `1px solid ${C_DARK_CARD_BORDER}`,
               borderRadius: "1.5rem",
               padding: "2.5rem 2rem",
             }}
@@ -279,8 +284,8 @@ export default function PostJob() {
                 width: 88,
                 height: 88,
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, oklch(0.60 0.22 160) 0%, oklch(0.52 0.22 150) 100%)",
-                boxShadow: "0 0 40px oklch(0.60 0.22 160 / 0.5), 0 0 80px oklch(0.60 0.22 160 / 0.2)",
+                background: `linear-gradient(135deg, ${SUCCESS} 0%, oklch(0.52 0.22 150) 100%)`,
+                boxShadow: `0 0 40px ${SUCCESS} / 0.5, 0 0 80px ${SUCCESS} / 0.2`,
               }}
             >
               <CheckCircle2 className="h-10 w-10 text-white" />
@@ -292,7 +297,7 @@ export default function PostJob() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.4 }}
               className="text-3xl font-black mb-2"
-              style={{ color: "oklch(0.95 0.005 80)" }}
+              style={{ color: TEXT_BRIGHT }}
             >
               🎉 המשרה פורסמה!
             </motion.h2>
@@ -303,7 +308,7 @@ export default function PostJob() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.4 }}
               className="text-base mb-1"
-              style={{ color: "oklch(1 0 0 / 55%)" }}
+              style={{ color: TEXT_MID }}
             >
               עובדים יוכלו לראות אותה עכשיו
             </motion.p>
@@ -314,7 +319,7 @@ export default function PostJob() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
               className="text-sm"
-              style={{ color: "oklch(1 0 0 / 30%)" }}
+              style={{ color: TEXT_FAINT }}
             >
               מעביר אותך לדף המשרה...
             </motion.p>
@@ -324,7 +329,7 @@ export default function PostJob() {
               className="mt-6 rounded-full overflow-hidden"
               style={{
                 height: 4,
-                background: "oklch(1 0 0 / 8%)",
+                background: C_DARK_CARD,
               }}
             >
               <motion.div
@@ -334,7 +339,7 @@ export default function PostJob() {
                 style={{
                   height: "100%",
                   borderRadius: "9999px",
-                  background: "linear-gradient(90deg, oklch(0.60 0.22 160) 0%, oklch(0.72 0.22 240) 100%)",
+                  background: `linear-gradient(90deg, ${SUCCESS} 0%, ${BRAND} 100%)`,
                 }}
               />
             </motion.div>

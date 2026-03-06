@@ -17,14 +17,13 @@ import {
   HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw,
 } from "lucide-react";
 
-// Design tokens (light theme)
-const BG = "oklch(1 0 0)";
-const BORDER = "oklch(0.92 0.006 247)";
-const TEXT_PRIMARY = "oklch(0.20 0.015 265)";
-const TEXT_MUTED = "oklch(0.50 0.010 265)";
-const BLUE = "oklch(0.58 0.20 255)";
-const BLUE_BG = "oklch(0.94 0.015 255)";
-const BLUE_ACTIVE_BORDER = "oklch(0.58 0.20 255 / 0.3)";
+// Design tokens (light theme) — sourced from @/lib/colors
+import {
+  C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
+  C_SURFACE as BG, C_BORDER_OKLCH as BORDER,
+  C_TEXT_PRIMARY as TEXT_PRIMARY, C_TEXT_MUTED as TEXT_MUTED,
+  C_BRAND_ACTIVE_BORDER as BLUE_ACTIVE_BORDER,
+} from "@/lib/colors";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();

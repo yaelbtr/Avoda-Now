@@ -23,6 +23,10 @@ import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSk
 import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 import BrandLoader from "@/components/BrandLoader";
+import {
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
+  C_SUCCESS_HEX, C_TEXT_MUTED,
+} from "@/lib/colors";
 
 const CATEGORIES = [
   { value: "kitchen", label: "מסעדות", icon: "🍳" },
@@ -233,9 +237,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 size="lg"
                 className="w-full font-bold text-base h-12 gap-2 relative overflow-hidden text-white"
                 style={{
-                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
                   border: "none",
-                  boxShadow: "0 4px 20px rgba(60,131,246,0.35)",
+                  boxShadow: `0 4px 20px ${C_BRAND_HEX}59`,
                 }}
                 onClick={() => navigate("/find-jobs")}
               >

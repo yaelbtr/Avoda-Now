@@ -1,6 +1,11 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame } from "lucide-react";
+import {
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER,
+  C_DANGER_HEX, C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
+  G_SUCCESS, G_URGENT, G_WHATSAPP,
+} from "@/lib/colors";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -117,9 +122,9 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
       transition={{ duration: 0.2 }}
       className="rounded-2xl p-4 relative overflow-hidden bg-white border"
       style={{
-        borderColor: job.isUrgent ? "rgba(239,68,68,0.25)" : "#e2e8f0",
+        borderColor: job.isUrgent ? `${C_DANGER_HEX}40` : C_BORDER,
         boxShadow: job.isUrgent
-          ? "0 2px 12px rgba(239,68,68,0.08)"
+          ? `0 2px 12px ${C_DANGER_HEX}14`
           : "0 1px 4px rgba(0,0,0,0.06)",
       }}
       dir="rtl"
@@ -128,7 +133,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
       {job.isUrgent && (
         <div
           className="absolute top-0 right-0 w-1 h-full rounded-r-2xl"
-          style={{ background: "linear-gradient(180deg, #ef4444 0%, #f97316 100%)" }}
+          style={{ background: G_URGENT }}
         />
       )}
 
@@ -140,9 +145,9 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
             className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
             style={{
               background: job.isUrgent
-                ? "linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(249,115,22,0.08) 100%)"
-                : "linear-gradient(135deg, rgba(60,131,246,0.1) 0%, rgba(60,131,246,0.05) 100%)",
-              border: job.isUrgent ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(60,131,246,0.15)",
+                ? `linear-gradient(135deg, ${C_DANGER_HEX}1a 0%, ${C_DANGER_HEX}14 100%)`
+                : `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
+              border: job.isUrgent ? `1px solid ${C_DANGER_HEX}33` : `1px solid ${C_BRAND_HEX}26`,
             }}
           >
             {getCategoryIcon(job.category)}
@@ -194,7 +199,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
         <div className="shrink-0 text-left">
           <span
             className="text-sm font-bold whitespace-nowrap"
-            style={{ color: isVolunteer ? "#16a34a" : "#3c83f6" }}
+            style={{ color: isVolunteer ? C_SUCCESS_HEX : C_BRAND_HEX }}
           >
             {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
           </span>
@@ -231,7 +236,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
         {countdown && (
           <span
             className="flex items-center gap-1 font-medium"
-            style={{ color: countdown === "פג תוקף" ? "#ef4444" : "#f97316" }}
+            style={{ color: countdown === "פג תוקף" ? C_DANGER_HEX : "#f97316" }}
           >
             <Timer className="h-3 w-3 shrink-0" />
             {countdown}
@@ -248,7 +253,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
                 size="sm"
                 className="gap-1.5 text-xs w-full text-white"
                 style={{
-                  background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                  background: G_SUCCESS,
                   border: "none",
                 }}
                 onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}

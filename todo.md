@@ -444,3 +444,12 @@
 
 ## Mobile UX — Role Selection Cards
 - [x] Compact RoleSelectionScreen cards to fit mobile viewport (no scroll needed)
+
+## Color Palette Centralization
+- [x] Audit all hardcoded color values across codebase
+- [x] Create client/src/lib/colors.ts with named TS constants
+- [x] Wire CSS custom properties in index.css for Tailwind-compatible tokens
+- [x] Replace hardcoded colors in RoleSelectionScreen, BrandLoader, JobCard, JobCardSkeleton
+- [x] Replace hardcoded colors in HomeWorker, HomeEmployer, FindJobs, JobDetails
+- [x] Replace hardcoded colors in remaining pages and components (Navbar, Footer, ActivityTicker, CarouselJobCard, MyJobs, PostJob, AvailableWorkers)
+- [x] Verify 0 TypeScript errors and all 83 tests pass

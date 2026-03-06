@@ -46,6 +46,47 @@
 
 :root {
   --radius: 0.5rem;
+
+  /* ── AvodaNow Brand Palette ────────────────────────────────────────────────
+   * Edit these variables to swap the entire site palette.
+   * TS constants mirror these in client/src/lib/colors.ts
+   * ─────────────────────────────────────────────────────────────────────── */
+
+  /* Primary blue */
+  --brand:           oklch(0.58 0.20 255);   /* #3c83f6 */
+  --brand-dark:      oklch(0.48 0.22 255);   /* #2563eb */
+  --brand-mid:       oklch(0.72 0.22 240);   /* icon tint */
+  --brand-light:     oklch(0.94 0.03 255);   /* tinted bg */
+  --brand-subtle:    oklch(0.62 0.22 255);   /* slightly brighter */
+
+  /* Success / green */
+  --success:         oklch(0.65 0.22 160);   /* #16a34a */
+  --success-dark:    oklch(0.52 0.22 150);   /* #15803d */
+  --success-light:   oklch(0.65 0.22 160 / 0.12);
+
+  /* Warning / orange */
+  --warning:         oklch(0.78 0.17 65);
+  --warning-light:   oklch(0.78 0.17 65 / 0.12);
+
+  /* Danger / red */
+  --danger:          oklch(0.65 0.22 25);    /* #ef4444 */
+  --danger-light:    oklch(0.65 0.22 25 / 0.12);
+
+  /* Page / surface */
+  --page-bg:         oklch(0.97 0.006 247);  /* #f5f7f8 */
+  --surface:         oklch(1 0 0);           /* white */
+  --border-color:    oklch(0.93 0.006 247);  /* #e2e8f0 */
+
+  /* Text */
+  --text-primary:    oklch(0.18 0.015 265);
+  --text-secondary:  oklch(0.42 0.012 265);
+  --text-muted:      oklch(0.62 0.008 265);
+  --text-faint:      oklch(0.65 0.008 265);
+
+  /* WhatsApp */
+  --whatsapp:        #25D366;
+  --whatsapp-dark:   #1da851;
+
   /* Light theme — #3c83f6 primary blue */
   --background: oklch(0.97 0.004 247);   /* #f5f7f8 */
   --foreground: oklch(0.20 0.015 265);   /* slate-900 */

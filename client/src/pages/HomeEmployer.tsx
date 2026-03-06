@@ -14,6 +14,9 @@ import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
+import {
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
+} from "@/lib/colors";
 
 const HOW_IT_WORKS_EMPLOYER = [
   { icon: Plus, step: "1", title: "פרסם משרה", desc: "מלא פרטי המשרה — סוג עבודה, מיקום, שכר ושעות" },
@@ -78,7 +81,7 @@ export default function HomeEmployer() {
   const workers = workersQuery.data ?? [];
 
   return (
-    <div dir="rtl" className="bg-[#f5f7f8] min-h-screen">
+    <div dir="rtl" className="min-h-screen" style={{ background: C_PAGE_BG_HEX }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-white border-b border-gray-100">
@@ -146,9 +149,9 @@ export default function HomeEmployer() {
                 size="lg"
                 className="w-full font-bold text-base h-12 gap-2 relative overflow-hidden text-white"
                 style={{
-                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
                   border: "none",
-                  boxShadow: "0 4px 20px rgba(60,131,246,0.35)",
+                  boxShadow: `0 4px 20px ${C_BRAND_HEX}59`,
                 }}
                 onClick={handlePostJob}
               >
@@ -231,7 +234,7 @@ export default function HomeEmployer() {
                   onClick={handlePostJob}
                   className="gap-2 text-white"
                   style={{
-                    background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                    background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
                     border: "none",
                   }}
                 >
@@ -247,7 +250,7 @@ export default function HomeEmployer() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.08, duration: 0.3 }}
-                    className="rounded-xl p-3 flex items-center gap-3 bg-[#f5f7f8] border border-gray-100 hover:border-blue-200 transition-all"
+                    className="rounded-xl p-3 flex items-center gap-3 border border-gray-100 hover:border-blue-200 transition-all" style={{ background: C_PAGE_BG_HEX }}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-800 truncate">{job.title}</p>
@@ -299,9 +302,9 @@ export default function HomeEmployer() {
                 onClick={handlePostJob}
                 className="w-full gap-2 text-white relative overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
                   border: "none",
-                  boxShadow: "0 4px 16px rgba(60,131,246,0.3)",
+                  boxShadow: `0 4px 16px ${C_BRAND_HEX}4d`,
                 }}
               >
                 <Plus className="h-4 w-4" />
@@ -379,7 +382,7 @@ export default function HomeEmployer() {
                       style={{
                         width: i === activeWorkerIdx ? "16px" : "8px",
                         height: "8px",
-                        background: i === activeWorkerIdx ? "#22c55e" : "#e2e8f0",
+                        background: i === activeWorkerIdx ? "#22c55e" : C_BORDER,
                       }}
                     />
                   ))}
@@ -427,7 +430,7 @@ export default function HomeEmployer() {
                   <Icon className="h-6 w-6 text-orange-500" />
                   <span
                     className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)" }}
+                    style={{ background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)` }}
                   >
                     {step}
                   </span>
@@ -459,9 +462,9 @@ export default function HomeEmployer() {
               onClick={handlePostJob}
               className="gap-2 px-8 text-white relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
                 border: "none",
-                boxShadow: "0 8px 24px rgba(60,131,246,0.35)",
+                boxShadow: `0 8px 24px ${C_BRAND_HEX}59`,
               }}
             >
               <motion.div

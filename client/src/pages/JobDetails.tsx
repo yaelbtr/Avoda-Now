@@ -21,6 +21,10 @@ import {
 } from "@shared/categories";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
+import {
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
+  C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
+} from "@/lib/colors";
 
 const SITE_URL = "https://job-now.manus.space";
 
@@ -56,7 +60,7 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
 // ── Light card style helper ─────────────────────────────────────────────
 const lightCard: React.CSSProperties = {
   background: "white",
-  border: "1px solid #e2e8f0",
+  border: `1px solid ${C_BORDER}`,
   borderRadius: "1rem",
   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
 };
@@ -121,7 +125,7 @@ export default function JobDetails() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 bg-[#f5f7f8]">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" style={{ background: C_PAGE_BG_HEX }}>
         <BrandLoader size="lg" label="טוען פרטי משרה..." />
       </div>
     );
@@ -177,7 +181,7 @@ export default function JobDetails() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#f5f7f8]"
+      className="min-h-screen" style={{ background: C_PAGE_BG_HEX }}
     >
 
 
@@ -210,8 +214,8 @@ export default function JobDetails() {
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
               style={{
-                background: "linear-gradient(135deg, rgba(60,131,246,0.1) 0%, rgba(60,131,246,0.05) 100%)",
-                border: "1px solid rgba(60,131,246,0.15)",
+                background: `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
+                border: `1px solid ${C_BRAND_HEX}26`,
               }}
             >
               {getCategoryIcon(job.category)}
@@ -370,8 +374,8 @@ export default function JobDetails() {
                 <button
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all"
                   style={{
-                    background: "linear-gradient(135deg, #25D366 0%, #1da851 100%)",
-                    boxShadow: "0 0 20px #25D366 / 0.3",
+                    background: G_WHATSAPP,
+                    boxShadow: "0 0 20px rgba(37,211,102,0.3)",
                   }}
                 >
                   <WhatsAppIcon size="lg" />
@@ -403,8 +407,8 @@ export default function JobDetails() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
                 style={{
-                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
-                  boxShadow: "0 4px 16px rgba(60,131,246,0.3)",
+                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
+                  boxShadow: `0 4px 16px ${C_BRAND_HEX}4d`,
                 }}
                 onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
               >
@@ -436,7 +440,7 @@ export default function JobDetails() {
             className="block mt-3"
           >
             <button
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all bg-[#f5f7f8] border border-gray-200 text-gray-600 hover:bg-gray-100"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-600 hover:bg-gray-100" style={{ background: C_PAGE_BG_HEX }}
             >
               <Share2 className="h-4 w-4" />
               שתף עבודה ב-WhatsApp
@@ -458,8 +462,8 @@ export default function JobDetails() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
                 style={{
-                  background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-                  boxShadow: "0 4px 16px rgba(22,163,74,0.3)",
+                  background: `linear-gradient(135deg, ${C_SUCCESS_HEX} 0%, ${C_SUCCESS_DARK_HEX} 100%)`,
+                  boxShadow: `0 4px 16px ${C_SUCCESS_HEX}4d`,
                 }}
                 onClick={() => markFilledMutation.mutate({ id: job.id })}
                 disabled={markFilledMutation.isPending}

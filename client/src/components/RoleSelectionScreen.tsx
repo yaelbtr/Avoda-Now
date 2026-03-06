@@ -2,6 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users } from "lucide-react";
+import {
+  C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT,
+  C_TEXT_PRIMARY, C_TEXT_SECONDARY, C_TEXT_MUTED,
+  C_PAGE_BG, S_BRAND_MD, S_BRAND_LG,
+} from "@/lib/colors";
 
 interface RoleSelectionScreenProps {
   onSelected: (mode: "worker" | "employer") => void;
@@ -11,14 +16,6 @@ const WORKER_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCXZrKFndAo95eFwCh4AIII3H1E4Yu7Be02H1TRn5xaWhTNgB5AHDOdrQkXxe7wDOeZkg3vyRr4tjK3KrsuDX8NAVrioZsGEI0z4Bm-_ozdoQaCKpuOSWtQt7kU78geKlXTdq6S3_tym2woptkmRNCnOqmVsT8RxMCq58MbV3PANPZIJG7OtClCO021xREN6to9i8G4Z3V3BP9ox4F9U0c2OqkTa-9QGhYWV0k0sS-6iqkJu27MX-VnikcJwtaNtmD2Sy9r4km25g";
 const EMPLOYER_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBCVfysXcSHKuS_fZeUhXSL1eddN2CFaf5cM6GfP2K6-UlJNdRcasgKvnC-TrOiE6kCPfhJ7aKwMIo_24URtLV2InHHRAFLGwjItj3HOpz2c8RhJr9_o1SOwmZUP78nSpHL7aytS7SH1M62Lr1FazjB-ChdpvXwmhth5CWwYlHIlsGR6DBMIDsqdoR0oUtn2GmA4x618u39wjuu5ZiOGA1Be20pmJSL9q4nwBCIvwVDNkq8SaDRFYlPDiRu5i8_WfphQgd_-F6-mA";
-
-const BLUE = "oklch(0.58 0.20 255)";
-const BLUE_DARK = "oklch(0.48 0.22 255)";
-const BLUE_LIGHT = "oklch(0.94 0.03 255)";
-const TEXT_PRIMARY = "oklch(0.18 0.015 265)";
-const TEXT_SECONDARY = "oklch(0.42 0.012 265)";
-const TEXT_MUTED = "oklch(0.62 0.008 265)";
-const BG = "oklch(0.97 0.006 247)";
 
 interface RoleCardProps {
   role: "worker" | "employer";
@@ -64,14 +61,14 @@ function RoleCard({
       style={{
         background: "oklch(1 0 0)",
         boxShadow: hovered
-          ? `0 12px 40px oklch(0.58 0.20 255 / 0.18), 0 0 0 2px ${BLUE}`
+          ? `0 12px 40px oklch(0.58 0.20 255 / 0.18), 0 0 0 2px ${C_BRAND}`
           : "0 2px 12px oklch(0 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.04)",
-        border: `1.5px solid ${hovered ? BLUE : "oklch(0.93 0.006 247)"}`,
+        border: `1.5px solid ${hovered ? C_BRAND : "oklch(0.93 0.006 247)"}`,
         transition: "box-shadow 0.3s ease, border-color 0.3s ease",
         minHeight: 0,
       }}
     >
-      {/* Left: image strip (portrait, narrow) */}
+      {/* Left: image strip */}
       <div className="relative overflow-hidden shrink-0" style={{ width: "110px" }}>
         <motion.div
           className="absolute inset-0 bg-cover bg-center"
@@ -79,20 +76,18 @@ function RoleCard({
           animate={{ scale: hovered ? 1.06 : 1 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         />
-        {/* Gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "linear-gradient(to right, oklch(0 0 0 / 0.0) 60%, oklch(0 0 0 / 0.15) 100%)",
+            background: "linear-gradient(to right, oklch(0 0 0 / 0.0) 60%, oklch(0 0 0 / 0.15) 100%)",
           }}
         />
-        {/* Floating badge — vertical */}
+        {/* Floating badge */}
         <motion.div
           className="absolute bottom-3 right-0 left-0 mx-auto flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold"
           style={{
             background: "oklch(1 0 0 / 0.92)",
-            color: BLUE,
+            color: C_BRAND,
             backdropFilter: "blur(8px)",
             boxShadow: "0 2px 8px oklch(0 0 0 / 0.12)",
             width: "fit-content",
@@ -117,7 +112,7 @@ function RoleCard({
               style={{
                 width: 36,
                 height: 36,
-                background: BLUE_LIGHT,
+                background: C_BRAND_LIGHT,
                 border: `1.5px solid oklch(0.80 0.08 255)`,
               }}
             >
@@ -125,33 +120,28 @@ function RoleCard({
             </div>
             <span
               className="text-[11px] font-semibold uppercase tracking-widest"
-              style={{ color: BLUE }}
+              style={{ color: C_BRAND }}
             >
               {subtitle}
             </span>
           </div>
 
-          <h2 className="text-base font-bold mb-1 leading-snug" style={{ color: TEXT_PRIMARY }}>
+          <h2 className="text-base font-bold mb-1 leading-snug" style={{ color: C_TEXT_PRIMARY }}>
             {title}
           </h2>
-          <p className="text-xs leading-relaxed" style={{ color: TEXT_SECONDARY }}>
+          <p className="text-xs leading-relaxed" style={{ color: C_TEXT_SECONDARY }}>
             {description}
           </p>
         </div>
 
         {/* CTA Button */}
         <motion.button
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
           disabled={disabled}
           className="mt-3 w-full py-2.5 rounded-xl font-semibold text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 relative overflow-hidden text-sm"
           style={{
-            background: `linear-gradient(135deg, ${BLUE} 0%, ${BLUE_DARK} 100%)`,
-            boxShadow: hovered
-              ? `0 6px 18px oklch(0.58 0.20 255 / 0.40)`
-              : `0 3px 10px oklch(0.58 0.20 255 / 0.25)`,
+            background: `linear-gradient(135deg, ${C_BRAND} 0%, ${C_BRAND_DARK} 100%)`,
+            boxShadow: hovered ? S_BRAND_LG : S_BRAND_MD,
           }}
           whileTap={{ scale: 0.97 }}
         >
@@ -196,22 +186,21 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
           transition={{ duration: 0.35 }}
           className="w-full min-h-screen flex items-center justify-center"
           dir="rtl"
-          style={{ background: BG }}
+          style={{ background: C_PAGE_BG }}
         >
           <div className="flex flex-col items-center px-4 py-6 max-w-lg mx-auto w-full">
-            {/* Welcome header — compact */}
+            {/* Welcome header */}
             <motion.header
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="text-center mb-5 w-full"
             >
-              {/* Top pill */}
               <motion.div
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
                 style={{
-                  background: BLUE_LIGHT,
-                  color: BLUE,
+                  background: C_BRAND_LIGHT,
+                  color: C_BRAND,
                   border: `1px solid oklch(0.80 0.08 255)`,
                 }}
                 initial={{ opacity: 0, scale: 0.85 }}
@@ -224,22 +213,22 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
               <h1
                 className="text-3xl font-black mb-1.5 tracking-tight"
-                style={{ color: TEXT_PRIMARY, lineHeight: 1.15 }}
+                style={{ color: C_TEXT_PRIMARY, lineHeight: 1.15 }}
               >
                 ברוכים הבאים ל-
-                <span style={{ color: BLUE }}>AvodaNow</span>
+                <span style={{ color: C_BRAND }}>AvodaNow</span>
               </h1>
-              <p style={{ color: TEXT_MUTED }} className="text-sm">
+              <p style={{ color: C_TEXT_MUTED }} className="text-sm">
                 איך נוכל לעזור לך היום?
               </p>
             </motion.header>
 
-            {/* Cards — horizontal layout on mobile */}
+            {/* Cards */}
             <div className="flex flex-col gap-3 w-full">
               <RoleCard
                 role="worker"
                 image={WORKER_IMG}
-                icon={<HardHat className="h-5 w-5" style={{ color: BLUE }} />}
+                icon={<HardHat className="h-5 w-5" style={{ color: C_BRAND }} />}
                 title="אני מחפש עבודה"
                 subtitle="לעובדים"
                 description="מציאת עבודה בקלות ובמהירות. הגש מועמדות למשרות המבטיחות ביותר בלחיצת כפתור."
@@ -255,7 +244,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
               <RoleCard
                 role="employer"
                 image={EMPLOYER_IMG}
-                icon={<Briefcase className="h-5 w-5" style={{ color: BLUE }} />}
+                icon={<Briefcase className="h-5 w-5" style={{ color: C_BRAND }} />}
                 title="אני מחפש עובדים"
                 subtitle="למעסיקים"
                 description="גיוס יעיל והתאמה מהירה. מצא את המועמדים המושלמים לעסק שלך תוך זמן קצר."
@@ -272,7 +261,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
             {/* Bottom trust line */}
             <motion.p
               className="mt-4 text-xs text-center"
-              style={{ color: TEXT_MUTED }}
+              style={{ color: C_TEXT_MUTED }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}

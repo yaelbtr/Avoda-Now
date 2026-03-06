@@ -216,7 +216,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                 style={{ color: C_TEXT_PRIMARY, lineHeight: 1.15 }}
               >
                 ברוכים הבאים ל-
-                <span style={{ color: C_BRAND }}>AvodaNow</span>
+                <span style={{ color: C_TEXT_PRIMARY }}>Avoda</span><span style={{ color: C_BRAND }}>Now</span>
               </h1>
               <p style={{ color: C_TEXT_MUTED }} className="text-sm">
                 איך נוכל לעזור לך היום?

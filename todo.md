@@ -412,3 +412,6 @@
 
 ## Navbar Light Theme (Mar 6 2026)
 - [x] Update Navbar to white background, dark text, blue accent
+
+## Footer Light Theme (Mar 6 2026)
+- [x] Update Footer to light-gray background and dark text

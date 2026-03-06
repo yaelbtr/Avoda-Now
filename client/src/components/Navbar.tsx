@@ -109,7 +109,7 @@ export default function Navbar() {
                 <Briefcase className="h-4 w-4" style={{ color: BLUE }} />
               </motion.div>
               <span className="font-black text-lg" style={{ color: TEXT_PRIMARY }}>
-                Job<span style={{ color: BLUE }}>Now</span>
+                Avoda<span style={{ color: BLUE }}>Now</span>
               </span>
             </Link>
 

@@ -30,7 +30,7 @@ export default function Footer() {
                 <Briefcase className="h-3.5 w-3.5" style={{ color: BLUE }} />
               </div>
               <span className="font-black text-lg" style={{ color: TEXT_PRIMARY }}>
-                Job<span style={{ color: BLUE }}>Now</span>
+                Avoda<span style={{ color: BLUE }}>Now</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed text-right" style={{ color: TEXT_MUTED }}>

@@ -59,13 +59,14 @@ function Router() {
   // each get their own animation.
   const routeKey = location.split("/")[1] || "home";
 
+  // If role selection is needed, show ONLY that screen (no Navbar/Footer behind it)
+  if (needsRoleSelection) {
+    return <RoleSelectionScreen onSelected={handleRoleSelected} />;
+  }
+
+  // If welcome screen is active, show it on top of the full layout
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
-      {/* Role selection overlay */}
-      {needsRoleSelection && (
-        <RoleSelectionScreen onSelected={handleRoleSelected} />
-      )}
-
       {/* Welcome screen — shown once after role selection */}
       {showWelcome && welcomeMode && (
         <WelcomeScreen

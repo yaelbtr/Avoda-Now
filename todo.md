@@ -400,3 +400,6 @@
 
 ## Bug Fix — Scrollable RoleSelectionScreen (Mar 6 2026)
 - [x] Fix RoleSelectionScreen overflow/scroll issue (fixed inset-0 prevents scrolling)
+
+## Bug Fix — RoleSelectionScreen Overlay (Mar 6 2026)
+- [x] Fix RoleSelectionScreen showing as overlay instead of replacing page content

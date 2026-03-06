@@ -59,12 +59,6 @@ function Router() {
   // each get their own animation.
   const routeKey = location.split("/")[1] || "home";
 
-  // If role selection is needed, show ONLY that screen (no Navbar/Footer behind it)
-  if (needsRoleSelection) {
-    return <RoleSelectionScreen onSelected={handleRoleSelected} />;
-  }
-
-  // If welcome screen is active, show it on top of the full layout
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
       {/* Welcome screen — shown once after role selection */}
@@ -86,25 +80,29 @@ function Router() {
         enter animation starts, preventing two pages overlapping.
       */}
       <main className="flex-1" style={{ overflow: "hidden" }}>
-        <AnimatePresence mode="wait" initial={false}>
-          <PageTransition routeKey={routeKey}>
-            <Switch>
-              <Route path="/" component={Home} />
-              <Route path="/find-jobs" component={FindJobs} />
-              <Route path="/job/:id" component={JobDetails} />
-              <Route path="/post-job" component={PostJob} />
-              <Route path="/my-jobs" component={MyJobs} />
-              <Route path="/terms" component={Terms} />
-              <Route path="/privacy" component={Privacy} />
-              <Route path="/admin" component={Admin} />
-              <Route path="/jobs-today" component={JobsToday} />
-              <Route path="/available-workers" component={AvailableWorkers} />
-              <Route path="/worker-profile" component={WorkerProfile} />
-              <Route path="/404" component={NotFound} />
-              <Route component={NotFound} />
-            </Switch>
-          </PageTransition>
-        </AnimatePresence>
+        {needsRoleSelection ? (
+          <RoleSelectionScreen onSelected={handleRoleSelected} />
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <PageTransition routeKey={routeKey}>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/find-jobs" component={FindJobs} />
+                <Route path="/job/:id" component={JobDetails} />
+                <Route path="/post-job" component={PostJob} />
+                <Route path="/my-jobs" component={MyJobs} />
+                <Route path="/terms" component={Terms} />
+                <Route path="/privacy" component={Privacy} />
+                <Route path="/admin" component={Admin} />
+                <Route path="/jobs-today" component={JobsToday} />
+                <Route path="/available-workers" component={AvailableWorkers} />
+                <Route path="/worker-profile" component={WorkerProfile} />
+                <Route path="/404" component={NotFound} />
+                <Route component={NotFound} />
+              </Switch>
+            </PageTransition>
+          </AnimatePresence>
+        )}
       </main>
 
       <Footer />

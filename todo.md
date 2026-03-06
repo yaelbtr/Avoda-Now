@@ -403,3 +403,6 @@
 
 ## Bug Fix — RoleSelectionScreen Overlay (Mar 6 2026)
 - [x] Fix RoleSelectionScreen showing as overlay instead of replacing page content
+
+## Bug Fix — Restore Navbar/Footer in RoleSelectionScreen (Mar 6 2026)
+- [x] Show Navbar and Footer with RoleSelectionScreen as the main content area

@@ -34,12 +34,13 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
     { enabled: mode === "employer" }
   );
 
-  /** Shared exit helper — plays slide-down animation then navigates */
+  /** Shared exit helper — navigates immediately, then removes overlay after animation */
   const exitTo = (path: string) => {
+    // Navigate first so the correct page is already mounted behind the overlay
+    navigate(path);
     setExiting(true);
     setTimeout(() => {
       onDismiss();
-      navigate(path);
     }, 400);
   };
 

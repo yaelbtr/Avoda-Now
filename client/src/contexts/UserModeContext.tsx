@@ -121,27 +121,28 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
 
   // After the first server fetch completes:
   // - If server has a mode → use it (and sync to localStorage)
-  // - If server has null → server is authoritative; clear any stale localStorage
+  // - If server has null AND no mutation is pending → clear stale localStorage
+  //   (don't clear if setMode mutation is in-flight — server hasn't saved yet)
   useEffect(() => {
     if (!hasChecked) return;
     if (serverMode) {
       setLocalMode(serverMode);
       saveRoleToStorage(serverMode, userId);
-    } else {
-      // Server explicitly says no mode — clear stale local value so the
-      // role selection screen is shown
+    } else if (!setModeMutation.isPending) {
+      // Server explicitly says no mode and no mutation in-flight — clear stale local value
       setLocalMode(null);
       clearRoleFromStorage();
     }
-  }, [hasChecked, serverMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasChecked, serverMode, setModeMutation.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Effective mode:
   // - Before first server check: use localMode (fast path for returning users)
-  // - After first server check: server is authoritative
+  // - After first server check: server is authoritative, but fall back to
+  //   localMode when server returns null and localMode is set (mutation in-flight)
   const userMode: UserMode = isAuthenticated
     ? hasChecked
-      ? serverMode  // server wins once we've fetched
-      : localMode   // optimistic pre-fetch (avoids flash for returning users)
+      ? serverMode ?? localMode  // server wins, but localMode bridges mutation lag
+      : localMode                // optimistic pre-fetch (avoids flash for returning users)
     : localMode;
 
   // Show loading spinner only on first fetch when we have no local fallback

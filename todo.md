@@ -468,3 +468,6 @@
 ## Google One-Tap Login & Guest Banner
 - [x] Add Google login button to LoginModal alongside OTP (with divider, Google SVG logo, redirects via getGoogleLoginUrl)
 - [x] Build persistent guest login banner shown at top of all pages for unauthenticated users (GuestLoginBanner.tsx, dismissible via sessionStorage)
+
+## Bug Fix — WelcomeScreen Worker CTA Navigation (Round 2)
+- [x] Fix: UserModeContext race condition — serverMode=null while setMode mutation in-flight caused needsRoleSelection=true again; fixed by checking setModeMutation.isPending before clearing localMode

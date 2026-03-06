@@ -28,11 +28,10 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import {
-  G_BRAND, G_SUCCESS, G_WHATSAPP,
-  S_BRAND_MD, S_BRAND_LG,
-  C_BRAND_HEX, C_BRAND_DARK_HEX,
-  C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
-  C_WHATSAPP, C_WHATSAPP_DARK,
+  G_BRAND, G_AMBER, G_SUCCESS, G_WHATSAPP,
+  S_BRAND_MD,
+  C_BRAND_HEX, C_AMBER_HEX, C_CITRUS_HEX,
+  C_SUCCESS_HEX,
 } from "@/lib/colors";
 
 // ─── CVA variants (Tailwind-only styles) ─────────────────────────────────────
@@ -50,9 +49,9 @@ const appButtonVariants = cva(
       variant: {
         // ── Solid variants ──────────────────────────────────────────────────
         primary:     "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl",
-        secondary:   "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl",
-        outline:     "border border-gray-200 bg-transparent text-gray-700 hover:bg-gray-50 rounded-xl",
-        ghost:       "bg-transparent text-gray-500 hover:bg-gray-100 rounded-xl",
+        secondary:   "bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 rounded-xl",
+        outline:     "border border-border bg-transparent text-foreground hover:bg-secondary/60 rounded-xl",
+        ghost:       "bg-transparent text-foreground/70 hover:bg-secondary/60 rounded-xl",
         destructive: "bg-destructive text-white hover:bg-destructive/90 rounded-xl",
         success:     "bg-green-600 text-white hover:bg-green-700 rounded-xl",
         // ── Special variants (use inline style for gradients) ───────────────
@@ -62,7 +61,7 @@ const appButtonVariants = cva(
         link:        "bg-transparent underline-offset-4 hover:underline text-primary rounded-none p-0 h-auto",
         // ── Pill filter (toggle-able category/radius chips) ─────────────────
         "pill-active":   "rounded-full text-white",   // bg via inline style
-        "pill-inactive": "rounded-full border bg-white text-gray-500 hover:border-blue-400 hover:text-blue-600",
+        "pill-inactive": "rounded-full border border-border bg-background text-muted-foreground hover:border-primary hover:text-primary",
       },
       size: {
         xs:   "h-7 px-2.5 text-xs rounded-lg gap-1",

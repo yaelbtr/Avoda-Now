@@ -48,20 +48,38 @@
   --radius: 0.5rem;
 
   /* ── AvodaNow Brand Palette ────────────────────────────────────────────────
+   * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
    * Edit these variables to swap the entire site palette.
    * TS constants mirror these in client/src/lib/colors.ts
    * ─────────────────────────────────────────────────────────────────────── */
 
-  /* Primary blue */
-  --brand:           oklch(0.58 0.20 255);   /* #3c83f6 */
-  --brand-dark:      oklch(0.48 0.22 255);   /* #2563eb */
-  --brand-mid:       oklch(0.72 0.22 240);   /* icon tint */
-  --brand-light:     oklch(0.94 0.03 255);   /* tinted bg */
-  --brand-subtle:    oklch(0.62 0.22 255);   /* slightly brighter */
+  /* Primary — Olive Grove #4F583B */
+  --brand:           oklch(0.44 0.05 122.3);   /* #4F583B */
+  --brand-dark:      oklch(0.36 0.05 122.3);   /* darker olive */
+  --brand-mid:       oklch(0.55 0.05 122.3);   /* lighter olive tint */
+  --brand-light:     oklch(0.95 0.02 122.3);   /* very light olive bg */
+  --brand-subtle:    oklch(0.50 0.05 122.3);   /* slightly brighter olive */
+
+  /* Accent — Amber Harvest #D9A450 */
+  --amber:           oklch(0.75 0.12 76.7);    /* #D9A450 */
+  --amber-dark:      oklch(0.65 0.13 76.7);    /* darker amber */
+  --amber-light:     oklch(0.75 0.12 76.7 / 0.15); /* tinted bg */
+
+  /* Highlight — Sun-Kissed Citrus #F4B840 */
+  --citrus:          oklch(0.82 0.15 80.8);    /* #F4B840 */
+  --citrus-dark:     oklch(0.72 0.15 80.8);    /* darker citrus */
+  --citrus-light:    oklch(0.82 0.15 80.8 / 0.15);
+
+  /* Neutral warm — Honey Wheat #EAD7B2 */
+  --honey:           oklch(0.89 0.05 84.0);    /* #EAD7B2 */
+  --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
+
+  /* Background — Vanilla Linen #F8F4E8 */
+  --linen:           oklch(0.97 0.02 91.6);    /* #F8F4E8 */
 
   /* Success / green */
-  --success:         oklch(0.65 0.22 160);   /* #16a34a */
-  --success-dark:    oklch(0.52 0.22 150);   /* #15803d */
+  --success:         oklch(0.65 0.22 160);
+  --success-dark:    oklch(0.52 0.22 150);
   --success-light:   oklch(0.65 0.22 160 / 0.12);
 
   /* Warning / orange */
@@ -69,88 +87,88 @@
   --warning-light:   oklch(0.78 0.17 65 / 0.12);
 
   /* Danger / red */
-  --danger:          oklch(0.65 0.22 25);    /* #ef4444 */
+  --danger:          oklch(0.65 0.22 25);
   --danger-light:    oklch(0.65 0.22 25 / 0.12);
 
   /* Page / surface */
-  --page-bg:         oklch(0.97 0.006 247);  /* #f5f7f8 */
-  --surface:         oklch(1 0 0);           /* white */
-  --border-color:    oklch(0.93 0.006 247);  /* #e2e8f0 */
+  --page-bg:         oklch(0.97 0.02 91.6);    /* Vanilla Linen */
+  --surface:         oklch(1 0 0);
+  --border-color:    oklch(0.89 0.05 84.0);    /* Honey Wheat */
 
   /* Text */
-  --text-primary:    oklch(0.18 0.015 265);
-  --text-secondary:  oklch(0.42 0.012 265);
-  --text-muted:      oklch(0.62 0.008 265);
-  --text-faint:      oklch(0.65 0.008 265);
+  --text-primary:    oklch(0.22 0.03 122.3);   /* dark olive-tinted */
+  --text-secondary:  oklch(0.40 0.03 122.3);
+  --text-muted:      oklch(0.58 0.02 100);
+  --text-faint:      oklch(0.65 0.015 100);
 
   /* WhatsApp */
   --whatsapp:        #25D366;
   --whatsapp-dark:   #1da851;
 
-  /* Light theme — #3c83f6 primary blue */
-  --background: oklch(0.97 0.004 247);   /* #f5f7f8 */
-  --foreground: oklch(0.20 0.015 265);   /* slate-900 */
-  --card: oklch(1 0 0);                  /* white */
-  --card-foreground: oklch(0.20 0.015 265);
+  /* Light theme — Olive Grove primary */
+  --background: oklch(0.97 0.02 91.6);         /* Vanilla Linen */
+  --foreground: oklch(0.22 0.03 122.3);         /* dark olive text */
+  --card: oklch(1 0 0);                         /* white */
+  --card-foreground: oklch(0.22 0.03 122.3);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.015 265);
-  --primary: oklch(0.58 0.20 255);       /* #3c83f6 */
-  --primary-foreground: oklch(1 0 0);
-  --accent: oklch(0.94 0.015 255);       /* primary/10 */
-  --accent-foreground: oklch(0.58 0.20 255);
-  --secondary: oklch(0.94 0.008 247);    /* slate-100 */
-  --secondary-foreground: oklch(0.35 0.015 265);
-  --muted: oklch(0.94 0.008 247);
-  --muted-foreground: oklch(0.50 0.012 265);  /* slate-500 */
+  --popover-foreground: oklch(0.22 0.03 122.3);
+  --primary: oklch(0.44 0.05 122.3);            /* Olive Grove */
+  --primary-foreground: oklch(0.97 0.02 91.6);  /* Vanilla Linen on olive */
+  --accent: oklch(0.82 0.15 80.8);              /* Sun-Kissed Citrus */
+  --accent-foreground: oklch(0.22 0.03 122.3);  /* dark text on citrus */
+  --secondary: oklch(0.89 0.05 84.0);           /* Honey Wheat */
+  --secondary-foreground: oklch(0.36 0.04 122.3);
+  --muted: oklch(0.93 0.03 91.6);               /* slightly darker linen */
+  --muted-foreground: oklch(0.52 0.03 100);
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.88 0.008 247);       /* slate-200 */
-  --input: oklch(0.88 0.008 247);
-  --ring: oklch(0.58 0.20 255);
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.20 0.015 265);
-  --sidebar-primary: oklch(0.58 0.20 255);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.015 255);
-  --sidebar-accent-foreground: oklch(0.58 0.20 255);
-  --sidebar-border: oklch(0.88 0.008 247);
-  --sidebar-ring: oklch(0.58 0.20 255);
-  --chart-1: oklch(0.58 0.20 255);
-  --chart-2: oklch(0.65 0.20 160);
-  --chart-3: oklch(0.72 0.19 30);
-  --chart-4: oklch(0.70 0.18 300);
-  --chart-5: oklch(0.78 0.17 65);
+  --border: oklch(0.87 0.04 84.0);              /* Honey Wheat border */
+  --input: oklch(0.87 0.04 84.0);
+  --ring: oklch(0.75 0.12 76.7);                /* Amber Harvest ring */
+  --sidebar: oklch(0.44 0.05 122.3);            /* Olive Grove sidebar */
+  --sidebar-foreground: oklch(0.97 0.02 91.6);
+  --sidebar-primary: oklch(0.82 0.15 80.8);     /* Citrus on sidebar */
+  --sidebar-primary-foreground: oklch(0.22 0.03 122.3);
+  --sidebar-accent: oklch(0.36 0.05 122.3);
+  --sidebar-accent-foreground: oklch(0.97 0.02 91.6);
+  --sidebar-border: oklch(0.36 0.05 122.3);
+  --sidebar-ring: oklch(0.75 0.12 76.7);
+  --chart-1: oklch(0.44 0.05 122.3);            /* Olive Grove */
+  --chart-2: oklch(0.75 0.12 76.7);             /* Amber Harvest */
+  --chart-3: oklch(0.82 0.15 80.8);             /* Sun-Kissed Citrus */
+  --chart-4: oklch(0.89 0.05 84.0);             /* Honey Wheat */
+  --chart-5: oklch(0.65 0.22 160);              /* green */
 }
 
-/* Dark mode (optional, kept for future use) */
+/* Dark mode */
 .dark {
-  --background: oklch(0.10 0.015 265);
-  --foreground: oklch(0.95 0.005 80);
-  --card: oklch(0.15 0.018 265);
-  --card-foreground: oklch(0.95 0.005 80);
-  --popover: oklch(0.14 0.016 265);
-  --popover-foreground: oklch(0.95 0.005 80);
-  --primary: oklch(0.62 0.22 255);
-  --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.78 0.17 65);
-  --accent-foreground: oklch(0.10 0.015 265);
-  --secondary: oklch(0.20 0.022 265);
-  --secondary-foreground: oklch(0.85 0.01 80);
-  --muted: oklch(0.18 0.018 265);
-  --muted-foreground: oklch(0.60 0.01 265);
+  --background: oklch(0.20 0.04 122.3);         /* deep olive dark */
+  --foreground: oklch(0.97 0.02 91.6);          /* Vanilla Linen */
+  --card: oklch(0.26 0.04 122.3);
+  --card-foreground: oklch(0.97 0.02 91.6);
+  --popover: oklch(0.24 0.04 122.3);
+  --popover-foreground: oklch(0.97 0.02 91.6);
+  --primary: oklch(0.82 0.15 80.8);             /* Citrus on dark */
+  --primary-foreground: oklch(0.22 0.03 122.3);
+  --accent: oklch(0.75 0.12 76.7);              /* Amber Harvest */
+  --accent-foreground: oklch(0.22 0.03 122.3);
+  --secondary: oklch(0.30 0.04 122.3);
+  --secondary-foreground: oklch(0.89 0.05 84.0);
+  --muted: oklch(0.28 0.04 122.3);
+  --muted-foreground: oklch(0.70 0.03 100);
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.62 0.22 255);
-  --sidebar: oklch(0.12 0.016 265);
-  --sidebar-foreground: oklch(0.90 0.005 80);
-  --sidebar-primary: oklch(0.62 0.22 255);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.20 0.022 265);
-  --sidebar-accent-foreground: oklch(0.90 0.005 80);
+  --ring: oklch(0.75 0.12 76.7);
+  --sidebar: oklch(0.18 0.04 122.3);
+  --sidebar-foreground: oklch(0.97 0.02 91.6);
+  --sidebar-primary: oklch(0.82 0.15 80.8);
+  --sidebar-primary-foreground: oklch(0.22 0.03 122.3);
+  --sidebar-accent: oklch(0.26 0.04 122.3);
+  --sidebar-accent-foreground: oklch(0.97 0.02 91.6);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.62 0.22 255);
+  --sidebar-ring: oklch(0.75 0.12 76.7);
 }
 
 @layer base {
@@ -214,13 +232,13 @@
   }
   /* ── Hero gradients ── */
   .hero-gradient {
-    background: linear-gradient(135deg, oklch(0.12 0.025 265) 0%, oklch(0.08 0.02 285) 100%);
+    background: linear-gradient(135deg, oklch(0.28 0.05 122.3) 0%, oklch(0.20 0.04 122.3) 100%);
   }
   .hero-gradient-worker {
-    background: linear-gradient(135deg, oklch(0.10 0.025 255) 0%, oklch(0.16 0.03 280) 50%, oklch(0.12 0.02 300) 100%);
+    background: linear-gradient(135deg, oklch(0.22 0.05 122.3) 0%, oklch(0.30 0.05 110) 50%, oklch(0.26 0.04 130) 100%);
   }
   .hero-gradient-employer {
-    background: linear-gradient(135deg, oklch(0.10 0.02 30) 0%, oklch(0.14 0.025 265) 50%, oklch(0.10 0.015 265) 100%);
+    background: linear-gradient(135deg, oklch(0.26 0.05 122.3) 0%, oklch(0.36 0.05 122.3) 50%, oklch(0.22 0.04 122.3) 100%);
   }
 
   /* ── Glassmorphism ── */
@@ -250,29 +268,29 @@
   }
   .card-hover:hover {
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 16px 40px oklch(0.62 0.22 255 / 0.20);
+    box-shadow: 0 16px 40px oklch(0.44 0.05 122.3 / 0.20);
   }
 
   /* ── Glow effects ── */
   .glow-primary {
-    box-shadow: 0 0 24px oklch(0.62 0.22 255 / 0.35), 0 0 48px oklch(0.62 0.22 255 / 0.15);
+    box-shadow: 0 0 24px oklch(0.44 0.05 122.3 / 0.35), 0 0 48px oklch(0.44 0.05 122.3 / 0.15);
   }
   .glow-accent {
-    box-shadow: 0 0 24px oklch(0.78 0.17 65 / 0.40), 0 0 48px oklch(0.78 0.17 65 / 0.15);
+    box-shadow: 0 0 24px oklch(0.82 0.15 80.8 / 0.40), 0 0 48px oklch(0.82 0.15 80.8 / 0.15);
   }
   .text-glow {
-    text-shadow: 0 0 20px oklch(0.78 0.17 65 / 0.6);
+    text-shadow: 0 0 20px oklch(0.82 0.15 80.8 / 0.6);
   }
 
   /* ── Gradient text ── */
   .gradient-text {
-    background: linear-gradient(135deg, oklch(0.78 0.17 65) 0%, oklch(0.88 0.14 75) 100%);
+    background: linear-gradient(135deg, oklch(0.75 0.12 76.7) 0%, oklch(0.82 0.15 80.8) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .gradient-text-blue {
-    background: linear-gradient(135deg, oklch(0.72 0.22 240) 0%, oklch(0.82 0.18 200) 100%);
+    background: linear-gradient(135deg, oklch(0.44 0.05 122.3) 0%, oklch(0.55 0.05 122.3) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -280,8 +298,8 @@
 
   /* ── Animated border ── */
   .border-glow {
-    border: 1px solid oklch(0.62 0.22 255 / 0.4);
-    box-shadow: inset 0 0 12px oklch(0.62 0.22 255 / 0.08);
+    border: 1px solid oklch(0.44 0.05 122.3 / 0.4);
+    box-shadow: inset 0 0 12px oklch(0.44 0.05 122.3 / 0.08);
   }
 
   /* ── Category badge ── */
@@ -316,22 +334,12 @@
   }
   /**
    * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
    */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -342,16 +350,16 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
   }
 }

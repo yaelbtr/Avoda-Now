@@ -453,3 +453,6 @@
 - [x] Replace hardcoded colors in HomeWorker, HomeEmployer, FindJobs, JobDetails
 - [x] Replace hardcoded colors in remaining pages and components (Navbar, Footer, ActivityTicker, CarouselJobCard, MyJobs, PostJob, AvailableWorkers)
 - [x] Verify 0 TypeScript errors and all 83 tests pass
+
+## Bug Fix — JobCardSkeleton JSX Parse Error
+- [x] Fix JSX parsing error in JobCardSkeleton.tsx (line ~78) so component loads correctly — confirmed: error was stale HMR artifact; current file is valid (0 TS errors, 83 tests pass)

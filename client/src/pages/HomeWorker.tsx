@@ -1,57 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
 import JobCard from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import {
-  Search, MapPin, ChevronLeft, Flame, Zap,
-  CheckCircle2, Phone, Map, List, ArrowLeft, Briefcase, Info,
-  Clock, Star, TrendingUp, Sparkles,
+  Search, MapPin, ChevronLeft, Zap,
+  Map, List, ArrowLeft, TrendingUp, Star,
 } from "lucide-react";
-import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import ActivityTicker from "@/components/ActivityTicker";
 import CarouselJobCard from "@/components/CarouselJobCard";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
-import LiveStats from "@/components/LiveStats";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
-import BrandLoader from "@/components/BrandLoader";
-import {
-  C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
-  C_SUCCESS_HEX, C_TEXT_MUTED,
-} from "@/lib/colors";
-
-const CATEGORIES = [
-  { value: "kitchen", label: "מסעדות", icon: "🍳" },
-  { value: "warehouse", label: "מחסנים", icon: "📦" },
-  { value: "delivery", label: "שליחויות", icon: "🚴" },
-  { value: "events", label: "אירועים", icon: "🎉" },
-  { value: "retail", label: "חנויות", icon: "🛍️" },
-  { value: "cleaning", label: "ניקיון", icon: "🧹" },
-  { value: "construction", label: "בנייה", icon: "🏗️" },
-  { value: "agriculture", label: "חקלאות", icon: "🌾" },
-];
 
 const HOW_IT_WORKS = [
-  { icon: Search, step: "1", title: "מצא עבודה", desc: "חפש לפי קטגוריה, מיקום, או עיין בעבודות הדחופות" },
-  { icon: Phone, step: "2", title: "צור קשר", desc: "התקשר ישירות למעסיק או שלח הודעת WhatsApp בלחיצה אחת" },
-  { icon: CheckCircle2, step: "3", title: "התחל לעבוד", desc: "הגע למקום ותתחיל לעבוד — לרוב עוד באותו יום" },
+  {
+    step: "01",
+    title: "מחפשים עבודה",
+    desc: "עינו במגוון עבודות בסביבה הקרובה אלייך.",
+    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBamn2qup2cLZLS0F7g_ak0WLTInI6W80vxhpKaOVS5LvEDl1LbNhdRUjazjOJujODYDKCCm0wVmr68y6wo4HiA7bPMUmFZ4hEQMndLqGlbGLjfLqtiqyD2AMY9TidSzS_hPgu5Ur5Z2MBpFBvusjARNnk7FNagj5vM5F9-d-Okq_vbnvzcmYLSObdJ9OJMzZZWzrsgw3HIN_x9coQBlKMfGlWR0eNLV0mX2VSSizcok2morIGRV6Ge2fGy_kA6s1H6jaOUll8DcA",
+    reverse: false,
+  },
+  {
+    step: "02",
+    title: "סוגרים פרטים",
+    desc: "שיחה קצרה עם המפרסמים בטלפון או בוואטסאפ.",
+    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAStrMaRfZDifQeV-VACZz7ZypB1K8qO0mfWH-7GKp9zP5N0IFSgQpYT8gGJfOxyxssudU0ma8TE9HYWViNqn1eNoc7_qkfar8L0c38K28sRu-_lwd2DFueAtvndwsNLlxCicO5asK-g-NFLhaSWhOxM5Lx7tQalZGYbZlc-cGOJHfX0VMMQvGKi69yA7_YyxYFmg51eaSrjgIb2kEHbOcTexFsWld1x3UCbPcBhX92Us5OHKPCI2Wbzy1VcqYfh8U6aCD_3lOdng",
+    reverse: true,
+  },
+  {
+    step: "03",
+    title: "מתחילים להרוויח",
+    desc: "ביצוע העבודה וקבלת תשלום מיידי בסיום.",
+    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmsOM6ool_591rxa3QrTQJ_siNP3M919Xa5n12iJHU9-myKDCxxkIXJLVpXND4AON1Q8eRBnMPtrBeggN_C4S0lJ5lumxRI4XROt9rXnjP5Krt1MAn8P4EnpBkn24bwAgR163Pw2pImLomXOGNpz-MCOZ8aI6DDwDbqiFoOBi2D-UsT1OV5mTJyv3BKGljWdOH2cGAdggVOjFgQ0oQ8lCPYfY4Fgpq2UzIf2KqNukQ6Z4NgQAXUPUyrHbEzkXWFccR4AfTBcUzbw",
+    reverse: false,
+  },
 ];
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (delay = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay, duration: 0.5, ease: [0.0, 0.0, 0.2, 1] as [number, number, number, number] },
-  }),
-};
 
 interface HomeWorkerProps {
   onLoginRequired: (msg: string) => void;
@@ -83,25 +71,21 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   }, []);
 
-  // Auto-scroll carousel every 3 seconds
   useEffect(() => {
-    const startAutoScroll = () => {
-      autoScrollRef.current = setInterval(() => {
-        if (isPausedRef.current) return;
-        const el = document.getElementById("job-carousel");
-        if (!el) return;
-        const cardWidth = 220 + 12;
-        const maxScroll = el.scrollWidth - el.clientWidth;
-        if (el.scrollLeft >= maxScroll - 4) {
-          el.scrollTo({ left: 0, behavior: "smooth" });
-          setActiveCarouselIdx(0);
-        } else {
-          el.scrollBy({ left: -cardWidth, behavior: "smooth" });
-          setActiveCarouselIdx((i) => i + 1);
-        }
-      }, 3000);
-    };
-    startAutoScroll();
+    autoScrollRef.current = setInterval(() => {
+      if (isPausedRef.current) return;
+      const el = document.getElementById("job-carousel");
+      if (!el) return;
+      const cardWidth = 288 + 16;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        setActiveCarouselIdx(0);
+      } else {
+        el.scrollBy({ left: -cardWidth, behavior: "smooth" });
+        setActiveCarouselIdx((i) => i + 1);
+      }
+    }, 3000);
     return () => { if (autoScrollRef.current) clearInterval(autoScrollRef.current); };
   }, []);
 
@@ -155,12 +139,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setAvailableMutation.mutate({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            city: undefined,
-            durationHours: hours,
-          });
+          setAvailableMutation.mutate({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, city: undefined, durationHours: hours });
         },
         () => {
           setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: hours });
@@ -171,430 +150,293 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
+  const allCarouselJobs = [
+    ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
+    ...todayJobs.filter((j) => !urgentJobs.some((u) => u.id === j.id)).map((j) => ({ job: j, badge: "today" as const })),
+  ];
+  const carouselTotal = allCarouselJobs.length;
+
   return (
-    <div dir="rtl" className="bg-[#f5f7f8] min-h-screen">
+    <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
+
+      {/* Decorative blobs */}
+      <div className="absolute top-20 left-0 right-0 h-96 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div className="absolute w-64 h-64 rounded-full left-1/4" style={{ backgroundColor: "var(--brand)", filter: "blur(60px)", opacity: 0.09 }} />
+        <div className="absolute w-64 h-64 rounded-full right-1/4 top-20" style={{ backgroundColor: "var(--amber)", filter: "blur(60px)", opacity: 0.09 }} />
+      </div>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-white border-b border-gray-100">
-        {/* Subtle blue gradient accent */}
+      <section className="relative z-10 px-6 pt-14 pb-8 text-center max-w-lg mx-auto">
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, rgba(60,131,246,0.06) 0%, rgba(60,131,246,0.02) 50%, transparent 100%)",
-          }}
-        />
-        {/* Decorative circles */}
-        <motion.div
-          animate={{ x: [0, 15, 0], y: [0, -10, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-20 -right-20 w-64 h-64 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(60,131,246,0.08) 0%, transparent 70%)" }}
-        />
-        <motion.div
-          animate={{ x: [0, -12, 0], y: [0, 18, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%)" }}
-        />
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 shadow-sm"
+          style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.9)" }}
+        >
+          <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
+          <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)" }}>
+            הדרך המהירה למצוא עזרה או עבודה
+          </span>
+        </div>
 
-        <div className="relative max-w-2xl mx-auto px-4 pt-8 pb-8">
-          {/* Top pill badge */}
-          <motion.div
-            variants={fadeUp} initial="hidden" animate="visible" custom={0}
-            className="flex justify-center mb-5"
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="text-[36px] leading-[1.15] font-extrabold mb-4"
+          style={{ color: "var(--brand)" }}
+        >
+          עבודות מזדמנות<br />
+          <span style={{ color: "var(--amber)" }}>מחכות לך עכשיו</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-base font-semibold max-w-[280px] mx-auto"
+          style={{ color: "var(--foreground)" }}
+        >
+          קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+        </motion.p>
+      </section>
+
+      {/* ── Availability CTA ─────────────────────────────────────────────── */}
+      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10 space-y-4">
+        {/* Live status badge */}
+        <div className="flex justify-center">
+          <div
+            className="px-6 py-2.5 rounded-full flex items-center gap-3 shadow-sm"
+            style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.9)" }}
           >
-            <span
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold text-blue-700"
-              style={{ background: "rgba(60,131,246,0.1)", border: "1px solid rgba(60,131,246,0.2)" }}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              פלטפורמת הגיוס המהירה בישראל
-            </span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.div
-            variants={fadeUp} initial="hidden" animate="visible" custom={0.1}
-            className="text-center mb-6"
-          >
-            <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-gray-900 mb-3">
-              עבודות דחופות
-              <br />
-              <span className="text-blue-600">מחכות לך עכשיו</span>
-            </h1>
-            <p className="text-gray-500 text-base max-w-sm mx-auto leading-relaxed">
-              קשר ישיר עם מעסיקים — ללא תיווך, ללא עמלות
-            </p>
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div
-            variants={fadeUp} initial="hidden" animate="visible" custom={0.2}
-            className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto mb-6"
-          >
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <AppButton
-                variant="brand"
-                size="xl"
-                className="w-full overflow-hidden"
-                styleOverride={{ boxShadow: `0 4px 20px ${C_BRAND_HEX}59` }}
-                onClick={() => {
-                  const el = document.getElementById("jobs-section");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
-                {/* Shimmer */}
-                <motion.div
-                  className="absolute inset-0 -skew-x-12 pointer-events-none"
-                  style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)" }}
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-                />
-                <Search className="h-5 w-5 relative z-10" />
-                <span className="relative z-10">חפש עבודה עכשיו</span>
-              </AppButton>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <AppButton
-                variant="secondary"
-                size="xl"
-                className="w-full"
-                onClick={() => navigate("/jobs-today")}
-              >
-                <Flame className="h-5 w-5 text-orange-500" />
-                עבודות להיום
-              </AppButton>
-            </motion.div>
-          </motion.div>
-
-          {/* Availability card */}
-          <motion.div
-            variants={fadeUp} initial="hidden" animate="visible" custom={0.3}
-            className="max-w-sm mx-auto"
-          >
-            <div className="flex items-center gap-2">
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <motion.button
-                      onClick={handleAvailabilityToggle}
-                      disabled={availabilityLoading}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all duration-300 shadow-sm"
-                      style={{
-                        background: isAvailable
-                          ? "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)"
-                          : "white",
-                        border: isAvailable
-                          ? "1px solid #86efac"
-                          : "1px solid #e2e8f0",
-                        boxShadow: isAvailable
-                          ? "0 0 16px rgba(34,197,94,0.2)"
-                          : "0 1px 4px rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        {availabilityLoading ? (
-                          <BrandLoader size="sm" />
-                        ) : (
-                          <span className="relative flex h-3 w-3">
-                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAvailable ? "bg-green-400" : "bg-gray-300"}`} />
-                            <span className={`relative inline-flex rounded-full h-3 w-3 ${isAvailable ? "bg-green-500" : "bg-gray-300"}`} />
-                          </span>
-                        )}
-                        <span className={`font-semibold text-sm ${isAvailable ? "text-green-800" : "text-gray-700"}`}>
-                          {isAvailable ? `פנוי לעבוד — ${selectedDuration}ש'` : "סמן את עצמך כזמין"}
-                        </span>
-                      </div>
-                      <span
-                        className="text-xs px-2.5 py-1 rounded-full font-medium"
-                        style={{
-                          background: isAvailable ? "rgba(34,197,94,0.15)" : "#f1f5f9",
-                          color: isAvailable ? "#16a34a" : "#94a3b8",
-                        }}
-                      >
-                        {isAvailable ? "פעיל" : "לחץ"}
-                      </span>
-                    </motion.button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs text-right" dir="rtl">
-                    <p className="font-semibold text-sm mb-1">
-                      {isAvailable ? "אתה מסומן כזמין" : "סמן זמינות"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isAvailable
-                        ? `מעסיקים באזורך רואים אותך. הזמינות תתבטל אוטומטית לאחר ${selectedDuration} שעות, או לחץ שוב לביטול.`
-                        : "תבחר כמה שעות אתה פנוי ותוסף לרשימת העובדים הזמינים."}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <motion.button
-                onClick={() => setInfoOpen(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="shrink-0 w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-colors shadow-sm"
-                aria-label="מידע נוסף"
-              >
-                <Info className="h-4 w-4" />
-              </motion.button>
+            <div className="relative size-3">
+              <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.6 }} />
+              <div className="relative size-full rounded-full" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8" }} />
             </div>
-          </motion.div>
+            <span className="text-[13px] font-bold leading-none" style={{ color: "var(--brand)" }}>
+              {isAvailable ? "במצב זמין כרגע" : "לא זמין כרגע"}
+            </span>
+          </div>
+        </div>
 
-          {/* Profile shortcut */}
-          {isAuthenticated && (
-            <motion.div
-              variants={fadeUp} initial="hidden" animate="visible" custom={0.4}
-              className="text-center mt-3"
+        {/* Availability card button */}
+        <motion.button
+          onClick={handleAvailabilityToggle}
+          whileTap={{ scale: 0.98 }}
+          disabled={availabilityLoading}
+          className="w-full rounded-3xl p-7 relative overflow-hidden flex items-center gap-5 text-right transition-transform"
+          style={{
+            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)",
+            boxShadow: "0 10px 30px rgba(63,74,40,0.25)",
+          }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-12 -mt-12" style={{ background: "rgba(255,255,255,0.10)", filter: "blur(32px)" }} />
+          <div className="size-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.20)", border: "1px solid rgba(255,255,255,0.20)" }}>
+            <MapPin className="h-7 w-7 text-white" />
+          </div>
+          <div className="relative z-10 flex-1">
+            <h2 className="text-xl font-black tracking-tight mb-1 text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+              זמינות לעבודה עכשיו
+            </h2>
+            <p className="text-[13px] text-white font-semibold leading-snug" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+              הצטרפו לתוצאות החיפוש של עבודה בזמינות מיידית
+            </p>
+          </div>
+          <ChevronLeft className="h-5 w-5 text-white/90 rotate-180" />
+        </motion.button>
+
+        {/* Profile link */}
+        {isAuthenticated && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => navigate("/worker-profile")}
+              className="flex items-center gap-1 text-sm font-black hover:underline transition-colors"
+              style={{ color: "var(--amber)" }}
             >
-              <button
-                onClick={() => navigate("/worker-profile")}
-                className="inline-flex items-center gap-1.5 text-gray-400 hover:text-blue-600 text-xs transition-colors"
-              >
-                עדכן קטגוריות מועדפות לקבלת התראות
-                <ArrowLeft className="h-3 w-3" />
-              </button>
-            </motion.div>
-          )}
+              כאן מעדכנים תחומי עניין לקבלת התראות מותאמות אישית
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* ── Location row ─────────────────────────────────────────────────── */}
+      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10">
+        <div className="flex gap-3">
+          <button
+            onClick={requestGeo}
+            className="flex-[3] bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm transition-colors text-right"
+            style={{ border: "1px solid var(--border)" }}
+          >
+            <div className="size-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--honey)" }}>
+              <MapPin className="h-5 w-5" style={{ color: "var(--brand)" }} />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-black" style={{ color: "var(--brand)" }}>
+                {userLat ? "מיקום עודכן ✓" : "עדכון מיקום"}
+              </h4>
+              <p className="text-[10px] font-bold" style={{ color: "var(--muted-foreground)" }}>חיפוש עבודות בסביבה</p>
+            </div>
+          </button>
+          <button
+            onClick={requestGeo}
+            className="flex-1 bg-white rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm transition-all"
+            style={{ border: "1.5px dashed var(--border)" }}
+          >
+            <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
+            <span className="text-[10px] font-black" style={{ color: "var(--amber)" }}>זיהוי מיקום</span>
+          </button>
         </div>
       </section>
 
-      <ActivityTicker />
-      <LiveStats mode="worker" />
-
-      {/* ── Urgent Jobs Carousel ──────────────────────────────────────────── */}
-      {(urgentJobs.length > 0 || todayJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (() => {
-        const allCarouselJobs = [
-          ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
-          ...todayJobs
-            .filter((j) => !urgentJobs.some((u) => u.id === j.id))
-            .map((j) => ({ job: j, badge: "today" as const })),
-        ];
-        const total = allCarouselJobs.length;
-        return (
-          <motion.section
-            id="jobs-section"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="pt-6 bg-white border-b border-gray-100"
-          >
-            <div className="max-w-2xl mx-auto px-4 flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-red-500 fill-red-500" />
-                עבודות דחופות ולהיום
-              </h2>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/find-jobs?urgent=1")}
-                className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
-              >
-                כל העבודות
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </AppButton>
-            </div>
-
-            {(urgentQuery.isLoading || todayQuery.isLoading) ? (
-              <div className="px-4 py-2">
-                <CarouselSkeletonRow count={3} />
-              </div>
-            ) : (
-              <div className="relative">
-                {activeCarouselIdx < total - 1 && (
-                  <button
-                    onClick={() => {
-                      const el = document.getElementById("job-carousel");
-                      if (el) el.scrollBy({ left: -300, behavior: "smooth" });
-                      setActiveCarouselIdx((i) => Math.min(i + 1, total - 1));
-                    }}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 hover:scale-110 transition-all"
-                    aria-label="הקודם"
-                  >
-                    <ChevronLeft className="h-4 w-4 text-gray-500" />
-                  </button>
-                )}
-                {activeCarouselIdx > 0 && (
-                  <button
-                    onClick={() => {
-                      const el = document.getElementById("job-carousel");
-                      if (el) el.scrollBy({ left: 300, behavior: "smooth" });
-                      setActiveCarouselIdx((i) => Math.max(i - 1, 0));
-                    }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md border border-gray-200 hover:scale-110 transition-all"
-                    aria-label="הבא"
-                  >
-                    <ChevronLeft className="h-4 w-4 rotate-180 text-gray-500" />
-                  </button>
-                )}
-
-                <div
-                  id="job-carousel"
-                  className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory"
-                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
-                  onMouseEnter={() => { isPausedRef.current = true; }}
-                  onMouseLeave={() => { isPausedRef.current = false; }}
-                  onTouchStart={() => { isPausedRef.current = true; }}
-                  onTouchEnd={() => { setTimeout(() => { isPausedRef.current = false; }, 2000); }}
-                  onScroll={(e) => {
-                    const el = e.currentTarget;
-                    const cardWidth = el.scrollWidth / total;
-                    const idx = Math.round(el.scrollLeft / cardWidth);
-                    setActiveCarouselIdx(idx);
-                  }}
-                >
-                  {allCarouselJobs.map(({ job, badge }) => (
-                    <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-[58vw] max-w-[220px]">
-                      <CarouselJobCard
-                        job={{ ...job, salary: job.salary ?? null, businessName: job.businessName ?? null }}
-                        badge={badge}
-                        onLoginRequired={onLoginRequired}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {total > 1 && (
-                  <div className="flex justify-center gap-1.5 mt-2 pb-3">
-                    {allCarouselJobs.map((_, i) => (
-                      <span
-                        key={i}
-                        className="inline-block rounded-full transition-all duration-300"
-                        style={{
-                          width: i === activeCarouselIdx ? "16px" : "8px",
-                          height: "8px",
-                          background: i === activeCarouselIdx ? "#3c83f6" : "#e2e8f0",
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.section>
-        );
-      })()}
-
-      {/* ── Emergency & Special Jobs ─────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="max-w-2xl mx-auto px-4 pt-6"
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <section
+        className="relative z-10 mx-6 mb-12 rounded-[32px] p-6 max-w-lg"
+        style={{ background: "white", boxShadow: "0 20px 50px -12px rgba(63,74,40,0.15)", border: "1px solid rgba(255,255,255,0.9)" }}
       >
-        <div
-          className="rounded-2xl p-5 bg-white shadow-sm border border-gray-100"
-        >
-          <h2 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-            🆘 סיוע בזמן חירום ועבודות לפסח
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            עבודות התנדבותיות ובתשלום לסיוע לקהילה, למשפחות מילואימניקים, ולקראת הפסח
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { value: "emergency_support", label: "סיוע בזמן חירום", icon: "🆘" },
-              { value: "reserve_families", label: "משפחות מילואימניקים", icon: "🪖" },
-              { value: "passover_jobs", label: "עבודות לפסח", icon: "🫓" },
-              { value: "volunteer", label: "התנדבות", icon: "💚" },
-            ].map((cat) => (
-              <motion.button
-                key={cat.value}
-                onClick={() => navigate(`/find-jobs?category=${cat.value}`)}
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-3 p-3 rounded-xl text-right bg-[#f5f7f8] hover:bg-blue-50 border border-gray-100 hover:border-blue-200 transition-all"
-              >
-                <span className="text-2xl shrink-0">{cat.icon}</span>
-                <p className="text-sm font-semibold text-gray-700 leading-tight">{cat.label}</p>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </motion.section>
+        <h3 className="text-lg font-black mb-8 flex items-center justify-center gap-2" style={{ color: "var(--brand)" }}>
+          <Star className="h-5 w-5" style={{ color: "var(--amber)" }} />
+          איך זה עובד?
+        </h3>
 
-      {/* ── Categories ───────────────────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.5 }}
-        className="max-w-2xl mx-auto px-4 py-6"
-      >
-        <h2 className="text-xl font-bold text-gray-900 mb-4">חפש לפי קטגוריה</h2>
-        <div className="grid grid-cols-4 gap-2">
-          {CATEGORIES.map((cat, i) => (
-            <motion.button
-              key={cat.value}
-              onClick={() => navigate(`/find-jobs?category=${cat.value}`)}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + i * 0.04, duration: 0.3 }}
-              whileHover={{ scale: 1.08, y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center gap-1.5 p-3 rounded-2xl text-center bg-white border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
+        <div className="space-y-4 mb-10">
+          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }) => (
+            <div
+              key={step}
+              className={"flex items-center gap-5 p-4 rounded-3xl overflow-hidden shadow-sm" + (reverse ? " flex-row-reverse" : "")}
+              style={{ backgroundColor: "var(--brand-light)", border: "1px solid var(--border)" }}
             >
-              <span className="text-2xl">{cat.icon}</span>
-              <span className="text-xs font-medium text-gray-600 leading-tight">{cat.label}</span>
-            </motion.button>
+              <div
+                className="flex-shrink-0 w-28 text-center text-[84px] font-black leading-none select-none"
+                style={{
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  backgroundImage: `url("${imgUrl}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.9)",
+                  WebkitTextStroke: "1px rgba(255,255,255,0.2)",
+                } as React.CSSProperties}
+              >
+                {step}
+              </div>
+              <div className="flex-1 text-right">
+                <h4 className="text-base font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
+                <p className="text-[11px] font-bold leading-relaxed" style={{ color: "var(--foreground)" }}>{desc}</p>
+              </div>
+            </div>
           ))}
         </div>
-      </motion.section>
 
-      {/* ── Nearby / Latest jobs ─────────────────────────────────────────── */}
-      <section className="max-w-2xl mx-auto px-4 pb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            {userLat ? (
-              <><MapPin className="h-5 w-5 text-blue-500" />עבודות קרובות אליך</>
-            ) : (
-              <><TrendingUp className="h-5 w-5 text-blue-500" />משרות אחרונות</>
-            )}
+        <button
+          onClick={() => navigate("/find-jobs")}
+          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all active:scale-95 shadow-sm"
+          style={{ background: "white", border: "2.5px solid var(--citrus)", color: "var(--brand)" }}
+        >
+          חיפוש עבודה מזדמנת
+          <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
+        </button>
+      </section>
+
+      {/* ── Urgent / Today carousel ───────────────────────────────────────── */}
+      {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
+        <section className="mb-10 relative z-10">
+          <div className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto">
+            <h2 className="text-xl font-black" style={{ color: "var(--brand)" }}>עבודות בהתאמה אישית עבורך</h2>
+            <button
+              onClick={() => navigate("/find-jobs?urgent=1")}
+              className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+              style={{ color: "var(--amber)", backgroundColor: "rgba(217,164,80,0.15)" }}
+            >
+              הכל
+            </button>
+          </div>
+
+          {(urgentQuery.isLoading || todayQuery.isLoading) ? (
+            <div className="px-6"><CarouselSkeletonRow count={3} /></div>
+          ) : (
+            <div className="relative">
+              {activeCarouselIdx < carouselTotal - 1 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("job-carousel");
+                    if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+                    setActiveCarouselIdx((i) => Math.min(i + 1, carouselTotal - 1));
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הקודם"
+                >
+                  <ChevronLeft className="h-4 w-4" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
+              {activeCarouselIdx > 0 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("job-carousel");
+                    if (el) el.scrollBy({ left: 300, behavior: "smooth" });
+                    setActiveCarouselIdx((i) => Math.max(i - 1, 0));
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הבא"
+                >
+                  <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
+              <div
+                id="job-carousel"
+                className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                onMouseEnter={() => { isPausedRef.current = true; }}
+                onMouseLeave={() => { isPausedRef.current = false; }}
+                onTouchStart={() => { isPausedRef.current = true; }}
+                onTouchEnd={() => { setTimeout(() => { isPausedRef.current = false; }, 2000); }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const cardWidth = el.scrollWidth / carouselTotal;
+                  const idx = Math.round(el.scrollLeft / cardWidth);
+                  setActiveCarouselIdx(idx);
+                }}
+              >
+                {allCarouselJobs.map(({ job, badge }) => (
+                  <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-72">
+                    <CarouselJobCard
+                      job={{ ...job, isUrgent: badge === "urgent" }}
+                      badge={badge}
+                      onLoginRequired={onLoginRequired}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────────── */}
+      <section className="px-6 mb-8 max-w-lg mx-auto relative z-10">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-black flex items-center gap-2" style={{ color: "var(--brand)" }}>
+            <TrendingUp className="h-5 w-5" style={{ color: "var(--amber)" }} />
+            חדש בסביבה
           </h2>
-          <AppButton
-            variant="ghost"
-            size="sm"
+          <button
             onClick={() => navigate("/find-jobs")}
-            className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
+            className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+            style={{ color: "var(--amber)", backgroundColor: "rgba(217,164,80,0.15)" }}
           >
-            כל המשרות
-            <ChevronLeft className="h-4 w-4" />
-          </AppButton>
+            הכל
+          </button>
         </div>
 
-        {!userLat && !geoRequested && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-4 mb-4 text-center bg-white border border-blue-100 shadow-sm"
-          >
-            <MapPin className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-gray-800 mb-1">רוצה לראות עבודות קרובות אליך?</p>
-            <p className="text-xs text-gray-500 mb-3">אפשר גישה למיקום להצגת עבודות באזור שלך</p>
-            <AppButton
-              variant="brand"
-              size="sm"
-              onClick={requestGeo}
-            >
-              <MapPin className="h-4 w-4" />
-              אפשר גישה למיקום
-            </AppButton>
-          </motion.div>
-        )}
-
         {userLat && (
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className="text-xs text-gray-400">רדיוס:</span>
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-xs font-bold" style={{ color: "var(--muted-foreground)" }}>רדיוס:</span>
             {[1, 3, 5].map((km) => (
               <button
                 key={km}
                 onClick={() => setNearbyRadius(km)}
-                className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
+                className="px-3 py-1 rounded-full text-xs font-bold transition-all"
                 style={{
-                  background: nearbyRadius === km ? "#3c83f6" : "white",
-                  border: nearbyRadius === km ? "1px solid #3c83f6" : "1px solid #e2e8f0",
-                  color: nearbyRadius === km ? "white" : "#64748b",
+                  background: nearbyRadius === km ? "var(--brand)" : "white",
+                  border: nearbyRadius === km ? "1px solid var(--brand)" : "1px solid var(--border)",
+                  color: nearbyRadius === km ? "white" : "var(--muted-foreground)",
                 }}
               >
                 {km} ק"מ
@@ -604,34 +446,44 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <button
                 onClick={() => setShowMap(false)}
                 className="p-1.5 rounded-lg transition-all"
-                style={{
-                  background: !showMap ? "#3c83f6" : "white",
-                  border: !showMap ? "1px solid #3c83f6" : "1px solid #e2e8f0",
-                }}
+                style={{ background: !showMap ? "var(--brand)" : "white", border: !showMap ? "1px solid var(--brand)" : "1px solid var(--border)" }}
               >
-                <List className="h-4 w-4" style={{ color: !showMap ? "white" : "#64748b" }} />
+                <List className="h-4 w-4" style={{ color: !showMap ? "white" : "var(--muted-foreground)" }} />
               </button>
               <button
                 onClick={() => setShowMap(true)}
                 className="p-1.5 rounded-lg transition-all"
-                style={{
-                  background: showMap ? "#3c83f6" : "white",
-                  border: showMap ? "1px solid #3c83f6" : "1px solid #e2e8f0",
-                }}
+                style={{ background: showMap ? "var(--brand)" : "white", border: showMap ? "1px solid var(--brand)" : "1px solid var(--border)" }}
               >
-                <Map className="h-4 w-4" style={{ color: showMap ? "white" : "#64748b" }} />
+                <Map className="h-4 w-4" style={{ color: showMap ? "white" : "var(--muted-foreground)" }} />
               </button>
             </div>
           </div>
         )}
 
+        {!userLat && !geoRequested && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl p-5 mb-4 text-center bg-white shadow-sm"
+            style={{ border: "1px solid var(--border)" }}
+          >
+            <MapPin className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--brand)" }} />
+            <p className="text-sm font-black mb-1" style={{ color: "var(--brand)" }}>רוצה לראות עבודות קרובות אליך?</p>
+            <p className="text-xs font-bold mb-3" style={{ color: "var(--muted-foreground)" }}>אפשר גישה למיקום להצגת עבודות באזור שלך</p>
+            <AppButton variant="brand" size="sm" onClick={requestGeo}>
+              <MapPin className="h-4 w-4" />
+              אפשר גישה למיקום
+            </AppButton>
+          </motion.div>
+        )}
+
         {isLoading ? (
           <JobCardSkeletonList count={3} />
         ) : jobs.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium text-gray-600">אין משרות בטווח {nearbyRadius} ק"מ</p>
-            <p className="text-xs mt-1">נסה להרחיב את הרדיוס או לחפש בכל המשרות</p>
+          <div className="text-center py-12">
+            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" style={{ color: "var(--brand)" }} />
+            <p className="font-black" style={{ color: "var(--brand)" }}>אין משרות בטווח {nearbyRadius} ק"מ</p>
+            <p className="text-xs mt-1 font-bold" style={{ color: "var(--muted-foreground)" }}>נסה להרחיב את הרדיוס או לחפש בכל המשרות</p>
             <AppButton variant="brand" size="sm" className="mt-4" onClick={() => navigate("/find-jobs")}>כל המשרות</AppButton>
           </div>
         ) : showMap && userLat ? (
@@ -639,88 +491,52 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         ) : (
           <div className="space-y-3">
             {jobs.map((job, i) => (
-              <motion.div
-                key={job.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06, duration: 0.35 }}
-              >
-                <JobCard
-                  job={{
-                    ...job,
-                    salary: job.salary ?? null,
-                    businessName: job.businessName ?? null,
-                    distance: "distance" in job ? (job as { distance: number }).distance : undefined,
-                  }}
-                  showDistance={!!userLat}
-                  onLoginRequired={onLoginRequired}
-                />
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {!isLoading && !showMap && jobs.length > 0 && (
-          <div className="mt-6 text-center">
-            <AppButton
-              variant="secondary"
-              onClick={() => navigate("/find-jobs")}
-              className="gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-            >
-              <Search className="h-4 w-4" />
-              חפש עוד משרות
-            </AppButton>
-          </div>
-        )}
-      </section>
-
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-gray-100">
-        <div className="max-w-2xl mx-auto px-4 py-10">
-          <h2 className="text-xl font-bold text-gray-900 mb-8 text-center">איך זה עובד?</h2>
-          <div className="grid grid-cols-3 gap-4">
-            {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }, i) => (
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.1, duration: 0.4 }}
-                className="text-center"
-              >
-                <div
-                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(60,131,246,0.1) 0%, rgba(60,131,246,0.05) 100%)",
-                    border: "1px solid rgba(60,131,246,0.2)",
-                  }}
-                >
-                  <Icon className="h-6 w-6 text-blue-600" />
-                  <span
-                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
-                  >
-                    {step}
-                  </span>
+              <motion.div key={job.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.35 }}>
+                <div onClick={() => navigate(`/jobs/${job.id}`)} className="cursor-pointer">
+                  <JobCard
+                    job={job}
+                    onLoginRequired={onLoginRequired}
+                  />
                 </div>
-                <h3 className="font-bold text-sm text-gray-900 mb-1">{title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
               </motion.div>
             ))}
           </div>
-        </div>
+        )}
       </section>
 
-      {/* ── Switch role ─────────────────────────────────────────────────────── */}
-      <section className="max-w-2xl mx-auto px-4 py-6 text-center">
-        <p className="text-sm text-gray-400 mb-2">גם מעסיק? עבור למצב מעסיק</p>
-        <AppButton
-          variant="secondary"
-          size="sm"
-          onClick={resetUserMode}
-          className="gap-2 text-gray-500"
+      {/* ── Not found CTA ────────────────────────────────────────────────── */}
+      <section
+        className="px-6 py-12 text-center relative z-10"
+        style={{ backgroundColor: "var(--honey)", borderTop: "1px solid var(--border)" }}
+      >
+        <div className="mb-6 max-w-lg mx-auto">
+          <Search className="h-10 w-10 mx-auto mb-2" style={{ color: "var(--brand)" }} />
+          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
+          <p className="text-xs mt-1 font-bold" style={{ color: "var(--foreground)" }}>
+            כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/find-jobs")}
+          className="px-8 py-3 rounded-2xl font-black transition-colors active:scale-95 shadow-sm"
+          style={{ border: "2.5px solid var(--brand)", color: "var(--brand)", background: "white" }}
         >
-          🔄 שנה תפקיד
-        </AppButton>
+          לחיפוש מתקדם
+        </button>
+      </section>
+
+      {/* ── Employer CTA ─────────────────────────────────────────────────── */}
+      <section
+        className="px-6 pt-2 pb-16 text-center relative z-10"
+        style={{ backgroundColor: "var(--honey)" }}
+      >
+        <button
+          onClick={resetUserMode}
+          className="inline-block text-[15px] font-black transition-colors underline underline-offset-4"
+          style={{ color: "var(--amber)" }}
+        >
+          מחפשים עובדים? לחצו לפרסום עבודה
+        </button>
       </section>
 
       {/* ── Info Dialog ──────────────────────────────────────────────────── */}
@@ -771,14 +587,15 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 onClick={() => confirmAvailability(h)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all font-bold text-gray-800"
+                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all font-bold"
+                style={{ borderColor: "var(--border)", color: "var(--brand)" }}
               >
-                <span className="text-2xl font-extrabold text-blue-600">{h}</span>
-                <span className="text-xs text-gray-500 mt-1">שעות</span>
+                <span className="text-2xl font-extrabold" style={{ color: "var(--amber)" }}>{h}</span>
+                <span className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>שעות</span>
               </motion.button>
             ))}
           </div>
-          <AppButton variant="ghost" size="sm" className="mt-1 w-full text-gray-500" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
     </div>

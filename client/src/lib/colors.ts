@@ -12,15 +12,15 @@
  */
 
 // ─── Primary brand — Olive Grove #4F583B ─────────────────────────────────────
-export const C_BRAND           = "oklch(0.44 0.05 122.3)";   // Olive Grove
-export const C_BRAND_DARK      = "oklch(0.36 0.05 122.3)";   // darker olive
-export const C_BRAND_MID       = "oklch(0.55 0.05 122.3)";   // lighter olive tint
-export const C_BRAND_LIGHT     = "oklch(0.95 0.02 122.3)";   // very light olive bg
-export const C_BRAND_SUBTLE    = "oklch(0.50 0.05 122.3)";   // slightly brighter olive
+export const C_BRAND           = "oklch(0.38 0.07 125.0)";   // deep rich olive
+export const C_BRAND_DARK      = "oklch(0.30 0.07 125.0)";   // very dark olive
+export const C_BRAND_MID       = "oklch(0.50 0.07 125.0)";   // mid olive tint
+export const C_BRAND_LIGHT     = "oklch(0.96 0.02 122.3)";   // very light olive bg
+export const C_BRAND_SUBTLE    = "oklch(0.44 0.07 125.0)";   // slightly brighter olive
 
 // Hex equivalents (for inline styles that need hex)
-export const C_BRAND_HEX       = "#4F583B";                  // Olive Grove
-export const C_BRAND_DARK_HEX  = "#3a4129";                  // darker olive
+export const C_BRAND_HEX       = "#3d4a28";                  // deep rich olive
+export const C_BRAND_DARK_HEX  = "#2e3a1c";                  // very dark olive
 
 // ─── Accent — Amber Harvest #D9A450 ──────────────────────────────────────────
 export const C_AMBER           = "oklch(0.75 0.12 76.7)";    // Amber Harvest
@@ -71,13 +71,13 @@ export const C_WHATSAPP        = "#25D366";
 export const C_WHATSAPP_DARK   = "#1da851";
 
 // ─── Page / surface backgrounds ──────────────────────────────────────────────
-export const C_PAGE_BG         = "oklch(0.97 0.02 91.6)";    // Vanilla Linen
-export const C_PAGE_BG_HEX     = "#F8F4E8";
+export const C_PAGE_BG         = "oklch(0.99 0.01 91.6)";    // near-white warm linen
+export const C_PAGE_BG_HEX     = "#fdfaf3";
 export const C_SURFACE         = "oklch(1 0 0)";
 export const C_SURFACE_HEX     = "#ffffff";
 
 // Dark-mode surfaces
-export const C_DARK_BG         = "oklch(0.20 0.04 122.3)";   // deep olive dark
+export const C_DARK_BG         = "oklch(0.18 0.06 125.0)";   // deep rich olive dark
 export const C_DARK_CARD       = "oklch(1 0 0 / 5%)";
 export const C_DARK_CARD_BORDER = "oklch(1 0 0 / 10%)";
 
@@ -107,8 +107,8 @@ export const G_URGENT          = `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f
 export const G_WHATSAPP        = `linear-gradient(135deg, ${C_WHATSAPP} 0%, ${C_WHATSAPP_DARK} 100%)`;
 
 // ─── Box-shadow helpers ───────────────────────────────────────────────────────
-export const S_BRAND_SM        = `0 3px 10px oklch(0.44 0.05 122.3 / 0.25)`;
-export const S_BRAND_MD        = `0 4px 14px oklch(0.44 0.05 122.3 / 0.30)`;
-export const S_BRAND_LG        = `0 8px 24px oklch(0.44 0.05 122.3 / 0.45)`;
+export const S_BRAND_SM        = `0 3px 10px oklch(0.38 0.07 125.0 / 0.28)`;
+export const S_BRAND_MD        = `0 4px 14px oklch(0.38 0.07 125.0 / 0.32)`;
+export const S_BRAND_LG        = `0 8px 24px oklch(0.38 0.07 125.0 / 0.48)`;
 export const S_CARD            = "0 1px 4px rgba(0,0,0,0.06)";
 export const S_CARD_HOVER      = "0 4px 20px rgba(0,0,0,0.10)";

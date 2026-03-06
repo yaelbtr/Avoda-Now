@@ -53,12 +53,12 @@
    * TS constants mirror these in client/src/lib/colors.ts
    * ─────────────────────────────────────────────────────────────────────── */
 
-  /* Primary — Olive Grove #4F583B */
-  --brand:           oklch(0.44 0.05 122.3);   /* #4F583B */
-  --brand-dark:      oklch(0.36 0.05 122.3);   /* darker olive */
-  --brand-mid:       oklch(0.55 0.05 122.3);   /* lighter olive tint */
-  --brand-light:     oklch(0.95 0.02 122.3);   /* very light olive bg */
-  --brand-subtle:    oklch(0.50 0.05 122.3);   /* slightly brighter olive */
+  /* Primary — Olive Grove (deepened) */
+  --brand:           oklch(0.38 0.07 125.0);   /* deep rich olive */
+  --brand-dark:      oklch(0.30 0.07 125.0);   /* very dark olive */
+  --brand-mid:       oklch(0.50 0.07 125.0);   /* mid olive tint */
+  --brand-light:     oklch(0.96 0.02 122.3);   /* very light olive bg */
+  --brand-subtle:    oklch(0.44 0.07 125.0);   /* slightly brighter olive */
 
   /* Accent — Amber Harvest #D9A450 */
   --amber:           oklch(0.75 0.12 76.7);    /* #D9A450 */
@@ -74,8 +74,8 @@
   --honey:           oklch(0.89 0.05 84.0);    /* #EAD7B2 */
   --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
 
-  /* Background — Vanilla Linen #F8F4E8 */
-  --linen:           oklch(0.97 0.02 91.6);    /* #F8F4E8 */
+  /* Background — Vanilla Linen (lightened) */
+  --page-bg:         oklch(0.99 0.01 91.6);    /* near-white warm linen */
 
   /* Success / green */
   --success:         oklch(0.65 0.22 160);
@@ -106,14 +106,14 @@
   --whatsapp-dark:   #1da851;
 
   /* Light theme — Olive Grove primary */
-  --background: oklch(0.97 0.02 91.6);         /* Vanilla Linen */
+  --background: oklch(0.99 0.01 91.6);         /* near-white warm linen */
   --foreground: oklch(0.22 0.03 122.3);         /* dark olive text */
   --card: oklch(1 0 0);                         /* white */
   --card-foreground: oklch(0.22 0.03 122.3);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.03 122.3);
-  --primary: oklch(0.44 0.05 122.3);            /* Olive Grove */
-  --primary-foreground: oklch(0.97 0.02 91.6);  /* Vanilla Linen on olive */
+  --primary: oklch(0.38 0.07 125.0);            /* deep rich olive */
+  --primary-foreground: oklch(0.99 0.01 91.6);  /* near-white on olive */
   --accent: oklch(0.82 0.15 80.8);              /* Sun-Kissed Citrus */
   --accent-foreground: oklch(0.22 0.03 122.3);  /* dark text on citrus */
   --secondary: oklch(0.89 0.05 84.0);           /* Honey Wheat */
@@ -125,15 +125,15 @@
   --border: oklch(0.87 0.04 84.0);              /* Honey Wheat border */
   --input: oklch(0.87 0.04 84.0);
   --ring: oklch(0.75 0.12 76.7);                /* Amber Harvest ring */
-  --sidebar: oklch(0.44 0.05 122.3);            /* Olive Grove sidebar */
-  --sidebar-foreground: oklch(0.97 0.02 91.6);
+  --sidebar: oklch(0.38 0.07 125.0);            /* deep olive sidebar */
+  --sidebar-foreground: oklch(0.99 0.01 91.6);
   --sidebar-primary: oklch(0.82 0.15 80.8);     /* Citrus on sidebar */
   --sidebar-primary-foreground: oklch(0.22 0.03 122.3);
-  --sidebar-accent: oklch(0.36 0.05 122.3);
-  --sidebar-accent-foreground: oklch(0.97 0.02 91.6);
-  --sidebar-border: oklch(0.36 0.05 122.3);
+  --sidebar-accent: oklch(0.30 0.07 125.0);
+  --sidebar-accent-foreground: oklch(0.99 0.01 91.6);
+  --sidebar-border: oklch(0.30 0.07 125.0);
   --sidebar-ring: oklch(0.75 0.12 76.7);
-  --chart-1: oklch(0.44 0.05 122.3);            /* Olive Grove */
+  --chart-1: oklch(0.38 0.07 125.0);            /* deep olive */
   --chart-2: oklch(0.75 0.12 76.7);             /* Amber Harvest */
   --chart-3: oklch(0.82 0.15 80.8);             /* Sun-Kissed Citrus */
   --chart-4: oklch(0.89 0.05 84.0);             /* Honey Wheat */
@@ -142,31 +142,31 @@
 
 /* Dark mode */
 .dark {
-  --background: oklch(0.20 0.04 122.3);         /* deep olive dark */
-  --foreground: oklch(0.97 0.02 91.6);          /* Vanilla Linen */
-  --card: oklch(0.26 0.04 122.3);
-  --card-foreground: oklch(0.97 0.02 91.6);
-  --popover: oklch(0.24 0.04 122.3);
-  --popover-foreground: oklch(0.97 0.02 91.6);
+  --background: oklch(0.18 0.06 125.0);         /* deep rich olive dark */
+  --foreground: oklch(0.99 0.01 91.6);          /* near-white */
+  --card: oklch(0.24 0.06 125.0);
+  --card-foreground: oklch(0.99 0.01 91.6);
+  --popover: oklch(0.22 0.06 125.0);
+  --popover-foreground: oklch(0.99 0.01 91.6);
   --primary: oklch(0.82 0.15 80.8);             /* Citrus on dark */
   --primary-foreground: oklch(0.22 0.03 122.3);
   --accent: oklch(0.75 0.12 76.7);              /* Amber Harvest */
   --accent-foreground: oklch(0.22 0.03 122.3);
-  --secondary: oklch(0.30 0.04 122.3);
+  --secondary: oklch(0.28 0.06 125.0);
   --secondary-foreground: oklch(0.89 0.05 84.0);
-  --muted: oklch(0.28 0.04 122.3);
+  --muted: oklch(0.26 0.06 125.0);
   --muted-foreground: oklch(0.70 0.03 100);
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.75 0.12 76.7);
-  --sidebar: oklch(0.18 0.04 122.3);
-  --sidebar-foreground: oklch(0.97 0.02 91.6);
+  --sidebar: oklch(0.16 0.06 125.0);
+  --sidebar-foreground: oklch(0.99 0.01 91.6);
   --sidebar-primary: oklch(0.82 0.15 80.8);
   --sidebar-primary-foreground: oklch(0.22 0.03 122.3);
-  --sidebar-accent: oklch(0.26 0.04 122.3);
-  --sidebar-accent-foreground: oklch(0.97 0.02 91.6);
+  --sidebar-accent: oklch(0.24 0.06 125.0);
+  --sidebar-accent-foreground: oklch(0.99 0.01 91.6);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.75 0.12 76.7);
 }
@@ -232,13 +232,13 @@
   }
   /* ── Hero gradients ── */
   .hero-gradient {
-    background: linear-gradient(135deg, oklch(0.28 0.05 122.3) 0%, oklch(0.20 0.04 122.3) 100%);
+    background: linear-gradient(135deg, oklch(0.30 0.07 125.0) 0%, oklch(0.20 0.07 125.0) 100%);
   }
   .hero-gradient-worker {
-    background: linear-gradient(135deg, oklch(0.22 0.05 122.3) 0%, oklch(0.30 0.05 110) 50%, oklch(0.26 0.04 130) 100%);
+    background: linear-gradient(135deg, oklch(0.22 0.07 125.0) 0%, oklch(0.32 0.07 115) 50%, oklch(0.26 0.06 130) 100%);
   }
   .hero-gradient-employer {
-    background: linear-gradient(135deg, oklch(0.26 0.05 122.3) 0%, oklch(0.36 0.05 122.3) 50%, oklch(0.22 0.04 122.3) 100%);
+    background: linear-gradient(135deg, oklch(0.28 0.07 125.0) 0%, oklch(0.38 0.07 125.0) 50%, oklch(0.22 0.06 125.0) 100%);
   }
 
   /* ── Glassmorphism ── */
@@ -268,12 +268,12 @@
   }
   .card-hover:hover {
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 16px 40px oklch(0.44 0.05 122.3 / 0.20);
+    box-shadow: 0 16px 40px oklch(0.38 0.07 125.0 / 0.22);
   }
 
   /* ── Glow effects ── */
   .glow-primary {
-    box-shadow: 0 0 24px oklch(0.44 0.05 122.3 / 0.35), 0 0 48px oklch(0.44 0.05 122.3 / 0.15);
+    box-shadow: 0 0 24px oklch(0.38 0.07 125.0 / 0.40), 0 0 48px oklch(0.38 0.07 125.0 / 0.18);
   }
   .glow-accent {
     box-shadow: 0 0 24px oklch(0.82 0.15 80.8 / 0.40), 0 0 48px oklch(0.82 0.15 80.8 / 0.15);
@@ -298,8 +298,8 @@
 
   /* ── Animated border ── */
   .border-glow {
-    border: 1px solid oklch(0.44 0.05 122.3 / 0.4);
-    box-shadow: inset 0 0 12px oklch(0.44 0.05 122.3 / 0.08);
+    border: 1px solid oklch(0.38 0.07 125.0 / 0.45);
+    box-shadow: inset 0 0 12px oklch(0.38 0.07 125.0 / 0.10);
   }
 
   /* ── Category badge ── */

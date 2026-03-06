@@ -459,3 +459,8 @@
 
 ## Bug Fix — Worker Role Navigation
 - [x] Fix: "המשך כעובד" button navigates to /find-jobs instead of / (HomeWorker) — fixed in WelcomeScreen.tsx handleCTA
+
+## UX Improvements — Navigation & Transitions
+- [x] Fix onDismiss (X button) in WelcomeScreen: navigate worker to / and employer to /post-job
+- [x] Save pre-login return path (sessionStorage) and restore it after successful OTP login
+- [x] Add smooth slide-down exit animation in WelcomeScreen (fade + translateY) for natural page reveal

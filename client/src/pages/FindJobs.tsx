@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import {
@@ -96,7 +97,7 @@ export default function FindJobs() {
     if (cached) { setUserLat(cached.lat); setUserLng(cached.lng); }
   }, []);
 
-  const requireLogin = (message: string) => { setLoginMessage(message); setLoginOpen(true); };
+  const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
   const doGetLocation = () => {
     setLocating(true);

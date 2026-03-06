@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase } from "lucide-react";
 import { toast } from "sonner";
@@ -169,7 +170,7 @@ export default function PostJob() {
   };
 
   const onSubmit = (data: FormData) => {
-    if (!isAuthenticated) { setLoginOpen(true); return; }
+    if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
     if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); return; }
 
     // Validate CAPTCHA

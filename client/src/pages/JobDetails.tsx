@@ -21,6 +21,7 @@ import {
 } from "@shared/categories";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
   C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
@@ -121,7 +122,7 @@ export default function JobDetails() {
     new google.maps.Marker({ position: { lat, lng }, map, title: job.title });
   };
 
-  const requireLogin = (message: string) => { setLoginMessage(message); setLoginOpen(true); };
+  const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
   if (isLoading) {
     return (

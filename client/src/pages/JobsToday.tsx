@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES } from "@shared/categories";
 import { Flame, Briefcase, ChevronRight } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
@@ -16,7 +17,7 @@ export default function JobsToday() {
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);
-    setLoginOpen(true);
+    saveReturnPath(); setLoginOpen(true);
   };
 
   const { data: jobs = [], isLoading } = trpc.jobs.listToday.useQuery({

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -176,7 +177,7 @@ export default function MyJobs() {
           <h2 className="text-xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>כניסה נדרשת</h2>
           <p className="text-sm mb-6" style={{ color: TEXT_MID }}>התחבר כדי לנהל את המשרות שלך</p>
           <Button
-            onClick={() => setLoginOpen(true)}
+            onClick={() => { saveReturnPath(); setLoginOpen(true); }}
             className="w-full"
             style={{
               background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,

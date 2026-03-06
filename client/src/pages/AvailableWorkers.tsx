@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
@@ -65,7 +66,7 @@ export default function AvailableWorkers() {
   const workers = workersQuery.data ?? [];
 
   const contactWorker = (phone: string | null, name: string) => {
-    if (!isAuthenticated) { setLoginOpen(true); return; }
+    if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
     if (!phone) return;
     const clean = phone.replace(/\D/g, "");
     const intl = clean.startsWith("0") ? "972" + clean.slice(1) : clean;
@@ -74,7 +75,7 @@ export default function AvailableWorkers() {
   };
 
   const callWorker = (phone: string | null) => {
-    if (!isAuthenticated) { setLoginOpen(true); return; }
+    if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
     if (!phone) return;
     window.location.href = `tel:${phone}`;
   };

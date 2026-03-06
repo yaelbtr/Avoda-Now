@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
+import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil, TrendingUp, Sparkles,
@@ -64,7 +65,7 @@ export default function HomeEmployer() {
     return () => { if (workerAutoScrollRef.current) clearInterval(workerAutoScrollRef.current); };
   }, []);
 
-  const requireLogin = (msg: string) => { setLoginMessage(msg); setLoginOpen(true); };
+  const requireLogin = (msg: string) => { saveReturnPath(); setLoginMessage(msg); setLoginOpen(true); };
 
   const handlePostJob = () => {
     if (!isAuthenticated) { requireLogin("כדי לפרסם משרה יש להתחבר למערכת"); return; }

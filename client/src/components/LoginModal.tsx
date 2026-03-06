@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback, KeyboardEvent, ClipboardEvent
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { popReturnPath } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -37,6 +39,7 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { refetch } = useAuth();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   // ── Timer helpers ────────────────────────────────────────────────────────────
   const startResendTimer = useCallback(() => {
@@ -99,6 +102,9 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
         queryClient.invalidateQueries();
         toast.success("התחברת בהצלחה! 🎉");
         onClose();
+        // Navigate back to the page the user was on before login
+        const returnPath = popReturnPath();
+        if (returnPath) navigate(returnPath);
       }, 800);
     },
     onError: (e) => {

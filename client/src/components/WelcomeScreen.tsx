@@ -34,32 +34,39 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
     { enabled: mode === "employer" }
   );
 
-  const handleDismiss = () => {
-    setExiting(true);
-    setTimeout(() => onDismiss(), 350);
-  };
-
-  const handleCTA = () => {
+  /** Shared exit helper — plays slide-down animation then navigates */
+  const exitTo = (path: string) => {
     setExiting(true);
     setTimeout(() => {
       onDismiss();
-      if (mode === "worker") navigate("/");
-      else navigate("/post-job");
-    }, 350);
+      navigate(path);
+    }, 400);
+  };
+
+  /** X button / "עבור לדף הבית" — always goes to home */
+  const handleDismiss = () => exitTo("/");
+
+  /** Primary CTA — worker → home, employer → post-job */
+  const handleCTA = () => {
+    if (mode === "worker") exitTo("/");
+    else exitTo("/post-job");
   };
 
   const isWorker = mode === "worker";
 
   return (
     <div
-      className={`fixed inset-0 z-40 bg-background overflow-y-auto transition-all duration-350 ${
-        visible && !exiting
-          ? "opacity-100 translate-y-0"
-          : exiting
-          ? "opacity-0 -translate-y-8"
-          : "opacity-0 translate-y-12"
-      }`}
-      style={{ transitionDuration: "350ms" }}
+      className={`fixed inset-0 z-40 bg-background overflow-y-auto`}
+      style={{
+        transition: "opacity 400ms ease, transform 400ms cubic-bezier(0.4, 0, 0.2, 1)",
+        opacity: visible && !exiting ? 1 : 0,
+        // Slide up on enter, slide down on exit for a natural "page reveals underneath" feel
+        transform: exiting
+          ? "translateY(40px)"
+          : visible
+          ? "translateY(0)"
+          : "translateY(20px)",
+      }}
       dir="rtl"
     >
       <div className="max-w-lg mx-auto px-4 py-10">
@@ -100,13 +107,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
               urgentJobsQuery.data.slice(0, 3).map((job) => (
                 <div
                   key={job.id}
-                  onClick={() => {
-                    setExiting(true);
-                    setTimeout(() => {
-                      onDismiss();
-                      navigate(`/job/${job.id}`);
-                    }, 350);
-                  }}
+                  onClick={() => exitTo(`/job/${job.id}`)}
                   className="cursor-pointer"
                 >
                   <JobCard

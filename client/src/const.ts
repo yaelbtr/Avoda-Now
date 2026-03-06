@@ -1,5 +1,21 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+/** Key used to persist the pre-login path in sessionStorage */
+const RETURN_PATH_KEY = "avodanow_return_path";
+
+/** Save current page path before redirecting to login */
+export const saveReturnPath = (path?: string) => {
+  const p = path ?? window.location.pathname + window.location.search;
+  if (p && p !== "/") sessionStorage.setItem(RETURN_PATH_KEY, p);
+};
+
+/** Retrieve and clear the saved return path (returns null if none) */
+export const popReturnPath = (): string | null => {
+  const p = sessionStorage.getItem(RETURN_PATH_KEY);
+  if (p) sessionStorage.removeItem(RETURN_PATH_KEY);
+  return p;
+};
+
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;

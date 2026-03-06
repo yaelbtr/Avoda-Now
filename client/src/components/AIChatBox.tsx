@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -317,9 +317,10 @@ export function AIChatBox({
           className="flex-1 max-h-32 resize-none min-h-9"
           rows={1}
         />
-        <Button
+        <AppButton
           type="submit"
           size="icon"
+          variant="brand"
           disabled={!input.trim() || isLoading}
           className="shrink-0 h-[38px] w-[38px]"
         >
@@ -328,7 +329,7 @@ export function AIChatBox({
           ) : (
             <Send className="size-4" />
           )}
-        </Button>
+        </AppButton>
       </form>
     </div>
   );

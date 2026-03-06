@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -242,15 +242,17 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
               </div>
             </div>
 
-            <Button
-              className="w-full h-11 text-base font-semibold"
+            <AppButton
+              variant="brand"
+              size="lg"
+              className="w-full"
               onClick={handleSend}
               disabled={sendOtp.isPending || !phone.trim()}
             >
               {sendOtp.isPending
                 ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
                 : "שלח קוד אימות"}
-            </Button>
+            </AppButton>
 
             {/* ── Divider ── */}
             <div className="flex items-center gap-3 my-1">
@@ -348,15 +350,17 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
               </p>
             </div>
 
-            <Button
-              className="w-full h-11 text-base font-semibold"
+            <AppButton
+              variant="brand"
+              size="lg"
+              className="w-full"
               onClick={() => submitOtp(digits.join(""))}
               disabled={verifyOtp.isPending || !isOtpComplete}
             >
               {verifyOtp.isPending
                 ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />מאמת...</>
                 : <><CheckCircle2 className="h-4 w-4 ml-2" />אמת קוד</>}
-            </Button>
+            </AppButton>
 
             {/* Resend row */}
             <div className="flex items-center justify-between text-sm" dir="rtl">

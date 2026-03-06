@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -51,9 +51,9 @@ export default function WorkerProfile() {
       <div className="max-w-lg mx-auto px-4 py-16 text-center" dir="rtl">
         <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-40" />
         <p className="text-muted-foreground">יש להתחבר כדי לצפות בפרופיל</p>
-        <Button className="mt-4" onClick={() => navigate("/")}>
+        <AppButton variant="brand" className="mt-4" onClick={() => navigate("/")}>
           חזרה לדף הבית
-        </Button>
+        </AppButton>
       </div>
     );
   }
@@ -195,10 +195,12 @@ export default function WorkerProfile() {
           </div>
 
           {/* Save button */}
-          <Button
+          <AppButton
+            variant="brand"
+            size="xl"
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="w-full gap-2 py-6 text-base font-bold"
+            className="w-full gap-2"
           >
             {updateMutation.isPending ? (
               <BrandLoader size="sm" />
@@ -206,7 +208,7 @@ export default function WorkerProfile() {
               <Save className="h-5 w-5" />
             )}
             שמור פרופיל
-          </Button>
+          </AppButton>
         </div>
       )}
     </div>

@@ -25,7 +25,7 @@ import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
-import { Button } from "./ui/button";
+import { AppButton } from "./AppButton";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Page 1", path: "/" },
@@ -68,15 +68,16 @@ export default function DashboardLayout({
               Access to this dashboard requires authentication. Continue to launch the login flow.
             </p>
           </div>
-          <Button
+          <AppButton
+            variant="brand"
+            size="xl"
             onClick={() => {
               window.location.href = getLoginUrl();
             }}
-            size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
             Sign in
-          </Button>
+          </AppButton>
         </div>
       </div>
     );

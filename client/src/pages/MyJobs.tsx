@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -176,17 +176,13 @@ export default function MyJobs() {
           </div>
           <h2 className="text-xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>כניסה נדרשת</h2>
           <p className="text-sm mb-6" style={{ color: TEXT_MID }}>התחבר כדי לנהל את המשרות שלך</p>
-          <Button
-            onClick={() => { saveReturnPath(); setLoginOpen(true); }}
+          <AppButton
+            variant="brand"
             className="w-full"
-            style={{
-              background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
-              border: "none",
-              boxShadow: `0 0 20px ${BRAND} / 0.25`,
-            }}
+            onClick={() => { saveReturnPath(); setLoginOpen(true); }}
           >
             כניסה / הרשמה
-          </Button>
+          </AppButton>
         </motion.div>
         <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
       </div>
@@ -243,19 +239,15 @@ export default function MyJobs() {
             </p>
           </div>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-            <Button
-              onClick={() => navigate("/post-job")}
+            <AppButton
+              variant="brand"
               size="sm"
               className="gap-2"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
-                border: "none",
-                boxShadow: `0 0 16px ${BRAND} / 0.3`,
-              }}
+              onClick={() => navigate("/post-job")}
             >
               <PlusCircle className="h-4 w-4" />
               פרסם משרה
-            </Button>
+            </AppButton>
           </motion.div>
         </motion.div>
 
@@ -347,18 +339,14 @@ export default function MyJobs() {
               פרסם את המשרה הראשונה שלך ומצא עובדים תוך דקות
             </p>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-              <Button
-                onClick={() => navigate("/post-job")}
+              <AppButton
+                variant="brand"
                 className="gap-2"
-                style={{
-                  background: `linear-gradient(135deg, ${BRAND} 0%, oklch(0.55 0.25 280) 100%)`,
-                  border: "none",
-                  boxShadow: `0 0 20px ${BRAND} / 0.25`,
-                }}
+                onClick={() => navigate("/post-job")}
               >
                 <PlusCircle className="h-4 w-4" />
                 פרסם את המשרה הראשונה שלך
-              </Button>
+              </AppButton>
             </motion.div>
           </motion.div>
         ) : (
@@ -475,7 +463,7 @@ export default function MyJobs() {
                     {/* Action buttons */}
                     <div className="flex gap-2 flex-wrap">
                       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                        <Button
+                        <AppButton
                           variant="outline"
                           size="sm"
                           className="gap-1.5 text-xs"
@@ -488,12 +476,12 @@ export default function MyJobs() {
                         >
                           <Eye className="h-3.5 w-3.5" />
                           צפה
-                        </Button>
+                        </AppButton>
                       </motion.div>
 
                       {job.status === "active" ? (
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                          <Button
+                          <AppButton
                             variant="outline"
                             size="sm"
                             className="gap-1.5 text-xs"
@@ -507,11 +495,11 @@ export default function MyJobs() {
                           >
                             <XCircle className="h-3.5 w-3.5" />
                             סגור משרה
-                          </Button>
+                          </AppButton>
                         </motion.div>
                       ) : job.status === "closed" ? (
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                          <Button
+                          <AppButton
                             variant="outline"
                             size="sm"
                             className="gap-1.5 text-xs"
@@ -525,12 +513,12 @@ export default function MyJobs() {
                           >
                             <CheckCircle className="h-3.5 w-3.5" />
                             הפעל מחדש
-                          </Button>
+                          </AppButton>
                         </motion.div>
                       ) : null}
 
                       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                        <Button
+                        <AppButton
                           variant="ghost"
                           size="sm"
                           className="gap-1.5 text-xs"
@@ -539,7 +527,7 @@ export default function MyJobs() {
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           מחק
-                        </Button>
+                        </AppButton>
                       </motion.div>
                     </div>
                   </motion.div>

@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -166,7 +166,7 @@ export default function Admin() {
             <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">גישה נדחתה</h2>
             <p className="text-muted-foreground mb-6">אין לך הרשאות גישה לפאנל הניהול.</p>
-            <Button onClick={() => navigate("/")}>חזרה לדף הבית</Button>
+            <AppButton variant="brand" onClick={() => navigate("/")}>חזרה לדף הבית</AppButton>
           </CardContent>
         </Card>
       </div>
@@ -186,7 +186,7 @@ export default function Admin() {
             <Badge variant="secondary">Admin</Badge>
           </div>
           <Link href="/">
-            <Button variant="outline" size="sm">חזרה לאתר</Button>
+            <AppButton variant="secondary" size="sm">חזרה לאתר</AppButton>
           </Link>
         </div>
       </div>
@@ -292,36 +292,36 @@ export default function Admin() {
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <Link href={`/job/${job.id}`}>
-                            <Button variant="outline" size="sm">
+                            <AppButton variant="secondary" size="sm">
                               <Eye className="w-4 h-4" />
-                            </Button>
+                            </AppButton>
                           </Link>
                           {job.status === "under_review" && (
-                            <Button
+                            <AppButton
                               size="sm"
                               variant="outline"
                               className="text-green-600 border-green-300 hover:bg-green-50"
                               onClick={() => confirm("אישור משרה", `לאשר את המשרה "${job.title}"?`, () => approveJob.mutate({ jobId: job.id }))}
                             >
                               <CheckCircle className="w-4 h-4" />
-                            </Button>
+                            </AppButton>
                           )}
-                          <Button
+                          <AppButton
                             size="sm"
                             variant="outline"
                             className="text-orange-600 border-orange-300 hover:bg-orange-50"
                             onClick={() => confirm("דחיית משרה", `לדחות ולהסתיר את המשרה "${job.title}"?`, () => rejectJob.mutate({ jobId: job.id }))}
                           >
                             <XCircle className="w-4 h-4" />
-                          </Button>
-                          <Button
+                          </AppButton>
+                          <AppButton
                             size="sm"
                             variant="outline"
                             className="text-red-600 border-red-300 hover:bg-red-50"
                             onClick={() => confirm("מחיקת משרה", `למחוק לצמיתות את המשרה "${job.title}"?`, () => deleteJobMutation.mutate({ jobId: job.id }))}
                           >
                             <Trash2 className="w-4 h-4" />
-                          </Button>
+                          </AppButton>
                         </div>
                       </div>
                     </CardContent>
@@ -361,7 +361,7 @@ export default function Admin() {
                               <p className="text-sm text-muted-foreground">{job.city ?? job.address} · {job.contactName}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Button
+                              <AppButton
                                 size="sm"
                                 variant="outline"
                                 className="text-green-600 border-green-300 hover:bg-green-50"
@@ -372,15 +372,15 @@ export default function Admin() {
                               >
                                 <CheckCircle className="w-4 h-4 ml-1" />
                                 אשר
-                              </Button>
-                              <Button
+                              </AppButton>
+                              <AppButton
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => confirm("מחיקת משרה", `למחוק את המשרה "${job.title}"?`, () => deleteJobMutation.mutate({ jobId: job.id }))}
                               >
                                 <Trash2 className="w-4 h-4 ml-1" />
                                 מחק
-                              </Button>
+                              </AppButton>
                             </div>
                           </div>
                         </CardContent>
@@ -465,7 +465,7 @@ export default function Admin() {
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {u.status === "suspended" ? (
-                            <Button
+                            <AppButton
                               size="sm"
                               variant="outline"
                               className="text-green-600 border-green-300 hover:bg-green-50"
@@ -473,9 +473,9 @@ export default function Admin() {
                             >
                               <UserCheck className="w-4 h-4 ml-1" />
                               בטל חסימה
-                            </Button>
+                            </AppButton>
                           ) : (
-                            <Button
+                            <AppButton
                               size="sm"
                               variant="outline"
                               className="text-red-600 border-red-300 hover:bg-red-50"
@@ -483,17 +483,17 @@ export default function Admin() {
                             >
                               <Ban className="w-4 h-4 ml-1" />
                               חסום
-                            </Button>
+                            </AppButton>
                           )}
                           {u.role !== "admin" && (
-                            <Button
+                            <AppButton
                               size="sm"
                               variant="outline"
                               onClick={() => confirm("קידום למנהל", `לקדם את ${u.phone} לתפקיד מנהל?`, () => setUserRole.mutate({ userId: u.id, role: "admin" }))}
                             >
                               <Shield className="w-4 h-4 ml-1" />
                               קדם למנהל
-                            </Button>
+                            </AppButton>
                           )}
                         </div>
                       </div>
@@ -517,7 +517,7 @@ export default function Admin() {
             <DialogDescription>{confirmDialog.description}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-row-reverse gap-2">
-            <Button
+            <AppButton
               variant="destructive"
               onClick={() => {
                 confirmDialog.onConfirm();
@@ -525,10 +525,10 @@ export default function Admin() {
               }}
             >
               אישור
-            </Button>
-            <Button variant="outline" onClick={() => setConfirmDialog((p) => ({ ...p, open: false }))}>
+            </AppButton>
+            <AppButton variant="secondary" onClick={() => setConfirmDialog((p) => ({ ...p, open: false }))}>
               ביטול
-            </Button>
+            </AppButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

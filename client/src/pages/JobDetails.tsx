@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { MapView } from "@/components/Map";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -139,7 +139,7 @@ export default function JobDetails() {
           <AlertCircle className="h-8 w-8 text-red-500" />
         </div>
         <p className="font-semibold text-lg text-gray-900">משרה לא נמצאה</p>
-        <Button onClick={() => navigate("/find-jobs")}>חזור לחיפוש</Button>
+        <AppButton variant="brand" onClick={() => navigate("/find-jobs")}>חזור לחיפוש</AppButton>
       </div>
     );
   }
@@ -559,14 +559,14 @@ export default function JobDetails() {
             className="resize-none"
           />
           <div className="flex gap-2 justify-start" dir="rtl">
-            <Button variant="ghost" onClick={() => setReportOpen(false)}>ביטול</Button>
-            <Button
+            <AppButton variant="ghost" onClick={() => setReportOpen(false)}>ביטול</AppButton>
+            <AppButton
               variant="destructive"
               onClick={() => reportMutation.mutate({ jobId: job.id, reason: reportReason || undefined })}
               disabled={reportMutation.isPending}
             >
               {reportMutation.isPending ? <BrandLoader size="sm" /> : "שלח דיווח"}
-            </Button>
+            </AppButton>
           </div>
         </DialogContent>
       </Dialog>

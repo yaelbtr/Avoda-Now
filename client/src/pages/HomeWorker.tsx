@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import JobCard from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -233,14 +233,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto mb-6"
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <Button
-                size="lg"
-                className="w-full font-bold text-base h-12 gap-2 relative overflow-hidden text-white"
-                style={{
-                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                  border: "none",
-                  boxShadow: `0 4px 20px ${C_BRAND_HEX}59`,
-                }}
+              <AppButton
+                variant="brand"
+                size="xl"
+                className="w-full overflow-hidden"
+                styleOverride={{ boxShadow: `0 4px 20px ${C_BRAND_HEX}59` }}
                 onClick={() => {
                   const el = document.getElementById("jobs-section");
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -255,18 +252,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 />
                 <Search className="h-5 w-5 relative z-10" />
                 <span className="relative z-10">חפש עבודה עכשיו</span>
-              </Button>
+              </AppButton>
             </motion.div>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full font-bold text-base h-12 gap-2 bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              <AppButton
+                variant="secondary"
+                size="xl"
+                className="w-full"
                 onClick={() => navigate("/jobs-today")}
               >
                 <Flame className="h-5 w-5 text-orange-500" />
                 עבודות להיום
-              </Button>
+              </AppButton>
             </motion.div>
           </motion.div>
 
@@ -389,7 +386,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 <Zap className="h-5 w-5 text-red-500 fill-red-500" />
                 עבודות דחופות ולהיום
               </h2>
-              <Button
+              <AppButton
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/find-jobs?urgent=1")}
@@ -397,7 +394,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               >
                 כל העבודות
                 <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
+              </AppButton>
             </div>
 
             {(urgentQuery.isLoading || todayQuery.isLoading) ? (
@@ -555,7 +552,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <><TrendingUp className="h-5 w-5 text-blue-500" />משרות אחרונות</>
             )}
           </h2>
-          <Button
+          <AppButton
             variant="ghost"
             size="sm"
             onClick={() => navigate("/find-jobs")}
@@ -563,7 +560,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             כל המשרות
             <ChevronLeft className="h-4 w-4" />
-          </Button>
+          </AppButton>
         </div>
 
         {!userLat && !geoRequested && (
@@ -575,18 +572,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <MapPin className="h-8 w-8 text-blue-500 mx-auto mb-2" />
             <p className="text-sm font-semibold text-gray-800 mb-1">רוצה לראות עבודות קרובות אליך?</p>
             <p className="text-xs text-gray-500 mb-3">אפשר גישה למיקום להצגת עבודות באזור שלך</p>
-            <Button
+            <AppButton
+              variant="brand"
               size="sm"
               onClick={requestGeo}
-              className="gap-2 text-white"
-              style={{
-                background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
-                border: "none",
-              }}
             >
               <MapPin className="h-4 w-4" />
               אפשר גישה למיקום
-            </Button>
+            </AppButton>
           </motion.div>
         )}
 
@@ -639,7 +632,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium text-gray-600">אין משרות בטווח {nearbyRadius} ק"מ</p>
             <p className="text-xs mt-1">נסה להרחיב את הרדיוס או לחפש בכל המשרות</p>
-            <Button className="mt-4 text-white" style={{ background: "#3c83f6" }} onClick={() => navigate("/find-jobs")}>כל המשרות</Button>
+            <AppButton variant="brand" size="sm" className="mt-4" onClick={() => navigate("/find-jobs")}>כל המשרות</AppButton>
           </div>
         ) : showMap && userLat ? (
           <NearbyJobsMap jobs={jobs} userLat={userLat} userLng={userLng!} />
@@ -669,14 +662,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
         {!isLoading && !showMap && jobs.length > 0 && (
           <div className="mt-6 text-center">
-            <Button
-              variant="outline"
+            <AppButton
+              variant="secondary"
               onClick={() => navigate("/find-jobs")}
-              className="gap-2 bg-white border-gray-200 text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+              className="gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
             >
               <Search className="h-4 w-4" />
               חפש עוד משרות
-            </Button>
+            </AppButton>
           </div>
         )}
       </section>
@@ -720,14 +713,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Switch role ─────────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 py-6 text-center">
         <p className="text-sm text-gray-400 mb-2">גם מעסיק? עבור למצב מעסיק</p>
-        <Button
-          variant="outline"
+        <AppButton
+          variant="secondary"
           size="sm"
           onClick={resetUserMode}
-          className="gap-2 bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+          className="gap-2 text-gray-500"
         >
           🔄 שנה תפקיד
-        </Button>
+        </AppButton>
       </section>
 
       {/* ── Info Dialog ──────────────────────────────────────────────────── */}
@@ -757,7 +750,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end mt-2">
-            <Button onClick={() => setInfoOpen(false)} size="sm" className="text-white" style={{ background: "#3c83f6" }}>סגור</Button>
+            <AppButton variant="brand" size="sm" onClick={() => setInfoOpen(false)}>סגור</AppButton>
           </div>
         </DialogContent>
       </Dialog>
@@ -785,7 +778,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </motion.button>
             ))}
           </div>
-          <Button variant="ghost" size="sm" className="mt-1 w-full text-gray-500" onClick={() => setDurationOpen(false)}>ביטול</Button>
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full text-gray-500" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
     </div>

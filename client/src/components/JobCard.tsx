@@ -6,7 +6,7 @@ import {
   C_DANGER_HEX, C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
   G_SUCCESS, G_URGENT, G_WHATSAPP,
 } from "@/lib/colors";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getCategoryIcon,
@@ -249,62 +249,59 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
         {hasPhone ? (
           <>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
-              <Button
+              <AppButton
+                variant="whatsapp"
                 size="sm"
-                className="gap-1.5 text-xs w-full text-white"
-                style={{
-                  background: G_SUCCESS,
-                  border: "none",
-                }}
+                className="gap-1.5 text-xs w-full"
                 onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
               >
                 <WhatsAppIcon />
                 <span className="truncate">וואטסאפ</span>
-              </Button>
+              </AppButton>
             </motion.div>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
-              <Button
-                variant="outline"
+              <AppButton
+                variant="secondary"
                 size="sm"
-                className="gap-1.5 text-xs w-full bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+                className="gap-1.5 text-xs w-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
                 onClick={() => callPhone(job.contactPhone!)}
               >
                 <Phone className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">התקשר</span>
-              </Button>
+              </AppButton>
             </motion.div>
           </>
         ) : (
-          <Button
-            size="sm"
+          <AppButton
             variant="outline"
-            className="gap-1.5 text-xs flex-1 min-w-0 bg-white border-dashed border-gray-300 text-gray-400 hover:border-blue-300 hover:text-blue-600"
+            size="sm"
+            className="gap-1.5 text-xs flex-1 min-w-0 border-dashed border-gray-300 text-gray-400 hover:border-blue-300 hover:text-blue-600"
             onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
           >
             <Lock className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">התחבר לראות טלפון</span>
-          </Button>
+          </AppButton>
         )}
 
-        <Button
+        <AppButton
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0 text-gray-400 hover:text-green-600 hover:bg-green-50"
+          size="icon-sm"
+          className="shrink-0 text-gray-400 hover:text-green-600 hover:bg-green-50"
           onClick={() => shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType)}
           title="שתף ב-WhatsApp"
         >
           <Share2 className="h-3.5 w-3.5" />
-        </Button>
+        </AppButton>
 
         <Link href={`/job/${job.id}`}>
-          <Button
-            variant="outline"
+          <AppButton
+            variant="secondary"
             size="sm"
-            className="gap-1 text-xs bg-white border-gray-200 text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+            className="gap-1 text-xs hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
           >
             <ChevronLeft className="h-3 w-3" />
             פרטים
-          </Button>
+          </AppButton>
         </Link>
       </div>
     </motion.div>

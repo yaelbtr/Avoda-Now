@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import {
   Dialog,
   DialogContent,
@@ -76,12 +76,12 @@ export function ManusDialog({
 
         <DialogFooter className="px-5 py-5">
           {/* Login button */}
-          <Button
+          <AppButton
             onClick={onLogin}
             className="w-full h-10 bg-[#1a1a19] hover:bg-[#1a1a19]/90 text-white rounded-[10px] text-sm font-medium leading-5 tracking-[-0.154px]"
           >
             Login with Manus
-          </Button>
+          </AppButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Users, Zap, Flame, Phone, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import {
   Sheet,
   SheetContent,
@@ -255,7 +255,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
 
           {/* Action buttons */}
           <div className="grid grid-cols-3 gap-2">
-            <Button
+            <AppButton
               className="font-bold gap-1.5"
               onClick={handleWhatsApp}
               style={{
@@ -266,8 +266,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             >
               <span className="text-base">💬</span>
               וואטסאפ
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="outline"
               className="gap-1.5 font-semibold"
               onClick={handleCall}
@@ -279,8 +279,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             >
               <Phone className="h-4 w-4" />
               התקשר
-            </Button>
-            <Button
+            </AppButton>
+            <AppButton
               variant="outline"
               className="gap-1.5"
               onClick={handleShare}
@@ -292,7 +292,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             >
               <Share2 className="h-4 w-4" />
               שתף
-            </Button>
+            </AppButton>
           </div>
         </SheetContent>
       </Sheet>

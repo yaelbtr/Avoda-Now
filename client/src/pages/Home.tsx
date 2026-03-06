@@ -6,7 +6,7 @@ import HomeEmployer from "./HomeEmployer";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Search, Zap } from "lucide-react";
 import { SectionLoader } from "@/components/BrandLoader";
 
@@ -31,21 +31,22 @@ function HomeGuest() {
             חבר בין מעסיקים שצריכים עובדים עכשיו לאנשים שפנויים לעבוד עכשיו
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
-            <Button
-              size="lg"
-              className="flex-1 bg-white text-primary hover:bg-white/90 font-bold text-base h-12 gap-2"
+            <AppButton
+              variant="secondary"
+              size="xl"
+              className="flex-1 text-primary hover:bg-white/90"
               onClick={() => navigate("/find-jobs")}
             >
               <Search className="h-5 w-5" /> אני מחפש עבודה
-            </Button>
-            <Button
-              size="lg"
+            </AppButton>
+            <AppButton
               variant="outline"
-              className="flex-1 border-white/40 text-white hover:bg-white/15 font-bold text-base h-12 gap-2"
+              size="xl"
+              className="flex-1 border-white/40 text-white hover:bg-white/15"
               onClick={() => navigate("/post-job")}
             >
               <Zap className="h-5 w-5" /> אני מעסיק
-            </Button>
+            </AppButton>
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import JobCard from "@/components/JobCard";
 import { Briefcase, HardHat, ArrowLeft } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
@@ -172,13 +172,12 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
 
         {/* CTA buttons */}
         <div className="flex flex-col gap-3">
-          <Button
+          <AppButton
+            variant="brand"
+            size="xl"
+            className="w-full gap-2"
             onClick={handleCTA}
-            className={`w-full gap-2 py-6 text-base font-bold ${
-              isWorker
-                ? "bg-orange-500 hover:bg-orange-600"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            styleOverride={isWorker ? { background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" } : {}}
           >
             {isWorker ? (
               <>
@@ -191,7 +190,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
                 פרסם משרה עכשיו
               </>
             )}
-          </Button>
+          </AppButton>
           <button
             onClick={handleDismiss}
             className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2 } from "lucide-react";
@@ -106,7 +106,7 @@ export default function AvailableWorkers() {
 
       {/* Location + radius controls */}
       <div className="bg-card rounded-xl border border-border p-4 mb-4 flex flex-wrap items-center gap-3">
-        <Button
+        <AppButton
           variant="outline"
           size="sm"
           onClick={getLocation}
@@ -115,7 +115,7 @@ export default function AvailableWorkers() {
         >
           {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
           {userLat ? "עדכן מיקום" : "אתר מיקום"}
-        </Button>
+        </AppButton>
 
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">רדיוס:</span>
@@ -209,16 +209,16 @@ export default function AvailableWorkers() {
                   <div className="flex gap-2 mt-3">
                     {isAuthenticated && worker.userPhone ? (
                       <>
-                        <Button
+                        <AppButton
                           size="sm"
-                          className="flex-1 gap-1.5 text-xs text-white"
+                          className="flex-1 gap-1.5 text-xs"
                           style={{ backgroundColor: C_WHATSAPP }}
                           onClick={() => contactWorker(worker.userPhone, worker.userName ?? "עובד")}
                         >
                           <MessageCircle className="h-3.5 w-3.5" />
                           WhatsApp
-                        </Button>
-                        <Button
+                        </AppButton>
+                        <AppButton
                           variant="outline"
                           size="sm"
                           className="flex-1 gap-1.5 text-xs"
@@ -226,10 +226,10 @@ export default function AvailableWorkers() {
                         >
                           <Phone className="h-3.5 w-3.5" />
                           התקשר
-                        </Button>
+                        </AppButton>
                       </>
                     ) : (
-                      <Button
+                      <AppButton
                         size="sm"
                         variant="outline"
                         className="flex-1 gap-1.5 text-xs border-dashed text-muted-foreground"
@@ -237,7 +237,7 @@ export default function AvailableWorkers() {
                       >
                         <Phone className="h-3.5 w-3.5" />
                         התחבר לראות פרטי קשר
-                      </Button>
+                      </AppButton>
                     )}
                   </div>
                 </div>

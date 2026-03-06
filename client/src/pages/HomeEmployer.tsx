@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
@@ -146,14 +146,10 @@ export default function HomeEmployer() {
             className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-5"
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <Button
-                size="lg"
-                className="w-full font-bold text-base h-12 gap-2 relative overflow-hidden text-white"
-                style={{
-                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                  border: "none",
-                  boxShadow: `0 4px 20px ${C_BRAND_HEX}59`,
-                }}
+              <AppButton
+                variant="brand"
+                size="xl"
+                className="w-full relative overflow-hidden"
                 onClick={handlePostJob}
               >
                 {/* Shimmer */}
@@ -165,18 +161,18 @@ export default function HomeEmployer() {
                 />
                 <Zap className="h-5 w-5 relative z-10" />
                 <span className="relative z-10">פרסם עבודה דחופה</span>
-              </Button>
+              </AppButton>
             </motion.div>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full font-bold text-base h-12 gap-2 bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              <AppButton
+                variant="secondary"
+                size="xl"
+                className="w-full"
                 onClick={() => navigate("/available-workers")}
               >
                 <Users className="h-5 w-5 text-green-600" />
                 עובדים זמינים
-              </Button>
+              </AppButton>
             </motion.div>
           </motion.div>
 
@@ -213,7 +209,7 @@ export default function HomeEmployer() {
                 <Briefcase className="h-5 w-5 text-blue-500" />
                 המשרות שלי
               </h2>
-              <Button
+              <AppButton
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/my-jobs")}
@@ -221,7 +217,7 @@ export default function HomeEmployer() {
               >
                 כל המשרות
                 <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
+              </AppButton>
             </div>
 
             {myJobsQuery.isLoading ? (
@@ -230,18 +226,15 @@ export default function HomeEmployer() {
               <div className="text-center py-6">
                 <Briefcase className="h-10 w-10 mx-auto mb-2 text-blue-300" />
                 <p className="text-sm text-gray-500 mb-3">עדיין לא פרסמת משרות</p>
-                <Button
+                <AppButton
+                  variant="brand"
                   size="sm"
+                  className="gap-2"
                   onClick={handlePostJob}
-                  className="gap-2 text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                    border: "none",
-                  }}
                 >
                   <Plus className="h-4 w-4" />
                   פרסם משרה ראשונה
-                </Button>
+                </AppButton>
               </div>
             ) : (
               <div className="space-y-2">
@@ -298,19 +291,15 @@ export default function HomeEmployer() {
             )}
 
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <Button
+              <AppButton
+                variant="brand"
                 size="sm"
+                className="w-full gap-2 relative overflow-hidden"
                 onClick={handlePostJob}
-                className="w-full gap-2 text-white relative overflow-hidden"
-                style={{
-                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                  border: "none",
-                  boxShadow: `0 4px 16px ${C_BRAND_HEX}4d`,
-                }}
               >
                 <Plus className="h-4 w-4" />
                 פרסם משרה חדשה
-              </Button>
+              </AppButton>
             </div>
           </div>
         </motion.section>
@@ -329,15 +318,15 @@ export default function HomeEmployer() {
               <Users className="h-5 w-5 text-green-600" />
               עובדים זמינים עכשיו
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/available-workers")}
-              className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
-            >
-              כל העובדים
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </Button>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/available-workers")}
+                className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
+              >
+                כל העובדים
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </AppButton>
           </div>
 
           {workersQuery.isLoading ? (
@@ -394,15 +383,15 @@ export default function HomeEmployer() {
 
           {workers.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <Button
+              <AppButton
+                variant="secondary"
                 size="sm"
-                variant="outline"
                 onClick={() => navigate("/available-workers")}
-                className="w-full gap-2 bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                className="w-full gap-2 text-green-700 hover:bg-green-50 hover:border-green-300"
               >
                 <TrendingUp className="h-4 w-4" />
                 צפה בכל העובדים הזמינים
-              </Button>
+              </AppButton>
             </div>
           )}
         </div>
@@ -458,15 +447,11 @@ export default function HomeEmployer() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">צריך עובד עכשיו?</h2>
           <p className="text-gray-500 mb-6 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות — ללא עמלות</p>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Button
-              size="lg"
+            <AppButton
+              variant="brand"
+              size="xl"
+              className="gap-2 px-8 relative overflow-hidden"
               onClick={handlePostJob}
-              className="gap-2 px-8 text-white relative overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                border: "none",
-                boxShadow: `0 8px 24px ${C_BRAND_HEX}59`,
-              }}
             >
               <motion.div
                 className="absolute inset-0 -skew-x-12 pointer-events-none"
@@ -476,7 +461,7 @@ export default function HomeEmployer() {
               />
               <Zap className="h-5 w-5 relative z-10" />
               <span className="relative z-10">פרסם עבודה דחופה</span>
-            </Button>
+            </AppButton>
           </motion.div>
         </motion.div>
       </section>
@@ -484,14 +469,14 @@ export default function HomeEmployer() {
       {/* ── Switch role ─────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-8 text-center">
         <p className="text-sm text-gray-400 mb-2">גם מחפש עבודה? עבור למצב עובד</p>
-        <Button
-          variant="outline"
+        <AppButton
+          variant="secondary"
           size="sm"
           onClick={resetUserMode}
-          className="gap-2 bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+          className="gap-2 text-gray-500"
         >
           🔄 שנה תפקיד
-        </Button>
+        </AppButton>
       </section>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />

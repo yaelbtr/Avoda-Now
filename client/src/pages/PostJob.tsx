@@ -6,7 +6,7 @@ import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -216,10 +216,10 @@ export default function PostJob() {
         <p className="text-muted-foreground mb-6">
           כדי לפרסם משרה יש להתחבר למערכת עם מספר טלפון
         </p>
-        <Button size="lg" className="gap-2" onClick={() => setLoginOpen(true)}>
+        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setLoginOpen(true)}>
           <Shield className="h-5 w-5" />
           התחבר למערכת
-        </Button>
+        </AppButton>
         <LoginModal
           open={loginOpen}
           onClose={() => setLoginOpen(false)}
@@ -240,10 +240,10 @@ export default function PostJob() {
         <p className="text-muted-foreground mb-6">
           אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם משרה, עבור למצב מעסיק.
         </p>
-        <Button size="lg" className="gap-2" onClick={() => setUserMode("employer")}>
+        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setUserMode("employer")}>
           <Briefcase className="h-5 w-5" />
           עבור למצב מעסיק ופרסם משרה
-        </Button>
+        </AppButton>
         <p className="text-xs text-muted-foreground mt-4">תוכל לחזור למצב עובד בכל עת מהתפריט</p>
       </div>
     );
@@ -445,7 +445,7 @@ export default function PostJob() {
           </h2>
           <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
 
-          <Button
+          <AppButton
             type="button"
             variant="outline"
             size="sm"
@@ -455,7 +455,7 @@ export default function PostJob() {
           >
             {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
             השתמש במיקום שלי
-          </Button>
+          </AppButton>
 
           <div className="rounded-lg overflow-hidden border border-border h-56">
             <MapView onMapReady={handleMapReady} className="h-56" />
@@ -687,10 +687,11 @@ export default function PostJob() {
           {captchaError && <p className="text-destructive text-xs mt-1 text-right">תשובה שגויה, נסה שוב</p>}
         </div>
 
-        <Button
+        <AppButton
           type="submit"
-          size="lg"
-          className="w-full h-12 text-base font-bold"
+          variant="brand"
+          size="xl"
+          className="w-full"
           disabled={createJob.isPending}
         >
           {createJob.isPending ? (
@@ -698,7 +699,7 @@ export default function PostJob() {
           ) : (
             "פרסם עבודה"
           )}
-        </Button>
+        </AppButton>
       </form>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />

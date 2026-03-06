@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearch } from "wouter";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import JobCard from "@/components/JobCard";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
@@ -249,18 +249,18 @@ export default function FindJobs() {
                   נשתמש במיקומך <strong className="text-gray-900">כדי להציג עבודות קרובות אליך בלבד</strong>. המיקום לא נשמר בשרת ולא מועבר לצדדים שלישיים.
                 </p>
                 <div className="flex flex-col gap-2">
-                  <Button onClick={doGetLocation} className="w-full gap-2">
+                  <AppButton variant="brand" className="w-full gap-2" onClick={doGetLocation}>
                     <LocateFixed className="h-4 w-4" />
                     אפשר גישה למיקום
-                  </Button>
-                  <Button
+                  </AppButton>
+                  <AppButton
                     variant="outline"
                     className="w-full gap-2"
                     onClick={() => { setShowLocationDialog(false); setShowCityInput(true); setTimeout(() => cityInputRef.current?.focus(), 100); }}
                   >
                     <Search className="h-4 w-4" />
                     הזן עיר ידנית
-                  </Button>
+                  </AppButton>
                   <button
                     onClick={() => setShowLocationDialog(false)}
                     className="text-xs py-1 transition-colors text-gray-400 hover:text-gray-600"
@@ -437,22 +437,18 @@ export default function FindJobs() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant={userLat ? "default" : "outline"}
+                  <AppButton
+                    variant={userLat ? "brand" : "outline"}
                     size="sm"
                     onClick={handleLocationButtonClick}
                     disabled={locating}
                     className="gap-2 shrink-0"
-                    style={userLat ? {
-                      background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
-                      boxShadow: "0 4px 12px rgba(60,131,246,0.3)",
-                    } : {}}
                   >
                     {locating ? <BrandLoader size="sm" />
                       : userLat ? <MapPin className="h-4 w-4" />
                       : <LocateFixed className="h-4 w-4" />}
                     {locating ? "מאתר מיקום..." : userLat ? "ממוין לפי מרחק ממך" : "📍 הצג עבודות קרובות אלי"}
-                  </Button>
+                  </AppButton>
                 </motion.div>
 
                 {userLat && (

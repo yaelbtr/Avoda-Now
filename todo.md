@@ -480,3 +480,13 @@
 
 ## Bug Fix — Remove WelcomeScreen Intermediate Step
 - [x] Remove WelcomeScreen from role selection flow: navigate directly to / (worker) or /post-job (employer) without intermediate welcome screen
+
+## Button Template System (Mar 6 2026)
+- [ ] Create AppButton component with all variants (primary, secondary, outline, ghost, danger, whatsapp, cta, link-style)
+- [ ] Replace all Button/button usages in pages with AppButton
+- [ ] Replace all Button/button usages in components with AppButton
+
+## Button Template System
+- [x] Create AppButton centralized component with all variants (brand, secondary, outline, ghost, destructive, icon)
+- [x] Replace all Button usages in pages and components with AppButton
+- [x] Verify TypeScript compiles cleanly (0 errors)

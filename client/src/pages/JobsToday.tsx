@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
@@ -29,14 +29,14 @@ export default function JobsToday() {
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
-        <Button
+        <AppButton
           variant="ghost"
           size="icon"
           onClick={() => navigate("/")}
           className="h-8 w-8 text-muted-foreground"
         >
           <ChevronRight className="h-4 w-4" />
-        </Button>
+        </AppButton>
         <div className="flex items-center gap-2">
           <Flame className="h-6 w-6 text-red-500" />
           <h1 className="text-2xl font-bold text-foreground">עבודות להיום</h1>
@@ -97,14 +97,14 @@ export default function JobsToday() {
           <Flame className="h-12 w-12 mx-auto mb-3 opacity-20 text-red-400" />
           <p className="font-medium">אין עבודות להיום כרגע</p>
           <p className="text-sm mt-1">בדוק שוב מאוחר יותר — משרות חדשות מתפרסמות כל הזמן</p>
-          <Button
-            variant="outline"
+          <AppButton
+            variant="secondary"
             className="mt-4 gap-2"
             onClick={() => navigate("/find-jobs")}
           >
             <Briefcase className="h-4 w-4" />
             חפש כל המשרות
-          </Button>
+          </AppButton>
         </div>
       ) : (
         <div className="space-y-3">

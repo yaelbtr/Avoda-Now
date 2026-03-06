@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "./LoginModal";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/AppButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,7 +140,7 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
+                    <AppButton
                       variant="ghost"
                       size="sm"
                       className="gap-2 hover:bg-slate-100"
@@ -156,8 +156,8 @@ export default function Navbar() {
                         {user?.name ?? user?.phone ?? "פרופיל"}
                       </span>
                       {roleBadge && <span className="hidden sm:flex">{roleBadge}</span>}
-                    </Button>
-                  </DropdownMenuTrigger>
+                    </AppButton>
+                </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="start"
                     className="w-52"
@@ -265,23 +265,18 @@ export default function Navbar() {
                 </DropdownMenu>
               ) : (
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button
+                  <AppButton
+                    variant="brand"
                     size="sm"
                     onClick={() => setLoginOpen(true)}
-                    style={{
-                      background: BLUE,
-                      border: "none",
-                      boxShadow: `0 4px 12px oklch(0.58 0.20 255 / 0.30)`,
-                      color: "white",
-                    }}
                   >
                     כניסה
-                  </Button>
+                  </AppButton>
                 </motion.div>
               )}
 
               {/* Mobile menu toggle */}
-              <Button
+              <AppButton
                 variant="ghost"
                 size="icon"
                 className="md:hidden hover:bg-slate-100"
@@ -300,11 +295,10 @@ export default function Navbar() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </Button>
+              </AppButton>
             </div>
           </div>
         </div>
-
         {/* Mobile nav */}
         <AnimatePresence>
           {mobileOpen && (

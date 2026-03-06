@@ -415,3 +415,6 @@
 
 ## Footer Light Theme (Mar 6 2026)
 - [x] Update Footer to light-gray background and dark text
+
+## Rename JobNow → AvodaNow (Mar 6 2026)
+- [x] Replace all occurrences of JobNow/Job-Now/Job Now with AvodaNow in all frontend visual files

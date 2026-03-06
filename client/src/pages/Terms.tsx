@@ -18,7 +18,7 @@ export default function Terms() {
         <section className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold mb-3">1. כללי</h2>
           <p className="text-muted-foreground leading-relaxed">
-            ברוכים הבאים ל-Job-Now. השימוש בפלטפורמה מהווה הסכמה לתנאים אלו. הפלטפורמה מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה כלשהם.
+            ברוכים הבאים ל-AvodaNow. השימוש בפלטפורמה מהווה הסכמה לתנאים אלו. הפלטפורמה מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה כלשהם.
           </p>
         </section>
 
@@ -32,7 +32,7 @@ export default function Terms() {
         <section className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold mb-3">3. אחריות</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Job-Now אינה אחראית לתנאי העסקה, להסכמים, לתשלומים, או לכל מחלוקת בין עובדים למעסיקים. כל עסקה היא בין הצדדים ישירות.
+            AvodaNow אינה אחראית לתנאי העסקה, להסכמים, לתשלומים, או לכל מחלוקת בין עובדים למעסיקים. כל עסקה היא בין הצדדים ישירות.
           </p>
         </section>
 

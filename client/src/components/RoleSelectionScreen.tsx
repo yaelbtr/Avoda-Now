@@ -56,7 +56,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                 className="text-4xl font-bold mb-3 tracking-tight"
                 style={{ color: "oklch(0.20 0.015 265)" }}
               >
-                ברוכים הבאים ל-<br />JobNow
+                ברוכים הבאים ל-<br />AvodaNow
               </h1>
               <p style={{ color: "oklch(0.45 0.012 265)" }} className="text-lg">
                 איך נוכל לעזור לך היום?

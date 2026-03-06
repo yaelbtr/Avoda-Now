@@ -102,7 +102,7 @@ export default function Footer() {
             פלטפורמה זו מחברת בין עובדים למעסיקים בלבד. הפלטפורמה אינה אחראית לתנאי העסקה או להסכמים בין הצדדים.
           </p>
           <p className="text-xs text-center mt-2" style={{ color: TEXT_FAINT }}>
-            © {new Date().getFullYear()} Job-Now. כל הזכויות שמורות.
+            © {new Date().getFullYear()} AvodaNow. כל הזכויות שמורות.
           </p>
         </div>
       </div>

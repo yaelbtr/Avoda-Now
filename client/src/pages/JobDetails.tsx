@@ -40,14 +40,14 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
       el.setAttribute("content", content);
     };
     const jobUrl = `${SITE_URL}/job/${jobId}`;
-    document.title = `${title} | Job-Now`;
-    setMeta("og:title", `${title} | Job-Now`);
+    document.title = `${title} | AvodaNow`;
+    setMeta("og:title", `${title} | AvodaNow`);
     setMeta("og:description", description.slice(0, 200));
     setMeta("og:url", jobUrl);
     setMeta("og:type", "article");
-    setMeta("og:site_name", "Job-Now");
+    setMeta("og:site_name", "AvodaNow");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-    return () => { document.title = "Job-Now | מצא עבודה או עובדים עכשיו"; };
+    return () => { document.title = "AvodaNow | מצא עבודה או עובדים עכשיו"; };
   }, [title, description, jobId]);
   return null;
 }
@@ -165,11 +165,11 @@ export default function JobDetails() {
   const lng = parseFloat(job.longitude as string);
   const isVolunteer = job.salaryType === "volunteer";
   const jobUrl = `${SITE_URL}/job/${job.id}`;
-  const shareText = encodeURIComponent(`מצאתי עבודה באתר Job-Now 💼\n${job.title}\n${jobUrl}`);
+  const shareText = encodeURIComponent(`מצאתי עבודה באתר AvodaNow 💼\n${job.title}\n${jobUrl}`);
   const hasPhone = isAuthenticated && !!job.contactPhone;
   const cleanPhone = hasPhone ? job.contactPhone!.replace(/\D/g, "") : "";
   const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-  const contactText = encodeURIComponent(`שלום, ראיתי את המשרה "${job.title}" באתר Job-Now ואני מעוניין/ת.`);
+  const contactText = encodeURIComponent(`שלום, ראיתי את המשרה "${job.title}" באתר AvodaNow ואני מעוניין/ת.`);
 
   const distance = userLat && userLng
     ? (() => {

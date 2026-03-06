@@ -61,7 +61,7 @@ export function shareJobOnWhatsApp(
 export function contactViaWhatsApp(phone: string, jobTitle: string) {
   const clean = phone.replace(/\D/g, "");
   const intl = clean.startsWith("0") ? "972" + clean.slice(1) : clean;
-  const text = encodeURIComponent(`שלום, ראיתי את המשרה "${jobTitle}" באתר Job-Now ואני מעוניין/ת.`);
+  const text = encodeURIComponent(`שלום, ראיתי את המשרה "${jobTitle}" באתר AvodaNow ואני מעוניין/ת.`);
   window.open(`https://wa.me/${intl}?text=${text}`, "_blank");
 }
 

@@ -241,7 +241,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   border: "none",
                   boxShadow: `0 4px 20px ${C_BRAND_HEX}59`,
                 }}
-                onClick={() => navigate("/find-jobs")}
+                onClick={() => {
+                  const el = document.getElementById("jobs-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
               >
                 {/* Shimmer */}
                 <motion.div
@@ -375,6 +378,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         const total = allCarouselJobs.length;
         return (
           <motion.section
+            id="jobs-section"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}

@@ -471,3 +471,6 @@
 
 ## Bug Fix — WelcomeScreen Worker CTA Navigation (Round 2)
 - [x] Fix: UserModeContext race condition — serverMode=null while setMode mutation in-flight caused needsRoleSelection=true again; fixed by checking setModeMutation.isPending before clearing localMode
+
+## Bug Fix — HomeWorker Hero CTA
+- [x] Fix: "חפש עבודה עכשיו" button in hero section now scrolls to #jobs-section instead of navigating to /find-jobs

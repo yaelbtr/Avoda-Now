@@ -15,8 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Briefcase, PlusCircle, Loader2, Trash2, CheckCircle, XCircle,
+import BrandLoader from "@/components/BrandLoader";
+import { Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
   Clock, MapPin, Users, DollarSign, ChevronLeft, Eye, Zap,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
@@ -140,16 +140,8 @@ export default function MyJobs() {
   // ── Auth loading ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: "oklch(0.10 0.015 265)" }}
-      >
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: "oklch(0.62 0.22 255 / 0.1)", border: "1px solid oklch(0.62 0.22 255 / 0.2)" }}
-        >
-          <Loader2 className="h-7 w-7 animate-spin" style={{ color: "oklch(0.72 0.22 240)" }} />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f7f8]">
+        <BrandLoader size="lg" label="טוען..." />
       </div>
     );
   }

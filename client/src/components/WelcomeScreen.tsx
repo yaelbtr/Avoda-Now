@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
-import { Briefcase, HardHat, ArrowLeft, Loader2 } from "lucide-react";
+import { Briefcase, HardHat, ArrowLeft } from "lucide-react";
+import BrandLoader from "@/components/BrandLoader";
 
 interface WelcomeScreenProps {
   mode: "worker" | "employer";
@@ -93,7 +94,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
             </h2>
             {urgentJobsQuery.isLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <BrandLoader size="sm" />
               </div>
             ) : urgentJobsQuery.data && urgentJobsQuery.data.length > 0 ? (
               urgentJobsQuery.data.slice(0, 3).map((job) => (
@@ -133,7 +134,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
             </h2>
             {workersQuery.isLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <BrandLoader size="sm" />
               </div>
             ) : workersQuery.data && workersQuery.data.length > 0 ? (
               workersQuery.data.slice(0, 3).map((worker) => (

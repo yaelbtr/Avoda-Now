@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-// ── Shimmer block ─────────────────────────────────────────────────────────────
+// ── Shimmer block (light theme) ───────────────────────────────────────────────
 function Shimmer({
   width = "100%",
   height = 14,
@@ -19,7 +19,7 @@ function Shimmer({
         width,
         height,
         borderRadius: rounded,
-        background: "oklch(1 0 0 / 7%)",
+        background: "#e2e8f0",
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
@@ -30,7 +30,7 @@ function Shimmer({
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 10%) 40%, oklch(1 0 0 / 18%) 50%, oklch(1 0 0 / 10%) 60%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 40%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 60%, transparent 100%)",
           backgroundSize: "200% 100%",
         }}
         animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
@@ -45,12 +45,11 @@ export default function JobCardSkeleton() {
   return (
     <div
       style={{
-        background: "oklch(1 0 0 / 5%)",
-        backdropFilter: "blur(16px) saturate(180%)",
-        WebkitBackdropFilter: "blur(16px) saturate(180%)",
-        border: "1px solid oklch(1 0 0 / 10%)",
+        background: "white",
+        border: "1px solid #e2e8f0",
         borderRadius: "1rem",
         padding: "1rem",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
       dir="rtl"
     >
@@ -103,12 +102,11 @@ export function CarouselJobCardSkeleton() {
   return (
     <div
       style={{
-        background: "oklch(1 0 0 / 5%)",
-        backdropFilter: "blur(16px) saturate(180%)",
-        WebkitBackdropFilter: "blur(16px) saturate(180%)",
-        border: "1px solid oklch(1 0 0 / 10%)",
+        background: "white",
+        border: "1px solid #e2e8f0",
         borderRadius: "1rem",
         padding: "1rem",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         width: 220,
         flexShrink: 0,
       }}

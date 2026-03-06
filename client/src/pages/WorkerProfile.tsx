@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
-import { User, MapPin, Briefcase, Save, Loader2, ArrowRight } from "lucide-react";
+import { User, MapPin, Briefcase, Save, ArrowRight } from "lucide-react";
+import BrandLoader from "@/components/BrandLoader";
 
 const ALL_CATEGORIES = [
   ...JOB_CATEGORIES,
@@ -89,7 +90,7 @@ export default function WorkerProfile() {
 
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <BrandLoader size="md" />
         </div>
       ) : (
         <div className="space-y-6">
@@ -200,7 +201,7 @@ export default function WorkerProfile() {
             className="w-full gap-2 py-6 text-base font-bold"
           >
             {updateMutation.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <BrandLoader size="sm" />
             ) : (
               <Save className="h-5 w-5" />
             )}

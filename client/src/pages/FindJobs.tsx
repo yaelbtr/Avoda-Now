@@ -10,9 +10,10 @@ import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import {
-  MapPin, Search, Loader2, Briefcase, LocateFixed, Flame, X,
+  MapPin, Search, Briefcase, LocateFixed, Flame, X,
   Navigation, AlertCircle, SlidersHorizontal,
 } from "lucide-react";
+import BrandLoader from "@/components/BrandLoader";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -54,13 +55,12 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-// ── Glassmorphism style helpers ─────────────────────────────────────────────
-const glassPanel = {
-  background: "oklch(1 0 0 / 5%)",
-  backdropFilter: "blur(16px) saturate(180%)",
-  WebkitBackdropFilter: "blur(16px) saturate(180%)",
-  border: "1px solid oklch(1 0 0 / 10%)",
+// ── Light panel style helper ─────────────────────────────────────────────
+const lightPanel = {
+  background: "white",
+  border: "1px solid #e2e8f0",
   borderRadius: "1rem",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
 } as React.CSSProperties;
 
 export default function FindJobs() {
@@ -180,32 +180,11 @@ export default function FindJobs() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen"
-      style={{ background: "oklch(0.10 0.015 265)" }}
+      className="min-h-screen bg-[#f5f7f8]"
     >
-      {/* ── Floating background orbs ── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 500, height: 500,
-            top: -100, right: -100,
-            background: "radial-gradient(circle, oklch(0.62 0.22 255 / 0.06) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 400, height: 400,
-            bottom: 100, left: -80,
-            background: "radial-gradient(circle, oklch(0.78 0.17 65 / 0.05) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-      </div>
 
-      <div className="relative max-w-2xl mx-auto px-4 py-8" style={{ zIndex: 1 }}>
+
+      <div className="relative max-w-2xl mx-auto px-4 py-8">
 
         {/* ── Page header ── */}
         <motion.div
@@ -218,20 +197,17 @@ export default function FindJobs() {
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{
-                background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
-                boxShadow: "0 0 20px oklch(0.62 0.22 255 / 0.3)",
+                background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                boxShadow: "0 4px 16px rgba(60,131,246,0.3)",
               }}
             >
               <Search className="h-5 w-5 text-white" />
             </div>
-            <h1
-              className="text-2xl font-black"
-              style={{ color: "oklch(0.95 0.005 80)" }}
-            >
+            <h1 className="text-2xl font-black text-gray-900">
               חפש עבודה
             </h1>
           </div>
-          <p className="text-sm" style={{ color: "oklch(1 0 0 / 40%)" }}>
+          <p className="text-sm text-gray-500">
             מצא עבודות זמניות ודחופות באזורך
           </p>
         </motion.div>
@@ -243,8 +219,7 @@ export default function FindJobs() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
-              style={{ background: "oklch(0 0 0 / 60%)", backdropFilter: "blur(8px)" }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
               onClick={() => setShowLocationDialog(false)}
             >
               <motion.div
@@ -252,27 +227,21 @@ export default function FindJobs() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                style={{ ...glassPanel, maxWidth: 360, width: "100%", padding: "1.5rem" }}
+                style={{ ...lightPanel, maxWidth: 360, width: "100%", padding: "1.5rem" }}
                 onClick={e => e.stopPropagation()}
                 dir="rtl"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: "oklch(0.62 0.22 255 / 0.15)",
-                      border: "1px solid oklch(0.62 0.22 255 / 0.3)",
-                    }}
-                  >
-                    <Navigation className="h-6 w-6" style={{ color: "oklch(0.72 0.22 240)" }} />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-blue-50 border border-blue-200">
+                    <Navigation className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold" style={{ color: "oklch(0.95 0.005 80)" }}>גישה למיקום</h3>
-                    <p className="text-xs" style={{ color: "oklch(1 0 0 / 45%)" }}>כדי להציג עבודות קרובות אליך</p>
+                    <h3 className="font-bold text-gray-900">גישה למיקום</h3>
+                    <p className="text-xs text-gray-500">כדי להציג עבודות קרובות אליך</p>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed mb-5" style={{ color: "oklch(1 0 0 / 55%)" }}>
-                  נשתמש במיקומך <strong style={{ color: "oklch(0.95 0.005 80)" }}>כדי להציג עבודות קרובות אליך בלבד</strong>. המיקום לא נשמר בשרת ולא מועבר לצדדים שלישיים.
+                <p className="text-sm leading-relaxed mb-5 text-gray-600">
+                  נשתמש במיקומך <strong className="text-gray-900">כדי להציג עבודות קרובות אליך בלבד</strong>. המיקום לא נשמר בשרת ולא מועבר לצדדים שלישיים.
                 </p>
                 <div className="flex flex-col gap-2">
                   <Button onClick={doGetLocation} className="w-full gap-2">
@@ -289,8 +258,7 @@ export default function FindJobs() {
                   </Button>
                   <button
                     onClick={() => setShowLocationDialog(false)}
-                    className="text-xs py-1 transition-colors"
-                    style={{ color: "oklch(1 0 0 / 35%)" }}
+                    className="text-xs py-1 transition-colors text-gray-400 hover:text-gray-600"
                   >
                     ביטול
                   </button>
@@ -305,53 +273,45 @@ export default function FindJobs() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-          style={{ ...glassPanel, padding: "1.25rem", marginBottom: "1.5rem" }}
+          style={{ ...lightPanel, padding: "1.25rem", marginBottom: "1.5rem" }}
           dir="rtl"
         >
           {/* Filter header */}
           <div className="flex items-center gap-2 mb-4">
-            <SlidersHorizontal className="h-4 w-4" style={{ color: "oklch(0.72 0.22 240)" }} />
-            <span className="text-sm font-bold" style={{ color: "oklch(0.95 0.005 80)" }}>
+            <SlidersHorizontal className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-bold text-gray-900">
               סינון וחיפוש
             </span>
           </div>
 
           {/* 1. Search */}
           <div className="relative mb-4">
-            <Search
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
-              style={{ color: "oklch(1 0 0 / 35%)" }}
-            />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
             <Input
               placeholder="חפש לפי תפקיד, עיר או מילת מפתח..."
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
-              className="pr-10 text-right"
-              style={{
-                background: "oklch(1 0 0 / 6%)",
-                border: "1px solid oklch(1 0 0 / 12%)",
-                color: "oklch(0.95 0.005 80)",
-              }}
+              className="pr-10 text-right bg-[#f5f7f8] border-gray-200 text-gray-900 placeholder:text-gray-400"
             />
           </div>
 
           {/* 2. Quick filter: urgent today */}
           <div className="mb-4">
-            <p className="text-xs font-semibold mb-2" style={{ color: "oklch(1 0 0 / 40%)" }}>סינון מהיר</p>
+            <p className="text-xs font-semibold mb-2 text-gray-500">סינון מהיר</p>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowUrgentToday(!showUrgentToday)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
               style={showUrgentToday ? {
-                background: "linear-gradient(135deg, oklch(0.60 0.22 25) 0%, oklch(0.55 0.25 15) 100%)",
+                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
                 color: "white",
-                border: "1px solid oklch(0.65 0.22 25 / 0.5)",
-                boxShadow: "0 0 16px oklch(0.60 0.22 25 / 0.3)",
+                border: "1px solid #ef4444",
+                boxShadow: "0 4px 12px rgba(239,68,68,0.3)",
               } : {
-                background: "oklch(0.60 0.22 25 / 0.08)",
-                color: "oklch(0.72 0.22 25)",
-                border: "1px solid oklch(0.60 0.22 25 / 0.25)",
+                background: "rgba(239,68,68,0.08)",
+                color: "#ef4444",
+                border: "1px solid rgba(239,68,68,0.25)",
               }}
             >
               <Flame className="h-4 w-4" />
@@ -361,24 +321,24 @@ export default function FindJobs() {
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, background: "oklch(1 0 0 / 8%)", marginBottom: "1rem" }} />
+          <div className="h-px bg-gray-100 mb-4" />
 
           {/* 3. Category */}
           <div className="mb-4">
-            <p className="text-xs font-semibold mb-2" style={{ color: "oklch(1 0 0 / 40%)" }}>קטגוריה</p>
+            <p className="text-xs font-semibold mb-2 text-gray-500">קטגוריה</p>
             <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setCategory("all")}
                 className="px-3 py-1 rounded-full text-xs font-medium transition-all"
                 style={category === "all" ? {
-                  background: "oklch(0.62 0.22 255)",
+                  background: "#3c83f6",
                   color: "white",
-                  border: "1px solid oklch(0.62 0.22 255)",
-                  boxShadow: "0 0 10px oklch(0.62 0.22 255 / 0.3)",
+                  border: "1px solid #3c83f6",
+                  boxShadow: "0 2px 8px rgba(60,131,246,0.3)",
                 } : {
-                  background: "oklch(1 0 0 / 5%)",
-                  color: "oklch(1 0 0 / 50%)",
-                  border: "1px solid oklch(1 0 0 / 12%)",
+                  background: "#f5f7f8",
+                  color: "#64748b",
+                  border: "1px solid #e2e8f0",
                 }}
               >
                 הכל
@@ -389,14 +349,14 @@ export default function FindJobs() {
                   onClick={() => setCategory(cat.value)}
                   className="px-3 py-1 rounded-full text-xs font-medium transition-all"
                   style={category === cat.value ? {
-                    background: "oklch(0.62 0.22 255)",
+                    background: "#3c83f6",
                     color: "white",
-                    border: "1px solid oklch(0.62 0.22 255)",
-                    boxShadow: "0 0 10px oklch(0.62 0.22 255 / 0.3)",
+                    border: "1px solid #3c83f6",
+                    boxShadow: "0 2px 8px rgba(60,131,246,0.3)",
                   } : {
-                    background: "oklch(1 0 0 / 5%)",
-                    color: "oklch(1 0 0 / 50%)",
-                    border: "1px solid oklch(1 0 0 / 12%)",
+                    background: "#f5f7f8",
+                    color: "#64748b",
+                    border: "1px solid #e2e8f0",
                   }}
                 >
                   {cat.icon} {cat.label}
@@ -407,37 +367,37 @@ export default function FindJobs() {
 
           {/* 4. Special categories */}
           <div className="mb-4">
-            <p className="text-xs font-semibold mb-2" style={{ color: "oklch(1 0 0 / 40%)" }}>קטגוריות מיוחדות</p>
+            <p className="text-xs font-semibold mb-2 text-gray-500">קטגוריות מיוחדות</p>
             <div className="flex flex-wrap gap-2">
               {SPECIAL_CATEGORIES.map(cat => {
                 const isActive = category === cat.value;
-                const colorMap: Record<string, { activeBg: string; activeColor: string; inactiveBg: string; inactiveColor: string; inactiveBorder: string; activeBorder: string; glow: string }> = {
+                  const colorMap: Record<string, { activeBg: string; activeColor: string; inactiveBg: string; inactiveColor: string; inactiveBorder: string; activeBorder: string; glow: string }> = {
                   purple: {
-                    activeBg: "oklch(0.55 0.22 290)",
+                    activeBg: "#7c3aed",
                     activeColor: "white",
-                    activeBorder: "oklch(0.55 0.22 290)",
-                    inactiveBg: "oklch(0.55 0.22 290 / 0.1)",
-                    inactiveColor: "oklch(0.72 0.20 290)",
-                    inactiveBorder: "oklch(0.55 0.22 290 / 0.3)",
-                    glow: "0 0 12px oklch(0.55 0.22 290 / 0.3)",
+                    activeBorder: "#7c3aed",
+                    inactiveBg: "rgba(124,58,237,0.08)",
+                    inactiveColor: "#7c3aed",
+                    inactiveBorder: "rgba(124,58,237,0.3)",
+                    glow: "0 2px 8px rgba(124,58,237,0.3)",
                   },
                   amber: {
-                    activeBg: "oklch(0.72 0.18 65)",
-                    activeColor: "oklch(0.10 0.015 265)",
-                    activeBorder: "oklch(0.72 0.18 65)",
-                    inactiveBg: "oklch(0.72 0.18 65 / 0.1)",
-                    inactiveColor: "oklch(0.78 0.17 65)",
-                    inactiveBorder: "oklch(0.72 0.18 65 / 0.3)",
-                    glow: "0 0 12px oklch(0.72 0.18 65 / 0.3)",
+                    activeBg: "#d97706",
+                    activeColor: "white",
+                    activeBorder: "#d97706",
+                    inactiveBg: "rgba(217,119,6,0.08)",
+                    inactiveColor: "#d97706",
+                    inactiveBorder: "rgba(217,119,6,0.3)",
+                    glow: "0 2px 8px rgba(217,119,6,0.3)",
                   },
                   green: {
-                    activeBg: "oklch(0.60 0.22 160)",
+                    activeBg: "#16a34a",
                     activeColor: "white",
-                    activeBorder: "oklch(0.60 0.22 160)",
-                    inactiveBg: "oklch(0.60 0.22 160 / 0.1)",
-                    inactiveColor: "oklch(0.68 0.20 160)",
-                    inactiveBorder: "oklch(0.60 0.22 160 / 0.3)",
-                    glow: "0 0 12px oklch(0.60 0.22 160 / 0.3)",
+                    activeBorder: "#16a34a",
+                    inactiveBg: "rgba(22,163,74,0.08)",
+                    inactiveColor: "#16a34a",
+                    inactiveBorder: "rgba(22,163,74,0.3)",
+                    glow: "0 2px 8px rgba(22,163,74,0.3)",
                   },
                 };
                 const c = colorMap[cat.color] ?? colorMap.purple;
@@ -468,7 +428,7 @@ export default function FindJobs() {
 
           {/* 5. Location */}
           <div>
-            <p className="text-xs font-semibold mb-2" style={{ color: "oklch(1 0 0 / 40%)" }}>מיקום</p>
+            <p className="text-xs font-semibold mb-2 text-gray-500">מיקום</p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -479,11 +439,11 @@ export default function FindJobs() {
                     disabled={locating}
                     className="gap-2 shrink-0"
                     style={userLat ? {
-                      background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
-                      boxShadow: "0 0 16px oklch(0.62 0.22 255 / 0.3)",
+                      background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                      boxShadow: "0 4px 12px rgba(60,131,246,0.3)",
                     } : {}}
                   >
-                    {locating ? <Loader2 className="h-4 w-4 animate-spin" />
+                    {locating ? <BrandLoader size="sm" />
                       : userLat ? <MapPin className="h-4 w-4" />
                       : <LocateFixed className="h-4 w-4" />}
                     {locating ? "מאתר מיקום..." : userLat ? "ממוין לפי מרחק ממך" : "📍 הצג עבודות קרובות אלי"}
@@ -495,12 +455,7 @@ export default function FindJobs() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
-                    className="flex items-center gap-1 text-xs rounded-full px-2 py-1 transition-colors"
-                    style={{
-                      color: "oklch(1 0 0 / 40%)",
-                      border: "1px solid oklch(1 0 0 / 12%)",
-                      background: "oklch(1 0 0 / 4%)",
-                    }}
+                    className="flex items-center gap-1 text-xs rounded-full px-2 py-1 transition-colors text-gray-500 border border-gray-200 bg-white hover:bg-gray-50"
                   >
                     <X className="h-3 w-3" />
                     בטל מיקום
@@ -510,8 +465,7 @@ export default function FindJobs() {
                 {!userLat && !showCityInput && (
                   <button
                     onClick={() => { setShowCityInput(true); setTimeout(() => cityInputRef.current?.focus(), 100); }}
-                    className="text-xs transition-colors"
-                    style={{ color: "oklch(0.72 0.22 240)" }}
+                    className="text-xs transition-colors text-blue-600 hover:text-blue-800"
                   >
                     הזן עיר ידנית
                   </button>
@@ -533,13 +487,13 @@ export default function FindJobs() {
                         onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
                         className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
                         style={radiusKm === r.value ? {
-                          background: "oklch(0.62 0.22 255)",
+                          background: "#3c83f6",
                           color: "white",
-                          border: "1px solid oklch(0.62 0.22 255)",
+                          border: "1px solid #3c83f6",
                         } : {
-                          background: "oklch(1 0 0 / 5%)",
-                          color: "oklch(1 0 0 / 50%)",
-                          border: "1px solid oklch(1 0 0 / 12%)",
+                          background: "#f5f7f8",
+                          color: "#64748b",
+                          border: "1px solid #e2e8f0",
                         }}
                       >
                         {r.label}
@@ -568,8 +522,7 @@ export default function FindJobs() {
                     </div>
                     <button
                       onClick={() => { setShowCityInput(false); setCitySearch(""); }}
-                      className="mt-2 transition-colors"
-                      style={{ color: "oklch(1 0 0 / 40%)" }}
+                      className="mt-2 transition-colors text-gray-400 hover:text-gray-600"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -589,27 +542,23 @@ export default function FindJobs() {
               exit={{ opacity: 0, y: -10 }}
               className="flex items-start gap-3 rounded-xl p-4 mb-4"
               style={{
-                background: "oklch(0.72 0.18 65 / 0.08)",
-                border: "1px solid oklch(0.72 0.18 65 / 0.2)",
+                background: "rgba(251,146,60,0.06)",
+                border: "1px solid rgba(251,146,60,0.2)",
               }}
               dir="rtl"
             >
-              <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "oklch(0.78 0.17 65)" }} />
+              <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-orange-500" />
               <div className="flex-1">
-                <p className="text-sm font-medium" style={{ color: "oklch(0.88 0.14 75)" }}>
+                <p className="text-sm font-medium text-orange-700">
                   לא נמצאו עבודות בטווח {radiusKm} ק"מ
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: "oklch(1 0 0 / 45%)" }}>רוצה להרחיב את החיפוש?</p>
+                <p className="text-xs mt-0.5 text-gray-500">רוצה להרחיב את החיפוש?</p>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
                     <button
                       key={r.value}
                       onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                      className="px-3 py-1 rounded-full text-xs font-bold transition-colors"
-                      style={{
-                        background: "oklch(0.72 0.18 65)",
-                        color: "oklch(0.10 0.015 265)",
-                      }}
+                      className="px-3 py-1 rounded-full text-xs font-bold transition-colors bg-orange-500 text-white hover:bg-orange-600"
                     >
                       הרחב ל-{r.label}
                     </button>
@@ -627,11 +576,11 @@ export default function FindJobs() {
           transition={{ delay: 0.2 }}
           className="flex items-center justify-between mb-4"
         >
-          <p className="text-sm" style={{ color: "oklch(1 0 0 / 40%)" }}>
+          <p className="text-sm text-gray-500">
             {isLoading ? "מחפש..." : `${jobs.length} משרות נמצאו`}
           </p>
           {userLat && (
-            <div className="flex items-center gap-1 text-xs" style={{ color: "oklch(0.72 0.22 240)" }}>
+            <div className="flex items-center gap-1 text-xs text-blue-600">
               <MapPin className="h-3 w-3" />
               ממוין לפי מרחק ממך
             </div>
@@ -648,17 +597,13 @@ export default function FindJobs() {
             className="flex flex-col items-center justify-center py-20 gap-4 text-center"
           >
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{
-                background: "oklch(1 0 0 / 5%)",
-                border: "1px solid oklch(1 0 0 / 10%)",
-              }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white border border-gray-200 shadow-sm"
             >
-              <Briefcase className="h-8 w-8" style={{ color: "oklch(1 0 0 / 20%)" }} />
+              <Briefcase className="h-8 w-8 text-gray-300" />
             </div>
             <div>
-              <p className="font-semibold" style={{ color: "oklch(0.95 0.005 80)" }}>לא נמצאו משרות</p>
-              <p className="text-sm mt-1" style={{ color: "oklch(1 0 0 / 35%)" }}>נסה לשנות את הפילטרים</p>
+              <p className="font-semibold text-gray-700">לא נמצאו משרות</p>
+              <p className="text-sm mt-1 text-gray-400">נסה לשנות את הפילטרים</p>
             </div>
           </motion.div>
         ) : (

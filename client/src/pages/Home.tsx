@@ -7,15 +7,12 @@ import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Search, Zap, Loader2 } from "lucide-react";
+import { Search, Zap } from "lucide-react";
+import { SectionLoader } from "@/components/BrandLoader";
 
 /** Shown while userMode is still loading (null) */
 function HomeLoading() {
-  return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
+  return <SectionLoader label="טוען..." />;
 }
 
 /** Shown when userMode is undefined — user hasn't chosen a role yet (shouldn't normally appear) */

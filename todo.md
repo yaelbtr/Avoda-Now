@@ -424,3 +424,20 @@
 
 ## RoleSelectionScreen Premium Upgrade (Mar 6 2026)
 - [x] Redesign RoleSelectionScreen with premium card layout, better imagery, and polished details
+
+## Branded Loading Animation (Mar 6 2026)
+- [ ] Create BrandLoader component with shimmer and brand animation
+- [ ] Create PageLoader full-screen branded loading screen
+- [ ] Replace generic spinners in App.tsx and key pages
+
+## Custom Brand Loading Animation (Shimmer)
+- [x] Create BrandLoader component with shimmer animation in brand colors (blue arc + pulsing glow)
+- [x] Replace generic Loader2 spinners in HomeWorker with BrandLoader
+- [x] Replace generic Loader2 spinners in HomeEmployer with BrandLoader
+- [x] Replace generic Loader2 spinners in JobDetails with BrandLoader
+- [x] Update JobCardSkeleton to use light-theme shimmer (white cards, #e2e8f0 shimmer base)
+- [x] Update JobDetails page to light theme (white cards, gray text, blue accents)
+- [x] Update FindJobs page to light theme (bg-[#f5f7f8], white cards)
+- [x] Update HomeWorker page to light theme
+- [x] Update HomeEmployer page to light theme
+- [x] Update JobCard component to light theme

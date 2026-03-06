@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import JobCard from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { JOB_CATEGORIES } from "@shared/categories";
-import { Flame, Briefcase, Loader2, ChevronRight } from "lucide-react";
+import { Flame, Briefcase, ChevronRight } from "lucide-react";
+import BrandLoader from "@/components/BrandLoader";
 
 export default function JobsToday() {
   const [, navigate] = useLocation();
@@ -88,7 +89,7 @@ export default function JobsToday() {
       {/* Job list */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+          <BrandLoader size="md" />
         </div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">

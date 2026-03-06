@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
 import {
-  Zap, Users, Briefcase, HardHat, ChevronLeft, Loader2,
-  Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil, TrendingUp,
+  Zap, Users, Briefcase, HardHat, ChevronLeft,
+  Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil, TrendingUp, Sparkles,
 } from "lucide-react";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
@@ -48,7 +48,7 @@ export default function HomeEmployer() {
       if (workerPausedRef.current) return;
       const el = document.getElementById("worker-carousel");
       if (!el) return;
-      const cardWidth = 180 + 12; // max-w-[180px] + gap-3
+      const cardWidth = 180 + 12;
       const maxScroll = el.scrollWidth - el.clientWidth;
       if (el.scrollLeft >= maxScroll - 4) {
         el.scrollTo({ left: 0, behavior: "smooth" });
@@ -78,51 +78,40 @@ export default function HomeEmployer() {
   const workers = workersQuery.data ?? [];
 
   return (
-    <div dir="rtl" style={{ background: "oklch(0.10 0.015 265)" }}>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section
-        className="relative overflow-hidden text-white"
-        style={{
-          background: "linear-gradient(160deg, oklch(0.14 0.03 30) 0%, oklch(0.12 0.025 265) 50%, oklch(0.10 0.015 265) 100%)",
-          minHeight: "380px",
-        }}
-      >
-        {/* Animated orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            animate={{ x: [0, 25, 0], y: [0, -18, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-20 -left-20 w-80 h-80 rounded-full"
-            style={{ background: "radial-gradient(circle, oklch(0.78 0.17 65 / 0.15) 0%, transparent 70%)" }}
-          />
-          <motion.div
-            animate={{ x: [0, -20, 0], y: [0, 25, 0], scale: [1, 1.12, 1] }}
-            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full"
-            style={{ background: "radial-gradient(circle, oklch(0.62 0.22 255 / 0.12) 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-        </div>
+    <div dir="rtl" className="bg-[#f5f7f8] min-h-screen">
 
-        <div className="relative max-w-2xl mx-auto px-4 py-12 text-center">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-white border-b border-gray-100">
+        {/* Subtle warm gradient accent */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, rgba(251,146,60,0.06) 0%, rgba(60,131,246,0.04) 60%, transparent 100%)",
+          }}
+        />
+        <motion.div
+          animate={{ x: [0, 20, 0], y: [0, -12, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-20 -left-20 w-72 h-72 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%)" }}
+        />
+        <motion.div
+          animate={{ x: [0, -15, 0], y: [0, 20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(60,131,246,0.07) 0%, transparent 70%)" }}
+        />
+
+        <div className="relative max-w-2xl mx-auto px-4 py-8 text-center">
+          {/* Top pill badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-5"
-            style={{
-              background: "oklch(1 0 0 / 8%)",
-              border: "1px solid oklch(1 0 0 / 15%)",
-              backdropFilter: "blur(12px)",
-            }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold text-orange-700 mb-5"
+            style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.2)" }}
           >
-            <Briefcase className="h-4 w-4 text-amber-300" />
+            <Sparkles className="h-3.5 w-3.5" />
             מצב מעסיק — מחפש עובדים
           </motion.div>
 
@@ -130,18 +119,18 @@ export default function HomeEmployer() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3"
+            className="text-3xl sm:text-4xl font-extrabold leading-tight mb-3 text-gray-900"
           >
             מצא עובד תוך דקות
             <br />
-            <span className="gradient-text text-glow">– פרסם עכשיו</span>
+            <span className="text-blue-600">– פרסם עכשיו</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-base text-white/60 mb-7 max-w-md mx-auto"
+            className="text-base text-gray-500 mb-7 max-w-md mx-auto"
           >
             פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
           </motion.p>
@@ -155,33 +144,33 @@ export default function HomeEmployer() {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
               <Button
                 size="lg"
-                className="w-full font-bold text-base h-12 gap-2 shadow-xl"
+                className="w-full font-bold text-base h-12 gap-2 relative overflow-hidden text-white"
                 style={{
-                  background: "linear-gradient(135deg, oklch(0.78 0.17 65) 0%, oklch(0.68 0.22 50) 100%)",
-                  color: "oklch(0.12 0.02 265)",
+                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
                   border: "none",
-                  boxShadow: "0 8px 24px oklch(0.78 0.17 65 / 0.35)",
+                  boxShadow: "0 4px 20px rgba(60,131,246,0.35)",
                 }}
                 onClick={handlePostJob}
               >
-                <Zap className="h-5 w-5" />
-                פרסם עבודה דחופה
+                {/* Shimmer */}
+                <motion.div
+                  className="absolute inset-0 -skew-x-12 pointer-events-none"
+                  style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)" }}
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                />
+                <Zap className="h-5 w-5 relative z-10" />
+                <span className="relative z-10">פרסם עבודה דחופה</span>
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full font-bold text-base h-12 gap-2"
-                style={{
-                  background: "oklch(1 0 0 / 8%)",
-                  border: "1px solid oklch(1 0 0 / 20%)",
-                  color: "white",
-                  backdropFilter: "blur(12px)",
-                }}
+                className="w-full font-bold text-base h-12 gap-2 bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
                 onClick={() => navigate("/available-workers")}
               >
-                <Users className="h-5 w-5" />
+                <Users className="h-5 w-5 text-green-600" />
                 עובדים זמינים
               </Button>
             </motion.div>
@@ -195,9 +184,9 @@ export default function HomeEmployer() {
               const message = encodeURIComponent(`שלום, אני רוצה לפרסם עבודה:\n\nשם העסק:\nסוג העבודה:\nמיקום:\nשכר:\nטלפון ליצירת קשר:`);
               window.open(`https://wa.me/?text=${message}`, "_blank");
             }}
-            className="inline-flex items-center gap-2 text-white/50 hover:text-white text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-green-600 text-xs font-medium transition-colors"
           >
-            <MessageCircle className="h-3.5 w-3.5 text-green-400" />
+            <MessageCircle className="h-3.5 w-3.5 text-green-500" />
             פרסם עבודה דרך WhatsApp
           </motion.button>
         </div>
@@ -214,23 +203,17 @@ export default function HomeEmployer() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-2xl mx-auto px-4 pt-6"
         >
-          <div
-            className="rounded-3xl p-5"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.16 0.04 255) 0%, oklch(0.14 0.03 265) 100%)",
-              border: "1px solid oklch(0.62 0.22 255 / 0.2)",
-            }}
-          >
+          <div className="rounded-2xl p-5 bg-white shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-blue-400" />
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-blue-500" />
                 המשרות שלי
               </h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/my-jobs")}
-                className="gap-1 text-white/50 hover:text-white text-xs"
+                className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
               >
                 כל המשרות
                 <ChevronLeft className="h-3.5 w-3.5" />
@@ -241,14 +224,14 @@ export default function HomeEmployer() {
               <JobCardSkeletonList count={2} />
             ) : myJobs.length === 0 ? (
               <div className="text-center py-6">
-                <Briefcase className="h-10 w-10 mx-auto mb-2 text-blue-400/40" />
-                <p className="text-sm text-white/50 mb-3">עדיין לא פרסמת משרות</p>
+                <Briefcase className="h-10 w-10 mx-auto mb-2 text-blue-300" />
+                <p className="text-sm text-gray-500 mb-3">עדיין לא פרסמת משרות</p>
                 <Button
                   size="sm"
                   onClick={handlePostJob}
-                  className="gap-2"
+                  className="gap-2 text-white"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                    background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
                     border: "none",
                   }}
                 >
@@ -264,22 +247,18 @@ export default function HomeEmployer() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.08, duration: 0.3 }}
-                    className="rounded-2xl p-3 flex items-center gap-3"
-                    style={{
-                      background: "oklch(1 0 0 / 6%)",
-                      border: "1px solid oklch(1 0 0 / 8%)",
-                    }}
+                    className="rounded-xl p-3 flex items-center gap-3 bg-[#f5f7f8] border border-gray-100 hover:border-blue-200 transition-all"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-white truncate">{job.title}</p>
-                      <p className="text-xs text-white/40 mt-0.5">
+                      <p className="font-semibold text-sm text-gray-800 truncate">{job.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {job.city}
                         {job.salary ? ` · ₪${job.salary}` : ""}
                         <span className={`mr-2 px-1.5 py-0.5 rounded text-xs font-medium ${
-                          job.status === "active" ? "bg-green-500/20 text-green-400" :
-                          job.status === "closed" ? "bg-white/10 text-white/40" :
-                          job.status === "expired" ? "bg-red-500/20 text-red-400" :
-                          "bg-amber-500/20 text-amber-400"
+                          job.status === "active" ? "bg-green-100 text-green-700" :
+                          job.status === "closed" ? "bg-gray-100 text-gray-500" :
+                          job.status === "expired" ? "bg-red-100 text-red-600" :
+                          "bg-amber-100 text-amber-700"
                         }`}>
                           {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : job.status === "expired" ? "פג" : "בבדיקה"}
                         </span>
@@ -288,19 +267,17 @@ export default function HomeEmployer() {
                     <div className="flex gap-1 shrink-0">
                       <button
                         onClick={() => navigate(`/job/${job.id}`)}
-                        className="p-1.5 rounded-lg transition-all hover:scale-110"
-                        style={{ background: "oklch(1 0 0 / 8%)", border: "1px solid oklch(1 0 0 / 10%)" }}
+                        className="p-1.5 rounded-lg bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-all hover:scale-110 text-gray-400"
                         title="צפה"
                       >
-                        <Eye className="h-3.5 w-3.5 text-white/50" />
+                        <Eye className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => navigate(`/edit-job/${job.id}`)}
-                        className="p-1.5 rounded-lg transition-all hover:scale-110"
-                        style={{ background: "oklch(1 0 0 / 8%)", border: "1px solid oklch(1 0 0 / 10%)" }}
+                        className="p-1.5 rounded-lg bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-all hover:scale-110 text-gray-400"
                         title="ערוך"
                       >
-                        <Pencil className="h-3.5 w-3.5 text-white/50" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </motion.div>
@@ -308,7 +285,7 @@ export default function HomeEmployer() {
                 {myJobs.length > 3 && (
                   <button
                     onClick={() => navigate("/my-jobs")}
-                    className="w-full text-center text-xs text-blue-400 hover:text-blue-300 py-2 font-medium transition-colors"
+                    className="w-full text-center text-xs text-blue-500 hover:text-blue-700 py-2 font-medium transition-colors"
                   >
                     + עוד {myJobs.length - 3} משרות
                   </button>
@@ -316,15 +293,15 @@ export default function HomeEmployer() {
               </div>
             )}
 
-            <div className="mt-4 pt-4" style={{ borderTop: "1px solid oklch(1 0 0 / 8%)" }}>
+            <div className="mt-4 pt-4 border-t border-gray-100">
               <Button
                 size="sm"
                 onClick={handlePostJob}
-                className="w-full gap-2"
+                className="w-full gap-2 text-white relative overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                  background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
                   border: "none",
-                  boxShadow: "0 4px 16px oklch(0.62 0.22 255 / 0.3)",
+                  boxShadow: "0 4px 16px rgba(60,131,246,0.3)",
                 }}
               >
                 <Plus className="h-4 w-4" />
@@ -342,23 +319,17 @@ export default function HomeEmployer() {
         transition={{ delay: 0.3, duration: 0.5 }}
         className="max-w-2xl mx-auto px-4 pt-4"
       >
-        <div
-          className="rounded-3xl p-5"
-          style={{
-            background: "linear-gradient(135deg, oklch(0.15 0.04 160) 0%, oklch(0.13 0.03 165) 100%)",
-            border: "1px solid oklch(0.65 0.22 160 / 0.2)",
-          }}
-        >
+        <div className="rounded-2xl p-5 bg-white shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-400" />
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-600" />
               עובדים זמינים עכשיו
             </h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/available-workers")}
-              className="gap-1 text-white/50 hover:text-white text-xs"
+              className="gap-1 text-gray-400 hover:text-blue-600 text-xs"
             >
               כל העובדים
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -371,13 +342,12 @@ export default function HomeEmployer() {
             </div>
           ) : workers.length === 0 ? (
             <div className="text-center py-6">
-              <HardHat className="h-10 w-10 mx-auto mb-2 text-green-400/30" />
-              <p className="text-sm text-white/40">אין עובדים זמינים כרגע באזורך</p>
-              <p className="text-xs text-white/25 mt-1">פרסם משרה ועובדים יפנו אליך</p>
+              <HardHat className="h-10 w-10 mx-auto mb-2 text-green-300" />
+              <p className="text-sm text-gray-500">אין עובדים זמינים כרגע באזורך</p>
+              <p className="text-xs text-gray-400 mt-1">פרסם משרה ועובדים יפנו אליך</p>
             </div>
           ) : (
             <div className="relative">
-              {/* Carousel track */}
               <div
                 id="worker-carousel"
                 className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
@@ -400,7 +370,6 @@ export default function HomeEmployer() {
                 ))}
               </div>
 
-              {/* Dot indicators */}
               {workers.length > 1 && (
                 <div className="flex justify-center gap-1.5 mt-2">
                   {workers.map((_, i) => (
@@ -410,9 +379,7 @@ export default function HomeEmployer() {
                       style={{
                         width: i === activeWorkerIdx ? "16px" : "8px",
                         height: "8px",
-                        background: i === activeWorkerIdx
-                          ? "oklch(0.65 0.22 160)"
-                          : "oklch(1 0 0 / 20%)",
+                        background: i === activeWorkerIdx ? "#22c55e" : "#e2e8f0",
                       }}
                     />
                   ))}
@@ -422,17 +389,12 @@ export default function HomeEmployer() {
           )}
 
           {workers.length > 0 && (
-            <div className="mt-4 pt-4" style={{ borderTop: "1px solid oklch(1 0 0 / 8%)" }}>
+            <div className="mt-4 pt-4 border-t border-gray-100">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/available-workers")}
-                className="w-full gap-2"
-                style={{
-                  background: "oklch(1 0 0 / 5%)",
-                  border: "1px solid oklch(0.65 0.22 160 / 0.3)",
-                  color: "oklch(0.75 0.18 160)",
-                }}
+                className="w-full gap-2 bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
               >
                 <TrendingUp className="h-4 w-4" />
                 צפה בכל העובדים הזמינים
@@ -443,15 +405,9 @@ export default function HomeEmployer() {
       </motion.section>
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section
-        className="border-y mt-6"
-        style={{
-          background: "oklch(0.13 0.02 265)",
-          borderColor: "oklch(1 0 0 / 8%)",
-        }}
-      >
+      <section className="bg-white border-y border-gray-100 mt-6">
         <div className="max-w-2xl mx-auto px-4 py-10">
-          <h2 className="text-xl font-bold text-white mb-8 text-center">איך מפרסמים משרה?</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-8 text-center">איך מפרסמים משרה?</h2>
           <div className="grid grid-cols-3 gap-4">
             {HOW_IT_WORKS_EMPLOYER.map(({ icon: Icon, step, title, desc }, i) => (
               <motion.div
@@ -464,20 +420,20 @@ export default function HomeEmployer() {
                 <div
                   className="relative w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.78 0.17 65 / 0.15) 0%, oklch(0.68 0.22 50 / 0.08) 100%)",
-                    border: "1px solid oklch(0.78 0.17 65 / 0.2)",
+                    background: "linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(251,146,60,0.05) 100%)",
+                    border: "1px solid rgba(251,146,60,0.2)",
                   }}
                 >
-                  <Icon className="h-6 w-6 text-amber-400" />
+                  <Icon className="h-6 w-6 text-orange-500" />
                   <span
                     className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)" }}
+                    style={{ background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)" }}
                   >
                     {step}
                   </span>
                 </div>
-                <h3 className="font-bold text-sm text-white mb-1">{title}</h3>
-                <p className="text-xs text-white/40 leading-relaxed">{desc}</p>
+                <h3 className="font-bold text-sm text-gray-900 mb-1">{title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
               </motion.div>
             ))}
           </div>
@@ -490,29 +446,32 @@ export default function HomeEmployer() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="rounded-3xl p-8"
+          className="rounded-2xl p-8 bg-white shadow-sm border border-gray-100"
           style={{
-            background: "linear-gradient(135deg, oklch(0.16 0.04 255) 0%, oklch(0.12 0.025 280) 100%)",
-            border: "1px solid oklch(0.62 0.22 255 / 0.2)",
-            boxShadow: "0 0 60px oklch(0.62 0.22 255 / 0.08)",
+            background: "linear-gradient(135deg, rgba(60,131,246,0.04) 0%, white 100%)",
           }}
         >
-          <h2 className="text-2xl font-bold text-white mb-2">צריך עובד עכשיו?</h2>
-          <p className="text-white/50 mb-6 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות — ללא עמלות</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">צריך עובד עכשיו?</h2>
+          <p className="text-gray-500 mb-6 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות — ללא עמלות</p>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Button
               size="lg"
               onClick={handlePostJob}
-              className="gap-2 px-8"
+              className="gap-2 px-8 text-white relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, oklch(0.78 0.17 65) 0%, oklch(0.68 0.22 50) 100%)",
-                color: "oklch(0.12 0.02 265)",
+                background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
                 border: "none",
-                boxShadow: "0 8px 24px oklch(0.78 0.17 65 / 0.35)",
+                boxShadow: "0 8px 24px rgba(60,131,246,0.35)",
               }}
             >
-              <Zap className="h-5 w-5" />
-              פרסם עבודה דחופה
+              <motion.div
+                className="absolute inset-0 -skew-x-12 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)" }}
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
+              />
+              <Zap className="h-5 w-5 relative z-10" />
+              <span className="relative z-10">פרסם עבודה דחופה</span>
             </Button>
           </motion.div>
         </motion.div>
@@ -520,17 +479,12 @@ export default function HomeEmployer() {
 
       {/* ── Switch role ─────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-8 text-center">
-        <p className="text-sm text-white/30 mb-2">גם מחפש עבודה? עבור למצב עובד</p>
+        <p className="text-sm text-gray-400 mb-2">גם מחפש עבודה? עבור למצב עובד</p>
         <Button
           variant="outline"
           size="sm"
           onClick={resetUserMode}
-          className="gap-2"
-          style={{
-            background: "oklch(1 0 0 / 5%)",
-            border: "1px solid oklch(1 0 0 / 12%)",
-            color: "oklch(1 0 0 / 50%)",
-          }}
+          className="gap-2 bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
         >
           🔄 שנה תפקיד
         </Button>

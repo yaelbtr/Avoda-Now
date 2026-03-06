@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/LoginModal";
-import { MapPin, Phone, Loader2, Users, Clock, MessageCircle, AlertCircle, LocateFixed } from "lucide-react";
+import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2 } from "lucide-react";
+import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
 
@@ -142,7 +143,7 @@ export default function AvailableWorkers() {
       {/* Workers list */}
       {workersQuery.isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <BrandLoader size="md" />
         </div>
       ) : workers.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">

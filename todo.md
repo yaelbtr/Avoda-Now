@@ -456,3 +456,6 @@
 
 ## Bug Fix — JobCardSkeleton JSX Parse Error
 - [x] Fix JSX parsing error in JobCardSkeleton.tsx (line ~78) so component loads correctly — confirmed: error was stale HMR artifact; current file is valid (0 TS errors, 83 tests pass)
+
+## Bug Fix — Worker Role Navigation
+- [x] Fix: "המשך כעובד" button navigates to /find-jobs instead of / (HomeWorker) — fixed in WelcomeScreen.tsx handleCTA

@@ -43,7 +43,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
     setExiting(true);
     setTimeout(() => {
       onDismiss();
-      if (mode === "worker") navigate("/find-jobs");
+      if (mode === "worker") navigate("/");
       else navigate("/post-job");
     }, 350);
   };

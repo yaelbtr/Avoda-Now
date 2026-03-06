@@ -409,3 +409,6 @@
 
 ## Bug Fix — Duplicate Navbar/Footer (Mar 6 2026)
 - [x] Remove internal Navbar and Footer from RoleSelectionScreen (duplicates from App.tsx)
+
+## Navbar Light Theme (Mar 6 2026)
+- [x] Update Navbar to white background, dark text, blue accent

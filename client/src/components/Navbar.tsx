@@ -14,8 +14,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Briefcase, User, LogOut, PlusCircle, Menu, X, Shield,
-  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, Zap,
+  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw,
 } from "lucide-react";
+
+// Design tokens (light theme)
+const BG = "oklch(1 0 0)";
+const BORDER = "oklch(0.92 0.006 247)";
+const TEXT_PRIMARY = "oklch(0.20 0.015 265)";
+const TEXT_MUTED = "oklch(0.50 0.010 265)";
+const BLUE = "oklch(0.58 0.20 255)";
+const BLUE_BG = "oklch(0.94 0.015 255)";
+const BLUE_ACTIVE_BORDER = "oklch(0.58 0.20 255 / 0.3)";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -54,9 +63,9 @@ export default function Navbar() {
       <span
         className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold"
         style={{
-          background: "oklch(0.78 0.17 65 / 0.15)",
-          color: "oklch(0.88 0.14 75)",
-          border: "1px solid oklch(0.78 0.17 65 / 0.25)",
+          background: "oklch(0.97 0.015 75)",
+          color: "oklch(0.55 0.14 65)",
+          border: "1px solid oklch(0.88 0.06 75)",
         }}
       >
         <HardHat className="h-3 w-3" />
@@ -66,9 +75,9 @@ export default function Navbar() {
       <span
         className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold"
         style={{
-          background: "oklch(0.62 0.22 255 / 0.15)",
-          color: "oklch(0.80 0.18 240)",
-          border: "1px solid oklch(0.62 0.22 255 / 0.25)",
+          background: BLUE_BG,
+          color: BLUE,
+          border: `1px solid ${BLUE_ACTIVE_BORDER}`,
         }}
       >
         <Briefcase className="h-3 w-3" />
@@ -82,10 +91,9 @@ export default function Navbar() {
         className="sticky top-0 z-50"
         dir="rtl"
         style={{
-          background: "oklch(0.10 0.015 265 / 0.85)",
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-          borderBottom: "1px solid oklch(1 0 0 / 8%)",
+          background: BG,
+          borderBottom: `1px solid ${BORDER}`,
+          boxShadow: "0 1px 4px oklch(0 0 0 / 0.06)",
         }}
       >
         <div className="max-w-2xl mx-auto px-4">
@@ -93,18 +101,15 @@ export default function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               <motion.div
-                whileHover={{ scale: 1.08, rotate: 5 }}
+                whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
-                  boxShadow: "0 0 16px oklch(0.62 0.22 255 / 0.4)",
-                }}
+                style={{ background: BLUE_BG }}
               >
-                <Zap className="h-4 w-4 text-white" />
+                <Briefcase className="h-4 w-4" style={{ color: BLUE }} />
               </motion.div>
-              <span className="font-black text-lg text-white">
-                Job<span className="gradient-text">Now</span>
+              <span className="font-black text-lg" style={{ color: TEXT_PRIMARY }}>
+                Job<span style={{ color: BLUE }}>Now</span>
               </span>
             </Link>
 
@@ -119,9 +124,9 @@ export default function Navbar() {
                       whileTap={{ scale: 0.96 }}
                       className="px-3 py-1.5 rounded-xl text-sm font-medium transition-all cursor-pointer inline-block"
                       style={{
-                        background: isActive ? "oklch(0.62 0.22 255 / 0.15)" : "transparent",
-                        color: isActive ? "oklch(0.80 0.18 240)" : "oklch(1 0 0 / 55%)",
-                        border: isActive ? "1px solid oklch(0.62 0.22 255 / 0.25)" : "1px solid transparent",
+                        background: isActive ? BLUE_BG : "transparent",
+                        color: isActive ? BLUE : TEXT_MUTED,
+                        border: isActive ? `1px solid ${BLUE_ACTIVE_BORDER}` : "1px solid transparent",
                       }}
                     >
                       {link.label}
@@ -139,16 +144,14 @@ export default function Navbar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-2 text-white/70 hover:text-white hover:bg-white/8"
+                      className="gap-2 hover:bg-slate-100"
+                      style={{ color: TEXT_PRIMARY }}
                     >
                       <div
                         className="w-7 h-7 rounded-full flex items-center justify-center"
-                        style={{
-                          background: "linear-gradient(135deg, oklch(0.62 0.22 255 / 0.3) 0%, oklch(0.55 0.25 280 / 0.2) 100%)",
-                          border: "1px solid oklch(0.62 0.22 255 / 0.3)",
-                        }}
+                        style={{ background: BLUE_BG, border: `1px solid ${BLUE_ACTIVE_BORDER}` }}
                       >
-                        <User className="h-3.5 w-3.5 text-blue-300" />
+                        <User className="h-3.5 w-3.5" style={{ color: BLUE }} />
                       </div>
                       <span className="hidden sm:inline text-sm">
                         {user?.name ?? user?.phone ?? "פרופיל"}
@@ -162,36 +165,36 @@ export default function Navbar() {
                     style={{
                       direction: "rtl",
                       textAlign: "right",
-                      background: "oklch(0.14 0.02 265)",
-                      border: "1px solid oklch(1 0 0 / 10%)",
-                      backdropFilter: "blur(20px)",
+                      background: BG,
+                      border: `1px solid ${BORDER}`,
+                      boxShadow: "0 8px 24px oklch(0 0 0 / 0.10)",
                     }}
                   >
                     {userMode && (
                       <>
-                        <div className="px-2 py-1.5 text-xs text-white/40">
+                        <div className="px-2 py-1.5 text-xs" style={{ color: TEXT_MUTED }}>
                           מחובר כ: {userMode === "worker" ? "מחפש עבודה 👷" : "מעסיק 💼"}
                         </div>
-                        <DropdownMenuSeparator style={{ background: "oklch(1 0 0 / 8%)" }} />
+                        <DropdownMenuSeparator style={{ background: BORDER }} />
                       </>
                     )}
 
                     {userMode === "worker" && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/find-jobs" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                          <Link href="/find-jobs" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <MapPin className="h-4 w-4 shrink-0" />
                             <span>חפש עבודה</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/jobs-today" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
-                            <Flame className="h-4 w-4 shrink-0 text-orange-400" />
+                          <Link href="/jobs-today" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
+                            <Flame className="h-4 w-4 shrink-0 text-orange-500" />
                             <span>עבודות להיום</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/worker-profile" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                          <Link href="/worker-profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <User className="h-4 w-4 shrink-0" />
                             <span>הפרופיל שלי</span>
                           </Link>
@@ -202,19 +205,19 @@ export default function Navbar() {
                     {userMode === "employer" && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/post-job" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                          <Link href="/post-job" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <PlusCircle className="h-4 w-4 shrink-0" />
                             <span>פרסם משרה</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/available-workers" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                          <Link href="/available-workers" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Users className="h-4 w-4 shrink-0" />
                             <span>עובדים זמינים</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/my-jobs" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                          <Link href="/my-jobs" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Briefcase className="h-4 w-4 shrink-0" />
                             <span>המשרות שלי</span>
                           </Link>
@@ -222,11 +225,12 @@ export default function Navbar() {
                       </>
                     )}
 
-                    <DropdownMenuSeparator style={{ background: "oklch(1 0 0 / 8%)" }} />
+                    <DropdownMenuSeparator style={{ background: BORDER }} />
 
                     <DropdownMenuItem
                       onClick={() => setUserMode(userMode === "worker" ? "employer" : "worker")}
-                      className="flex items-center gap-2 text-white/50 hover:text-white"
+                      className="flex items-center gap-2"
+                      style={{ color: TEXT_MUTED }}
                     >
                       <RefreshCw className="h-4 w-4 shrink-0" />
                       <span>{userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}</span>
@@ -234,7 +238,8 @@ export default function Navbar() {
 
                     <DropdownMenuItem
                       onClick={resetUserMode}
-                      className="flex items-center gap-2 text-white/50 hover:text-white"
+                      className="flex items-center gap-2"
+                      style={{ color: TEXT_MUTED }}
                     >
                       <RotateCcw className="h-4 w-4 shrink-0" />
                       <span>אפס בחירת תפקיד</span>
@@ -242,17 +247,17 @@ export default function Navbar() {
 
                     {user?.role === "admin" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex items-center gap-2 cursor-pointer w-full text-white/70 hover:text-white">
+                        <Link href="/admin" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: BLUE }}>
                           <Shield className="h-4 w-4 shrink-0" />
                           <span>פאנל ניהול</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
 
-                    <DropdownMenuSeparator style={{ background: "oklch(1 0 0 / 8%)" }} />
+                    <DropdownMenuSeparator style={{ background: BORDER }} />
                     <DropdownMenuItem
                       onClick={logout}
-                      className="text-red-400 focus:text-red-300 flex items-center gap-2"
+                      className="flex items-center gap-2 text-red-500 focus:text-red-600"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
                       <span>התנתק</span>
@@ -265,9 +270,10 @@ export default function Navbar() {
                     size="sm"
                     onClick={() => setLoginOpen(true)}
                     style={{
-                      background: "linear-gradient(135deg, oklch(0.62 0.22 255) 0%, oklch(0.55 0.25 280) 100%)",
+                      background: BLUE,
                       border: "none",
-                      boxShadow: "0 4px 12px oklch(0.62 0.22 255 / 0.3)",
+                      boxShadow: `0 4px 12px oklch(0.58 0.20 255 / 0.30)`,
+                      color: "white",
                     }}
                   >
                     כניסה
@@ -279,7 +285,8 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-white/60 hover:text-white hover:bg-white/8"
+                className="md:hidden hover:bg-slate-100"
+                style={{ color: TEXT_MUTED }}
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="תפריט"
               >
@@ -310,14 +317,13 @@ export default function Navbar() {
               className="md:hidden overflow-hidden"
               dir="rtl"
               style={{
-                borderTop: "1px solid oklch(1 0 0 / 8%)",
-                background: "oklch(0.12 0.018 265 / 0.95)",
-                backdropFilter: "blur(20px)",
+                borderTop: `1px solid ${BORDER}`,
+                background: BG,
               }}
             >
               <nav className="max-w-2xl mx-auto px-4 py-3 flex flex-col gap-1">
                 {isAuthenticated && userMode && (
-                  <div className="px-3 py-2 text-xs text-white/30 border-b mb-1" style={{ borderColor: "oklch(1 0 0 / 8%)" }}>
+                  <div className="px-3 py-2 text-xs border-b mb-1" style={{ color: TEXT_MUTED, borderColor: BORDER }}>
                     מחובר כ: {userMode === "worker" ? "👷 מחפש עבודה" : "💼 מעסיק"}
                   </div>
                 )}
@@ -335,8 +341,8 @@ export default function Navbar() {
                         <span
                           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-right cursor-pointer"
                           style={{
-                            background: isActive ? "oklch(0.62 0.22 255 / 0.12)" : "transparent",
-                            color: isActive ? "oklch(0.80 0.18 240)" : "oklch(1 0 0 / 55%)",
+                            background: isActive ? BLUE_BG : "transparent",
+                            color: isActive ? BLUE : TEXT_MUTED,
                           }}
                           onClick={() => setMobileOpen(false)}
                         >
@@ -352,39 +358,38 @@ export default function Navbar() {
                   <>
                     <button
                       onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setMobileOpen(false); }}
-                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ color: "oklch(1 0 0 / 40%)" }}
+                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-slate-50"
+                      style={{ color: TEXT_MUTED }}
                     >
                       <RefreshCw className="h-4 w-4 shrink-0" />
-                      🔄 {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
+                      {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
                     </button>
 
                     <button
                       onClick={() => { resetUserMode(); setMobileOpen(false); }}
-                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ color: "oklch(1 0 0 / 40%)" }}
+                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-slate-50"
+                      style={{ color: TEXT_MUTED }}
                     >
                       <RotateCcw className="h-4 w-4 shrink-0" />
-                      🔁 אפס בחירת תפקיד
+                      אפס בחירת תפקיד
                     </button>
 
                     {user?.role === "admin" && (
                       <Link href="/admin">
                         <span
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer"
-                          style={{ color: "oklch(0.80 0.18 240)" }}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer hover:bg-slate-50"
+                          style={{ color: BLUE }}
                           onClick={() => setMobileOpen(false)}
                         >
                           <Shield className="h-4 w-4 shrink-0" />
-                          🛡️ פאנל ניהול
+                          פאנל ניהול
                         </span>
                       </Link>
                     )}
 
                     <button
                       onClick={() => { logout(); setMobileOpen(false); }}
-                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ color: "oklch(0.65 0.22 25)" }}
+                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-red-50 text-red-500"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
                       התנתק
@@ -395,10 +400,10 @@ export default function Navbar() {
                 {!isAuthenticated && (
                   <button
                     onClick={() => { setLoginOpen(true); setMobileOpen(false); }}
-                    className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                    style={{ color: "oklch(0.80 0.18 240)" }}
+                    className="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+                    style={{ background: BLUE }}
                   >
-                    כניסה / הרשמה
+                    כניסה
                   </button>
                 )}
               </nav>

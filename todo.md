@@ -418,3 +418,9 @@
 
 ## Rename JobNow → AvodaNow (Mar 6 2026)
 - [x] Replace all occurrences of JobNow/Job-Now/Job Now with AvodaNow in all frontend visual files
+
+## Browser Tab Title (Mar 6 2026)
+- [ ] Update VITE_APP_TITLE and index.html title to AvodaNow
+
+## RoleSelectionScreen Premium Upgrade (Mar 6 2026)
+- [x] Redesign RoleSelectionScreen with premium card layout, better imagery, and polished details

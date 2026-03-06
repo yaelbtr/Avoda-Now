@@ -441,3 +441,6 @@
 - [x] Update HomeWorker page to light theme
 - [x] Update HomeEmployer page to light theme
 - [x] Update JobCard component to light theme
+
+## Mobile UX — Role Selection Cards
+- [x] Compact RoleSelectionScreen cards to fit mobile viewport (no scroll needed)

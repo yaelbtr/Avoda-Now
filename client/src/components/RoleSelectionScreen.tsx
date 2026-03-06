@@ -37,7 +37,6 @@ interface RoleCardProps {
 }
 
 function RoleCard({
-  role,
   image,
   icon,
   title,
@@ -55,24 +54,25 @@ function RoleCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onSelect}
-      className="group relative rounded-2xl overflow-hidden cursor-pointer"
+      className="group relative rounded-2xl overflow-hidden cursor-pointer flex"
       style={{
         background: "oklch(1 0 0)",
         boxShadow: hovered
-          ? `0 20px 60px oklch(0.58 0.20 255 / 0.18), 0 0 0 2px ${BLUE}`
-          : "0 4px 24px oklch(0 0 0 / 0.08), 0 1px 4px oklch(0 0 0 / 0.04)",
+          ? `0 12px 40px oklch(0.58 0.20 255 / 0.18), 0 0 0 2px ${BLUE}`
+          : "0 2px 12px oklch(0 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.04)",
         border: `1.5px solid ${hovered ? BLUE : "oklch(0.93 0.006 247)"}`,
         transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+        minHeight: 0,
       }}
     >
-      {/* Image with overlay */}
-      <div className="relative w-full overflow-hidden" style={{ height: "180px" }}>
+      {/* Left: image strip (portrait, narrow) */}
+      <div className="relative overflow-hidden shrink-0" style={{ width: "110px" }}>
         <motion.div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('${image}')` }}
@@ -84,17 +84,20 @@ function RoleCard({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, oklch(0 0 0 / 0.08) 0%, oklch(0 0 0 / 0.35) 100%)",
+              "linear-gradient(to right, oklch(0 0 0 / 0.0) 60%, oklch(0 0 0 / 0.15) 100%)",
           }}
         />
-        {/* Floating badge */}
+        {/* Floating badge — vertical */}
         <motion.div
-          className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+          className="absolute bottom-3 right-0 left-0 mx-auto flex items-center justify-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold"
           style={{
             background: "oklch(1 0 0 / 0.92)",
             color: BLUE,
             backdropFilter: "blur(8px)",
-            boxShadow: "0 2px 12px oklch(0 0 0 / 0.12)",
+            boxShadow: "0 2px 8px oklch(0 0 0 / 0.12)",
+            width: "fit-content",
+            maxWidth: "90px",
+            whiteSpace: "nowrap",
           }}
           animate={{ y: hovered ? -2 : 0 }}
           transition={{ duration: 0.3 }}
@@ -104,38 +107,37 @@ function RoleCard({
         </motion.div>
       </div>
 
-      {/* Content */}
-      <div className="p-5 flex flex-col items-center text-center" dir="rtl">
-        {/* Icon circle */}
-        <motion.div
-          className="flex items-center justify-center rounded-full mb-4 -mt-9 relative z-10"
-          style={{
-            width: 60,
-            height: 60,
-            background: "oklch(1 0 0)",
-            boxShadow: `0 4px 16px oklch(0.58 0.20 255 / 0.25)`,
-            border: `2px solid ${BLUE_LIGHT}`,
-          }}
-          animate={{ scale: hovered ? 1.08 : 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          {icon}
-        </motion.div>
+      {/* Right: content */}
+      <div className="flex-1 p-4 flex flex-col justify-between" dir="rtl">
+        <div>
+          {/* Icon + subtitle row */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <div
+              className="flex items-center justify-center rounded-full shrink-0"
+              style={{
+                width: 36,
+                height: 36,
+                background: BLUE_LIGHT,
+                border: `1.5px solid oklch(0.80 0.08 255)`,
+              }}
+            >
+              {icon}
+            </div>
+            <span
+              className="text-[11px] font-semibold uppercase tracking-widest"
+              style={{ color: BLUE }}
+            >
+              {subtitle}
+            </span>
+          </div>
 
-        {/* Subtitle tag */}
-        <span
-          className="text-xs font-semibold uppercase tracking-widest mb-1"
-          style={{ color: BLUE, letterSpacing: "0.1em" }}
-        >
-          {subtitle}
-        </span>
-
-        <h2 className="text-xl font-bold mb-2" style={{ color: TEXT_PRIMARY, lineHeight: 1.3 }}>
-          {title}
-        </h2>
-        <p className="mb-5 leading-relaxed text-sm" style={{ color: TEXT_SECONDARY, maxWidth: 280 }}>
-          {description}
-        </p>
+          <h2 className="text-base font-bold mb-1 leading-snug" style={{ color: TEXT_PRIMARY }}>
+            {title}
+          </h2>
+          <p className="text-xs leading-relaxed" style={{ color: TEXT_SECONDARY }}>
+            {description}
+          </p>
+        </div>
 
         {/* CTA Button */}
         <motion.button
@@ -144,30 +146,19 @@ function RoleCard({
             onSelect();
           }}
           disabled={disabled}
-          className="w-full py-3.5 rounded-xl font-semibold text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 relative overflow-hidden"
+          className="mt-3 w-full py-2.5 rounded-xl font-semibold text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 relative overflow-hidden text-sm"
           style={{
             background: `linear-gradient(135deg, ${BLUE} 0%, ${BLUE_DARK} 100%)`,
             boxShadow: hovered
-              ? `0 8px 24px oklch(0.58 0.20 255 / 0.45)`
-              : `0 4px 14px oklch(0.58 0.20 255 / 0.30)`,
-            fontSize: "0.95rem",
+              ? `0 6px 18px oklch(0.58 0.20 255 / 0.40)`
+              : `0 3px 10px oklch(0.58 0.20 255 / 0.25)`,
           }}
           whileTap={{ scale: 0.97 }}
         >
-          {/* Shimmer effect */}
-          <motion.div
-            className="absolute inset-0 opacity-0"
-            style={{
-              background:
-                "linear-gradient(105deg, transparent 40%, oklch(1 0 0 / 0.18) 50%, transparent 60%)",
-            }}
-            animate={hovered ? { opacity: 1, x: ["−100%", "200%"] } : { opacity: 0 }}
-            transition={{ duration: 0.7, ease: "easeInOut" }}
-          />
           {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
           )}
           {buttonLabel}
         </motion.button>
@@ -203,21 +194,21 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.35 }}
-          className="w-full"
+          className="w-full min-h-screen flex items-center justify-center"
           dir="rtl"
           style={{ background: BG }}
         >
-          <div className="flex flex-col items-center px-4 py-8 max-w-lg mx-auto w-full">
-            {/* Welcome header */}
+          <div className="flex flex-col items-center px-4 py-6 max-w-lg mx-auto w-full">
+            {/* Welcome header — compact */}
             <motion.header
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="text-center mb-8"
+              transition={{ delay: 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="text-center mb-5 w-full"
             >
               {/* Top pill */}
               <motion.div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
                 style={{
                   background: BLUE_LIGHT,
                   color: BLUE,
@@ -232,27 +223,27 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
               </motion.div>
 
               <h1
-                className="text-4xl font-black mb-3 tracking-tight"
+                className="text-3xl font-black mb-1.5 tracking-tight"
                 style={{ color: TEXT_PRIMARY, lineHeight: 1.15 }}
               >
                 ברוכים הבאים ל-
                 <span style={{ color: BLUE }}>AvodaNow</span>
               </h1>
-              <p style={{ color: TEXT_MUTED }} className="text-base">
+              <p style={{ color: TEXT_MUTED }} className="text-sm">
                 איך נוכל לעזור לך היום?
               </p>
             </motion.header>
 
-            {/* Cards */}
-            <div className="grid grid-cols-1 gap-5 w-full">
+            {/* Cards — horizontal layout on mobile */}
+            <div className="flex flex-col gap-3 w-full">
               <RoleCard
                 role="worker"
                 image={WORKER_IMG}
-                icon={<HardHat className="h-7 w-7" style={{ color: BLUE }} />}
+                icon={<HardHat className="h-5 w-5" style={{ color: BLUE }} />}
                 title="אני מחפש עבודה"
                 subtitle="לעובדים"
-                description="מציאת עבודה בקלות ובמהירות. הגש מועמדות למשרות המבטיחות ביותר בלחיצת כפתור אחת."
-                badge="אלפי משרות פתוחות"
+                description="מציאת עבודה בקלות ובמהירות. הגש מועמדות למשרות המבטיחות ביותר בלחיצת כפתור."
+                badge="אלפי משרות"
                 badgeIcon={<Zap className="h-3 w-3" />}
                 buttonLabel="המשך כעובד"
                 loading={loading === "worker"}
@@ -264,11 +255,11 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
               <RoleCard
                 role="employer"
                 image={EMPLOYER_IMG}
-                icon={<Briefcase className="h-7 w-7" style={{ color: BLUE }} />}
+                icon={<Briefcase className="h-5 w-5" style={{ color: BLUE }} />}
                 title="אני מחפש עובדים"
                 subtitle="למעסיקים"
                 description="גיוס יעיל והתאמה מהירה. מצא את המועמדים המושלמים לעסק שלך תוך זמן קצר."
-                badge="עובדים זמינים עכשיו"
+                badge="עובדים זמינים"
                 badgeIcon={<Users className="h-3 w-3" />}
                 buttonLabel="המשך כמעסיק"
                 loading={loading === "employer"}
@@ -280,7 +271,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
             {/* Bottom trust line */}
             <motion.p
-              className="mt-6 text-xs text-center"
+              className="mt-4 text-xs text-center"
               style={{ color: TEXT_MUTED }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

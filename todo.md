@@ -397,3 +397,6 @@
 
 ## Bug Fix (Mar 6 2026)
 - [x] Fix RoleSelectionScreen click behavior (card click not triggering role selection)
+
+## Bug Fix — Scrollable RoleSelectionScreen (Mar 6 2026)
+- [x] Fix RoleSelectionScreen overflow/scroll issue (fixed inset-0 prevents scrolling)

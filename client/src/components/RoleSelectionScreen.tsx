@@ -40,7 +40,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.35 }}
-          className="fixed inset-0 z-50 flex flex-col min-h-screen"
+          className="relative z-50 flex flex-col min-h-screen w-full overflow-y-auto"
           dir="rtl"
           style={{ background: "oklch(0.97 0.004 247)" }}
         >
@@ -63,13 +63,13 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
           </nav>
 
           {/* ── Main content ── */}
-          <main className="flex-1 flex flex-col items-center px-4 py-12 max-w-2xl mx-auto w-full">
+          <main className="flex-1 flex flex-col items-center px-4 py-8 max-w-2xl mx-auto w-full">
             {/* Welcome header */}
             <motion.header
               initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="text-center mb-10"
+              className="text-center mb-6"
             >
               <h1
                 className="text-4xl font-bold mb-3 tracking-tight"
@@ -102,7 +102,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                 }}
               >
                 {/* Image */}
-                <div className="w-full h-48 overflow-hidden bg-slate-100">
+                <div className="w-full h-36 overflow-hidden bg-slate-100">
                   <motion.div
                     className="w-full h-full bg-cover bg-center"
                     whileHover={{ scale: 1.05 }}
@@ -161,7 +161,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                 }}
               >
                 {/* Image */}
-                <div className="w-full h-48 overflow-hidden bg-slate-100">
+                <div className="w-full h-36 overflow-hidden bg-slate-100">
                   <motion.div
                     className="w-full h-full bg-cover bg-center"
                     whileHover={{ scale: 1.05 }}

@@ -43,14 +43,16 @@ function MapsPreloader() {
 }
 
 function Router() {
-  const { needsRoleSelection, setUserMode, userMode } = useUserMode();
+  const { needsRoleSelection, setLocalModeOnly, userMode } = useUserMode();
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeMode, setWelcomeMode] = useState<"worker" | "employer" | null>(null);
   // useLocation returns [pathname, navigate]; we only need pathname as the key
   const [location] = useLocation();
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    setUserMode(mode);
+    // RoleSelectionScreen already sent the server mutation.
+    // We only need to update local state so needsRoleSelection becomes false.
+    setLocalModeOnly(mode);
     setWelcomeMode(mode);
     setShowWelcome(true);
   };

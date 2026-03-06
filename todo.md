@@ -474,3 +474,6 @@
 
 ## Bug Fix — HomeWorker Hero CTA
 - [x] Fix: "חפש עבודה עכשיו" button in hero section now scrolls to #jobs-section instead of navigating to /find-jobs
+
+## Bug Fix — RoleSelectionScreen Worker Button
+- [x] Fix: "המשך כעובד" double-mutation race condition fixed — App.handleRoleSelected now calls setLocalModeOnly (no server mutation) instead of setUserMode, so needsRoleSelection becomes false immediately and WelcomeScreen shows correctly

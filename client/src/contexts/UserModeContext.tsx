@@ -46,6 +46,7 @@ interface UserModeContextValue {
   userMode: UserMode;
   isLoadingMode: boolean;
   setUserMode: (mode: "worker" | "employer") => void;
+  setLocalModeOnly: (mode: "worker" | "employer") => void;
   resetUserMode: () => void;
   needsRoleSelection: boolean;
 }
@@ -54,6 +55,7 @@ const UserModeContext = createContext<UserModeContextValue>({
   userMode: null,
   isLoadingMode: false,
   setUserMode: () => {},
+  setLocalModeOnly: () => {},
   resetUserMode: () => {},
   needsRoleSelection: false,
 });
@@ -159,6 +161,13 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Sets local mode only (no server mutation) — used when RoleSelectionScreen
+  // already sent the mutation itself and we just need to update local state.
+  const setLocalModeOnly = (mode: "worker" | "employer") => {
+    setLocalMode(mode);
+    saveRoleToStorage(mode, userId);
+  };
+
   // Clears the current role so the role selection screen is shown again
   const resetUserMode = () => {
     setLocalMode(null);
@@ -170,7 +179,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserModeContext.Provider value={{ userMode, isLoadingMode, setUserMode, resetUserMode, needsRoleSelection }}>
+    <UserModeContext.Provider value={{ userMode, isLoadingMode, setUserMode, setLocalModeOnly, resetUserMode, needsRoleSelection }}>
       {children}
     </UserModeContext.Provider>
   );

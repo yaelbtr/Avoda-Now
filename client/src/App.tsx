@@ -11,7 +11,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
-import WelcomeScreen from "./components/WelcomeScreen";
 import PageTransition from "./components/PageTransition";
 import Home from "./pages/Home";
 import FindJobs from "./pages/FindJobs";
@@ -43,18 +42,16 @@ function MapsPreloader() {
 }
 
 function Router() {
-  const { needsRoleSelection, setLocalModeOnly, userMode } = useUserMode();
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [welcomeMode, setWelcomeMode] = useState<"worker" | "employer" | null>(null);
+  const { needsRoleSelection, setLocalModeOnly } = useUserMode();
   // useLocation returns [pathname, navigate]; we only need pathname as the key
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
     // RoleSelectionScreen already sent the server mutation.
-    // We only need to update local state so needsRoleSelection becomes false.
+    // Update local state so needsRoleSelection becomes false, then navigate directly.
     setLocalModeOnly(mode);
-    setWelcomeMode(mode);
-    setShowWelcome(true);
+    if (mode === "worker") navigate("/");
+    else navigate("/post-job");
   };
 
   // Derive a stable segment key so that /job/1 and /job/2 share the same
@@ -64,17 +61,6 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
-      {/* Welcome screen — shown once after role selection */}
-      {showWelcome && welcomeMode && (
-        <WelcomeScreen
-          mode={welcomeMode}
-          onDismiss={() => {
-            setShowWelcome(false);
-            setWelcomeMode(null);
-          }}
-        />
-      )}
-
       <Navbar />
       <GuestLoginBanner />
 

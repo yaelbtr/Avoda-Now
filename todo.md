@@ -477,3 +477,6 @@
 
 ## Bug Fix — RoleSelectionScreen Worker Button
 - [x] Fix: "המשך כעובד" double-mutation race condition fixed — App.handleRoleSelected now calls setLocalModeOnly (no server mutation) instead of setUserMode, so needsRoleSelection becomes false immediately and WelcomeScreen shows correctly
+
+## Bug Fix — Remove WelcomeScreen Intermediate Step
+- [x] Remove WelcomeScreen from role selection flow: navigate directly to / (worker) or /post-job (employer) without intermediate welcome screen

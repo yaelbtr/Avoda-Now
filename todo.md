@@ -406,3 +406,6 @@
 
 ## Bug Fix — Restore Navbar/Footer in RoleSelectionScreen (Mar 6 2026)
 - [x] Show Navbar and Footer with RoleSelectionScreen as the main content area
+
+## Bug Fix — Duplicate Navbar/Footer (Mar 6 2026)
+- [x] Remove internal Navbar and Footer from RoleSelectionScreen (duplicates from App.tsx)

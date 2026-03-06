@@ -7,7 +7,6 @@ interface RoleSelectionScreenProps {
   onSelected: (mode: "worker" | "employer") => void;
 }
 
-// Images from the reference HTML
 const WORKER_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCXZrKFndAo95eFwCh4AIII3H1E4Yu7Be02H1TRn5xaWhTNgB5AHDOdrQkXxe7wDOeZkg3vyRr4tjK3KrsuDX8NAVrioZsGEI0z4Bm-_ozdoQaCKpuOSWtQt7kU78geKlXTdq6S3_tym2woptkmRNCnOqmVsT8RxMCq58MbV3PANPZIJG7OtClCO021xREN6to9i8G4Z3V3BP9ox4F9U0c2OqkTa-9QGhYWV0k0sS-6iqkJu27MX-VnikcJwtaNtmD2Sy9r4km25g";
 const EMPLOYER_IMG =
@@ -40,30 +39,12 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.35 }}
-          className="relative z-50 flex flex-col min-h-screen w-full overflow-y-auto"
+          className="w-full"
           dir="rtl"
           style={{ background: "oklch(0.97 0.004 247)" }}
         >
-          {/* ── Navbar ── */}
-          <nav
-            className="flex items-center justify-between px-6 py-4 shadow-sm"
-            style={{ background: "oklch(1 0 0)", borderBottom: "1px solid oklch(0.92 0.006 247)" }}
-          >
-            <div className="flex items-center gap-2">
-              <div
-                className="p-2 rounded-lg"
-                style={{ background: "oklch(0.94 0.015 255)" }}
-              >
-                <Briefcase className="h-6 w-6" style={{ color: "oklch(0.58 0.20 255)" }} />
-              </div>
-              <span className="text-xl font-bold" style={{ color: "oklch(0.20 0.015 265)" }}>
-                Job<span style={{ color: "oklch(0.58 0.20 255)" }}>Now</span>
-              </span>
-            </div>
-          </nav>
-
           {/* ── Main content ── */}
-          <main className="flex-1 flex flex-col items-center px-4 py-8 max-w-2xl mx-auto w-full">
+          <div className="flex flex-col items-center px-4 py-8 max-w-2xl mx-auto w-full">
             {/* Welcome header */}
             <motion.header
               initial={{ opacity: 0, y: -16 }}
@@ -101,7 +82,6 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                   border: "1px solid oklch(0.92 0.006 247)",
                 }}
               >
-                {/* Image */}
                 <div className="w-full h-36 overflow-hidden bg-slate-100">
                   <motion.div
                     className="w-full h-full bg-cover bg-center"
@@ -110,25 +90,17 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     style={{ backgroundImage: `url('${WORKER_IMG}')` }}
                   />
                 </div>
-
-                {/* Content */}
                 <div className="p-6 flex flex-col items-center text-center">
                   <div
-                    className="p-4 rounded-full mb-4 transition-colors duration-300"
+                    className="p-4 rounded-full mb-4"
                     style={{ background: "oklch(0.94 0.015 255)" }}
                   >
                     <HardHat className="h-8 w-8" style={{ color: "oklch(0.58 0.20 255)" }} />
                   </div>
-                  <h2
-                    className="text-2xl font-bold mb-2"
-                    style={{ color: "oklch(0.20 0.015 265)" }}
-                  >
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: "oklch(0.20 0.015 265)" }}>
                     אני מחפש עבודה
                   </h2>
-                  <p
-                    className="mb-6 leading-relaxed text-sm"
-                    style={{ color: "oklch(0.45 0.012 265)" }}
-                  >
+                  <p className="mb-6 leading-relaxed text-sm" style={{ color: "oklch(0.45 0.012 265)" }}>
                     מציאת עבודה בקלות ובמהירות. הגש מועמדות למשרות המבטיחות ביותר בלחיצת כפתור אחת.
                   </p>
                   <button
@@ -140,9 +112,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       boxShadow: "0 4px 14px oklch(0.58 0.20 255 / 0.35)",
                     }}
                   >
-                    {loading === "worker" ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : null}
+                    {loading === "worker" && <Loader2 className="h-5 w-5 animate-spin" />}
                     המשך כעובד
                   </button>
                 </div>
@@ -160,7 +130,6 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                   border: "1px solid oklch(0.92 0.006 247)",
                 }}
               >
-                {/* Image */}
                 <div className="w-full h-36 overflow-hidden bg-slate-100">
                   <motion.div
                     className="w-full h-full bg-cover bg-center"
@@ -169,25 +138,17 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     style={{ backgroundImage: `url('${EMPLOYER_IMG}')` }}
                   />
                 </div>
-
-                {/* Content */}
                 <div className="p-6 flex flex-col items-center text-center">
                   <div
-                    className="p-4 rounded-full mb-4 transition-colors duration-300"
+                    className="p-4 rounded-full mb-4"
                     style={{ background: "oklch(0.94 0.015 255)" }}
                   >
                     <Briefcase className="h-8 w-8" style={{ color: "oklch(0.58 0.20 255)" }} />
                   </div>
-                  <h2
-                    className="text-2xl font-bold mb-2"
-                    style={{ color: "oklch(0.20 0.015 265)" }}
-                  >
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: "oklch(0.20 0.015 265)" }}>
                     אני מחפש עובדים
                   </h2>
-                  <p
-                    className="mb-6 leading-relaxed text-sm"
-                    style={{ color: "oklch(0.45 0.012 265)" }}
-                  >
+                  <p className="mb-6 leading-relaxed text-sm" style={{ color: "oklch(0.45 0.012 265)" }}>
                     גיוס יעיל והתאמה מהירה. מצא את המועמדים המושלמים לעסק שלך תוך זמן קצר בעזרת טכנולוגיה חכמה.
                   </p>
                   <button
@@ -199,20 +160,13 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       boxShadow: "0 4px 14px oklch(0.58 0.20 255 / 0.35)",
                     }}
                   >
-                    {loading === "employer" ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : null}
+                    {loading === "employer" && <Loader2 className="h-5 w-5 animate-spin" />}
                     המשך כמעסיק
                   </button>
                 </div>
               </motion.div>
             </motion.div>
-          </main>
-
-          {/* ── Footer ── */}
-          <footer className="text-center py-6 text-sm" style={{ color: "oklch(0.65 0.008 265)" }}>
-            <p>© 2024 JobNow. כל הזכויות שמורות.</p>
-          </footer>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

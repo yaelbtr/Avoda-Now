@@ -239,22 +239,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
         className="relative z-10 overflow-hidden"
-        style={{ minHeight: "480px" }}
+        style={{ minHeight: "540px" }}
       >
         {/* Full-bleed background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_8b541c43.png"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "center center" }}
+          style={{ objectPosition: "70% 60%" }}
         />
 
-        {/* Directional overlay: opaque cream on LEFT (text side), transparent on RIGHT (woman visible) */}
+        {/* Directional overlay: very light on left (decorative graphics blend naturally), transparent on right (woman visible) */}
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.97) 0%, oklch(0.95 0.03 91.6 / 0.90) 30%, oklch(0.95 0.03 91.6 / 0.45) 55%, transparent 80%)",
+            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.94) 0%, oklch(0.95 0.03 91.6 / 0.86) 30%, oklch(0.95 0.03 91.6 / 0.40) 55%, transparent 78%)",
           }}
         />
         {/* Bottom fade to page bg */}
@@ -264,7 +264,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         />
 
         {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
-        <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "480px", marginRight: "auto" }}>
+        <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "460px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"

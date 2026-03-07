@@ -4,7 +4,7 @@ import { Briefcase, Mail, Home, Search, PlusCircle, FolderOpen, FileText, Shield
 // Dark footer — matches Navbar header-bg (#2e3c0f)
 const FG_PRIMARY  = "#e8eae5";                          // off-white text
 const FG_MUTED    = "#e8eae5";                          // same off-white for body text
-const FG_FAINT    = "rgba(232,234,229,0.70)";            // dimmer for legal/copyright
+const FG_FAINT    = "#e8eae5";                          // email, disclaimer, copyright
 const ACCENT      = "var(--citrus)";                     // Sun-Kissed Citrus — nav & legal links
 const DIVIDER     = "oklch(0.40 0.07 124.9)";            // subtle dark olive line
 
@@ -100,10 +100,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
-          <p className="text-xs text-center leading-relaxed" style={{ color: FG_FAINT }}>
+          <p className="text-xs text-center leading-relaxed" style={{ color: FG_FAINT, opacity: 0.75 }}>
             פלטפורמה זו מחברת בין עובדים למעסיקים בלבד. הפלטפורמה אינה אחראית לתנאי העסקה או להסכמים בין הצדדים.
           </p>
-          <p className="text-xs text-center mt-2" style={{ color: FG_FAINT }}>
+          <p className="text-xs text-center mt-2" style={{ color: FG_FAINT, opacity: 0.75 }}>
             © {new Date().getFullYear()} AvodaNow. כל הזכויות שמורות.
           </p>
         </div>

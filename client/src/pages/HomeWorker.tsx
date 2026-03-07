@@ -184,17 +184,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               background: "radial-gradient(ellipse 80% 40% at 50% 0%, oklch(0.75 0.12 80 / 0.12) 0%, transparent 60%)",
             }}
           />
-          {/* Bottom fade into page bg */}
+          {/* Bottom fade — tall gradient into page bg for smooth blend */}
           <div
-            className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
-              background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)",
+              height: "160px",
+              background: "linear-gradient(to bottom, transparent 0%, oklch(0.93 0.04 91.6 / 0.5) 50%, oklch(0.93 0.04 91.6 / 1) 100%)",
             }}
           />
         </div>
 
         {/* Content — all white on dark background */}
-        <div className="relative z-10 px-6 pt-14 pb-12 text-center max-w-lg mx-auto">
+        <div className="relative z-10 px-6 pt-14 pb-16 text-center max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7"
@@ -257,15 +258,34 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             ))}
           </motion.div>
         </div>
+        {/* Wave SVG divider — overlaps hero bottom, blends into how-it-works */}
+        <div
+          className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none"
+          style={{ lineHeight: 0, marginBottom: "-2px" }}
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 390 56"
+            xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="none"
+            style={{ display: "block", width: "100%", height: "56px" }}
+          >
+            <path
+              d="M0,56 L0,28 Q48,0 97,14 Q146,28 195,18 Q244,8 293,22 Q342,36 390,16 L390,56 Z"
+              fill="oklch(0.93 0.04 91.6)"
+            />
+          </svg>
+        </div>
       </section>
 
-      {/* ── How it works ─────────────────────────────────────────────────── */}
+      {/* ── How it works ─────────────────────────────────────────────────────────── */}
       <section
         className="relative z-10 mx-6 mb-12 rounded-[28px] p-7 max-w-lg"
         style={{
           background: "white",
           boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
           border: "1px solid oklch(0.89 0.05 84.0)",
+          marginTop: "-8px",
         }}
       >
         <div className="flex items-center justify-center gap-2 mb-7">

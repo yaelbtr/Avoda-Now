@@ -308,19 +308,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
             className="mt-5 w-full"
           >
-            <button
+            <motion.button
               onClick={() => navigate("/find-jobs")}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
+              className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
               style={{
                 background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
                 color: "oklch(0.96 0.04 80)",
                 boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45)",
               }}
+              whileHover={{ scale: 1.02, boxShadow: "0 8px 28px oklch(0.28 0.06 122 / 0.55)" }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
               <Search size={15} />
               חפש עבודה עכשיו
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
-            </button>
+            </motion.button>
           </motion.div>
         </div>
       </section>
@@ -394,21 +397,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
             className="mt-6"
           >
-            <button
+            <motion.button
               onClick={() => navigate("/find-jobs")}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
               style={{
                 background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
                 color: "oklch(0.96 0.04 80)",
                 boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)",
               }}
-              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)", e.currentTarget.style.boxShadow = "0 8px 28px oklch(0.28 0.06 122 / 0.50), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.12)")}
-              onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)")}
+              whileHover={{ scale: 1.03, y: -2, boxShadow: "0 10px 32px oklch(0.28 0.06 122 / 0.55), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.15)" }}
+              whileTap={{ scale: 0.96, y: 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 22 }}
             >
               <Search size={15} />
               חפש עבודה עכשיו
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
-            </button>
+            </motion.button>
           </motion.div>
         </div>
 

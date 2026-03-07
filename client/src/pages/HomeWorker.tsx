@@ -160,70 +160,91 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 px-6 pt-14 pb-10 text-center max-w-lg mx-auto">
-        {/* Decorative background blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-8 -right-12 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "var(--amber)", filter: "blur(48px)" }} />
-          <div className="absolute top-12 -left-8 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "var(--brand)", filter: "blur(40px)" }} />
+      <section className="relative z-10 overflow-hidden">
+        {/* Hero background image with overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-city_a4dc5bfe.jpg"
+            alt=""
+            className="w-full h-full object-cover object-center"
+            aria-hidden="true"
+          />
+          {/* Multi-layer overlay for text readability */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, oklch(0.93 0.04 91.6 / 0.82) 0%, oklch(0.93 0.04 91.6 / 0.90) 60%, oklch(0.93 0.04 91.6 / 0.97) 100%)",
+            }}
+          />
+          {/* Subtle warm tint */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.82 0.15 80.8 / 0.08) 0%, transparent 70%)",
+            }}
+          />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7 shadow-sm"
-          style={{
-            background: "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
-            border: "1px solid var(--honey)",
-            boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.10)",
-          }}
-        >
-          <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
-          <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)", letterSpacing: "0.08em" }}>
-            הדרך המהירה למצוא עבודה
-          </span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="text-[38px] leading-[1.12] font-black mb-4"
-          style={{ color: "var(--brand)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
-        >
-          עבודות מזדמנות<br />
-          <span
+        {/* Content */}
+        <div className="relative z-10 px-6 pt-14 pb-10 text-center max-w-lg mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7 shadow-sm"
             style={{
-              background: "linear-gradient(135deg, var(--amber) 0%, var(--citrus) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
+              background: "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+              border: "1px solid var(--honey)",
+              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.15)",
             }}
           >
-            מחכות לך עכשיו
-          </span>
-        </motion.h1>
+            <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
+            <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)", letterSpacing: "0.08em" }}>
+              הדרך המהירה למצוא עבודה
+            </span>
+          </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-[15px] font-medium max-w-[300px] mx-auto leading-relaxed"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
-        </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-[38px] leading-[1.12] font-black mb-4"
+            style={{ color: "var(--brand)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+          >
+            עבודות מזדמנות<br />
+            <span
+              style={{
+                background: "linear-gradient(135deg, var(--amber) 0%, var(--citrus) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              מחכות לך עכשיו
+            </span>
+          </motion.h1>
 
-        {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex items-center justify-center gap-6 mt-8"
-        >
-          {[
-            { value: "500+", label: "עבודות פעילות" },
-            { value: "100%", label: "ללא עמלות" },
-            { value: "24/7", label: "זמין תמיד" },
-          ].map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <div className="text-[22px] font-black leading-none" style={{ color: "var(--brand)" }}>{value}</div>
-              <div className="text-[10px] font-semibold mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
-            </div>
-          ))}
-        </motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[15px] font-medium max-w-[300px] mx-auto leading-relaxed"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+          </motion.p>
+
+          {/* Stats row */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex items-center justify-center gap-6 mt-8"
+          >
+            {[
+              { value: "500+", label: "עבודות פעילות" },
+              { value: "100%", label: "ללא עמלות" },
+              { value: "24/7", label: "זמין תמיד" },
+            ].map(({ value, label }) => (
+              <div key={label} className="text-center">
+                <div className="text-[22px] font-black leading-none" style={{ color: "var(--brand)" }}>{value}</div>
+                <div className="text-[10px] font-semibold mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </section>
 
       {/* ── How it works ─────────────────────────────────────────────────── */}

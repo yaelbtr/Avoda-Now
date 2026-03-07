@@ -100,10 +100,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
-          <p className="text-xs text-center leading-relaxed" style={{ color: FG_FAINT, opacity: 0.75 }}>
+          <p className="text-xs text-center leading-relaxed" style={{ color: FG_FAINT }}>
             פלטפורמה זו מחברת בין עובדים למעסיקים בלבד. הפלטפורמה אינה אחראית לתנאי העסקה או להסכמים בין הצדדים.
           </p>
-          <p className="text-xs text-center mt-2" style={{ color: FG_FAINT, opacity: 0.75 }}>
+          <p className="text-xs text-center mt-2" style={{ color: FG_FAINT }}>
             © {new Date().getFullYear()} AvodaNow. כל הזכויות שמורות.
           </p>
         </div>

@@ -159,17 +159,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   return (
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
-      {/* Decorative blobs */}
-      <div className="absolute top-20 left-0 right-0 h-96 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        <div className="absolute w-64 h-64 rounded-full left-1/4" style={{ backgroundColor: "var(--brand)", filter: "blur(60px)", opacity: 0.09 }} />
-        <div className="absolute w-64 h-64 rounded-full right-1/4 top-20" style={{ backgroundColor: "var(--amber)", filter: "blur(60px)", opacity: 0.09 }} />
-      </div>
-
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative z-10 px-6 pt-14 pb-8 text-center max-w-lg mx-auto">
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 shadow-sm"
-          style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.9)" }}
+          style={{ background: "var(--brand-light)", border: "1px solid var(--honey)" }}
         >
           <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
           <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)" }}>
@@ -201,7 +195,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div className="flex justify-center">
           <div
             className="px-6 py-2.5 rounded-full flex items-center gap-3 shadow-sm"
-            style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.9)" }}
+            style={{ background: "var(--brand-light)", border: "1px solid var(--honey)" }}
           >
             <div className="relative size-3">
               <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.6 }} />
@@ -220,8 +214,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           disabled={availabilityLoading}
           className="w-full rounded-3xl p-7 relative overflow-hidden flex items-center gap-5 text-right transition-transform"
           style={{
-            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%)",
-            boxShadow: "0 10px 30px rgba(63,74,40,0.25)",
+            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%)",
+            boxShadow: "0 8px 24px oklch(0.38 0.07 125.0 / 0.40)",
           }}
         >
           <div className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-12 -mt-12" style={{ background: "rgba(255,255,255,0.10)", filter: "blur(32px)" }} />
@@ -286,7 +280,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <section
         className="relative z-10 mx-6 mb-12 rounded-[32px] p-6 max-w-lg"
-        style={{ background: "white", boxShadow: "0 20px 50px -12px rgba(63,74,40,0.15)", border: "1px solid rgba(255,255,255,0.9)" }}
+        style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "1px solid var(--honey)" }}
       >
         <h3 className="text-lg font-black mb-8 flex items-center justify-center gap-2" style={{ color: "var(--brand)" }}>
           <Star className="h-5 w-5" style={{ color: "var(--amber)" }} />
@@ -298,7 +292,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <div
               key={step}
               className={"flex items-center gap-5 p-4 rounded-3xl overflow-hidden shadow-sm" + (reverse ? " flex-row-reverse" : "")}
-              style={{ backgroundColor: "var(--brand-light)", border: "1px solid var(--border)" }}
+              style={{ backgroundColor: "var(--brand-light)", border: "1.5px solid var(--honey)" }}
             >
               <div
                 className="flex-shrink-0 w-28 text-center text-[84px] font-black leading-none select-none"
@@ -465,7 +459,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-3xl p-5 mb-4 text-center bg-white shadow-sm"
-            style={{ border: "1px solid var(--border)" }}
+            style={{ border: "1.5px solid var(--honey)" }}
           >
             <MapPin className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--brand)" }} />
             <p className="text-sm font-black mb-1" style={{ color: "var(--brand)" }}>רוצה לראות עבודות קרובות אליך?</p>
@@ -507,7 +501,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Not found CTA ────────────────────────────────────────────────── */}
       <section
         className="px-6 py-12 text-center relative z-10"
-        style={{ backgroundColor: "var(--honey)", borderTop: "1px solid var(--border)" }}
+        style={{ backgroundColor: "var(--brand-light)", borderTop: "1px solid var(--honey)" }}
       >
         <div className="mb-6 max-w-lg mx-auto">
           <Search className="h-10 w-10 mx-auto mb-2" style={{ color: "var(--brand)" }} />
@@ -528,7 +522,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Employer CTA ─────────────────────────────────────────────────── */}
       <section
         className="px-6 pt-2 pb-16 text-center relative z-10"
-        style={{ backgroundColor: "var(--honey)" }}
+        style={{ backgroundColor: "var(--brand-light)" }}
       >
         <button
           onClick={resetUserMode}

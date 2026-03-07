@@ -124,7 +124,7 @@ export default function Navbar() {
                       className="px-3 py-1.5 rounded-xl text-sm font-medium transition-all cursor-pointer inline-block"
                       style={{
                         background: isActive ? "oklch(0.40 0.07 124.9)" : "transparent",
-                        color: isActive ? "var(--citrus)" : "oklch(0.85 0.03 95.3)",
+                        color: isActive ? "var(--citrus)" : "#e8eae5",
                         border: isActive ? "1px solid oklch(0.50 0.07 124.9)" : "1px solid transparent",
                       }}
                     >
@@ -280,7 +280,7 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 className="md:hidden"
-                style={{ color: "oklch(0.85 0.03 95.3)", background: "transparent" }}
+                style={{ color: "#e8eae5", background: "transparent" }}
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="תפריט"
               >
@@ -316,7 +316,7 @@ export default function Navbar() {
             >
               <nav className="max-w-2xl mx-auto px-4 py-3 flex flex-col gap-1">
                 {isAuthenticated && userMode && (
-                  <div className="px-3 py-2 text-xs border-b mb-1" style={{ color: "oklch(0.75 0.03 95.3)", borderColor: "oklch(0.40 0.07 124.9)" }}>
+                  <div className="px-3 py-2 text-xs border-b mb-1" style={{ color: "rgba(232,234,229,0.6)", borderColor: "oklch(0.40 0.07 124.9)" }}>
                     מחובר כ: {userMode === "worker" ? "👷 מחפש עבודה" : "💼 מעסיק"}
                   </div>
                 )}
@@ -335,7 +335,7 @@ export default function Navbar() {
                           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-right cursor-pointer"
                           style={{
                             background: isActive ? "oklch(0.40 0.07 124.9)" : "transparent",
-                            color: isActive ? "var(--citrus)" : "oklch(0.80 0.03 95.3)",
+                            color: isActive ? "var(--citrus)" : "#e8eae5",
                           }}
                           onClick={() => setMobileOpen(false)}
                         >
@@ -352,7 +352,7 @@ export default function Navbar() {
                     <button
                       onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setMobileOpen(false); }}
                       className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[oklch(0.40_0.07_124.9)]"
-                      style={{ color: "oklch(0.80 0.03 95.3)" }}
+                      style={{ color: "#e8eae5" }}
                     >
                       <RefreshCw className="h-4 w-4 shrink-0" />
                       {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
@@ -361,7 +361,7 @@ export default function Navbar() {
                     <button
                       onClick={() => { resetUserMode(); setMobileOpen(false); }}
                       className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[oklch(0.40_0.07_124.9)]"
-                      style={{ color: "oklch(0.80 0.03 95.3)" }}
+                      style={{ color: "#e8eae5" }}
                     >
                       <RotateCcw className="h-4 w-4 shrink-0" />
                       אפס בחירת תפקיד

@@ -50,13 +50,13 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="flex items-center gap-2 justify-end transition-colors"
-                    style={{ color: FG_PRIMARY }}
+                    className="inline-flex items-center gap-2 transition-colors"
+                    style={{ color: FG_PRIMARY, direction: "rtl" }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                     onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                   >
-                    <span>{label}</span>
                     <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{label}</span>
                   </Link>
                 </li>
               ))}
@@ -70,25 +70,25 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="flex items-center gap-2 justify-end transition-colors"
-                  style={{ color: FG_PRIMARY }}
+                  className="inline-flex items-center gap-2 transition-colors"
+                  style={{ color: FG_PRIMARY, direction: "rtl" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                 >
-                  <span>תנאי שימוש</span>
                   <FileText className="h-3.5 w-3.5 shrink-0" />
+                  <span>תנאי שימוש</span>
                 </Link>
               </li>
               <li>
                 <Link
                   href="/privacy"
-                  className="flex items-center gap-2 justify-end transition-colors"
-                  style={{ color: FG_PRIMARY }}
+                  className="inline-flex items-center gap-2 transition-colors"
+                  style={{ color: FG_PRIMARY, direction: "rtl" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                 >
-                  <span>מדיניות פרטיות</span>
                   <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                  <span>מדיניות פרטיות</span>
                 </Link>
               </li>
             </ul>

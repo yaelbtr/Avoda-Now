@@ -9,6 +9,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import {
   Search, MapPin, ChevronLeft, Zap,
   Map, List, ArrowLeft, TrendingUp, Star,
+  Briefcase, BadgePercent, Clock,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -43,9 +44,9 @@ function StatsRow() {
   const jobs = useCountDown(750, 500, 1400, inView);
   const pct = useCountDown(150, 100, 1200, inView);
   const statsData = [
-    { display: `+${jobs}`, label: "עבודות פעילות" },
-    { display: `${pct}%`, label: "ללא עמלות" },
-    { display: "24/7", label: "זמין תמיד" },
+    { display: `+${jobs}`, label: "עבודות פעילות", Icon: Briefcase },
+    { display: `${pct}%`, label: "ללא עמלות", Icon: BadgePercent },
+    { display: "24/7", label: "זמין תמיד", Icon: Clock },
   ];
   return (
     <motion.div
@@ -58,26 +59,30 @@ function StatsRow() {
         border: "1px solid oklch(1 0 0 / 0.15)",
       }}
     >
-      {statsData.map(({ display, label }, i) => (
-        <div key={label} className="relative text-center flex-1">
+      {statsData.map(({ display, label, Icon }, i) => (
+        <div key={label} className="relative text-center flex-1 flex flex-col items-center gap-0.5 py-1">
           {i > 0 && (
             <div
               className="absolute top-1/2 -translate-y-1/2"
               style={{
                 right: "100%",
                 width: "1px",
-                height: "36px",
+                height: "44px",
                 background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",
               }}
             />
           )}
+          <Icon
+            size={15}
+            style={{ color: "rgba(255,255,200,0.75)", filter: "drop-shadow(0 1px 3px oklch(0 0 0 / 0.5))" }}
+          />
           <div
-            className="text-[22px] font-black leading-none tabular-nums"
+            className="text-[20px] font-black leading-none tabular-nums"
             style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
           >{display}</div>
           <div
-            className="text-[11px] font-semibold mt-1"
-            style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
+            className="text-[10px] font-semibold"
+            style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
           >{label}</div>
         </div>
       ))}

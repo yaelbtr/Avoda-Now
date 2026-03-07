@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Briefcase, Mail } from "lucide-react";
+import { Briefcase, Mail, Home, Search, PlusCircle, FolderOpen, FileText, ShieldCheck } from "lucide-react";
 
 // Dark footer — matches Navbar header-bg (#2e3c0f)
 const FG_PRIMARY  = "#e8eae5";                          // off-white text
@@ -42,20 +42,21 @@ export default function Footer() {
             <h3 className="font-semibold text-sm text-right" style={{ color: FG_PRIMARY }}>ניווט</h3>
             <ul className="space-y-2 text-sm text-right">
               {[
-                { href: "/", label: "בית" },
-                { href: "/find-jobs", label: "חפש עבודה" },
-                { href: "/post-job", label: "פרסם משרה" },
-                { href: "/my-jobs", label: "המשרות שלי" },
-              ].map(({ href, label }) => (
+                { href: "/", label: "בית", Icon: Home },
+                { href: "/find-jobs", label: "חפש עבודה", Icon: Search },
+                { href: "/post-job", label: "פרסם משרה", Icon: PlusCircle },
+                { href: "/my-jobs", label: "המשרות שלי", Icon: FolderOpen },
+              ].map(({ href, label, Icon }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="transition-colors"
+                    className="flex items-center gap-2 justify-end transition-colors"
                     style={{ color: ACCENT }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                     onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                   >
-                    {label}
+                    <span>{label}</span>
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
                   </Link>
                 </li>
               ))}
@@ -69,23 +70,25 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="transition-colors"
+                  className="flex items-center gap-2 justify-end transition-colors"
                   style={{ color: ACCENT }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                 >
-                  תנאי שימוש
+                  <span>תנאי שימוש</span>
+                  <FileText className="h-3.5 w-3.5 shrink-0" />
                 </Link>
               </li>
               <li>
                 <Link
                   href="/privacy"
-                  className="transition-colors"
+                  className="flex items-center gap-2 justify-end transition-colors"
                   style={{ color: ACCENT }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                 >
-                  מדיניות פרטיות
+                  <span>מדיניות פרטיות</span>
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                 </Link>
               </li>
             </ul>

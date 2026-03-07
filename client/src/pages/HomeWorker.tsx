@@ -308,6 +308,28 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           {/* Stats row with countdown animation */}
           <StatsRow />
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-6"
+          >
+            <button
+              onClick={() => navigate("/find-jobs")}
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-[15px] transition-all duration-200 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.32 0.07 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.95 0.05 80)",
+                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.35), 0 1px 4px oklch(0.28 0.06 122 / 0.20)",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)", e.currentTarget.style.boxShadow = "0 6px 24px oklch(0.28 0.06 122 / 0.45), 0 2px 6px oklch(0.28 0.06 122 / 0.25)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 20px oklch(0.28 0.06 122 / 0.35), 0 1px 4px oklch(0.28 0.06 122 / 0.20)")}
+            >
+              <Search size={16} />
+              חפש עבודה עכשיו
+              <ChevronLeft size={16} style={{ opacity: 0.7 }} />
+            </button>
+          </motion.div>
         </div>
         {/* Wave SVG divider — seamlessly transitions to page bg */}
         <div

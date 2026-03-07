@@ -189,6 +189,56 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </motion.p>
       </section>
 
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <section
+        className="relative z-10 mx-6 mb-12 rounded-[32px] p-6 max-w-lg"
+        style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "1px solid var(--honey)" }}
+      >
+        <h3 className="text-lg font-black mb-8 flex items-center justify-center gap-2" style={{ color: "var(--brand)" }}>
+          <Star className="h-5 w-5" style={{ color: "var(--amber)" }} />
+          איך זה עובד?
+        </h3>
+
+        <div className="space-y-4 mb-10">
+          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }) => (
+            <div
+              key={step}
+              className={"flex items-center gap-5 p-4 rounded-3xl overflow-hidden shadow-sm" + (reverse ? " flex-row-reverse" : "")}
+              style={{ backgroundColor: "var(--brand-light)", border: "1.5px solid var(--honey)" }}
+            >
+              <div
+                className="flex-shrink-0 w-28 text-center text-[84px] font-black leading-none select-none"
+                style={{
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  backgroundImage: `url("${imgUrl}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.9)",
+                  WebkitTextStroke: "1px rgba(255,255,255,0.2)",
+                } as React.CSSProperties}
+              >
+                {step}
+              </div>
+              <div className="flex-1 text-right">
+                <h4 className="text-base font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
+                <p className="text-[11px] font-bold leading-relaxed" style={{ color: "var(--foreground)" }}>{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => navigate("/find-jobs")}
+          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all active:scale-95 shadow-sm"
+          style={{ background: "white", border: "2.5px solid var(--citrus)", color: "var(--brand)" }}
+        >
+          חיפוש עבודה מזדמנת
+          <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
+        </button>
+      </section>
+
       {/* ── Availability CTA ─────────────────────────────────────────────── */}
       <section className="px-6 mb-10 max-w-lg mx-auto relative z-10 space-y-4">
         {/* Live status badge */}
@@ -275,56 +325,6 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <span className="text-[10px] font-black" style={{ color: "var(--amber)" }}>זיהוי מיקום</span>
           </button>
         </div>
-      </section>
-
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section
-        className="relative z-10 mx-6 mb-12 rounded-[32px] p-6 max-w-lg"
-        style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "1px solid var(--honey)" }}
-      >
-        <h3 className="text-lg font-black mb-8 flex items-center justify-center gap-2" style={{ color: "var(--brand)" }}>
-          <Star className="h-5 w-5" style={{ color: "var(--amber)" }} />
-          איך זה עובד?
-        </h3>
-
-        <div className="space-y-4 mb-10">
-          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }) => (
-            <div
-              key={step}
-              className={"flex items-center gap-5 p-4 rounded-3xl overflow-hidden shadow-sm" + (reverse ? " flex-row-reverse" : "")}
-              style={{ backgroundColor: "var(--brand-light)", border: "1.5px solid var(--honey)" }}
-            >
-              <div
-                className="flex-shrink-0 w-28 text-center text-[84px] font-black leading-none select-none"
-                style={{
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  color: "transparent",
-                  backgroundImage: `url("${imgUrl}")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  filter: "saturate(1.4) contrast(1.1) brightness(0.9)",
-                  WebkitTextStroke: "1px rgba(255,255,255,0.2)",
-                } as React.CSSProperties}
-              >
-                {step}
-              </div>
-              <div className="flex-1 text-right">
-                <h4 className="text-base font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
-                <p className="text-[11px] font-bold leading-relaxed" style={{ color: "var(--foreground)" }}>{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={() => navigate("/find-jobs")}
-          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all active:scale-95 shadow-sm"
-          style={{ background: "white", border: "2.5px solid var(--citrus)", color: "var(--brand)" }}
-        >
-          חיפוש עבודה מזדמנת
-          <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
-        </button>
       </section>
 
       {/* ── Urgent / Today carousel ───────────────────────────────────────── */}

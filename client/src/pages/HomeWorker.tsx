@@ -184,12 +184,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               background: "radial-gradient(ellipse 80% 40% at 50% 0%, oklch(0.75 0.12 80 / 0.12) 0%, transparent 60%)",
             }}
           />
-          {/* Bottom fade — tall gradient into page bg for smooth blend */}
+          {/* Bottom fade — fades to exact page bg color */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
-              height: "160px",
-              background: "linear-gradient(to bottom, transparent 0%, oklch(0.93 0.04 91.6 / 0.5) 50%, oklch(0.93 0.04 91.6 / 1) 100%)",
+              height: "200px",
+              background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6 / 0.6) 40%, oklch(0.95 0.03 91.6 / 1) 100%)",
             }}
           />
         </div>
@@ -258,21 +258,21 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             ))}
           </motion.div>
         </div>
-        {/* Wave SVG divider — overlaps hero bottom, blends into how-it-works */}
+        {/* Wave SVG divider — seamlessly transitions to page bg */}
         <div
           className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none"
-          style={{ lineHeight: 0, marginBottom: "-2px" }}
+          style={{ lineHeight: 0, marginBottom: "-1px" }}
           aria-hidden="true"
         >
           <svg
-            viewBox="0 0 390 56"
+            viewBox="0 0 390 64"
             xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="none"
-            style={{ display: "block", width: "100%", height: "56px" }}
+            style={{ display: "block", width: "100%", height: "64px" }}
           >
             <path
-              d="M0,56 L0,28 Q48,0 97,14 Q146,28 195,18 Q244,8 293,22 Q342,36 390,16 L390,56 Z"
-              fill="oklch(0.93 0.04 91.6)"
+              d="M0,64 L0,32 C65,8 130,48 195,28 C260,8 325,44 390,20 L390,64 Z"
+              fill="var(--page-bg)"
             />
           </svg>
         </div>
@@ -284,8 +284,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         style={{
           background: "white",
           boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
-          border: "1px solid oklch(0.89 0.05 84.0)",
-          marginTop: "-8px",
+          border: "none",
+          marginTop: "-4px",
         }}
       >
         <div className="flex items-center justify-center gap-2 mb-7">

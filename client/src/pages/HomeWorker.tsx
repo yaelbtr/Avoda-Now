@@ -246,18 +246,25 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             aria-hidden="true"
             style={{ display: "block", objectPosition: "70% center" }}
           />
-          {/* Cream overlay — stronger on right (text area in RTL) fading to transparent on left (woman side) */}
+          {/* Top-to-bottom cream fade for text area */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.92) 0%, oklch(0.95 0.03 91.6 / 0.70) 35%, oklch(0.95 0.03 91.6 / 0.20) 65%, transparent 100%)",
+              background: "linear-gradient(180deg, oklch(0.96 0.02 91 / 0.82) 0%, oklch(0.95 0.03 91 / 0.72) 55%, oklch(0.95 0.03 91 / 0.55) 80%, transparent 100%)",
+            }}
+          />
+          {/* Right-side (RTL text area) stronger fade */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.60) 0%, oklch(0.95 0.03 91.6 / 0.30) 50%, transparent 100%)",
             }}
           />
           {/* Bottom fade to page bg */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
-              height: "120px",
+              height: "140px",
               background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6 / 1) 100%)",
             }}
           />
@@ -267,23 +274,23 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div className="relative z-10 px-6 pt-14 pb-16 text-center max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"
             style={{
-              background: "oklch(0.95 0.03 91 / 0.75)",
-              border: "1px solid oklch(0.70 0.08 122 / 0.30)",
-              backdropFilter: "blur(8px)",
+              background: "oklch(0.32 0.07 122)",
+              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
             }}
           >
-            <Zap className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
-            <span className="text-[11px] font-extrabold tracking-wide" style={{ color: "oklch(0.32 0.07 122)", letterSpacing: "0.06em" }}>
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
               הדרך המהירה למצוא עבודה
             </span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-[38px] leading-[1.12] font-black mb-4"
-            style={{ color: "oklch(0.22 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+            className="text-[40px] leading-[1.1] font-black mb-4"
+            style={{ color: "oklch(0.18 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 0 oklch(1 0 0 / 0.6)" }}
           >
             עבודות מזדמנות<br />
             <span
@@ -300,8 +307,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-[15px] font-medium max-w-[300px] mx-auto leading-relaxed"
-            style={{ color: "oklch(0.38 0.05 122)" }}
+            className="text-[15px] font-semibold max-w-[300px] mx-auto leading-relaxed"
+            style={{ color: "oklch(0.30 0.06 122)" }}
           >
             קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
           </motion.p>
@@ -316,18 +323,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             <button
               onClick={() => navigate("/find-jobs")}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-[15px] transition-all duration-200 active:scale-95"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
               style={{
-                background: "linear-gradient(135deg, oklch(0.32 0.07 122) 0%, oklch(0.28 0.06 122) 100%)",
-                color: "oklch(0.95 0.05 80)",
-                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.35), 0 1px 4px oklch(0.28 0.06 122 / 0.20)",
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)",
+                boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)",
               }}
-              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)", e.currentTarget.style.boxShadow = "0 6px 24px oklch(0.28 0.06 122 / 0.45), 0 2px 6px oklch(0.28 0.06 122 / 0.25)")}
-              onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 20px oklch(0.28 0.06 122 / 0.35), 0 1px 4px oklch(0.28 0.06 122 / 0.20)")}
+              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)", e.currentTarget.style.boxShadow = "0 8px 28px oklch(0.28 0.06 122 / 0.50), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.12)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)")}
             >
-              <Search size={16} />
+              <Search size={15} />
               חפש עבודה עכשיו
-              <ChevronLeft size={16} style={{ opacity: 0.7 }} />
+              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </button>
           </motion.div>
         </div>

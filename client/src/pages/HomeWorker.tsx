@@ -261,6 +261,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
           />
 
+          {/* StatsRow overlaid at bottom of image */}
+          <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center px-5">
+            <StatsRow />
+          </div>
+
           {/* Badge + heading + description at top of image */}
           <div className="absolute inset-x-0 top-0 z-10 flex flex-col items-center text-center px-5 pt-6">
             <motion.div
@@ -297,10 +302,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </div>
         </div>
 
-        {/* Stats + CTA below image on clean background */}
-        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
-          <StatsRow />
-
+        {/* CTA below image on clean background */}
+        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
             className="mt-5 w-full"

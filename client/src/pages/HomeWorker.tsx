@@ -52,12 +52,13 @@ function StatsRow() {
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-      className="flex items-center justify-center gap-0 mt-8 rounded-2xl px-4 py-3"
+      dir="rtl"
+      className="flex items-stretch justify-between gap-0 mt-8 rounded-2xl px-2 py-3 w-full max-w-[300px]"
       style={{
-        background: "oklch(0.95 0.03 91 / 0.80)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid oklch(0.70 0.08 122 / 0.25)",
-        boxShadow: "0 2px 16px oklch(0.38 0.07 122 / 0.12)",
+        background: "oklch(0.96 0.02 91 / 0.92)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid oklch(0.70 0.08 122 / 0.30)",
+        boxShadow: "0 4px 20px oklch(0.38 0.07 122 / 0.15), 0 1px 4px oklch(0.38 0.07 122 / 0.08)",
       }}
     >
       {statsData.map(({ display, label, Icon }, i) => (
@@ -73,7 +74,7 @@ function StatsRow() {
               }}
             />
           )}
-          <div key={label} className="text-center flex-1 flex flex-col items-center gap-0.5 py-1">
+          <div key={label} className="text-center flex-1 flex flex-col items-center gap-0.5 py-1 px-2">
             <Icon
               size={15}
               style={{ color: "oklch(0.62 0.16 75)" }}
@@ -246,14 +247,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "right center" }}
+          style={{ objectPosition: "center center" }}
         />
 
         {/* Directional overlay: opaque cream on LEFT (text side), transparent on RIGHT (woman visible) */}
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.93) 0%, oklch(0.95 0.03 91.6 / 0.78) 38%, oklch(0.95 0.03 91.6 / 0.22) 62%, transparent 100%)",
+            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.97) 0%, oklch(0.95 0.03 91.6 / 0.90) 30%, oklch(0.95 0.03 91.6 / 0.45) 55%, transparent 80%)",
           }}
         />
         {/* Bottom fade to page bg */}
@@ -262,8 +263,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
         />
 
-        {/* Content — text on LEFT side (RTL: visually right side of screen) */}
-        <div className="relative z-10 flex flex-col justify-center items-end text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "520px", marginRight: "auto" }}>
+        {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
+        <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "480px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"

@@ -255,7 +255,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.50) 0%, oklch(0.95 0.03 91.6 / 0.30) 35%, oklch(0.95 0.03 91.6 / 0.05) 58%, transparent 72%)",
+            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.20) 0%, oklch(0.95 0.03 91.6 / 0.08) 25%, transparent 45%)",
           }}
         />
         {/* Bottom fade to page bg */}

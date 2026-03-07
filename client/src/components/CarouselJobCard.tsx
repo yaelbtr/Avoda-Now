@@ -96,7 +96,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         className="w-full text-right rounded-2xl p-3 focus:outline-none overflow-hidden relative"
         aria-label={`פתח פרטים: ${job.title}`}
         style={{
-          background: `linear-gradient(135deg, ${C_DARK_BG} 0%, oklch(0.14 0.020 275) 100%)`,
+          background: `linear-gradient(135deg, ${C_DARK_BG} 0%, oklch(0.14 0.05 125) 100%)`,
 
           border: `1px solid ${accentBorder}`,
           boxShadow: "0 4px 20px oklch(0 0 0 / 0.3), inset 0 1px 0 oklch(1 0 0 / 0.06)",

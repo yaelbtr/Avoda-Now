@@ -27,6 +27,7 @@ import {
   C_WARNING as WARNING, C_DANGER, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
   C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
   C_TEXT_ON_DARK_FAINT as TEXT_FAINT, C_PAGE_BG_HEX,
+  C_AMBER, C_AMBER_LIGHT, C_HONEY,
 } from "@/lib/colors";
 
 // ── Glassmorphism helpers ─────────────────────────────────────────────────────
@@ -388,8 +389,8 @@ export default function MyJobs() {
                         <div
                           className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
                           style={{
-                            background: "linear-gradient(135deg, oklch(0.62 0.22 255 / 0.12) 0%, oklch(0.55 0.25 280 / 0.12) 100%)",
-                            border: "1px solid oklch(0.62 0.22 255 / 0.18)",
+                            background: `linear-gradient(135deg, ${C_AMBER_LIGHT} 0%, ${C_HONEY} 100%)`,
+                            border: `1px solid ${C_HONEY}`,
                           }}
                         >
                           {getCategoryIcon(job.category)}
@@ -430,15 +431,15 @@ export default function MyJobs() {
                     {/* Meta row */}
                     <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs mb-3">
                       <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
-                        <MapPin className="h-3 w-3" style={{ color: "oklch(0.72 0.22 240)" }} />
+                        <MapPin className="h-3 w-3" style={{ color: C_AMBER }} />
                         {job.address.split(",")[0]}
                       </span>
                       <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
-                        <Clock className="h-3 w-3" style={{ color: "oklch(0.72 0.22 240)" }} />
+                        <Clock className="h-3 w-3" style={{ color: C_AMBER }} />
                         {getStartTimeLabel(job.startTime)}
                       </span>
                       <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
-                        <Users className="h-3 w-3" style={{ color: "oklch(0.72 0.22 240)" }} />
+                        <Users className="h-3 w-3" style={{ color: C_AMBER }} />
                         {job.workersNeeded} עובדים
                       </span>
                       <span
@@ -451,7 +452,7 @@ export default function MyJobs() {
                       {daysLeft !== null && job.status === "active" && (
                         <span
                           className="flex items-center gap-1 font-bold"
-                          style={{ color: isExpiringSoon ? "oklch(0.65 0.22 25)" : "oklch(0.72 0.22 240)" }}
+                          style={{ color: isExpiringSoon ? "oklch(0.65 0.22 25)" : C_AMBER }}
                         >
                           {isExpiringSoon && <Zap className="h-3 w-3" />}
                           <Clock className="h-3 w-3" />
@@ -469,9 +470,9 @@ export default function MyJobs() {
                           className="gap-1.5 text-xs"
                           onClick={() => navigate(`/job/${job.id}`)}
                           style={{
-                            background: "oklch(0.62 0.22 255 / 0.08)",
-                            border: "1px solid oklch(0.62 0.22 255 / 0.2)",
-                            color: "oklch(0.72 0.22 240)",
+                            background: C_AMBER_LIGHT,
+                            border: `1px solid ${C_HONEY}`,
+                            color: C_AMBER,
                           }}
                         >
                           <Eye className="h-3.5 w-3.5" />

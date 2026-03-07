@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
+import { C_BRAND, C_AMBER, C_AMBER_HEX } from "@/lib/colors";
 
 interface LiveStatsProps {
   mode?: "worker" | "employer";
@@ -19,12 +20,12 @@ export default function LiveStats({ mode = "worker" }: LiveStatsProps) {
       <div
         dir="rtl"
         style={{
-          background: "oklch(0.12 0.018 265)",
-          borderBottom: "1px solid oklch(1 0 0 / 8%)",
-        }}
-      >
-        <div className="max-w-2xl mx-auto px-4 py-3 flex justify-center">
-          <Loader2 className="h-4 w-4 animate-spin" style={{ color: "oklch(0.62 0.22 255)" }} />
+        background: C_BRAND,
+        borderBottom: "1px solid oklch(1 0 0 / 8%)",
+      }}
+    >
+      <div className="max-w-2xl mx-auto px-4 py-3 flex justify-center">
+          <Loader2 className="h-4 w-4 animate-spin" style={{ color: C_AMBER }} />
         </div>
       </div>
     );
@@ -47,9 +48,9 @@ export default function LiveStats({ mode = "worker" }: LiveStatsProps) {
       icon: "📢",
       value: stats.newJobsLastHour,
       label: "עבודות חדשות בשעה",
-      accentColor: "oklch(0.62 0.22 255)",
-      accentBg: "oklch(0.62 0.22 255 / 0.1)",
-      accentBorder: "oklch(0.62 0.22 255 / 0.2)",
+      accentColor: C_AMBER,
+      accentBg: `${C_AMBER_HEX}1a`,
+      accentBorder: `${C_AMBER_HEX}33`,
       pulse: false,
       employerOnly: false,
     },
@@ -71,7 +72,7 @@ export default function LiveStats({ mode = "worker" }: LiveStatsProps) {
     <div
       dir="rtl"
       style={{
-        background: "oklch(0.12 0.018 265)",
+        background: C_BRAND,
         borderBottom: "1px solid oklch(1 0 0 / 8%)",
       }}
     >

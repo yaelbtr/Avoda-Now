@@ -27,7 +27,7 @@ function timeUntil(date: Date | string | null | undefined): string {
 function getAvatarColors(userId: number) {
   const palettes = [
     { from: "oklch(0.55 0.22 160)", to: "oklch(0.45 0.20 155)", text: "oklch(0.75 0.18 160)" },
-    { from: "oklch(0.55 0.22 255)", to: "oklch(0.45 0.20 265)", text: "oklch(0.72 0.18 255)" },
+    { from: "oklch(0.55 0.12 76.7)", to: "oklch(0.45 0.13 76.7)", text: "oklch(0.75 0.12 76.7)" },
     { from: "oklch(0.60 0.22 25)",  to: "oklch(0.50 0.20 30)",  text: "oklch(0.80 0.18 25)"  },
     { from: "oklch(0.58 0.22 300)", to: "oklch(0.48 0.20 305)", text: "oklch(0.78 0.18 300)" },
     { from: "oklch(0.62 0.20 65)",  to: "oklch(0.52 0.18 70)",  text: "oklch(0.82 0.16 65)"  },

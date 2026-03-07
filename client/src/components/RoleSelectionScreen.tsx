@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users } from "lucide-react";
 import {
-  C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT,
+  C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT, C_HONEY,
   C_TEXT_PRIMARY, C_TEXT_SECONDARY, C_TEXT_MUTED,
-  C_PAGE_BG, S_BRAND_MD, S_BRAND_LG,
+  C_PAGE_BG, S_BRAND_MD, S_BRAND_LG, S_CARD,
 } from "@/lib/colors";
 
 interface RoleSelectionScreenProps {
@@ -61,9 +61,9 @@ function RoleCard({
       style={{
         background: "oklch(1 0 0)",
         boxShadow: hovered
-          ? `0 12px 40px oklch(0.58 0.20 255 / 0.18), 0 0 0 2px ${C_BRAND}`
-          : "0 2px 12px oklch(0 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.04)",
-        border: `1.5px solid ${hovered ? C_BRAND : "oklch(0.93 0.006 247)"}`,
+          ? `${S_BRAND_LG}, 0 0 0 2px ${C_BRAND}`
+          : S_CARD,
+        border: `1.5px solid ${hovered ? C_BRAND : C_HONEY}`,
         transition: "box-shadow 0.3s ease, border-color 0.3s ease",
         minHeight: 0,
       }}
@@ -113,7 +113,7 @@ function RoleCard({
                 width: 36,
                 height: 36,
                 background: C_BRAND_LIGHT,
-                border: `1.5px solid oklch(0.80 0.08 255)`,
+                border: `1.5px solid ${C_HONEY}`,
               }}
             >
               {icon}
@@ -201,7 +201,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                 style={{
                   background: C_BRAND_LIGHT,
                   color: C_BRAND,
-                  border: `1px solid oklch(0.80 0.08 255)`,
+                  border: `1px solid ${C_HONEY}`,
                 }}
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}

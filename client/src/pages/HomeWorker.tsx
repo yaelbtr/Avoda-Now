@@ -241,23 +241,28 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── MOBILE Hero (< md): image on top, text below ── */}
       <section className="relative z-10 overflow-hidden md:hidden">
-        {/* Image + overlay text panel */}
-        <div className="relative w-full" style={{ height: "420px" }}>
+        {/* Full image with text at top + woman visible in center */}
+        <div className="relative w-full" style={{ height: "480px" }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
             alt=""
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "65% 40%" }}
+            style={{ objectPosition: "60% 35%" }}
           />
-          {/* Bottom gradient fade */}
+          {/* Top gradient for text readability */}
+          <div
+            className="absolute top-0 left-0 right-0 pointer-events-none"
+            style={{ height: "55%", background: "linear-gradient(to bottom, oklch(0.97 0.02 91 / 0.82) 0%, transparent 100%)" }}
+          />
+          {/* Bottom fade into page */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "200px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
+            style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
           />
 
-          {/* Badge + heading + description overlaid on image */}
-          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-6">
+          {/* Badge + heading + description at top of image */}
+          <div className="absolute inset-x-0 top-0 z-10 flex flex-col items-center text-center px-5 pt-6">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
@@ -275,8 +280,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[36px] leading-[1.15] font-black mb-3"
-              style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 10px oklch(0.97 0.02 91 / 0.80)" }}
+              className="text-[34px] leading-[1.15] font-black mb-2"
+              style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
             >
               עבודות מזדמנות<br />
               <span style={{ color: "var(--citrus)" }}>מחכות לך עכשיו</span>
@@ -284,8 +289,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
             <motion.p
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[14px] font-semibold leading-relaxed"
-              style={{ color: "oklch(0.22 0.06 122)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70)" }}
+              className="text-[13px] font-semibold leading-relaxed"
+              style={{ color: "oklch(0.22 0.06 122)", maxWidth: "270px" }}
             >
               קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
             </motion.p>
@@ -293,7 +298,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
 
         {/* Stats + CTA below image on clean background */}
-        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
+        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
           <StatsRow />
 
           <motion.div

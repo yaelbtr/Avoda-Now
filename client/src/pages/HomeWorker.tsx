@@ -246,14 +246,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "55% center" }}
+          style={{ objectPosition: "right center" }}
         />
 
-        {/* Directional overlay: opaque cream on RIGHT (text side), transparent on LEFT (image side) */}
+        {/* Directional overlay: opaque cream on LEFT (text side), transparent on RIGHT (woman visible) */}
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.92) 0%, oklch(0.95 0.03 91.6 / 0.75) 40%, oklch(0.95 0.03 91.6 / 0.20) 70%, transparent 100%)",
+            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.93) 0%, oklch(0.95 0.03 91.6 / 0.78) 38%, oklch(0.95 0.03 91.6 / 0.22) 62%, transparent 100%)",
           }}
         />
         {/* Bottom fade to page bg */}
@@ -262,8 +262,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
         />
 
-        {/* Content — text on right side */}
-        <div className="relative z-10 flex flex-col justify-center items-end text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "520px", marginLeft: "auto" }}>
+        {/* Content — text on LEFT side (RTL: visually right side of screen) */}
+        <div className="relative z-10 flex flex-col justify-center items-end text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "520px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"

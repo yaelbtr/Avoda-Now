@@ -39,7 +39,7 @@ export default function Footer() {
 
           {/* Navigation */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-right" style={{ color: FG_PRIMARY }}>ניווט</h3>
+            <h3 className="font-semibold text-sm text-right" style={{ color: ACCENT }}>ניווט</h3>
             <ul className="space-y-2 text-sm text-right">
               {[
                 { href: "/", label: "בית", Icon: Home },
@@ -51,9 +51,9 @@ export default function Footer() {
                   <Link
                     href={href}
                     className="flex items-center gap-2 justify-end transition-colors"
-                    style={{ color: ACCENT }}
+                    style={{ color: FG_PRIMARY }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                   >
                     <span>{label}</span>
                     <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -65,15 +65,15 @@ export default function Footer() {
 
           {/* Legal */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-right" style={{ color: FG_PRIMARY }}>מידע משפטי</h3>
+            <h3 className="font-semibold text-sm text-right" style={{ color: ACCENT }}>מידע משפטי</h3>
             <ul className="space-y-2 text-sm text-right">
               <li>
                 <Link
                   href="/terms"
                   className="flex items-center gap-2 justify-end transition-colors"
-                  style={{ color: ACCENT }}
+                  style={{ color: FG_PRIMARY }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                 >
                   <span>תנאי שימוש</span>
                   <FileText className="h-3.5 w-3.5 shrink-0" />
@@ -83,9 +83,9 @@ export default function Footer() {
                 <Link
                   href="/privacy"
                   className="flex items-center gap-2 justify-end transition-colors"
-                  style={{ color: ACCENT }}
+                  style={{ color: FG_PRIMARY }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_PRIMARY)}
                 >
                   <span>מדיניות פרטיות</span>
                   <ShieldCheck className="h-3.5 w-3.5 shrink-0" />

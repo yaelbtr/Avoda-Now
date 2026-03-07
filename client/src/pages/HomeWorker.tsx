@@ -438,49 +438,76 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           marginTop: "-4px",
         }}
       >
-        <div className="flex items-center justify-center gap-2 mb-7">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
-            <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+        {/* Section header */}
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.35 0.08 122 / 0.12)" }}>
+            <Star className="h-4 w-4" style={{ color: "var(--brand)" }} />
           </div>
-          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד?</h3>
+          <h3 className="text-xl font-black" style={{ color: "oklch(0.18 0.06 122)" }}>איך זה עובד?</h3>
         </div>
 
-        <div className="space-y-3 mb-8">
-          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }, idx) => (
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: reverse ? -16 : 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1, duration: 0.4 }}
-              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
-              style={{
-                background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
-                border: "1px solid oklch(0.89 0.05 84.0)",
-              }}
-            >
-              <div
-                className="flex-shrink-0 w-24 h-20 text-center text-[72px] font-black leading-none select-none flex items-center justify-center"
-                style={{
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  color: "transparent",
-                  backgroundImage: `url("${imgUrl}")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  filter: "saturate(1.4) contrast(1.1) brightness(0.85)",
-                } as React.CSSProperties}
+        {/* Steps */}
+        <div className="relative mb-8" dir="rtl">
+          {/* Connector line */}
+          <div
+            className="absolute right-[27px] top-10 bottom-10 w-0.5 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, oklch(0.55 0.09 122 / 0.25) 0%, oklch(0.55 0.09 122 / 0.10) 100%)" }}
+          />
+
+          <div className="space-y-4">
+            {HOW_IT_WORKS.map(({ step, title, desc }, idx) => (
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
+                className="flex items-start gap-4"
               >
-                {step}
-              </div>
-              <div className="flex-1 text-right">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mb-1.5" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)", color: "var(--amber-dark)" }}>
-                  שלב {idx + 1}
+                {/* Step number bubble */}
+                <div
+                  className="flex-shrink-0 w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-sm"
+                  style={{
+                    background: idx === 0
+                      ? "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)"
+                      : "oklch(0.97 0.015 122.3)",
+                    border: idx === 0 ? "none" : "1.5px solid oklch(0.88 0.05 122 / 0.6)",
+                    boxShadow: idx === 0 ? "0 4px 16px oklch(0.28 0.06 122 / 0.30)" : "0 2px 8px oklch(0.28 0.06 122 / 0.08)",
+                  }}
+                >
+                  <span
+                    className="text-[22px] font-black leading-none"
+                    style={{ color: idx === 0 ? "oklch(0.97 0.04 80)" : "oklch(0.35 0.08 122)" }}
+                  >{step}</span>
                 </div>
-                <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
-                <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Content card */}
+                <div
+                  className="flex-1 p-4 rounded-2xl"
+                  style={{
+                    background: idx === 0
+                      ? "linear-gradient(135deg, oklch(0.97 0.02 122.3) 0%, oklch(0.95 0.025 91.6) 100%)"
+                      : "oklch(0.98 0.008 91.6)",
+                    border: idx === 0
+                      ? "1.5px solid oklch(0.82 0.07 122 / 0.5)"
+                      : "1px solid oklch(0.91 0.03 91.6)",
+                    boxShadow: idx === 0 ? "0 2px 12px oklch(0.35 0.08 122 / 0.10)" : "none",
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{
+                        background: idx === 0 ? "oklch(0.35 0.08 122 / 0.12)" : "oklch(0.88 0.05 84.0 / 0.5)",
+                        color: idx === 0 ? "oklch(0.35 0.08 122)" : "oklch(0.55 0.07 84.0)",
+                      }}
+                    >שלב {idx + 1}</span>
+                  </div>
+                  <h4 className="text-[16px] font-black mb-1" style={{ color: "oklch(0.18 0.06 122)" }}>{title}</h4>
+                  <p className="text-[13px] font-medium leading-relaxed" style={{ color: "oklch(0.42 0.04 122)" }}>{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <motion.button

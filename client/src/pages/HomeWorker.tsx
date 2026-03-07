@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
 import JobCard from "@/components/JobCard";
@@ -16,6 +16,74 @@ import {
 import CarouselJobCard from "@/components/CarouselJobCard";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
+
+// Hook: counts DOWN from startValue to endValue over duration ms
+function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
+  const [current, setCurrent] = useState(startValue);
+  useEffect(() => {
+    if (!triggered) return;
+    const steps = 40;
+    const stepTime = duration / steps;
+    const delta = (startValue - endValue) / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const next = Math.round(startValue - delta * step);
+      setCurrent(step >= steps ? endValue : next);
+      if (step >= steps) clearInterval(timer);
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [triggered]);
+  return current;
+}
+
+function StatsRow() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
+  const jobs = useCountDown(750, 500, 1400, inView);
+  const pct = useCountDown(150, 100, 1200, inView);
+  const statsData = [
+    { display: `+${jobs}`, label: "עבודות פעילות" },
+    { display: `${pct}%`, label: "ללא עמלות" },
+    { display: "24/7", label: "זמין תמיד" },
+  ];
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+      className="flex items-center justify-center gap-0 mt-8 rounded-2xl px-4 py-3"
+      style={{
+        background: "oklch(0 0 0 / 0.30)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid oklch(1 0 0 / 0.15)",
+      }}
+    >
+      {statsData.map(({ display, label }, i) => (
+        <div key={label} className="relative text-center flex-1">
+          {i > 0 && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2"
+              style={{
+                right: "100%",
+                width: "1px",
+                height: "36px",
+                background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",
+              }}
+            />
+          )}
+          <div
+            className="text-[22px] font-black leading-none tabular-nums"
+            style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
+          >{display}</div>
+          <div
+            className="text-[11px] font-semibold mt-1"
+            style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
+          >{label}</div>
+        </div>
+      ))}
+    </motion.div>
+  );
+}
 
 const HOW_IT_WORKS = [
   {
@@ -59,8 +127,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
-  const autoScrollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
-  const isPausedRef = React.useRef(false);
+  const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isPausedRef = useRef(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -238,44 +306,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
           </motion.p>
 
-          {/* Stats row */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center justify-center gap-0 mt-8 rounded-2xl px-4 py-3"
-            style={{
-              background: "oklch(0 0 0 / 0.30)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid oklch(1 0 0 / 0.15)",
-            }}
-          >
-            {[
-              { value: "+500", label: "עבודות פעילות" },
-              { value: "100%", label: "ללא עמלות" },
-              { value: "24/7", label: "זמין תמיד" },
-            ].map(({ value, label }, i) => (
-              <div key={label} className="relative text-center flex-1">
-                {i > 0 && (
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2"
-                    style={{
-                      right: "100%",
-                      width: "1px",
-                      height: "36px",
-                      background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",
-                    }}
-                  />
-                )}
-                <div
-                  className="text-[22px] font-black leading-none"
-                  style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
-                >{value}</div>
-                <div
-                  className="text-[11px] font-semibold mt-1"
-                  style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
-                >{label}</div>
-              </div>
-            ))}
-          </motion.div>
+          {/* Stats row with countdown animation */}
+          <StatsRow />
         </div>
         {/* Wave SVG divider — seamlessly transitions to page bg */}
         <div

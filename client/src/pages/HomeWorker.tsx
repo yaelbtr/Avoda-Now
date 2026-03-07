@@ -238,8 +238,85 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
+
+      {/* ── MOBILE Hero (< md): image on top, text below ── */}
+      <section className="relative z-10 overflow-hidden md:hidden">
+        {/* Image panel */}
+        <div className="relative w-full" style={{ height: "260px" }}>
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "65% 45%" }}
+          />
+          {/* Bottom fade into text section */}
+          <div
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
+            style={{ height: "80px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
+          />
+        </div>
+
+        {/* Text panel */}
+        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+            style={{
+              background: "oklch(0.32 0.07 122)",
+              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+            }}
+          >
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
+              הדרך המהירה למצוא עבודה
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-[36px] leading-[1.15] font-black mb-3"
+            style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+          >
+            עבודות מזדמנות<br />
+            <span style={{ color: "var(--citrus)" }}>מחכות לך עכשיו</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[14px] font-semibold leading-relaxed mb-5"
+            style={{ color: "oklch(0.28 0.06 122)", maxWidth: "280px" }}
+          >
+            קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+          </motion.p>
+
+          <StatsRow />
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-5 w-full"
+          >
+            <button
+              onClick={() => navigate("/find-jobs")}
+              className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)",
+                boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45)",
+              }}
+            >
+              <Search size={15} />
+              חפש עבודה עכשיו
+              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── DESKTOP Hero (≥ md): full-bleed image with text overlay ── */}
       <section
-        className="relative z-10 overflow-hidden"
+        className="relative z-10 overflow-hidden hidden md:block"
         style={{ minHeight: "540px" }}
       >
         {/* Full-bleed background image */}
@@ -251,7 +328,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ objectPosition: "70% 60%" }}
         />
 
-        {/* Directional overlay: very light on left (decorative graphics blend naturally), transparent on right (woman visible) */}
+        {/* Directional overlay: very light on left only */}
         <div
           className="absolute inset-0"
           style={{

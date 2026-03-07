@@ -241,19 +241,30 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           {/* Stats row */}
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center justify-center gap-6 mt-8"
+            className="flex items-center justify-center gap-0 mt-8 rounded-2xl px-4 py-3"
+            style={{
+              background: "oklch(0 0 0 / 0.30)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid oklch(1 0 0 / 0.15)",
+            }}
           >
             {[
               { value: "+500", label: "עבודות פעילות" },
               { value: "100%", label: "ללא עמלות" },
               { value: "24/7", label: "זמין תמיד" },
             ].map(({ value, label }, i) => (
-              <div key={label} className="text-center">
+              <div key={label} className="text-center flex-1">
                 {i > 0 && (
-                  <div className="absolute" style={{ display: "none" }} />
+                  <div className="absolute inset-y-3" style={{ width: "1px", background: "oklch(1 0 0 / 0.2)", right: 0 }} />
                 )}
-                <div className="text-[24px] font-black leading-none" style={{ color: "oklch(0.97 0.01 80)", textShadow: "0 1px 6px oklch(0 0 0 / 0.4)" }}>{value}</div>
-                <div className="text-[10px] font-semibold mt-0.5" style={{ color: "oklch(0.78 0.05 80)" }}>{label}</div>
+                <div
+                  className="text-[22px] font-black leading-none"
+                  style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
+                >{value}</div>
+                <div
+                  className="text-[11px] font-semibold mt-1"
+                  style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
+                >{label}</div>
               </div>
             ))}
           </motion.div>

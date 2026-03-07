@@ -1,16 +1,8 @@
 import { Link } from "wouter";
-import { ChevronRight } from "lucide-react";
 
 export default function Terms() {
   return (
-    <div dir="rtl" className="max-w-2xl mx-auto px-4 py-8">
-      <Link href="/">
-        <span className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-          <ChevronRight className="h-4 w-4" />
-          חזור לבית
-        </span>
-      </Link>
-
+    <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-foreground mb-2">תנאי שימוש</h1>
       <p className="text-sm text-muted-foreground mb-8">עדכון אחרון: מרץ 2026</p>
 

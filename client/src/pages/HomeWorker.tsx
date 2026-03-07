@@ -253,9 +253,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               { value: "100%", label: "ללא עמלות" },
               { value: "24/7", label: "זמין תמיד" },
             ].map(({ value, label }, i) => (
-              <div key={label} className="text-center flex-1">
+              <div key={label} className="relative text-center flex-1">
                 {i > 0 && (
-                  <div className="absolute inset-y-3" style={{ width: "1px", background: "oklch(1 0 0 / 0.2)", right: 0 }} />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2"
+                    style={{
+                      right: "100%",
+                      width: "1px",
+                      height: "36px",
+                      background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",
+                    }}
+                  />
                 )}
                 <div
                   className="text-[22px] font-black leading-none"

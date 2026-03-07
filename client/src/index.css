@@ -73,8 +73,8 @@
   --honey:           oklch(0.89 0.05 84.0);    /* #EAD7B2 */
   --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
 
-  /* Background — Vanilla Linen (lightened) */
-  --page-bg:         oklch(0.99 0.01 91.6);    /* near-white warm linen */
+  /* Background — #fefcf4 warm cream */
+  --page-bg:         oklch(0.9904 0.0107 95.3); /* #fefcf4 warm cream */
 
   /* Success / green */
   --success:         oklch(0.65 0.22 160);
@@ -90,7 +90,7 @@
   --danger-light:    oklch(0.65 0.22 25 / 0.12);
 
   /* Page / surface */
-  --page-bg:         oklch(0.97 0.02 91.6);    /* Vanilla Linen */
+  --page-bg:         oklch(0.9904 0.0107 95.3); /* #fefcf4 warm cream */
   --surface:         oklch(1 0 0);
   --border-color:    oklch(0.89 0.05 84.0);    /* Honey Wheat */
 
@@ -105,7 +105,7 @@
   --whatsapp-dark:   #1da851;
 
   /* Light theme — Olive Grove primary */
-  --background: oklch(0.99 0.01 91.6);         /* near-white warm linen */
+  --background: oklch(0.9904 0.0107 95.3);     /* #fefcf4 warm cream */
   --foreground: oklch(0.22 0.03 122.3);         /* dark olive text */
   --card: oklch(1 0 0);                         /* white */
   --card-foreground: oklch(0.22 0.03 122.3);

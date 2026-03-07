@@ -71,8 +71,8 @@ export const C_WHATSAPP        = "#25D366";
 export const C_WHATSAPP_DARK   = "#1da851";
 
 // ─── Page / surface backgrounds ──────────────────────────────────────────────
-export const C_PAGE_BG         = "oklch(0.99 0.01 91.6)";    // near-white warm linen
-export const C_PAGE_BG_HEX     = "#fdfaf3";
+export const C_PAGE_BG         = "oklch(0.9904 0.0107 95.3)"; // #fefcf4 warm cream
+export const C_PAGE_BG_HEX     = "#fefcf4";
 export const C_SURFACE         = "oklch(1 0 0)";
 export const C_SURFACE_HEX     = "#ffffff";
 

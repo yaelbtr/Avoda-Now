@@ -160,26 +160,52 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 overflow-hidden">
-        {/* Decorative background blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-8 -right-12 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "var(--amber)", filter: "blur(48px)" }} />
-          <div className="absolute top-12 -left-8 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "var(--brand)", filter: "blur(40px)" }} />
+      <section className="relative z-10 overflow-hidden" style={{ minHeight: "420px" }}>
+        {/* Full background image */}
+        <div className="absolute inset-0">
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-sunset_695173a0.jpg"
+            alt=""
+            className="w-full h-full object-cover object-center"
+            aria-hidden="true"
+            style={{ display: "block" }}
+          />
+          {/* Dark overlay — strong enough for white text */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, oklch(0.15 0.04 30 / 0.72) 0%, oklch(0.12 0.03 30 / 0.78) 55%, oklch(0.10 0.02 30 / 0.92) 100%)",
+            }}
+          />
+          {/* Warm amber tint at the top */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(ellipse 100% 50% at 50% 0%, oklch(0.65 0.18 60 / 0.18) 0%, transparent 65%)",
+            }}
+          />
+          {/* Bottom fade into page bg */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+            style={{
+              background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)",
+            }}
+          />
         </div>
 
-        {/* Text content */}
-        <div className="relative z-10 px-6 pt-14 pb-6 text-center max-w-lg mx-auto">
+        {/* Content — all white on dark background */}
+        <div className="relative z-10 px-6 pt-14 pb-12 text-center max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7 shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7"
             style={{
-              background: "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
-              border: "1px solid var(--honey)",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.10)",
+              background: "oklch(1 0 0 / 0.12)",
+              border: "1px solid oklch(1 0 0 / 0.25)",
+              backdropFilter: "blur(8px)",
             }}
           >
-            <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
-            <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)", letterSpacing: "0.08em" }}>
+            <Zap className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
+            <span className="text-[11px] font-extrabold tracking-wide" style={{ color: "oklch(0.95 0.05 80)", letterSpacing: "0.06em" }}>
               הדרך המהירה למצוא עבודה
             </span>
           </motion.div>
@@ -187,15 +213,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-[38px] leading-[1.12] font-black mb-4"
-            style={{ color: "var(--brand)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+            style={{ color: "oklch(0.97 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0 0 0 / 0.4)" }}
           >
             עבודות מזדמנות<br />
             <span
               style={{
-                background: "linear-gradient(135deg, var(--amber) 0%, var(--citrus) 100%)",
+                background: "linear-gradient(135deg, var(--citrus) 0%, oklch(0.82 0.18 75) 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
+                filter: "drop-shadow(0 1px 4px oklch(0 0 0 / 0.3))",
               }}
             >
               מחכות לך עכשיו
@@ -205,7 +232,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
             className="text-[15px] font-medium max-w-[300px] mx-auto leading-relaxed"
-            style={{ color: "var(--text-secondary)" }}
+            style={{ color: "oklch(0.88 0.02 80)", textShadow: "0 1px 4px oklch(0 0 0 / 0.3)" }}
           >
             קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
           </motion.p>
@@ -216,65 +243,20 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="flex items-center justify-center gap-6 mt-8"
           >
             {[
-              { value: "500+", label: "עבודות פעילות" },
+              { value: "+500", label: "עבודות פעילות" },
               { value: "100%", label: "ללא עמלות" },
               { value: "24/7", label: "זמין תמיד" },
-            ].map(({ value, label }) => (
+            ].map(({ value, label }, i) => (
               <div key={label} className="text-center">
-                <div className="text-[22px] font-black leading-none" style={{ color: "var(--brand)" }}>{value}</div>
-                <div className="text-[10px] font-semibold mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
+                {i > 0 && (
+                  <div className="absolute" style={{ display: "none" }} />
+                )}
+                <div className="text-[24px] font-black leading-none" style={{ color: "oklch(0.97 0.01 80)", textShadow: "0 1px 6px oklch(0 0 0 / 0.4)" }}>{value}</div>
+                <div className="text-[10px] font-semibold mt-0.5" style={{ color: "oklch(0.78 0.05 80)" }}>{label}</div>
               </div>
             ))}
           </motion.div>
         </div>
-
-        {/* Hero image card — naturally embedded below the text */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="relative z-10 mx-5 mb-6"
-        >
-          <div
-            className="relative overflow-hidden"
-            style={{
-              borderRadius: "20px",
-              boxShadow: "0 12px 40px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0 0 0 / 0.08)",
-              border: "1px solid oklch(0.89 0.05 84.0)",
-              aspectRatio: "16/7",
-            }}
-          >
-            <img
-              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-construction-workers_7a34271e.jpg"
-              alt="עובדים באתר בנייה"
-              className="w-full h-full object-cover object-center"
-              style={{ display: "block" }}
-            />
-            {/* Subtle bottom gradient fade into page background */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, transparent 0%, oklch(0.93 0.04 91.6 / 0.6) 100%)",
-              }}
-            />
-            {/* Live badge overlay */}
-            <div
-              className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold"
-              style={{
-                background: "oklch(0.22 0.03 122.3 / 0.85)",
-                backdropFilter: "blur(8px)",
-                color: "var(--citrus)",
-                border: "1px solid oklch(1 0 0 / 0.12)",
-              }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: "oklch(0.65 0.22 160)", boxShadow: "0 0 6px oklch(0.65 0.22 160)" }}
-              />
-              משרות פעילות עכשיו
-            </div>
-          </div>
-        </motion.div>
       </section>
 
       {/* ── How it works ─────────────────────────────────────────────────── */}

@@ -160,54 +160,103 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 px-6 pt-14 pb-8 text-center max-w-lg mx-auto">
-        <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 shadow-sm"
-          style={{ background: "var(--brand-light)", border: "1px solid var(--honey)" }}
+      <section className="relative z-10 px-6 pt-14 pb-10 text-center max-w-lg mx-auto">
+        {/* Decorative background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-8 -right-12 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "var(--amber)", filter: "blur(48px)" }} />
+          <div className="absolute top-12 -left-8 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "var(--brand)", filter: "blur(40px)" }} />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7 shadow-sm"
+          style={{
+            background: "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+            border: "1px solid var(--honey)",
+            boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.10)",
+          }}
         >
           <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
-          <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)" }}>
-            הדרך המהירה למצוא עזרה או עבודה
+          <span className="text-[11px] font-extrabold tracking-wide uppercase" style={{ color: "var(--brand)", letterSpacing: "0.08em" }}>
+            הדרך המהירה למצוא עבודה
           </span>
-        </div>
+        </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="text-[36px] leading-[1.15] font-extrabold mb-4"
-          style={{ color: "var(--brand)" }}
+          className="text-[38px] leading-[1.12] font-black mb-4"
+          style={{ color: "var(--brand)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
         >
           עבודות מזדמנות<br />
-          <span style={{ color: "var(--amber)" }}>מחכות לך עכשיו</span>
+          <span
+            style={{
+              background: "linear-gradient(135deg, var(--amber) 0%, var(--citrus) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            מחכות לך עכשיו
+          </span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-base font-semibold max-w-[280px] mx-auto"
-          style={{ color: "var(--foreground)" }}
+          className="text-[15px] font-medium max-w-[300px] mx-auto leading-relaxed"
+          style={{ color: "var(--text-secondary)" }}
         >
           קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
         </motion.p>
+
+        {/* Stats row */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex items-center justify-center gap-6 mt-8"
+        >
+          {[
+            { value: "500+", label: "עבודות פעילות" },
+            { value: "100%", label: "ללא עמלות" },
+            { value: "24/7", label: "זמין תמיד" },
+          ].map(({ value, label }) => (
+            <div key={label} className="text-center">
+              <div className="text-[22px] font-black leading-none" style={{ color: "var(--brand)" }}>{value}</div>
+              <div className="text-[10px] font-semibold mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
+            </div>
+          ))}
+        </motion.div>
       </section>
 
       {/* ── How it works ─────────────────────────────────────────────────── */}
       <section
-        className="relative z-10 mx-6 mb-12 rounded-[32px] p-6 max-w-lg"
-        style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "1px solid var(--honey)" }}
+        className="relative z-10 mx-6 mb-12 rounded-[28px] p-7 max-w-lg"
+        style={{
+          background: "white",
+          boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+          border: "1px solid oklch(0.89 0.05 84.0)",
+        }}
       >
-        <h3 className="text-lg font-black mb-8 flex items-center justify-center gap-2" style={{ color: "var(--brand)" }}>
-          <Star className="h-5 w-5" style={{ color: "var(--amber)" }} />
-          איך זה עובד?
-        </h3>
+        <div className="flex items-center justify-center gap-2 mb-7">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
+            <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+          </div>
+          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד?</h3>
+        </div>
 
-        <div className="space-y-4 mb-10">
-          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }) => (
-            <div
+        <div className="space-y-3 mb-8">
+          {HOW_IT_WORKS.map(({ step, title, desc, imgUrl, reverse }, idx) => (
+            <motion.div
               key={step}
-              className={"flex items-center gap-5 p-4 rounded-3xl overflow-hidden shadow-sm" + (reverse ? " flex-row-reverse" : "")}
-              style={{ backgroundColor: "var(--brand-light)", border: "1.5px solid var(--honey)" }}
+              initial={{ opacity: 0, x: reverse ? -16 : 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.4 }}
+              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
+              style={{
+                background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
+                border: "1px solid oklch(0.89 0.05 84.0)",
+              }}
             >
               <div
-                className="flex-shrink-0 w-28 text-center text-[84px] font-black leading-none select-none"
+                className="flex-shrink-0 w-24 h-20 text-center text-[72px] font-black leading-none select-none flex items-center justify-center"
                 style={{
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
@@ -215,43 +264,58 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   backgroundImage: `url("${imgUrl}")`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  filter: "saturate(1.4) contrast(1.1) brightness(0.9)",
-                  WebkitTextStroke: "1px rgba(255,255,255,0.2)",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.85)",
                 } as React.CSSProperties}
               >
                 {step}
               </div>
               <div className="flex-1 text-right">
-                <h4 className="text-base font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
-                <p className="text-[11px] font-bold leading-relaxed" style={{ color: "var(--foreground)" }}>{desc}</p>
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mb-1.5" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)", color: "var(--amber-dark)" }}>
+                  שלב {idx + 1}
+                </div>
+                <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
+                <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <button
+        <motion.button
           onClick={() => navigate("/find-jobs")}
-          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all active:scale-95 shadow-sm"
-          style={{ background: "white", border: "2.5px solid var(--citrus)", color: "var(--brand)" }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all"
+          style={{
+            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%)",
+            color: "white",
+            boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.35)",
+          }}
         >
           חיפוש עבודה מזדמנת
-          <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
-        </button>
+          <Search className="h-5 w-5" />
+        </motion.button>
       </section>
 
-      {/* ── Availability CTA ─────────────────────────────────────────────── */}
+      {/* ── Availability CTA ─────────────────────────────────────────────────────────── */}
       <section className="px-6 mb-10 max-w-lg mx-auto relative z-10 space-y-4">
         {/* Live status badge */}
         <div className="flex justify-center">
           <div
-            className="px-6 py-2.5 rounded-full flex items-center gap-3 shadow-sm"
-            style={{ background: "var(--brand-light)", border: "1px solid var(--honey)" }}
+            className="px-5 py-2 rounded-full flex items-center gap-2.5 shadow-sm"
+            style={{
+              background: isAvailable
+                ? "oklch(0.65 0.22 160 / 0.10)"
+                : "oklch(0.93 0.03 91.6)",
+              border: isAvailable
+                ? "1px solid oklch(0.65 0.22 160 / 0.30)"
+                : "1px solid oklch(0.87 0.04 84.0)",
+            }}
           >
-            <div className="relative size-3">
+            <div className="relative size-2.5">
               <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.6 }} />
               <div className="relative size-full rounded-full" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8" }} />
             </div>
-            <span className="text-[13px] font-bold leading-none" style={{ color: "var(--brand)" }}>
+            <span className="text-[12px] font-bold leading-none" style={{ color: isAvailable ? "oklch(0.52 0.22 150)" : "var(--text-muted)" }}>
               {isAvailable ? "במצב זמין כרגע" : "לא זמין כרגע"}
             </span>
           </div>
@@ -498,39 +562,66 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         )}
       </section>
 
-      {/* ── Not found CTA ────────────────────────────────────────────────── */}
+      {/* ── Not found CTA ─────────────────────────────────────────────────────────── */}
       <section
         className="px-6 py-12 text-center relative z-10"
-        style={{ backgroundColor: "var(--brand-light)", borderTop: "1px solid var(--honey)" }}
+        style={{
+          background: "linear-gradient(180deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+          borderTop: "1px solid oklch(0.89 0.05 84.0)",
+        }}
       >
         <div className="mb-6 max-w-lg mx-auto">
-          <Search className="h-10 w-10 mx-auto mb-2" style={{ color: "var(--brand)" }} />
-          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
-          <p className="text-xs mt-1 font-bold" style={{ color: "var(--foreground)" }}>
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ background: "white", boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.12)", border: "1px solid oklch(0.89 0.05 84.0)" }}
+          >
+            <Search className="h-7 w-7" style={{ color: "var(--brand)" }} />
+          </div>
+          <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
+          <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
             כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
           </p>
         </div>
-        <button
+        <motion.button
           onClick={() => navigate("/find-jobs")}
-          className="px-8 py-3 rounded-2xl font-black transition-colors active:scale-95 shadow-sm"
-          style={{ border: "2.5px solid var(--brand)", color: "var(--brand)", background: "white" }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
+          className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+          style={{
+            border: "2px solid var(--brand)",
+            color: "var(--brand)",
+            background: "white",
+            boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+          }}
         >
           לחיפוש מתקדם
-        </button>
+        </motion.button>
       </section>
 
-      {/* ── Employer CTA ─────────────────────────────────────────────────── */}
+      {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}
       <section
-        className="px-6 pt-2 pb-16 text-center relative z-10"
-        style={{ backgroundColor: "var(--brand-light)" }}
+        className="px-6 pt-4 pb-16 text-center relative z-10"
+        style={{
+          background: "linear-gradient(180deg, oklch(0.93 0.03 91.6) 0%, oklch(0.96 0.02 122.3) 100%)",
+        }}
       >
-        <button
+        <div
+          className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl cursor-pointer transition-all"
+          style={{
+            background: "white",
+            border: "1.5px solid oklch(0.75 0.12 76.7 / 0.35)",
+            boxShadow: "0 2px 10px oklch(0.75 0.12 76.7 / 0.12)",
+          }}
           onClick={resetUserMode}
-          className="inline-block text-[15px] font-black transition-colors underline underline-offset-4"
-          style={{ color: "var(--amber)" }}
         >
-          מחפשים עובדים? לחצו לפרסום עבודה
-        </button>
+          <span className="text-[15px] font-black" style={{ color: "var(--brand)" }}>מחפשים עובדים?</span>
+          <span
+            className="text-[15px] font-black"
+            style={{ color: "var(--amber)" }}
+          >
+            לחצו לפרסום עבודה →
+          </span>
+        </div>
       </section>
 
       {/* ── Info Dialog ──────────────────────────────────────────────────── */}

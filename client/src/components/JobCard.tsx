@@ -78,11 +78,11 @@ function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
   if (mins < 2) return "פורסם עכשיו";
-  if (mins < 60) return `פורסם לפני ${mins} דקות`;
+  if (mins < 60) return `לפני ${mins} דקות`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `פורסם לפני ${hrs === 1 ? "שעה" : hrs + " שעות"}`;
+  if (hrs < 24) return `לפני ${hrs === 1 ? "שעה" : hrs + " שעות"}`;
   const days = Math.floor(hrs / 24);
-  return `פורסם לפני ${days === 1 ? "יום" : days + " ימים"}`;
+  return `לפני ${days === 1 ? "יום" : days + " ימים"}`;
 }
 
 function expiryCountdown(expiresAt: Date | string | null | undefined): string | null {
@@ -91,8 +91,8 @@ function expiryCountdown(expiresAt: Date | string | null | undefined): string | 
   if (ms <= 0) return "פג תוקף";
   const hrs = Math.floor(ms / 3600000);
   const mins = Math.floor((ms % 3600000) / 60000);
-  if (hrs === 0) return `פג תוקף בעוד ${mins} דקות`;
-  if (hrs < 6) return `פג תוקף בעוד ${hrs} שעות`;
+  if (hrs === 0) return `${mins} דקות נותרו`;
+  if (hrs < 6) return `${hrs} שעות נותרו`;
   return null;
 }
 
@@ -118,22 +118,28 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
 
   return (
     <motion.div
-      whileHover={{ y: -2, boxShadow: "0 8px 30px rgba(60,131,246,0.12)" }}
-      transition={{ duration: 0.2 }}
-      className="rounded-2xl p-4 relative overflow-hidden bg-white border"
-      style={{
-        borderColor: job.isUrgent ? `${C_DANGER_HEX}40` : C_BORDER,
+      whileHover={{
+        y: -3,
         boxShadow: job.isUrgent
-          ? `0 2px 12px ${C_DANGER_HEX}14`
-          : "0 1px 4px rgba(0,0,0,0.06)",
+          ? `0 12px 36px ${C_DANGER_HEX}20, 0 2px 8px ${C_DANGER_HEX}10`
+          : "0 12px 36px oklch(0.38 0.07 125.0 / 0.12), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+        borderColor: job.isUrgent ? `${C_DANGER_HEX}60` : "oklch(0.80 0.06 84.0)",
+      }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl p-4 relative overflow-hidden bg-white"
+      style={{
+        border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
+        boxShadow: job.isUrgent
+          ? `0 2px 12px ${C_DANGER_HEX}12`
+          : "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
       }}
       dir="rtl"
     >
-      {/* Urgent left border accent */}
+      {/* Urgent right border accent */}
       {job.isUrgent && (
         <div
-          className="absolute top-0 right-0 w-1 h-full rounded-r-2xl"
-          style={{ background: G_URGENT }}
+          className="absolute top-0 right-0 w-[3px] h-full rounded-r-2xl"
+          style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)` }}
         />
       )}
 
@@ -142,64 +148,77 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
         <div className="flex items-start gap-3 min-w-0">
           {/* Category icon circle */}
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+            className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
             style={{
               background: job.isUrgent
-                ? `linear-gradient(135deg, ${C_DANGER_HEX}1a 0%, ${C_DANGER_HEX}14 100%)`
-                : `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
-              border: job.isUrgent ? `1px solid ${C_DANGER_HEX}33` : `1px solid ${C_BRAND_HEX}26`,
+                ? `linear-gradient(135deg, ${C_DANGER_HEX}18 0%, ${C_DANGER_HEX}0e 100%)`
+                : "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+              border: job.isUrgent
+                ? `1px solid ${C_DANGER_HEX}30`
+                : "1px solid oklch(0.89 0.05 84.0)",
+              boxShadow: job.isUrgent
+                ? `0 2px 8px ${C_DANGER_HEX}15`
+                : "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
             }}
           >
             {getCategoryIcon(job.category)}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-semibold text-gray-900 text-base leading-tight text-right">
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <h3 className="font-bold text-[15px] leading-tight text-right" style={{ color: "var(--text-primary)" }}>
                 {job.title}
               </h3>
+            </div>
+            {/* Badges row */}
+            <div className="flex flex-wrap gap-1">
               {job.isUrgent && (
-                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-red-100 text-red-700 border border-red-200">
-                  <Zap className="h-3 w-3" />
+                <span
+                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+                  style={{ background: `${C_DANGER_HEX}15`, color: C_DANGER_HEX, border: `1px solid ${C_DANGER_HEX}30` }}
+                >
+                  <Zap className="h-2.5 w-2.5" />
                   דחוף
                 </span>
               )}
               {isToday && !job.isUrgent && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-orange-100 text-orange-700 border border-orange-200">
-                  <Flame className="h-3 w-3" />
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-orange-50 text-orange-600 border border-orange-200">
+                  <Flame className="h-2.5 w-2.5" />
                   להיום
                 </span>
               )}
               {isWartime && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-purple-100 text-purple-700 border border-purple-200">
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-purple-50 text-purple-600 border border-purple-200">
                   🆘 חירום
                 </span>
               )}
               {isSeasonal && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-amber-100 text-amber-700 border border-amber-200">
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-amber-50 text-amber-600 border border-amber-200">
                   🫓 פסח
                 </span>
               )}
               {job.isLocalBusiness && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-blue-100 text-blue-700 border border-blue-200">
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-blue-50 text-blue-600 border border-blue-200">
                   🏢 עסק מקומי
                 </span>
               )}
               {isVolunteer && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 bg-green-100 text-green-700 border border-green-200">
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-green-50 text-green-600 border border-green-200">
                   💚 התנדבות
                 </span>
               )}
             </div>
             {job.businessName && (
-              <p className="text-xs text-gray-400 truncate mt-0.5 text-right">{job.businessName}</p>
+              <p className="text-[11px] truncate mt-1 text-right" style={{ color: "var(--text-muted)" }}>{job.businessName}</p>
             )}
           </div>
         </div>
         {/* Salary */}
         <div className="shrink-0 text-left">
           <span
-            className="text-sm font-bold whitespace-nowrap"
-            style={{ color: isVolunteer ? C_SUCCESS_HEX : C_BRAND_HEX }}
+            className="text-sm font-black whitespace-nowrap"
+            style={{
+              color: isVolunteer ? C_SUCCESS_HEX : C_BRAND_HEX,
+            }}
           >
             {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
           </span>
@@ -207,38 +226,50 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
       </div>
 
       {/* Meta row */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-gray-500 mb-2">
-        <span className="flex items-center gap-1 font-medium text-gray-700">
-          <MapPin className="h-3 w-3 text-blue-500 shrink-0" />
+      <div
+        className="flex flex-wrap gap-x-3 gap-y-1 text-xs mb-2 pb-2"
+        style={{ borderBottom: "1px solid oklch(0.93 0.03 91.6)" }}
+      >
+        <span className="flex items-center gap-1 font-semibold" style={{ color: "var(--text-secondary)" }}>
+          <MapPin className="h-3 w-3 shrink-0" style={{ color: C_BRAND_HEX }} />
           {cityDisplay}
           {showDistance && job.distance !== undefined && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold mr-0.5 bg-blue-50 text-blue-600 border border-blue-100">
+            <span
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold mr-0.5"
+              style={{ background: `${C_BRAND_HEX}12`, color: C_BRAND_HEX, border: `1px solid ${C_BRAND_HEX}25` }}
+            >
               📍 {formatDistance(job.distance)} ממך
             </span>
           )}
         </span>
-        <span className="px-1.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
+        <span
+          className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+          style={{ background: "oklch(0.93 0.03 91.6)", color: "var(--text-secondary)" }}
+        >
           {getCategoryLabel(job.category)}
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
           <Clock className="h-3 w-3 shrink-0" />
           {getStartTimeLabel(job.startTime)}
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
           <Users className="h-3 w-3 shrink-0" />
           {job.workersNeeded} עובדים
         </span>
       </div>
 
       {/* Time info row */}
-      <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
+      <div className="flex items-center justify-between text-[11px] mb-3" style={{ color: "var(--text-faint)" }}>
         <span>{relativeTime(job.createdAt)}</span>
         {countdown && (
           <span
-            className="flex items-center gap-1 font-medium"
-            style={{ color: countdown === "פג תוקף" ? C_DANGER_HEX : "#f97316" }}
+            className="flex items-center gap-1 font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              color: countdown === "פג תוקף" ? C_DANGER_HEX : "#f97316",
+              background: countdown === "פג תוקף" ? `${C_DANGER_HEX}12` : "oklch(0.78 0.17 65 / 0.10)",
+            }}
           >
-            <Timer className="h-3 w-3 shrink-0" />
+            <Timer className="h-2.5 w-2.5 shrink-0" />
             {countdown}
           </span>
         )}
@@ -252,7 +283,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
               <AppButton
                 variant="whatsapp"
                 size="sm"
-                className="gap-1.5 text-xs w-full"
+                className="gap-1.5 text-xs w-full font-bold"
                 onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
               >
                 <WhatsAppIcon />
@@ -263,7 +294,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
               <AppButton
                 variant="secondary"
                 size="sm"
-                className="gap-1.5 text-xs w-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+                className="gap-1.5 text-xs w-full font-bold"
                 onClick={() => callPhone(job.contactPhone!)}
               >
                 <Phone className="h-3.5 w-3.5 shrink-0" />
@@ -272,36 +303,44 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
             </motion.div>
           </>
         ) : (
-          <AppButton
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs flex-1 min-w-0 border-dashed border-gray-300 text-gray-400 hover:border-blue-300 hover:text-blue-600"
-            onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-          >
-            <Lock className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">התחבר לראות טלפון</span>
-          </AppButton>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1 min-w-0">
+            <AppButton
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs flex-1 min-w-0 w-full font-semibold"
+              style={{ borderStyle: "dashed", color: "var(--text-muted)" }}
+              onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+            >
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">התחבר לראות טלפון</span>
+            </AppButton>
+          </motion.div>
         )}
 
-        <AppButton
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0 text-gray-400 hover:text-green-600 hover:bg-green-50"
-          onClick={() => shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType)}
-          title="שתף ב-WhatsApp"
-        >
-          <Share2 className="h-3.5 w-3.5" />
-        </AppButton>
+        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+          <AppButton
+            variant="ghost"
+            size="icon-sm"
+            className="shrink-0"
+            style={{ color: "var(--text-muted)" }}
+            onClick={() => shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType)}
+            title="שתף ב-WhatsApp"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </AppButton>
+        </motion.div>
 
         <Link href={`/job/${job.id}`}>
-          <AppButton
-            variant="secondary"
-            size="sm"
-            className="gap-1 text-xs hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-          >
-            <ChevronLeft className="h-3 w-3" />
-            פרטים
-          </AppButton>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+            <AppButton
+              variant="secondary"
+              size="sm"
+              className="gap-1 text-xs font-bold"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              פרטים
+            </AppButton>
+          </motion.div>
         </Link>
       </div>
     </motion.div>

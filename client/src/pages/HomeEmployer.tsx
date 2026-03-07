@@ -85,35 +85,47 @@ export default function HomeEmployer() {
     <div dir="rtl" className="min-h-screen" style={{ background: C_PAGE_BG_HEX }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-white border-b border-gray-100">
-        {/* Subtle warm gradient accent */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, rgba(251,146,60,0.06) 0%, rgba(60,131,246,0.04) 60%, transparent 100%)",
-          }}
-        />
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(160deg, oklch(0.22 0.07 125.0) 0%, oklch(0.32 0.07 115) 50%, oklch(0.26 0.06 130) 100%)",
+        }}
+      >
+        {/* Animated background blobs */}
         <motion.div
           animate={{ x: [0, 20, 0], y: [0, -12, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-20 -left-20 w-72 h-72 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, oklch(0.75 0.12 76.7 / 0.15) 0%, transparent 70%)" }}
         />
         <motion.div
           animate={{ x: [0, -15, 0], y: [0, 20, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(60,131,246,0.07) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, oklch(0.65 0.22 160 / 0.12) 0%, transparent 70%)" }}
+        />
+        {/* Subtle grid texture */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
         />
 
-        <div className="relative max-w-2xl mx-auto px-4 py-8 text-center">
+        <div className="relative max-w-2xl mx-auto px-4 py-10 text-center">
           {/* Top pill badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold text-orange-700 mb-5"
-            style={{ background: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.2)" }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold mb-5"
+            style={{
+              background: "oklch(0.75 0.12 76.7 / 0.18)",
+              border: "1px solid oklch(0.75 0.12 76.7 / 0.35)",
+              color: "oklch(0.88 0.14 75)",
+              letterSpacing: "0.04em",
+            }}
           >
             <Sparkles className="h-3.5 w-3.5" />
             מצב מעסיק — מחפש עובדים
@@ -123,18 +135,25 @@ export default function HomeEmployer() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="text-3xl sm:text-4xl font-extrabold leading-tight mb-3 text-gray-900"
+            className="text-[32px] sm:text-[40px] font-black leading-tight mb-3"
+            style={{
+              color: "white",
+              fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
+              textShadow: "0 2px 12px oklch(0 0 0 / 0.3)",
+              letterSpacing: "-0.02em",
+            }}
           >
             מצא עובד תוך דקות
             <br />
-            <span className="text-blue-600">– פרסם עכשיו</span>
+            <span style={{ color: "var(--citrus)", textShadow: "0 0 20px oklch(0.82 0.15 80.8 / 0.4)" }}>– פרסם עכשיו</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-base text-gray-500 mb-7 max-w-md mx-auto"
+            className="text-[14px] mb-7 max-w-md mx-auto"
+            style={{ color: "oklch(1 0 0 / 0.65)" }}
           >
             פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
           </motion.p>
@@ -145,35 +164,40 @@ export default function HomeEmployer() {
             transition={{ delay: 0.25, duration: 0.5 }}
             className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto mb-5"
           >
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <AppButton
-                variant="brand"
-                size="xl"
-                className="w-full relative overflow-hidden"
-                onClick={handlePostJob}
-              >
-                {/* Shimmer */}
-                <motion.div
-                  className="absolute inset-0 -skew-x-12 pointer-events-none"
-                  style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)" }}
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-                />
-                <Zap className="h-5 w-5 relative z-10" />
-                <span className="relative z-10">פרסם עבודה דחופה</span>
-              </AppButton>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
-              <AppButton
-                variant="secondary"
-                size="xl"
-                className="w-full"
-                onClick={() => navigate("/available-workers")}
-              >
-                <Users className="h-5 w-5 text-green-600" />
-                עובדים זמינים
-              </AppButton>
-            </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-[14px] relative overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
+                color: "oklch(0.22 0.03 122.3)",
+                boxShadow: "0 6px 20px oklch(0.82 0.15 80.8 / 0.40)",
+              }}
+              onClick={handlePostJob}
+            >
+              <motion.div
+                className="absolute inset-0 -skew-x-12 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.2) 50%, transparent 100%)" }}
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+              />
+              <Zap className="h-5 w-5 relative z-10" />
+              <span className="relative z-10">פרסם עבודה דחופה</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-[14px]"
+              style={{
+                background: "oklch(1 0 0 / 0.10)",
+                border: "1px solid oklch(1 0 0 / 0.20)",
+                color: "oklch(1 0 0 / 0.85)",
+              }}
+              onClick={() => navigate("/available-workers")}
+            >
+              <Users className="h-5 w-5" />
+              עובדים זמינים
+            </motion.button>
           </motion.div>
 
           <motion.button
@@ -184,9 +208,12 @@ export default function HomeEmployer() {
               const message = encodeURIComponent(`שלום, אני רוצה לפרסם עבודה:\n\nשם העסק:\nסוג העבודה:\nמיקום:\nשכר:\nטלפון ליצירת קשר:`);
               window.open(`https://wa.me/?text=${message}`, "_blank");
             }}
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-green-600 text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-medium transition-colors"
+            style={{ color: "oklch(1 0 0 / 0.40)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "oklch(0.65 0.22 160)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "oklch(1 0 0 / 0.40)")}
           >
-            <MessageCircle className="h-3.5 w-3.5 text-green-500" />
+            <MessageCircle className="h-3.5 w-3.5" style={{ color: "oklch(0.65 0.22 160)" }} />
             פרסם עבודה דרך WhatsApp
           </motion.button>
         </div>
@@ -203,10 +230,25 @@ export default function HomeEmployer() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-2xl mx-auto px-4 pt-6"
         >
-          <div className="rounded-2xl p-5 bg-white shadow-sm border border-gray-100">
+          <div
+            className="rounded-2xl p-5 shadow-sm"
+            style={{
+              background: "white",
+              border: "1px solid oklch(0.89 0.05 84.0)",
+              boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.06)",
+            }}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-blue-500" />
+              <h2
+                className="text-[17px] font-black flex items-center gap-2"
+                style={{ color: "oklch(0.22 0.03 122.3)" }}
+              >
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: "oklch(0.38 0.07 125.0 / 0.10)", border: "1px solid oklch(0.38 0.07 125.0 / 0.18)" }}
+                >
+                  <Briefcase className="h-3.5 w-3.5" style={{ color: "oklch(0.38 0.07 125.0)" }} />
+                </div>
                 המשרות שלי
               </h2>
               <AppButton
@@ -244,7 +286,13 @@ export default function HomeEmployer() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.08, duration: 0.3 }}
-                    className="rounded-xl p-3 flex items-center gap-3 border border-gray-100 hover:border-blue-200 transition-all" style={{ background: C_PAGE_BG_HEX }}
+                    className="rounded-xl p-3 flex items-center gap-3 transition-all"
+                    style={{
+                      background: "oklch(0.9904 0.0107 95.3)",
+                      border: "1px solid oklch(0.89 0.05 84.0)",
+                    }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "oklch(0.75 0.07 125.0)")}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "oklch(0.89 0.05 84.0)")}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-800 truncate">{job.title}</p>
@@ -312,10 +360,25 @@ export default function HomeEmployer() {
         transition={{ delay: 0.3, duration: 0.5 }}
         className="max-w-2xl mx-auto px-4 pt-4"
       >
-        <div className="rounded-2xl p-5 bg-white shadow-sm border border-gray-100">
+          <div
+            className="rounded-2xl p-5 shadow-sm"
+            style={{
+              background: "white",
+              border: "1px solid oklch(0.89 0.05 84.0)",
+              boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.06)",
+            }}
+          >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-600" />
+            <h2
+              className="text-[17px] font-black flex items-center gap-2"
+              style={{ color: "oklch(0.22 0.03 122.3)" }}
+            >
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: "oklch(0.65 0.22 160 / 0.10)", border: "1px solid oklch(0.65 0.22 160 / 0.18)" }}
+              >
+                <Users className="h-3.5 w-3.5" style={{ color: "oklch(0.55 0.22 160)" }} />
+              </div>
               עובדים זמינים עכשיו
             </h2>
               <AppButton
@@ -397,10 +460,20 @@ export default function HomeEmployer() {
         </div>
       </motion.section>
 
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-gray-100 mt-6">
+      {/* ── How it works ─────────────────────────────────────────────────────────── */}
+      <section
+        className="mt-6"
+        style={{
+          background: "linear-gradient(180deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+          borderTop: "1px solid oklch(0.89 0.05 84.0)",
+          borderBottom: "1px solid oklch(0.89 0.05 84.0)",
+        }}
+      >
         <div className="max-w-2xl mx-auto px-4 py-10">
-          <h2 className="text-xl font-bold text-gray-900 mb-8 text-center">איך מפרסמים משרה?</h2>
+          <h2
+            className="text-[20px] font-black mb-8 text-center"
+            style={{ color: "oklch(0.22 0.03 122.3)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+          >איך מפרסמים משרה?</h2>
           <div className="grid grid-cols-3 gap-4">
             {HOW_IT_WORKS_EMPLOYER.map(({ icon: Icon, step, title, desc }, i) => (
               <motion.div
@@ -417,7 +490,7 @@ export default function HomeEmployer() {
                     border: "1px solid rgba(251,146,60,0.2)",
                   }}
                 >
-                  <Icon className="h-6 w-6 text-orange-500" />
+                  <Icon className="h-6 w-6" style={{ color: "oklch(0.38 0.07 125.0)" }} />
                   <span
                     className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
                     style={{ background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)` }}
@@ -425,61 +498,91 @@ export default function HomeEmployer() {
                     {step}
                   </span>
                 </div>
-                <h3 className="font-bold text-sm text-gray-900 mb-1">{title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+                <h3
+                  className="font-bold text-sm mb-1"
+                  style={{ color: "oklch(0.22 0.03 122.3)" }}
+                >{title}</h3>
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: "oklch(0.52 0.03 100)" }}
+                >{desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-
-      {/* ── Quick post CTA ───────────────────────────────────────────────── */}
+      {/* ── Quick post CTA ─────────────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 py-10 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="rounded-2xl p-8 bg-white shadow-sm border border-gray-100"
+          className="rounded-2xl p-8 relative overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(60,131,246,0.04) 0%, white 100%)",
+            background: "linear-gradient(135deg, oklch(0.22 0.07 125.0) 0%, oklch(0.32 0.07 115) 100%)",
+            boxShadow: "0 8px 32px oklch(0.38 0.07 125.0 / 0.25)",
           }}
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">צריך עובד עכשיו?</h2>
-          <p className="text-gray-500 mb-6 text-sm">פרסם משרה דחופה ומצא עובדים תוך דקות — ללא עמלות</p>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <AppButton
-              variant="brand"
-              size="xl"
-              className="gap-2 px-8 relative overflow-hidden"
-              onClick={handlePostJob}
-            >
-              <motion.div
-                className="absolute inset-0 -skew-x-12 pointer-events-none"
-                style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)" }}
-                animate={{ x: ["-100%", "200%"] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
-              />
-              <Zap className="h-5 w-5 relative z-10" />
-              <span className="relative z-10">פרסם עבודה דחופה</span>
-            </AppButton>
-          </motion.div>
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: "radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
+          <h2
+            className="text-[22px] font-black mb-2 relative z-10"
+            style={{
+              color: "white",
+              fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
+              textShadow: "0 2px 8px oklch(0 0 0 / 0.25)",
+            }}
+          >צריך עובד עכשיו?</h2>
+          <p
+            className="mb-6 text-sm relative z-10"
+            style={{ color: "oklch(1 0 0 / 0.60)" }}
+          >פרסם משרה דחופה ומצא עובדים תוך דקות — ללא עמלות</p>
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-black text-[15px] relative overflow-hidden z-10"
+            style={{
+              background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
+              color: "oklch(0.22 0.03 122.3)",
+              boxShadow: "0 6px 20px oklch(0.82 0.15 80.8 / 0.45)",
+            }}
+            onClick={handlePostJob}
+          >
+            <motion.div
+              className="absolute inset-0 -skew-x-12 pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.2) 50%, transparent 100%)" }}
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
+            />
+            <Zap className="h-5 w-5 relative z-10" />
+            <span className="relative z-10">פרסם עבודה דחופה</span>
+          </motion.button>
         </motion.div>
       </section>
 
-      {/* ── Switch role ─────────────────────────────────────────────────── */}
+      {/* ── Switch role ─────────────────────────────────────────────────────────── */}
       <section className="max-w-2xl mx-auto px-4 pb-8 text-center">
-        <p className="text-sm text-gray-400 mb-2">גם מחפש עבודה? עבור למצב עובד</p>
-        <AppButton
-          variant="secondary"
-          size="sm"
+        <p className="text-sm mb-3" style={{ color: "oklch(0.58 0.02 100)" }}>גם מחפש עבודה? עבור למצב עובד</p>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={resetUserMode}
-          className="gap-2 text-gray-500"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: "white",
+            border: "1px solid oklch(0.89 0.05 84.0)",
+            color: "oklch(0.40 0.03 122.3)",
+            boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+          }}
         >
           🔄 שנה תפקיד
-        </AppButton>
-      </section>
-
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+        </motion.button>
+      </section>   <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
     </div>
   );
 }

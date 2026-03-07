@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Inter', 'Heebo', sans-serif;
+  --font-sans: 'Heebo', sans-serif;
+  --font-display: 'Frank Ruhl Libre', 'Heebo', serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -44,7 +45,7 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
   /* ── AvodaNow Brand Palette ────────────────────────────────────────────────
    * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
@@ -95,7 +96,6 @@
   --danger-light:    oklch(0.65 0.22 25 / 0.12);
 
   /* Page / surface */
-  --page-bg:         oklch(0.9904 0.0107 95.3); /* #fefcf4 warm cream */
   --surface:         oklch(1 0 0);
   --border-color:    oklch(0.89 0.05 84.0);    /* Honey Wheat */
 
@@ -181,13 +181,20 @@
   }
   html {
     direction: rtl;
-    font-family: 'Inter', 'Heebo', sans-serif;
+    font-family: 'Heebo', sans-serif;
     text-align: right;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground font-sans;
     direction: rtl;
     text-align: right;
+  }
+  h1, h2 {
+    font-family: 'Frank Ruhl Libre', 'Heebo', serif;
+    font-weight: 700;
   }
   /* Ensure all inputs respect RTL */
   input:not([dir="ltr"]),
@@ -234,15 +241,16 @@
   .btn-whatsapp:hover {
     background-color: #1da851;
   }
+
   /* ── Hero gradients ── */
   .hero-gradient {
     background: linear-gradient(135deg, oklch(0.30 0.07 125.0) 0%, oklch(0.20 0.07 125.0) 100%);
   }
   .hero-gradient-worker {
-    background: linear-gradient(135deg, oklch(0.22 0.07 125.0) 0%, oklch(0.32 0.07 115) 50%, oklch(0.26 0.06 130) 100%);
+    background: linear-gradient(160deg, oklch(0.22 0.07 125.0) 0%, oklch(0.32 0.07 115) 50%, oklch(0.26 0.06 130) 100%);
   }
   .hero-gradient-employer {
-    background: linear-gradient(135deg, oklch(0.28 0.07 125.0) 0%, oklch(0.38 0.07 125.0) 50%, oklch(0.22 0.06 125.0) 100%);
+    background: linear-gradient(160deg, oklch(0.28 0.07 125.0) 0%, oklch(0.38 0.07 125.0) 50%, oklch(0.22 0.06 125.0) 100%);
   }
 
   /* ── Glassmorphism ── */
@@ -268,11 +276,32 @@
 
   /* ── Card hover ── */
   .card-hover {
-    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
+    transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease;
   }
   .card-hover:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 16px 40px oklch(0.38 0.07 125.0 / 0.22);
+    transform: translateY(-5px) scale(1.015);
+    box-shadow: 0 20px 48px oklch(0.38 0.07 125.0 / 0.18), 0 4px 12px oklch(0.38 0.07 125.0 / 0.10);
+  }
+
+  /* ── Premium card ── */
+  .card-premium {
+    background: white;
+    border: 1px solid oklch(0.89 0.05 84.0);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px oklch(0.38 0.07 125.0 / 0.06);
+    transition: box-shadow 0.28s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s ease;
+  }
+  .card-premium:hover {
+    box-shadow: 0 12px 40px oklch(0.38 0.07 125.0 / 0.14), 0 2px 8px oklch(0.38 0.07 125.0 / 0.08);
+    transform: translateY(-3px);
+    border-color: oklch(0.80 0.06 84.0);
+  }
+
+  /* ── Section divider ── */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, oklch(0.89 0.05 84.0) 30%, oklch(0.89 0.05 84.0) 70%, transparent 100%);
+    margin: 0 1.5rem;
   }
 
   /* ── Glow effects ── */
@@ -293,8 +322,8 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .gradient-text-blue {
-    background: linear-gradient(135deg, oklch(0.44 0.05 122.3) 0%, oklch(0.55 0.05 122.3) 100%);
+  .gradient-text-olive {
+    background: linear-gradient(135deg, oklch(0.38 0.07 125.0) 0%, oklch(0.50 0.07 125.0) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -309,6 +338,19 @@
   /* ── Category badge ── */
   .badge-category {
     @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* ── Premium badge ── */
+  .badge-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-family: 'Heebo', sans-serif;
   }
 
   /* ── Pulse dot ── */
@@ -328,14 +370,71 @@
 
   /* ── Shimmer loading ── */
   .shimmer {
-    background: linear-gradient(90deg, oklch(1 0 0 / 0%) 0%, oklch(1 0 0 / 8%) 50%, oklch(1 0 0 / 0%) 100%);
+    background: linear-gradient(90deg, oklch(0.93 0.03 91.6) 0%, oklch(0.97 0.02 91.6) 50%, oklch(0.93 0.03 91.6) 100%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer 1.6s ease-in-out infinite;
   }
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
+
+  /* ── Animated underline ── */
+  .animated-underline {
+    position: relative;
+  }
+  .animated-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    width: 0;
+    height: 2px;
+    background: var(--citrus);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+  .animated-underline:hover::after {
+    width: 100%;
+  }
+
+  /* ── Text balance ── */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* ── Scroll snap ── */
+  .snap-x-mandatory {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  /* ── Floating action button ── */
+  .fab {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 50;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px oklch(0.38 0.07 125.0 / 0.4);
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+  }
+  .fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 32px oklch(0.38 0.07 125.0 / 0.5);
+  }
+  .fab:active {
+    transform: scale(0.95);
+  }
+
   /**
    * Custom container utility that centers content and adds responsive padding.
    */

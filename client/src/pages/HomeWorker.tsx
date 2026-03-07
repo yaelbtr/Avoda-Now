@@ -499,98 +499,106 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </motion.button>
       </section>
 
-      {/* ── Availability CTA ─────────────────────────────────────────────────────────── */}
-      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10 space-y-4">
-        {/* Live status badge */}
-        <div className="flex justify-center">
-          <div
-            className="px-5 py-2 rounded-full flex items-center gap-2.5 shadow-sm"
-            style={{
-              background: isAvailable
-                ? "oklch(0.65 0.22 160 / 0.10)"
-                : "oklch(0.93 0.03 91.6)",
-              border: isAvailable
-                ? "1px solid oklch(0.65 0.22 160 / 0.30)"
-                : "1px solid oklch(0.87 0.04 84.0)",
-            }}
-          >
-            <div className="relative size-2.5">
-              <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.6 }} />
+      {/* ── Availability + Location ─────────────────────────────────────────────── */}
+      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10" dir="rtl">
+
+        {/* Availability row */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[13px] font-bold" style={{ color: "oklch(0.42 0.04 122)" }}>זמינות לעבודה</span>
+          <div className="flex items-center gap-2">
+            <div className="relative size-2">
+              <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.5 }} />
               <div className="relative size-full rounded-full" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8" }} />
             </div>
-            <span className="text-[12px] font-bold leading-none" style={{ color: isAvailable ? "oklch(0.52 0.22 150)" : "var(--text-muted)" }}>
-              {isAvailable ? "במצב זמין כרגע" : "לא זמין כרגע"}
+            <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
+              {isAvailable ? "זמין כרגע" : "לא זמין"}
             </span>
           </div>
         </div>
 
-        {/* Availability card button */}
         <motion.button
           onClick={handleAvailabilityToggle}
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.985 }}
+          whileHover={{ boxShadow: isAvailable
+            ? "0 6px 20px oklch(0.45 0.18 150 / 0.25)"
+            : "0 6px 20px oklch(0.35 0.08 122 / 0.25)"
+          }}
           disabled={availabilityLoading}
-          className="w-full rounded-3xl p-7 relative overflow-hidden flex items-center gap-5 text-right transition-transform"
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 transition-all mb-3"
           style={{
-            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%)",
-            boxShadow: "0 8px 24px oklch(0.38 0.07 125.0 / 0.40)",
+            background: isAvailable
+              ? "linear-gradient(135deg, oklch(0.42 0.18 150) 0%, oklch(0.36 0.16 155) 100%)"
+              : "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+            boxShadow: isAvailable
+              ? "0 4px 16px oklch(0.42 0.18 150 / 0.30)"
+              : "0 4px 16px oklch(0.28 0.06 122 / 0.25)",
           }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-12 -mt-12" style={{ background: "rgba(255,255,255,0.10)", filter: "blur(32px)" }} />
-          <div className="size-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.20)", border: "1px solid rgba(255,255,255,0.20)" }}>
-            <MapPin className="h-7 w-7 text-white" />
+          <div
+            className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.18)" }}
+          >
+            {isAvailable
+              ? <MapPin className="h-5 w-5 text-white" />
+              : <MapPin className="h-5 w-5 text-white/80" />
+            }
           </div>
-          <div className="relative z-10 flex-1">
-            <h2 className="text-xl font-black tracking-tight mb-1 text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
-              זמינות לעבודה עכשיו
-            </h2>
-            <p className="text-[13px] text-white font-semibold leading-snug" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
-              הצטרפו לתוצאות החיפוש של עבודה בזמינות מיידית
+          <div className="flex-1 text-right">
+            <p className="text-[15px] font-black text-white leading-tight">
+              {isAvailable ? "סמן עצמך כלא זמין" : "סמן עצמך כזמין"}
+            </p>
+            <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
+              {isAvailable ? "הסר אותך מרשימת הזמינים" : "הופע בחיפושי מעסיקים באזורך"}
             </p>
           </div>
-          <ChevronLeft className="h-5 w-5 text-white/90 rotate-180" />
+          {availabilityLoading
+            ? <div className="size-5 rounded-full border-2 border-white/40 border-t-white animate-spin flex-shrink-0" />
+            : <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
+          }
         </motion.button>
 
-        {/* Profile link */}
-        {isAuthenticated && (
-          <div className="flex justify-center">
+        {/* Location + Profile row */}
+        <div className="flex gap-2.5">
+          <button
+            onClick={requestGeo}
+            className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
+            style={{
+              background: userLat ? "oklch(0.96 0.02 122.3)" : "white",
+              border: userLat ? "1px solid oklch(0.82 0.06 122 / 0.5)" : "1px solid oklch(0.91 0.03 91.6)",
+            }}
+          >
+            <div
+              className="size-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: userLat ? "oklch(0.35 0.08 122 / 0.12)" : "oklch(0.93 0.03 91.6)" }}
+            >
+              <MapPin className="h-4 w-4" style={{ color: userLat ? "oklch(0.35 0.08 122)" : "oklch(0.55 0.04 91)" }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-black" style={{ color: userLat ? "oklch(0.35 0.08 122)" : "oklch(0.35 0.04 91)" }}>
+                {userLat ? "מיקום פעיל ✓" : "זהה מיקום"}
+              </p>
+              <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>עבודות בסביבה</p>
+            </div>
+          </button>
+
+          {isAuthenticated && (
             <button
               onClick={() => navigate("/worker-profile")}
-              className="flex items-center gap-1 text-sm font-black hover:underline transition-colors"
-              style={{ color: "var(--amber)" }}
+              className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
+              style={{
+                background: "white",
+                border: "1px solid oklch(0.91 0.03 91.6)",
+              }}
             >
-              כאן מעדכנים תחומי עניין לקבלת התראות מותאמות אישית
-              <ArrowLeft className="h-4 w-4" />
+              <div className="size-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.93 0.04 84.0)" }}>
+                <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+              </div>
+              <div>
+                <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>העדפות</p>
+                <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>התאמה אישית</p>
+              </div>
             </button>
-          </div>
-        )}
-      </section>
-
-      {/* ── Location row ─────────────────────────────────────────────────── */}
-      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10">
-        <div className="flex gap-3">
-          <button
-            onClick={requestGeo}
-            className="flex-[3] bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm transition-colors text-right"
-            style={{ border: "1px solid var(--border)" }}
-          >
-            <div className="size-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--honey)" }}>
-              <MapPin className="h-5 w-5" style={{ color: "var(--brand)" }} />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-black" style={{ color: "var(--brand)" }}>
-                {userLat ? "מיקום עודכן ✓" : "עדכון מיקום"}
-              </h4>
-              <p className="text-[10px] font-bold" style={{ color: "var(--muted-foreground)" }}>חיפוש עבודות בסביבה</p>
-            </div>
-          </button>
-          <button
-            onClick={requestGeo}
-            className="flex-1 bg-white rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm transition-all"
-            style={{ border: "1.5px dashed var(--border)" }}
-          >
-            <Search className="h-5 w-5" style={{ color: "var(--amber)" }} />
-            <span className="text-[10px] font-black" style={{ color: "var(--amber)" }}>זיהוי מיקום</span>
-          </button>
+          )}
         </div>
       </section>
 

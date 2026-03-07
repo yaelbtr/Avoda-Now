@@ -293,14 +293,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             style={{ color: "oklch(0.18 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 0 oklch(1 0 0 / 0.6)" }}
           >
             עבודות מזדמנות<br />
-            <span
-              style={{
-                background: "linear-gradient(135deg, oklch(0.62 0.16 75) 0%, oklch(0.52 0.14 80) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <span style={{ color: "oklch(0.78 0.18 78)" }}>
               מחכות לך עכשיו
             </span>
           </motion.h1>

@@ -60,31 +60,33 @@ function StatsRow() {
       }}
     >
       {statsData.map(({ display, label, Icon }, i) => (
-        <div key={label} className="relative text-center flex-1 flex flex-col items-center gap-0.5 py-1">
+        <React.Fragment key={label}>
           {i > 0 && (
             <div
-              className="absolute top-1/2 -translate-y-1/2"
+              key={`divider-${i}`}
               style={{
-                left: "0",
                 width: "1px",
                 height: "44px",
+                flexShrink: 0,
                 background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",
               }}
             />
           )}
-          <Icon
-            size={15}
-            style={{ color: "rgba(255,255,200,0.75)", filter: "drop-shadow(0 1px 3px oklch(0 0 0 / 0.5))" }}
-          />
-          <div
-            className="text-[20px] font-black leading-none tabular-nums"
-            style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
-          >{display}</div>
-          <div
-            className="text-[10px] font-semibold"
-            style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
-          >{label}</div>
-        </div>
+          <div key={label} className="text-center flex-1 flex flex-col items-center gap-0.5 py-1">
+            <Icon
+              size={15}
+              style={{ color: "rgba(255,255,200,0.75)", filter: "drop-shadow(0 1px 3px oklch(0 0 0 / 0.5))" }}
+            />
+            <div
+              className="text-[20px] font-black leading-none tabular-nums"
+              style={{ color: "#ffffff", textShadow: "0 1px 8px oklch(0 0 0 / 0.6)" }}
+            >{display}</div>
+            <div
+              className="text-[10px] font-semibold"
+              style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 4px oklch(0 0 0 / 0.5)" }}
+            >{label}</div>
+          </div>
+        </React.Fragment>
       ))}
     </motion.div>
   );

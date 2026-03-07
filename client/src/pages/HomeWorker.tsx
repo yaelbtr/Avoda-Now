@@ -236,28 +236,29 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 overflow-hidden" style={{ minHeight: "420px" }}>
+      <section className="relative z-10 overflow-hidden" style={{ minHeight: "480px" }}>
         {/* Full background image */}
         <div className="absolute inset-0">
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_8b541c43.png"
             alt=""
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover"
             aria-hidden="true"
-            style={{ display: "block" }}
+            style={{ display: "block", objectPosition: "70% center" }}
           />
-          {/* Very light cream overlay — preserves the natural image colors */}
+          {/* Cream overlay — stronger on right (text area in RTL) fading to transparent on left (woman side) */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(180deg, oklch(0.97 0.02 91 / 0.25) 0%, oklch(0.95 0.03 91 / 0.45) 60%, oklch(0.95 0.03 91.6 / 1) 100%)",
+              background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.92) 0%, oklch(0.95 0.03 91.6 / 0.70) 35%, oklch(0.95 0.03 91.6 / 0.20) 65%, transparent 100%)",
             }}
           />
-          {/* Subtle left-side fade for text readability */}
+          {/* Bottom fade to page bg */}
           <div
-            className="absolute inset-0"
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
-              background: "linear-gradient(to left, transparent 30%, oklch(0.95 0.03 91 / 0.55) 100%)",
+              height: "120px",
+              background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6 / 1) 100%)",
             }}
           />
         </div>

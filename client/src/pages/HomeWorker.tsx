@@ -161,39 +161,21 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative z-10 overflow-hidden">
-        {/* Hero background image with overlay */}
-        <div className="absolute inset-0">
-          <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-city_a4dc5bfe.jpg"
-            alt=""
-            className="w-full h-full object-cover object-center"
-            aria-hidden="true"
-          />
-          {/* Multi-layer overlay for text readability */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(180deg, oklch(0.93 0.04 91.6 / 0.82) 0%, oklch(0.93 0.04 91.6 / 0.90) 60%, oklch(0.93 0.04 91.6 / 0.97) 100%)",
-            }}
-          />
-          {/* Subtle warm tint */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.82 0.15 80.8 / 0.08) 0%, transparent 70%)",
-            }}
-          />
+        {/* Decorative background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-8 -right-12 w-48 h-48 rounded-full opacity-[0.07]" style={{ background: "var(--amber)", filter: "blur(48px)" }} />
+          <div className="absolute top-12 -left-8 w-40 h-40 rounded-full opacity-[0.05]" style={{ background: "var(--brand)", filter: "blur(40px)" }} />
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 px-6 pt-14 pb-10 text-center max-w-lg mx-auto">
+        {/* Text content */}
+        <div className="relative z-10 px-6 pt-14 pb-6 text-center max-w-lg mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7 shadow-sm"
             style={{
               background: "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
               border: "1px solid var(--honey)",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.15)",
+              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.10)",
             }}
           >
             <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
@@ -245,6 +227,54 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             ))}
           </motion.div>
         </div>
+
+        {/* Hero image card — naturally embedded below the text */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="relative z-10 mx-5 mb-6"
+        >
+          <div
+            className="relative overflow-hidden"
+            style={{
+              borderRadius: "20px",
+              boxShadow: "0 12px 40px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0 0 0 / 0.08)",
+              border: "1px solid oklch(0.89 0.05 84.0)",
+              aspectRatio: "16/7",
+            }}
+          >
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-construction-workers_7a34271e.jpg"
+              alt="עובדים באתר בנייה"
+              className="w-full h-full object-cover object-center"
+              style={{ display: "block" }}
+            />
+            {/* Subtle bottom gradient fade into page background */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, transparent 0%, oklch(0.93 0.04 91.6 / 0.6) 100%)",
+              }}
+            />
+            {/* Live badge overlay */}
+            <div
+              className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold"
+              style={{
+                background: "oklch(0.22 0.03 122.3 / 0.85)",
+                backdropFilter: "blur(8px)",
+                color: "var(--citrus)",
+                border: "1px solid oklch(1 0 0 / 0.12)",
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: "oklch(0.65 0.22 160)", boxShadow: "0 0 6px oklch(0.65 0.22 160)" }}
+              />
+              משרות פעילות עכשיו
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* ── How it works ─────────────────────────────────────────────────── */}

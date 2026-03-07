@@ -246,18 +246,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             aria-hidden="true"
             style={{ display: "block", objectPosition: "70% center" }}
           />
-          {/* Top-to-bottom cream fade for text area */}
+          {/* Subtle top fade — keeps text readable, image visible */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(180deg, oklch(0.96 0.02 91 / 0.82) 0%, oklch(0.95 0.03 91 / 0.72) 55%, oklch(0.95 0.03 91 / 0.55) 80%, transparent 100%)",
+              background: "linear-gradient(180deg, oklch(0.96 0.02 91 / 0.55) 0%, oklch(0.95 0.03 91 / 0.35) 45%, transparent 75%)",
             }}
           />
-          {/* Right-side (RTL text area) stronger fade */}
+          {/* Right-side text area gentle fade */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.60) 0%, oklch(0.95 0.03 91.6 / 0.30) 50%, transparent 100%)",
+              background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.45) 0%, oklch(0.95 0.03 91.6 / 0.20) 45%, transparent 100%)",
             }}
           />
           {/* Bottom fade to page bg */}

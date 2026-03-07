@@ -2,10 +2,10 @@ import { Link } from "wouter";
 import { Briefcase, Mail } from "lucide-react";
 
 // Dark footer — matches Navbar header-bg (#2e3c0f)
-const FG_PRIMARY  = "var(--header-fg)";                  // #fefcf4 cream
-const FG_MUTED    = "oklch(0.78 0.03 95.3)";             // warm light grey
-const FG_FAINT    = "oklch(0.62 0.03 95.3)";             // dimmer warm grey
-const ACCENT      = "var(--citrus)";                     // Sun-Kissed Citrus
+const FG_PRIMARY  = "#e8eae5";                          // off-white text
+const FG_MUTED    = "#e8eae5";                          // same off-white for body text
+const FG_FAINT    = "rgba(232,234,229,0.70)";            // dimmer for legal/copyright
+const ACCENT      = "var(--citrus)";                     // Sun-Kissed Citrus — nav & legal links
 const DIVIDER     = "oklch(0.40 0.07 124.9)";            // subtle dark olive line
 
 export default function Footer() {
@@ -51,9 +51,9 @@ export default function Footer() {
                   <Link
                     href={href}
                     className="transition-colors"
-                    style={{ color: FG_MUTED }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
+                    style={{ color: ACCENT }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                   >
                     {label}
                   </Link>
@@ -70,9 +70,9 @@ export default function Footer() {
                 <Link
                   href="/terms"
                   className="transition-colors"
-                  style={{ color: FG_MUTED }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
+                  style={{ color: ACCENT }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                 >
                   תנאי שימוש
                 </Link>
@@ -81,9 +81,9 @@ export default function Footer() {
                 <Link
                   href="/privacy"
                   className="transition-colors"
-                  style={{ color: FG_MUTED }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
+                  style={{ color: ACCENT }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = ACCENT)}
                 >
                   מדיניות פרטיות
                 </Link>

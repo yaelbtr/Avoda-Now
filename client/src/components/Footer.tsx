@@ -1,18 +1,20 @@
 import { Link } from "wouter";
 import { Briefcase, Mail } from "lucide-react";
-import {
-  C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
-  C_PAGE_BG as BG, C_BORDER_OKLCH as BORDER,
-  C_TEXT_PRIMARY as TEXT_PRIMARY, C_TEXT_MUTED as TEXT_MUTED, C_TEXT_FAINT as TEXT_FAINT,
-} from "@/lib/colors";
+
+// Dark footer — matches Navbar header-bg (#2e3c0f)
+const FG_PRIMARY  = "var(--header-fg)";                  // #fefcf4 cream
+const FG_MUTED    = "oklch(0.78 0.03 95.3)";             // warm light grey
+const FG_FAINT    = "oklch(0.62 0.03 95.3)";             // dimmer warm grey
+const ACCENT      = "var(--citrus)";                     // Sun-Kissed Citrus
+const DIVIDER     = "oklch(0.40 0.07 124.9)";            // subtle dark olive line
 
 export default function Footer() {
   return (
     <footer
       dir="rtl"
       style={{
-        background: BG,
-        borderTop: `1px solid ${BORDER}`,
+        background: "var(--footer-bg)",
+        borderTop: `1px solid ${DIVIDER}`,
       }}
     >
       <div className="max-w-2xl mx-auto px-4 py-10">
@@ -22,22 +24,22 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: BLUE_BG }}
+                style={{ background: "oklch(0.40 0.07 124.9)" }}
               >
-                <Briefcase className="h-3.5 w-3.5" style={{ color: BLUE }} />
+                <Briefcase className="h-3.5 w-3.5" style={{ color: ACCENT }} />
               </div>
-              <span className="font-black text-lg" style={{ color: TEXT_PRIMARY }}>
-                Avoda<span style={{ color: BLUE }}>Now</span>
+              <span className="font-black text-lg" style={{ color: FG_PRIMARY }}>
+                Avoda<span style={{ color: ACCENT }}>Now</span>
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-right" style={{ color: TEXT_MUTED }}>
+            <p className="text-sm leading-relaxed text-right" style={{ color: FG_MUTED }}>
               מצא עבודה או עובדים עכשיו. לוח דרושים מהיר ופשוט לעבודות זמניות והתנדבות.
             </p>
           </div>
 
           {/* Navigation */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-right" style={{ color: TEXT_PRIMARY }}>ניווט</h3>
+            <h3 className="font-semibold text-sm text-right" style={{ color: FG_PRIMARY }}>ניווט</h3>
             <ul className="space-y-2 text-sm text-right">
               {[
                 { href: "/", label: "בית" },
@@ -49,9 +51,9 @@ export default function Footer() {
                   <Link
                     href={href}
                     className="transition-colors"
-                    style={{ color: TEXT_MUTED }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = BLUE)}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = TEXT_MUTED)}
+                    style={{ color: FG_MUTED }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
                   >
                     {label}
                   </Link>
@@ -62,15 +64,15 @@ export default function Footer() {
 
           {/* Legal */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-right" style={{ color: TEXT_PRIMARY }}>מידע משפטי</h3>
+            <h3 className="font-semibold text-sm text-right" style={{ color: FG_PRIMARY }}>מידע משפטי</h3>
             <ul className="space-y-2 text-sm text-right">
               <li>
                 <Link
                   href="/terms"
                   className="transition-colors"
-                  style={{ color: TEXT_MUTED }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = BLUE)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = TEXT_MUTED)}
+                  style={{ color: FG_MUTED }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
                 >
                   תנאי שימוש
                 </Link>
@@ -79,26 +81,26 @@ export default function Footer() {
                 <Link
                   href="/privacy"
                   className="transition-colors"
-                  style={{ color: TEXT_MUTED }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = BLUE)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = TEXT_MUTED)}
+                  style={{ color: FG_MUTED }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = FG_MUTED)}
                 >
                   מדיניות פרטיות
                 </Link>
               </li>
             </ul>
-            <div className="flex items-center gap-2 text-sm pt-1 justify-end" style={{ color: TEXT_FAINT }}>
+            <div className="flex items-center gap-2 text-sm pt-1 justify-end" style={{ color: FG_FAINT }}>
               <span>info@job-now.co.il</span>
               <Mail className="h-3.5 w-3.5 shrink-0" />
             </div>
           </div>
         </div>
 
-        <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${BORDER}` }}>
-          <p className="text-xs text-center leading-relaxed" style={{ color: TEXT_FAINT }}>
+        <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
+          <p className="text-xs text-center leading-relaxed" style={{ color: FG_FAINT }}>
             פלטפורמה זו מחברת בין עובדים למעסיקים בלבד. הפלטפורמה אינה אחראית לתנאי העסקה או להסכמים בין הצדדים.
           </p>
-          <p className="text-xs text-center mt-2" style={{ color: TEXT_FAINT }}>
+          <p className="text-xs text-center mt-2" style={{ color: FG_FAINT }}>
             © {new Date().getFullYear()} AvodaNow. כל הזכויות שמורות.
           </p>
         </div>

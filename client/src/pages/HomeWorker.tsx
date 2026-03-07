@@ -238,116 +238,98 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
         className="relative z-10 overflow-hidden"
-        style={{ background: "var(--page-bg)" }}
+        style={{ minHeight: "480px" }}
       >
-        {/* Two-column grid: text right, image left (RTL) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 items-stretch" style={{ minHeight: "440px" }}>
+        {/* Full-bleed background image */}
+        <img
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_8b541c43.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "55% center" }}
+        />
 
-          {/* ── Right column: text content ── */}
-          <div className="relative z-10 flex flex-col justify-center px-6 pt-14 pb-10 text-right order-1">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 self-end"
-              style={{
-                background: "oklch(0.32 0.07 122)",
-                border: "1px solid oklch(0.45 0.09 122 / 0.5)",
-                boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
-              }}
-            >
-              <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
-              <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-                הדרך המהירה למצוא עבודה
-              </span>
-            </motion.div>
+        {/* Directional overlay: opaque cream on RIGHT (text side), transparent on LEFT (image side) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to left, oklch(0.95 0.03 91.6 / 0.92) 0%, oklch(0.95 0.03 91.6 / 0.75) 40%, oklch(0.95 0.03 91.6 / 0.20) 70%, transparent 100%)",
+          }}
+        />
+        {/* Bottom fade to page bg */}
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none"
+          style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
+        />
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[40px] leading-[1.1] font-black mb-4"
-              style={{ color: "oklch(0.18 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
-            >
-              עבודות מזדמנות<br />
-              <span style={{ color: "var(--citrus)", textShadow: "0 0 20px oklch(0.82 0.15 80.8 / 0.3)" }}>
-                מחכות לך עכשיו
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[15px] font-semibold leading-relaxed mb-2"
-              style={{ color: "oklch(0.30 0.06 122)" }}
-            >
-              קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
-            </motion.p>
-
-            {/* Stats row */}
-            <div className="flex justify-end">
-              <StatsRow />
-            </div>
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
-              className="mt-6 flex justify-end"
-            >
-              <button
-                onClick={() => navigate("/find-jobs")}
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                  color: "oklch(0.96 0.04 80)",
-                  boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)", e.currentTarget.style.boxShadow = "0 8px 28px oklch(0.28 0.06 122 / 0.50), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.12)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)")}
-              >
-                <Search size={15} />
-                חפש עבודה עכשיו
-                <ChevronLeft size={15} style={{ opacity: 0.65 }} />
-              </button>
-            </motion.div>
-          </div>
-
-          {/* ── Left column: image ── */}
-          <div
-            className="relative order-2 overflow-hidden"
-            style={{ minHeight: "320px" }}
+        {/* Content — text on right side */}
+        <div className="relative z-10 flex flex-col justify-center items-end text-right px-6 pt-14 pb-20" style={{ minHeight: "480px", maxWidth: "520px", marginLeft: "auto" }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"
+            style={{
+              background: "oklch(0.32 0.07 122)",
+              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+            }}
           >
-            <motion.img
-              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_8b541c43.png"
-              alt="עובדת מחפשת עבודה"
-              initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }}
-              className="w-full h-full object-cover"
-              style={{ objectPosition: "60% center", display: "block" }}
-            />
-            {/* Fade edge toward text column (right side in RTL = left in DOM) */}
-            <div
-              className="absolute inset-y-0 right-0 w-24 pointer-events-none"
-              style={{ background: "linear-gradient(to left, var(--page-bg) 0%, transparent 100%)" }}
-            />
-            {/* Bottom fade */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
-              style={{ background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
-            />
-          </div>
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
+              הדרך המהירה למצוא עבודה
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-[42px] leading-[1.1] font-black mb-4"
+            style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+          >
+            עבודות מזדמנות<br />
+            <span style={{ color: "var(--citrus)", textShadow: "0 0 20px oklch(0.82 0.15 80.8 / 0.3)" }}>
+              מחכות לך עכשיו
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[280px]"
+            style={{ color: "oklch(0.28 0.06 122)" }}
+          >
+            קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+          </motion.p>
+
+          <StatsRow />
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-6"
+          >
+            <button
+              onClick={() => navigate("/find-jobs")}
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] transition-all duration-200 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)",
+                boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)", e.currentTarget.style.boxShadow = "0 8px 28px oklch(0.28 0.06 122 / 0.50), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.12)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "", e.currentTarget.style.boxShadow = "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)")}
+            >
+              <Search size={15} />
+              חפש עבודה עכשיו
+              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+            </button>
+          </motion.div>
         </div>
 
         {/* Wave SVG divider */}
         <div
-          className="relative z-20 pointer-events-none"
-          style={{ lineHeight: 0, marginTop: "-2px" }}
+          className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none"
+          style={{ lineHeight: 0, marginBottom: "-1px" }}
           aria-hidden="true"
         >
-          <svg
-            viewBox="0 0 390 40"
-            xmlns="http://www.w3.org/2000/svg"
-            preserveAspectRatio="none"
-            style={{ display: "block", width: "100%", height: "40px" }}
-          >
-            <path
-              d="M0,40 L0,20 C65,4 130,32 195,16 C260,0 325,28 390,10 L390,40 Z"
-              fill="var(--page-bg)"
-            />
+          <svg viewBox="0 0 390 48" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: "48px" }}>
+            <path d="M0,48 L0,28 C65,8 130,44 195,22 C260,0 325,38 390,16 L390,48 Z" fill="var(--page-bg)" />
           </svg>
         </div>
       </section>

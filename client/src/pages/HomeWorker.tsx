@@ -65,7 +65,7 @@ function StatsRow() {
             <div
               className="absolute top-1/2 -translate-y-1/2"
               style={{
-                right: "100%",
+                left: "0",
                 width: "1px",
                 height: "44px",
                 background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(255,255,255,0.35) 70%, transparent 100%)",

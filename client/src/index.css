@@ -52,6 +52,11 @@
    * TS constants mirror these in client/src/lib/colors.ts
    * ─────────────────────────────────────────────────────────────────────── */
 
+  /* Header / Footer background — #2e3c0f dark forest olive */
+  --header-bg:       oklch(0.3329 0.0694 124.9); /* #2e3c0f */
+  --footer-bg:       oklch(0.3329 0.0694 124.9); /* #2e3c0f */
+  --header-fg:       oklch(0.9904 0.0107 95.3);  /* #fefcf4 warm cream text */
+
   /* Primary — Olive Grove (deepened) */
   --brand:           oklch(0.38 0.07 125.0);   /* deep rich olive */
   --brand-dark:      oklch(0.30 0.07 125.0);   /* very dark olive */

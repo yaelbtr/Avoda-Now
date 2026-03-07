@@ -90,9 +90,9 @@ export default function Navbar() {
         className="sticky top-0 z-50"
         dir="rtl"
         style={{
-          background: BG,
-          borderBottom: `1px solid ${BORDER}`,
-          boxShadow: "0 1px 4px oklch(0 0 0 / 0.06)",
+          background: "var(--header-bg)",
+          borderBottom: "1px solid oklch(0.40 0.07 124.9)",
+          boxShadow: "0 2px 8px oklch(0 0 0 / 0.18)",
         }}
       >
         <div className="max-w-2xl mx-auto px-4">
@@ -103,12 +103,12 @@ export default function Navbar() {
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: BLUE_BG }}
+                style={{ background: "oklch(0.40 0.07 124.9)" }}
               >
-                <Briefcase className="h-4 w-4" style={{ color: BLUE }} />
+                <Briefcase className="h-4 w-4" style={{ color: "var(--citrus)" }} />
               </motion.div>
-              <span className="font-black text-lg" style={{ color: TEXT_PRIMARY }}>
-                Avoda<span style={{ color: BLUE }}>Now</span>
+              <span className="font-black text-lg" style={{ color: "var(--header-fg)" }}>
+                Avoda<span style={{ color: "var(--citrus)" }}>Now</span>
               </span>
             </Link>
 
@@ -123,9 +123,9 @@ export default function Navbar() {
                       whileTap={{ scale: 0.96 }}
                       className="px-3 py-1.5 rounded-xl text-sm font-medium transition-all cursor-pointer inline-block"
                       style={{
-                        background: isActive ? BLUE_BG : "transparent",
-                        color: isActive ? BLUE : TEXT_MUTED,
-                        border: isActive ? `1px solid ${BLUE_ACTIVE_BORDER}` : "1px solid transparent",
+                        background: isActive ? "oklch(0.40 0.07 124.9)" : "transparent",
+                        color: isActive ? "var(--citrus)" : "oklch(0.85 0.03 95.3)",
+                        border: isActive ? "1px solid oklch(0.50 0.07 124.9)" : "1px solid transparent",
                       }}
                     >
                       {link.label}
@@ -143,14 +143,14 @@ export default function Navbar() {
                     <AppButton
                       variant="ghost"
                       size="sm"
-                      className="gap-2 hover:bg-slate-100"
-                      style={{ color: TEXT_PRIMARY }}
+                    className="gap-2"
+                    style={{ color: "var(--header-fg)", background: "transparent" }}
                     >
                       <div
                         className="w-7 h-7 rounded-full flex items-center justify-center"
-                        style={{ background: BLUE_BG, border: `1px solid ${BLUE_ACTIVE_BORDER}` }}
+                        style={{ background: "oklch(0.40 0.07 124.9)", border: "1px solid oklch(0.50 0.07 124.9)" }}
                       >
-                        <User className="h-3.5 w-3.5" style={{ color: BLUE }} />
+                        <User className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
                       </div>
                       <span className="hidden sm:inline text-sm">
                         {user?.name ?? user?.phone ?? "פרופיל"}
@@ -279,8 +279,8 @@ export default function Navbar() {
               <AppButton
                 variant="ghost"
                 size="icon"
-                className="md:hidden hover:bg-slate-100"
-                style={{ color: TEXT_MUTED }}
+                className="md:hidden"
+                style={{ color: "oklch(0.85 0.03 95.3)", background: "transparent" }}
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="תפריט"
               >
@@ -310,13 +310,13 @@ export default function Navbar() {
               className="md:hidden overflow-hidden"
               dir="rtl"
               style={{
-                borderTop: `1px solid ${BORDER}`,
-                background: BG,
+                borderTop: "1px solid oklch(0.40 0.07 124.9)",
+                background: "var(--header-bg)",
               }}
             >
               <nav className="max-w-2xl mx-auto px-4 py-3 flex flex-col gap-1">
                 {isAuthenticated && userMode && (
-                  <div className="px-3 py-2 text-xs border-b mb-1" style={{ color: TEXT_MUTED, borderColor: BORDER }}>
+                  <div className="px-3 py-2 text-xs border-b mb-1" style={{ color: "oklch(0.75 0.03 95.3)", borderColor: "oklch(0.40 0.07 124.9)" }}>
                     מחובר כ: {userMode === "worker" ? "👷 מחפש עבודה" : "💼 מעסיק"}
                   </div>
                 )}
@@ -334,8 +334,8 @@ export default function Navbar() {
                         <span
                           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-right cursor-pointer"
                           style={{
-                            background: isActive ? BLUE_BG : "transparent",
-                            color: isActive ? BLUE : TEXT_MUTED,
+                            background: isActive ? "oklch(0.40 0.07 124.9)" : "transparent",
+                            color: isActive ? "var(--citrus)" : "oklch(0.80 0.03 95.3)",
                           }}
                           onClick={() => setMobileOpen(false)}
                         >
@@ -351,8 +351,8 @@ export default function Navbar() {
                   <>
                     <button
                       onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setMobileOpen(false); }}
-                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-slate-50"
-                      style={{ color: TEXT_MUTED }}
+                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[oklch(0.40_0.07_124.9)]"
+                      style={{ color: "oklch(0.80 0.03 95.3)" }}
                     >
                       <RefreshCw className="h-4 w-4 shrink-0" />
                       {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
@@ -360,8 +360,8 @@ export default function Navbar() {
 
                     <button
                       onClick={() => { resetUserMode(); setMobileOpen(false); }}
-                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-slate-50"
-                      style={{ color: TEXT_MUTED }}
+                      className="flex items-center gap-2 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[oklch(0.40_0.07_124.9)]"
+                      style={{ color: "oklch(0.80 0.03 95.3)" }}
                     >
                       <RotateCcw className="h-4 w-4 shrink-0" />
                       אפס בחירת תפקיד
@@ -371,7 +371,7 @@ export default function Navbar() {
                       <Link href="/admin">
                         <span
                           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer hover:bg-slate-50"
-                          style={{ color: BLUE }}
+                          style={{ color: "var(--citrus)" }}
                           onClick={() => setMobileOpen(false)}
                         >
                           <Shield className="h-4 w-4 shrink-0" />

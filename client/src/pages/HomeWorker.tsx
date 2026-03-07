@@ -241,56 +241,59 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── MOBILE Hero (< md): image on top, text below ── */}
       <section className="relative z-10 overflow-hidden md:hidden">
-        {/* Image panel */}
-        <div className="relative w-full" style={{ height: "260px" }}>
+        {/* Image + overlay text panel */}
+        <div className="relative w-full" style={{ height: "420px" }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
             alt=""
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "65% 45%" }}
+            style={{ objectPosition: "65% 40%" }}
           />
-          {/* Bottom fade into text section */}
+          {/* Bottom gradient fade */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "80px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
+            style={{ height: "200px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
           />
+
+          {/* Badge + heading + description overlaid on image */}
+          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+              style={{
+                background: "oklch(0.32 0.07 122)",
+                border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+                boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+              }}
+            >
+              <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+              <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
+                הדרך המהירה למצוא עבודה
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="text-[36px] leading-[1.15] font-black mb-3"
+              style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 10px oklch(0.97 0.02 91 / 0.80)" }}
+            >
+              עבודות מזדמנות<br />
+              <span style={{ color: "var(--citrus)" }}>מחכות לך עכשיו</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-[14px] font-semibold leading-relaxed"
+              style={{ color: "oklch(0.22 0.06 122)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70)" }}
+            >
+              קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+            </motion.p>
+          </div>
         </div>
 
-        {/* Text panel */}
-        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-            style={{
-              background: "oklch(0.32 0.07 122)",
-              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
-              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
-            }}
-          >
-            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
-            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-              הדרך המהירה למצוא עבודה
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-[36px] leading-[1.15] font-black mb-3"
-            style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
-          >
-            עבודות מזדמנות<br />
-            <span style={{ color: "var(--citrus)" }}>מחכות לך עכשיו</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-[14px] font-semibold leading-relaxed mb-5"
-            style={{ color: "oklch(0.28 0.06 122)", maxWidth: "280px" }}
-          >
-            קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
-          </motion.p>
-
+        {/* Stats + CTA below image on clean background */}
+        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-10" style={{ backgroundColor: "var(--page-bg)" }}>
           <StatsRow />
 
           <motion.div

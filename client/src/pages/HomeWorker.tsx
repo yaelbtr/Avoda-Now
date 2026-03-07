@@ -164,24 +164,24 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Full background image */}
         <div className="absolute inset-0">
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-sunset_695173a0.jpg"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-blue-sky_50074f55.jpg"
             alt=""
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-top"
             aria-hidden="true"
             style={{ display: "block" }}
           />
-          {/* Dark overlay — strong enough for white text */}
+          {/* Olive-green brand overlay — matches app palette */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(180deg, oklch(0.15 0.04 30 / 0.72) 0%, oklch(0.12 0.03 30 / 0.78) 55%, oklch(0.10 0.02 30 / 0.92) 100%)",
+              background: "linear-gradient(180deg, oklch(0.28 0.06 122 / 0.68) 0%, oklch(0.24 0.05 122 / 0.78) 55%, oklch(0.20 0.04 122 / 0.94) 100%)",
             }}
           />
-          {/* Warm amber tint at the top */}
+          {/* Subtle amber highlight at top center */}
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse 100% 50% at 50% 0%, oklch(0.65 0.18 60 / 0.18) 0%, transparent 65%)",
+              background: "radial-gradient(ellipse 80% 40% at 50% 0%, oklch(0.75 0.12 80 / 0.12) 0%, transparent 60%)",
             }}
           />
           {/* Bottom fade into page bg */}

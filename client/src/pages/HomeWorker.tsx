@@ -255,10 +255,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute top-0 left-0 right-0 pointer-events-none"
             style={{ height: "55%", background: "linear-gradient(to bottom, oklch(0.97 0.02 91 / 0.82) 0%, transparent 100%)" }}
           />
-          {/* Bottom fade into page */}
+          {/* Bottom fade into page - smooth multi-stop gradient */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, var(--page-bg) 100%)" }}
+            style={{ height: "180px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.97 0.02 91 / 0.3) 30%, oklch(0.97 0.02 91 / 0.7) 60%, oklch(0.97 0.02 91 / 0.92) 80%, var(--page-bg) 100%)" }}
           />
 
           {/* StatsRow overlaid at bottom of image */}

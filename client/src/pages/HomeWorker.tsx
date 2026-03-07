@@ -255,7 +255,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.72) 0%, oklch(0.95 0.03 91.6 / 0.55) 30%, oklch(0.95 0.03 91.6 / 0.15) 55%, transparent 75%)",
+            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.50) 0%, oklch(0.95 0.03 91.6 / 0.30) 35%, oklch(0.95 0.03 91.6 / 0.05) 58%, transparent 72%)",
           }}
         />
         {/* Bottom fade to page bg */}
@@ -284,7 +284,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-[42px] leading-[1.1] font-black mb-4"
-            style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+            style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 12px oklch(0.97 0.02 91 / 0.80), 0 2px 20px oklch(0.97 0.02 91 / 0.60)" }}
           >
             עבודות מזדמנות<br />
             <span style={{ color: "var(--citrus)", textShadow: "0 0 20px oklch(0.82 0.15 80.8 / 0.3)" }}>
@@ -295,7 +295,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
             className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[280px]"
-            style={{ color: "oklch(0.28 0.06 122)" }}
+            style={{ color: "oklch(0.18 0.06 122)", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70), 0 2px 16px oklch(0.97 0.02 91 / 0.50)" }}
           >
             קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
           </motion.p>

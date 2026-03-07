@@ -55,10 +55,11 @@ function StatsRow() {
       dir="rtl"
       className="flex items-stretch justify-between gap-0 mt-8 rounded-2xl px-2 py-3 w-full max-w-[300px]"
       style={{
-        background: "oklch(0.96 0.02 91 / 0.92)",
-        backdropFilter: "blur(16px)",
-        border: "1px solid oklch(0.70 0.08 122 / 0.30)",
-        boxShadow: "0 4px 20px oklch(0.38 0.07 122 / 0.15), 0 1px 4px oklch(0.38 0.07 122 / 0.08)",
+        background: "oklch(0.40 0.08 122 / 0.30)",
+        backdropFilter: "blur(16px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(16px) saturate(1.4)",
+        border: "1px solid oklch(0.55 0.09 122 / 0.35)",
+        boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.20), inset 0 1px 0 oklch(0.70 0.06 122 / 0.15)",
       }}
     >
       {statsData.map(({ display, label, Icon }, i) => (
@@ -77,15 +78,15 @@ function StatsRow() {
           <div key={label} className="text-center flex-1 flex flex-col items-center gap-0.5 py-1 px-2">
             <Icon
               size={15}
-              style={{ color: "oklch(0.62 0.16 75)" }}
+              style={{ color: "oklch(0.82 0.15 80.8)" }}
             />
             <div
               className="text-[20px] font-black leading-none tabular-nums"
-              style={{ color: "oklch(0.22 0.06 122)" }}
+              style={{ color: "oklch(0.97 0.02 91)" }}
             >{display}</div>
             <div
               className="text-[10px] font-semibold"
-              style={{ color: "oklch(0.42 0.06 122)" }}
+              style={{ color: "oklch(0.88 0.04 91)" }}
             >{label}</div>
           </div>
         </React.Fragment>

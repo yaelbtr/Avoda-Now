@@ -7,6 +7,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -217,3 +218,20 @@ export const notificationBatches = mysqlTable("notification_batches", {
 });
 export type NotificationBatch = typeof notificationBatches.$inferSelect;
 export type InsertNotificationBatch = typeof notificationBatches.$inferInsert;
+
+/**
+ * Stores Web Push subscriptions for workers.
+ * Each row represents one browser/device subscription.
+ */
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  endpoint: varchar("endpoint", { length: 2048 }).notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  endpointIdx: uniqueIndex("push_endpoint_idx").on(t.endpoint),
+}));
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;

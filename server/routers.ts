@@ -49,8 +49,11 @@ import {
   revealApplicationContact,
   updateApplicationStatus,
   getUnreadApplicationsCount,
+  savePushSubscription,
+  deletePushSubscriptionByEndpoint,
 } from "./db";
 import { sendJobAlerts } from "./sms";
+import { sendPushToUser } from "./webPush";
 import {
   adminApproveJob,
   adminBlockUser,
@@ -524,6 +527,19 @@ const jobsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה לפעולה זו" });
       }
       await updateApplicationStatus(input.id, input.action);
+
+      // Send Web Push notification to the worker
+      if (app.workerId) {
+        const isAccepted = input.action === "accept";
+        sendPushToUser(app.workerId, {
+          title: isAccepted ? "🎉 מועמדותך התקבלה!" : "עדכון מועמדות",
+          body: isAccepted
+            ? `מזל טוב! המעסיק קיבל את מועמדותך למשרה "${app.jobTitle}"`
+            : `מועמדותך למשרה "${app.jobTitle}" לא התקבלה`,
+          url: "/my-applications",
+        }).catch((e) => console.error("[WebPush] send failed:", e));
+      }
+
       return {
         success: true,
         // Return phone only when accepting
@@ -803,6 +819,40 @@ const userRouter = router({
     }),
 });
 
+// ─── Push Notifications Router ─────────────────────────────────────────────
+
+const pushRouter = router({
+  /** Subscribe current user to Web Push notifications */
+  subscribe: protectedProcedure
+    .input(z.object({
+      endpoint: z.string().url(),
+      p256dh: z.string(),
+      auth: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      await savePushSubscription({
+        userId: ctx.user.id,
+        endpoint: input.endpoint,
+        p256dh: input.p256dh,
+        auth: input.auth,
+      });
+      return { success: true };
+    }),
+
+  /** Unsubscribe (remove) a push subscription by endpoint */
+  unsubscribe: protectedProcedure
+    .input(z.object({ endpoint: z.string() }))
+    .mutation(async ({ input }) => {
+      await deletePushSubscriptionByEndpoint(input.endpoint);
+      return { success: true };
+    }),
+
+  /** Return the VAPID public key for the client to use when subscribing */
+  vapidKey: publicProcedure.query(() => ({
+    publicKey: ENV.vapidPublicKey ?? "",
+  })),
+});
+
 // ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -813,6 +863,7 @@ export const appRouter = router({
   admin: adminRouter,
   live: liveStatsRouter,
   user: userRouter,
+  push: pushRouter,
 });
 
 export type AppRouter = typeof appRouter;

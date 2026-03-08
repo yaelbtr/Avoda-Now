@@ -582,3 +582,25 @@
 - [x] Frontend: badge shown in both desktop nav and mobile menu
 - [x] Frontend: badge clears when worker visits /my-applications (localStorage updated)
 - [x] All 114 tests pass
+
+## Web Push Notifications
+- [x] web-push npm package installed
+- [x] VAPID keys generated and stored as secrets
+- [x] DB: push_subscriptions table (userId, endpoint, p256dh, auth, unique on endpoint)
+- [x] DB: migration applied
+- [x] Server: push.subscribe mutation — save subscription for current user
+- [x] Server: push.unsubscribe mutation — remove subscription by endpoint
+- [x] Server: push.vapidKey query — returns VAPID public key to client
+- [x] Server: webPush.ts helper — sendPushToUser(userId, payload)
+- [x] Frontend: client/public/sw.js — service worker handles push + notificationclick
+- [x] Frontend: usePushNotifications hook — subscribe/unsubscribe lifecycle
+- [x] Frontend: Bell icon in MyApplications header to toggle push
+- [x] Frontend: inline banner prompt on /my-applications to enable notifications
+- [x] Server: updateApplicationStatus sends push notification to worker on accept/reject
+- [x] All 114 tests pass
+
+## MyApplications Filter & Sort
+- [x] Frontend: filter pills — הכל / ממתינות / התקבלתי / לא התקבלתי
+- [x] Frontend: sort toggle — חדש לישן / ישן לחדש
+- [x] Frontend: collapsible filter bar (Filter icon in header)
+- [x] Frontend: AnimatePresence exit animation on cards when filter changes

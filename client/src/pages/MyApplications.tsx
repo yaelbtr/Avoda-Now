@@ -1,13 +1,15 @@
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppButton } from "@/components/AppButton";
 import BrandLoader from "@/components/BrandLoader";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
   HourglassIcon, ChevronRight, Phone, MessageCircle,
+  Bell, BellOff, Filter, ArrowUpDown,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
 import { formatDistanceToNow } from "date-fns";
@@ -20,6 +22,7 @@ const C_CARD_BORDER = "oklch(1 0 0 / 0.09)";
 const C_BRIGHT = "oklch(0.97 0.01 260)";
 const C_MID = "oklch(0.72 0.03 260)";
 const C_FAINT = "oklch(0.52 0.02 260)";
+const C_ACCENT = "oklch(0.70 0.18 260)";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; bg: string; color: string; border: string }> = {
@@ -70,6 +73,9 @@ type MyApplication = {
   workerPhone?: string | null;
 };
 
+type FilterStatus = "all" | "pending" | "accepted" | "rejected";
+type SortOrder = "newest" | "oldest";
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function Shimmer({ width = "100%", height = 14, rounded = "0.5rem" }: {
   width?: string | number; height?: number; rounded?: string;
@@ -108,6 +114,11 @@ function CardSkeleton() {
 export default function MyApplications() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const push = usePushNotifications();
 
   // Mark all application updates as "seen" when the worker visits this page
   useEffect(() => {
@@ -119,6 +130,28 @@ export default function MyApplications() {
   const { data: applications, isLoading } = trpc.jobs.myApplications.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+
+  // ── Filter + sort ─────────────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    if (!applications) return [];
+    let list = [...applications] as MyApplication[];
+
+    if (filterStatus !== "all") {
+      if (filterStatus === "pending") {
+        list = list.filter((a) => a.status === "pending" || a.status === "viewed");
+      } else {
+        list = list.filter((a) => a.status === filterStatus);
+      }
+    }
+
+    list.sort((a, b) => {
+      const ta = new Date(a.createdAt).getTime();
+      const tb = new Date(b.createdAt).getTime();
+      return sortOrder === "newest" ? tb - ta : ta - tb;
+    });
+
+    return list;
+  }, [applications, filterStatus, sortOrder]);
 
   // ── Auth guard ────────────────────────────────────────────────────────────
   if (loading) {
@@ -137,16 +170,12 @@ export default function MyApplications() {
     );
   }
 
-  // ── Group by status ───────────────────────────────────────────────────────
-  const pending = applications?.filter((a) => a.status === "pending" || a.status === "viewed") ?? [];
-  const accepted = applications?.filter((a) => a.status === "accepted") ?? [];
-  const rejected = applications?.filter((a) => a.status === "rejected") ?? [];
-
-  const sections = [
-    { key: "pending", label: "ממתינות לתשובה", items: pending },
-    { key: "accepted", label: "התקבלתי!", items: accepted },
-    { key: "rejected", label: "לא התקבלתי", items: rejected },
-  ];
+  const filterLabels: Record<FilterStatus, string> = {
+    all: "הכל",
+    pending: "ממתינות",
+    accepted: "התקבלתי",
+    rejected: "לא התקבלתי",
+  };
 
   return (
     <div className="min-h-screen pb-16" style={{ background: C_BG }} dir="rtl">
@@ -159,30 +188,125 @@ export default function MyApplications() {
           borderBottom: `1px solid ${C_CARD_BORDER}`,
         }}
       >
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <AppButton
-            variant="ghost"
-            size="sm"
-            className="p-1.5"
-            onClick={() => navigate("/")}
-            style={{ color: C_MID }}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </AppButton>
-          <div>
-            <h1 className="text-lg font-bold" style={{ color: C_BRIGHT }}>
-              המועמדויות שלי
-            </h1>
-            {applications && (
-              <p className="text-xs" style={{ color: C_FAINT }}>
-                {applications.length} מועמדויות סה"כ
-              </p>
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center gap-3 mb-3">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              className="p-1.5"
+              onClick={() => navigate("/")}
+              style={{ color: C_MID }}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </AppButton>
+            <div className="flex-1">
+              <h1 className="text-lg font-bold" style={{ color: C_BRIGHT }}>
+                המועמדויות שלי
+              </h1>
+              {applications && (
+                <p className="text-xs" style={{ color: C_FAINT }}>
+                  {applications.length} מועמדויות סה"כ
+                </p>
+              )}
+            </div>
+
+            {/* Push notification toggle */}
+            {push.isSupported && (
+              <AppButton
+                variant="ghost"
+                size="sm"
+                className="p-1.5 shrink-0"
+                onClick={push.isSubscribed ? push.unsubscribe : push.subscribe}
+                disabled={push.isLoading}
+                title={push.isSubscribed ? "בטל התראות" : "הפעל התראות"}
+                style={{ color: push.isSubscribed ? "oklch(0.68 0.20 160)" : C_FAINT }}
+              >
+                {push.isSubscribed ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+              </AppButton>
             )}
+
+            {/* Filter toggle */}
+            <AppButton
+              variant="ghost"
+              size="sm"
+              className="p-1.5 shrink-0"
+              onClick={() => setShowFilters((v) => !v)}
+              style={{ color: showFilters ? C_ACCENT : C_FAINT }}
+            >
+              <Filter className="h-5 w-5" />
+            </AppButton>
           </div>
+
+          {/* ── Filter / Sort bar ── */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-2 pb-2">
+                  {/* Status filter pills */}
+                  {(["all", "pending", "accepted", "rejected"] as FilterStatus[]).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setFilterStatus(s)}
+                      className="text-xs px-3 py-1 rounded-full font-medium transition-all"
+                      style={{
+                        background: filterStatus === s ? C_ACCENT : C_CARD,
+                        color: filterStatus === s ? "oklch(0.14 0.02 260)" : C_MID,
+                        border: `1px solid ${filterStatus === s ? C_ACCENT : C_CARD_BORDER}`,
+                      }}
+                    >
+                      {filterLabels[s]}
+                    </button>
+                  ))}
+
+                  {/* Sort toggle */}
+                  <button
+                    onClick={() => setSortOrder((o) => (o === "newest" ? "oldest" : "newest"))}
+                    className="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium transition-all mr-auto"
+                    style={{
+                      background: C_CARD,
+                      color: C_MID,
+                      border: `1px solid ${C_CARD_BORDER}`,
+                    }}
+                  >
+                    <ArrowUpDown className="h-3 w-3" />
+                    {sortOrder === "newest" ? "חדש לישן" : "ישן לחדש"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-5 space-y-6">
+      <div className="max-w-lg mx-auto px-4 pt-5 space-y-3">
+        {/* ── Push notification prompt ── */}
+        {push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
+          <div
+            className="flex items-center gap-3 p-3 rounded-xl"
+            style={{ background: "oklch(0.55 0.22 260 / 0.08)", border: `1px solid oklch(0.55 0.22 260 / 0.15)` }}
+          >
+            <Bell className="h-4 w-4 shrink-0" style={{ color: C_ACCENT }} />
+            <p className="text-xs flex-1" style={{ color: C_MID }}>
+              הפעל התראות כדי לקבל עדכון מיידי כשמעסיק מגיב למועמדותך
+            </p>
+            <AppButton
+              size="sm"
+              className="text-xs shrink-0"
+              onClick={push.subscribe}
+              disabled={push.isLoading}
+              style={{ background: C_ACCENT, color: "oklch(0.14 0.02 260)" }}
+            >
+              הפעל
+            </AppButton>
+          </div>
+        )}
+
         {/* ── Loading ── */}
         {isLoading && (
           <div className="space-y-3">
@@ -191,205 +315,189 @@ export default function MyApplications() {
         )}
 
         {/* ── Empty state ── */}
-        {!isLoading && (!applications || applications.length === 0) && (
+        {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center"
               style={{ background: "oklch(0.55 0.22 260 / 0.12)" }}
             >
-              <Briefcase className="h-8 w-8" style={{ color: "oklch(0.70 0.18 260)" }} />
+              <Briefcase className="h-8 w-8" style={{ color: C_ACCENT }} />
             </div>
             <p className="text-base font-semibold" style={{ color: C_MID }}>
-              עדיין לא הגשת מועמדות
+              {filterStatus === "all" ? "עדיין לא הגשת מועמדות" : `אין מועמדויות בסטטוס "${filterLabels[filterStatus]}"`}
             </p>
-            <p className="text-sm text-center" style={{ color: C_FAINT }}>
-              חפש משרות מתאימות והגש מועמדות
-            </p>
-            <AppButton onClick={() => navigate("/find-jobs")}>חפש עבודה</AppButton>
+            {filterStatus === "all" && (
+              <>
+                <p className="text-sm text-center" style={{ color: C_FAINT }}>
+                  חפש משרות מתאימות והגש מועמדות
+                </p>
+                <AppButton onClick={() => navigate("/find-jobs")}>חפש עבודה</AppButton>
+              </>
+            )}
           </div>
         )}
 
-        {/* ── Sections ── */}
-        {!isLoading && applications && applications.length > 0 && sections.map(({ key, label, items }) => {
-          if (items.length === 0) return null;
-          return (
-            <div key={key}>
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-sm font-semibold" style={{ color: C_MID }}>{label}</h2>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{
-                    background: STATUS_CONFIG[key === "pending" ? "pending" : key]?.bg ?? C_CARD,
-                    color: STATUS_CONFIG[key === "pending" ? "pending" : key]?.color ?? C_FAINT,
-                  }}
-                >
-                  {items.length}
-                </span>
-              </div>
-              <AnimatePresence>
-                <div className="space-y-3">
-                  {items.map((app: MyApplication, idx: number) => {
-                    const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.pending;
-                    const isAccepted = app.status === "accepted";
-                    const isRejected = app.status === "rejected";
-                    const timeAgo = formatDistanceToNow(new Date(app.createdAt), {
-                      addSuffix: true,
-                      locale: he,
-                    });
+        {/* ── Application cards ── */}
+        <AnimatePresence>
+          {!isLoading && filtered.map((app: MyApplication, idx: number) => {
+            const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.pending;
+            const isAccepted = app.status === "accepted";
+            const isRejected = app.status === "rejected";
+            const timeAgo = formatDistanceToNow(new Date(app.createdAt), {
+              addSuffix: true,
+              locale: he,
+            });
 
-                    return (
-                      <motion.div
-                        key={app.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 }}
+            return (
+              <motion.div
+                key={app.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ delay: idx * 0.04 }}
+                style={{
+                  background: isAccepted
+                    ? "oklch(0.68 0.20 160 / 0.06)"
+                    : isRejected
+                      ? "oklch(1 0 0 / 0.02)"
+                      : C_CARD,
+                  border: isAccepted
+                    ? "1px solid oklch(0.68 0.20 160 / 0.2)"
+                    : `1px solid ${C_CARD_BORDER}`,
+                  borderRadius: "1rem",
+                  padding: "1rem",
+                  opacity: isRejected ? 0.65 : 1,
+                }}
+              >
+                {/* Top row: icon + title + status badge */}
+                <div className="flex items-start gap-3 mb-2">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      background: isAccepted
+                        ? "oklch(0.68 0.20 160 / 0.15)"
+                        : "oklch(0.55 0.22 260 / 0.12)",
+                    }}
+                  >
+                    <Briefcase
+                      className="h-5 w-5"
+                      style={{
+                        color: isAccepted
+                          ? "oklch(0.68 0.20 160)"
+                          : C_ACCENT,
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: C_BRIGHT }}>
+                      {getCategoryLabel(app.jobTitle ?? "") || app.jobTitle || "משרה"}
+                    </p>
+                    {app.employerName && (
+                      <p className="text-xs truncate" style={{ color: C_FAINT }}>
+                        {app.employerName}
+                      </p>
+                    )}
+                  </div>
+                  {/* Status badge */}
+                  <span
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium shrink-0"
+                    style={{
+                      background: cfg.bg,
+                      color: cfg.color,
+                      border: `1px solid ${cfg.border}`,
+                    }}
+                  >
+                    {cfg.icon}
+                    {cfg.label}
+                  </span>
+                </div>
+
+                {/* Meta row */}
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+                  {(app.jobCity || app.jobAddress) && (
+                    <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
+                      <MapPin className="h-3 w-3" />
+                      {app.jobCity ?? app.jobAddress}
+                    </span>
+                  )}
+                  {app.jobSalary && (
+                    <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
+                      {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly")}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
+                    <Clock className="h-3 w-3" />
+                    {timeAgo}
+                  </span>
+                </div>
+
+                {/* Message */}
+                {app.message && (
+                  <p className="text-xs italic mb-2 line-clamp-2" style={{ color: C_MID }}>
+                    "{app.message}"
+                  </p>
+                )}
+
+                {/* Accepted: show contact buttons */}
+                {isAccepted && app.contactRevealed && app.workerPhone && (
+                  <div className="flex gap-2 mt-2">
+                    <a href={`tel:${app.workerPhone}`} className="flex-1">
+                      <AppButton
+                        size="sm"
+                        className="gap-1.5 text-xs w-full"
                         style={{
-                          background: isAccepted
-                            ? "oklch(0.68 0.20 160 / 0.06)"
-                            : isRejected
-                              ? "oklch(1 0 0 / 0.02)"
-                              : C_CARD,
-                          border: isAccepted
-                            ? "1px solid oklch(0.68 0.20 160 / 0.2)"
-                            : `1px solid ${C_CARD_BORDER}`,
-                          borderRadius: "1rem",
-                          padding: "1rem",
-                          opacity: isRejected ? 0.65 : 1,
+                          background: "oklch(0.55 0.22 260 / 0.15)",
+                          border: "1px solid oklch(0.55 0.22 260 / 0.3)",
+                          color: C_ACCENT,
                         }}
                       >
-                        {/* Top row: icon + title + status badge */}
-                        <div className="flex items-start gap-3 mb-2">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                            style={{
-                              background: isAccepted
-                                ? "oklch(0.68 0.20 160 / 0.15)"
-                                : "oklch(0.55 0.22 260 / 0.12)",
-                            }}
-                          >
-                            <Briefcase
-                              className="h-5 w-5"
-                              style={{
-                                color: isAccepted
-                                  ? "oklch(0.68 0.20 160)"
-                                  : "oklch(0.70 0.18 260)",
-                              }}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate" style={{ color: C_BRIGHT }}>
-                              {getCategoryLabel(app.jobTitle ?? "") || app.jobTitle || "משרה"}
-                            </p>
-                            {app.employerName && (
-                              <p className="text-xs mt-0.5 truncate" style={{ color: C_FAINT }}>
-                                {app.employerName}
-                              </p>
-                            )}
-                          </div>
-                          {/* Status badge */}
-                          <span
-                            className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium shrink-0"
-                            style={{
-                              background: cfg.bg,
-                              color: cfg.color,
-                              border: `1px solid ${cfg.border}`,
-                            }}
-                          >
-                            {cfg.icon}
-                            {cfg.label}
-                          </span>
-                        </div>
+                        <Phone className="h-3.5 w-3.5" />
+                        התקשר
+                      </AppButton>
+                    </a>
+                    <a
+                      href={`https://wa.me/${app.workerPhone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1"
+                    >
+                      <AppButton
+                        size="sm"
+                        className="gap-1.5 text-xs w-full"
+                        style={{
+                          background: "oklch(0.68 0.20 160 / 0.12)",
+                          border: "1px solid oklch(0.68 0.20 160 / 0.25)",
+                          color: "oklch(0.68 0.20 160)",
+                        }}
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        WhatsApp
+                      </AppButton>
+                    </a>
+                  </div>
+                )}
 
-                        {/* Meta row */}
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
-                          {(app.jobCity || app.jobAddress) && (
-                            <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
-                              <MapPin className="h-3 w-3" />
-                              {app.jobCity ?? app.jobAddress}
-                            </span>
-                          )}
-                          {app.jobSalary && (
-                            <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
-                              {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly")}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1 text-xs" style={{ color: C_FAINT }}>
-                            <Clock className="h-3 w-3" />
-                            {timeAgo}
-                          </span>
-                        </div>
+                {/* Accepted but contact not yet revealed */}
+                {isAccepted && !app.contactRevealed && (
+                  <p className="text-xs mt-2" style={{ color: "oklch(0.68 0.20 160)" }}>
+                    ✓ התקבלת! המעסיק ייצור איתך קשר בקרוב.
+                  </p>
+                )}
 
-                        {/* Message */}
-                        {app.message && (
-                          <p className="text-xs italic mb-2 line-clamp-2" style={{ color: C_MID }}>
-                            "{app.message}"
-                          </p>
-                        )}
-
-                        {/* Accepted: show contact buttons */}
-                        {isAccepted && app.contactRevealed && app.workerPhone && (
-                          <div className="flex gap-2 mt-2">
-                            <a href={`tel:${app.workerPhone}`} className="flex-1">
-                              <AppButton
-                                size="sm"
-                                className="gap-1.5 text-xs w-full"
-                                style={{
-                                  background: "oklch(0.55 0.22 260 / 0.15)",
-                                  border: "1px solid oklch(0.55 0.22 260 / 0.3)",
-                                  color: "oklch(0.70 0.18 260)",
-                                }}
-                              >
-                                <Phone className="h-3.5 w-3.5" />
-                                התקשר
-                              </AppButton>
-                            </a>
-                            <a
-                              href={`https://wa.me/${app.workerPhone.replace(/\D/g, "")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1"
-                            >
-                              <AppButton
-                                size="sm"
-                                className="gap-1.5 text-xs w-full"
-                                style={{
-                                  background: "oklch(0.68 0.20 160 / 0.12)",
-                                  border: "1px solid oklch(0.68 0.20 160 / 0.25)",
-                                  color: "oklch(0.68 0.20 160)",
-                                }}
-                              >
-                                <MessageCircle className="h-3.5 w-3.5" />
-                                WhatsApp
-                              </AppButton>
-                            </a>
-                          </div>
-                        )}
-
-                        {/* Accepted but contact not yet revealed */}
-                        {isAccepted && !app.contactRevealed && (
-                          <p className="text-xs mt-2" style={{ color: "oklch(0.68 0.20 160)" }}>
-                            ✓ התקבלת! המעסיק ייצור איתך קשר בקרוב.
-                          </p>
-                        )}
-
-                        {/* View job link */}
-                        <div className="mt-2 text-left">
-                          <a
-                            href={`/job/${app.jobId}`}
-                            className="text-xs underline"
-                            style={{ color: "oklch(0.70 0.18 260 / 0.7)" }}
-                          >
-                            צפה במשרה
-                          </a>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                {/* View job link */}
+                <div className="mt-2 text-left">
+                  <a
+                    href={`/job/${app.jobId}`}
+                    className="text-xs underline"
+                    style={{ color: "oklch(0.70 0.18 260 / 0.7)" }}
+                  >
+                    צפה במשרה
+                  </a>
                 </div>
-              </AnimatePresence>
-            </div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </div>
   );

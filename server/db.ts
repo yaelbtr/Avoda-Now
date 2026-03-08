@@ -13,6 +13,8 @@ import {
   InsertWorkerAvailability,
   applications,
   notificationBatches,
+  pushSubscriptions,
+  InsertPushSubscription,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1125,4 +1127,30 @@ export async function getUnreadApplicationsCount(
       )
     );
   return rows[0]?.cnt ?? 0;
+}
+
+// ── Push Subscription helpers ─────────────────────────────────────────────
+
+export async function savePushSubscription(data: InsertPushSubscription): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // Upsert by endpoint: if same endpoint re-subscribes, update its keys
+  await db
+    .insert(pushSubscriptions)
+    .values(data)
+    .onDuplicateKeyUpdate({
+      set: {
+        p256dh: data.p256dh,
+        auth: data.auth,
+        userId: data.userId,
+      },
+    });
+}
+
+export async function deletePushSubscriptionByEndpoint(endpoint: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .delete(pushSubscriptions)
+    .where(eq(pushSubscriptions.endpoint, endpoint));
 }

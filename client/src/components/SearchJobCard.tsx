@@ -177,7 +177,7 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
         }}
       >
         {/* Top: title + location */}
-        <div>
+        <div style={{ textAlign: "right" }}>
           <h3
             style={{
               color: OLIVE,
@@ -189,6 +189,7 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
+              textAlign: "right",
             }}
           >
             {job.title}
@@ -198,16 +199,17 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "flex-end",
                 gap: 3,
                 color: `${OLIVE}99`,
                 fontSize: 11,
                 fontWeight: 500,
               }}
             >
-              <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {job.businessName ? `${job.businessName}, ` : ""}{location}
               </span>
+              <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />
               {showDistance && job.distance != null && (
                 <span
                   style={{

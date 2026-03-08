@@ -188,7 +188,7 @@ export default function HomeEmployer() {
         />
 
         {/* Content — centered */}
-        <div className="relative z-10 flex flex-col justify-end items-center text-center px-5 pt-14 pb-8" style={{ minHeight: "480px" }}>
+        <div className="relative z-10 flex flex-col justify-center items-center text-center px-5 pt-14 pb-8" style={{ minHeight: "480px" }}>
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}

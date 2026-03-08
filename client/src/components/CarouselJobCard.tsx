@@ -120,7 +120,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         style={{
           background: "#ffffff",
           border: "1px solid #e8e8e8",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
           transition: "all 0.22s cubic-bezier(0.22, 1, 0.36, 1)",
           minHeight: 220,
         }}
@@ -182,7 +182,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         <div className="flex flex-col flex-1 px-4 pb-3.5" dir="rtl" style={{ paddingTop: "28px" }}>
           {/* Title */}
           <h3
-            className="font-bold text-[15px] leading-snug mb-1 line-clamp-2 text-right w-full"
+            className="font-extrabold text-[15px] leading-snug mb-1.5 line-clamp-2 text-right w-full"
             style={{ color: "#1a1a1a" }}
           >
             {job.title}
@@ -192,12 +192,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {location && (
             <div
               className="flex items-center gap-1 text-[12px] mb-auto justify-end"
-              style={{ color: "#888888" }}
+              style={{ color: "#777777" }}
             >
               <span className="truncate">
                 {job.businessName ? `${job.businessName}, ` : ""}{location}
               </span>
-              <MapPin className="h-3 w-3 shrink-0" style={{ color: "#aaaaaa" }} />
+              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#bbbbbb" }} />
             </div>
           )}
 
@@ -208,11 +208,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           <div className="flex items-center justify-between" dir="rtl">
             {/* Start time pill — right side */}
             <span
-              className="flex items-center gap-1 text-[12px] font-medium px-3 py-1 rounded-full"
+              className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
               style={{
-                background: "#f5f5f5",
-                color: "#555555",
-                border: "1px solid #ebebeb",
+                background: "#f7f7f7",
+                color: "#444444",
+                border: "1px solid #e8e8e8",
               }}
             >
               {getStartTimeLabel(job.startTime)}
@@ -222,12 +222,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             {salaryStr ? (
               <div className="flex items-baseline gap-0.5">
                 <span
-                  className="text-[17px] font-black"
-                  style={{ color: "#c8a020" }}
+                  className="text-[18px] font-black"
+                  style={{ color: "#F5A623" }}
                 >
                   ₪{salaryStr}
                 </span>
-                <span className="text-[11px] font-normal" style={{ color: "#999999" }}>
+                <span className="text-[11px] font-medium" style={{ color: "#aaaaaa" }}>
                   /שעה
                 </span>
               </div>

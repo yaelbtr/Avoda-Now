@@ -1004,11 +1004,25 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           borderTop: "1px solid oklch(0.85 0.06 84.0 / 0.5)",
         }}
         onClick={resetUserMode}
+        onMouseEnter={(e) => {
+          const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
+          if (bar) bar.style.borderRightWidth = '8px';
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1.12)'; arrow.style.boxShadow = '0 4px 12px oklch(0.75 0.18 80.8 / 0.35)'; }
+        }}
+        onMouseLeave={(e) => {
+          const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
+          if (bar) bar.style.borderRightWidth = '4px';
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1)'; arrow.style.boxShadow = 'none'; }
+        }}
       >
         <div
+          data-accent-bar
           className="flex items-center justify-between px-6 py-4"
           style={{
             borderRight: "4px solid var(--amber)",
+            transition: "border-right-width 0.2s ease",
           }}
         >
           <div className="flex flex-col gap-0.5">
@@ -1016,6 +1030,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <p className="text-[13px] font-semibold" style={{ color: "var(--amber)" }}>לחצו לפרסום עבודה</p>
           </div>
           <div
+            data-arrow-btn
             className="flex items-center justify-center rounded-full shrink-0"
             style={{
               width: 36,
@@ -1024,6 +1039,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               color: "white",
               fontSize: 18,
               fontWeight: 700,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
             }}
           >
             ←

@@ -37,6 +37,16 @@ export const users = mysqlTable("users", {
   preferredCategories: json("preferredCategories").$type<string[]>(),
   /** Worker's preferred city / area */
   preferredCity: varchar("preferredCity", { length: 100 }),
+  /** Worker's location mode for matching: city or radius */
+  locationMode: mysqlEnum("locationMode", ["city", "radius"]).default("city"),
+  /** Worker's GPS latitude for radius-based matching */
+  workerLatitude: decimal("workerLatitude", { precision: 10, scale: 7 }),
+  /** Worker's GPS longitude for radius-based matching */
+  workerLongitude: decimal("workerLongitude", { precision: 10, scale: 7 }),
+  /** Worker's preferred search radius in km */
+  searchRadiusKm: int("searchRadiusKm").default(5),
+  /** Free text describing work preferences for AI matching */
+  preferenceText: text("preferenceText"),
   /** Short bio / note from worker */
   workerBio: text("workerBio"),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */
@@ -124,6 +134,12 @@ export const jobs = mysqlTable("jobs", {
   reportCount: int("reportCount").default(0).notNull(),
   /** JSON array of normalized tags for future AI matching */
   jobTags: json("jobTags").$type<string[]>(),
+  /** Job location mode for matching: city or radius */
+  jobLocationMode: mysqlEnum("jobLocationMode", ["city", "radius"]).default("radius"),
+  /** Job search radius in km (used when jobLocationMode = radius) */
+  jobSearchRadiusKm: int("jobSearchRadiusKm").default(5),
+  /** Hourly rate for the job */
+  hourlyRate: decimal("hourlyRate", { precision: 10, scale: 2 }),
   /** Whether the employer's phone number is visible to workers on the job card */
   showPhone: boolean("showPhone").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

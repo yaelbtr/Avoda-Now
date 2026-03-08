@@ -734,3 +734,17 @@
 - [x] Add Facebook share option (sharer.php link)
 - [x] Add Telegram share option (t.me/share link)
 - [x] Add "העתק קישור" with clipboard copy + visual confirmation (Check icon + green color for 1.2s)
+
+## Worker-Job Matching Infrastructure
+- [x] DB: add locationMode, workerLatitude, workerLongitude, searchRadiusKm, preferenceText to users table
+- [x] DB: add jobLocationMode, jobSearchRadiusKm to jobs table
+- [x] DB: push migrations
+- [x] Server: updateWorkerProfile — include new matching fields (locationMode, workerLatitude, workerLongitude, searchRadiusKm, preferenceText)
+- [x] Server: jobs.matchWorkers mutation — calls external MATCHING_API_URL/match-workers (stub if not configured)
+- [x] Server: jobs.sendJobOffer mutation — calls external MATCHING_API_URL/job-offer (stub if not configured)
+- [x] UI: /worker-preferences page — preference text, category selection, location mode (radius/city)
+- [x] UI: HomeWorker "העדפות" button now navigates to /worker-preferences
+- [x] UI: PostJob — location mode selector (radius/city) with radius options
+- [x] UI: MyJobs — "עובדים מתאימים" button on active jobs → /matched-workers?jobId=...
+- [x] UI: /matched-workers page — shows matched workers with score, distance, send-offer button
+- [x] Routes: /worker-preferences and /matched-workers registered in App.tsx

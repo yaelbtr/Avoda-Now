@@ -134,6 +134,13 @@
       "when": 1772988268947,
       "tag": "0018_fearless_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1773001391220,
+      "tag": "0019_high_thundra",
+      "breakpoints": true
     }
   ]
 }

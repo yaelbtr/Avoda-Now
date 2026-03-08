@@ -129,6 +129,11 @@ export async function getWorkerProfile(id: number) {
       preferredCity: users.preferredCity,
       workerBio: users.workerBio,
       workerTags: users.workerTags,
+      locationMode: users.locationMode,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
+      preferenceText: users.preferenceText,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -138,7 +143,17 @@ export async function getWorkerProfile(id: number) {
 
 export async function updateWorkerProfile(
   id: number,
-  data: { preferredCategories?: string[]; preferredCity?: string | null; workerBio?: string | null; name?: string | null }
+  data: {
+    preferredCategories?: string[];
+    preferredCity?: string | null;
+    workerBio?: string | null;
+    name?: string | null;
+    locationMode?: "city" | "radius";
+    workerLatitude?: string | null;
+    workerLongitude?: string | null;
+    searchRadiusKm?: number | null;
+    preferenceText?: string | null;
+  }
 ) {
   const db = await getDb();
   if (!db) return;
@@ -147,6 +162,11 @@ export async function updateWorkerProfile(
   if (data.preferredCity !== undefined) updateSet.preferredCity = data.preferredCity;
   if (data.workerBio !== undefined) updateSet.workerBio = data.workerBio;
   if (data.name !== undefined) updateSet.name = data.name;
+  if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
+  if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
+  if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;
+  if (data.searchRadiusKm !== undefined) updateSet.searchRadiusKm = data.searchRadiusKm;
+  if (data.preferenceText !== undefined) updateSet.preferenceText = data.preferenceText;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
 }

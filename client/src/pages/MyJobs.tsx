@@ -20,7 +20,7 @@ import BrandLoader from "@/components/BrandLoader";
 import {
   Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
   Clock, MapPin, Users, DollarSign, Eye, Zap,
-  ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX,
+  ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX, Sparkles,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { toast } from "sonner";
@@ -772,6 +772,26 @@ export default function MyJobs() {
                             : <ChevronDown className="h-3 w-3" />}
                         </AppButton>
                       </motion.div>
+
+                      {/* Matched Workers button */}
+                      {job.status === "active" && (
+                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                          <AppButton
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
+                            style={{
+                              background: "oklch(0.93 0.05 122)",
+                              border: "1px solid oklch(0.75 0.10 122)",
+                              color: "oklch(0.35 0.08 122)",
+                            }}
+                          >
+                            <Sparkles className="h-3.5 w-3.5" />
+                            עובדים מתאימים
+                          </AppButton>
+                        </motion.div>
+                      )}
 
                       {job.status === "active" ? (
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>

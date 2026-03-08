@@ -17,7 +17,7 @@ import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
@@ -66,6 +66,9 @@ export default function PostJob() {
   const [lng, setLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
+  const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
+  const [jobCity, setJobCity] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
 
@@ -190,6 +193,7 @@ export default function PostJob() {
       description: data.description,
       category: data.category as Parameters<typeof createJob.mutate>[0]["category"],
       address: data.address,
+      city: jobLocationMode === "city" ? jobCity || undefined : undefined,
       latitude: lat,
       longitude: lng,
       salary: data.salary ? parseFloat(data.salary) : undefined,
@@ -444,8 +448,63 @@ export default function PostJob() {
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
           <h2 className="font-semibold text-foreground flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            מיקום
+            מיקום ואיך לחפש עובדים
           </h2>
+
+          {/* Location mode selection */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground">איך תרצה לחפש עובדים?</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setJobLocationMode("radius")}
+                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  jobLocationMode === "radius" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"
+                }`}
+              >
+                <Crosshair className="h-4 w-4" />
+                עובדים ברדיוס
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobLocationMode("city")}
+                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  jobLocationMode === "city" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"
+                }`}
+              >
+                <Building2 className="h-4 w-4" />
+                עובדים מעיר
+              </button>
+            </div>
+
+            {jobLocationMode === "radius" && (
+              <div className="flex gap-2 pt-1">
+                {[2, 5, 10, 20].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setJobSearchRadiusKm(r)}
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                      jobSearchRadiusKm === r ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {r} ק"מ
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {jobLocationMode === "city" && (
+              <input
+                type="text"
+                value={jobCity}
+                onChange={(e) => setJobCity(e.target.value)}
+                placeholder="שם העיר, לדוגמה: תל אביב"
+                className="w-full rounded-xl px-3 py-2 text-sm border border-border bg-background outline-none mt-1"
+              />
+            )}
+          </div>
+
           <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
 
           <AppButton

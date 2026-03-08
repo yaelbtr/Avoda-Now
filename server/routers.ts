@@ -419,6 +419,76 @@ const jobsRouter = router({
       return jobs;
     }),
 
+  /**
+   * Call external matching API to get workers matching a job.
+   * Returns worker IDs with scores from the external backend.
+   */
+  matchWorkers: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const job = await getJobById(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+
+      const MATCHING_API_URL = process.env.MATCHING_API_URL;
+      if (!MATCHING_API_URL) {
+        // Return empty list if no external API configured yet
+        return { workers: [] as { worker_id: number; score: number }[] };
+      }
+
+      try {
+        const res = await fetch(`${MATCHING_API_URL}/match-workers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            job_id: job.id,
+            job_description: job.description,
+            latitude: job.latitude,
+            longitude: job.longitude,
+            city: job.city,
+            location_mode: job.jobLocationMode ?? "radius",
+          }),
+        });
+        if (!res.ok) throw new Error(`Matching API error: ${res.status}`);
+        const data = await res.json() as { workers: { worker_id: number; score: number }[] };
+        return data;
+      } catch (err) {
+        console.warn("[MatchWorkers] External API call failed:", err);
+        return { workers: [] as { worker_id: number; score: number }[] };
+      }
+    }),
+
+  /**
+   * Send a job offer to a specific worker via external API.
+   */
+  sendJobOffer: protectedProcedure
+    .input(z.object({ jobId: z.number(), workerId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const job = await getJobById(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+
+      const MATCHING_API_URL = process.env.MATCHING_API_URL;
+      if (!MATCHING_API_URL) {
+        // Stub: log and return success when no external API configured
+        console.log(`[JobOffer] Stub: offer job #${input.jobId} to worker #${input.workerId}`);
+        return { success: true, stub: true };
+      }
+
+      try {
+        const res = await fetch(`${MATCHING_API_URL}/job-offer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: input.jobId, worker_id: input.workerId }),
+        });
+        if (!res.ok) throw new Error(`Job offer API error: ${res.status}`);
+        return { success: true, stub: false };
+      } catch (err) {
+        console.warn("[JobOffer] External API call failed:", err);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה בשליחת ההצעה" });
+      }
+    }),
+
   /** Mark a job as filled — only the job owner can do this */
   markFilled: protectedProcedure
     .input(z.object({ id: z.number() }))
@@ -836,6 +906,11 @@ const userRouter = router({
         preferredCategories: z.array(z.string()).optional(),
         preferredCity: z.string().max(100).nullable().optional(),
         workerBio: z.string().max(500).nullable().optional(),
+        locationMode: z.enum(["city", "radius"]).optional(),
+        workerLatitude: z.string().nullable().optional(),
+        workerLongitude: z.string().nullable().optional(),
+        searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
+        preferenceText: z.string().max(1000).nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -844,6 +919,11 @@ const userRouter = router({
         preferredCategories: input.preferredCategories,
         preferredCity: input.preferredCity,
         workerBio: input.workerBio,
+        locationMode: input.locationMode,
+        workerLatitude: input.workerLatitude,
+        workerLongitude: input.workerLongitude,
+        searchRadiusKm: input.searchRadiusKm ?? undefined,
+        preferenceText: input.preferenceText,
       });
       return { success: true };
     }),

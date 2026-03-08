@@ -263,7 +263,7 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
                 <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
                   <span style={{ color: OLIVE, fontSize: 16, fontWeight: 800 }}>{salaryStr}</span>
                   <span style={{ color: OLIVE, fontSize: 12, fontWeight: 700 }}>₪</span>
-                  <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 1 }}>/שעה</span>
+                  <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 1 }}>לשעה</span>
                 </div>
               ) : (
                 <span style={{ color: "#9ca3af", fontSize: 11 }}>שכר לא צוין</span>

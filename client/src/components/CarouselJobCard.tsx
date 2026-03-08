@@ -254,7 +254,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
               <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
                 <span style={{ color: OLIVE, fontSize: 17, fontWeight: 800 }}>{salaryStr}</span>
                 <span style={{ color: OLIVE, fontSize: 14, fontWeight: 700 }}>₪</span>
-                <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 2 }}>/שעה</span>
+                <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 2 }}>לשעה</span>
               </div>
             ) : (
               <span style={{ color: "#9ca3af", fontSize: 11 }}>שכר לא צוין</span>

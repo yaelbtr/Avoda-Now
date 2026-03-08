@@ -513,8 +513,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Availability row */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div style={{ width: 4, height: 20, borderRadius: 4, background: "#4F583B" }} />
-            <span className="text-[15px] font-black" style={{ color: "#4F583B" }}>זמינות לעבודה</span>
+            <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+            <span className="text-[17px] font-black" style={{ color: "#4F583B" }}>זמינות לעבודה</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>

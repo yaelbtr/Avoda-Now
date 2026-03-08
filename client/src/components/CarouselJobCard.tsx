@@ -83,13 +83,15 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className="w-full rounded-2xl overflow-hidden flex flex-col"
+      className="w-full rounded-2xl overflow-hidden flex flex-col focus:outline-none focus-visible:outline-none"
       dir="rtl"
       style={{
         background: "#ffffff",
         boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
         width: 220,
         flexShrink: 0,
+        outline: "none",
+        border: "none",
       }}
     >
       {/* ── Header image ── */}

@@ -670,3 +670,6 @@
 
 ## Bug: Blank page after role selection (still open)
 - [x] Definitive fix: after clicking role button, HomeWorker/HomeEmployer must render
+
+## Bug: Role selection button click does nothing
+- [x] Fix: clicking "המשך כעובד" / "המשך כמעסיק" does nothing

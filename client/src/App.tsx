@@ -27,7 +27,7 @@ import PublicWorkerProfile from "./pages/PublicWorkerProfile";
 import ApplicationView from "./pages/ApplicationView";
 import JobApplications from "./pages/JobApplications";
 import MyApplications from "./pages/MyApplications";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 
@@ -46,39 +46,22 @@ function MapsPreloader() {
 }
 
 function Router() {
-  const { needsRoleSelection, setLocalModeOnly, userMode } = useUserMode();
+  const { needsRoleSelection, setUserMode, userMode } = useUserMode();
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
 
-  // Track whether the role selection screen should be visible.
-  // We keep it true until the exit animation completes (via onExitComplete).
+  // Show RoleSelectionScreen when:
+  // 1. Authenticated user has no role yet (needsRoleSelection), OR
+  // 2. Guest is on the root path AND has no saved session role
   const isRootPath = location === "/" || location === "";
-  const guestHasRole = !isAuthenticated && userMode !== null;
-  const shouldShowRoleSelection = needsRoleSelection || (isRootPath && !guestHasRole);
-
-  // showRoleSelection is the "display" flag — it stays true while animating out.
-  // We use a separate state so we can delay removal until animation ends.
-  const [showRoleSelection, setShowRoleSelection] = useState(shouldShowRoleSelection);
-
-  // When the logical condition becomes true again (e.g. user resets role), show it.
-  useEffect(() => {
-    if (shouldShowRoleSelection) {
-      setShowRoleSelection(true);
-    }
-  }, [shouldShowRoleSelection]);
+  const hasRole = userMode !== null;
+  const showRoleSelection = needsRoleSelection || (isRootPath && !hasRole);
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    // Update the mode immediately — this makes shouldShowRoleSelection false.
-    setLocalModeOnly(mode);
+    setUserMode(mode);
     if (location !== "/" && location !== "") {
       navigate("/");
     }
-    // showRoleSelection stays true until onExitComplete fires.
-  };
-
-  const handleExitComplete = () => {
-    // Animation finished — now actually remove RoleSelectionScreen from DOM.
-    setShowRoleSelection(false);
   };
 
   // Derive a stable segment key so that /job/1 and /job/2 share the same
@@ -92,18 +75,14 @@ function Router() {
       <GuestLoginBanner />
 
       <main className="flex-1" style={{ overflow: "hidden" }}>
-        {showRoleSelection ? (
-          <AnimatePresence onExitComplete={handleExitComplete}>
-            {shouldShowRoleSelection && (
-              <RoleSelectionScreen
-                key="role-selection"
-                onSelected={handleRoleSelected}
-              />
-            )}
-          </AnimatePresence>
-        ) : (
-          <AnimatePresence mode="wait" initial={false}>
-            <PageTransition routeKey={routeKey}>
+        <AnimatePresence mode="wait">
+          {showRoleSelection ? (
+            <RoleSelectionScreen
+              key="role-selection"
+              onSelected={handleRoleSelected}
+            />
+          ) : (
+            <PageTransition key={routeKey} routeKey={routeKey}>
               <Switch>
                 <Route path="/" component={Home} />
                 <Route path="/find-jobs" component={FindJobs} />
@@ -124,8 +103,8 @@ function Router() {
                 <Route component={NotFound} />
               </Switch>
             </PageTransition>
-          </AnimatePresence>
-        )}
+          )}
+        </AnimatePresence>
       </main>
 
       <Footer />

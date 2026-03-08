@@ -834,8 +834,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </section>
       )}
 
-      {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────────── */}
-      <section className="px-6 mb-8 max-w-lg mx-auto relative z-10">
+       {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────── */}
+      <section
+        className="mb-8 relative z-10"
+        style={{
+          background: "oklch(0.97 0.012 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          borderBottom: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 24px",
+        }}
+      >
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
@@ -927,6 +936,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             ))}
           </div>
         )}
+        </div>
       </section>
 
       {/* ── Not found CTA ─────────────────────────────────────────────────────────── */}

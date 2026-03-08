@@ -954,7 +954,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "center 15%",
+              objectPosition: "center 55%",
             }}
           />
           {/* Bottom fade into content */}

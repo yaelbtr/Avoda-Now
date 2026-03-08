@@ -203,6 +203,22 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
           </div>
         )}
 
+        {/* Time ago */}
+        {job.createdAt && (
+          <div style={{ fontSize: 10, color: "#aaa", textAlign: "center", marginBottom: 6 }}>
+            {(() => {
+              const diff = Date.now() - new Date(job.createdAt).getTime();
+              const mins = Math.floor(diff / 60000);
+              const hours = Math.floor(diff / 3600000);
+              const days = Math.floor(diff / 86400000);
+              if (mins < 1) return "פורסם זה עתה";
+              if (mins < 60) return `לפני ${mins} דקות`;
+              if (hours < 24) return `לפני ${hours} שעות`;
+              if (days === 1) return "לפני יום";
+              return `לפני ${days} ימים`;
+            })()}
+          </div>
+        )}
         {/* Divider */}
         <div style={{ height: 1, background: "#f0ede6", marginBottom: 10 }} />
 

@@ -52,7 +52,7 @@ function StatsRow() {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+      initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: 0.1 }}
       dir="rtl"
       className="flex items-stretch justify-between gap-0 mt-8 rounded-2xl px-2 py-3 w-full max-w-[300px]"
       style={{
@@ -720,7 +720,13 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Urgent / Today carousel ───────────────────────────────────────── */}
       {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
         <section className="mb-10 relative z-10">
-          <div className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto">
+          <motion.div
+            className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
             <div className="flex items-center gap-2">
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
               <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>דחוף להיום</h2>
@@ -732,7 +738,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             >
               הכל
             </button>
-          </div>
+          </motion.div>
 
           {(urgentQuery.isLoading || todayQuery.isLoading) ? (
             <div className="px-6"><CarouselSkeletonRow count={3} /></div>
@@ -837,15 +843,23 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   setActiveCarouselIdx(idx);
                 }}
               >
-                {allCarouselJobs.map(({ job, badge }) => (
-                  <div key={`${badge}-${job.id}`} className="snap-start shrink-0" style={{ width: 220 }}>
+                {allCarouselJobs.map(({ job, badge }, idx) => (
+                  <motion.div
+                    key={`${badge}-${job.id}`}
+                    className="snap-start shrink-0"
+                    style={{ width: 220 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
+                  >
                     <CarouselJobCard
                       job={{ ...job, isUrgent: badge === "urgent" }}
                       badge={badge}
                       onLoginRequired={onLoginRequired}
                       onCardClick={(j) => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
                     />
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 

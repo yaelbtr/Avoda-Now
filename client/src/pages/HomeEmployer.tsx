@@ -46,8 +46,9 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
       className="flex gap-3 mt-5"
     >
       {stats.map(({ label, value, icon: Icon }) => (
@@ -471,7 +472,13 @@ export default function HomeEmployer() {
           boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
         }}
       >
-        <div className="flex items-center justify-between mb-5">
+        <motion.div
+          className="flex items-center justify-between mb-5"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.65 0.22 160 / 0.12)", border: "1px solid oklch(0.65 0.22 160 / 0.20)" }}>
               <Users className="h-4 w-4" style={{ color: "oklch(0.45 0.22 160)" }} />
@@ -486,7 +493,7 @@ export default function HomeEmployer() {
             כל העובדים
             <ChevronLeft className="h-3.5 w-3.5" style={{ transform: "rotate(180deg)" }} />
           </button>
-        </div>
+        </motion.div>
 
         {workersQuery.isLoading ? (
           <div className="px-1 py-2">
@@ -516,9 +523,16 @@ export default function HomeEmployer() {
               }}
             >
               {workers.map((worker, i) => (
-                <div key={worker.userId} className="snap-start shrink-0 w-[52vw] max-w-[180px]">
+                <motion.div
+                  key={worker.userId}
+                  className="snap-start shrink-0 w-[52vw] max-w-[180px]"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.35, delay: i * 0.06, ease: "easeOut" }}
+                >
                   <WorkerCarouselCard worker={worker} index={i} />
-                </div>
+                </motion.div>
               ))}
             </div>
 

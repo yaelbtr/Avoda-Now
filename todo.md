@@ -704,3 +704,9 @@
 ## Scroll-triggered entrance animations on "How it works" cards
 - [x] HomeEmployer: replace initial/animate with whileInView + viewport once:true
 - [x] HomeWorker: same scroll-triggered entrance animation
+
+## Scroll-in animations for stats + job cards
+- [x] HomeWorker: whileInView on StatsRow section header + individual stat cards (staggered)
+- [x] HomeWorker: whileInView on carousel section header + job cards
+- [x] HomeEmployer: whileInView on StatsRow section header + individual stat cards (staggered)
+- [x] HomeEmployer: whileInView on carousel section header + worker cards

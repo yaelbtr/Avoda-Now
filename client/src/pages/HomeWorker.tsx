@@ -507,9 +507,39 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div className="flex items-center justify-between mb-3">
           <span className="text-[13px] font-bold" style={{ color: "oklch(0.42 0.04 122)" }}>זמינות לעבודה</span>
           <div className="flex items-center gap-2">
-            <div className="relative size-2">
-              <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8", opacity: 0.5 }} />
-              <div className="relative size-full rounded-full" style={{ backgroundColor: isAvailable ? "#22c55e" : "#94a3b8" }} />
+            <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
+              {/* outer slow pulse ring — only when available */}
+              {isAvailable && (
+                <span
+                  className="absolute rounded-full"
+                  style={{
+                    inset: -4,
+                    background: "oklch(0.55 0.22 150 / 0.20)",
+                    animation: "pulse-ring-slow 2.2s ease-in-out infinite",
+                  }}
+                />
+              )}
+              {/* inner ping ring */}
+              {isAvailable && (
+                <span
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    backgroundColor: "#22c55e",
+                    opacity: 0.45,
+                    animation: "ping 1.6s cubic-bezier(0,0,0.2,1) infinite",
+                  }}
+                />
+              )}
+              {/* core dot */}
+              <span
+                className="relative rounded-full block"
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: isAvailable ? "#22c55e" : "#94a3b8",
+                  boxShadow: isAvailable ? "0 0 0 2px oklch(0.55 0.22 150 / 0.25)" : "none",
+                }}
+              />
             </div>
             <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
               {isAvailable ? "זמין כרגע" : "לא זמין"}

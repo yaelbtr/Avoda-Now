@@ -621,133 +621,194 @@ export default function HomeEmployer() {
         )}
       </section>
 
-      {/* ── My Active Jobs (authenticated) ──────────────────────────── */}
+      {/* ── My Active Jobs (authenticated) ────────────────────── */}
       {isAuthenticated && (
         <motion.section
+          dir="rtl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="relative z-10 mx-6 mb-8 rounded-[28px] p-6 max-w-lg"
+          className="relative z-10 mx-4 mb-8 rounded-3xl overflow-hidden max-w-lg"
           style={{
             background: "white",
-            boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+            boxShadow: "0 8px 32px oklch(0.38 0.07 125.0 / 0.12), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+            border: "1px solid oklch(0.92 0.03 91.6)",
           }}
         >
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.38 0.07 125.0 / 0.10)", border: "1px solid oklch(0.38 0.07 125.0 / 0.18)" }}>
-                <Briefcase className="h-4 w-4" style={{ color: "oklch(0.38 0.07 125.0)" }} />
+          {/* Header strip */}
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: "oklch(1 0 0 / 0.15)" }}
+              >
+                <Briefcase className="h-4 w-4" style={{ color: "oklch(0.92 0.08 80)" }} />
               </div>
-              <h3 className="text-[15px] font-black" style={{ color: "oklch(0.22 0.06 122)" }}>המשרות שלי</h3>
+              <h3 className="text-[15px] font-black" style={{ color: "white" }}>המשרות שלי</h3>
             </div>
             <button
               onClick={() => navigate("/my-jobs")}
-              className="flex items-center gap-1 text-[12px] font-semibold"
-              style={{ color: "oklch(0.45 0.08 122)" }}
+              className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: "oklch(1 0 0 / 0.15)", color: "oklch(0.95 0.04 80)" }}
             >
               כל המשרות
               <ChevronLeft className="h-3.5 w-3.5" style={{ transform: "rotate(180deg)" }} />
             </button>
           </div>
 
-          {myJobsQuery.isLoading ? (
-            <div className="space-y-2">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: "oklch(0.95 0.02 91.6)" }} />
-              ))}
-            </div>
-          ) : myJobs.length === 0 ? (
-            <div className="text-center py-6">
-              <Briefcase className="h-10 w-10 mx-auto mb-2" style={{ color: "oklch(0.75 0.10 125 / 0.50)" }} />
-              <p className="text-sm font-medium mb-3" style={{ color: "oklch(0.52 0.03 100)" }}>עדיין לא פרסמת משרות</p>
-              <motion.button
-                onClick={handlePostJob}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[13px]"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                  color: "oklch(0.96 0.04 80)",
-                }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Plus size={13} />
-                פרסם משרה ראשונה
-              </motion.button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {myJobs.slice(0, 3).map((job, i) => (
-                <motion.div
-                  key={job.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.3 }}
-                  className="rounded-xl p-3 flex items-center gap-3"
+          {/* Body */}
+          <div className="px-4 pt-4 pb-5">
+            {myJobsQuery.isLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: "oklch(0.95 0.02 91.6)" }} />
+                ))}
+              </div>
+            ) : myJobs.length === 0 ? (
+              <div className="text-center py-8">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                  style={{ background: "oklch(0.38 0.07 125.0 / 0.08)", border: "1px solid oklch(0.38 0.07 125.0 / 0.15)" }}
+                >
+                  <Briefcase className="h-7 w-7" style={{ color: "oklch(0.45 0.08 122)" }} />
+                </div>
+                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת משרות</p>
+                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ראשונה וקבל מועמדים תוך דקות</p>
+                <motion.button
+                  onClick={handlePostJob}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl font-bold text-[13px]"
                   style={{
-                    background: "oklch(0.9904 0.0107 95.3)",
-                    border: "1px solid oklch(0.89 0.05 84.0)",
+                    background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                    color: "oklch(0.96 0.04 80)",
+                    boxShadow: "0 4px 14px oklch(0.28 0.06 122 / 0.30)",
                   }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate" style={{ color: "oklch(0.22 0.06 122)" }}>{job.title}</p>
-                    <p className="text-xs mt-0.5 flex items-center gap-1.5" style={{ color: "oklch(0.52 0.03 100)" }}>
-                      {job.city && <><MapPin size={10} />{job.city}</>}
-                      {job.salary && <><Clock size={10} />₪{job.salary}</>}
-                      <span
-                        className="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                  <Plus size={14} />
+                  פרסם משרה ראשונה
+                </motion.button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {myJobs.slice(0, 3).map((job, i) => (
+                  <motion.div
+                    key={job.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.07, duration: 0.3 }}
+                    className="rounded-2xl p-3.5 flex items-center gap-3"
+                    style={{
+                      background: "oklch(0.985 0.008 95.3)",
+                      border: "1px solid oklch(0.91 0.04 91.6)",
+                    }}
+                  >
+                    {/* Job icon */}
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: job.status === "active"
+                          ? "oklch(0.92 0.08 145 / 0.25)"
+                          : job.status === "closed"
+                          ? "oklch(0.93 0.02 100 / 0.5)"
+                          : "oklch(0.93 0.08 30 / 0.25)",
+                        border: `1px solid ${job.status === "active" ? "oklch(0.80 0.12 145 / 0.3)" : job.status === "closed" ? "oklch(0.75 0.02 100 / 0.3)" : "oklch(0.75 0.10 30 / 0.3)"}`,
+                      }}
+                    >
+                      <Briefcase
+                        className="h-4 w-4"
                         style={{
-                          background: job.status === "active" ? "oklch(0.90 0.10 145)" : job.status === "closed" ? "oklch(0.93 0.02 100)" : "oklch(0.93 0.08 30)",
-                          color: job.status === "active" ? "oklch(0.35 0.15 145)" : job.status === "closed" ? "oklch(0.45 0.02 100)" : "oklch(0.45 0.12 30)",
+                          color: job.status === "active" ? "oklch(0.38 0.15 145)" : job.status === "closed" ? "oklch(0.50 0.02 100)" : "oklch(0.45 0.12 30)",
                         }}
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="font-bold text-[13px] truncate" style={{ color: "oklch(0.22 0.06 122)" }}>{job.title}</p>
+                        <span
+                          className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          style={{
+                            background: job.status === "active" ? "oklch(0.90 0.10 145)" : job.status === "closed" ? "oklch(0.91 0.02 100)" : "oklch(0.93 0.08 30)",
+                            color: job.status === "active" ? "oklch(0.30 0.15 145)" : job.status === "closed" ? "oklch(0.42 0.02 100)" : "oklch(0.40 0.12 30)",
+                          }}
+                        >
+                          {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : "פג תוקף"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]" style={{ color: "oklch(0.55 0.03 100)" }}>
+                        {job.city && (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={9} />{job.city}
+                          </span>
+                        )}
+                        {job.salary && (
+                          <span className="flex items-center gap-1">
+                            <Clock size={9} />₪{job.salary}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex gap-1.5 shrink-0">
+                      <button
+                        onClick={() => navigate(`/job/${job.id}`)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="צפייה"
                       >
-                        {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : "פג"}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex gap-1 shrink-0">
-                    <button
-                      onClick={() => navigate(`/job/${job.id}`)}
-                      className="p-1.5 rounded-lg transition-all"
-                      style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.52 0.03 100)" }}
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/edit-job/${job.id}`)}
-                      className="p-1.5 rounded-lg transition-all"
-                      style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.52 0.03 100)" }}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-              {myJobs.length > 3 && (
-                <button
-                  onClick={() => navigate("/my-jobs")}
-                  className="w-full text-center text-xs py-2 font-medium"
-                  style={{ color: "oklch(0.45 0.08 122)" }}
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/edit-job/${job.id}`)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="עריכה"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+
+                {myJobs.length > 3 && (
+                  <button
+                    onClick={() => navigate("/my-jobs")}
+                    className="w-full text-center text-[12px] py-2 font-semibold rounded-xl"
+                    style={{
+                      color: "oklch(0.45 0.08 122)",
+                      background: "oklch(0.38 0.07 125.0 / 0.06)",
+                      border: "1px dashed oklch(0.38 0.07 125.0 / 0.25)",
+                    }}
+                  >
+                    + עוד {myJobs.length - 3} משרות
+                  </button>
+                )}
+
+                <motion.button
+                  onClick={handlePostJob}
+                  className="mt-1 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-[13px]"
+                  style={{
+                    background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                    color: "oklch(0.96 0.04 80)",
+                    boxShadow: "0 4px 14px oklch(0.28 0.06 122 / 0.25)",
+                  }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
-                  + עוד {myJobs.length - 3} משרות
-                </button>
-              )}
-              <motion.button
-                onClick={handlePostJob}
-                className="mt-2 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-[13px]"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                  color: "oklch(0.96 0.04 80)",
-                  boxShadow: "0 3px 12px oklch(0.28 0.06 122 / 0.30)",
-                }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              >
-                <Plus size={13} />
-                פרסם משרה חדשה
-              </motion.button>
-            </div>
-          )}
+                  <Plus size={14} />
+                  פרסם משרה חדשה
+                </motion.button>
+              </div>
+            )}
+          </div>
         </motion.section>
       )}
 

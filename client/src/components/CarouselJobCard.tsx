@@ -223,7 +223,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
               <div className="flex items-baseline gap-0.5">
                 <span
                   className="text-[18px] font-black"
-                  style={{ color: "#F5A623" }}
+                  style={{ color: "oklch(0.82 0.15 80.8)" }}
                 >
                   ₪{salaryStr}
                 </span>

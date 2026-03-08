@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Users, Zap, Flame, Phone, Share2, ChevronLeft } from "lucide-react";
-import { AppButton } from "@/components/AppButton";
+import { MapPin, Clock, Users, Zap, Flame, Phone, Share2, ChevronLeft, Navigation } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -20,7 +19,6 @@ import {
   C_DANGER as DANGER, C_WARNING as WARNING,
   C_SUCCESS as SUCCESS,
   C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
-  C_TEXT_ON_DARK_MID,
 } from "@/lib/colors";
 
 interface CarouselJob {
@@ -72,6 +70,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
   const catIcon = getCategoryIcon(job.category);
   const catLabel = getCategoryLabel(job.category);
   const location = job.city ?? job.address;
+  const isUrgent = badge === "urgent";
 
   const handleCall = () => {
     if (!isAuthenticated) { onLoginRequired?.("כדי להתקשר יש להתחבר"); return; }
@@ -87,72 +86,52 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
     shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType);
   };
 
-  const isUrgent = badge === "urgent";
-  const accentColor = isUrgent ? DANGER : WARNING;
-
   return (
     <>
       {/* ── Compact card (carousel tile) ─────────────────────────────── */}
       <motion.button
         onClick={() => setOpen(true)}
-        whileHover={{ scale: 1.03, y: -4 }}
-        whileTap={{ scale: 0.97 }}
-        className="w-full text-right rounded-2xl p-4 focus:outline-none overflow-hidden relative"
+        whileHover={{ scale: 1.025, y: -3 }}
+        whileTap={{ scale: 0.975 }}
+        className="w-full text-right rounded-2xl overflow-hidden relative focus:outline-none flex flex-col"
         aria-label={`פתח פרטים: ${job.title}`}
         style={{
-          background: `linear-gradient(145deg, ${C_DARK_BG} 0%, oklch(0.13 0.04 125) 100%)`,
+          background: `linear-gradient(160deg, ${C_DARK_BG} 0%, oklch(0.13 0.04 125) 100%)`,
           border: `1px solid ${isUrgent ? `${DANGER}40` : `${WARNING}35`}`,
-          boxShadow: `0 6px 24px oklch(0 0 0 / 0.35), 0 1px 0 oklch(1 0 0 / 0.06) inset, 0 0 0 1px oklch(0 0 0 / 0.1)`,
+          boxShadow: `0 6px 24px oklch(0 0 0 / 0.30), 0 1px 0 oklch(1 0 0 / 0.06) inset`,
           transition: "all 0.22s cubic-bezier(0.22, 1, 0.36, 1)",
+          minHeight: 200,
         }}
       >
-        {/* Ambient glow */}
+        {/* Ambient top-right glow */}
         <div
-          className="absolute -top-8 -right-8 w-28 h-28 rounded-full pointer-events-none"
-          style={{
-            background: `radial-gradient(circle, ${isUrgent ? `${DANGER}25` : `${WARNING}20`} 0%, transparent 70%)`,
-          }}
-        />
-        {/* Bottom glow */}
-        <div
-          className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full pointer-events-none"
-          style={{
-            background: `radial-gradient(circle, oklch(0.55 0.15 160 / 0.12) 0%, transparent 70%)`,
-          }}
+          className="absolute -top-6 -right-6 w-24 h-24 rounded-full pointer-events-none"
+          style={{ background: `radial-gradient(circle, ${isUrgent ? `${DANGER}22` : `${WARNING}18`} 0%, transparent 70%)` }}
         />
 
-        {/* Top row: badge + category icon */}
-        <div className="flex items-start justify-between mb-3 relative">
+        {/* ── Header strip ── */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-3">
+          {/* Category icon */}
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            style={{
-              background: `oklch(1 0 0 / 0.06)`,
-              border: `1px solid oklch(1 0 0 / 0.10)`,
-            }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+            style={{ background: "oklch(1 0 0 / 0.07)", border: "1px solid oklch(1 0 0 / 0.10)" }}
           >
             {catIcon}
           </div>
-          {badge === "urgent" && (
+
+          {/* Badge */}
+          {isUrgent ? (
             <span
-              className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
-              style={{
-                background: `${DANGER}2a`,
-                color: `oklch(0.82 0.18 25)`,
-                border: `1px solid ${DANGER}50`,
-              }}
+              className="flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full"
+              style={{ background: `${DANGER}28`, color: "oklch(0.82 0.18 25)", border: `1px solid ${DANGER}50` }}
             >
               <Zap className="h-2.5 w-2.5" />
               דחוף
             </span>
-          )}
-          {badge === "today" && (
+          ) : (
             <span
-              className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
-              style={{
-                background: `${WARNING}22`,
-                color: "oklch(0.88 0.14 75)",
-                border: `1px solid ${WARNING}45`,
-              }}
+              className="flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full"
+              style={{ background: `${WARNING}22`, color: "oklch(0.88 0.14 75)", border: `1px solid ${WARNING}45` }}
             >
               <Flame className="h-2.5 w-2.5" />
               להיום
@@ -160,45 +139,86 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           )}
         </div>
 
-        {/* Title */}
-        <h3 className="font-bold text-[14px] text-white leading-snug mb-1 line-clamp-2 text-right">
-          {job.title}
-        </h3>
+        {/* ── Title + category ── */}
+        <div className="px-4 pb-3">
+          <h3 className="font-black text-[14px] text-white leading-snug mb-0.5 line-clamp-2 text-right">
+            {job.title}
+          </h3>
+          {/* Category pill */}
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{ background: "oklch(1 0 0 / 0.07)", color: "oklch(1 0 0 / 0.40)" }}
+          >
+            {catLabel}
+          </span>
+        </div>
 
-        {/* Category */}
-        <p className="text-[11px] mb-3 text-right" style={{ color: "oklch(1 0 0 / 0.35)" }}>{catLabel}</p>
+        {/* ── Divider ── */}
+        <div style={{ borderTop: "1px solid oklch(1 0 0 / 0.07)", margin: "0 16px" }} />
 
-        {/* Divider */}
-        <div className="mb-3" style={{ borderTop: "1px solid oklch(1 0 0 / 0.07)" }} />
-
-        {/* Key details */}
-        <div className="space-y-1.5 text-xs">
+        {/* ── Info tags row ── */}
+        <div className="px-4 pt-3 pb-3 flex flex-wrap gap-1.5" dir="rtl">
+          {/* Location */}
           {location && (
-            <span className="flex items-center gap-1.5" style={{ color: "oklch(1 0 0 / 0.45)" }}>
-              <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(1 0 0 / 0.25)" }} />
+            <span
+              className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+              style={{ background: "oklch(1 0 0 / 0.06)", color: "oklch(1 0 0 / 0.45)" }}
+            >
+              <MapPin className="h-2.5 w-2.5 shrink-0" />
               {location}
             </span>
           )}
-          {salaryStr && (
+          {/* Distance */}
+          {typeof job.distance === "number" && (
             <span
-              className="flex items-center gap-1.5 font-bold"
-              style={{ color: SUCCESS }}
+              className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+              style={{ background: "oklch(0.55 0.15 160 / 0.12)", color: "oklch(0.75 0.18 160)" }}
             >
-              <span className="text-[13px]">₪</span>
-              {salaryStr}
+              <Navigation className="h-2.5 w-2.5 shrink-0" />
+              {job.distance < 1 ? `${Math.round(job.distance * 1000)} מ'` : `${job.distance.toFixed(1)} ק"מ`}
             </span>
           )}
+          {/* Start time */}
+          <span
+            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+            style={{ background: "oklch(1 0 0 / 0.06)", color: "oklch(1 0 0 / 0.40)" }}
+          >
+            <Clock className="h-2.5 w-2.5 shrink-0" />
+            {getStartTimeLabel(job.startTime)}
+          </span>
+          {/* Workers needed */}
+          <span
+            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+            style={{ background: "oklch(1 0 0 / 0.06)", color: "oklch(1 0 0 / 0.40)" }}
+          >
+            <Users className="h-2.5 w-2.5 shrink-0" />
+            {job.workersNeeded} דרושים
+          </span>
         </div>
 
-        {/* Posted time */}
-        <p className="text-[10px] mt-3 text-right" style={{ color: "oklch(1 0 0 / 0.20)" }}>{relativeTime(job.createdAt)}</p>
+        {/* ── Salary + posted time ── */}
+        <div className="px-4 pb-4 flex items-end justify-between mt-auto">
+          {salaryStr ? (
+            <span
+              className="text-[13px] font-black"
+              style={{ color: SUCCESS }}
+            >
+              ₪ {salaryStr}
+            </span>
+          ) : (
+            <span className="text-[11px]" style={{ color: "oklch(1 0 0 / 0.25)" }}>שכר לא צוין</span>
+          )}
+          <span className="text-[10px]" style={{ color: "oklch(1 0 0 / 0.22)" }}>
+            {relativeTime(job.createdAt)}
+          </span>
+        </div>
 
         {/* Tap hint */}
         <div
-          className="absolute bottom-3 left-3 flex items-center gap-1 text-[10px]"
-          style={{ color: "oklch(1 0 0 / 0.20)" }}
+          className="absolute bottom-3 left-3 flex items-center gap-0.5 text-[9px]"
+          style={{ color: "oklch(1 0 0 / 0.18)" }}
         >
-          <ChevronLeft className="h-3 w-3" />
+          <ChevronLeft className="h-2.5 w-2.5" />
           פרטים
         </div>
       </motion.button>
@@ -219,10 +239,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             <div className="flex items-center gap-3 mb-1">
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-                style={{
-                  background: "oklch(1 0 0 / 0.06)",
-                  border: "1px solid oklch(1 0 0 / 0.10)",
-                }}
+                style={{ background: "oklch(1 0 0 / 0.06)", border: "1px solid oklch(1 0 0 / 0.10)" }}
               >
                 {catIcon}
               </div>
@@ -230,27 +247,18 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
                 <SheetTitle className="text-[17px] font-black leading-tight text-white">{job.title}</SheetTitle>
                 <p className="text-xs mt-0.5" style={{ color: "oklch(1 0 0 / 0.40)" }}>{catLabel}</p>
               </div>
-              {badge === "urgent" && (
+              {isUrgent ? (
                 <span
                   className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-                  style={{
-                    background: `${DANGER}2a`,
-                    color: "oklch(0.82 0.18 25)",
-                    border: `1px solid ${DANGER}50`,
-                  }}
+                  style={{ background: `${DANGER}2a`, color: "oklch(0.82 0.18 25)", border: `1px solid ${DANGER}50` }}
                 >
                   <Zap className="h-3 w-3" />
                   דחוף
                 </span>
-              )}
-              {badge === "today" && (
+              ) : (
                 <span
                   className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-                  style={{
-                    background: `${WARNING}22`,
-                    color: "oklch(0.88 0.14 75)",
-                    border: `1px solid ${WARNING}45`,
-                  }}
+                  style={{ background: `${WARNING}22`, color: "oklch(0.88 0.14 75)", border: `1px solid ${WARNING}45` }}
                 >
                   <Flame className="h-3 w-3" />
                   להיום
@@ -262,15 +270,22 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {/* Details */}
           <div
             className="space-y-3 mb-6 rounded-2xl p-4"
-            style={{
-              background: C_DARK_CARD,
-              border: `1px solid ${C_DARK_CARD_BORDER}`,
-            }}
+            style={{ background: C_DARK_CARD, border: `1px solid ${C_DARK_CARD_BORDER}` }}
           >
             <div className="flex items-center gap-2.5 text-sm" style={{ color: "oklch(1 0 0 / 0.65)" }}>
               <MapPin className="h-4 w-4 shrink-0" style={{ color: "oklch(1 0 0 / 0.30)" }} />
               <span>{job.address}{job.city && job.city !== job.address ? `, ${job.city}` : ""}</span>
             </div>
+            {typeof job.distance === "number" && (
+              <div className="flex items-center gap-2.5 text-sm" style={{ color: "oklch(0.75 0.18 160)" }}>
+                <Navigation className="h-4 w-4 shrink-0" style={{ color: "oklch(0.65 0.18 160)" }} />
+                <span>
+                  {job.distance < 1
+                    ? `${Math.round(job.distance * 1000)} מטר ממך`
+                    : `${job.distance.toFixed(1)} ק"מ ממך`}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2.5 text-sm" style={{ color: "oklch(1 0 0 / 0.65)" }}>
               <Clock className="h-4 w-4 shrink-0" style={{ color: "oklch(1 0 0 / 0.30)" }} />
               <span>{getStartTimeLabel(job.startTime)}</span>

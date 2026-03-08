@@ -508,7 +508,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       </section>
 
       {/* ── Availability + Location ─────────────────────────────────────────────── */}
-      <section className="px-6 mb-10 max-w-lg mx-auto relative z-10" dir="rtl">
+      <section
+        dir="rtl"
+        className="mb-10 relative z-10"
+        style={{
+          background: "oklch(0.97 0.012 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          borderBottom: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 24px",
+          maxWidth: "100%",
+        }}
+      >
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
 
         {/* Availability row */}
         <div className="flex items-center justify-between mb-3">
@@ -640,6 +651,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
             </button>
           )}
+        </div>
         </div>
       </section>
 

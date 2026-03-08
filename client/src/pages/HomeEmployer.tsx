@@ -62,9 +62,9 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
   const animJobs = useCountUp(activeJobs, 1200, inView);
   const animWorkers = useCountUp(workers, 1000, inView);
   const stats = [
-    { label: "משרות פעילות", value: activeJobs > 0 ? String(animJobs) : "0", icon: Briefcase },
-    { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "0", icon: Users },
     { label: "ללא עמלות", value: "100%", icon: CheckCircle2 },
+    { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "1+", icon: Users },
+    { label: "משרות פעילות", value: activeJobs > 0 ? String(animJobs) : "0", icon: Briefcase },
   ];
   return (
     <motion.div
@@ -73,22 +73,35 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="flex gap-3 mt-5"
+      style={{ display: "flex", gap: 6, marginTop: 20, direction: "rtl", width: "100%" }}
     >
-      {stats.map(({ label, value, icon: Icon }) => (
-        <div
+      {stats.map(({ label, value, icon: Icon }, i) => (
+        <motion.div
           key={label}
-          className="flex-1 flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
           style={{
-            background: "oklch(0.32 0.07 122 / 0.55)",
-            border: "1px solid oklch(0.50 0.09 122 / 0.30)",
-            backdropFilter: "blur(8px)",
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            padding: "10px 4px",
+            borderRadius: 14,
+            background: "rgba(0,0,0,0.40)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
           }}
         >
-          <Icon className="h-4 w-4" style={{ color: "oklch(0.85 0.16 80)" }} />
-          <span className="text-[17px] font-black leading-none" style={{ color: "oklch(0.97 0.03 80)" }}>{value}</span>
-          <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: "oklch(0.82 0.04 80 / 0.80)" }}>{label}</span>
-        </div>
+          <Icon style={{ width: 18, height: 18, color: "oklch(0.88 0.20 80)", flexShrink: 0 }} />
+          <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "#ffffff", letterSpacing: "-0.3px" }}>{value}</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.80)", textAlign: "center", lineHeight: 1.2, wordBreak: "keep-all" }}>{label}</span>
+        </motion.div>
       ))}
     </motion.div>
   );

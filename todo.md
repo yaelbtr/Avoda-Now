@@ -724,3 +724,13 @@
 ## Counting-up number animation on stats
 - [x] HomeWorker StatsRow: animate numbers from 0 to final value on scroll-in
 - [x] HomeEmployer StatsRow: same counting-up animation with useCountUp hook
+
+### Mark applications as viewed
+- [x] DB: markEmployerApplicationsViewed function — updates all pending apps of employer's jobs to "viewed" status
+- [x] Server: markApplicationsViewed mutation — calls markEmployerApplicationsViewed for authenticated employer
+- [x] Client: call markApplicationsViewed when employer opens MyJobs page (useEffect on mount)
+- [x] Badge count invalidated on success (totalPendingApplications + myJobsWithPendingCounts)
+## Expanded share popover
+- [x] Add Facebook share option (sharer.php link)
+- [x] Add Telegram share option (t.me/share link)
+- [x] Add "העתק קישור" with clipboard copy + visual confirmation (Check icon + green color for 1.2s)

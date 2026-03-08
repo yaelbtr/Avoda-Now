@@ -62,6 +62,7 @@ vi.mock("./db", () => ({
   getMyApplications: vi.fn().mockResolvedValue([]),
   getUnreadApplicationsCount: vi.fn().mockResolvedValue(0),
   getApplicationsForJobWithDistance: vi.fn().mockResolvedValue([]),
+  markEmployerApplicationsViewed: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("./sms", () => ({
@@ -544,5 +545,25 @@ describe("jobs.updateApplicationStatus", () => {
     await expect(
       caller.jobs.updateApplicationStatus({ id: 10, action: "accept" })
     ).rejects.toBeInstanceOf(TRPCError);
+  });
+});
+
+describe("jobs.markApplicationsViewed", () => {
+  beforeEach(() => vi.clearAllMocks());
+  it("marks all pending applications as viewed for authenticated employer", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.markEmployerApplicationsViewed).mockResolvedValue(undefined);
+    const result = await caller.jobs.markApplicationsViewed();
+    expect(result).toEqual({ success: true });
+    expect(db.markEmployerApplicationsViewed).toHaveBeenCalledWith(99);
+  });
+  it("requires authentication", async () => {
+    const { appRouter } = await import("./routers");
+    const ctx = makeCtx(null);
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.jobs.markApplicationsViewed()).rejects.toBeInstanceOf(TRPCError);
   });
 });

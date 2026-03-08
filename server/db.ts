@@ -1179,3 +1179,30 @@ export async function updateNotificationPrefs(
   if (!db) return;
   await db.update(users).set({ notificationPrefs: prefs }).where(eq(users.id, userId));
 }
+
+/**
+ * Mark all pending applications for an employer's jobs as "viewed".
+ * Called when the employer opens the applications/my-jobs page.
+ * This resets the pending badge count on the employer home page.
+ */
+export async function markEmployerApplicationsViewed(employerId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // Get all job IDs belonging to this employer
+  const myJobs = await db
+    .select({ id: jobs.id })
+    .from(jobs)
+    .where(eq(jobs.postedBy, employerId));
+  if (myJobs.length === 0) return;
+  const jobIds = myJobs.map((j) => j.id);
+  // Update all pending applications for those jobs to "viewed"
+  await db
+    .update(applications)
+    .set({ status: "viewed" })
+    .where(
+      and(
+        sql`${applications.jobId} IN (${sql.join(jobIds.map((id) => sql`${id}`), sql`, `)})`,
+        eq(applications.status, "pending")
+      )
+    );
+}

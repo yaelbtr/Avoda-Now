@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -367,6 +367,20 @@ export default function MyJobs() {
   const { data: myJobs, isLoading } = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+  const markViewed = trpc.jobs.markApplicationsViewed.useMutation({
+    onSuccess: () => {
+      // Invalidate the pending count so the badge on home page updates
+      utils.jobs.totalPendingApplications.invalidate();
+      utils.jobs.myJobsWithPendingCounts.invalidate();
+    },
+  });
+  // Mark all pending applications as viewed when employer opens this page
+  useEffect(() => {
+    if (isAuthenticated) {
+      markViewed.mutate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const updateStatus = trpc.jobs.updateStatus.useMutation({
     onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); toast.success("סטטוס עודכן"); },

@@ -53,6 +53,7 @@ import {
   deletePushSubscriptionByEndpoint,
   getNotificationPrefs,
   updateNotificationPrefs,
+  markEmployerApplicationsViewed,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -384,6 +385,11 @@ const jobsRouter = router({
     return { total };
   }),
 
+  /** Mark all pending applications for employer's jobs as viewed (resets badge count) */
+  markApplicationsViewed: protectedProcedure.mutation(async ({ ctx }) => {
+    await markEmployerApplicationsViewed(ctx.user.id);
+    return { success: true };
+  }),
   /** Worker's own applications with job info and status */
   myApplications: protectedProcedure.query(async ({ ctx }) =>
     getMyApplications(ctx.user.id)

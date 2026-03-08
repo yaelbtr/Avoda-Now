@@ -648,3 +648,9 @@
 - [x] Guest users: clicking a role card navigates directly to /find-jobs or /post-job (no server mutation)
 - [x] Authenticated users: clicking a role card saves mode to server as before, then navigates
 - [x] handleRoleSelected in App.tsx now navigates to /find-jobs (worker) or /post-job (employer) instead of /
+
+## Welcome-Back Animation on Landing Page
+- [x] Show "ברוך הבא בחזרה, [שם]!" greeting for authenticated users on RoleSelectionScreen
+- [x] Animate greeting in (fade + slide up) then fade out after ~1.5s
+- [x] After greeting fades, animate in the role selection cards
+- [x] Guests see cards immediately with no greeting

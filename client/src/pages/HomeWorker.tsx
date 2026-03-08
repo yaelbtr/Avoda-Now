@@ -518,7 +518,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               initial={{ opacity: 0, x: reverse ? -16 : 16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1, duration: 0.4 }}
-              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
+              whileHover={{ y: -3, boxShadow: "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)" }}
+              whileTap={{ scale: 0.98 }}
+              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden cursor-pointer" + (reverse ? " flex-row-reverse" : "")}
               style={{
                 background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
                 border: "1px solid oklch(0.89 0.05 84.0)",

@@ -696,3 +696,7 @@
 - [x] Fix badge positioning (should be right-aligned)
 - [x] Fix stats row (cards too small, text cramped)
 - [x] Lighten image overlay for better visibility
+
+## Hover animations on "How it works" cards
+- [x] HomeEmployer: add whileHover lift + shadow on step cards
+- [x] HomeWorker: add matching hover animations to its "how it works" cards

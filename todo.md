@@ -748,3 +748,7 @@
 - [x] UI: MyJobs — "עובדים מתאימים" button on active jobs → /matched-workers?jobId=...
 - [x] UI: /matched-workers page — shows matched workers with score, distance, send-offer button
 - [x] Routes: /worker-preferences and /matched-workers registered in App.tsx
+
+## Worker Profile — Custom Job Tags
+- [x] Add free-text custom tags input to WorkerProfile matching preferences section
+- [x] Wire custom tags to existing workerTags field in DB via updateProfile

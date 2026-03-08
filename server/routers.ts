@@ -911,6 +911,7 @@ const userRouter = router({
         workerLongitude: z.string().nullable().optional(),
         searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
         preferenceText: z.string().max(1000).nullable().optional(),
+        workerTags: z.array(z.string().max(50)).max(20).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -924,6 +925,7 @@ const userRouter = router({
         workerLongitude: input.workerLongitude,
         searchRadiusKm: input.searchRadiusKm ?? undefined,
         preferenceText: input.preferenceText,
+        workerTags: input.workerTags,
       });
       return { success: true };
     }),

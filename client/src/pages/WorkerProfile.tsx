@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
 import {
   User, MapPin, Briefcase, Save, ArrowRight,
-  Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
+  Bell, MessageSquare, BellOff, Crosshair, Building2, FileText, Plus, X,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 
@@ -57,6 +57,8 @@ export default function WorkerProfile() {
   // ── Matching preferences ────────────────────────────────────────────────────
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [preferenceText, setPreferenceText] = useState("");
+  const [workerTags, setWorkerTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [locationMode, setLocationMode] = useState<"city" | "radius">("city");
   const [preferredCity, setPreferredCity] = useState("");
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
@@ -72,6 +74,7 @@ export default function WorkerProfile() {
       setWorkerBio(d.workerBio ?? "");
       setSelectedCategories(d.preferredCategories ?? []);
       setPreferenceText(d.preferenceText ?? "");
+      setWorkerTags(d.workerTags ?? []);
       setLocationMode((d.locationMode as "city" | "radius") ?? "city");
       setPreferredCity(d.preferredCity ?? "");
       setSearchRadiusKm(d.searchRadiusKm ?? 5);
@@ -107,6 +110,7 @@ export default function WorkerProfile() {
       // Matching preferences
       preferredCategories: selectedCategories,
       preferenceText: preferenceText.trim() || null,
+      workerTags,
       locationMode,
       preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
@@ -203,6 +207,70 @@ export default function WorkerProfile() {
                 maxLength={1000}
               />
               <p className="text-xs text-muted-foreground mt-1 text-left">{preferenceText.length}/1000</p>
+            </div>
+
+            {/* Custom tags */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">
+                תחומי עיסוק חופשיים
+              </label>
+              <p className="text-xs text-muted-foreground mb-2">
+                הוסף תחומים שאינם ברשימה — לדוגמה: "מלגזן", "גינון", "מוסך"
+              </p>
+              {/* Tag chips */}
+              {workerTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {workerTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => setWorkerTags((prev) => prev.filter((t) => t !== tag))}
+                        className="opacity-70 hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Tag input */}
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+                      e.preventDefault();
+                      const newTag = tagInput.trim().replace(/,$/, "");
+                      if (newTag && !workerTags.includes(newTag) && workerTags.length < 20) {
+                        setWorkerTags((prev) => [...prev, newTag]);
+                      }
+                      setTagInput("");
+                    }
+                  }}
+                  placeholder="הקלד תחום ולחץ Enter..."
+                  className="text-right flex-1"
+                  maxLength={50}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTag = tagInput.trim();
+                    if (newTag && !workerTags.includes(newTag) && workerTags.length < 20) {
+                      setWorkerTags((prev) => [...prev, newTag]);
+                    }
+                    setTagInput("");
+                  }}
+                  className="px-3 py-2 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{workerTags.length}/20 תגיות</p>
             </div>
 
             {/* Categories */}

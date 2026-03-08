@@ -679,3 +679,8 @@
 - [x] "בקרבת מקום" button → /find-jobs?filter=nearby (auto-apply location filter)
 - [x] /jobs-today route kept as redirect to /find-jobs?filter=today
 - [x] FindJobs reads query params on mount and applies filters automatically
+
+## Today Jobs Banner on HomeWorker
+- [x] Add animated banner showing count of today's jobs on HomeWorker
+- [x] Banner links to /find-jobs?filter=today
+- [x] Show skeleton while loading, hide if count is 0

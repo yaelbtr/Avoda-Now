@@ -7,7 +7,7 @@ import JobCard from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import {
-  Search, MapPin, ChevronLeft, Zap,
+  Search, MapPin, ChevronLeft, Zap, Flame,
   Map, List, ArrowLeft, TrendingUp, Star,
   Briefcase, BadgePercent, Clock,
 } from "lucide-react";
@@ -434,6 +434,65 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </svg>
         </div>
       </section>
+
+      {/* ── Today Jobs Banner ──────────────────────────────────────────────────── */}
+      {(todayQuery.isLoading || (todayJobs.length > 0)) && (
+        <motion.button
+          dir="rtl"
+          onClick={() => navigate("/find-jobs?filter=today")}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          whileHover={{ scale: 1.015, y: -1 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative z-10 mx-4 mb-6 w-[calc(100%-2rem)] max-w-lg flex items-center gap-3 px-5 py-3.5 rounded-2xl overflow-hidden text-right"
+          style={{
+            background: "linear-gradient(135deg, oklch(0.30 0.08 28) 0%, oklch(0.38 0.12 30) 100%)",
+            boxShadow: "0 4px 20px oklch(0.35 0.12 28 / 0.35), 0 1px 4px oklch(0.35 0.12 28 / 0.20)",
+          }}
+        >
+          {/* Animated glow pulse */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            animate={{ opacity: [0.0, 0.12, 0.0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            style={{ background: "oklch(0.85 0.18 55)" }}
+          />
+          {/* Flame icon */}
+          <div
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: "oklch(0.50 0.15 30 / 0.40)", border: "1px solid oklch(0.65 0.18 45 / 0.35)" }}
+          >
+            <Flame className="h-4.5 w-4.5" style={{ color: "oklch(0.88 0.18 70)" }} />
+          </div>
+          {/* Text */}
+          <div className="flex-1 min-w-0">
+            {todayQuery.isLoading ? (
+              <div className="flex flex-col gap-1.5">
+                <div className="h-3.5 w-40 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.18)" }} />
+                <div className="h-2.5 w-24 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.12)" }} />
+              </div>
+            ) : (
+              <>
+                <p className="text-[13px] font-black leading-tight" style={{ color: "oklch(0.97 0.03 80)" }}>
+                  <span
+                    className="text-[17px] font-black"
+                    style={{ color: "oklch(0.88 0.18 70)", fontFamily: "'Heebo', sans-serif" }}
+                  >
+                    {todayJobs.length}
+                  </span>
+                  {" "}משרות זמינות להיום
+                </p>
+                <p className="text-[11px] font-medium mt-0.5" style={{ color: "oklch(0.85 0.06 80 / 0.75)" }}>
+                  לחץ לצפייה בעבודות דחופות שמחכות לך עכשיו
+                </p>
+              </>
+            )}
+          </div>
+          {/* Arrow */}
+          <ChevronLeft className="h-4 w-4 flex-shrink-0" style={{ color: "oklch(0.85 0.08 80 / 0.70)", transform: "rotate(180deg)" }} />
+        </motion.button>
+      )}
 
       {/* ── How it works ─────────────────────────────────────────────────────────── */}
       <section

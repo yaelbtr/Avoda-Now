@@ -4,10 +4,12 @@ import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
-import JobCard from "@/components/JobCard";
+import SearchJobCard from "@/components/SearchJobCard";
+import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
+import { useAuth } from "@/contexts/AuthContext";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import {
@@ -72,6 +74,7 @@ export default function FindJobs() {
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
   const initialCategory = params.get("category") ?? "all";
+  const { isAuthenticated } = useAuth();
 
   const [category, setCategory] = useState(initialCategory);
   const [radiusKm, setRadiusKm] = useState(10);
@@ -88,6 +91,8 @@ export default function FindJobs() {
   );
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
@@ -144,6 +149,7 @@ export default function FindJobs() {
     { enabled: showUrgentToday }
   );
 
+  type SearchJob = NonNullable<typeof searchQuery.data>[number] & { description?: string | null };
   type AnyJob = NonNullable<typeof searchQuery.data>[number] | NonNullable<typeof listQuery.data>[number];
   let jobs: AnyJob[] = userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
@@ -617,7 +623,7 @@ export default function FindJobs() {
           >
             {jobs.map(job => (
               <motion.div key={job.id} variants={itemVariants}>
-                <JobCard
+                <SearchJobCard
                   job={{
                     ...job,
                     salary: job.salary ?? null,
@@ -626,6 +632,7 @@ export default function FindJobs() {
                   }}
                   showDistance={!!userLat}
                   onLoginRequired={requireLogin}
+                  onCardClick={(j) => { setBottomSheetJob(j as SearchJob); setBottomSheetOpen(true); }}
                 />
               </motion.div>
             ))}
@@ -637,6 +644,14 @@ export default function FindJobs() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         message={loginMessage}
+      />
+
+      <JobBottomSheet
+        job={bottomSheetJob}
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
+        onLoginRequired={requireLogin}
+        isAuthenticated={isAuthenticated}
       />
     </div>
   );

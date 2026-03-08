@@ -684,3 +684,9 @@
 - [x] Add animated banner showing count of today's jobs on HomeWorker
 - [x] Banner links to /find-jobs?filter=today
 - [x] Show skeleton while loading, hide if count is 0
+
+## Redesign HomeEmployer
+- [x] Match HomeWorker design language: hero with image, stats row, banners, quick actions
+- [x] Live banner: active jobs count → /my-jobs (for authenticated users)
+- [x] Quick actions: post job, my jobs, available workers
+- [x] Stats row: active jobs, workers available, 100% no fees

@@ -32,6 +32,7 @@ interface CarouselJobCardProps {
   job: CarouselJob;
   badge?: "urgent" | "today";
   onLoginRequired?: (msg: string) => void;
+  onCardClick?: (job: CarouselJob) => void;
 }
 
 const CATEGORY_BG: Record<string, string> = {
@@ -56,7 +57,7 @@ function getCategoryBg(category: string): string {
 
 const OLIVE = "#4F583B";
 
-export default function CarouselJobCard({ job, badge, onLoginRequired }: CarouselJobCardProps) {
+export default function CarouselJobCard({ job, badge, onLoginRequired, onCardClick }: CarouselJobCardProps) {
   const { isAuthenticated } = useAuth();
 
   const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
@@ -90,6 +91,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         position: "relative",
       }}
+      onClick={() => onCardClick?.(job)}
       onMouseEnter={e => {
         (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
         (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.14)";
@@ -262,9 +264,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
 
         {/* CTA button */}
         <button
-          onClick={handleApply}
-          style={{
-            width: "100%",
+      onClick={(e) => { e.stopPropagation(); handleApply(e); }}
+        style={{
+          width: "100%",
             padding: "10px 0",
             borderRadius: 12,
             background: OLIVE,

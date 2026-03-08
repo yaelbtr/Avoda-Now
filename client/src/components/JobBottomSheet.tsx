@@ -1,0 +1,402 @@
+import React, { useEffect, useRef } from "react";
+import { X, MapPin, Clock, Briefcase, Heart, Phone, MessageCircle, Send, Calendar, Users } from "lucide-react";
+import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
+
+interface JobBottomSheetProps {
+  job: {
+    id: number;
+    title: string;
+    category: string;
+    address: string;
+    city?: string | null;
+    salary?: string | null;
+    salaryType: string;
+    contactPhone: string | null;
+    businessName?: string | null;
+    startTime: string;
+    startDateTime?: Date | string | null;
+    isUrgent?: boolean | null;
+    workersNeeded: number;
+    createdAt: Date | string;
+    expiresAt?: Date | string | null;
+    description?: string | null;
+    distance?: number;
+  } | null;
+  open: boolean;
+  onClose: () => void;
+  onLoginRequired?: (msg: string) => void;
+  isAuthenticated: boolean;
+}
+
+const OLIVE = "#4F583B";
+
+export default function JobBottomSheet({
+  job,
+  open,
+  onClose,
+  onLoginRequired,
+  isAuthenticated,
+}: JobBottomSheetProps) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef<number | null>(null);
+  const currentYRef = useRef<number>(0);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  // Swipe-down to close
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startYRef.current = e.touches[0].clientY;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startYRef.current === null) return;
+    const dy = e.touches[0].clientY - startYRef.current;
+    currentYRef.current = dy;
+    if (dy > 0 && sheetRef.current) {
+      sheetRef.current.style.transform = `translateY(${dy}px)`;
+    }
+  };
+  const handleTouchEnd = () => {
+    if (currentYRef.current > 100) {
+      onClose();
+    } else if (sheetRef.current) {
+      sheetRef.current.style.transform = "translateY(0)";
+    }
+    startYRef.current = null;
+    currentYRef.current = 0;
+  };
+
+  const handleCall = () => {
+    if (!isAuthenticated) { onLoginRequired?.("כדי להתקשר יש להתחבר"); return; }
+    if (job?.contactPhone) window.location.href = `tel:${job.contactPhone}`;
+  };
+
+  const handleWhatsApp = () => {
+    if (!isAuthenticated) { onLoginRequired?.("כדי לשלוח הודעה יש להתחבר"); return; }
+    if (!job) return;
+    const phone = job.contactPhone?.replace(/\D/g, "") ?? "";
+    const text = encodeURIComponent(`היי, ראיתי את המשרה "${job.title}" באפליקציית AvodaNow ואשמח לשמוע פרטים נוספים.`);
+    window.open(`https://wa.me/972${phone.replace(/^0/, "")}?text=${text}`, "_blank");
+  };
+
+  const handleApply = () => {
+    if (!isAuthenticated) { onLoginRequired?.("כדי להגיש מועמדות יש להתחבר"); return; }
+    handleWhatsApp();
+  };
+
+  if (!job) return null;
+
+  const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
+  const catIcon = getCategoryIcon(job.category);
+  const catLabel = getCategoryLabel(job.category);
+  const isVolunteer = job.salaryType === "volunteer";
+  const location = [job.businessName, job.city ?? job.address].filter(Boolean).join(", ");
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.45)",
+          zIndex: 50,
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+          transition: "opacity 0.3s ease",
+        }}
+      />
+
+      {/* Sheet */}
+      <div
+        ref={sheetRef}
+        dir="rtl"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 51,
+          background: "#ffffff",
+          borderRadius: "24px 24px 0 0",
+          boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
+          transform: open ? "translateY(0)" : "translateY(100%)",
+          transition: "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
+          maxHeight: "88vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4, flexShrink: 0 }}>
+          <div style={{ width: 40, height: 4, borderRadius: 99, background: "#d1cdc4" }} />
+        </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            background: "#f5f2ec",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <X size={16} color="#666" />
+        </button>
+
+        {/* Scrollable content */}
+        <div style={{ overflowY: "auto", flex: 1, padding: "8px 20px 24px 20px" }}>
+
+          {/* Header: icon + title */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: "#f5f2ec",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 26,
+                flexShrink: 0,
+              }}
+            >
+              {catIcon}
+            </div>
+            <div style={{ flex: 1 }}>
+              {job.isUrgent && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    background: "#E8521A",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: "2px 10px",
+                    borderRadius: 20,
+                    marginBottom: 4,
+                  }}
+                >
+                  דחוף ביותר
+                </span>
+              )}
+              <h2 style={{ color: OLIVE, fontSize: 20, fontWeight: 900, lineHeight: 1.2, margin: 0 }}>
+                {job.title}
+              </h2>
+              <p style={{ color: "#888", fontSize: 13, margin: "4px 0 0 0" }}>{catLabel}</p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: "#f0ede6", marginBottom: 16 }} />
+
+          {/* Info grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+            {/* Location */}
+            <InfoTile icon={<MapPin size={16} color={OLIVE} />} label="מיקום" value={location || "לא צוין"} />
+            {/* Time */}
+            <InfoTile icon={<Clock size={16} color={OLIVE} />} label="שעת התחלה" value={getStartTimeLabel(job.startTime)} />
+            {/* Salary */}
+            {!isVolunteer ? (
+              <InfoTile
+                icon={<Briefcase size={16} color={OLIVE} />}
+                label="שכר"
+                value={salaryStr ? `${salaryStr} ₪/שעה` : "לא צוין"}
+              />
+            ) : (
+              <InfoTile
+                icon={<Heart size={16} color="oklch(0.82 0.15 80.8)" />}
+                label="סוג עבודה"
+                value="התנדבות"
+                valueColor="oklch(0.82 0.15 80.8)"
+              />
+            )}
+            {/* Workers needed */}
+            <InfoTile
+              icon={<Users size={16} color={OLIVE} />}
+              label="עובדים נדרשים"
+              value={`${job.workersNeeded} עובדים`}
+            />
+          </div>
+
+          {/* Description if available */}
+          {job.description && (
+            <div
+              style={{
+                background: "#f9f7f3",
+                borderRadius: 14,
+                padding: "12px 14px",
+                marginBottom: 16,
+              }}
+            >
+              <p style={{ color: "#555", fontSize: 13, lineHeight: 1.6, margin: 0 }}>{job.description}</p>
+            </div>
+          )}
+
+          {/* Expiry notice */}
+          {job.expiresAt && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                color: "#E8521A",
+                fontSize: 12,
+                fontWeight: 600,
+                marginBottom: 16,
+              }}
+            >
+              <Calendar size={14} />
+              <span>
+                בתוקף עד:{" "}
+                {new Date(job.expiresAt).toLocaleDateString("he-IL", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons — sticky at bottom */}
+        <div
+          style={{
+            flexShrink: 0,
+            padding: "12px 20px 28px 20px",
+            borderTop: "1px solid #f0ede6",
+            background: "#ffffff",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          {/* Primary CTA */}
+          <button
+            onClick={handleApply}
+            style={{
+              width: "100%",
+              padding: "14px 0",
+              borderRadius: 14,
+              background: OLIVE,
+              color: "#fff",
+              fontSize: 15,
+              fontWeight: 800,
+              border: "none",
+              outline: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 4px 14px rgba(79,88,59,0.3)",
+            }}
+          >
+            <Send size={16} />
+            הגישו אותי להצעה זו
+          </button>
+
+          {/* Secondary row: Call + WhatsApp */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={handleCall}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                borderRadius: 14,
+                background: "#f0f4eb",
+                color: OLIVE,
+                fontSize: 14,
+                fontWeight: 700,
+                border: "none",
+                outline: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+              }}
+            >
+              <Phone size={15} />
+              התקשר
+            </button>
+            <button
+              onClick={handleWhatsApp}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                borderRadius: 14,
+                background: "#e8f5e9",
+                color: "#2e7d32",
+                fontSize: 14,
+                fontWeight: 700,
+                border: "none",
+                outline: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+              }}
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function InfoTile({
+  icon,
+  label,
+  value,
+  valueColor,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  valueColor?: string;
+}) {
+  return (
+    <div
+      style={{
+        background: "#f9f7f3",
+        borderRadius: 14,
+        padding: "10px 12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        {icon}
+        <span style={{ color: "#999", fontSize: 11, fontWeight: 600 }}>{label}</span>
+      </div>
+      <span style={{ color: valueColor ?? OLIVE, fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{value}</span>
+    </div>
+  );
+}

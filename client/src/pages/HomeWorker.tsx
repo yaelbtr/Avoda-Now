@@ -15,6 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import CarouselJobCard from "@/components/CarouselJobCard";
+import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 
@@ -137,6 +138,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
+  const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPausedRef = useRef(false);
   // Touch swipe state
@@ -734,6 +737,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                       job={{ ...job, isUrgent: badge === "urgent" }}
                       badge={badge}
                       onLoginRequired={onLoginRequired}
+                      onCardClick={(j) => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
                     />
                   </div>
                 ))}
@@ -1002,6 +1006,15 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
+
+      {/* ── Job Bottom Sheet ─────────────────────────────────────────────── */}
+      <JobBottomSheet
+        job={bottomSheetJob}
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
+        onLoginRequired={onLoginRequired}
+        isAuthenticated={isAuthenticated}
+      />
     </div>
   );
 }

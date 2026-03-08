@@ -799,14 +799,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────────── */}
       <section className="px-6 mb-8 max-w-lg mx-auto relative z-10">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-black flex items-center gap-2" style={{ color: "var(--brand)" }}>
-            <TrendingUp className="h-5 w-5" style={{ color: "var(--amber)" }} />
-            חדש בסביבה
-          </h2>
+          <div className="flex items-center gap-2">
+            <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+            <h2 className="text-[17px] font-black" style={{ color: "#4F583B" }}>חדש בסביבה</h2>
+          </div>
           <button
             onClick={() => navigate("/find-jobs")}
             className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
-            style={{ color: "var(--amber)", backgroundColor: "rgba(217,164,80,0.15)" }}
+            style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
           >
             הכל
           </button>

@@ -408,18 +408,17 @@ export default function HomeEmployer() {
           {HOW_IT_WORKS_EMPLOYER.map(({ step, title, desc, imgUrl, reverse }, idx) => (
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: reverse ? -16 : 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1, duration: 0.4 }}
+              initial={{ opacity: 0, x: reverse ? -24 : 24, y: 12 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
               whileHover={{ y: -3, boxShadow: "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)" }}
               whileTap={{ scale: 0.98 }}
               className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden cursor-pointer" + (reverse ? " flex-row-reverse" : "")}
               style={{
                 background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
                 border: "1px solid oklch(0.89 0.05 84.0)",
-                transition: "border-color 0.2s ease",
               }}
-              onHoverStart={(e) => { (e.target as HTMLElement).closest?.(".hover-card"); }}
             >
               <div
                 className="flex-shrink-0 w-24 h-20 rounded-xl"

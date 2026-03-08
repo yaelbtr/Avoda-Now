@@ -700,3 +700,7 @@
 ## Hover animations on "How it works" cards
 - [x] HomeEmployer: add whileHover lift + shadow on step cards
 - [x] HomeWorker: add matching hover animations to its "how it works" cards
+
+## Scroll-triggered entrance animations on "How it works" cards
+- [x] HomeEmployer: replace initial/animate with whileInView + viewport once:true
+- [x] HomeWorker: same scroll-triggered entrance animation

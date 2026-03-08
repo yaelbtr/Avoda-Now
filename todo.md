@@ -631,3 +631,14 @@
 - [x] Frontend: warning shown when "כבוי" selected
 - [x] Frontend: hint shown when "push_only" selected (to enable browser notifications)
 - [x] All 114 tests pass
+
+## Bug Fix — "הפעל התראות" Button
+- [ ] Diagnose why the Enable Notifications button does not work
+- [ ] Fix usePushNotifications hook / service worker / VAPID key flow
+
+## Bug Fix — "הפעל התראות" Button (Push Notifications)
+- [x] Root cause: applicationServerKey was passed as .buffer (ArrayBuffer with wrong byte offset) — PushManager silently rejected it
+- [x] Fix: use keyBytes.buffer.slice(byteOffset, byteOffset+byteLength) to get a clean, correctly-bounded ArrayBuffer
+- [x] Fix: improved error messages in Hebrew for permission denied / network errors
+- [x] Fix: added ⚠️ error banner below push prompt in MyApplications so user sees what went wrong
+- [x] All 114 tests pass

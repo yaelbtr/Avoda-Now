@@ -307,6 +307,17 @@ export default function MyApplications() {
           </div>
         )}
 
+        {/* ── Push error ── */}
+        {push.error && (
+          <div
+            className="flex items-center gap-2 p-3 rounded-xl text-xs"
+            style={{ background: "oklch(0.55 0.22 20 / 0.10)", border: "1px solid oklch(0.55 0.22 20 / 0.25)", color: "oklch(0.75 0.18 20)" }}
+          >
+            <span className="shrink-0">⚠️</span>
+            <span>{push.error}</span>
+          </div>
+        )}
+
         {/* ── Loading ── */}
         {isLoading && (
           <div className="space-y-3">

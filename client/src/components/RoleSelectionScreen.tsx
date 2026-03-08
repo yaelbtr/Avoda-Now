@@ -277,7 +277,6 @@ function WelcomeBackOverlay({ name, onDone }: { name: string; onDone: () => void
 
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
   const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
-  const [exiting, setExiting] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   // Show greeting only once per mount for authenticated users with a name
@@ -293,30 +292,27 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
-      // Call onSelected immediately so parent updates userMode/showRoleSelection
-      // BEFORE the exit animation completes. This ensures Home is ready to render
-      // as soon as RoleSelectionScreen finishes fading out.
+      // Notify parent — parent will remove this component from DOM,
+      // triggering the exit animation via parent's AnimatePresence.
       onSelected(vars.mode);
-      setExiting(true);
     },
     onSettled: () => setLoading(null),
   });
 
   const handleSelect = (mode: "worker" | "employer") => {
-    if (loading || exiting) return;
+    if (loading) return;
     if (!isAuthenticated) {
-      // Guest: call onSelected immediately then start exit animation
+      // Guest: notify parent immediately — parent AnimatePresence handles exit.
       onSelected(mode);
-      setExiting(true);
       return;
     }
     setLoading(mode);
     setModeMutation.mutate({ mode });
   };
 
+  // This component is rendered inside an AnimatePresence in App.tsx.
+  // The motion.div here responds to that parent AnimatePresence for exit animations.
   return (
-    <AnimatePresence>
-      {!exiting && (
         <motion.div
           key="role-selection"
           initial={{ opacity: 0 }}
@@ -418,7 +414,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     badgeIcon={<Zap className="h-3 w-3" />}
                     buttonLabel="המשך כעובד"
                     loading={loading === "worker"}
-                    disabled={!!loading || exiting}
+                    disabled={!!loading}
                     onSelect={() => handleSelect("worker")}
                     delay={0.15}
                   />
@@ -439,7 +435,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     badgeIcon={<Users className="h-3 w-3" />}
                     buttonLabel="המשך כמעסיק"
                     loading={loading === "employer"}
-                    disabled={!!loading || exiting}
+                    disabled={!!loading}
                     onSelect={() => handleSelect("employer")}
                     delay={0.25}
                   />
@@ -467,7 +463,5 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
             )}
           </AnimatePresence>
         </motion.div>
-      )}
-    </AnimatePresence>
   );
 }

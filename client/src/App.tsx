@@ -47,18 +47,38 @@ function MapsPreloader() {
 
 function Router() {
   const { needsRoleSelection, setLocalModeOnly, userMode } = useUserMode();
-  // useLocation returns [pathname, navigate]; we only need pathname as the key
   const [location, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  // Track whether the role selection screen should be visible.
+  // We keep it true until the exit animation completes (via onExitComplete).
+  const isRootPath = location === "/" || location === "";
+  const guestHasRole = !isAuthenticated && userMode !== null;
+  const shouldShowRoleSelection = needsRoleSelection || (isRootPath && !guestHasRole);
+
+  // showRoleSelection is the "display" flag — it stays true while animating out.
+  // We use a separate state so we can delay removal until animation ends.
+  const [showRoleSelection, setShowRoleSelection] = useState(shouldShowRoleSelection);
+
+  // When the logical condition becomes true again (e.g. user resets role), show it.
+  useEffect(() => {
+    if (shouldShowRoleSelection) {
+      setShowRoleSelection(true);
+    }
+  }, [shouldShowRoleSelection]);
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    // RoleSelectionScreen calls this BEFORE its exit animation starts.
-    // Updating userMode here causes showRoleSelection to become false,
-    // so Home is already mounted and ready when the exit animation completes.
+    // Update the mode immediately — this makes shouldShowRoleSelection false.
     setLocalModeOnly(mode);
-    // Only navigate if not already on / (edge case)
     if (location !== "/" && location !== "") {
       navigate("/");
     }
+    // showRoleSelection stays true until onExitComplete fires.
+  };
+
+  const handleExitComplete = () => {
+    // Animation finished — now actually remove RoleSelectionScreen from DOM.
+    setShowRoleSelection(false);
   };
 
   // Derive a stable segment key so that /job/1 and /job/2 share the same
@@ -66,28 +86,21 @@ function Router() {
   // each get their own animation.
   const routeKey = location.split("/")[1] || "home";
 
-  const { isAuthenticated } = useAuth();
-
-  // Show RoleSelectionScreen on / when:
-  // 1. Authenticated user has no role yet (needsRoleSelection), OR
-  // 2. Guest is on the root path AND has no saved session role
-  const isRootPath = location === "/" || location === "";
-  const guestHasRole = !isAuthenticated && userMode !== null;
-  const showRoleSelection = needsRoleSelection || (isRootPath && !guestHasRole);
-
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
       <Navbar />
       <GuestLoginBanner />
 
-      {/*
-        AnimatePresence must wrap the animated children directly.
-        mode="wait" ensures the exit animation completes before the
-        enter animation starts, preventing two pages overlapping.
-      */}
       <main className="flex-1" style={{ overflow: "hidden" }}>
         {showRoleSelection ? (
-          <RoleSelectionScreen onSelected={handleRoleSelected} />
+          <AnimatePresence onExitComplete={handleExitComplete}>
+            {shouldShowRoleSelection && (
+              <RoleSelectionScreen
+                key="role-selection"
+                onSelected={handleRoleSelected}
+              />
+            )}
+          </AnimatePresence>
         ) : (
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition routeKey={routeKey}>

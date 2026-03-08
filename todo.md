@@ -667,3 +667,6 @@
 
 ## Bug: Blank page after role selection
 - [x] Fix: navigating to / after selecting a role shows blank page instead of HomeWorker/HomeEmployer
+
+## Bug: Blank page after role selection (still open)
+- [x] Definitive fix: after clicking role button, HomeWorker/HomeEmployer must render

@@ -9,7 +9,7 @@ import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil,
-  Star, Clock, MapPin, RefreshCw,
+  Star, Clock, MapPin,
 } from "lucide-react";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 import { CarouselSkeletonRow } from "@/components/JobCardSkeleton";
@@ -751,24 +751,56 @@ export default function HomeEmployer() {
         </motion.section>
       )}
 
-      {/* ── Switch role ──────────────────────────────────────────────── */}
-      <section className="max-w-lg mx-auto px-6 pb-10 text-center">
-        <p className="text-sm mb-3" style={{ color: "oklch(0.58 0.02 100)" }}>גם מחפש עבודה? עבור למצב עובד</p>
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={resetUserMode}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+      {/* ── Worker CTA banner (mirrors HomeWorker's employer banner) ── */}
+      <section
+        dir="rtl"
+        className="relative z-10 cursor-pointer"
+        style={{
+          background: "linear-gradient(160deg, oklch(0.91 0.04 91.6) 0%, oklch(0.94 0.025 122.3) 100%)",
+          borderTop: "1px solid oklch(0.85 0.06 84.0 / 0.5)",
+        }}
+        onClick={resetUserMode}
+        onMouseEnter={(e) => {
+          const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
+          if (bar) bar.style.borderRightWidth = '8px';
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1.12)'; arrow.style.boxShadow = '0 4px 12px oklch(0.75 0.18 80.8 / 0.35)'; }
+        }}
+        onMouseLeave={(e) => {
+          const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
+          if (bar) bar.style.borderRightWidth = '4px';
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1)'; arrow.style.boxShadow = 'none'; }
+        }}
+      >
+        <div
+          data-accent-bar
+          className="flex items-center justify-between px-6 py-4"
           style={{
-            background: "white",
-            border: "1px solid oklch(0.89 0.05 84.0)",
-            color: "oklch(0.40 0.03 122.3)",
-            boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+            borderRight: "4px solid var(--amber)",
+            transition: "border-right-width 0.2s ease",
           }}
         >
-          <RefreshCw size={14} />
-          שנה תפקיד
-        </motion.button>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[15px] font-black" style={{ color: "var(--brand)" }}>מחפשים עבודה?</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--amber)" }}>לחצו לחיפוש עבודה</p>
+          </div>
+          <div
+            data-arrow-btn
+            className="flex items-center justify-center rounded-full shrink-0"
+            style={{
+              width: 36,
+              height: 36,
+              background: "var(--amber)",
+              color: "white",
+              fontSize: 18,
+              fontWeight: 700,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+          >
+            ←
+          </div>
+        </div>
       </section>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />

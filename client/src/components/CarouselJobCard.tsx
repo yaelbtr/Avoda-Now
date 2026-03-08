@@ -139,7 +139,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             style={{ background: "linear-gradient(to bottom, oklch(0 0 0 / 0.08) 0%, oklch(0 0 0 / 0.22) 100%)" }}
           />
 
-          {/* Badge top-right (RTL: visually top-left) */}
+          {/* Badge top-right (RTL: visually top-right) */}
           {isUrgent ? (
             <span
               className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full"
@@ -158,7 +158,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             </span>
           )}
 
-          {/* Category icon — bottom-left of image (RTL: bottom-left visually) */}
+          {/* Category icon — bottom-left of image */}
           <div
             className="absolute bottom-2.5 left-2.5 w-10 h-10 rounded-xl flex items-center justify-center text-xl"
             style={{
@@ -171,10 +171,10 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         </div>
 
         {/* ── Content area ── */}
-        <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3" dir="rtl">
+        <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3" dir="rtl" style={{ textAlign: "right" }}>
           {/* Title */}
           <h3
-            className="font-black text-[14px] leading-snug mb-1 line-clamp-2 text-right"
+            className="font-black text-[14px] leading-snug mb-1 line-clamp-2 text-right w-full"
             style={{ color: "oklch(0.18 0.04 125)" }}
           >
             {job.title}
@@ -183,19 +183,19 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {/* Location */}
           {location && (
             <div
-              className="flex items-center gap-1 text-[12px] mb-auto"
+              className="flex items-center gap-1 text-[12px] mb-auto flex-row-reverse justify-end"
               style={{ color: "oklch(0.50 0.02 100)" }}
             >
-              <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.02 100)" }} />
               <span className="truncate">{location}{job.businessName ? `, ${job.businessName}` : ""}</span>
+              <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.02 100)" }} />
             </div>
           )}
 
           {/* Divider */}
           <div className="my-2.5" style={{ borderTop: "1px solid oklch(0.93 0.01 100)" }} />
 
-          {/* Bottom row: start time + salary */}
-          <div className="flex items-center justify-between">
+          {/* Bottom row: start time (right) + salary (left) in RTL */}
+          <div className="flex items-center justify-between flex-row-reverse">
             {/* Start time pill */}
             <span
               className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"

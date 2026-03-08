@@ -226,21 +226,21 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div
                 style={{
-                  background: job.startTime === "today" ? "oklch(0.55 0.18 40)" : "#F5F0E4",
-                  color: job.startTime === "today" ? "#fff" : OLIVE,
+                  background: job.startTime === "today" ? "#FFF3E0" : "#F5F0E4",
+                  color: job.startTime === "today" ? "#E65100" : OLIVE,
                   fontSize: 10,
-                  fontWeight: 800,
-                  padding: "4px 8px",
-                  borderRadius: 8,
+                  fontWeight: 700,
+                  padding: "4px 10px",
+                  borderRadius: 20,
                   flexShrink: 0,
                   display: "flex",
                   alignItems: "center",
                   gap: 3,
-                  boxShadow: job.startTime === "today" ? "0 2px 6px oklch(0.55 0.18 40 / 0.35)" : "none",
+                  border: job.startTime === "today" ? "1px solid #FFCC80" : "none",
                 }}
               >
                 {job.startTime === "today" && <span style={{ fontSize: 11 }}>🔥</span>}
-                {getStartTimeLabel(job.startTime)}
+                {job.startTime === "today" ? "להיום" : getStartTimeLabel(job.startTime)}
               </div>
               {job.salary && !isVolunteer ? (
                 <span style={{ color: OLIVE, fontSize: 13, fontWeight: 700 }}>{salaryStr}</span>

@@ -738,6 +738,49 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   </div>
                 ))}
               </div>
+
+              {/* ── Navigation dots ── */}
+              {carouselTotal > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 6,
+                    paddingTop: 12,
+                    paddingBottom: 4,
+                  }}
+                >
+                  {allCarouselJobs.map((_, i) => {
+                    const isActive = i === activeCarouselIdx;
+                    return (
+                      <button
+                        key={i}
+                        aria-label={`עבור לכרטיס ${i + 1}`}
+                        onClick={() => {
+                          const el = document.getElementById("job-carousel");
+                          if (!el) return;
+                          const cardWidth = el.scrollWidth / carouselTotal;
+                          el.scrollTo({ left: i * cardWidth, behavior: "smooth" });
+                          setActiveCarouselIdx(i);
+                        }}
+                        style={{
+                          width: isActive ? 22 : 8,
+                          height: 8,
+                          borderRadius: 99,
+                          background: isActive ? "#4F583B" : "#c8c2b0",
+                          border: "none",
+                          outline: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          transition: "width 0.25s ease, background 0.25s ease",
+                          flexShrink: 0,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </section>

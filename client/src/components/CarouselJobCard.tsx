@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Users, Zap, Flame, Phone, Share2 } from "lucide-react";
+import { MapPin, Clock, Users, Zap, Flame, Phone, Share2, Heart } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -204,37 +204,55 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {/* Divider */}
           <div className="mt-3 mb-2.5" style={{ borderTop: "1px solid #f0f0f0" }} />
 
-          {/* Bottom row: start time pill (right) + salary (left) */}
-          <div className="flex items-center justify-between" dir="rtl">
-            {/* Start time pill — right side */}
-            <span
-              className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
-              style={{
-                background: "#f7f7f7",
-                color: "#444444",
-                border: "1px solid #e8e8e8",
-              }}
+          {/* Bottom row: volunteer OR (start time + salary) */}
+          {job.salaryType === "volunteer" ? (
+            /* Volunteer display — full-width centered heart + label */
+            <div
+              className="flex items-center justify-center gap-2 py-1"
             >
-              {getStartTimeLabel(job.startTime)}
-            </span>
+              <Heart
+                className="h-5 w-5"
+                style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)" }}
+              />
+              <span
+                className="text-[16px] font-black"
+                style={{ color: "oklch(0.82 0.15 80.8)" }}
+              >
+                התנדבות
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between" dir="rtl">
+              {/* Start time pill — right side */}
+              <span
+                className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                style={{
+                  background: "#f7f7f7",
+                  color: "#444444",
+                  border: "1px solid #e8e8e8",
+                }}
+              >
+                {getStartTimeLabel(job.startTime)}
+              </span>
 
-            {/* Salary — left side */}
-            {salaryStr ? (
-              <div className="flex items-baseline gap-0.5">
-                <span
-                  className="text-[18px] font-black"
-                  style={{ color: "oklch(0.82 0.15 80.8)" }}
-                >
-                  ₪{salaryStr}
-                </span>
-                <span className="text-[11px] font-medium" style={{ color: "#aaaaaa" }}>
-                  /שעה
-                </span>
-              </div>
-            ) : (
-              <span className="text-[11px]" style={{ color: "#aaaaaa" }}>שכר לא צוין</span>
-            )}
-          </div>
+              {/* Salary — left side */}
+              {salaryStr ? (
+                <div className="flex items-baseline gap-0.5">
+                  <span
+                    className="text-[18px] font-black"
+                    style={{ color: "oklch(0.82 0.15 80.8)" }}
+                  >
+                    ₪{salaryStr}
+                  </span>
+                  <span className="text-[11px] font-medium" style={{ color: "#aaaaaa" }}>
+                    /שעה
+                  </span>
+                </div>
+              ) : (
+                <span className="text-[11px]" style={{ color: "#aaaaaa" }}>שכר לא צוין</span>
+              )}
+            </div>
+          )}
         </div>
       </motion.button>
 

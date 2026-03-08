@@ -643,7 +643,7 @@ export default function HomeEmployer() {
 
       {/* ── My Active Jobs (authenticated) ──────────────────── */}
       {isAuthenticated && (
-        <section className="mb-10 relative z-10" style={{ background: "oklch(0.18 0.06 125.0)", borderRadius: "1.5rem", margin: "0 0 2.5rem 0", padding: "1.5rem 0 1.75rem" }}>
+        <section className="mb-10 relative z-10" style={{ background: "oklch(0.96 0.03 91.6)", borderRadius: "1.5rem", margin: "0 1rem 2.5rem", padding: "1.5rem 0 1.75rem", border: "1px solid oklch(0.90 0.04 91.6)" }}>
           <motion.div
             className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
             initial={{ opacity: 0, y: 16 }}
@@ -652,13 +652,13 @@ export default function HomeEmployer() {
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             <div className="flex items-center gap-2">
-              <div style={{ width: 4, height: 24, borderRadius: 4, background: "oklch(0.75 0.14 80)" }} />
-              <h2 className="text-[17px] font-black" style={{ color: "oklch(0.95 0.05 80)", fontFamily: "'Heebo', sans-serif" }}>המשרות שלי</h2>
+              <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המשרות שלי</h2>
             </div>
             <button
               onClick={() => navigate("/my-jobs")}
               className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
-              style={{ color: "oklch(0.95 0.05 80)", backgroundColor: "oklch(1 0 0 / 0.10)", border: "1px solid oklch(1 0 0 / 0.20)" }}
+              style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
             >
               הכל
             </button>
@@ -679,8 +679,8 @@ export default function HomeEmployer() {
                 >
                   <Briefcase className="h-7 w-7" style={{ color: "oklch(0.45 0.08 122)" }} />
                 </div>
-                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.90 0.04 80)" }}>עדיין לא פרסמת משרות</p>
-                <p className="text-xs mb-4" style={{ color: "oklch(0.70 0.03 100)" }}>פרסם משרה ראשונה וקבל מועמדים תוך דקות</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת משרות</p>
+                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ראשונה וקבל מועמדים תוך דקות</p>
                 <motion.button
                   onClick={handlePostJob}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl font-bold text-[13px]"
@@ -785,9 +785,9 @@ export default function HomeEmployer() {
                     onClick={() => navigate("/my-jobs")}
                     className="w-full text-center text-[12px] py-2 font-semibold rounded-xl"
                     style={{
-                      color: "oklch(0.80 0.05 80)",
-                      background: "oklch(1 0 0 / 0.06)",
-                      border: "1px dashed oklch(1 0 0 / 0.25)",
+                      color: "oklch(0.45 0.08 122)",
+                      background: "oklch(0.38 0.07 125.0 / 0.06)",
+                      border: "1px dashed oklch(0.38 0.07 125.0 / 0.25)",
                     }}
                   >
                     + עוד {myJobs.length - 3} משרות

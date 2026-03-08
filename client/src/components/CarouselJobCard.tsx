@@ -96,12 +96,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
       }}
     >
       {/* ── Header image ── */}
-      <section className="relative w-full" style={{ height: 130 }}>
+      <section className="relative w-full overflow-hidden" style={{ height: 130 }}>
         <img
           src={bgImage}
           alt={catLabel}
-          className="w-full h-full object-cover"
-          style={{ filter: "brightness(0.95)" }}
+          className="w-full h-full object-cover block"
+          style={{ filter: "brightness(0.95)", outline: "none", border: "none" }}
           loading="lazy"
         />
         {/* Gradient: transparent → white fade at bottom */}

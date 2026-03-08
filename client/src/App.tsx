@@ -51,10 +51,10 @@ function Router() {
   const [location, navigate] = useLocation();
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    // RoleSelectionScreen already sent the server mutation.
+    // RoleSelectionScreen already sent the server mutation (for authenticated users).
     // Update local state so needsRoleSelection becomes false, then navigate directly.
     setLocalModeOnly(mode);
-    if (mode === "worker") navigate("/");
+    if (mode === "worker") navigate("/find-jobs");
     else navigate("/post-job");
   };
 
@@ -62,6 +62,12 @@ function Router() {
   // transition group (no re-mount flash), while distinct top-level routes
   // each get their own animation.
   const routeKey = location.split("/")[1] || "home";
+
+  // Show RoleSelectionScreen on / when:
+  // 1. Authenticated user has no role yet (needsRoleSelection), OR
+  // 2. Any user (including guest) is on the root path
+  const isRootPath = location === "/" || location === "";
+  const showRoleSelection = needsRoleSelection || isRootPath;
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
@@ -74,7 +80,7 @@ function Router() {
         enter animation starts, preventing two pages overlapping.
       */}
       <main className="flex-1" style={{ overflow: "hidden" }}>
-        {needsRoleSelection ? (
+        {showRoleSelection ? (
           <RoleSelectionScreen onSelected={handleRoleSelected} />
         ) : (
           <AnimatePresence mode="wait" initial={false}>

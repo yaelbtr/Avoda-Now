@@ -642,3 +642,9 @@
 - [x] Fix: improved error messages in Hebrew for permission denied / network errors
 - [x] Fix: added ⚠️ error banner below push prompt in MyApplications so user sees what went wrong
 - [x] All 114 tests pass
+
+## Landing Page Always Shows Role Selection Screen
+- [x] Route / always shows RoleSelectionScreen (ברוכים הבאים ל-AvodaNow) regardless of login state
+- [x] Guest users: clicking a role card navigates directly to /find-jobs or /post-job (no server mutation)
+- [x] Authenticated users: clicking a role card saves mode to server as before, then navigates
+- [x] handleRoleSelected in App.tsx now navigates to /find-jobs (worker) or /post-job (employer) instead of /

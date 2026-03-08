@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users, Star, Shield } from "lucide-react";
 import {
   C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT, C_HONEY,
@@ -172,6 +173,7 @@ function RoleCard({
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
   const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
   const [exiting, setExiting] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
@@ -183,6 +185,12 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const handleSelect = (mode: "worker" | "employer") => {
     if (loading || exiting) return;
+    if (!isAuthenticated) {
+      // Guest: navigate directly without saving to server
+      setExiting(true);
+      setTimeout(() => onSelected(mode), 400);
+      return;
+    }
     setLoading(mode);
     setModeMutation.mutate({ mode });
   };

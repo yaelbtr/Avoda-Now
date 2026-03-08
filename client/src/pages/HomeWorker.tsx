@@ -697,7 +697,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           {isAuthenticated && (
             <button
-              onClick={() => navigate("/worker-preferences")}
+              onClick={() => navigate("/worker-profile")}
               className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
               style={{
                 background: "white",

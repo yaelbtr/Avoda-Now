@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
-import { User, MapPin, Briefcase, Save, ArrowRight, Bell, MessageSquare, BellOff } from "lucide-react";
+import {
+  User, MapPin, Briefcase, Save, ArrowRight,
+  Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
+} from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 
 const ALL_CATEGORIES = [
@@ -18,43 +21,18 @@ const ALL_CATEGORIES = [
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
 
 const NOTIF_OPTIONS: { value: NotifPref; label: string; description: string; icon: React.ReactNode }[] = [
-  {
-    value: "both",
-    label: "הכל",
-    description: "Push + SMS",
-    icon: <Bell className="h-4 w-4" />,
-  },
-  {
-    value: "push_only",
-    label: "Push בלבד",
-    description: "התראות דפדפן בלבד",
-    icon: <Bell className="h-4 w-4" />,
-  },
-  {
-    value: "sms_only",
-    label: "SMS בלבד",
-    description: "הודעות טקסט בלבד",
-    icon: <MessageSquare className="h-4 w-4" />,
-  },
-  {
-    value: "none",
-    label: "כבוי",
-    description: "ללא הודעות",
-    icon: <BellOff className="h-4 w-4" />,
-  },
+  { value: "both", label: "הכל", description: "Push + SMS", icon: <Bell className="h-4 w-4" /> },
+  { value: "push_only", label: "Push בלבד", description: "התראות דפדפן בלבד", icon: <Bell className="h-4 w-4" /> },
+  { value: "sms_only", label: "SMS בלבד", description: "הודעות טקסט בלבד", icon: <MessageSquare className="h-4 w-4" /> },
+  { value: "none", label: "כבוי", description: "ללא הודעות", icon: <BellOff className="h-4 w-4" /> },
 ];
 
 export default function WorkerProfile() {
   const { isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
 
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-
-  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
 
   const updateMutation = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -72,26 +50,36 @@ export default function WorkerProfile() {
     onError: () => toast.error("שגיאה בשמירת הגדרות ההתראות"),
   });
 
+  // ── Basic info ──────────────────────────────────────────────────────────────
   const [name, setName] = useState("");
-  const [preferredCity, setPreferredCity] = useState("");
   const [workerBio, setWorkerBio] = useState("");
+
+  // ── Matching preferences ────────────────────────────────────────────────────
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [preferenceText, setPreferenceText] = useState("");
+  const [locationMode, setLocationMode] = useState<"city" | "radius">("city");
+  const [preferredCity, setPreferredCity] = useState("");
+  const [searchRadiusKm, setSearchRadiusKm] = useState(5);
+
+  // ── Notifications ───────────────────────────────────────────────────────────
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
 
   // Populate form from server data
   useEffect(() => {
     if (profileQuery.data) {
-      setName(profileQuery.data.name ?? "");
-      setPreferredCity(profileQuery.data.preferredCity ?? "");
-      setWorkerBio(profileQuery.data.workerBio ?? "");
-      setSelectedCategories(profileQuery.data.preferredCategories ?? []);
+      const d = profileQuery.data;
+      setName(d.name ?? "");
+      setWorkerBio(d.workerBio ?? "");
+      setSelectedCategories(d.preferredCategories ?? []);
+      setPreferenceText(d.preferenceText ?? "");
+      setLocationMode((d.locationMode as "city" | "radius") ?? "city");
+      setPreferredCity(d.preferredCity ?? "");
+      setSearchRadiusKm(d.searchRadiusKm ?? 5);
     }
   }, [profileQuery.data]);
 
   useEffect(() => {
-    if (notifPrefsQuery.data) {
-      setNotifPref(notifPrefsQuery.data.prefs);
-    }
+    if (notifPrefsQuery.data) setNotifPref(notifPrefsQuery.data.prefs);
   }, [notifPrefsQuery.data]);
 
   if (!isAuthenticated) {
@@ -115,9 +103,13 @@ export default function WorkerProfile() {
   const handleSave = () => {
     updateMutation.mutate({
       name: name.trim() || undefined,
-      preferredCategories: selectedCategories,
-      preferredCity: preferredCity.trim() || null,
       workerBio: workerBio.trim() || null,
+      // Matching preferences
+      preferredCategories: selectedCategories,
+      preferenceText: preferenceText.trim() || null,
+      locationMode,
+      preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+      searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
     });
   };
 
@@ -147,7 +139,8 @@ export default function WorkerProfile() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Basic info */}
+
+          {/* ── Basic info ─────────────────────────────────────────────────── */}
           <div className="bg-card border border-border rounded-xl p-5">
             <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <User className="h-4 w-4 text-primary" />
@@ -164,90 +157,157 @@ export default function WorkerProfile() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  טלפון
-                </label>
+                <label className="text-sm font-medium text-foreground mb-1 block">טלפון</label>
                 <Input
                   value={profileQuery.data?.phone ?? ""}
                   disabled
                   className="text-right bg-muted text-muted-foreground"
                   dir="ltr"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  מספר הטלפון אינו ניתן לשינוי
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">מספר הטלפון אינו ניתן לשינוי</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">אודות</label>
+                <Textarea
+                  value={workerBio}
+                  onChange={(e) => setWorkerBio(e.target.value)}
+                  placeholder="ספר קצת על עצמך — ניסיון, כישורים, זמינות..."
+                  className="text-right resize-none"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground mt-1 text-left">{workerBio.length}/500</p>
               </div>
             </div>
           </div>
 
-          {/* Preferred area */}
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              אזור מועדף
-            </h2>
-            <Input
-              value={preferredCity}
-              onChange={(e) => setPreferredCity(e.target.value)}
-              placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
-              className="text-right"
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              מעסיקים יוכלו לסנן עובדים לפי אזור זה
-            </p>
-          </div>
-
-          {/* Preferred categories */}
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+          {/* ── Matching Preferences ────────────────────────────────────────── */}
+          <div className="bg-card border border-border rounded-xl p-5 space-y-5">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-primary" />
-              תחומי עיסוק מועדפים
+              העדפות התאמה
             </h2>
-            <p className="text-xs text-muted-foreground mb-4">
-              בחר את הקטגוריות שאתה מוכן לעבוד בהן — מעסיקים יראו אותן בפרופיל שלך
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {ALL_CATEGORIES.map((cat) => {
-                const isSelected = selectedCategories.includes(cat.value);
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => toggleCategory(cat.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
-                    }`}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                );
-              })}
+
+            {/* Preference text */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                תיאור חופשי
+              </label>
+              <Textarea
+                value={preferenceText}
+                onChange={(e) => setPreferenceText(e.target.value)}
+                placeholder="לדוגמה: מחפש עבודה בשעות הבוקר, מוכן לנסוע עד 10 ק&quot;מ, ניסיון בשמירה ובנייה..."
+                className="text-right resize-none"
+                rows={3}
+                maxLength={1000}
+              />
+              <p className="text-xs text-muted-foreground mt-1 text-left">{preferenceText.length}/1000</p>
             </div>
-            {selectedCategories.length > 0 && (
-              <p className="text-xs text-primary mt-3 font-medium">
-                {selectedCategories.length} קטגוריות נבחרו
+
+            {/* Categories */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                תחומי עיסוק מועדפים
+              </label>
+              <p className="text-xs text-muted-foreground mb-3">
+                בחר את הקטגוריות שאתה מוכן לעבוד בהן
               </p>
-            )}
+              <div className="flex flex-wrap gap-2">
+                {ALL_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategories.includes(cat.value);
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => toggleCategory(cat.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                      }`}
+                    >
+                      {cat.icon} {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedCategories.length > 0 && (
+                <p className="text-xs text-primary mt-3 font-medium">
+                  {selectedCategories.length} קטגוריות נבחרו
+                </p>
+              )}
+            </div>
+
+            {/* Location mode */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                מצב חיפוש עבודה
+              </label>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setLocationMode("radius")}
+                  className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                    locationMode === "radius"
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  <Crosshair className="h-4 w-4" />
+                  לפי רדיוס
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocationMode("city")}
+                  className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                    locationMode === "city"
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  <Building2 className="h-4 w-4" />
+                  לפי עיר
+                </button>
+              </div>
+
+              {locationMode === "radius" && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">רדיוס חיפוש מהמיקום שלי:</p>
+                  <div className="flex gap-2">
+                    {[2, 5, 10, 20, 50].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setSearchRadiusKm(r)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
+                          searchRadiusKm === r
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {r} ק"מ
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {locationMode === "city" && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">עיר מועדפת:</p>
+                  <Input
+                    value={preferredCity}
+                    onChange={(e) => setPreferredCity(e.target.value)}
+                    placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
+                    className="text-right"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Bio */}
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h2 className="font-semibold text-foreground mb-2">אודות</h2>
-            <Textarea
-              value={workerBio}
-              onChange={(e) => setWorkerBio(e.target.value)}
-              placeholder="ספר קצת על עצמך — ניסיון, כישורים, זמינות..."
-              className="text-right resize-none"
-              rows={4}
-              maxLength={500}
-            />
-            <p className="text-xs text-muted-foreground mt-1 text-left">
-              {workerBio.length}/500
-            </p>
-          </div>
-
-          {/* Save button */}
+          {/* ── Save button ─────────────────────────────────────────────────── */}
           <AppButton
             variant="brand"
             size="xl"
@@ -255,15 +315,11 @@ export default function WorkerProfile() {
             disabled={updateMutation.isPending}
             className="w-full gap-2"
           >
-            {updateMutation.isPending ? (
-              <BrandLoader size="sm" />
-            ) : (
-              <Save className="h-5 w-5" />
-            )}
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-5 w-5" />}
             שמור פרופיל
           </AppButton>
 
-          {/* ── Notification Settings ─────────────────────────────── */}
+          {/* ── Notification Settings ───────────────────────────────────────── */}
           <div className="bg-card border border-border rounded-xl p-5">
             <h2 className="font-semibold text-foreground mb-1 flex items-center gap-2">
               <Bell className="h-4 w-4 text-primary" />
@@ -272,7 +328,6 @@ export default function WorkerProfile() {
             <p className="text-xs text-muted-foreground mb-4">
               בחר כיצד תרצה לקבל עדכונים על מועמדויות ומשרות
             </p>
-
             <div className="grid grid-cols-2 gap-2">
               {NOTIF_OPTIONS.map((opt) => {
                 const isActive = notifPref === opt.value;
@@ -296,7 +351,6 @@ export default function WorkerProfile() {
                 );
               })}
             </div>
-
             {notifPref === "none" && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 border border-amber-200 dark:border-amber-800">
                 ⚠️ לא תקבל שום עדכון על מועמדויות ומשרות חדשות
@@ -308,6 +362,7 @@ export default function WorkerProfile() {
               </p>
             )}
           </div>
+
         </div>
       )}
     </div>

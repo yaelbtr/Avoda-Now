@@ -663,7 +663,33 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           {(urgentQuery.isLoading || todayQuery.isLoading) ? (
             <div className="px-6"><CarouselSkeletonRow count={3} /></div>
           ) : (
-            <div className="relative">
+            <div className="relative" style={{ overflow: "hidden" }}>
+              {/* Left fade mask */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: 32,
+                  background: "linear-gradient(to right, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5,
+                  pointerEvents: "none",
+                }}
+              />
+              {/* Right fade mask */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: 32,
+                  background: "linear-gradient(to left, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5,
+                  pointerEvents: "none",
+                }}
+              />
               {activeCarouselIdx < carouselTotal - 1 && (
                 <button
                   onClick={() => {

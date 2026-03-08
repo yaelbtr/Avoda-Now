@@ -222,7 +222,7 @@ export default function JobBottomSheet({
               <InfoTile
                 icon={<Briefcase size={16} color={OLIVE} />}
                 label="שכר"
-                value={salaryStr ? `${salaryStr} ₪ לשעה` : "לא צוין"}
+                value={salaryStr && !isVolunteer ? `${salaryStr} לשעה` : "לא צוין"}
               />
             ) : (
               <InfoTile

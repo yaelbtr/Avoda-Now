@@ -941,38 +941,56 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Not found CTA ─────────────────────────────────────────────────────────── */}
       <section
-        className="px-6 py-12 text-center relative z-10"
+        className="relative z-10 overflow-hidden"
         style={{
-          background: "linear-gradient(180deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
+          minHeight: 320,
           borderTop: "1px solid oklch(0.89 0.05 84.0)",
         }}
       >
-        <div className="mb-6 max-w-lg mx-auto">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: "white", boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.12)", border: "1px solid oklch(0.89 0.05 84.0)" }}
-          >
-            <Search className="h-7 w-7" style={{ color: "var(--brand)" }} />
-          </div>
-          <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
-          <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-            כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
-          </p>
-        </div>
-        <motion.button
-          onClick={() => navigate("/find-jobs")}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+        {/* Background image */}
+        <img
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
+          alt=""
           style={{
-            border: "2px solid var(--brand)",
-            color: "var(--brand)",
-            background: "white",
-            boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center top",
           }}
-        >
-          לחיפוש מתקדם
-        </motion.button>
+        />
+        {/* Overlay for readability */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 60%, rgba(255,255,255,0.96) 100%)",
+          }}
+        />
+        {/* Content */}
+        <div className="relative px-6 py-12 text-center">
+          <div className="mb-6 max-w-lg mx-auto">
+            <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
+            <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+              כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
+            </p>
+          </div>
+          <motion.button
+            onClick={() => navigate("/find-jobs")}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+            style={{
+              border: "2px solid var(--brand)",
+              color: "var(--brand)",
+              background: "white",
+              boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+            }}
+          >
+            לחיפוש מתקדם
+          </motion.button>
+        </div>
       </section>
 
       {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}

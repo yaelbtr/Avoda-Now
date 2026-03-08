@@ -643,7 +643,7 @@ export default function HomeEmployer() {
 
       {/* ── My Active Jobs (authenticated) ──────────────────── */}
       {isAuthenticated && (
-        <section className="mb-10 relative z-10" style={{ background: "oklch(0.96 0.03 91.6)", borderRadius: "1.5rem", margin: "0 1rem 2.5rem", padding: "1.5rem 0 1.75rem", border: "1px solid oklch(0.90 0.04 91.6)" }}>
+        <section className="mb-10 relative z-10" style={{ background: "oklch(0.97 0.012 100)", borderTop: "1px solid oklch(0.92 0.02 100)", borderBottom: "1px solid oklch(0.92 0.02 100)", padding: "20px 24px", maxWidth: "100%" }}>
           <motion.div
             className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
             initial={{ opacity: 0, y: 16 }}

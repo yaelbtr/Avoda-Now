@@ -975,17 +975,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </p>
           <motion.button
             onClick={() => navigate("/find-jobs")}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex items-center gap-2 transition-all"
             style={{
-              border: "2px solid var(--brand)",
+              border: "1.5px solid oklch(0.82 0.06 84.0)",
               color: "var(--brand)",
               background: "white",
-              boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+              borderRadius: 999,
+              padding: "10px 20px",
+              fontSize: 15,
+              fontWeight: 700,
+              boxShadow: "0 1px 6px oklch(0.38 0.07 125.0 / 0.08)",
             }}
           >
-            לחיפוש מתקדם
+            <Search size={16} style={{ color: "var(--brand)" }} />
+            חיפוש עבודה מזדמנת
           </motion.button>
         </div>
       </section>

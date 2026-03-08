@@ -267,14 +267,6 @@ const jobsRouter = router({
         });
       }
 
-      const activeCount = await countActiveJobsByUser(ctx.user.id);
-      if (activeCount >= 3) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "הגעת למגבלת 3 משרות פעילות. סגור משרה קיימת כדי לפרסם חדשה.",
-        });
-      }
-
       // Urgent jobs expire in 12h, normal jobs use activeDuration (default 1 day)
       const durationDays = parseInt(input.activeDuration);
       const expiresMs = input.isUrgent

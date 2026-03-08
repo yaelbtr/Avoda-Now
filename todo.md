@@ -552,3 +552,15 @@
 - [x] Frontend: Overdue badge for batches whose scheduledAt has passed but not yet sent
 - [x] Frontend: Explanation banner explaining the 10-min window + threshold logic
 - [x] All 114 tests pass
+
+## Employer Applicants Page (/jobs/:id/applications)
+- [x] DB: getApplicationsForJobWithDistance helper — Haversine distance from job location, sorted closest first
+- [x] Server: jobs.getJobApplications query — returns applicants sorted by distance, only job owner
+- [x] Frontend: /jobs/:id/applications page — title "מועמדים למשרה", applicant count at top
+- [x] Frontend: applicant card — worker name, distance (km), time since application, "חדש" badge (<24h)
+- [x] Frontend: Accept/Reject buttons per card (pending only)
+- [x] Frontend: on Accept — reveal Phone (tel:) + WhatsApp (wa.me) buttons, update status
+- [x] Frontend: sections: ממתינים / התקבלו / נדחו with counts
+- [x] Frontend: route /jobs/:id/applications in App.tsx
+- [x] Frontend: "צפה בכל המועמדים בדף מלא" link in MyJobs ApplicantsPanel
+- [x] All 114 tests pass

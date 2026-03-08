@@ -873,6 +873,57 @@ export async function getApplicationsForJob(jobId: number) {
 }
 
 /**
+ * Returns applications for a job with worker location (from workerAvailability if present)
+ * and Haversine distance from the job's lat/lng. Sorted: closest first, nulls last.
+ * Phone is included — caller must strip if contactRevealed=false.
+ */
+export async function getApplicationsForJobWithDistance(
+  jobId: number,
+  jobLat: string,
+  jobLng: string
+) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const distanceExpr = sql<number>`
+    6371 * 2 * ASIN(SQRT(
+      POWER(SIN((RADIANS(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))) - RADIANS(${jobLat})) / 2), 2)
+      + COS(RADIANS(${jobLat})) * COS(RADIANS(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
+      * POWER(SIN((RADIANS(CAST(${workerAvailability.longitude} AS DECIMAL(10,7))) - RADIANS(${jobLng})) / 2), 2)
+    ))
+  `;
+
+  const now = new Date();
+  return db
+    .select({
+      id: applications.id,
+      workerId: applications.workerId,
+      status: applications.status,
+      message: applications.message,
+      contactRevealed: applications.contactRevealed,
+      revealedAt: applications.revealedAt,
+      createdAt: applications.createdAt,
+      workerName: users.name,
+      workerPhone: users.phone,
+      workerBio: users.workerBio,
+      workerPreferredCity: users.preferredCity,
+      workerTags: users.workerTags,
+      distanceKm: distanceExpr,
+    })
+    .from(applications)
+    .innerJoin(users, eq(applications.workerId, users.id))
+    .leftJoin(
+      workerAvailability,
+      and(
+        eq(workerAvailability.userId, applications.workerId),
+        gte(workerAvailability.availableUntil, now)
+      )
+    )
+    .where(eq(applications.jobId, jobId))
+    .orderBy(sql`${distanceExpr} IS NULL`, asc(distanceExpr));
+}
+
+/**
  * Accept an application: sets status=accepted, contactRevealed=true, revealedAt=now.
  * Reject an application: sets status=rejected.
  */

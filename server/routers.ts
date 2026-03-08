@@ -39,10 +39,11 @@ import {
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
-  getApplicationByWorkerAndJob,
   createApplication,
-  getApplicationsForJob,
+  getApplicationByWorkerAndJob,
   getApplicationById,
+  getApplicationsForJob,
+  getApplicationsForJobWithDistance,
   revealApplicationContact,
   updateApplicationStatus,
 } from "./db";
@@ -450,7 +451,26 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  /** Get all applications for a job (employer only) */
+  /** Get applications for a job sorted by distance (employer view) */
+  getJobApplications: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const job = await getJobById(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה" });
+      const rows = await getApplicationsForJobWithDistance(
+        input.jobId,
+        job.latitude,
+        job.longitude
+      );
+      // Strip phone for non-accepted applicants
+      return rows.map((r) => ({
+        ...r,
+        workerPhone: r.contactRevealed ? r.workerPhone : null,
+      }));
+    }),
+
+  /** Get applications for a job (employer view) */
   getApplications: protectedProcedure
     .input(z.object({ jobId: z.number() }))
     .query(async ({ input, ctx }) => {

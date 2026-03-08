@@ -341,6 +341,16 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
           </motion.div>
         );
       })}
+      {/* Link to full applicants page */}
+      <div className="pt-2 text-center">
+        <a
+          href={`/jobs/${jobId}/applications`}
+          className="text-xs underline"
+          style={{ color: "oklch(0.70 0.18 260)" }}
+        >
+          צפה בכל המועמדים בדף מלא →
+        </a>
+      </div>
     </div>
   );
 }

@@ -98,31 +98,60 @@ export default function JobCardSkeleton() {
   );
 }
 
-// ── Carousel tile skeleton ────────────────────────────────────────────────────
+// ── Carousel tile skeleton (matches new CarouselJobCard design) ───────────────
 export function CarouselJobCardSkeleton() {
   return (
     <div
       style={{
-        background: C_SURFACE_HEX,
-        border: `1px solid ${C_BORDER}`,
+        background: "#ffffff",
+        border: "1px solid #e8e8e8",
         borderRadius: "1rem",
-        padding: "1rem",
-        boxShadow: S_CARD,
-        width: 220,
+        overflow: "hidden",
+        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.05)",
+        width: 288,
         flexShrink: 0,
       }}
       dir="rtl"
     >
-      {/* Icon */}
-      <Shimmer width={40} height={40} rounded="0.75rem" className="mb-3" />
-      {/* Title */}
-      <Shimmer width="80%" height={14} className="mb-2" />
-      {/* Location */}
-      <Shimmer width="55%" height={11} className="mb-3" />
-      {/* Salary badge */}
-      <Shimmer width={72} height={22} rounded="9999px" className="mb-4" />
-      {/* Button */}
-      <Shimmer width="100%" height={34} rounded="0.75rem" />
+      {/* Image area */}
+      <Shimmer width="100%" height={200} rounded="0" />
+
+      {/* Content area */}
+      <div style={{ padding: "0 20px 20px", position: "relative", paddingTop: 44 }}>
+        {/* Floating icon placeholder */}
+        <div
+          style={{
+            position: "absolute",
+            top: -36,
+            right: 20,
+            width: 72,
+            height: 72,
+            borderRadius: "0.75rem",
+            background: "#ffffff",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
+            border: "1px solid #f0f0f0",
+            overflow: "hidden",
+          }}
+        >
+          <Shimmer width="100%" height={72} rounded="0" />
+        </div>
+
+        {/* Title */}
+        <Shimmer width="75%" height={20} className="mb-2" />
+        <Shimmer width="50%" height={14} className="mb-4" />
+
+        {/* Divider */}
+        <div style={{ borderTop: "1px solid #f0f0f0", marginBottom: 16 }} />
+
+        {/* Time + salary row */}
+        <div className="flex items-center justify-between mb-4">
+          <Shimmer width={90} height={34} rounded="0.5rem" />
+          <Shimmer width={70} height={22} />
+        </div>
+
+        {/* CTA button */}
+        <Shimmer width="100%" height={48} rounded="0.75rem" />
+      </div>
     </div>
   );
 }

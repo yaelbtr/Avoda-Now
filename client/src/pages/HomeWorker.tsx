@@ -997,28 +997,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}
       <section
-        className="px-6 pt-4 pb-16 text-center relative z-10"
+        className="px-6 pt-5 pb-16 text-center relative z-10 cursor-pointer"
         style={{
           background: "linear-gradient(180deg, oklch(0.93 0.03 91.6) 0%, oklch(0.96 0.02 122.3) 100%)",
         }}
+        onClick={resetUserMode}
       >
-        <div
-          className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl cursor-pointer transition-all"
-          style={{
-            background: "white",
-            border: "1.5px solid oklch(0.75 0.12 76.7 / 0.35)",
-            boxShadow: "0 2px 10px oklch(0.75 0.12 76.7 / 0.12)",
-          }}
-          onClick={resetUserMode}
-        >
-          <span className="text-[15px] font-black" style={{ color: "var(--brand)" }}>מחפשים עובדים?</span>
-          <span
-            className="text-[15px] font-black"
-            style={{ color: "var(--amber)" }}
-          >
-            לחצו לפרסום עבודה →
-          </span>
-        </div>
+        <p className="text-[16px] font-black leading-snug" style={{ color: "var(--brand)" }}>מחפשים עובדים?</p>
+        <p className="text-[15px] font-bold mt-0.5" style={{ color: "var(--amber)" }}>לחצו לפרסום עבודה ←</p>
       </section>
 
       {/* ── Info Dialog ──────────────────────────────────────────────────── */}

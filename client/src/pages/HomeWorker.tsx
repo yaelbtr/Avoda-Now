@@ -512,7 +512,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
         {/* Availability row */}
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[13px] font-bold" style={{ color: "oklch(0.42 0.04 122)" }}>זמינות לעבודה</span>
+          <div className="flex items-center gap-2">
+            <div style={{ width: 4, height: 20, borderRadius: 4, background: "#4F583B" }} />
+            <span className="text-[15px] font-black" style={{ color: "#4F583B" }}>זמינות לעבודה</span>
+          </div>
           <div className="flex items-center gap-2">
             <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
               {/* outer slow pulse ring — only when available */}
@@ -644,11 +647,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
         <section className="mb-10 relative z-10">
           <div className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto">
-            <h2 className="text-xl font-black" style={{ color: "var(--brand)" }}>עבודות בהתאמה אישית עבורך</h2>
+            <div className="flex items-center gap-2">
+              <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B" }}>עבודות בהתאמה אישית עבורך</h2>
+            </div>
             <button
               onClick={() => navigate("/find-jobs?urgent=1")}
               className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
-              style={{ color: "var(--amber)", backgroundColor: "rgba(217,164,80,0.15)" }}
+              style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
             >
               הכל
             </button>

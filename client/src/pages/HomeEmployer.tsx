@@ -512,113 +512,126 @@ export default function HomeEmployer() {
         </motion.button>
       </section>
 
-      {/* ── Available Workers Carousel ───────────────────────────────── */}
+      {/* ── Available Workers Carousel ──────────────────────────────────────────────── */}
       <section
-        className="relative z-10 mx-6 mb-8 rounded-[28px] p-6 max-w-lg"
+        dir="rtl"
+        className="relative z-10 mx-4 mb-8 rounded-3xl overflow-hidden max-w-lg"
         style={{
           background: "white",
-          boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+          boxShadow: "0 8px 32px oklch(0.38 0.07 125.0 / 0.12), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+          border: "1px solid oklch(0.92 0.03 91.6)",
         }}
       >
-        <motion.div
-          className="flex items-center justify-between mb-5"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+        {/* Header strip */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{
+            background: "linear-gradient(135deg, oklch(0.38 0.18 160) 0%, oklch(0.30 0.14 160) 100%)",
+          }}
         >
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.65 0.22 160 / 0.12)", border: "1px solid oklch(0.65 0.22 160 / 0.20)" }}>
-              <Users className="h-4 w-4" style={{ color: "oklch(0.45 0.22 160)" }} />
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ background: "oklch(1 0 0 / 0.15)" }}
+            >
+              <Users className="h-4 w-4" style={{ color: "oklch(0.92 0.10 160)" }} />
             </div>
-            <h3 className="text-[15px] font-black" style={{ color: "oklch(0.22 0.06 122)" }}>עובדים זמינים עכשיו</h3>
+            <h3 className="text-[15px] font-black" style={{ color: "white" }}>עובדים זמינים עכשיו</h3>
           </div>
           <button
             onClick={() => navigate("/available-workers")}
-            className="flex items-center gap-1 text-[12px] font-semibold transition-colors"
-            style={{ color: "oklch(0.45 0.08 122)" }}
+            className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
+            style={{ background: "oklch(1 0 0 / 0.15)", color: "oklch(0.95 0.06 160)" }}
           >
             כל העובדים
             <ChevronLeft className="h-3.5 w-3.5" style={{ transform: "rotate(180deg)" }} />
           </button>
-        </motion.div>
+        </div>
 
-        {workersQuery.isLoading ? (
-          <div className="px-1 py-2">
-            <CarouselSkeletonRow count={3} />
-          </div>
-        ) : workers.length === 0 ? (
-          <div className="text-center py-8">
-            <HardHat className="h-10 w-10 mx-auto mb-2" style={{ color: "oklch(0.75 0.12 160 / 0.60)" }} />
-            <p className="text-sm font-medium" style={{ color: "oklch(0.52 0.03 100)" }}>אין עובדים זמינים כרגע באזורך</p>
-            <p className="text-xs mt-1" style={{ color: "oklch(0.65 0.02 100)" }}>פרסם משרה ועובדים יפנו אליך</p>
-          </div>
-        ) : (
-          <div className="relative">
-            <div
-              id="worker-carousel-home"
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
-              onMouseEnter={() => { workerPausedRef.current = true; }}
-              onMouseLeave={() => { workerPausedRef.current = false; }}
-              onTouchStart={() => { workerPausedRef.current = true; }}
-              onTouchEnd={() => { setTimeout(() => { workerPausedRef.current = false; }, 2000); }}
-              onScroll={(e) => {
-                const el = e.currentTarget;
-                const cardWidth = el.scrollWidth / workers.length;
-                const idx = Math.round(el.scrollLeft / cardWidth);
-                setActiveWorkerIdx(idx);
-              }}
-            >
-              {workers.map((worker, i) => (
-                <motion.div
-                  key={worker.userId}
-                  className="snap-start shrink-0 w-[52vw] max-w-[180px]"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.35, delay: i * 0.06, ease: "easeOut" }}
-                >
-                  <WorkerCarouselCard worker={worker} index={i} />
-                </motion.div>
-              ))}
+        {/* Body */}
+        <div className="px-4 pt-4 pb-5">
+          {workersQuery.isLoading ? (
+            <div className="px-1 py-2">
+              <CarouselSkeletonRow count={3} />
             </div>
-
-            {workers.length > 1 && (
-              <div className="flex justify-center gap-1.5 mt-2">
-                {workers.map((_, i) => (
-                  <span
-                    key={i}
-                    className="inline-block rounded-full transition-all duration-300"
-                    style={{
-                      width: i === activeWorkerIdx ? "16px" : "8px",
-                      height: "8px",
-                      background: i === activeWorkerIdx ? "oklch(0.45 0.22 160)" : "oklch(0.89 0.05 84.0)",
-                    }}
-                  />
+          ) : workers.length === 0 ? (
+            <div className="text-center py-8">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                style={{ background: "oklch(0.65 0.22 160 / 0.10)", border: "1px solid oklch(0.65 0.22 160 / 0.20)" }}
+              >
+                <HardHat className="h-7 w-7" style={{ color: "oklch(0.45 0.22 160)" }} />
+              </div>
+              <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>אין עובדים זמינים כרגע באזורך</p>
+              <p className="text-xs" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ועובדים יפנו אליך</p>
+            </div>
+          ) : (
+            <div className="relative">
+              <div
+                id="worker-carousel-home"
+                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                onMouseEnter={() => { workerPausedRef.current = true; }}
+                onMouseLeave={() => { workerPausedRef.current = false; }}
+                onTouchStart={() => { workerPausedRef.current = true; }}
+                onTouchEnd={() => { setTimeout(() => { workerPausedRef.current = false; }, 2000); }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const cardWidth = el.scrollWidth / workers.length;
+                  const idx = Math.round(el.scrollLeft / cardWidth);
+                  setActiveWorkerIdx(idx);
+                }}
+              >
+                {workers.map((worker, i) => (
+                  <motion.div
+                    key={worker.userId}
+                    className="snap-start shrink-0 w-[52vw] max-w-[180px]"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.35, delay: i * 0.06, ease: "easeOut" }}
+                  >
+                    <WorkerCarouselCard worker={worker} index={i} />
+                  </motion.div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {workers.length > 0 && (
-          <motion.button
-            onClick={() => navigate("/available-workers")}
-            className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-semibold text-[13px]"
-            style={{
-              background: "oklch(0.65 0.22 160 / 0.08)",
-              border: "1px solid oklch(0.65 0.22 160 / 0.20)",
-              color: "oklch(0.35 0.18 160)",
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Users size={13} />
-            צפה בכל העובדים הזמינים
-          </motion.button>
-        )}
+              {workers.length > 1 && (
+                <div className="flex justify-center gap-1.5 mt-2">
+                  {workers.map((_, i) => (
+                    <span
+                      key={i}
+                      className="inline-block rounded-full transition-all duration-300"
+                      style={{
+                        width: i === activeWorkerIdx ? "16px" : "8px",
+                        height: "8px",
+                        background: i === activeWorkerIdx ? "oklch(0.45 0.22 160)" : "oklch(0.89 0.05 84.0)",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {workers.length > 0 && (
+            <motion.button
+              onClick={() => navigate("/available-workers")}
+              className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-[13px]"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.38 0.18 160) 0%, oklch(0.30 0.14 160) 100%)",
+                color: "white",
+                boxShadow: "0 4px 14px oklch(0.38 0.18 160 / 0.30)",
+              }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <Users size={14} />
+              צפה בכל העובדים הזמינים
+            </motion.button>
+          )}
+        </div>
       </section>
 
       {/* ── My Active Jobs (authenticated) ────────────────────── */}

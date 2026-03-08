@@ -108,7 +108,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,1) 95%)",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 70%, rgba(255,255,255,1) 100%)",
           }}
         />
         {/* Urgent badge — top right */}

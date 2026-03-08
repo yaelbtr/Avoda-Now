@@ -968,28 +968,28 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 60%, rgba(255,255,255,0.96) 100%)",
           }}
         />
-        {/* Content */}
-        <div className="relative px-6 py-12 text-center">
-          <div className="mb-6 max-w-lg mx-auto">
+        {/* Content - aligned to right side (RTL), leaving left side for the man's face */}
+        <div className="relative px-6 py-12" dir="rtl" style={{ textAlign: "right" }}>
+          <div style={{ maxWidth: "55%", marginRight: 0 }}>
             <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
-            <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-sm font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
               כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
             </p>
+            <motion.button
+              onClick={() => navigate("/find-jobs")}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+              style={{
+                border: "2px solid var(--brand)",
+                color: "var(--brand)",
+                background: "white",
+                boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+              }}
+            >
+              לחיפוש מתקדם
+            </motion.button>
           </div>
-          <motion.button
-            onClick={() => navigate("/find-jobs")}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
-            style={{
-              border: "2px solid var(--brand)",
-              color: "var(--brand)",
-              background: "white",
-              boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
-            }}
-          >
-            לחיפוש מתקדם
-          </motion.button>
         </div>
       </section>
 

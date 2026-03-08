@@ -946,7 +946,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         style={{ borderTop: "1px solid oklch(0.89 0.05 84.0)" }}
       >
         {/* Image top half - man with magnifying glass */}
-        <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+        <div style={{ position: "relative", height: 280, overflow: "hidden" }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
             alt=""
@@ -954,7 +954,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "center 55%",
+              objectPosition: "center 15%",
             }}
           />
           {/* Bottom fade into content */}

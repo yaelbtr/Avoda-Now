@@ -997,14 +997,38 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}
       <section
-        className="px-6 pt-5 pb-16 text-center relative z-10 cursor-pointer"
+        dir="rtl"
+        className="relative z-10 cursor-pointer"
         style={{
-          background: "linear-gradient(180deg, oklch(0.93 0.03 91.6) 0%, oklch(0.96 0.02 122.3) 100%)",
+          background: "linear-gradient(160deg, oklch(0.91 0.04 91.6) 0%, oklch(0.94 0.025 122.3) 100%)",
+          borderTop: "1px solid oklch(0.85 0.06 84.0 / 0.5)",
         }}
         onClick={resetUserMode}
       >
-        <p className="text-[16px] font-black leading-snug" style={{ color: "var(--brand)" }}>מחפשים עובדים?</p>
-        <p className="text-[15px] font-bold mt-0.5" style={{ color: "var(--amber)" }}>לחצו לפרסום עבודה ←</p>
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{
+            borderRight: "4px solid var(--amber)",
+          }}
+        >
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[15px] font-black" style={{ color: "var(--brand)" }}>מחפשים עובדים?</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--amber)" }}>לחצו לפרסום עבודה</p>
+          </div>
+          <div
+            className="flex items-center justify-center rounded-full shrink-0"
+            style={{
+              width: 36,
+              height: 36,
+              background: "var(--amber)",
+              color: "white",
+              fontSize: 18,
+              fontWeight: 700,
+            }}
+          >
+            ←
+          </div>
+        </div>
       </section>
 
       {/* ── Info Dialog ──────────────────────────────────────────────────── */}

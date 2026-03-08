@@ -206,7 +206,7 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
                 fontWeight: 500,
               }}
             >
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", direction: "rtl", unicodeBidi: "embed" }}>
                 {job.businessName ? `${job.businessName}, ` : ""}{location}
               </span>
               <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />

@@ -202,7 +202,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
               marginBottom: 10,
             }}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140, direction: "rtl", unicodeBidi: "embed" }}>
               {job.businessName ? `${job.businessName}, ` : ""}{location}
             </span>
             <MapPin size={12} style={{ color: OLIVE, flexShrink: 0 }} />

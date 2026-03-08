@@ -261,10 +261,7 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
                 {getStartTimeLabel(job.startTime)}
               </div>
               {job.salary && !isVolunteer ? (
-                <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
-                  <span style={{ color: OLIVE, fontSize: 16, fontWeight: 800 }}>{salaryStr}</span>
-                  <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 1 }}>לשעה</span>
-                </div>
+                <span style={{ color: OLIVE, fontSize: 13, fontWeight: 700 }}>{salaryStr}</span>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <Heart size={12} style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)", flexShrink: 0 }} />

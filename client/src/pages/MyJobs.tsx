@@ -32,13 +32,12 @@ import {
   C_AMBER, C_AMBER_LIGHT, C_HONEY,
 } from "@/lib/colors";
 
-// ── Glassmorphism helpers ─────────────────────────────────────────────────────
+// ── Card helpers ─────────────────────────────────────────────────────────────
 const glassCard: React.CSSProperties = {
-  background: C_DARK_CARD,
-  backdropFilter: "blur(16px) saturate(180%)",
-  WebkitBackdropFilter: "blur(16px) saturate(180%)",
-  border: `1px solid ${C_DARK_CARD_BORDER}`,
+  background: "#ffffff",
+  border: "1px solid oklch(0.90 0.02 120)",
   borderRadius: "1rem",
+  boxShadow: "0 2px 12px oklch(0.35 0.08 120 / 0.07)",
 };
 
 // ── Shimmer skeleton ──────────────────────────────────────────────────────────
@@ -46,11 +45,11 @@ function Shimmer({ width = "100%", height = 14, rounded = "0.5rem" }: {
   width?: string | number; height?: number; rounded?: string;
 }) {
   return (
-    <div style={{ width, height, borderRadius: rounded, background: "oklch(1 0 0 / 7%)", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+    <div style={{ width, height, borderRadius: rounded, background: "oklch(0.92 0.01 120)", overflow: "hidden", position: "relative", flexShrink: 0 }}>
       <motion.div
         style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 10%) 40%, oklch(1 0 0 / 18%) 50%, oklch(1 0 0 / 10%) 60%, transparent 100%)",
+          background: "linear-gradient(90deg, transparent 0%, oklch(0.97 0.005 120) 40%, oklch(1 0 0) 50%, oklch(0.97 0.005 120) 60%, transparent 100%)",
           backgroundSize: "200% 100%",
         }}
         animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
@@ -100,28 +99,28 @@ const cardVariants = {
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; glow?: string }> = {
   active: {
     label: "פעיל",
-    bg: `${SUCCESS} / 0.12`,
-    color: SUCCESS,
-    border: `${SUCCESS} / 0.3`,
-    glow: `0 0 10px ${SUCCESS} / 0.2`,
+    bg: "oklch(0.94 0.08 160)",
+    color: "oklch(0.38 0.15 160)",
+    border: "oklch(0.75 0.12 160)",
+    glow: "0 0 8px oklch(0.68 0.20 160 / 0.2)",
   },
   closed: {
     label: "סגור",
-    bg: C_DARK_CARD,
-    color: TEXT_FAINT,
-    border: C_DARK_CARD_BORDER,
+    bg: "oklch(0.93 0.01 120)",
+    color: "oklch(0.45 0.02 120)",
+    border: "oklch(0.82 0.02 120)",
   },
   expired: {
     label: "פג תוקף",
-    bg: `${WARNING} / 0.1`,
-    color: WARNING,
-    border: `${WARNING} / 0.25`,
+    bg: "oklch(0.95 0.08 65)",
+    color: "oklch(0.50 0.18 65)",
+    border: "oklch(0.78 0.14 65)",
   },
   under_review: {
     label: "בבדיקה",
-    bg: `${BRAND} / 0.1`,
-    color: C_BRAND_SUBTLE,
-    border: `${BRAND} / 0.25`,
+    bg: "oklch(0.93 0.06 250)",
+    color: "oklch(0.42 0.18 250)",
+    border: "oklch(0.72 0.14 250)",
   },
 };
 
@@ -517,12 +516,12 @@ export default function MyJobs() {
               style={{ ...glassCard, padding: "1rem", marginBottom: "1.25rem" }}
             >
               <div className="flex items-center justify-between text-sm mb-2">
-                <span style={{ color: TEXT_FAINT }}>{activeJobs.length} מתוך 3</span>
-                <span className="font-semibold" style={{ color: TEXT_BRIGHT }}>משרות פעילות</span>
+                <span style={{ color: "oklch(0.50 0.04 120)" }}>{activeJobs.length} מתוך 3</span>
+                <span className="font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>משרות פעילות</span>
               </div>
               <div
                 className="rounded-full overflow-hidden"
-                style={{ height: 6, background: C_DARK_CARD }}
+                style={{ height: 6, background: "oklch(0.90 0.02 120)" }}
               >
                 <motion.div
                   initial={{ width: 0 }}
@@ -651,11 +650,11 @@ export default function MyJobs() {
                         <div className="min-w-0">
                           <h3
                             className="font-bold truncate"
-                            style={{ color: "oklch(0.95 0.005 80)" }}
+                            style={{ color: "oklch(0.20 0.04 120)" }}
                           >
                             {job.title}
                           </h3>
-                          <p className="text-xs" style={{ color: "oklch(1 0 0 / 40%)" }}>
+                          <p className="text-xs" style={{ color: "oklch(0.50 0.04 120)" }}>
                             {getCategoryLabel(job.category)}
                           </p>
                         </div>
@@ -683,15 +682,15 @@ export default function MyJobs() {
 
                     {/* Meta row */}
                     <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs mb-3">
-                      <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
+                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
                         <MapPin className="h-3 w-3" style={{ color: C_AMBER }} />
                         {job.address.split(",")[0]}
                       </span>
-                      <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
+                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
                         <Clock className="h-3 w-3" style={{ color: C_AMBER }} />
                         {getStartTimeLabel(job.startTime)}
                       </span>
-                      <span className="flex items-center gap-1" style={{ color: "oklch(1 0 0 / 45%)" }}>
+                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
                         <Users className="h-3 w-3" style={{ color: C_AMBER }} />
                         {job.workersNeeded} עובדים
                       </span>
@@ -742,14 +741,14 @@ export default function MyJobs() {
                           onClick={() => toggleApplicants(job.id)}
                           style={{
                             background: applicantsExpanded
-                              ? "oklch(0.55 0.22 260 / 0.12)"
-                              : "oklch(1 0 0 / 0.04)",
+                              ? "oklch(0.93 0.06 250)"
+                              : "oklch(0.95 0.01 120)",
                             border: applicantsExpanded
-                              ? "1px solid oklch(0.55 0.22 260 / 0.3)"
-                              : "1px solid oklch(1 0 0 / 0.10)",
+                              ? "1px solid oklch(0.72 0.14 250)"
+                              : "1px solid oklch(0.85 0.02 120)",
                             color: applicantsExpanded
-                              ? "oklch(0.70 0.18 260)"
-                              : TEXT_MID,
+                              ? "oklch(0.42 0.18 250)"
+                              : "oklch(0.40 0.04 120)",
                           }}
                         >
                           <Users className="h-3.5 w-3.5" />
@@ -783,9 +782,9 @@ export default function MyJobs() {
                             onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
                             disabled={updateStatus.isPending}
                             style={{
-                              background: "oklch(1 0 0 / 4%)",
-                              border: "1px solid oklch(1 0 0 / 12%)",
-                              color: "oklch(1 0 0 / 45%)",
+                              background: "oklch(0.95 0.01 120)",
+                            border: "1px solid oklch(0.85 0.02 120)",
+                            color: "oklch(0.45 0.04 120)",
                             }}
                           >
                             <XCircle className="h-3.5 w-3.5" />
@@ -841,10 +840,10 @@ export default function MyJobs() {
                             style={{
                               marginTop: "0.75rem",
                               paddingTop: "0.75rem",
-                              borderTop: "1px solid oklch(1 0 0 / 0.08)",
+                              borderTop: "1px solid oklch(0.88 0.02 120)",
                             }}
                           >
-                            <p className="text-xs font-semibold mb-1" style={{ color: TEXT_FAINT }}>
+                            <p className="text-xs font-semibold mb-1" style={{ color: "oklch(0.45 0.04 120)" }}>
                               מועמדים למשרה
                             </p>
                             <ApplicantsPanel jobId={job.id} />

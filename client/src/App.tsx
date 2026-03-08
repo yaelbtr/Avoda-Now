@@ -92,7 +92,7 @@ function Router() {
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
                 <Route path="/admin" component={Admin} />
-                <Route path="/jobs-today" component={JobsToday} />
+                <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />
                 <Route path="/worker/:id" component={PublicWorkerProfile} />

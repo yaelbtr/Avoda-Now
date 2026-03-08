@@ -86,9 +86,12 @@ export default function FindJobs() {
   const [citySearch, setCitySearch] = useState("");
   const [showCityInput, setShowCityInput] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const filterParam = params.get("filter");
   const [showUrgentToday, setShowUrgentToday] = useState(
-    params.get("urgent") === "1" || params.get("help") === "1"
+    params.get("urgent") === "1" || params.get("help") === "1" || filterParam === "today"
   );
+  // Auto-trigger location lookup when arriving via ?filter=nearby
+  const [autoNearby] = useState(filterParam === "nearby");
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
@@ -100,6 +103,24 @@ export default function FindJobs() {
   useEffect(() => {
     const cached = loadCachedLocation();
     if (cached) { setUserLat(cached.lat); setUserLng(cached.lng); }
+    else if (autoNearby) {
+      // Auto-start geolocation when arriving via "בקרבת מקום" button
+      setLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setUserLat(latitude); setUserLng(longitude);
+          saveLocationCache(latitude, longitude);
+          setLocating(false); setLocationDenied(false);
+          toast.success("מיקום נמצא — מציג עבודות קרובות אליך");
+        },
+        () => {
+          setLocating(false); setLocationDenied(true); setShowCityInput(true);
+          toast.error("לא ניתן לאתר מיקום אוטומטית — הזן עיר ידנית");
+        }
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };

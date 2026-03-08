@@ -673,3 +673,9 @@
 
 ## Bug: Role selection button click does nothing
 - [x] Fix: clicking "המשך כעובד" / "המשך כמעסיק" does nothing
+
+## Redirect filter buttons to /find-jobs
+- [x] "עבודות להיום" button → /find-jobs?filter=today (auto-apply today filter)
+- [x] "בקרבת מקום" button → /find-jobs?filter=nearby (auto-apply location filter)
+- [x] /jobs-today route kept as redirect to /find-jobs?filter=today
+- [x] FindJobs reads query params on mount and applies filters automatically

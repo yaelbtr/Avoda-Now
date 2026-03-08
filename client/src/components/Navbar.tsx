@@ -55,7 +55,7 @@ export default function Navbar() {
 
   const workerLinks = [
     { href: "/find-jobs", label: "חפש עבודה", icon: MapPin },
-    { href: "/jobs-today", label: "עבודות להיום", icon: Flame },
+    { href: "/find-jobs?filter=today", label: "עבודות להיום", icon: Flame },
     { href: "/my-applications", label: "מועמדויות", icon: Briefcase },
     { href: "/worker-profile", label: "פרופיל", icon: User },
   ];
@@ -74,7 +74,7 @@ export default function Navbar() {
   // For guests with a saved session role, show role-specific links
   const navLinks = !isAuthenticated
     ? userMode === "worker"
-      ? workerLinks.filter(l => l.href === "/find-jobs" || l.href === "/jobs-today")
+      ? workerLinks.filter(l => l.href === "/find-jobs" || l.href === "/find-jobs?filter=today")
       : userMode === "employer"
       ? employerLinks.filter(l => l.href === "/post-job")
       : guestLinks
@@ -274,7 +274,7 @@ export default function Navbar() {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/jobs-today" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
+                          <Link href="/find-jobs?filter=today" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Flame className="h-4 w-4 shrink-0 text-orange-500" />
                             <span>עבודות להיום</span>
                           </Link>

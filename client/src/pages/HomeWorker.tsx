@@ -612,22 +612,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Location + Profile row */}
         <div className="flex gap-2.5">
           <button
-            onClick={requestGeo}
+            onClick={() => navigate("/find-jobs?filter=nearby")}
             className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
             style={{
-              background: userLat ? "oklch(0.96 0.02 122.3)" : "white",
-              border: userLat ? "1px solid oklch(0.82 0.06 122 / 0.5)" : "1px solid oklch(0.91 0.03 91.6)",
+              background: "white",
+              border: "1px solid oklch(0.91 0.03 91.6)",
             }}
           >
             <div
               className="size-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: userLat ? "oklch(0.35 0.08 122 / 0.12)" : "oklch(0.93 0.03 91.6)" }}
+              style={{ background: "oklch(0.93 0.03 91.6)" }}
             >
-              <MapPin className="h-4 w-4" style={{ color: userLat ? "oklch(0.35 0.08 122)" : "oklch(0.55 0.04 91)" }} />
+              <MapPin className="h-4 w-4" style={{ color: "oklch(0.55 0.04 91)" }} />
             </div>
             <div>
-              <p className="text-[12px] font-black" style={{ color: userLat ? "oklch(0.35 0.08 122)" : "oklch(0.35 0.04 91)" }}>
-                {userLat ? "מיקום פעיל ✓" : "זהה מיקום"}
+              <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>
+                זהה מיקום
               </p>
               <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>עבודות בסביבה</p>
             </div>

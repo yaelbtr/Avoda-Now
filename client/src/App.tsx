@@ -23,6 +23,7 @@ import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 import WorkerProfile from "./pages/WorkerProfile";
+import PublicWorkerProfile from "./pages/PublicWorkerProfile";
 import { useState, useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -87,6 +88,7 @@ function Router() {
                 <Route path="/jobs-today" component={JobsToday} />
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />
+                <Route path="/worker/:id" component={PublicWorkerProfile} />
                 <Route path="/404" component={NotFound} />
                 <Route component={NotFound} />
               </Switch>

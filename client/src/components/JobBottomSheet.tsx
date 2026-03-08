@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import { X, MapPin, Clock, Briefcase, Heart, Phone, MessageCircle, Send, Calendar, Users } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { X, MapPin, Clock, Briefcase, Heart, Phone, MessageCircle, Send, Calendar, Users, CheckCircle2, Loader2 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 interface JobBottomSheetProps {
   job: {
@@ -12,6 +14,7 @@ interface JobBottomSheetProps {
     salary?: string | null;
     salaryType: string;
     contactPhone: string | null;
+    showPhone?: boolean | null;
     businessName?: string | null;
     startTime: string;
     startDateTime?: Date | string | null;
@@ -40,6 +43,46 @@ export default function JobBottomSheet({
   const sheetRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
   const currentYRef = useRef<number>(0);
+  const [applied, setApplied] = useState(false);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [showMessageInput, setShowMessageInput] = useState(false);
+
+  // Check if user already applied
+  const hasAppliedQuery = trpc.jobs.checkApplied.useQuery(
+    { jobId: job?.id ?? 0 },
+    { enabled: isAuthenticated && !!job && open }
+  );
+
+  const applyMutation = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => {
+      setApplied(true);
+      setShowMessageInput(false);
+      toast.success("המועמדות נשלחה! המעסיק יקבל הודעה עם קישור לפרופיל שלך.");
+    },
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setApplied(true);
+        toast.info("כבר הגשת מועמדות למשרה זו");
+      } else {
+        toast.error(err.message ?? "שגיאה בשליחת המועמדות");
+      }
+    },
+  });
+
+  // Sync applied state from server
+  useEffect(() => {
+    if (hasAppliedQuery.data?.applied) {
+      setApplied(true);
+    } else {
+      setApplied(false);
+    }
+  }, [hasAppliedQuery.data, job?.id]);
+
+  // Reset state when job changes
+  useEffect(() => {
+    setShowMessageInput(false);
+    setApplyMessage("");
+  }, [job?.id]);
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -88,7 +131,17 @@ export default function JobBottomSheet({
 
   const handleApply = () => {
     if (!isAuthenticated) { onLoginRequired?.("כדי להגיש מועמדות יש להתחבר"); return; }
-    handleWhatsApp();
+    if (applied) return;
+    setShowMessageInput(true);
+  };
+
+  const handleSubmitApplication = () => {
+    if (!job) return;
+    applyMutation.mutate({
+      jobId: job.id,
+      message: applyMessage.trim() || undefined,
+      origin: window.location.origin,
+    });
   };
 
   if (!job) return null;
@@ -98,6 +151,7 @@ export default function JobBottomSheet({
   const catLabel = getCategoryLabel(job.category);
   const isVolunteer = job.salaryType === "volunteer";
   const location = [job.businessName, job.city ?? job.address].filter(Boolean).join(", ");
+  const showPhoneNumber = job.showPhone && job.contactPhone;
 
   return (
     <>
@@ -254,6 +308,94 @@ export default function JobBottomSheet({
             </div>
           )}
 
+          {/* Phone number display (only if showPhone=true) */}
+          {showPhoneNumber && (
+            <div
+              style={{
+                background: "#f0f4eb",
+                borderRadius: 14,
+                padding: "12px 14px",
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <Phone size={16} color={OLIVE} />
+              <div>
+                <p style={{ color: "#888", fontSize: 11, fontWeight: 600, margin: 0 }}>טלפון ליצירת קשר</p>
+                <a
+                  href={`tel:${job.contactPhone}`}
+                  style={{ color: OLIVE, fontSize: 15, fontWeight: 700, textDecoration: "none" }}
+                  dir="ltr"
+                >
+                  {job.contactPhone}
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Apply message input (shown when user clicks apply) */}
+          {showMessageInput && !applied && (
+            <div
+              style={{
+                background: "#f9f7f3",
+                borderRadius: 14,
+                padding: "14px",
+                marginBottom: 16,
+                border: "1px solid #e8e4dc",
+              }}
+            >
+              <p style={{ color: OLIVE, fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                הוסף הודעה קצרה (אופציונלי)
+              </p>
+              <textarea
+                value={applyMessage}
+                onChange={(e) => setApplyMessage(e.target.value)}
+                placeholder="לדוגמה: יש לי ניסיון רלוונטי ואני זמין/ה להתחיל מחר..."
+                maxLength={500}
+                rows={3}
+                style={{
+                  width: "100%",
+                  border: "1px solid #d1cdc4",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                  color: "#333",
+                  resize: "none",
+                  fontFamily: "inherit",
+                  direction: "rtl",
+                  background: "#fff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+              <p style={{ color: "#aaa", fontSize: 11, textAlign: "left", marginTop: 4 }}>
+                {applyMessage.length}/500
+              </p>
+            </div>
+          )}
+
+          {/* Already applied notice */}
+          {applied && (
+            <div
+              style={{
+                background: "#f0f4eb",
+                borderRadius: 14,
+                padding: "12px 14px",
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <CheckCircle2 size={18} color={OLIVE} />
+              <p style={{ color: OLIVE, fontSize: 13, fontWeight: 700, margin: 0 }}>
+                הגשת מועמדות למשרה זו — המעסיק יצור קשר
+              </p>
+            </div>
+          )}
+
           {/* Expiry notice */}
           {job.expiresAt && (
             <div
@@ -293,77 +435,153 @@ export default function JobBottomSheet({
           }}
         >
           {/* Primary CTA */}
-          <button
-            onClick={handleApply}
-            style={{
-              width: "100%",
-              padding: "14px 0",
-              borderRadius: 14,
-              background: OLIVE,
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 800,
-              border: "none",
-              outline: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              boxShadow: "0 4px 14px rgba(79,88,59,0.3)",
-            }}
-          >
-            <Send size={16} />
-            הגישו אותי להצעה זו
-          </button>
-
-          {/* Secondary row: Call + WhatsApp */}
-          <div style={{ display: "flex", gap: 10 }}>
+          {showMessageInput && !applied ? (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowMessageInput(false)}
+                style={{
+                  flex: 0,
+                  padding: "14px 16px",
+                  borderRadius: 14,
+                  background: "#f5f2ec",
+                  color: "#666",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleSubmitApplication}
+                disabled={applyMutation.isPending}
+                style={{
+                  flex: 1,
+                  padding: "14px 0",
+                  borderRadius: 14,
+                  background: OLIVE,
+                  color: "#fff",
+                  fontSize: 15,
+                  fontWeight: 800,
+                  border: "none",
+                  outline: "none",
+                  cursor: applyMutation.isPending ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  opacity: applyMutation.isPending ? 0.7 : 1,
+                  boxShadow: "0 4px 14px rgba(79,88,59,0.3)",
+                }}
+              >
+                {applyMutation.isPending ? (
+                  <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <Send size={16} />
+                )}
+                שלח מועמדות
+              </button>
+            </div>
+          ) : applied ? (
             <button
-              onClick={handleCall}
+              disabled
               style={{
-                flex: 1,
-                padding: "12px 0",
+                width: "100%",
+                padding: "14px 0",
                 borderRadius: 14,
                 background: "#f0f4eb",
                 color: OLIVE,
-                fontSize: 14,
-                fontWeight: 700,
-                border: "none",
+                fontSize: 15,
+                fontWeight: 800,
+                border: "2px solid #c8d4b8",
                 outline: "none",
-                cursor: "pointer",
+                cursor: "not-allowed",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: 8,
               }}
             >
-              <Phone size={15} />
-              התקשר
+              <CheckCircle2 size={16} />
+              מועמדות הוגשה
             </button>
+          ) : (
             <button
-              onClick={handleWhatsApp}
+              onClick={handleApply}
               style={{
-                flex: 1,
-                padding: "12px 0",
+                width: "100%",
+                padding: "14px 0",
                 borderRadius: 14,
-                background: "#e8f5e9",
-                color: "#2e7d32",
-                fontSize: 14,
-                fontWeight: 700,
+                background: OLIVE,
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: 800,
                 border: "none",
                 outline: "none",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
+                gap: 8,
+                boxShadow: "0 4px 14px rgba(79,88,59,0.3)",
               }}
             >
-              <MessageCircle size={15} />
-              WhatsApp
+              <Send size={16} />
+              הגישו אותי להצעה זו
             </button>
-          </div>
+          )}
+
+          {/* Secondary row: Call + WhatsApp (only if showPhone) */}
+          {showPhoneNumber && !showMessageInput && (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={handleCall}
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  borderRadius: 14,
+                  background: "#f0f4eb",
+                  color: OLIVE,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
+              >
+                <Phone size={15} />
+                התקשר
+              </button>
+              <button
+                onClick={handleWhatsApp}
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  borderRadius: 14,
+                  background: "#e8f5e9",
+                  color: "#2e7d32",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
+              >
+                <MessageCircle size={15} />
+                WhatsApp
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

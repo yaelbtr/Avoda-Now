@@ -490,3 +490,21 @@
 - [x] Create AppButton centralized component with all variants (brand, secondary, outline, ghost, destructive, icon)
 - [x] Replace all Button usages in pages and components with AppButton
 - [x] Verify TypeScript compiles cleanly (0 errors)
+
+## Job Application System (Apply Button + SMS Notification)
+- [x] DB: add applications table (workerId, jobId, message, status, createdAt)
+- [x] DB: add showPhone boolean to jobs table (default false)
+- [x] DB: run migration (pnpm db:push)
+- [x] Server: jobs.applyToJob procedure — records application, sends SMS to employer with worker profile link
+- [x] Server: jobs.checkApplied procedure — returns whether current user already applied
+- [x] Server: jobs.getApplications procedure — returns applications for a job (owner/admin only)
+- [x] Server: user.getPublicProfile procedure — public worker profile by userId (no auth required)
+- [x] Server: db helper getPublicWorkerProfile (returns safe public fields only)
+- [x] PostJob form: showPhone toggle — "הצג מספר טלפון לעובדים" (default: hidden)
+- [x] JobBottomSheet: "הגישו אותי להצעה זו" primary CTA button
+- [x] JobBottomSheet: phone/WhatsApp buttons only shown when showPhone=true
+- [x] JobBottomSheet: duplicate application prevention (shows "מועמדות הוגשה" state)
+- [x] JobBottomSheet: optional message textarea before submitting application
+- [x] Frontend: /worker/:id public profile page for employers to view applicants
+- [x] App.tsx: route /worker/:id → PublicWorkerProfile page
+- [x] Vitest: 11 tests for application system (applyToJob, checkApplied, getApplications, getPublicProfile)

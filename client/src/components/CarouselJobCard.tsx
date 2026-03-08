@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Heart, Send, Building2 } from "lucide-react";
+import { MapPin, Heart, Send, Building2, Share2 } from "lucide-react";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -276,33 +276,66 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
           </div>
         )}
 
-        {/* CTA button */}
-        <button
-      onClick={(e) => { e.stopPropagation(); handleApply(e); }}
-        style={{
-          width: "100%",
-            padding: "10px 0",
-            borderRadius: 12,
-            background: OLIVE,
-            color: "#ffffff",
-            fontSize: 13,
-            fontWeight: 700,
-            border: "none",
-            outline: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-            boxShadow: "0 3px 10px rgba(79,88,59,0.28)",
-            transition: "background 0.15s ease",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = "#3d4530")}
-          onMouseLeave={e => (e.currentTarget.style.background = OLIVE)}
-        >
-          <span>הגישו אותי להצעה זו</span>
-          <Send size={14} />
-        </button>
+        {/* CTA button row */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleApply(e); }}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              borderRadius: 12,
+              background: OLIVE,
+              color: "#ffffff",
+              fontSize: 13,
+              fontWeight: 700,
+              border: "none",
+              outline: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              boxShadow: "0 3px 10px rgba(79,88,59,0.28)",
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3d4530")}
+            onMouseLeave={e => (e.currentTarget.style.background = OLIVE)}
+          >
+            <span>הגישו אותי להצעה זו</span>
+            <Send size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const url = `${window.location.origin}/job/${job.id}`;
+              if (navigator.share) {
+                navigator.share({ title: job.title, url });
+              } else {
+                navigator.clipboard.writeText(url);
+              }
+            }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "#F5F0E4",
+              color: OLIVE,
+              border: "none",
+              outline: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#ebe5d5")}
+            onMouseLeave={e => (e.currentTarget.style.background = "#F5F0E4")}
+            title="שתף"
+          >
+            <Share2 size={15} />
+          </button>
+        </div>
       </div>
     </div>
   );

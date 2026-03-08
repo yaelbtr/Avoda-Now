@@ -11,6 +11,7 @@ import {
   users,
   workerAvailability,
   InsertWorkerAvailability,
+  applications,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -753,4 +754,67 @@ export async function markAvailabilityReminderSent(availabilityId: number): Prom
     .update(workerAvailability)
     .set({ reminderSentAt: new Date() })
     .where(eq(workerAvailability.id, availabilityId));
+}
+
+// ─── Applications ─────────────────────────────────────────────────────────────
+
+/** Check if a worker has already applied to a job */
+export async function getApplicationByWorkerAndJob(workerId: number, jobId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(applications)
+    .where(and(eq(applications.workerId, workerId), eq(applications.jobId, jobId)))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Create a new job application */
+export async function createApplication(workerId: number, jobId: number, message?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(applications).values({ workerId, jobId, message: message ?? null });
+}
+
+/** Get a worker's public profile by user ID (for employer to view after receiving application SMS) */
+export async function getPublicWorkerProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      preferredCategories: users.preferredCategories,
+      preferredCity: users.preferredCity,
+      workerBio: users.workerBio,
+      workerTags: users.workerTags,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(and(eq(users.id, userId), eq(users.status, "active")))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Get all applications for a specific job (for employer view) */
+export async function getApplicationsForJob(jobId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: applications.id,
+      workerId: applications.workerId,
+      status: applications.status,
+      message: applications.message,
+      createdAt: applications.createdAt,
+      workerName: users.name,
+      workerPhone: users.phone,
+      workerBio: users.workerBio,
+      workerTags: users.workerTags,
+    })
+    .from(applications)
+    .innerJoin(users, eq(applications.workerId, users.id))
+    .where(eq(applications.jobId, jobId))
+    .orderBy(desc(applications.createdAt));
 }

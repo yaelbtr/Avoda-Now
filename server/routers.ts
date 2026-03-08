@@ -35,9 +35,13 @@ import {
   setUserMode,
   getUserMode,
   getWorkerProfile,
+  getPublicWorkerProfile,
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
+  getApplicationByWorkerAndJob,
+  createApplication,
+  getApplicationsForJob,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import {
@@ -215,6 +219,7 @@ const jobInputSchema = z.object({
   activeDuration: z.enum(["1", "3", "7"]).default("1"),
   isUrgent: z.boolean().default(false),
   isLocalBusiness: z.boolean().default(false),
+  showPhone: z.boolean().default(false),
   jobTags: z.array(z.string()).optional(),
   /** ISO string for exact start date/time */
   startDateTime: z.string().datetime({ offset: true }).optional(),
@@ -258,6 +263,14 @@ const jobsRouter = router({
   create: protectedProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
+      // Enforce active job limit (max 3 per user)
+      const activeCount = await countActiveJobsByUser(ctx.user.id);
+      if (activeCount >= 3) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "הגעת למגבלת 3 משרות פעילות. סגור משרה קיימת כדי לפרסם חדשה.",
+        });
+      }
       // Phone must come from the authenticated user — never trust client-supplied phone
       const contactPhone = ctx.user.phone ?? input.contactPhone;
       if (!contactPhone) {
@@ -285,6 +298,7 @@ const jobsRouter = router({
         expiresAt,
         isUrgent: input.isUrgent ?? false,
         isLocalBusiness: input.isLocalBusiness ?? false,
+        showPhone: input.showPhone ?? false,
         startDateTime: input.startDateTime ? new Date(input.startDateTime) : null,
         postedBy: ctx.user.id,
         status: "active",
@@ -389,6 +403,71 @@ const jobsRouter = router({
         "unknown";
       await reportJob({ jobId: input.jobId, reason: input.reason, reporterPhone: input.reporterPhone, reporterIp: ip });
       return { success: true };
+    }),
+
+  /** Worker applies to a job — records application and sends SMS to employer */
+  applyToJob: protectedProcedure
+    .input(
+      z.object({
+        jobId: z.number(),
+        message: z.string().max(500).optional(),
+        origin: z.string().url().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const job = await getJobById(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      if (job.status !== "active" && job.status !== "under_review") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "משרה זו אינה פעילה" });
+      }
+
+      // Prevent duplicate applications
+      const existing = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
+      if (existing) {
+        throw new TRPCError({ code: "CONFLICT", message: "כבר הגשת מועמדות למשרה זו" });
+      }
+
+      // Record the application
+      await createApplication(ctx.user.id, input.jobId, input.message);
+
+      // Send SMS notification to employer (fire-and-forget)
+      if (job.contactPhone) {
+        const origin = input.origin ?? "https://job-now.manus.space";
+        const workerProfileUrl = `${origin}/worker/${ctx.user.id}`;
+        const workerName = ctx.user.name ?? "עובד";
+        const smsBody =
+          `📋 הגשת מועמדות חדשה ב-Job-Now!\n` +
+          `${workerName} הגיש/ה מועמדות למשרה: "${job.title}"\n` +
+          `לצפייה בפרופיל העובד:\n${workerProfileUrl}`;
+
+        import("./sms").then(({ sendSms }) => {
+          sendSms(job.contactPhone!, smsBody).catch((err) =>
+            console.warn("[Apply] Failed to send SMS to employer:", err)
+          );
+        }).catch((err) => console.warn("[Apply] SMS import error:", err));
+      }
+
+      return { success: true };
+    }),
+
+  /** Get all applications for a job (employer only) */
+  getApplications: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const job = await getJobById(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND" });
+      if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return getApplicationsForJob(input.jobId);
+    }),
+
+  /** Check if current user has already applied to a job */
+  checkApplied: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const existing = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
+      return { applied: !!existing };
     }),
 });
 
@@ -551,6 +630,15 @@ const userRouter = router({
     const profile = await getWorkerProfile(ctx.user.id);
     return profile;
   }),
+
+  /** Get a public worker profile by user ID (for employers viewing applicants) */
+  getPublicProfile: publicProcedure
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ input }) => {
+      const profile = await getPublicWorkerProfile(input.userId);
+      if (!profile) throw new TRPCError({ code: "NOT_FOUND", message: "פרופיל לא נמצא" });
+      return profile;
+    }),
 
   /** Update the current user's worker profile */
   updateProfile: protectedProcedure

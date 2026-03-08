@@ -45,6 +45,7 @@ const schema = z.object({
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
   isVolunteer: z.boolean().optional(),
+  showPhone: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -100,6 +101,7 @@ export default function PostJob() {
   const isUrgent = watch("isUrgent");
   const isLocalBusiness = watch("isLocalBusiness");
   const isVolunteer = watch("isVolunteer");
+  const showPhone = watch("showPhone");
 
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
@@ -202,6 +204,7 @@ export default function PostJob() {
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
       isLocalBusiness: data.isLocalBusiness ?? false,
+      showPhone: data.showPhone ?? false,
     });
   };
 
@@ -665,6 +668,30 @@ export default function PostJob() {
           <div>
             <Label htmlFor="businessName">שם עסק (אופציונלי)</Label>
             <Input id="businessName" placeholder="שם החברה / העסק" {...register("businessName")} className="mt-1" />
+          </div>
+
+          {/* Show phone toggle */}
+          <div
+            onClick={() => setValue("showPhone", !showPhone)}
+            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
+              showPhone ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+            }`}
+          >
+            <div>
+              <p className={`font-semibold text-sm ${showPhone ? "text-primary" : "text-foreground"}`}>
+                📞 הצג מספר טלפון לעובדים
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {showPhone
+                  ? "מספר הטלפון שלך יוצג בכרטיס המשרה"
+                  : "מספר הטלפון מוסתר — עובדים ישלחו מועמדות ותקבל SMS"}
+              </p>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+              showPhone ? "border-primary bg-primary" : "border-muted-foreground"
+            }`}>
+              {showPhone && <span className="text-white text-xs">✓</span>}
+            </div>
           </div>
         </div>
 

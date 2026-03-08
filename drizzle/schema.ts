@@ -121,12 +121,32 @@ export const jobs = mysqlTable("jobs", {
   reportCount: int("reportCount").default(0).notNull(),
   /** JSON array of normalized tags for future AI matching */
   jobTags: json("jobTags").$type<string[]>(),
+  /** Whether the employer's phone number is visible to workers on the job card */
+  showPhone: boolean("showPhone").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = typeof jobs.$inferInsert;
+
+/**
+ * Job applications — tracks when a worker applies to a job.
+ * Prevents duplicate applications and provides employer with applicant details.
+ */
+export const applications = mysqlTable("applications", {
+  id: int("id").autoincrement().primaryKey(),
+  jobId: int("jobId").notNull().references(() => jobs.id),
+  workerId: int("workerId").notNull().references(() => users.id),
+  /** Status of the application */
+  status: mysqlEnum("status", ["pending", "viewed", "accepted", "rejected"]).default("pending").notNull(),
+  /** Optional message from the worker */
+  message: text("message"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Application = typeof applications.$inferSelect;
+export type InsertApplication = typeof applications.$inferInsert;
 
 export const jobReports = mysqlTable("job_reports", {
   id: int("id").autoincrement().primaryKey(),

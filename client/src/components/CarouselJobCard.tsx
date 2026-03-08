@@ -166,7 +166,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
       </div>
 
       {/* ── Content ── */}
-      <div style={{ padding: "8px 14px 14px 14px" }}>
+      <div style={{ padding: "8px 14px 14px 14px", direction: "rtl" }}>
         {/* Spacer for icon */}
         <div style={{ height: 28 }} />
 

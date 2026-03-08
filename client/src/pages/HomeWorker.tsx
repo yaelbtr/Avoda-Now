@@ -941,55 +941,52 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Not found CTA ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative z-10 overflow-hidden"
-        style={{
-          minHeight: 320,
-          borderTop: "1px solid oklch(0.89 0.05 84.0)",
-        }}
+        className="relative z-10"
+        dir="rtl"
+        style={{ borderTop: "1px solid oklch(0.89 0.05 84.0)" }}
       >
-        {/* Background image */}
-        <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
-          alt=""
-          style={{
+        {/* Image top half - man with magnifying glass */}
+        <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
+            alt=""
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center 15%",
+            }}
+          />
+          {/* Bottom fade into content */}
+          <div style={{
             position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center top",
-          }}
-        />
-        {/* Overlay for readability */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.82) 60%, rgba(255,255,255,0.96) 100%)",
-          }}
-        />
-        {/* Content - aligned to right side (RTL), leaving left side for the man's face */}
-        <div className="relative px-6 py-12" dir="rtl" style={{ textAlign: "right" }}>
-          <div style={{ maxWidth: "55%", marginRight: 0 }}>
-            <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
-            <p className="text-sm font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
-              כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
-            </p>
-            <motion.button
-              onClick={() => navigate("/find-jobs")}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
-              style={{
-                border: "2px solid var(--brand)",
-                color: "var(--brand)",
-                background: "white",
-                boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
-              }}
-            >
-              לחיפוש מתקדם
-            </motion.button>
-          </div>
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 80,
+            background: "linear-gradient(to bottom, transparent, white)",
+          }} />
+        </div>
+        {/* Content below image */}
+        <div className="px-6 pb-10 text-center" style={{ background: "white" }}>
+          <h3 className="text-xl font-black mb-2" style={{ color: "var(--brand)" }}>לא מצאתם את מה שחיפשתם?</h3>
+          <p className="text-sm font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
+            כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
+          </p>
+          <motion.button
+            onClick={() => navigate("/find-jobs")}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className="px-8 py-3 rounded-2xl font-black transition-all shadow-sm"
+            style={{
+              border: "2px solid var(--brand)",
+              color: "var(--brand)",
+              background: "white",
+              boxShadow: "0 2px 10px oklch(0.38 0.07 125.0 / 0.12)",
+            }}
+          >
+            לחיפוש מתקדם
+          </motion.button>
         </div>
       </section>
 

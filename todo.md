@@ -690,3 +690,9 @@
 - [x] Live banner: active jobs count → /my-jobs (for authenticated users)
 - [x] Quick actions: post job, my jobs, available workers
 - [x] Stats row: active jobs, workers available, 100% no fees
+
+## Bug: HomeEmployer mobile layout issues
+- [x] Fix RTL text alignment (text centered instead of right-aligned)
+- [x] Fix badge positioning (should be right-aligned)
+- [x] Fix stats row (cards too small, text cramped)
+- [x] Lighten image overlay for better visibility

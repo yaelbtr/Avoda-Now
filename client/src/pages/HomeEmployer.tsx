@@ -53,16 +53,16 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
       {stats.map(({ label, value, icon: Icon }) => (
         <div
           key={label}
-          className="flex-1 flex flex-col items-center gap-1 px-2 py-2.5 rounded-2xl"
+          className="flex-1 flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl"
           style={{
             background: "oklch(0.32 0.07 122 / 0.55)",
             border: "1px solid oklch(0.50 0.09 122 / 0.30)",
             backdropFilter: "blur(8px)",
           }}
         >
-          <Icon className="h-3.5 w-3.5" style={{ color: "oklch(0.85 0.16 80)" }} />
-          <span className="text-[15px] font-black leading-none" style={{ color: "oklch(0.97 0.03 80)" }}>{value}</span>
-          <span className="text-[9px] font-semibold text-center leading-tight" style={{ color: "oklch(0.82 0.04 80 / 0.75)" }}>{label}</span>
+          <Icon className="h-4 w-4" style={{ color: "oklch(0.85 0.16 80)" }} />
+          <span className="text-[17px] font-black leading-none" style={{ color: "oklch(0.97 0.03 80)" }}>{value}</span>
+          <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: "oklch(0.82 0.04 80 / 0.80)" }}>{label}</span>
         </div>
       ))}
     </motion.div>
@@ -131,54 +131,55 @@ export default function HomeEmployer() {
     <div dir="rtl" className="min-h-screen" style={{ background: "var(--page-bg)" }}>
 
       {/* ── MOBILE Hero ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden md:hidden" style={{ minHeight: "520px" }}>
+      <section className="relative overflow-hidden md:hidden" style={{ minHeight: "480px" }}>
         {/* Background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer_809b2625.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "60% 30%" }}
+          style={{ objectPosition: "55% 25%" }}
         />
-        {/* Gradient overlay — heavier on bottom for text readability */}
+        {/* Gradient overlay — lighter to show image better */}
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to bottom, oklch(0.12 0.06 122 / 0.55) 0%, oklch(0.12 0.06 122 / 0.80) 60%, oklch(0.95 0.03 91.6) 100%)",
+            background: "linear-gradient(to bottom, oklch(0.12 0.06 122 / 0.35) 0%, oklch(0.12 0.06 122 / 0.65) 55%, oklch(0.95 0.03 91.6) 100%)",
           }}
         />
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-end px-5 pt-14 pb-8" style={{ minHeight: "520px" }}>
+        {/* Content — RTL right-aligned */}
+        <div className="relative z-10 flex flex-col justify-end items-end text-right px-5 pt-14 pb-8" style={{ minHeight: "480px" }}>
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5 self-start"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
             style={{
-              background: "oklch(0.32 0.07 122)",
-              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+              background: "oklch(0.32 0.07 122 / 0.85)",
+              border: "1px solid oklch(0.55 0.10 122 / 0.60)",
               boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+              backdropFilter: "blur(8px)",
             }}
           >
             <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
-            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
+            <span className="text-[11px] font-bold" style={{ color: "oklch(0.95 0.04 80)" }}>
               מצא עובד תוך דקות
             </span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-[34px] leading-[1.15] font-black mb-2"
-            style={{ color: "oklch(0.97 0.02 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+            className="text-[32px] leading-[1.15] font-black mb-2"
+            style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
           >
             עובדים מקצועיים<br />
-            <span style={{ color: "oklch(0.88 0.18 70)" }}>מוכנים לעבוד עכשיו</span>
+            <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מוכנים לעבוד עכשיו</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
             className="text-[13px] font-semibold leading-relaxed mb-5"
-            style={{ color: "oklch(0.90 0.03 80 / 0.80)", maxWidth: "270px" }}
+            style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
           >
             פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
           </motion.p>
@@ -188,7 +189,7 @@ export default function HomeEmployer() {
       </section>
 
       {/* Mobile CTA */}
-      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
+      <div className="relative z-10 flex flex-col items-end text-right px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
           className="w-full flex flex-col gap-3"

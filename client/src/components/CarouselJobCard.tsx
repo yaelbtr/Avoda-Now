@@ -123,7 +123,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
       <article className="px-4 pt-1.5 pb-4 relative">
         {/* Floating category icon — overlaps image/content boundary */}
         <div
-          className="absolute bg-white rounded-xl flex items-center justify-center text-xl border border-gray-100"
+          className="absolute bg-white rounded-xl flex items-center justify-center text-xl"
           style={{
             width: 52,
             height: 52,

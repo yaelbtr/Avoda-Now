@@ -437,139 +437,180 @@ export default function HomeEmployer() {
         </motion.button>
       )}
 
-      {/* ── How it works ────────────────────────────────────────────── */}
+      {/* ── Quick Action Card (mirrors HomeWorker availability card) ────────────── */}
       <section
-        className="relative z-10 mx-6 mb-8 rounded-[28px] p-7 max-w-lg"
+        dir="rtl"
+        className="mb-8 relative z-10"
         style={{
-          background: "white",
-          boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
-          marginTop: "-4px",
+          background: "oklch(0.97 0.012 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          borderBottom: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 24px",
+          maxWidth: "100%",
         }}
       >
-        <div className="flex items-center justify-center gap-2 mb-7">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
-            <Star className="h-4 w-4" style={{ color: "oklch(0.68 0.14 80.8)" }} />
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
+          {/* Section title row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+              <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום משרה</span>
+            </div>
+            {isAuthenticated && myJobs.length > 0 && (
+              <button
+                onClick={() => navigate("/my-jobs")}
+                className="text-[12px] font-semibold px-3 py-1 rounded-full"
+                style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+              >
+                המשרות שלי
+              </button>
+            )}
           </div>
-          <h3 className="text-lg font-black" style={{ color: "oklch(0.35 0.08 122)" }}>איך מפרסמים משרה?</h3>
-        </div>
 
-        <div className="space-y-3 mb-8">
-          {HOW_IT_WORKS_EMPLOYER.map(({ step, title, desc, imgUrl, reverse }, idx) => (
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: reverse ? -24 : 24, y: 12 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
-              whileHover={{ y: -3, boxShadow: "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)" }}
-              whileTap={{ scale: 0.98 }}
-              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden cursor-pointer" + (reverse ? " flex-row-reverse" : "")}
+          {/* Main CTA button */}
+          <motion.button
+            onClick={handlePostJob}
+            whileTap={{ scale: 0.985 }}
+            whileHover={{ boxShadow: "0 6px 20px oklch(0.35 0.08 122 / 0.25)" }}
+            className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 transition-all mb-3"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+              boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.25)",
+            }}
+          >
+            <div
+              className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(255,255,255,0.18)" }}
+            >
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-[15px] font-black text-white leading-tight">פרסם משרה דחופה</p>
+              <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
+                עובדים יפנו אליך תוך דקות — ללא עמלות
+              </p>
+            </div>
+            <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
+          </motion.button>
+
+          {/* Quick-action row */}
+          <div className="flex gap-2.5">
+            <button
+              onClick={() => navigate("/available-workers")}
+              className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
               style={{
-                background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
-                border: "1px solid oklch(0.89 0.05 84.0)",
+                background: "white",
+                border: "1px solid oklch(0.91 0.03 91.6)",
               }}
             >
               <div
-                className="flex-shrink-0 w-24 h-20 rounded-xl"
-                style={{
-                  backgroundImage: `url("${imgUrl}")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  filter: "saturate(1.2) contrast(1.05) brightness(0.9)",
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className="w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)" }}
-                  >
-                    {step}
-                  </span>
-                  <h4 className="font-black text-[13px]" style={{ color: "oklch(0.22 0.06 122)" }}>{title}</h4>
-                </div>
-                <p className="text-[11px] leading-relaxed" style={{ color: "oklch(0.45 0.04 100)" }}>{desc}</p>
+                className="size-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "oklch(0.93 0.03 91.6)" }}
+              >
+                <Users className="h-4 w-4" style={{ color: "oklch(0.55 0.04 91)" }} />
               </div>
-            </motion.div>
-          ))}
-        </div>
+              <div>
+                <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>עובדים זמינים</p>
+                <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>באזורך עכשיו</p>
+              </div>
+            </button>
 
-        {/* Post job CTA inside card */}
-        <motion.button
-          onClick={handlePostJob}
-          className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-bold text-[14px] relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-            color: "oklch(0.96 0.04 80)",
-            boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
-          }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        >
-          <Plus size={15} />
-          פרסם משרה עכשיו
-        </motion.button>
+            {isAuthenticated && (
+              <button
+                onClick={() => navigate("/my-jobs")}
+                className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
+                style={{
+                  background: "white",
+                  border: "1px solid oklch(0.91 0.03 91.6)",
+                }}
+              >
+                <div className="size-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.93 0.04 84.0)" }}>
+                  <Briefcase className="h-4 w-4" style={{ color: "var(--amber)" }} />
+                </div>
+                <div>
+                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>המשרות שלי</p>
+                  <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>ניהול ומועמדויות</p>
+                </div>
+              </button>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* ── Available Workers Carousel ──────────────────────────────────────────────── */}
-      <section
-        dir="rtl"
-        className="relative z-10 mx-4 mb-8 rounded-3xl overflow-hidden max-w-lg"
-        style={{
-          background: "white",
-          boxShadow: "0 8px 32px oklch(0.38 0.07 125.0 / 0.12), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-          border: "1px solid oklch(0.92 0.03 91.6)",
-        }}
-      >
-        {/* Header strip */}
-        <div
-          className="flex items-center justify-between px-5 py-4"
-          style={{
-            background: "linear-gradient(135deg, oklch(0.38 0.18 160) 0%, oklch(0.30 0.14 160) 100%)",
-          }}
-        >
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: "oklch(1 0 0 / 0.15)" }}
-            >
-              <Users className="h-4 w-4" style={{ color: "oklch(0.92 0.10 160)" }} />
-            </div>
-            <h3 className="text-[15px] font-black" style={{ color: "white" }}>עובדים זמינים עכשיו</h3>
-          </div>
-          <button
-            onClick={() => navigate("/available-workers")}
-            className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
-            style={{ background: "oklch(1 0 0 / 0.15)", color: "oklch(0.95 0.06 160)" }}
+      {(workersQuery.isLoading || workers.length > 0) && (
+        <section className="mb-10 relative z-10">
+          <motion.div
+            className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            כל העובדים
-            <ChevronLeft className="h-3.5 w-3.5" style={{ transform: "rotate(180deg)" }} />
-          </button>
-        </div>
+            <div className="flex items-center gap-2">
+              <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>עובדים זמינים עכשיו</h2>
+            </div>
+            <button
+              onClick={() => navigate("/available-workers")}
+              className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+              style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+            >
+              הכל
+            </button>
+          </motion.div>
 
-        {/* Body */}
-        <div className="px-4 pt-4 pb-5">
           {workersQuery.isLoading ? (
-            <div className="px-1 py-2">
-              <CarouselSkeletonRow count={3} />
-            </div>
-          ) : workers.length === 0 ? (
-            <div className="text-center py-8">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: "oklch(0.65 0.22 160 / 0.10)", border: "1px solid oklch(0.65 0.22 160 / 0.20)" }}
-              >
-                <HardHat className="h-7 w-7" style={{ color: "oklch(0.45 0.22 160)" }} />
-              </div>
-              <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>אין עובדים זמינים כרגע באזורך</p>
-              <p className="text-xs" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ועובדים יפנו אליך</p>
-            </div>
+            <div className="px-6"><CarouselSkeletonRow count={3} /></div>
           ) : (
-            <div className="relative">
+            <div className="relative" style={{ overflow: "hidden" }}>
+              {/* Left fade mask */}
+              <div
+                style={{
+                  position: "absolute", top: 0, left: 0, bottom: 0, width: 32,
+                  background: "linear-gradient(to right, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5, pointerEvents: "none",
+                }}
+              />
+              {/* Right fade mask */}
+              <div
+                style={{
+                  position: "absolute", top: 0, right: 0, bottom: 0, width: 32,
+                  background: "linear-gradient(to left, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5, pointerEvents: "none",
+                }}
+              />
+              {activeWorkerIdx < workers.length - 1 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("worker-carousel-home");
+                    if (el) el.scrollBy({ left: -200, behavior: "smooth" });
+                    setActiveWorkerIdx((i) => Math.min(i + 1, workers.length - 1));
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הקודם"
+                >
+                  <ChevronLeft className="h-4 w-4" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
+              {activeWorkerIdx > 0 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("worker-carousel-home");
+                    if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+                    setActiveWorkerIdx((i) => Math.max(i - 1, 0));
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הבא"
+                >
+                  <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
               <div
                 id="worker-carousel-home"
-                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+                className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
                 onMouseEnter={() => { workerPausedRef.current = true; }}
                 onMouseLeave={() => { workerPausedRef.current = false; }}
@@ -595,87 +636,35 @@ export default function HomeEmployer() {
                   </motion.div>
                 ))}
               </div>
-
-              {workers.length > 1 && (
-                <div className="flex justify-center gap-1.5 mt-2">
-                  {workers.map((_, i) => (
-                    <span
-                      key={i}
-                      className="inline-block rounded-full transition-all duration-300"
-                      style={{
-                        width: i === activeWorkerIdx ? "16px" : "8px",
-                        height: "8px",
-                        background: i === activeWorkerIdx ? "oklch(0.45 0.22 160)" : "oklch(0.89 0.05 84.0)",
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
           )}
-
-          {workers.length > 0 && (
-            <motion.button
-              onClick={() => navigate("/available-workers")}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-[13px]"
-              style={{
-                background: "linear-gradient(135deg, oklch(0.38 0.18 160) 0%, oklch(0.30 0.14 160) 100%)",
-                color: "white",
-                boxShadow: "0 4px 14px oklch(0.38 0.18 160 / 0.30)",
-              }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            >
-              <Users size={14} />
-              צפה בכל העובדים הזמינים
-            </motion.button>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── My Active Jobs (authenticated) ────────────────────── */}
       {isAuthenticated && (
-        <motion.section
-          dir="rtl"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="relative z-10 mx-4 mb-8 rounded-3xl overflow-hidden max-w-lg"
-          style={{
-            background: "white",
-            boxShadow: "0 8px 32px oklch(0.38 0.07 125.0 / 0.12), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-            border: "1px solid oklch(0.92 0.03 91.6)",
-          }}
-        >
-          {/* Header strip */}
-          <div
-            className="flex items-center justify-between px-5 py-4"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-            }}
+        <section className="mb-10 relative z-10">
+          <motion.div
+            className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: "oklch(1 0 0 / 0.15)" }}
-              >
-                <Briefcase className="h-4 w-4" style={{ color: "oklch(0.92 0.08 80)" }} />
-              </div>
-              <h3 className="text-[15px] font-black" style={{ color: "white" }}>המשרות שלי</h3>
+            <div className="flex items-center gap-2">
+              <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המשרות שלי</h2>
             </div>
             <button
               onClick={() => navigate("/my-jobs")}
-              className="flex items-center gap-1 text-[12px] font-semibold px-3 py-1.5 rounded-full"
-              style={{ background: "oklch(1 0 0 / 0.15)", color: "oklch(0.95 0.04 80)" }}
+              className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+              style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
             >
-              כל המשרות
-              <ChevronLeft className="h-3.5 w-3.5" style={{ transform: "rotate(180deg)" }} />
+              הכל
             </button>
-          </div>
+          </motion.div>
 
-          {/* Body */}
-          <div className="px-4 pt-4 pb-5">
+          <div className="px-4 max-w-lg mx-auto">
             {myJobsQuery.isLoading ? (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
@@ -686,7 +675,7 @@ export default function HomeEmployer() {
               <div className="text-center py-8">
                 <div
                   className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                  style={{ background: "oklch(0.38 0.07 125.0 / 0.08)", border: "1px solid oklch(0.38 0.07 125.0 / 0.15)" }}
+                  style={{ background: "oklch(0.92 0.05 122 / 0.20)", border: "1px solid oklch(0.80 0.08 122 / 0.25)" }}
                 >
                   <Briefcase className="h-7 w-7" style={{ color: "oklch(0.45 0.08 122)" }} />
                 </div>
@@ -717,8 +706,9 @@ export default function HomeEmployer() {
                     transition={{ delay: i * 0.07, duration: 0.3 }}
                     className="rounded-2xl p-3.5 flex items-center gap-3"
                     style={{
-                      background: "oklch(0.985 0.008 95.3)",
+                      background: "white",
                       border: "1px solid oklch(0.91 0.04 91.6)",
+                      boxShadow: "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
                     }}
                   >
                     {/* Job icon */}
@@ -773,7 +763,7 @@ export default function HomeEmployer() {
                       <button
                         onClick={() => navigate(`/job/${job.id}`)}
                         className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                        style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
                         title="צפייה"
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -781,7 +771,7 @@ export default function HomeEmployer() {
                       <button
                         onClick={() => navigate(`/edit-job/${job.id}`)}
                         className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                        style={{ background: "white", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
                         title="עריכה"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -822,7 +812,7 @@ export default function HomeEmployer() {
               </div>
             )}
           </div>
-        </motion.section>
+        </section>
       )}
 
       {/* ── Worker CTA banner (mirrors HomeWorker's employer banner) ── */}
@@ -877,7 +867,7 @@ export default function HomeEmployer() {
         </div>
       </section>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+            <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { MapPin, Heart, Send } from "lucide-react";
 import {
   getCategoryIcon,
@@ -35,7 +34,6 @@ interface CarouselJobCardProps {
   onLoginRequired?: (msg: string) => void;
 }
 
-// Category-based background images
 const CATEGORY_BG: Record<string, string> = {
   food: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80&fit=crop",
   hospitality: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&fit=crop",
@@ -56,9 +54,7 @@ function getCategoryBg(category: string): string {
   return CATEGORY_BG[category] ?? CATEGORY_BG.other;
 }
 
-// Olive brand color
 const OLIVE = "#4F583B";
-const OLIVE_80 = "#4F583Bcc";
 
 export default function CarouselJobCard({ job, badge, onLoginRequired }: CarouselJobCardProps) {
   const { isAuthenticated } = useAuth();
@@ -71,7 +67,8 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
   const isVolunteer = job.salaryType === "volunteer";
   const bgImage = getCategoryBg(job.category);
 
-  const handleApply = () => {
+  const handleApply = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!isAuthenticated) {
       onLoginRequired?.("כדי להגיש מועמדות יש להתחבר");
       return;
@@ -80,69 +77,111 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.98 }}
-      className="w-full rounded-2xl overflow-hidden flex flex-col focus:outline-none focus-visible:outline-none"
+    <div
       dir="rtl"
       style={{
-        background: "#ffffff",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
-        transition: "box-shadow 0.2s ease",
-        width: 220,
+        width: 210,
         flexShrink: 0,
-        outline: "none",
-        border: "none",
+        borderRadius: 20,
+        overflow: "hidden",
+        background: "#ffffff",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
+        cursor: "pointer",
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
+        position: "relative",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.14)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.10)";
       }}
     >
-      {/* ── Header image ── */}
-      <section className="relative w-full overflow-hidden" style={{ height: 130 }}>
+      {/* ── Image area ── */}
+      <div style={{ position: "relative", height: 120, overflow: "hidden" }}>
         <img
           src={bgImage}
           alt={catLabel}
-          className="w-full h-full object-cover block"
-          style={{ filter: "brightness(0.95)", outline: "none", border: "none" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
           loading="lazy"
         />
-        {/* Gradient: transparent → white fade at bottom */}
+        {/* Fade to white at bottom */}
         <div
-          className="absolute inset-0"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 70%, rgba(255,255,255,1) 100%)",
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, transparent 30%, rgba(255,255,255,0.6) 70%, #ffffff 100%)",
+            pointerEvents: "none",
           }}
         />
-        {/* Urgent badge — top right */}
-        <div
-          className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold text-white shadow-md"
-          style={{ background: "#f25a1d" }}
-        >
-          {isUrgent ? "דחוף ביותר" : "דחוף ביותר"}
-        </div>
-      </section>
+        {/* Urgent badge */}
+        {isUrgent && (
+          <div
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              background: "#E8521A",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 800,
+              padding: "4px 12px",
+              borderRadius: 20,
+              boxShadow: "0 2px 6px rgba(232,82,26,0.4)",
+            }}
+          >
+            דחוף ביותר
+          </div>
+        )}
+      </div>
 
-      {/* ── Content area ── */}
-      <article className="px-4 pt-1.5 pb-4 relative">
-        {/* Floating category icon — overlaps image/content boundary */}
-        <div
-          className="absolute bg-white rounded-xl flex items-center justify-center text-xl"
-          style={{
-            width: 52,
-            height: 52,
-            top: -26,
-            right: 14,
-            boxShadow: "0 3px 10px rgba(0,0,0,0.12)",
-          }}
-        >
-          {catIcon}
-        </div>
+      {/* ── Category icon (floats over image/content boundary) ── */}
+      <div
+        style={{
+          position: "absolute",
+          top: 82,
+          right: 14,
+          width: 50,
+          height: 50,
+          borderRadius: 14,
+          background: "#ffffff",
+          boxShadow: "0 3px 10px rgba(0,0,0,0.13)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 22,
+          zIndex: 2,
+        }}
+      >
+        {catIcon}
+      </div>
 
-        {/* Spacer to push content below the floating icon */}
-        <div style={{ marginTop: 32 }} />
+      {/* ── Content ── */}
+      <div style={{ padding: "8px 14px 14px 14px" }}>
+        {/* Spacer for icon */}
+        <div style={{ height: 28 }} />
 
-        {/* Job title */}
+        {/* Title */}
         <h3
-          className="text-[14px] font-extrabold leading-tight mb-1.5 text-right line-clamp-2"
-          style={{ color: OLIVE }}
+          style={{
+            color: OLIVE,
+            fontSize: 14,
+            fontWeight: 800,
+            lineHeight: 1.3,
+            marginBottom: 6,
+            textAlign: "right",
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+          }}
         >
           {job.title}
         </h3>
@@ -150,66 +189,105 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         {/* Location */}
         {location && (
           <div
-            className="flex items-center gap-1 justify-end text-xs font-medium mb-2.5"
-            style={{ color: `${OLIVE}cc` }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 4,
+              color: `${OLIVE}bb`,
+              fontSize: 11,
+              fontWeight: 500,
+              marginBottom: 10,
+            }}
           >
-            <span className="truncate">{job.businessName ? `${job.businessName}, ` : ""}{location}</span>
-            <MapPin className="h-3 w-3 shrink-0" style={{ color: OLIVE }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>
+              {job.businessName ? `${job.businessName}, ` : ""}{location}
+            </span>
+            <MapPin size={12} style={{ color: OLIVE, flexShrink: 0 }} />
           </div>
         )}
 
         {/* Divider */}
-        <hr style={{ borderColor: "#f0f0f0", marginBottom: 10, marginTop: 2 }} />
+        <div style={{ height: 1, background: "#f0ede6", marginBottom: 10 }} />
 
-        {/* Bottom info row: time badge (right) + salary (left) */}
+        {/* Info row */}
         {isVolunteer ? (
-          <div className="flex items-center justify-center gap-1.5 py-0.5 mb-3">
-            <Heart
-              className="h-4 w-4"
-              style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)" }}
-            />
-            <span className="text-[14px] font-black" style={{ color: "oklch(0.82 0.15 80.8)" }}>
-              התנדבות
-            </span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              marginBottom: 12,
+              padding: "4px 0",
+            }}
+          >
+            <Heart size={16} style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)", flexShrink: 0 }} />
+            <span style={{ color: "oklch(0.82 0.15 80.8)", fontSize: 14, fontWeight: 900 }}>התנדבות</span>
           </div>
         ) : (
-          <div className="flex items-center justify-between mb-3">
-            {/* Time badge — right side */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 12,
+            }}
+          >
+            {/* Time badge */}
             <div
-              className="px-3 py-1.5 rounded-lg font-bold text-xs"
-              style={{ background: "#F8F4E8", color: OLIVE }}
+              style={{
+                background: "#F5F0E4",
+                color: OLIVE,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "5px 10px",
+                borderRadius: 8,
+              }}
             >
               {getStartTimeLabel(job.startTime)}
             </div>
-            {/* Salary — left side */}
+            {/* Salary */}
             {salaryStr ? (
-              <div className="flex items-baseline gap-0.5">
-                <span className="font-extrabold text-[17px]" style={{ color: OLIVE }}>
-                  {salaryStr}
-                </span>
-                <span className="font-bold text-[15px] mr-0.5" style={{ color: OLIVE }}>₪</span>
-                <span className="text-[10px] font-bold mr-1" style={{ color: "#6b7280" }}>/שעה</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                <span style={{ color: OLIVE, fontSize: 17, fontWeight: 800 }}>{salaryStr}</span>
+                <span style={{ color: OLIVE, fontSize: 14, fontWeight: 700 }}>₪</span>
+                <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 2 }}>/שעה</span>
               </div>
             ) : (
-              <span className="text-xs" style={{ color: "#9ca3af" }}>שכר לא צוין</span>
+              <span style={{ color: "#9ca3af", fontSize: 11 }}>שכר לא צוין</span>
             )}
           </div>
         )}
 
         {/* CTA button */}
-        <motion.button
+        <button
           onClick={handleApply}
-          whileTap={{ scale: 0.97 }}
-          className="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 transition-all duration-200"
           style={{
+            width: "100%",
+            padding: "10px 0",
+            borderRadius: 12,
             background: OLIVE,
-            boxShadow: "0 3px 10px rgba(79,88,59,0.30)",
+            color: "#ffffff",
+            fontSize: 13,
+            fontWeight: 700,
+            border: "none",
+            outline: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            boxShadow: "0 3px 10px rgba(79,88,59,0.28)",
+            transition: "background 0.15s ease",
           }}
+          onMouseEnter={e => (e.currentTarget.style.background = "#3d4530")}
+          onMouseLeave={e => (e.currentTarget.style.background = OLIVE)}
         >
           <span>הגישו אותי להצעה זו</span>
-          <Send className="h-4 w-4" />
-        </motion.button>
-      </article>
-    </motion.div>
+          <Send size={14} />
+        </button>
+      </div>
+    </div>
   );
 }

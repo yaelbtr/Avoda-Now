@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Users, Zap, Flame, Phone, Share2, Navigation } from "lucide-react";
+import { MapPin, Clock, Users, Zap, Flame, Phone, Share2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -118,9 +118,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         className="w-full text-right rounded-2xl overflow-hidden focus:outline-none flex flex-col"
         aria-label={`פתח פרטים: ${job.title}`}
         style={{
-          background: "#fff",
-          border: "1px solid oklch(0.92 0.01 100)",
-          boxShadow: "0 4px 20px oklch(0 0 0 / 0.08), 0 1px 4px oklch(0 0 0 / 0.04)",
+          background: "#ffffff",
+          border: "1px solid #e8e8e8",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)",
           transition: "all 0.22s cubic-bezier(0.22, 1, 0.36, 1)",
           minHeight: 220,
         }}
@@ -133,37 +133,45 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          {/* Subtle dark overlay at bottom of image for icon contrast */}
+          {/* Subtle dark overlay */}
           <div
             className="absolute inset-0"
-            style={{ background: "linear-gradient(to bottom, oklch(0 0 0 / 0.08) 0%, oklch(0 0 0 / 0.22) 100%)" }}
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.18) 100%)" }}
           />
 
-          {/* Badge top-right (RTL: visually top-right) */}
+          {/* Badge — top-right corner */}
           {isUrgent ? (
             <span
-              className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full"
-              style={{ background: "#E8521A", color: "#fff" }}
+              className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
+              style={{
+                background: "#E8521A",
+                color: "#ffffff",
+                letterSpacing: "0.01em",
+              }}
             >
               <Zap className="h-3 w-3" />
               דחוף ביותר
             </span>
           ) : (
             <span
-              className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full"
-              style={{ background: "oklch(0.55 0.15 160)", color: "#fff" }}
+              className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
+              style={{
+                background: "#E8521A",
+                color: "#ffffff",
+                letterSpacing: "0.01em",
+              }}
             >
               <Flame className="h-3 w-3" />
-              להיום
+              דחוף ביותר
             </span>
           )}
 
-          {/* Category icon — bottom-left of image */}
+          {/* Category icon — bottom-left of image (white rounded square) */}
           <div
-            className="absolute bottom-2.5 left-2.5 w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+            className="absolute bottom-[-18px] left-3 w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-2xl"
             style={{
-              background: "oklch(1 0 0 / 0.92)",
-              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
+              background: "#ffffff",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
             }}
           >
             {catIcon}
@@ -171,11 +179,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         </div>
 
         {/* ── Content area ── */}
-        <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3" dir="rtl" style={{ textAlign: "right" }}>
+        <div className="flex flex-col flex-1 px-4 pb-3.5" dir="rtl" style={{ paddingTop: "28px" }}>
           {/* Title */}
           <h3
-            className="font-black text-[14px] leading-snug mb-1 line-clamp-2 text-right w-full"
-            style={{ color: "oklch(0.18 0.04 125)" }}
+            className="font-bold text-[15px] leading-snug mb-1 line-clamp-2 text-right w-full"
+            style={{ color: "#1a1a1a" }}
           >
             {job.title}
           </h3>
@@ -183,45 +191,48 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
           {/* Location */}
           {location && (
             <div
-              className="flex items-center gap-1 text-[12px] mb-auto flex-row-reverse justify-end"
-              style={{ color: "oklch(0.50 0.02 100)" }}
+              className="flex items-center gap-1 text-[12px] mb-auto justify-end"
+              style={{ color: "#888888" }}
             >
-              <span className="truncate">{location}{job.businessName ? `, ${job.businessName}` : ""}</span>
-              <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.02 100)" }} />
+              <span className="truncate">
+                {job.businessName ? `${job.businessName}, ` : ""}{location}
+              </span>
+              <MapPin className="h-3 w-3 shrink-0" style={{ color: "#aaaaaa" }} />
             </div>
           )}
 
           {/* Divider */}
-          <div className="my-2.5" style={{ borderTop: "1px solid oklch(0.93 0.01 100)" }} />
+          <div className="mt-3 mb-2.5" style={{ borderTop: "1px solid #f0f0f0" }} />
 
-          {/* Bottom row: start time (right) + salary (left) in RTL */}
-          <div className="flex items-center justify-between flex-row-reverse">
-            {/* Start time pill */}
+          {/* Bottom row: start time pill (right) + salary (left) */}
+          <div className="flex items-center justify-between" dir="rtl">
+            {/* Start time pill — right side */}
             <span
-              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+              className="flex items-center gap-1 text-[12px] font-medium px-3 py-1 rounded-full"
               style={{
-                background: "oklch(0.96 0.02 100)",
-                color: "oklch(0.38 0.04 125)",
-                border: "1px solid oklch(0.90 0.02 100)",
+                background: "#f5f5f5",
+                color: "#555555",
+                border: "1px solid #ebebeb",
               }}
             >
-              <Clock className="h-3 w-3 shrink-0" />
               {getStartTimeLabel(job.startTime)}
             </span>
 
-            {/* Salary */}
+            {/* Salary — left side */}
             {salaryStr ? (
-              <span
-                className="text-[14px] font-black"
-                style={{ color: "oklch(0.18 0.04 125)" }}
-              >
-                ₪{salaryStr}
-                <span className="text-[10px] font-medium mr-0.5" style={{ color: "oklch(0.50 0.02 100)" }}>
+              <div className="flex items-baseline gap-0.5">
+                <span
+                  className="text-[17px] font-black"
+                  style={{ color: "#c8a020" }}
+                >
+                  ₪{salaryStr}
+                </span>
+                <span className="text-[11px] font-normal" style={{ color: "#999999" }}>
                   /שעה
                 </span>
-              </span>
+              </div>
             ) : (
-              <span className="text-[11px]" style={{ color: "oklch(0.60 0.02 100)" }}>שכר לא צוין</span>
+              <span className="text-[11px]" style={{ color: "#aaaaaa" }}>שכר לא צוין</span>
             )}
           </div>
         </div>
@@ -251,23 +262,13 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
                 <SheetTitle className="text-[17px] font-black leading-tight text-white">{job.title}</SheetTitle>
                 <p className="text-xs mt-0.5" style={{ color: "oklch(1 0 0 / 0.40)" }}>{catLabel}</p>
               </div>
-              {isUrgent ? (
-                <span
-                  className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-                  style={{ background: `${DANGER}2a`, color: "oklch(0.82 0.18 25)", border: `1px solid ${DANGER}50` }}
-                >
-                  <Zap className="h-3 w-3" />
-                  דחוף
-                </span>
-              ) : (
-                <span
-                  className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-                  style={{ background: `${WARNING}22`, color: "oklch(0.88 0.14 75)", border: `1px solid ${WARNING}45` }}
-                >
-                  <Flame className="h-3 w-3" />
-                  להיום
-                </span>
-              )}
+              <span
+                className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
+                style={{ background: `${DANGER}2a`, color: "oklch(0.82 0.18 25)", border: `1px solid ${DANGER}50` }}
+              >
+                <Zap className="h-3 w-3" />
+                {isUrgent ? "דחוף" : "להיום"}
+              </span>
             </div>
           </SheetHeader>
 

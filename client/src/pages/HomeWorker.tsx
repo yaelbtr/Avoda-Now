@@ -729,7 +729,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 }}
               >
                 {allCarouselJobs.map(({ job, badge }) => (
-                  <div key={`${badge}-${job.id}`} className="snap-start shrink-0 w-72">
+                  <div key={`${badge}-${job.id}`} className="snap-start shrink-0" style={{ width: 220 }}>
                     <CarouselJobCard
                       job={{ ...job, isUrgent: badge === "urgent" }}
                       badge={badge}

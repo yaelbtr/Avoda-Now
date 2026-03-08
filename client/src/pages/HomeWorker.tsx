@@ -485,17 +485,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
         <motion.button
           onClick={() => navigate("/find-jobs")}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.01, backgroundColor: "oklch(0.96 0.02 122.3)" }}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-base font-black transition-all"
+          className="w-full flex items-center justify-center gap-3 px-10 py-3.5 rounded-2xl text-[14px] font-bold transition-all"
           style={{
-            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%)",
-            color: "white",
-            boxShadow: "0 4px 16px oklch(0.38 0.07 125.0 / 0.35)",
+            background: "white",
+            color: "oklch(0.35 0.08 122)",
+            border: "1.5px solid oklch(0.82 0.06 122 / 0.5)",
+            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.08)",
           }}
         >
+          <Search className="h-4 w-4" style={{ color: "oklch(0.35 0.08 122)" }} />
           חיפוש עבודה מזדמנת
-          <Search className="h-5 w-5" />
         </motion.button>
       </section>
 

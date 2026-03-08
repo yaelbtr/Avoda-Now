@@ -233,14 +233,19 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
             {/* Time badge */}
             <div
               style={{
-                background: "#F5F0E4",
-                color: OLIVE,
+                background: job.startTime === "today" ? "oklch(0.55 0.18 40)" : "#F5F0E4",
+                color: job.startTime === "today" ? "#fff" : OLIVE,
                 fontSize: 11,
-                fontWeight: 700,
+                fontWeight: 800,
                 padding: "5px 10px",
                 borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                boxShadow: job.startTime === "today" ? "0 2px 8px oklch(0.55 0.18 40 / 0.35)" : "none",
               }}
             >
+              {job.startTime === "today" && <span style={{ fontSize: 12 }}>🔥</span>}
               {getStartTimeLabel(job.startTime)}
             </div>
             {/* Salary */}

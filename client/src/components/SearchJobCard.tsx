@@ -226,15 +226,20 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div
                 style={{
-                  background: "#F5F0E4",
-                  color: OLIVE,
+                  background: job.startTime === "today" ? "oklch(0.55 0.18 40)" : "#F5F0E4",
+                  color: job.startTime === "today" ? "#fff" : OLIVE,
                   fontSize: 10,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   padding: "4px 8px",
                   borderRadius: 8,
                   flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 3,
+                  boxShadow: job.startTime === "today" ? "0 2px 6px oklch(0.55 0.18 40 / 0.35)" : "none",
                 }}
               >
+                {job.startTime === "today" && <span style={{ fontSize: 11 }}>🔥</span>}
                 {getStartTimeLabel(job.startTime)}
               </div>
               {job.salary && !isVolunteer ? (

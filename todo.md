@@ -540,3 +540,15 @@
 - [x] Server: flush sends SMS "X עובדים חדשים הגישו מועמדות למשרה שלך" + link /jobs/{id}/applications
 - [x] Server: prevent double-send (DB guard: only updates status=pending rows)
 - [x] Vitest: 8 tests for batch creation, threshold flush, window flush, double-send guard, singular/plural SMS — 114 total
+
+## Admin Applications & Batches Screen
+- [x] Server: admin.listApplications — all applications with worker+job info
+- [x] Server: admin.listBatches — all notification_batches with job title + status
+- [x] Server: admin.flushBatch — manually trigger a batch flush (sends SMS immediately)
+- [x] Server: admin.cancelBatch — mark a pending batch as cancelled
+- [x] Frontend: Two new tabs in /admin: "מועמדויות" + "הודעות מקובצות"
+- [x] Frontend: Applications tab — worker name, phone, job title, status, contactRevealed, date
+- [x] Frontend: Batches tab — job title, pendingCount, scheduledAt, status, flush/cancel actions
+- [x] Frontend: Overdue badge for batches whose scheduledAt has passed but not yet sent
+- [x] Frontend: Explanation banner explaining the 10-min window + threshold logic
+- [x] All 114 tests pass

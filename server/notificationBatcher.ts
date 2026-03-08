@@ -136,6 +136,19 @@ export async function recordApplicationAndNotify(
 }
 
 /**
+ * Admin override: flush a batch by ID immediately.
+ * Exported separately so the admin router can call it without re-importing internals.
+ */
+export async function flushBatchAdmin(
+  batchId: number,
+  jobId: number,
+  employerPhone: string,
+  count: number
+): Promise<void> {
+  await flushBatch(batchId, jobId, employerPhone, count);
+}
+
+/**
  * Exposed for testing: clears all in-process timers.
  */
 export function clearAllBatchTimers(): void {

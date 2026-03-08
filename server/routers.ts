@@ -50,11 +50,15 @@ import { sendJobAlerts } from "./sms";
 import {
   adminApproveJob,
   adminBlockUser,
+  adminCancelBatch,
   adminClearJobReports,
   adminDeleteJob,
+  adminGetAllApplications,
+  adminGetAllBatches,
   adminGetAllJobs,
   adminGetAllReports,
   adminGetAllUsers,
+  adminGetBatchById,
   adminGetReportedJobs,
   adminGetStats,
   adminRejectJob,
@@ -597,9 +601,43 @@ const adminRouter = router({
   setUserRole: adminProcedure
     .input(z.object({ userId: z.number(), role: z.enum(["user", "admin"]) }))
     .mutation(async ({ input }) => { await adminSetUserRole(input.userId, input.role); return { success: true }; }),
-});
 
-// ─── Workers Router ──────────────────────────────────────────────────────────
+  // ── Applications Admin ────────────────────────────────────────────────────
+
+  /** All applications with worker + job info */
+  listApplications: adminProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllApplications(input.limit ?? 300)),
+
+  // ── Notification Batches Admin ────────────────────────────────────────────
+
+  /** All notification batches with job title */
+  listBatches: adminProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllBatches(input.limit ?? 300)),
+
+  /** Force-flush a pending batch immediately */
+  flushBatch: adminProcedure
+    .input(z.object({ batchId: z.number() }))
+    .mutation(async ({ input }) => {
+      const batch = await adminGetBatchById(input.batchId);
+      if (!batch) throw new TRPCError({ code: "NOT_FOUND", message: "Batch not found" });
+      if (batch.status !== "pending") throw new TRPCError({ code: "BAD_REQUEST", message: "Batch is not pending" });
+      // Use the batcher's flush logic (handles markBatchSent + SMS)
+      const { flushBatchAdmin } = await import("./notificationBatcher");
+      await flushBatchAdmin(batch.id, batch.jobId, batch.employerPhone, batch.pendingCount);
+      return { success: true };
+    }),
+
+  /** Cancel a pending batch (suppress the notification) */
+  cancelBatch: adminProcedure
+    .input(z.object({ batchId: z.number() }))
+    .mutation(async ({ input }) => {
+      await adminCancelBatch(input.batchId);
+      return { success: true };
+    }),
+});
+// ─── Workers Router ───────────────────────────────────────────────────────────
 
 const workersRouter = router({
   /** Set current user as available to work */

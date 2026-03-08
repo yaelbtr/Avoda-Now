@@ -22,16 +22,22 @@ import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
   Ban,
+  Bell,
+  BellOff,
   Briefcase,
   CheckCircle,
+  Clock,
   Eye,
   Flag,
+  Phone,
+  Send,
   Shield,
   Trash2,
   TrendingUp,
   UserCheck,
   Users,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -115,6 +121,14 @@ export default function Admin() {
     { limit: 200 },
     { enabled: !!user && user.role === "admin" && activeTab === "users" }
   );
+  const applicationsQuery = trpc.admin.listApplications.useQuery(
+    { limit: 300 },
+    { enabled: !!user && user.role === "admin" && activeTab === "applications" }
+  );
+  const batchesQuery = trpc.admin.listBatches.useQuery(
+    { limit: 300 },
+    { enabled: !!user && user.role === "admin" && activeTab === "batches" }
+  );
 
   // Mutations
   const approveJob = trpc.admin.approveJob.useMutation({
@@ -143,6 +157,14 @@ export default function Admin() {
   });
   const setUserRole = trpc.admin.setUserRole.useMutation({
     onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("תפקיד המשתמש עודכן"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const flushBatch = trpc.admin.flushBatch.useMutation({
+    onSuccess: () => { utils.admin.listBatches.invalidate(); toast.success("הודעה נשלחה מיידית"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const cancelBatch = trpc.admin.cancelBatch.useMutation({
+    onSuccess: () => { utils.admin.listBatches.invalidate(); toast.success("ה-batch בוטל"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -215,6 +237,14 @@ export default function Admin() {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               משתמשים
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4" />
+              מועמדויות
+            </TabsTrigger>
+            <TabsTrigger value="batches" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              הודעות מקובצות
             </TabsTrigger>
           </TabsList>
 
@@ -506,6 +536,207 @@ export default function Admin() {
               </div>
             )}
           </TabsContent>
+
+          {/* ─── Applications Tab ─── */}
+          <TabsContent value="applications">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">מועמדויות ({applicationsQuery.data?.length ?? 0})</h2>
+              <AppButton variant="secondary" size="sm" onClick={() => utils.admin.listApplications.invalidate()}>
+                רענן
+              </AppButton>
+            </div>
+            {applicationsQuery.isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Card key={i}><CardContent className="pt-4 pb-4"><div className="h-14 bg-muted animate-pulse rounded" /></CardContent></Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(applicationsQuery.data ?? []).map((app) => {
+                  const statusColors: Record<string, string> = {
+                    pending: "bg-yellow-100 text-yellow-800",
+                    accepted: "bg-green-100 text-green-800",
+                    rejected: "bg-red-100 text-red-800",
+                  };
+                  const statusLabels: Record<string, string> = {
+                    pending: "ממתין",
+                    accepted: "התקבל",
+                    rejected: "נדחה",
+                  };
+                  return (
+                    <Card key={app.id}>
+                      <CardContent className="pt-4 pb-4">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="font-medium">{app.workerName ?? "ללא שם"}</span>
+                              <Badge className={statusColors[app.status] ?? "bg-gray-100 text-gray-700"}>
+                                {statusLabels[app.status] ?? app.status}
+                              </Badge>
+                              {app.contactRevealed && (
+                                <Badge className="bg-blue-100 text-blue-800">
+                                  <Eye className="w-3 h-3 ml-1" />
+                                  פרטים נחשפו
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              <Phone className="w-3 h-3 inline ml-1" />
+                              {app.workerPhone ?? "ללא טלפון"}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              <Briefcase className="w-3 h-3 inline ml-1" />
+                              {app.jobTitle} {app.jobCity ? `· ${app.jobCity}` : ""}
+                            </p>
+                            {app.message && (
+                              <p className="text-sm mt-1 italic text-muted-foreground">"{ app.message}"</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              <Clock className="w-3 h-3 inline ml-1" />
+                              {new Date(app.createdAt).toLocaleString("he-IL")}
+                              {app.revealedAt && ` · נחשף: ${new Date(app.revealedAt).toLocaleString("he-IL")}`}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <AppButton
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(`/applications/${app.id}`, "_blank")}
+                            >
+                              <Eye className="w-4 h-4 ml-1" />
+                              צפה
+                            </AppButton>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {applicationsQuery.data?.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">אין מועמדויות</div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ─── Batches Tab ─── */}
+          <TabsContent value="batches">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">הודעות מקובצות ({batchesQuery.data?.length ?? 0})</h2>
+              <AppButton variant="secondary" size="sm" onClick={() => utils.admin.listBatches.invalidate()}>
+                רענן
+              </AppButton>
+            </div>
+            <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+              <Bell className="w-4 h-4 inline ml-2" />
+              <strong>לוגיקת batching:</strong> כל הגשת מועמדות פותחת חלון של 10 דקות. אם מגיעים 3 מועמדים — ההודעה נשלחת מיידית. אחרת — נשלחת בסוף החלון.
+            </div>
+            {batchesQuery.isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Card key={i}><CardContent className="pt-4 pb-4"><div className="h-14 bg-muted animate-pulse rounded" /></CardContent></Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(batchesQuery.data ?? []).map((batch) => {
+                  const batchStatusColors: Record<string, string> = {
+                    pending: "bg-yellow-100 text-yellow-800",
+                    sent: "bg-green-100 text-green-800",
+                    cancelled: "bg-gray-100 text-gray-700",
+                  };
+                  const batchStatusLabels: Record<string, string> = {
+                    pending: "ממתין",
+                    sent: "נשלח",
+                    cancelled: "בוטל",
+                  };
+                  const isPending = batch.status === "pending";
+                  const scheduledAt = new Date(batch.scheduledAt);
+                  const isOverdue = isPending && scheduledAt < new Date();
+                  return (
+                    <Card key={batch.id} className={isOverdue ? "border-orange-300" : ""}>
+                      <CardContent className="pt-4 pb-4">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className="font-medium">{batch.jobTitle}</span>
+                              <Badge className={batchStatusColors[batch.status] ?? "bg-gray-100 text-gray-700"}>
+                                {batchStatusLabels[batch.status] ?? batch.status}
+                              </Badge>
+                              {isOverdue && (
+                                <Badge className="bg-orange-100 text-orange-800">
+                                  <AlertTriangle className="w-3 h-3 ml-1" />
+                                  באיחור
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              <Phone className="w-3 h-3 inline ml-1" />
+                              {batch.employerPhone}
+                              <span className="mx-2">·</span>
+                              <Zap className="w-3 h-3 inline ml-1" />
+                              {batch.pendingCount} מועמדים
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              <Clock className="w-3 h-3 inline ml-1" />
+                              נוצר: {new Date(batch.createdAt).toLocaleString("he-IL")}
+                              {isPending && (
+                                <span className="mr-3">
+                                  <Send className="w-3 h-3 inline ml-1" />
+                                  שליחה מתוזמנת: {scheduledAt.toLocaleString("he-IL")}
+                                </span>
+                              )}
+                              {batch.sentAt && (
+                                <span className="mr-3">
+                                  <CheckCircle className="w-3 h-3 inline ml-1 text-green-600" />
+                                  נשלח: {new Date(batch.sentAt).toLocaleString("he-IL")}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          {isPending && (
+                            <div className="flex gap-2 flex-shrink-0">
+                              <AppButton
+                                size="sm"
+                                variant="outline"
+                                className="text-green-700 border-green-300 hover:bg-green-50"
+                                onClick={() => confirm(
+                                  "שלח הודעה עכשיו",
+                                  `לשלוח SMS עם ${batch.pendingCount} מועמדים למספר ${batch.employerPhone}?`,
+                                  () => flushBatch.mutate({ batchId: batch.id })
+                                )}
+                              >
+                                <Send className="w-4 h-4 ml-1" />
+                                שלח עכשיו
+                              </AppButton>
+                              <AppButton
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                onClick={() => confirm(
+                                  "ביטול batch",
+                                  `לבטל את ה-batch ולמנוע שליחת הודעה למספר ${batch.employerPhone}?`,
+                                  () => cancelBatch.mutate({ batchId: batch.id })
+                                )}
+                              >
+                                <BellOff className="w-4 h-4 ml-1" />
+                                בטל
+                              </AppButton>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {batchesQuery.data?.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">אין batches</div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
         </Tabs>
       </div>
 

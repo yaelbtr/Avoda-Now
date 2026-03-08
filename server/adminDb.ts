@@ -3,7 +3,7 @@
  * All functions here are called only from adminProcedure-protected routes.
  */
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import { Job, jobReports, jobs, users } from "../drizzle/schema";
+import { Job, applications, jobReports, jobs, notificationBatches, users } from "../drizzle/schema";
 import { getDb } from "./db";
 
 // ─── Jobs Admin ───────────────────────────────────────────────────────────────
@@ -173,4 +173,92 @@ export async function adminGetStats() {
     totalReports: totalReportsRes[0]?.cnt ?? 0,
     newUsersToday: newUsersTodayRes[0]?.cnt ?? 0,
   };
+}
+
+// ─── Applications Admin ───────────────────────────────────────────────────────
+
+/**
+ * Returns all applications with worker name/phone and job title, newest first.
+ */
+export async function adminGetAllApplications(limit = 300) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: applications.id,
+      jobId: applications.jobId,
+      workerId: applications.workerId,
+      status: applications.status,
+      message: applications.message,
+      contactRevealed: applications.contactRevealed,
+      revealedAt: applications.revealedAt,
+      createdAt: applications.createdAt,
+      workerName: users.name,
+      workerPhone: users.phone,
+      jobTitle: jobs.title,
+      jobCity: jobs.city,
+    })
+    .from(applications)
+    .innerJoin(users, eq(applications.workerId, users.id))
+    .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .orderBy(desc(applications.createdAt))
+    .limit(limit);
+}
+
+// ─── Notification Batches Admin ───────────────────────────────────────────────
+
+/**
+ * Returns all notification batches with job title, newest first.
+ */
+export async function adminGetAllBatches(limit = 300) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: notificationBatches.id,
+      jobId: notificationBatches.jobId,
+      employerPhone: notificationBatches.employerPhone,
+      pendingCount: notificationBatches.pendingCount,
+      scheduledAt: notificationBatches.scheduledAt,
+      sentAt: notificationBatches.sentAt,
+      status: notificationBatches.status,
+      createdAt: notificationBatches.createdAt,
+      jobTitle: jobs.title,
+    })
+    .from(notificationBatches)
+    .innerJoin(jobs, eq(notificationBatches.jobId, jobs.id))
+    .orderBy(desc(notificationBatches.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Returns a single batch by ID.
+ */
+export async function adminGetBatchById(batchId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(notificationBatches)
+    .where(eq(notificationBatches.id, batchId))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Cancels a pending batch (sets status = "cancelled").
+ * Only affects rows that are still "pending".
+ */
+export async function adminCancelBatch(batchId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(notificationBatches)
+    .set({ status: "cancelled" })
+    .where(
+      and(
+        eq(notificationBatches.id, batchId),
+        eq(notificationBatches.status, "pending")
+      )
+    );
 }

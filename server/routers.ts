@@ -939,6 +939,8 @@ const userRouter = router({
         searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
         preferenceText: z.string().max(1000).nullable().optional(),
         workerTags: z.array(z.string().max(50)).max(20).optional(),
+        preferredDays: z.array(z.string()).optional(),
+        preferredTimeSlots: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -953,6 +955,8 @@ const userRouter = router({
         searchRadiusKm: input.searchRadiusKm ?? undefined,
         preferenceText: input.preferenceText,
         workerTags: input.workerTags,
+        preferredDays: input.preferredDays,
+        preferredTimeSlots: input.preferredTimeSlots,
       });
       return { success: true };
     }),

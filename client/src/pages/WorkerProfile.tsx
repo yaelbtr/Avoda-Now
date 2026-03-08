@@ -77,6 +77,10 @@ export default function WorkerProfile() {
   const [preferredCity, setPreferredCity] = useState("");
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
 
+  // ── Schedule preferences ────────────────────────────────────────────────────
+  const [preferredDays, setPreferredDays] = useState<string[]>([]);
+  const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+
   // ── Notifications ───────────────────────────────────────────────────────────
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
 
@@ -92,6 +96,8 @@ export default function WorkerProfile() {
       setLocationMode((d.locationMode as "city" | "radius") ?? "city");
       setPreferredCity(d.preferredCity ?? "");
       setSearchRadiusKm(d.searchRadiusKm ?? 5);
+      setPreferredDays((d.preferredDays as string[]) ?? []);
+      setPreferredTimeSlots((d.preferredTimeSlots as string[]) ?? []);
     }
   }, [profileQuery.data]);
 
@@ -127,6 +133,8 @@ export default function WorkerProfile() {
       locationMode,
       preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
+      preferredDays,
+      preferredTimeSlots,
     });
   };
 
@@ -322,9 +330,92 @@ export default function WorkerProfile() {
                 </div>
               )}
             </div>
+
+            {/* ── Preferred Schedule ──────────────────────────────────────── */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                זמני עבודה מועדפים
+              </label>
+              <p className="text-xs text-muted-foreground mb-3">
+                בחר את הימים ושעות שאתה מעדיף לעבוד בהם
+              </p>
+
+              {/* Days */}
+              <p className="text-xs font-medium text-muted-foreground mb-2">ימי עבודה:</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  { value: "sunday", label: "א׳" },
+                  { value: "monday", label: "ב׳" },
+                  { value: "tuesday", label: "ג׳" },
+                  { value: "wednesday", label: "ד׳" },
+                  { value: "thursday", label: "ה׳" },
+                  { value: "friday", label: "ש׳" },
+                  { value: "saturday", label: "שבת" },
+                ].map((day) => {
+                  const isSelected = preferredDays.includes(day.value);
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() =>
+                        setPreferredDays((prev) =>
+                          prev.includes(day.value)
+                            ? prev.filter((d) => d !== day.value)
+                            : [...prev, day.value]
+                        )
+                      }
+                      className={`w-10 h-10 rounded-full text-sm font-bold border-2 transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Time slots */}
+              <p className="text-xs font-medium text-muted-foreground mb-2">שעות עבודה:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅" },
+                  { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️" },
+                  { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🌆" },
+                  { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙" },
+                ].map((slot) => {
+                  const isSelected = preferredTimeSlots.includes(slot.value);
+                  return (
+                    <button
+                      key={slot.value}
+                      type="button"
+                      onClick={() =>
+                        setPreferredTimeSlots((prev) =>
+                          prev.includes(slot.value)
+                            ? prev.filter((s) => s !== slot.value)
+                            : [...prev, slot.value]
+                        )
+                      }
+                      className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      <span className="text-lg">{slot.icon}</span>
+                      <div className="text-right">
+                        <div className="font-bold text-sm">{slot.label}</div>
+                        <div className="text-xs opacity-70">{slot.sub}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          {/* ── Save button ─────────────────────────────────────────────────── */}
+          {/* ── Save button ──────────────────────────────────────────────────── */}
           <AppButton
             variant="brand"
             size="xl"

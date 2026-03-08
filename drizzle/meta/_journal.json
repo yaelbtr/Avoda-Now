@@ -141,6 +141,13 @@
       "when": 1773001391220,
       "tag": "0019_high_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1773012474523,
+      "tag": "0020_cool_pretty_boy",
+      "breakpoints": true
     }
   ]
 }

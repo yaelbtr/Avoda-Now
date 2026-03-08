@@ -47,6 +47,10 @@ export const users = mysqlTable("users", {
   searchRadiusKm: int("searchRadiusKm").default(5),
   /** Free text describing work preferences for AI matching */
   preferenceText: text("preferenceText"),
+  /** Preferred work days: e.g. ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"] */
+  preferredDays: json("preferredDays").$type<string[]>(),
+  /** Preferred time slots: e.g. ["morning","afternoon","evening","night"] */
+  preferredTimeSlots: json("preferredTimeSlots").$type<string[]>(),
   /** Short bio / note from worker */
   workerBio: text("workerBio"),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */

@@ -134,6 +134,8 @@ export async function getWorkerProfile(id: number) {
       workerLongitude: users.workerLongitude,
       searchRadiusKm: users.searchRadiusKm,
       preferenceText: users.preferenceText,
+      preferredDays: users.preferredDays,
+      preferredTimeSlots: users.preferredTimeSlots,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -154,6 +156,8 @@ export async function updateWorkerProfile(
     searchRadiusKm?: number | null;
     preferenceText?: string | null;
     workerTags?: string[];
+    preferredDays?: string[];
+    preferredTimeSlots?: string[];
   }
 ) {
   const db = await getDb();
@@ -169,6 +173,8 @@ export async function updateWorkerProfile(
   if (data.searchRadiusKm !== undefined) updateSet.searchRadiusKm = data.searchRadiusKm;
   if (data.preferenceText !== undefined) updateSet.preferenceText = data.preferenceText;
   if (data.workerTags !== undefined) updateSet.workerTags = data.workerTags;
+  if (data.preferredDays !== undefined) updateSet.preferredDays = data.preferredDays;
+  if (data.preferredTimeSlots !== undefined) updateSet.preferredTimeSlots = data.preferredTimeSlots;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
 }

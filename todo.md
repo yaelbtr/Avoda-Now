@@ -759,3 +759,8 @@
 - [x] Fire matching API (POST /match-workers) automatically on job creation (fire-and-forget)
 - [x] Add Push notification trigger to worker when sendJobOffer is called
 - [x] Fix WorkerProfile categories to match spec list (add: טיפול בבעלי חיים, עזרה בבית, הובלות וסבלים, תחזוקה ותיקונים, עבודה משרדית, מכירות ושירות)
+
+## Worker Profile — Preferred Schedule
+- [x] Add preferredDays (JSON array) and preferredTimeSlots (JSON array) to users table in schema
+- [x] Update updateWorkerProfile in db.ts and updateProfile in routers.ts
+- [x] Add days + time slots UI to WorkerProfile matching preferences section

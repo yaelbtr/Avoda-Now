@@ -87,11 +87,13 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
       dir="rtl"
       style={{
         background: "#ffffff",
-        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.05)",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
+        width: 220,
+        flexShrink: 0,
       }}
     >
       {/* ── Header image ── */}
-      <section className="relative w-full" style={{ height: 200 }}>
+      <section className="relative w-full" style={{ height: 130 }}>
         <img
           src={bgImage}
           alt={catLabel}
@@ -108,7 +110,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         />
         {/* Urgent badge — top right */}
         <div
-          className="absolute top-3.5 right-3.5 px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-md"
+          className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold text-white shadow-md"
           style={{ background: "#f25a1d" }}
         >
           {isUrgent ? "דחוף ביותר" : "דחוף ביותר"}
@@ -116,25 +118,27 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
       </section>
 
       {/* ── Content area ── */}
-      <article className="px-5 pt-2 pb-5 relative">
+      <article className="px-4 pt-1.5 pb-4 relative">
         {/* Floating category icon — overlaps image/content boundary */}
         <div
-          className="absolute w-[72px] h-[72px] bg-white rounded-xl flex items-center justify-center text-3xl border border-gray-100 transition-transform hover:scale-105"
+          className="absolute bg-white rounded-xl flex items-center justify-center text-xl border border-gray-100"
           style={{
-            top: -36,
-            right: 20,
-            boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
+            width: 52,
+            height: 52,
+            top: -26,
+            right: 14,
+            boxShadow: "0 3px 10px rgba(0,0,0,0.12)",
           }}
         >
           {catIcon}
         </div>
 
         {/* Spacer to push content below the floating icon */}
-        <div style={{ marginTop: 44 }} />
+        <div style={{ marginTop: 32 }} />
 
         {/* Job title */}
         <h3
-          className="text-[20px] font-extrabold leading-tight mb-2 text-right"
+          className="text-[14px] font-extrabold leading-tight mb-1.5 text-right line-clamp-2"
           style={{ color: OLIVE }}
         >
           {job.title}
@@ -143,33 +147,33 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         {/* Location */}
         {location && (
           <div
-            className="flex items-center gap-1 justify-end text-sm font-medium mb-3"
+            className="flex items-center gap-1 justify-end text-xs font-medium mb-2.5"
             style={{ color: `${OLIVE}cc` }}
           >
-            <span>{job.businessName ? `${job.businessName}, ` : ""}{location}</span>
-            <MapPin className="h-4 w-4 shrink-0" style={{ color: OLIVE }} />
+            <span className="truncate">{job.businessName ? `${job.businessName}, ` : ""}{location}</span>
+            <MapPin className="h-3 w-3 shrink-0" style={{ color: OLIVE }} />
           </div>
         )}
 
         {/* Divider */}
-        <hr style={{ borderColor: "#f0f0f0", marginBottom: 16, marginTop: 4 }} />
+        <hr style={{ borderColor: "#f0f0f0", marginBottom: 10, marginTop: 2 }} />
 
         {/* Bottom info row: time badge (right) + salary (left) */}
         {isVolunteer ? (
-          <div className="flex items-center justify-center gap-2 py-1 mb-4">
+          <div className="flex items-center justify-center gap-1.5 py-0.5 mb-3">
             <Heart
-              className="h-5 w-5"
+              className="h-4 w-4"
               style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)" }}
             />
-            <span className="text-[17px] font-black" style={{ color: "oklch(0.82 0.15 80.8)" }}>
+            <span className="text-[14px] font-black" style={{ color: "oklch(0.82 0.15 80.8)" }}>
               התנדבות
             </span>
           </div>
         ) : (
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             {/* Time badge — right side */}
             <div
-              className="px-4 py-2 rounded-lg font-bold text-sm"
+              className="px-3 py-1.5 rounded-lg font-bold text-xs"
               style={{ background: "#F8F4E8", color: OLIVE }}
             >
               {getStartTimeLabel(job.startTime)}
@@ -177,14 +181,14 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
             {/* Salary — left side */}
             {salaryStr ? (
               <div className="flex items-baseline gap-0.5">
-                <span className="font-extrabold text-2xl" style={{ color: OLIVE }}>
+                <span className="font-extrabold text-[17px]" style={{ color: OLIVE }}>
                   {salaryStr}
                 </span>
-                <span className="font-bold text-xl mr-0.5" style={{ color: OLIVE }}>₪</span>
-                <span className="text-xs font-bold mr-1" style={{ color: "#6b7280" }}>/שעה</span>
+                <span className="font-bold text-[15px] mr-0.5" style={{ color: OLIVE }}>₪</span>
+                <span className="text-[10px] font-bold mr-1" style={{ color: "#6b7280" }}>/שעה</span>
               </div>
             ) : (
-              <span className="text-sm" style={{ color: "#9ca3af" }}>שכר לא צוין</span>
+              <span className="text-xs" style={{ color: "#9ca3af" }}>שכר לא צוין</span>
             )}
           </div>
         )}
@@ -193,14 +197,14 @@ export default function CarouselJobCard({ job, badge, onLoginRequired }: Carouse
         <motion.button
           onClick={handleApply}
           whileTap={{ scale: 0.97 }}
-          className="w-full py-3.5 px-6 rounded-xl font-bold text-lg text-white flex items-center justify-center gap-2 transition-all duration-200"
+          className="w-full py-2.5 px-4 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 transition-all duration-200"
           style={{
             background: OLIVE,
-            boxShadow: "0 4px 14px rgba(79,88,59,0.35)",
+            boxShadow: "0 3px 10px rgba(79,88,59,0.30)",
           }}
         >
           <span>הגישו אותי להצעה זו</span>
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4" />
         </motion.button>
       </article>
     </motion.div>

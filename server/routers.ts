@@ -44,6 +44,7 @@ import {
   getApplicationsForJob,
   getApplicationById,
   revealApplicationContact,
+  updateApplicationStatus,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import {
@@ -460,11 +461,41 @@ const jobsRouter = router({
     .input(z.object({ jobId: z.number() }))
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      return getApplicationsForJob(input.jobId);
+      const apps = await getApplicationsForJob(input.jobId);
+      // Strip phone unless the employer has already accepted (contactRevealed)
+      return apps.map((a) => ({
+        ...a,
+        workerPhone: a.contactRevealed ? a.workerPhone : null,
+      }));
+    }),
+
+  /**
+   * Accept or reject an application.
+   * Accept: sets status=accepted, contactRevealed=true, revealedAt=now → phone revealed.
+   * Reject: sets status=rejected.
+   * Only the job owner can call this.
+   */
+  updateApplicationStatus: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      action: z.enum(["accept", "reject"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const app = await getApplicationById(input.id);
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
+      if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה לפעולה זו" });
+      }
+      await updateApplicationStatus(input.id, input.action);
+      return {
+        success: true,
+        // Return phone only when accepting
+        workerPhone: input.action === "accept" ? app.workerPhone : null,
+      };
     }),
 
   /** Check if current user has already applied to a job */

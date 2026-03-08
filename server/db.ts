@@ -855,14 +855,45 @@ export async function getApplicationsForJob(jobId: number) {
       workerId: applications.workerId,
       status: applications.status,
       message: applications.message,
+      contactRevealed: applications.contactRevealed,
+      revealedAt: applications.revealedAt,
       createdAt: applications.createdAt,
       workerName: users.name,
+      // Phone only returned if contactRevealed — caller must filter
       workerPhone: users.phone,
       workerBio: users.workerBio,
+      workerPreferredCity: users.preferredCity,
       workerTags: users.workerTags,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
     .where(eq(applications.jobId, jobId))
     .orderBy(desc(applications.createdAt));
+}
+
+/**
+ * Accept an application: sets status=accepted, contactRevealed=true, revealedAt=now.
+ * Reject an application: sets status=rejected.
+ */
+export async function updateApplicationStatus(
+  id: number,
+  action: "accept" | "reject"
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (action === "accept") {
+    await db
+      .update(applications)
+      .set({
+        status: "accepted",
+        contactRevealed: true,
+        revealedAt: new Date(),
+      })
+      .where(eq(applications.id, id));
+  } else {
+    await db
+      .update(applications)
+      .set({ status: "rejected" })
+      .where(eq(applications.id, id));
+  }
 }

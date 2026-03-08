@@ -21,6 +21,7 @@ vi.mock("./db", () => ({
   getApplicationsForJob: vi.fn(),
   getApplicationById: vi.fn(),
   revealApplicationContact: vi.fn(),
+  updateApplicationStatus: vi.fn(),
   getPublicWorkerProfile: vi.fn(),
   // Other functions used by the router (return safe defaults)
   getActiveJobs: vi.fn().mockResolvedValue([]),
@@ -473,5 +474,67 @@ describe("jobs.revealContact", () => {
     await expect(caller.jobs.revealContact({ id: 999 })).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
+  });
+});
+
+describe("jobs.updateApplicationStatus", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("accepts application and returns phone for job owner", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    vi.mocked(db.updateApplicationStatus).mockResolvedValue(undefined);
+    const result = await caller.jobs.updateApplicationStatus({ id: 10, action: "accept" });
+    expect(result.success).toBe(true);
+    expect(result.workerPhone).toBe("+972501234567");
+    expect(db.updateApplicationStatus).toHaveBeenCalledWith(10, "accept");
+  });
+
+  it("rejects application and returns null phone", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    vi.mocked(db.updateApplicationStatus).mockResolvedValue(undefined);
+    const result = await caller.jobs.updateApplicationStatus({ id: 10, action: "reject" });
+    expect(result.success).toBe(true);
+    expect(result.workerPhone).toBeNull();
+    expect(db.updateApplicationStatus).toHaveBeenCalledWith(10, "reject");
+  });
+
+  it("throws FORBIDDEN for non-owner", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 42 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    await expect(
+      caller.jobs.updateApplicationStatus({ id: 10, action: "accept" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(db.updateApplicationStatus).not.toHaveBeenCalled();
+  });
+
+  it("throws NOT_FOUND when application does not exist", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(null);
+    await expect(
+      caller.jobs.updateApplicationStatus({ id: 999, action: "accept" })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("requires authentication", async () => {
+    const { appRouter } = await import("./routers");
+    const ctx = makeCtx(null);
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.jobs.updateApplicationStatus({ id: 10, action: "accept" })
+    ).rejects.toBeInstanceOf(TRPCError);
   });
 });

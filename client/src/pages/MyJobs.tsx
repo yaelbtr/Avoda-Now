@@ -17,8 +17,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import BrandLoader from "@/components/BrandLoader";
-import { Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
-  Clock, MapPin, Users, DollarSign, ChevronLeft, Eye, Zap,
+import {
+  Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
+  Clock, MapPin, Users, DollarSign, Eye, Zap,
+  ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { toast } from "sonner";
@@ -123,11 +125,232 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
   },
 };
 
+// ── Applicants Panel ──────────────────────────────────────────────────────────
+type Applicant = {
+  id: number;
+  workerName: string | null;
+  workerBio: string | null;
+  workerPreferredCity: string | null;
+  workerPhone: string | null;
+  status: string;
+  contactRevealed: boolean;
+  message: string | null;
+  createdAt: Date;
+};
+
+function ApplicantsPanel({ jobId }: { jobId: number }) {
+  const utils = trpc.useUtils();
+  const { data: applicants, isLoading } = trpc.jobs.getApplications.useQuery({ jobId });
+
+  const updateStatus = trpc.jobs.updateApplicationStatus.useMutation({
+    onSuccess: (data, vars) => {
+      utils.jobs.getApplications.invalidate({ jobId });
+      if (vars.action === "accept") {
+        toast.success("המועמד התקבל! פרטי הקשר נחשפו.");
+      } else {
+        toast.success("המועמד נדחה.");
+      }
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="pt-3 space-y-2">
+        {[0, 1].map((i) => (
+          <div key={i} style={{ background: "oklch(1 0 0 / 4%)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+            <div className="flex gap-3">
+              <Shimmer width={32} height={32} rounded="50%" />
+              <div className="flex-1 space-y-1.5">
+                <Shimmer width="50%" height={12} />
+                <Shimmer width="30%" height={10} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!applicants || applicants.length === 0) {
+    return (
+      <div className="pt-3 text-center py-4">
+        <p className="text-xs" style={{ color: TEXT_FAINT }}>אין מועמדים עדיין</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-3 space-y-2">
+      {applicants.map((app: Applicant) => {
+        const isPending = app.status === "pending" || app.status === "viewed";
+        const isAccepted = app.status === "accepted";
+        const isRejected = app.status === "rejected";
+        const isMutating = updateStatus.isPending && updateStatus.variables?.id === app.id;
+
+        return (
+          <motion.div
+            key={app.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: isAccepted
+                ? "oklch(0.68 0.20 160 / 0.08)"
+                : isRejected
+                  ? "oklch(1 0 0 / 0.02)"
+                  : "oklch(1 0 0 / 0.04)",
+              border: isAccepted
+                ? "1px solid oklch(0.68 0.20 160 / 0.25)"
+                : isRejected
+                  ? "1px solid oklch(1 0 0 / 0.06)"
+                  : "1px solid oklch(1 0 0 / 0.08)",
+              borderRadius: "0.75rem",
+              padding: "0.75rem",
+              opacity: isRejected ? 0.5 : 1,
+            }}
+          >
+            {/* Worker info row */}
+            <div className="flex items-start gap-2.5 mb-2">
+              {/* Avatar */}
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                style={{
+                  background: isAccepted
+                    ? "oklch(0.68 0.20 160 / 0.2)"
+                    : "oklch(1 0 0 / 0.08)",
+                  color: isAccepted ? "oklch(0.68 0.20 160)" : TEXT_MID,
+                }}
+              >
+                {app.workerName?.charAt(0) ?? "?"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold" style={{ color: TEXT_BRIGHT }}>
+                    {app.workerName ?? "עובד"}
+                  </span>
+                  {/* Status badge */}
+                  {isAccepted && (
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                      style={{ background: "oklch(0.68 0.20 160 / 0.15)", color: "oklch(0.68 0.20 160)" }}
+                    >
+                      התקבל
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                      style={{ background: "oklch(1 0 0 / 0.06)", color: TEXT_FAINT }}
+                    >
+                      נדחה
+                    </span>
+                  )}
+                </div>
+                {app.workerPreferredCity && (
+                  <p className="text-xs mt-0.5" style={{ color: TEXT_FAINT }}>
+                    <MapPin className="inline h-2.5 w-2.5 ml-0.5" />
+                    {app.workerPreferredCity}
+                  </p>
+                )}
+                {app.message && (
+                  <p className="text-xs mt-1 line-clamp-2" style={{ color: TEXT_MID }}>
+                    "{app.message}"
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            {isPending && (
+              <div className="flex gap-2 mt-1">
+                <AppButton
+                  size="sm"
+                  className="gap-1.5 text-xs flex-1"
+                  disabled={isMutating}
+                  onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
+                  style={{
+                    background: "oklch(0.68 0.20 160 / 0.15)",
+                    border: "1px solid oklch(0.68 0.20 160 / 0.3)",
+                    color: "oklch(0.68 0.20 160)",
+                  }}
+                >
+                  <UserCheck className="h-3.5 w-3.5" />
+                  קבל
+                </AppButton>
+                <AppButton
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5 text-xs flex-1"
+                  disabled={isMutating}
+                  onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
+                  style={{
+                    background: "oklch(1 0 0 / 0.03)",
+                    border: "1px solid oklch(1 0 0 / 0.08)",
+                    color: TEXT_FAINT,
+                  }}
+                >
+                  <UserX className="h-3.5 w-3.5" />
+                  דחה
+                </AppButton>
+              </div>
+            )}
+
+            {/* Contact buttons — only shown after acceptance */}
+            {isAccepted && app.contactRevealed && app.workerPhone && (
+              <div className="flex gap-2 mt-2">
+                <a
+                  href={`tel:${app.workerPhone}`}
+                  className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AppButton
+                    size="sm"
+                    className="gap-1.5 text-xs w-full"
+                    style={{
+                      background: "oklch(0.55 0.22 260 / 0.15)",
+                      border: "1px solid oklch(0.55 0.22 260 / 0.3)",
+                      color: "oklch(0.70 0.18 260)",
+                    }}
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                    התקשר
+                  </AppButton>
+                </a>
+                <a
+                  href={`https://wa.me/${app.workerPhone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AppButton
+                    size="sm"
+                    className="gap-1.5 text-xs w-full"
+                    style={{
+                      background: "oklch(0.68 0.20 160 / 0.12)",
+                      border: "1px solid oklch(0.68 0.20 160 / 0.25)",
+                      color: "oklch(0.68 0.20 160)",
+                    }}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    WhatsApp
+                  </AppButton>
+                </a>
+              </div>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MyJobs() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [expandedApplicants, setExpandedApplicants] = useState<Set<number>>(new Set());
 
   const utils = trpc.useUtils();
 
@@ -144,6 +367,15 @@ export default function MyJobs() {
     onSuccess: () => { utils.jobs.myJobs.invalidate(); setDeleteId(null); toast.success("המשרה נמחקה"); },
     onError: (e) => toast.error(e.message),
   });
+
+  const toggleApplicants = (jobId: number) => {
+    setExpandedApplicants((prev) => {
+      const next = new Set(prev);
+      if (next.has(jobId)) next.delete(jobId);
+      else next.add(jobId);
+      return next;
+    });
+  };
 
   // ── Auth loading ──────────────────────────────────────────────────────────
   if (loading) {
@@ -206,7 +438,6 @@ export default function MyJobs() {
             width: 400, height: 400,
             top: -80, right: -80,
             background: `radial-gradient(circle, ${BRAND} / 0.06 0%, transparent 70%)`,
-
             filter: "blur(40px)",
           }}
         />
@@ -216,7 +447,6 @@ export default function MyJobs() {
             width: 300, height: 300,
             bottom: 100, left: -60,
             background: `radial-gradient(circle, ${SUCCESS} / 0.05 0%, transparent 70%)`,
-
             filter: "blur(40px)",
           }}
         />
@@ -280,7 +510,6 @@ export default function MyJobs() {
                     background: activeJobs.length >= 3
                       ? `linear-gradient(90deg, ${C_DANGER} 0%, oklch(0.65 0.22 15) 100%)`
                       : `linear-gradient(90deg, ${BRAND} 0%, ${SUCCESS} 100%)`,
-
                   }}
                 />
               </div>
@@ -367,6 +596,7 @@ export default function MyJobs() {
                   ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000))
                   : null;
                 const isExpiringSoon = daysLeft !== null && daysLeft <= 1 && job.status === "active";
+                const applicantsExpanded = expandedApplicants.has(job.id);
 
                 return (
                   <motion.div
@@ -374,7 +604,6 @@ export default function MyJobs() {
                     variants={cardVariants}
                     layout
                     exit="exit"
-                    whileHover={{ y: -2, boxShadow: "0 8px 32px oklch(0 0 0 / 0.3)" }}
                     style={{
                       ...glassCard,
                       padding: "1rem",
@@ -480,6 +709,33 @@ export default function MyJobs() {
                         </AppButton>
                       </motion.div>
 
+                      {/* Applicants toggle button */}
+                      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                        <AppButton
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => toggleApplicants(job.id)}
+                          style={{
+                            background: applicantsExpanded
+                              ? "oklch(0.55 0.22 260 / 0.12)"
+                              : "oklch(1 0 0 / 0.04)",
+                            border: applicantsExpanded
+                              ? "1px solid oklch(0.55 0.22 260 / 0.3)"
+                              : "1px solid oklch(1 0 0 / 0.10)",
+                            color: applicantsExpanded
+                              ? "oklch(0.70 0.18 260)"
+                              : TEXT_MID,
+                          }}
+                        >
+                          <Users className="h-3.5 w-3.5" />
+                          מועמדים
+                          {applicantsExpanded
+                            ? <ChevronUp className="h-3 w-3" />
+                            : <ChevronDown className="h-3 w-3" />}
+                        </AppButton>
+                      </motion.div>
+
                       {job.status === "active" ? (
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                           <AppButton
@@ -531,6 +787,33 @@ export default function MyJobs() {
                         </AppButton>
                       </motion.div>
                     </div>
+
+                    {/* ── Applicants Panel ── */}
+                    <AnimatePresence>
+                      {applicantsExpanded && (
+                        <motion.div
+                          key="applicants"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <div
+                            style={{
+                              marginTop: "0.75rem",
+                              paddingTop: "0.75rem",
+                              borderTop: "1px solid oklch(1 0 0 / 0.08)",
+                            }}
+                          >
+                            <p className="text-xs font-semibold mb-1" style={{ color: TEXT_FAINT }}>
+                              מועמדים למשרה
+                            </p>
+                            <ApplicantsPanel jobId={job.id} />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}

@@ -520,3 +520,13 @@
 - [x] Frontend: contact reveal shows Phone (tel:) + WhatsApp (wa.me) buttons
 - [x] Frontend: route /applications/:id in App.tsx
 - [x] Vitest: tests for revealContact and getApplication procedures (7 new tests, 101 total)
+
+## Employer-First Contact Logic
+- [x] Server: jobs.updateApplicationStatus mutation — accept/reject, only job owner
+- [x] Server: accept = sets status=accepted + contactRevealed=true + revealedAt
+- [x] Server: reject = sets status=rejected
+- [x] MyJobs: applicants count badge per job
+- [x] MyJobs: expandable applicants list per job with Accept/Reject buttons
+- [x] MyJobs: accepted applicant shows Phone + WhatsApp buttons
+- [x] MyJobs: rejected applicant shows greyed-out state
+- [x] Vitest: 5 new tests for updateApplicationStatus (accept/reject/forbidden/not-found/auth) — 106 total

@@ -39,6 +39,8 @@ import {
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
+  getMyJobsWithPendingCounts,
+  getMyApplications,
   createApplication,
   getApplicationByWorkerAndJob,
   getApplicationById,
@@ -364,6 +366,16 @@ const jobsRouter = router({
     }),
 
   myJobs: protectedProcedure.query(async ({ ctx }) => getMyJobs(ctx.user.id)),
+
+  /** Employer's jobs with pending applicant count per job */
+  myJobsWithPendingCounts: protectedProcedure.query(async ({ ctx }) =>
+    getMyJobsWithPendingCounts(ctx.user.id)
+  ),
+
+  /** Worker's own applications with job info and status */
+  myApplications: protectedProcedure.query(async ({ ctx }) =>
+    getMyApplications(ctx.user.id)
+  ),
 
   /** Jobs starting within the next 24 hours */
   listToday: publicProcedure

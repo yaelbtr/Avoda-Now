@@ -342,6 +342,68 @@ export async function getMyJobs(userId: number) {
   return db.select().from(jobs).where(eq(jobs.postedBy, userId)).orderBy(desc(jobs.createdAt));
 }
 
+/**
+ * Returns the employer's jobs enriched with a pendingCount of applications awaiting review.
+ */
+export async function getMyJobsWithPendingCounts(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const myJobsList = await db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.postedBy, userId))
+    .orderBy(desc(jobs.createdAt));
+
+  if (myJobsList.length === 0) return [];
+
+  // Count pending applications per job in one query
+  const counts = await db
+    .select({
+      jobId: applications.jobId,
+      pendingCount: count(),
+    })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.status, "pending"),
+        sql`${applications.jobId} IN (${myJobsList.map((j) => j.id).join(",")})`
+      )
+    )
+    .groupBy(applications.jobId);
+
+  const countMap = new Map(counts.map((c) => [c.jobId, c.pendingCount]));
+  return myJobsList.map((j) => ({ ...j, pendingCount: countMap.get(j.id) ?? 0 }));
+}
+
+/**
+ * Returns all applications submitted by a worker, with job info.
+ */
+export async function getMyApplications(workerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: applications.id,
+      jobId: applications.jobId,
+      status: applications.status,
+      message: applications.message,
+      contactRevealed: applications.contactRevealed,
+      createdAt: applications.createdAt,
+      jobTitle: jobs.category,
+      jobAddress: jobs.address,
+      jobCity: jobs.city,
+      jobSalary: jobs.salary,
+      jobSalaryType: jobs.salaryType,
+      jobStatus: jobs.status,
+      employerName: users.name,
+    })
+    .from(applications)
+    .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .innerJoin(users, eq(jobs.postedBy, users.id))
+    .where(eq(applications.workerId, workerId))
+    .orderBy(desc(applications.createdAt));
+}
+
 export async function updateJobStatus(id: number, userId: number, status: Job["status"]) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

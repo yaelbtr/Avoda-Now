@@ -37,6 +37,7 @@ export default function Navbar() {
   const workerLinks = [
     { href: "/find-jobs", label: "חפש עבודה", icon: MapPin },
     { href: "/jobs-today", label: "עבודות להיום", icon: Flame },
+    { href: "/my-applications", label: "מועמדויות", icon: Briefcase },
     { href: "/worker-profile", label: "פרופיל", icon: User },
   ];
 
@@ -233,6 +234,12 @@ export default function Navbar() {
                           <Link href="/jobs-today" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Flame className="h-4 w-4 shrink-0 text-orange-500" />
                             <span>עבודות להיום</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-applications" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
+                            <Briefcase className="h-4 w-4 shrink-0" style={{ color: BLUE }} />
+                            <span>המועמדויות שלי</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>

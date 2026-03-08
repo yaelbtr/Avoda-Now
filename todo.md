@@ -564,3 +564,12 @@
 - [x] Frontend: route /jobs/:id/applications in App.tsx
 - [x] Frontend: "צפה בכל המועמדים בדף מלא" link in MyJobs ApplicantsPanel
 - [x] All 114 tests pass
+
+## Pending Badge & Worker Applications Page
+- [x] Server: jobs.myJobsWithPendingCounts — myJobs enriched with pendingCount per job
+- [x] Server: jobs.myApplications — worker's own applications with job title, status, contactRevealed
+- [x] Frontend: MyJobs — red badge with pending count on "מועמדים" button
+- [x] Frontend: /my-applications page — worker's applications grouped by status (ממתין/התקבלת/לא התקבלת)
+- [x] Frontend: Navbar — "מועמדויות" link in workerLinks + dropdown menu item
+- [x] Frontend: route /my-applications in App.tsx
+- [x] All 114 tests pass

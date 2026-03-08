@@ -364,17 +364,17 @@ export default function MyJobs() {
 
   const utils = trpc.useUtils();
 
-  const { data: myJobs, isLoading } = trpc.jobs.myJobs.useQuery(undefined, {
+  const { data: myJobs, isLoading } = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
   const updateStatus = trpc.jobs.updateStatus.useMutation({
-    onSuccess: () => { utils.jobs.myJobs.invalidate(); toast.success("סטטוס עודכן"); },
+    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); toast.success("סטטוס עודכן"); },
     onError: (e) => toast.error(e.message),
   });
 
   const deleteJob = trpc.jobs.delete.useMutation({
-    onSuccess: () => { utils.jobs.myJobs.invalidate(); setDeleteId(null); toast.success("המשרה נמחקה"); },
+    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); setDeleteId(null); toast.success("המשרה נמחקה"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -740,6 +740,20 @@ export default function MyJobs() {
                         >
                           <Users className="h-3.5 w-3.5" />
                           מועמדים
+                          {(job as { pendingCount?: number }).pendingCount ? (
+                            <span
+                              className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                              style={{
+                                background: "oklch(0.60 0.22 25)",
+                                color: "white",
+                                minWidth: "1.2rem",
+                                textAlign: "center",
+                                lineHeight: 1,
+                              }}
+                            >
+                              {(job as { pendingCount?: number }).pendingCount}
+                            </span>
+                          ) : null}
                           {applicantsExpanded
                             ? <ChevronUp className="h-3 w-3" />
                             : <ChevronDown className="h-3 w-3" />}

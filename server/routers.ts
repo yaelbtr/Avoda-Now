@@ -377,6 +377,12 @@ const jobsRouter = router({
   myJobsWithPendingCounts: protectedProcedure.query(async ({ ctx }) =>
     getMyJobsWithPendingCounts(ctx.user.id)
   ),
+  /** Total count of pending (unreviewed) applications across all employer's jobs */
+  totalPendingApplications: protectedProcedure.query(async ({ ctx }) => {
+    const jobs = await getMyJobsWithPendingCounts(ctx.user.id);
+    const total = jobs.reduce((sum, j) => sum + (j.pendingCount ?? 0), 0);
+    return { total };
+  }),
 
   /** Worker's own applications with job info and status */
   myApplications: protectedProcedure.query(async ({ ctx }) =>

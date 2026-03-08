@@ -1,6 +1,7 @@
 import { Link } from "wouter";
-import { motion } from "framer-motion";
-import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useEffect } from "react";
+import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame, Mail } from "lucide-react";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER,
   C_DANGER_HEX, C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
@@ -63,6 +64,23 @@ export function shareJobOnWhatsApp(
   window.open(`https://wa.me/?text=${text}`, "_blank");
 }
 
+export function shareJobByEmail(
+  jobTitle: string,
+  jobId: number,
+  city?: string | null,
+  salary?: string | null,
+  salaryType?: string
+) {
+  const location = city ?? "";
+  const salaryStr = salary && salaryType !== "volunteer"
+    ? `₪${parseFloat(salary).toLocaleString("he-IL")} ${salaryType === "hourly" ? "לשעה" : salaryType === "daily" ? "ליום" : "לחודש"}`
+    : "התנדבות";
+  const jobUrl = `${SITE_URL}/job/${jobId}`;
+  const subject = encodeURIComponent(`עבודה זמנית: ${jobTitle}`);
+  const body = encodeURIComponent(`שלום,\n\nמצאתי משרה שעשויה לעניין אותך:\n${jobTitle}\n${location}\n${salaryStr}\n\nפרטים נוספים:\n${jobUrl}`);
+  window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+}
+
 export function contactViaWhatsApp(phone: string, jobTitle: string) {
   const clean = phone.replace(/\D/g, "");
   const intl = clean.startsWith("0") ? "972" + clean.slice(1) : clean;
@@ -101,6 +119,82 @@ const WhatsAppIcon = () => (
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 );
+
+function SharePopover({ jobTitle, jobId, city, salary, salaryType }: { jobTitle: string; jobId: number; city?: string | null; salary?: string | null; salaryType?: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+        <AppButton
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
+          style={{ color: "var(--text-muted)" }}
+          onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+          title="שתף"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+        </AppButton>
+      </motion.div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 4 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: "absolute",
+              bottom: "calc(100% + 6px)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "#fff",
+              border: "1px solid oklch(0.87 0.04 84.0)",
+              borderRadius: 12,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+              padding: "6px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              zIndex: 50,
+              minWidth: 140,
+              direction: "rtl",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => { shareJobOnWhatsApp(jobTitle, jobId, city, salary, salaryType); setOpen(false); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#25D366", width: "100%", textAlign: "right" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 15, height: 15, flexShrink: 0 }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              שתף ב-WhatsApp
+            </button>
+            <button
+              onClick={() => { shareJobByEmail(jobTitle, jobId, city, salary, salaryType); setOpen(false); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#4F583B", width: "100%", textAlign: "right" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f5f0e4")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              <Mail style={{ width: 15, height: 15, flexShrink: 0 }} />
+              שתף ב-Email
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function JobCard({ job, showDistance = false, onLoginRequired }: JobCardProps) {
   const { isAuthenticated } = useAuth();
@@ -317,18 +411,7 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
           </motion.div>
         )}
 
-        <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
-          <AppButton
-            variant="ghost"
-            size="icon-sm"
-            className="shrink-0"
-            style={{ color: "var(--text-muted)" }}
-            onClick={() => shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType)}
-            title="שתף ב-WhatsApp"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-          </AppButton>
-        </motion.div>
+        <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
 
         <Link href={`/job/${job.id}`}>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>

@@ -710,3 +710,17 @@
 - [x] HomeWorker: whileInView on carousel section header + job cards
 - [x] HomeEmployer: whileInView on StatsRow section header + individual stat cards (staggered)
 - [x] HomeEmployer: whileInView on carousel section header + worker cards
+
+## Share button on job cards
+- [x] Add share popover/menu on CarouselJobCard and JobCard with WhatsApp + Email options
+- [x] WhatsApp: wa.me link with job title + URL
+- [x] Email: mailto link with job title + URL
+
+## Unread applications badge on employer banner
+- [x] Add totalPendingApplications tRPC procedure
+- [x] Show red badge on employer home banner with pending count
+- [x] Dynamic text: "X מועמדויות ממתינות לסקירה" when pending > 0
+
+## Counting-up number animation on stats
+- [x] HomeWorker StatsRow: animate numbers from 0 to final value on scroll-in
+- [x] HomeEmployer StatsRow: same counting-up animation with useCountUp hook

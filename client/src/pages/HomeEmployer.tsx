@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -13,6 +13,25 @@ import {
 } from "lucide-react";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 import { CarouselSkeletonRow } from "@/components/JobCardSkeleton";
+
+// Hook: counts UP from 0 to endValue over duration ms when triggered
+function useCountUp(endValue: number, duration: number, triggered: boolean) {
+  const [current, setCurrent] = useState(0);
+  useEffect(() => {
+    if (!triggered || endValue === 0) return;
+    const steps = 40;
+    const stepTime = duration / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const next = Math.round((endValue / steps) * step);
+      setCurrent(step >= steps ? endValue : next);
+      if (step >= steps) clearInterval(timer);
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [triggered, endValue]);
+  return current;
+}
 
 /* ── How it works steps ───────────────────────────────────────────── */
 const HOW_IT_WORKS_EMPLOYER = [
@@ -38,13 +57,18 @@ const HOW_IT_WORKS_EMPLOYER = [
 
 /* ── Stats row ────────────────────────────────────────────────────── */
 function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
+  const animJobs = useCountUp(activeJobs, 1200, inView);
+  const animWorkers = useCountUp(workers, 1000, inView);
   const stats = [
-    { label: "משרות פעילות", value: activeJobs > 0 ? String(activeJobs) : "0", icon: Briefcase },
-    { label: "עובדים זמינים", value: workers > 0 ? `${workers}+` : "0", icon: Users },
+    { label: "משרות פעילות", value: activeJobs > 0 ? String(animJobs) : "0", icon: Briefcase },
+    { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "0", icon: Users },
     { label: "ללא עמלות", value: "100%", icon: CheckCircle2 },
   ];
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
@@ -119,6 +143,8 @@ export default function HomeEmployer() {
   };
 
   const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: isAuthenticated });
+  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const pendingCount = pendingAppsQuery.data?.total ?? 0;
   const workersQuery = trpc.workers.nearby.useQuery(
     { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: 20, limit: 8 },
     { staleTime: 60_000 }
@@ -375,14 +401,24 @@ export default function HomeEmployer() {
           </div>
           {/* Text */}
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-black leading-tight" style={{ color: "oklch(0.97 0.03 80)" }}>
-              <span className="text-[17px] font-black" style={{ color: "oklch(0.85 0.14 255)", fontFamily: "'Heebo', sans-serif" }}>
-                {activeJobs}
-              </span>
-              {" "}משרות פעילות שלך
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[13px] font-black leading-tight" style={{ color: "oklch(0.97 0.03 80)" }}>
+                <span className="text-[17px] font-black" style={{ color: "oklch(0.85 0.14 255)", fontFamily: "'Heebo', sans-serif" }}>
+                  {activeJobs}
+                </span>
+                {" "}משרות פעילות שלך
+              </p>
+              {pendingCount > 0 && (
+                <span
+                  className="inline-flex items-center justify-center text-[11px] font-black rounded-full px-2 py-0.5 leading-none"
+                  style={{ background: "oklch(0.55 0.22 25)", color: "white", minWidth: 22, border: "1.5px solid oklch(0.70 0.18 25 / 0.40)" }}
+                >
+                  {pendingCount} חדש
+                </span>
+              )}
+            </div>
             <p className="text-[11px] font-medium mt-0.5" style={{ color: "oklch(0.85 0.06 80 / 0.75)" }}>
-              לחץ לניהול המשרות ומועמדויות שהתקבלו
+              {pendingCount > 0 ? `${pendingCount} מועמדויות ממתינות לסקירה` : "לחץ לניהול המשרות ומועמדויות"}
             </p>
           </div>
           <ChevronLeft className="h-4 w-4 flex-shrink-0" style={{ color: "oklch(0.85 0.08 80 / 0.70)", transform: "rotate(180deg)" }} />

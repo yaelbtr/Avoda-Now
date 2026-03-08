@@ -664,3 +664,6 @@
 ## Role-Based Home Pages
 - [x] After role selection: navigate to / which renders HomeWorker or HomeEmployer based on role
 - [x] No new pages needed — Home.tsx already handles role-based rendering
+
+## Bug: Blank page after role selection
+- [x] Fix: navigating to / after selecting a role shows blank page instead of HomeWorker/HomeEmployer

@@ -51,11 +51,14 @@ function Router() {
   const [location, navigate] = useLocation();
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    // RoleSelectionScreen already sent the server mutation (for authenticated users).
-    // Update local state so needsRoleSelection becomes false, then navigate to home
-    // which renders HomeWorker or HomeEmployer based on the chosen role.
+    // RoleSelectionScreen calls this BEFORE its exit animation starts.
+    // Updating userMode here causes showRoleSelection to become false,
+    // so Home is already mounted and ready when the exit animation completes.
     setLocalModeOnly(mode);
-    navigate("/");
+    // Only navigate if not already on / (edge case)
+    if (location !== "/" && location !== "") {
+      navigate("/");
+    }
   };
 
   // Derive a stable segment key so that /job/1 and /job/2 share the same

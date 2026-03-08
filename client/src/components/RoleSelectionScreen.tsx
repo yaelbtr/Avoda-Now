@@ -293,8 +293,11 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
+      // Call onSelected immediately so parent updates userMode/showRoleSelection
+      // BEFORE the exit animation completes. This ensures Home is ready to render
+      // as soon as RoleSelectionScreen finishes fading out.
+      onSelected(vars.mode);
       setExiting(true);
-      setTimeout(() => onSelected(vars.mode), 400);
     },
     onSettled: () => setLoading(null),
   });
@@ -302,9 +305,9 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
   const handleSelect = (mode: "worker" | "employer") => {
     if (loading || exiting) return;
     if (!isAuthenticated) {
-      // Guest: navigate directly without saving to server
+      // Guest: call onSelected immediately then start exit animation
+      onSelected(mode);
       setExiting(true);
-      setTimeout(() => onSelected(mode), 400);
       return;
     }
     setLoading(mode);

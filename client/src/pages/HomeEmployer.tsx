@@ -585,7 +585,7 @@ export default function HomeEmployer() {
                 {workers.map((worker, i) => (
                   <motion.div
                     key={worker.userId}
-                    className="snap-start shrink-0 w-[52vw] max-w-[180px]"
+                    className="snap-start shrink-0 w-[58vw] max-w-[200px]"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}

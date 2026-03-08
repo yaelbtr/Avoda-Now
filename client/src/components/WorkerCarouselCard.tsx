@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { HardHat, MapPin, Clock } from "lucide-react";
+import { HardHat, MapPin, Clock, CheckCircle2 } from "lucide-react";
 
 interface WorkerCarouselCardProps {
   worker: {
@@ -23,14 +23,14 @@ function timeUntil(date: Date | string | null | undefined): string {
   return `זמין עוד ${mins} דק'`;
 }
 
-// Deterministic avatar color based on userId
+// Deterministic avatar gradient based on userId
 function getAvatarColors(userId: number) {
   const palettes = [
-    { from: "oklch(0.55 0.22 160)", to: "oklch(0.45 0.20 155)", text: "oklch(0.75 0.18 160)" },
-    { from: "oklch(0.55 0.12 76.7)", to: "oklch(0.45 0.13 76.7)", text: "oklch(0.75 0.12 76.7)" },
-    { from: "oklch(0.60 0.22 25)",  to: "oklch(0.50 0.20 30)",  text: "oklch(0.80 0.18 25)"  },
-    { from: "oklch(0.58 0.22 300)", to: "oklch(0.48 0.20 305)", text: "oklch(0.78 0.18 300)" },
-    { from: "oklch(0.62 0.20 65)",  to: "oklch(0.52 0.18 70)",  text: "oklch(0.82 0.16 65)"  },
+    { from: "oklch(0.45 0.18 160)", to: "oklch(0.38 0.15 155)", bg: "oklch(0.92 0.08 160 / 0.18)", border: "oklch(0.75 0.15 160 / 0.30)" },
+    { from: "oklch(0.52 0.14 76.7)", to: "oklch(0.44 0.13 76.7)", bg: "oklch(0.94 0.06 76.7 / 0.18)", border: "oklch(0.78 0.12 76.7 / 0.30)" },
+    { from: "oklch(0.52 0.20 25)",  to: "oklch(0.44 0.18 30)",  bg: "oklch(0.94 0.08 25 / 0.18)",  border: "oklch(0.78 0.16 25 / 0.30)"  },
+    { from: "oklch(0.52 0.20 300)", to: "oklch(0.44 0.18 305)", bg: "oklch(0.94 0.08 300 / 0.18)", border: "oklch(0.78 0.16 300 / 0.30)" },
+    { from: "oklch(0.52 0.18 65)",  to: "oklch(0.44 0.16 70)",  bg: "oklch(0.94 0.07 65 / 0.18)",  border: "oklch(0.78 0.14 65 / 0.30)"  },
   ];
   return palettes[userId % palettes.length];
 }
@@ -46,75 +46,93 @@ export default function WorkerCarouselCard({ worker, index = 0 }: WorkerCarousel
 
   return (
     <motion.div
+      dir="rtl"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.35 }}
       whileHover={{ scale: 1.03, y: -3 }}
-      className="w-full text-right rounded-2xl p-3 overflow-hidden relative"
+      className="w-full text-right rounded-2xl overflow-hidden relative"
       style={{
-        background: "linear-gradient(135deg, oklch(0.14 0.03 165) 0%, oklch(0.12 0.025 175) 100%)",
-        border: `1px solid oklch(0.65 0.22 160 / 0.25)`,
-        boxShadow: "0 4px 20px oklch(0 0 0 / 0.3), inset 0 1px 0 oklch(1 0 0 / 0.06)",
+        background: "white",
+        border: `1px solid oklch(0.91 0.04 91.6)`,
+        boxShadow: "0 2px 12px oklch(0.38 0.07 125.0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.04)",
       }}
     >
-      {/* Subtle glow */}
+      {/* Colored top accent bar */}
       <div
-        className="absolute -top-5 -right-5 w-16 h-16 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, oklch(0.65 0.22 160 / 0.15) 0%, transparent 70%)" }}
+        className="h-1.5 w-full"
+        style={{ background: `linear-gradient(90deg, ${colors.from} 0%, ${colors.to} 100%)` }}
       />
 
-      {/* Avatar + status badge */}
-      <div className="flex items-start justify-between mb-2 relative">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-          style={{
-            background: `linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`,
-            boxShadow: `0 0 12px ${colors.from}55`,
-          }}
-        >
-          {initials || <HardHat className="h-4 w-4" />}
-        </div>
-        <span
-          className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{
-            background: "oklch(0.65 0.22 160 / 0.18)",
-            color: "oklch(0.75 0.18 160)",
-            border: "1px solid oklch(0.65 0.22 160 / 0.3)",
-          }}
-        >
+      <div className="p-3">
+        {/* Avatar + status badge */}
+        <div className="flex items-start justify-between mb-2.5">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`,
+              boxShadow: `0 3px 10px ${colors.from}55`,
+            }}
+          >
+            {initials || <HardHat className="h-4 w-4" />}
+          </div>
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: "oklch(0.75 0.18 160)" }}
-          />
-          זמין
-        </span>
+            className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{
+              background: "oklch(0.90 0.12 145 / 0.25)",
+              color: "oklch(0.35 0.15 145)",
+              border: "1px solid oklch(0.80 0.14 145 / 0.35)",
+            }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: "oklch(0.50 0.18 145)" }}
+            />
+            זמין
+          </span>
+        </div>
+
+        {/* Name */}
+        <h3
+          className="font-black text-[13px] leading-snug mb-1 line-clamp-1"
+          style={{ color: "oklch(0.22 0.06 122)" }}
+        >
+          {worker.userName ?? "עובד זמין"}
+        </h3>
+
+        {/* Location */}
+        {worker.city && (
+          <p
+            className="flex items-center gap-1 text-[11px] mb-1"
+            style={{ color: "oklch(0.55 0.03 100)" }}
+          >
+            <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.55 0.08 122)" }} />
+            {worker.city}
+          </p>
+        )}
+
+        {/* Note */}
+        {worker.note && (
+          <p
+            className="text-[11px] line-clamp-1 mb-1"
+            style={{ color: "oklch(0.60 0.03 100)" }}
+          >
+            {worker.note}
+          </p>
+        )}
+
+        {/* Time remaining */}
+        <div
+          className="flex items-center gap-1 text-[11px] mt-1.5 pt-1.5"
+          style={{
+            borderTop: "1px solid oklch(0.93 0.03 91.6)",
+            color: "oklch(0.45 0.12 145)",
+          }}
+        >
+          <CheckCircle2 className="h-3 w-3 shrink-0" />
+          <span className="font-semibold">{timeUntil(worker.availableUntil)}</span>
+        </div>
       </div>
-
-      {/* Name */}
-      <h3 className="font-bold text-sm text-white leading-snug mb-0.5 line-clamp-1">
-        {worker.userName ?? "עובד זמין"}
-      </h3>
-
-      {/* Location */}
-      {worker.city && (
-        <p className="flex items-center gap-1 text-xs text-white/45 mb-1.5">
-          <MapPin className="h-3 w-3 shrink-0" />
-          {worker.city}
-        </p>
-      )}
-
-      {/* Note */}
-      {worker.note && (
-        <p className="text-xs text-white/35 line-clamp-1 mb-1.5">
-          {worker.note}
-        </p>
-      )}
-
-      {/* Time remaining */}
-      <p className="flex items-center gap-1 text-xs mt-1" style={{ color: colors.text }}>
-        <Clock className="h-3 w-3 shrink-0" />
-        {timeUntil(worker.availableUntil)}
-      </p>
     </motion.div>
   );
 }

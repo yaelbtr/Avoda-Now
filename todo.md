@@ -654,3 +654,9 @@
 - [x] Animate greeting in (fade + slide up) then fade out after ~1.5s
 - [x] After greeting fades, animate in the role selection cards
 - [x] Guests see cards immediately with no greeting
+
+## Guest Role Persistence (sessionStorage)
+- [x] Save guest role selection to sessionStorage on role card click
+- [x] On / route: if guest has a saved session role, skip role selection and navigate directly
+- [x] Clear session role on logout or when user authenticates
+- [x] Add "שנה תפקיד" option so guest can reset their choice and return to role selection

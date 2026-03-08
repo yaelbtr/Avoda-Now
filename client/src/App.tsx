@@ -46,7 +46,7 @@ function MapsPreloader() {
 }
 
 function Router() {
-  const { needsRoleSelection, setLocalModeOnly } = useUserMode();
+  const { needsRoleSelection, setLocalModeOnly, userMode } = useUserMode();
   // useLocation returns [pathname, navigate]; we only need pathname as the key
   const [location, navigate] = useLocation();
 
@@ -63,11 +63,14 @@ function Router() {
   // each get their own animation.
   const routeKey = location.split("/")[1] || "home";
 
+  const { isAuthenticated } = useAuth();
+
   // Show RoleSelectionScreen on / when:
   // 1. Authenticated user has no role yet (needsRoleSelection), OR
-  // 2. Any user (including guest) is on the root path
+  // 2. Guest is on the root path AND has no saved session role
   const isRootPath = location === "/" || location === "";
-  const showRoleSelection = needsRoleSelection || isRootPath;
+  const guestHasRole = !isAuthenticated && userMode !== null;
+  const showRoleSelection = needsRoleSelection || (isRootPath && !guestHasRole);
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">

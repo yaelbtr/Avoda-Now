@@ -71,8 +71,13 @@ export default function Navbar() {
     { href: "/post-job", label: "פרסם משרה", icon: PlusCircle },
   ];
 
+  // For guests with a saved session role, show role-specific links
   const navLinks = !isAuthenticated
-    ? guestLinks
+    ? userMode === "worker"
+      ? workerLinks.filter(l => l.href === "/find-jobs" || l.href === "/jobs-today")
+      : userMode === "employer"
+      ? employerLinks.filter(l => l.href === "/post-job")
+      : guestLinks
     : userMode === "worker"
     ? workerLinks
     : userMode === "employer"
@@ -352,19 +357,40 @@ export default function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                  <button
-                    onClick={() => setLoginOpen(true)}
-                    className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
-                    style={{
-                      background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
-                      color: "oklch(0.22 0.03 122.3)",
-                      boxShadow: "0 2px 10px oklch(0.82 0.15 80.8 / 0.4)",
-                    }}
-                  >
-                    כניסה
-                  </button>
-                </motion.div>
+                <div className="flex items-center gap-2">
+                  {/* Guest role badge + switch button */}
+                  {userMode && (
+                    <motion.button
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => resetUserMode()}
+                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all"
+                      style={{
+                        background: "oklch(0.42 0.07 124.9)",
+                        border: "1px solid oklch(0.50 0.07 124.9)",
+                        color: "#e8eae5",
+                      }}
+                      title="שנה תפקיד"
+                    >
+                      {userMode === "worker" ? <HardHat className="h-3 w-3" /> : <Briefcase className="h-3 w-3" />}
+                      {userMode === "worker" ? "עובד" : "מעסיק"}
+                      <RefreshCw className="h-3 w-3 opacity-60" />
+                    </motion.button>
+                  )}
+                  <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                    <button
+                      onClick={() => setLoginOpen(true)}
+                      className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                      style={{
+                        background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
+                        color: "oklch(0.22 0.03 122.3)",
+                        boxShadow: "0 2px 10px oklch(0.82 0.15 80.8 / 0.4)",
+                      }}
+                    >
+                      כניסה
+                    </button>
+                  </motion.div>
+                </div>
               )}
 
               {/* Mobile menu toggle */}

@@ -7,6 +7,10 @@ type UserMode = "worker" | "employer" | null;
 const LS_KEY = "avoda_now_role";
 // We store the userId alongside the role so we can detect cross-user reuse
 const LS_USER_KEY = "avoda_now_role_user";
+// Session key for guest role (cleared when browser tab closes)
+const SS_GUEST_KEY = "avoda_now_guest_role";
+
+// ── Authenticated user storage (localStorage, persists across sessions) ──────
 
 function loadRoleFromStorage(currentUserId?: number): UserMode {
   try {
@@ -42,6 +46,28 @@ function clearRoleFromStorage() {
   } catch {}
 }
 
+// ── Guest storage (sessionStorage, cleared when tab closes) ──────────────────
+
+function loadGuestRole(): UserMode {
+  try {
+    const v = sessionStorage.getItem(SS_GUEST_KEY);
+    if (v === "worker" || v === "employer") return v;
+  } catch {}
+  return null;
+}
+
+function saveGuestRole(mode: "worker" | "employer") {
+  try {
+    sessionStorage.setItem(SS_GUEST_KEY, mode);
+  } catch {}
+}
+
+function clearGuestRole() {
+  try {
+    sessionStorage.removeItem(SS_GUEST_KEY);
+  } catch {}
+}
+
 interface UserModeContextValue {
   userMode: UserMode;
   isLoadingMode: boolean;
@@ -71,6 +97,9 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   const [hasChecked, setHasChecked] = useState(false);
   const [localInitialized, setLocalInitialized] = useState(false);
 
+  // Guest mode: initialise from sessionStorage immediately (synchronous read)
+  const [guestMode, setGuestMode] = useState<UserMode>(() => loadGuestRole());
+
   // Once we know the userId, load the matching localStorage role
   useEffect(() => {
     if (userId !== undefined && !localInitialized) {
@@ -87,6 +116,17 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
       clearRoleFromStorage();
     }
   }, [userId, isAuthenticated, localInitialized]);
+
+  // When user authenticates, promote guest role to authenticated storage and clear session
+  useEffect(() => {
+    if (isAuthenticated && guestMode) {
+      // Guest just logged in — carry their session role over to authenticated storage
+      saveRoleToStorage(guestMode, userId);
+      setLocalMode(guestMode);
+      clearGuestRole();
+      setGuestMode(null);
+    }
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch mode from server when authenticated
   const modeQuery = trpc.user.getMode.useQuery(undefined, {
@@ -138,43 +178,56 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   }, [hasChecked, serverMode, setModeMutation.isPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Effective mode:
-  // - Before first server check: use localMode (fast path for returning users)
-  // - After first server check: server is authoritative, but fall back to
-  //   localMode when server returns null and localMode is set (mutation in-flight)
+  // - Authenticated: server is authoritative, fall back to localMode during mutations
+  // - Guest: use guestMode from sessionStorage
   const userMode: UserMode = isAuthenticated
     ? hasChecked
       ? serverMode ?? localMode  // server wins, but localMode bridges mutation lag
       : localMode                // optimistic pre-fetch (avoids flash for returning users)
-    : localMode;
+    : guestMode;
 
   // Show loading spinner only on first fetch when we have no local fallback
   const isLoadingMode = isAuthenticated && !hasChecked && localMode === null;
 
-  // Show role selection only when: authenticated, done loading, and no mode
-  const needsRoleSelection = isAuthenticated && !isLoadingMode && userMode === null;
+  // Show role selection only when: authenticated with no mode, OR guest with no session role
+  const needsRoleSelection = isAuthenticated
+    ? !isLoadingMode && userMode === null
+    : false; // guests handled separately via isRootPath in App.tsx
 
   const setUserMode = (mode: "worker" | "employer") => {
-    setLocalMode(mode);
-    saveRoleToStorage(mode, userId);
     if (isAuthenticated) {
+      setLocalMode(mode);
+      saveRoleToStorage(mode, userId);
       setModeMutation.mutate({ mode });
+    } else {
+      // Guest: save to sessionStorage only
+      setGuestMode(mode);
+      saveGuestRole(mode);
     }
   };
 
   // Sets local mode only (no server mutation) — used when RoleSelectionScreen
   // already sent the mutation itself and we just need to update local state.
   const setLocalModeOnly = (mode: "worker" | "employer") => {
-    setLocalMode(mode);
-    saveRoleToStorage(mode, userId);
+    if (isAuthenticated) {
+      setLocalMode(mode);
+      saveRoleToStorage(mode, userId);
+    } else {
+      setGuestMode(mode);
+      saveGuestRole(mode);
+    }
   };
 
   // Clears the current role so the role selection screen is shown again
   const resetUserMode = () => {
-    setLocalMode(null);
-    clearRoleFromStorage();
-    setHasChecked(false);
     if (isAuthenticated) {
+      setLocalMode(null);
+      clearRoleFromStorage();
+      setHasChecked(false);
       resetModeMutation.mutate();
+    } else {
+      setGuestMode(null);
+      clearGuestRole();
     }
   };
 

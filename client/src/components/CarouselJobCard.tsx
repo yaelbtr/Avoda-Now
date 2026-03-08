@@ -250,7 +250,7 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
               {getStartTimeLabel(job.startTime)}
             </div>
             {/* Salary */}
-            {salaryStr && !isVolunteer ? (
+            {job.salary && !isVolunteer ? (
               <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
                 <span style={{ color: OLIVE, fontSize: 17, fontWeight: 800 }}>{salaryStr}</span>
                 <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 2 }}>לשעה</span>

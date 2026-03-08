@@ -660,3 +660,7 @@
 - [x] On / route: if guest has a saved session role, skip role selection and navigate directly
 - [x] Clear session role on logout or when user authenticates
 - [x] Add "שנה תפקיד" option so guest can reset their choice and return to role selection
+
+## Role-Based Home Pages
+- [x] After role selection: navigate to / which renders HomeWorker or HomeEmployer based on role
+- [x] No new pages needed — Home.tsx already handles role-based rendering

@@ -52,10 +52,10 @@ function Router() {
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
     // RoleSelectionScreen already sent the server mutation (for authenticated users).
-    // Update local state so needsRoleSelection becomes false, then navigate directly.
+    // Update local state so needsRoleSelection becomes false, then navigate to home
+    // which renders HomeWorker or HomeEmployer based on the chosen role.
     setLocalModeOnly(mode);
-    if (mode === "worker") navigate("/find-jobs");
-    else navigate("/post-job");
+    navigate("/");
   };
 
   // Derive a stable segment key so that /job/1 and /job/2 share the same

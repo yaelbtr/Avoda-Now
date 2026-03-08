@@ -39,6 +39,8 @@ export const users = mysqlTable("users", {
   preferredCity: varchar("preferredCity", { length: 100 }),
   /** Short bio / note from worker */
   workerBio: text("workerBio"),
+  /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */
+  notificationPrefs: mysqlEnum("notificationPrefs", ["both", "push_only", "sms_only", "none"]).default("both").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

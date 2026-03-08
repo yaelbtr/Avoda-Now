@@ -54,6 +54,14 @@ vi.mock("./db", () => ({
   getWorkerProfile: vi.fn(),
   updateWorkerProfile: vi.fn(),
   getWorkersMatchingJob: vi.fn().mockResolvedValue([]),
+  getNotificationPrefs: vi.fn().mockResolvedValue("both"),
+  updateNotificationPrefs: vi.fn(),
+  savePushSubscription: vi.fn(),
+  deletePushSubscriptionByEndpoint: vi.fn(),
+  getMyJobsWithPendingCounts: vi.fn().mockResolvedValue([]),
+  getMyApplications: vi.fn().mockResolvedValue([]),
+  getUnreadApplicationsCount: vi.fn().mockResolvedValue(0),
+  getApplicationsForJobWithDistance: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("./sms", () => ({

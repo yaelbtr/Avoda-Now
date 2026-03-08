@@ -604,3 +604,30 @@
 - [x] Frontend: sort toggle — חדש לישן / ישן לחדש
 - [x] Frontend: collapsible filter bar (Filter icon in header)
 - [x] Frontend: AnimatePresence exit animation on cards when filter changes
+
+## Push to Employer & Notification Settings
+
+- [ ] DB: add notificationPrefs column to users table (enum: push_only / sms_only / both / none)
+- [ ] DB: run migration
+- [ ] Server: user.updateNotificationPrefs mutation — saves preference for current user
+- [ ] Server: applyToJob — send Push to employer if notificationPrefs includes push
+- [ ] Server: applyToJob — send SMS to employer if notificationPrefs includes sms (existing batched logic)
+- [ ] Frontend: notification settings section in /profile page
+- [ ] Frontend: toggle cards for Push / SMS / Both / None with current state
+- [ ] Frontend: subscribe to push when user selects Push or Both
+- [ ] Frontend: unsubscribe from push when user selects SMS-only or None
+- [ ] Vitest: tests for updateNotificationPrefs procedure
+
+## Push to Employer & Notification Settings [DONE]
+- [x] DB: notificationPrefs column on users table (enum: both/push_only/sms_only/none, default both)
+- [x] DB: migration applied
+- [x] Server: getNotificationPrefs(userId) DB helper
+- [x] Server: updateNotificationPrefs(userId, prefs) DB helper
+- [x] Server: user.getNotificationPrefs query procedure
+- [x] Server: user.updateNotificationPrefs mutation procedure
+- [x] Server: applyToJob respects employer's notificationPrefs — sends SMS only if both/sms_only, Push only if both/push_only
+- [x] Server: Push to employer on new application — title "מועמד חדש! 🎉", link to /jobs/:id/applications
+- [x] Frontend: WorkerProfile — notification settings section with 4 options (הכל/Push/SMS/כבוי)
+- [x] Frontend: warning shown when "כבוי" selected
+- [x] Frontend: hint shown when "push_only" selected (to enable browser notifications)
+- [x] All 114 tests pass

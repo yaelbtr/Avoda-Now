@@ -1154,3 +1154,28 @@ export async function deletePushSubscriptionByEndpoint(endpoint: string): Promis
     .delete(pushSubscriptions)
     .where(eq(pushSubscriptions.endpoint, endpoint));
 }
+
+// ── Notification Preferences helpers ─────────────────────────────────────────
+/** Returns the notification preference for a user (defaults to "both") */
+export async function getNotificationPrefs(
+  userId: number
+): Promise<"both" | "push_only" | "sms_only" | "none"> {
+  const db = await getDb();
+  if (!db) return "both";
+  const result = await db
+    .select({ notificationPrefs: users.notificationPrefs })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return result[0]?.notificationPrefs ?? "both";
+}
+
+/** Update the notification preference for a user */
+export async function updateNotificationPrefs(
+  userId: number,
+  prefs: "both" | "push_only" | "sms_only" | "none"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ notificationPrefs: prefs }).where(eq(users.id, userId));
+}

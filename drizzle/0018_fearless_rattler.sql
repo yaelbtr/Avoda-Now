@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `notificationPrefs` enum('both','push_only','sms_only','none') DEFAULT 'both' NOT NULL;

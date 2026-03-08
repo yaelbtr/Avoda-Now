@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
-import { User, MapPin, Briefcase, Save, ArrowRight } from "lucide-react";
+import { User, MapPin, Briefcase, Save, ArrowRight, Bell, MessageSquare, BellOff } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 
 const ALL_CATEGORIES = [
@@ -15,11 +15,44 @@ const ALL_CATEGORIES = [
   ...SPECIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label, icon: c.icon })),
 ];
 
+type NotifPref = "both" | "push_only" | "sms_only" | "none";
+
+const NOTIF_OPTIONS: { value: NotifPref; label: string; description: string; icon: React.ReactNode }[] = [
+  {
+    value: "both",
+    label: "הכל",
+    description: "Push + SMS",
+    icon: <Bell className="h-4 w-4" />,
+  },
+  {
+    value: "push_only",
+    label: "Push בלבד",
+    description: "התראות דפדפן בלבד",
+    icon: <Bell className="h-4 w-4" />,
+  },
+  {
+    value: "sms_only",
+    label: "SMS בלבד",
+    description: "הודעות טקסט בלבד",
+    icon: <MessageSquare className="h-4 w-4" />,
+  },
+  {
+    value: "none",
+    label: "כבוי",
+    description: "ללא הודעות",
+    icon: <BellOff className="h-4 w-4" />,
+  },
+];
+
 export default function WorkerProfile() {
   const { isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
 
   const profileQuery = trpc.user.getProfile.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
+  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
@@ -31,10 +64,19 @@ export default function WorkerProfile() {
     onError: () => toast.error("שגיאה בשמירת הפרופיל"),
   });
 
+  const updateNotifPrefsMutation = trpc.user.updateNotificationPrefs.useMutation({
+    onSuccess: () => {
+      toast.success("הגדרות ההתראות עודכנו");
+      notifPrefsQuery.refetch();
+    },
+    onError: () => toast.error("שגיאה בשמירת הגדרות ההתראות"),
+  });
+
   const [name, setName] = useState("");
   const [preferredCity, setPreferredCity] = useState("");
   const [workerBio, setWorkerBio] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [notifPref, setNotifPref] = useState<NotifPref>("both");
 
   // Populate form from server data
   useEffect(() => {
@@ -45,6 +87,12 @@ export default function WorkerProfile() {
       setSelectedCategories(profileQuery.data.preferredCategories ?? []);
     }
   }, [profileQuery.data]);
+
+  useEffect(() => {
+    if (notifPrefsQuery.data) {
+      setNotifPref(notifPrefsQuery.data.prefs);
+    }
+  }, [notifPrefsQuery.data]);
 
   if (!isAuthenticated) {
     return (
@@ -71,6 +119,11 @@ export default function WorkerProfile() {
       preferredCity: preferredCity.trim() || null,
       workerBio: workerBio.trim() || null,
     });
+  };
+
+  const handleNotifPrefChange = (pref: NotifPref) => {
+    setNotifPref(pref);
+    updateNotifPrefsMutation.mutate({ prefs: pref });
   };
 
   const isLoading = profileQuery.isLoading;
@@ -209,6 +262,52 @@ export default function WorkerProfile() {
             )}
             שמור פרופיל
           </AppButton>
+
+          {/* ── Notification Settings ─────────────────────────────── */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h2 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+              <Bell className="h-4 w-4 text-primary" />
+              הגדרות התראות
+            </h2>
+            <p className="text-xs text-muted-foreground mb-4">
+              בחר כיצד תרצה לקבל עדכונים על מועמדויות ומשרות
+            </p>
+
+            <div className="grid grid-cols-2 gap-2">
+              {NOTIF_OPTIONS.map((opt) => {
+                const isActive = notifPref === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleNotifPrefChange(opt.value)}
+                    disabled={updateNotifPrefsMutation.isPending}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border-2 text-right transition-all ${
+                      isActive
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-medium text-sm">
+                      {opt.icon}
+                      {opt.label}
+                    </div>
+                    <span className="text-xs opacity-70">{opt.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {notifPref === "none" && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 border border-amber-200 dark:border-amber-800">
+                ⚠️ לא תקבל שום עדכון על מועמדויות ומשרות חדשות
+              </p>
+            )}
+            {notifPref === "push_only" && (
+              <p className="text-xs text-muted-foreground mt-3">
+                💡 ודא שהתראות דפדפן מופעלות בדף "מועמדויות שלי"
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

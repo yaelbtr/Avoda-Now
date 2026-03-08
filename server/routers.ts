@@ -51,6 +51,8 @@ import {
   getUnreadApplicationsCount,
   savePushSubscription,
   deletePushSubscriptionByEndpoint,
+  getNotificationPrefs,
+  updateNotificationPrefs,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -460,14 +462,30 @@ const jobsRouter = router({
       // Record the application
       await createApplication(ctx.user.id, input.jobId, input.message);
 
-      // Batched notification: collect applications for 10 min, then send one summary SMS.
-      // If BATCH_THRESHOLD (3) applicants arrive before the window closes, send immediately.
-      if (job.contactPhone) {
+      // Determine employer's notification preferences (only if postedBy is set)
+      const employerPrefs = job.postedBy != null
+        ? await getNotificationPrefs(job.postedBy)
+        : "both";
+
+      // Batched SMS notification (respects prefs)
+      if (job.contactPhone && (employerPrefs === "both" || employerPrefs === "sms_only")) {
         import("./notificationBatcher").then(({ recordApplicationAndNotify }) => {
           recordApplicationAndNotify(input.jobId, job.contactPhone!).catch((err) =>
             console.warn("[Apply] Batch notification error:", err)
           );
         }).catch((err) => console.warn("[Apply] Batcher import error:", err));
+      }
+
+      // Immediate Push notification to employer (respects prefs)
+      if (job.postedBy != null && (employerPrefs === "both" || employerPrefs === "push_only")) {
+        const workerName = ctx.user.name ?? "עובד חדש";
+        const origin = input.origin ?? "";
+        const appUrl = origin ? `${origin}/jobs/${input.jobId}/applications` : `/jobs/${input.jobId}/applications`;
+        sendPushToUser(job.postedBy, {
+          title: "מועמד חדש! 🎉",
+          body: `${workerName} הגיש מועמדות למשרה: ${job.title}`,
+          url: appUrl,
+        }).catch((err) => console.warn("[Apply] Push to employer error:", err));
       }
 
       return { success: true };
@@ -815,6 +833,24 @@ const userRouter = router({
         preferredCity: input.preferredCity,
         workerBio: input.workerBio,
       });
+      return { success: true };
+    }),
+
+  /** Get the current user's notification preferences */
+  getNotificationPrefs: protectedProcedure.query(async ({ ctx }) => {
+    const prefs = await getNotificationPrefs(ctx.user.id);
+    return { prefs };
+  }),
+
+  /** Update the current user's notification preferences */
+  updateNotificationPrefs: protectedProcedure
+    .input(
+      z.object({
+        prefs: z.enum(["both", "push_only", "sms_only", "none"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await updateNotificationPrefs(ctx.user.id, input.prefs);
       return { success: true };
     }),
 });

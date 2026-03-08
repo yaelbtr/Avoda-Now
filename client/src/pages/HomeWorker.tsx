@@ -139,6 +139,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPausedRef = useRef(false);
+  // Touch swipe state
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartScrollRef = useRef<number>(0);
+  const touchStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -685,8 +689,38 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
                 onMouseEnter={() => { isPausedRef.current = true; }}
                 onMouseLeave={() => { isPausedRef.current = false; }}
-                onTouchStart={() => { isPausedRef.current = true; }}
-                onTouchEnd={() => { setTimeout(() => { isPausedRef.current = false; }, 2000); }}
+                onTouchStart={(e) => {
+                  isPausedRef.current = true;
+                  touchStartXRef.current = e.touches[0].clientX;
+                  touchStartScrollRef.current = e.currentTarget.scrollLeft;
+                  touchStartTimeRef.current = Date.now();
+                }}
+                onTouchMove={(e) => {
+                  if (touchStartXRef.current === null) return;
+                  const dx = touchStartXRef.current - e.touches[0].clientX;
+                  e.currentTarget.scrollLeft = touchStartScrollRef.current + dx;
+                }}
+                onTouchEnd={(e) => {
+                  const el = e.currentTarget;
+                  const dx = (touchStartXRef.current ?? 0) - (e.changedTouches[0]?.clientX ?? 0);
+                  const dt = Date.now() - touchStartTimeRef.current;
+                  const velocity = Math.abs(dx) / dt; // px/ms
+                  const cardWidth = 288 + 16;
+                  // Snap: flick (velocity > 0.3) or drag > half card
+                  if (velocity > 0.3 || Math.abs(dx) > cardWidth / 2) {
+                    const direction = dx > 0 ? 1 : -1; // 1 = scroll right (RTL: next), -1 = scroll left (RTL: prev)
+                    const targetIdx = Math.max(0, Math.min(carouselTotal - 1, activeCarouselIdx + direction));
+                    el.scrollTo({ left: targetIdx * cardWidth, behavior: "smooth" });
+                    setActiveCarouselIdx(targetIdx);
+                  } else {
+                    // Snap back to nearest
+                    const nearest = Math.round(el.scrollLeft / cardWidth);
+                    el.scrollTo({ left: nearest * cardWidth, behavior: "smooth" });
+                    setActiveCarouselIdx(nearest);
+                  }
+                  touchStartXRef.current = null;
+                  setTimeout(() => { isPausedRef.current = false; }, 2000);
+                }}
                 onScroll={(e) => {
                   const el = e.currentTarget;
                   const cardWidth = el.scrollWidth / carouselTotal;

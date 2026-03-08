@@ -573,3 +573,12 @@
 - [x] Frontend: Navbar — "מועמדויות" link in workerLinks + dropdown menu item
 - [x] Frontend: route /my-applications in App.tsx
 - [x] All 114 tests pass
+
+## Unread Applications Badge (Nav)
+- [x] DB: updatedAt column already exists in applications table (onUpdateNow) — no migration needed
+- [x] Server: jobs.unreadApplicationsCount — count apps with updatedAt > lastSeenAt AND status != pending
+- [x] Frontend: MyApplications stores lastSeenAt = now() in localStorage on mount
+- [x] Frontend: Navbar queries unreadApplicationsCount every 60s, shows red badge on "מועמדויות" link
+- [x] Frontend: badge shown in both desktop nav and mobile menu
+- [x] Frontend: badge clears when worker visits /my-applications (localStorage updated)
+- [x] All 114 tests pass

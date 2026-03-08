@@ -48,6 +48,7 @@ import {
   getApplicationsForJobWithDistance,
   revealApplicationContact,
   updateApplicationStatus,
+  getUnreadApplicationsCount,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import {
@@ -376,6 +377,12 @@ const jobsRouter = router({
   myApplications: protectedProcedure.query(async ({ ctx }) =>
     getMyApplications(ctx.user.id)
   ),
+  /** Count of unread application status updates since lastSeenAt */
+  unreadApplicationsCount: protectedProcedure
+    .input(z.object({ lastSeenAt: z.date() }))
+    .query(async ({ ctx, input }) =>
+      getUnreadApplicationsCount(ctx.user.id, input.lastSeenAt)
+    ),
 
   /** Jobs starting within the next 24 hours */
   listToday: publicProcedure

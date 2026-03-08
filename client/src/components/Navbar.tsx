@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
 import { AppButton } from "@/components/AppButton";
 import {
@@ -33,6 +34,24 @@ export default function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
+
+  // ── Unread applications badge ────────────────────────────────────────────
+  // lastSeenAt is stored in localStorage when worker visits /my-applications
+  const lastSeenAt = useMemo(() => {
+    if (typeof window === "undefined") return new Date(0);
+    const stored = localStorage.getItem("myApplicationsLastSeen");
+    return stored ? new Date(stored) : new Date(0);
+  }, []);
+
+  const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
+    { lastSeenAt },
+    {
+      enabled: isAuthenticated && userMode === "worker",
+      refetchInterval: 60_000, // re-check every minute
+      staleTime: 30_000,
+    }
+  );
+  const hasUnread = (unreadCount ?? 0) > 0;
 
   const workerLinks = [
     { href: "/find-jobs", label: "חפש עבודה", icon: MapPin },
@@ -161,6 +180,25 @@ export default function Navbar() {
                     >
                       <link.icon className="h-3.5 w-3.5 shrink-0" />
                       {link.label}
+                      {link.href === "/my-applications" && hasUnread && (
+                        <span
+                          style={{
+                            background: "oklch(0.60 0.22 25)",
+                            color: "white",
+                            fontSize: "0.6rem",
+                            fontWeight: 700,
+                            borderRadius: "9999px",
+                            minWidth: "1.1rem",
+                            height: "1.1rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "0 0.3rem",
+                          }}
+                        >
+                          {unreadCount}
+                        </span>
+                      )}
                     </motion.span>
                   </Link>
                 );
@@ -409,6 +447,26 @@ export default function Navbar() {
                         >
                           <link.icon className="h-4 w-4 shrink-0" />
                           {link.label}
+                          {link.href === "/my-applications" && hasUnread && (
+                            <span
+                              style={{
+                                background: "oklch(0.60 0.22 25)",
+                                color: "white",
+                                fontSize: "0.6rem",
+                                fontWeight: 700,
+                                borderRadius: "9999px",
+                                minWidth: "1.1rem",
+                                height: "1.1rem",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "0 0.3rem",
+                                marginRight: "auto",
+                              }}
+                            >
+                              {unreadCount}
+                            </span>
+                          )}
                         </span>
                       </Link>
                     </motion.div>

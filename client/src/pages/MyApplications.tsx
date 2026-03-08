@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,6 +108,13 @@ function CardSkeleton() {
 export default function MyApplications() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
+
+  // Mark all application updates as "seen" when the worker visits this page
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem("myApplicationsLastSeen", new Date().toISOString());
+    }
+  }, [isAuthenticated]);
 
   const { data: applications, isLoading } = trpc.jobs.myApplications.useQuery(undefined, {
     enabled: isAuthenticated,

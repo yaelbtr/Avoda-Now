@@ -1102,3 +1102,27 @@ export async function markBatchSent(batchId: number) {
       )
     );
 }
+
+/**
+ * Returns the count of applications for a worker where the status was updated
+ * after the given lastSeenAt timestamp. Used to drive the unread badge in the nav.
+ * Only counts meaningful status changes (accepted/rejected/viewed), not initial creation.
+ */
+export async function getUnreadApplicationsCount(
+  workerId: number,
+  lastSeenAt: Date
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ cnt: count() })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.workerId, workerId),
+        sql`${applications.updatedAt} > ${lastSeenAt}`,
+        sql`${applications.status} != 'pending'`
+      )
+    );
+  return rows[0]?.cnt ?? 0;
+}

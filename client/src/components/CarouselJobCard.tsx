@@ -255,9 +255,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
                 <span style={{ color: OLIVE, fontSize: 17, fontWeight: 800 }}>{salaryStr}</span>
                 <span style={{ color: "#9ca3af", fontSize: 10, fontWeight: 600, marginRight: 2 }}>לשעה</span>
               </div>
-            ) : !isVolunteer ? (
-              <span style={{ color: "#9ca3af", fontSize: 11 }}>שכר לא צוין</span>
-            ) : null}
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Heart size={13} style={{ color: "oklch(0.82 0.15 80.8)", fill: "oklch(0.82 0.15 80.8)", flexShrink: 0 }} />
+                <span style={{ color: "oklch(0.82 0.15 80.8)", fontSize: 12, fontWeight: 800 }}>התנדבות</span>
+              </div>
+            )}
           </div>
         )}
 

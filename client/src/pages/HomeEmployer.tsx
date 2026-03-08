@@ -73,7 +73,7 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      style={{ display: "flex", gap: 6, marginTop: 20, direction: "rtl", width: "100%" }}
+      style={{ display: "flex", gap: 6, marginTop: 0, marginBottom: 12, direction: "rtl", width: "100%", alignSelf: "stretch" }}
     >
       {stats.map(({ label, value, icon: Icon }, i) => (
         <motion.div
@@ -90,17 +90,16 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
             alignItems: "center",
             justifyContent: "center",
             gap: 4,
-            padding: "10px 4px",
+            padding: "12px 4px",
             borderRadius: 14,
-            background: "rgba(0,0,0,0.40)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
+            background: "oklch(0.97 0.02 122)",
+            border: "1px solid oklch(0.88 0.05 122)",
+            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
           }}
         >
-          <Icon style={{ width: 18, height: 18, color: "oklch(0.88 0.20 80)", flexShrink: 0 }} />
-          <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "#ffffff", letterSpacing: "-0.3px" }}>{value}</span>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.80)", textAlign: "center", lineHeight: 1.2, wordBreak: "keep-all" }}>{label}</span>
+          <Icon style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+          <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>{value}</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2, wordBreak: "keep-all" }}>{label}</span>
         </motion.div>
       ))}
     </motion.div>
@@ -188,8 +187,8 @@ export default function HomeEmployer() {
           }}
         />
 
-        {/* Content — RTL right-aligned */}
-        <div className="relative z-10 flex flex-col justify-end items-end text-right px-5 pt-14 pb-8" style={{ minHeight: "480px" }}>
+        {/* Content — centered */}
+        <div className="relative z-10 flex flex-col justify-end items-center text-center px-5 pt-14 pb-8" style={{ minHeight: "480px" }}>
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -224,12 +223,12 @@ export default function HomeEmployer() {
             פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
           </motion.p>
 
-          <StatsRow activeJobs={activeJobs} workers={workers.length} />
         </div>
       </section>
 
-      {/* Mobile CTA */}
-      <div className="relative z-10 flex flex-col items-end text-right px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
+      {/* Mobile Stats + CTA */}
+      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
+        <StatsRow activeJobs={activeJobs} workers={workers.length} />
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
           className="w-full flex flex-col gap-3"

@@ -12,6 +12,7 @@ import {
   workerAvailability,
   InsertWorkerAvailability,
   applications,
+  notificationBatches,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -896,4 +897,95 @@ export async function updateApplicationStatus(
       .set({ status: "rejected" })
       .where(eq(applications.id, id));
   }
+}
+
+// ── Notification Batch helpers ────────────────────────────────────────────────
+
+/**
+ * Returns the active (pending) batch for a job, or null if none exists.
+ */
+export async function getPendingBatchForJob(jobId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(notificationBatches)
+    .where(
+      and(
+        eq(notificationBatches.jobId, jobId),
+        eq(notificationBatches.status, "pending")
+      )
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Creates a new pending batch for a job.
+ * scheduledAt = now + windowMs (default 10 minutes).
+ */
+export async function createNotificationBatch(
+  jobId: number,
+  employerPhone: string,
+  windowMs = 10 * 60 * 1000
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const scheduledAt = new Date(Date.now() + windowMs);
+  await db.insert(notificationBatches).values({
+    jobId,
+    employerPhone,
+    pendingCount: 1,
+    scheduledAt,
+    status: "pending",
+  });
+  // Return the newly created row
+  const rows = await db
+    .select()
+    .from(notificationBatches)
+    .where(
+      and(
+        eq(notificationBatches.jobId, jobId),
+        eq(notificationBatches.status, "pending")
+      )
+    )
+    .orderBy(desc(notificationBatches.createdAt))
+    .limit(1);
+  return rows[0];
+}
+
+/**
+ * Increments pendingCount on an existing batch and returns the updated row.
+ */
+export async function incrementBatchCount(batchId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(notificationBatches)
+    .set({ pendingCount: sql`pendingCount + 1` })
+    .where(eq(notificationBatches.id, batchId));
+  const rows = await db
+    .select()
+    .from(notificationBatches)
+    .where(eq(notificationBatches.id, batchId))
+    .limit(1);
+  return rows[0];
+}
+
+/**
+ * Marks a batch as sent (idempotent — safe to call multiple times).
+ * Only updates rows that are still "pending" to prevent double-send.
+ */
+export async function markBatchSent(batchId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(notificationBatches)
+    .set({ status: "sent", sentAt: new Date() })
+    .where(
+      and(
+        eq(notificationBatches.id, batchId),
+        eq(notificationBatches.status, "pending")
+      )
+    );
 }

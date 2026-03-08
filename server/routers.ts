@@ -433,24 +433,14 @@ const jobsRouter = router({
       // Record the application
       await createApplication(ctx.user.id, input.jobId, input.message);
 
-      // Fetch the newly created application ID for the SMS link
-      const newApp = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
-
-      // Send SMS notification to employer (fire-and-forget)
-      if (job.contactPhone && newApp) {
-        const origin = input.origin ?? "https://job-now.manus.space";
-        const applicationUrl = `${origin}/applications/${newApp.id}`;
-        const workerName = ctx.user.name ?? "עובד";
-        const smsBody =
-          `📋 הגשת מועמדות חדשה ב-Job-Now!\n` +
-          `${workerName} הגיש/ה מועמדות למשרה: "${job.title}"\n` +
-          `לצפייה בפרופיל המועמד:\n${applicationUrl}`;
-
-        import("./sms").then(({ sendSms }) => {
-          sendSms(job.contactPhone!, smsBody).catch((err) =>
-            console.warn("[Apply] Failed to send SMS to employer:", err)
+      // Batched notification: collect applications for 10 min, then send one summary SMS.
+      // If BATCH_THRESHOLD (3) applicants arrive before the window closes, send immediately.
+      if (job.contactPhone) {
+        import("./notificationBatcher").then(({ recordApplicationAndNotify }) => {
+          recordApplicationAndNotify(input.jobId, job.contactPhone!).catch((err) =>
+            console.warn("[Apply] Batch notification error:", err)
           );
-        }).catch((err) => console.warn("[Apply] SMS import error:", err));
+        }).catch((err) => console.warn("[Apply] Batcher import error:", err));
       }
 
       return { success: true };

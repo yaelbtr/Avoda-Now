@@ -530,3 +530,13 @@
 - [x] MyJobs: accepted applicant shows Phone + WhatsApp buttons
 - [x] MyJobs: rejected applicant shows greyed-out state
 - [x] Vitest: 5 new tests for updateApplicationStatus (accept/reject/forbidden/not-found/auth) — 106 total
+
+## Batched Application Notifications
+- [x] DB: notification_batches table (jobId, employerPhone, pendingCount, scheduledAt, sentAt, status)
+- [x] DB: run migration
+- [x] Server: on applyToJob — upsert batch row, increment pendingCount
+- [x] Server: if pendingCount >= 3 → flush immediately (send SMS + mark sent)
+- [x] Server: if pendingCount < 3 → schedule flush after 10 min window (setTimeout)
+- [x] Server: flush sends SMS "X עובדים חדשים הגישו מועמדות למשרה שלך" + link /jobs/{id}/applications
+- [x] Server: prevent double-send (DB guard: only updates status=pending rows)
+- [x] Vitest: 8 tests for batch creation, threshold flush, window flush, double-send guard, singular/plural SMS — 114 total

@@ -190,3 +190,30 @@ export const workerAvailability = mysqlTable("worker_availability", {
 
 export type WorkerAvailability = typeof workerAvailability.$inferSelect;
 export type InsertWorkerAvailability = typeof workerAvailability.$inferInsert;
+
+/**
+ * Batches application notifications per job so the employer receives
+ * a single summary SMS instead of one per applicant.
+ *
+ * Lifecycle:
+ *  pending  → batch is collecting; a flush is scheduled for scheduledAt
+ *  sent     → SMS was dispatched
+ */
+export const notificationBatches = mysqlTable("notification_batches", {
+  id: int("id").autoincrement().primaryKey(),
+  jobId: int("jobId").notNull().references(() => jobs.id),
+  /** Phone number of the employer who posted the job */
+  employerPhone: varchar("employerPhone", { length: 20 }).notNull(),
+  /** How many new applications have been collected in this batch */
+  pendingCount: int("pendingCount").notNull().default(0),
+  /** When the delayed flush is scheduled to fire (now + 10 min) */
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  /** When the SMS was actually sent (null = not yet sent) */
+  sentAt: timestamp("sentAt"),
+  /** pending | sent */
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type NotificationBatch = typeof notificationBatches.$inferSelect;
+export type InsertNotificationBatch = typeof notificationBatches.$inferInsert;

@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Heart, Send } from "lucide-react";
+import { MapPin, Heart, Send, Building2 } from "lucide-react";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -188,25 +188,18 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
           {job.title}
         </h3>
 
-        {/* Location */}
+        {/* Business name */}
+        {job.businessName && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, color: `${OLIVE}bb`, fontSize: 11, fontWeight: 500, marginBottom: 3, direction: "rtl" }}>
+            <Building2 size={11} style={{ color: OLIVE, flexShrink: 0 }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>{job.businessName}</span>
+          </div>
+        )}
+        {/* Address */}
         {location && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              gap: 4,
-              color: `${OLIVE}bb`,
-              fontSize: 11,
-              fontWeight: 500,
-              marginBottom: 10,
-              direction: "rtl",
-            }}
-          >
-            <MapPin size={12} style={{ color: OLIVE, flexShrink: 0 }} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>
-              {job.businessName ? `${job.businessName}, ` : ""}{location}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, color: `${OLIVE}bb`, fontSize: 11, fontWeight: 500, marginBottom: 10, direction: "rtl" }}>
+            <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>{job.city ?? job.address}</span>
           </div>
         )}
 

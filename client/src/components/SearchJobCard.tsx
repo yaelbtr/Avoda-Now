@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Heart, Send, Navigation } from "lucide-react";
+import { MapPin, Heart, Send, Navigation, Building2 } from "lucide-react";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -194,43 +194,20 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
           >
             {job.title}
           </h3>
+          {job.businessName && (
+            <div style={{ display: "flex", alignItems: "center", gap: 3, color: `${OLIVE}99`, fontSize: 11, fontWeight: 500, marginBottom: 2, direction: "rtl" }}>
+              <Building2 size={10} style={{ color: OLIVE, flexShrink: 0 }} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.businessName}</span>
+            </div>
+          )}
           {location && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                gap: 3,
-                color: `${OLIVE}99`,
-                fontSize: 11,
-                fontWeight: 500,
-                direction: "rtl",
-              }}
-            >
-              <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {job.businessName ? `${job.businessName}, ` : ""}{location}
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 3, color: `${OLIVE}99`, fontSize: 11, fontWeight: 500, direction: "rtl" }}>
+              <MapPin size={10} style={{ color: OLIVE, flexShrink: 0 }} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.city ?? job.address}</span>
               {showDistance && job.distance != null && (
-                <span
-                  style={{
-                    marginRight: 4,
-                    background: "#f0f4eb",
-                    color: OLIVE,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    padding: "1px 6px",
-                    borderRadius: 8,
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
-                >
+                <span style={{ marginRight: 4, background: "#f0f4eb", color: OLIVE, fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 8, flexShrink: 0, display: "flex", alignItems: "center", gap: 2 }}>
                   <Navigation size={9} />
-                  {job.distance < 1
-                    ? `${Math.round(job.distance * 1000)}מ'`
-                    : `${job.distance.toFixed(1)}ק"מ`}
+                  {job.distance < 1 ? `${Math.round(job.distance * 1000)}מ'` : `${job.distance.toFixed(1)}ק"מ`}
                 </span>
               )}
             </div>

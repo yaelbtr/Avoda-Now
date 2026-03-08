@@ -6,16 +6,31 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
+
 import {
   User, MapPin, Briefcase, Save, ArrowRight,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText, Plus, X,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 
-const ALL_CATEGORIES = [
-  ...JOB_CATEGORIES,
-  ...SPECIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label, icon: c.icon })),
+// Spec-required preference categories for worker profile matching
+const PREFERENCE_CATEGORIES = [
+  { value: "delivery", label: "שליחויות", icon: "🚴" },
+  { value: "warehouse", label: "מחסן ולוגיסטיקה", icon: "📦" },
+  { value: "cleaning", label: "ניקיון וסידור", icon: "🧹" },
+  { value: "kitchen", label: "מסעדות ואירועים", icon: "🍳" },
+  { value: "childcare", label: "טיפול בילדים", icon: "👶" },
+  { value: "petcare", label: "טיפול בבעלי חיים", icon: "🐾" },
+  { value: "homehelp", label: "עזרה בבית", icon: "🏠" },
+  { value: "moving", label: "הובלות וסבלים", icon: "🚚" },
+  { value: "maintenance", label: "תחזוקה ותיקונים", icon: "🔧" },
+  { value: "office", label: "עבודה משרדית", icon: "💻" },
+  { value: "sales", label: "מכירות ושירות", icon: "🛍️" },
+  { value: "construction", label: "בנייה", icon: "🏗️" },
+  { value: "security", label: "אבטחה", icon: "🛡️" },
+  { value: "eldercare", label: "טיפול בקשישים", icon: "🧓" },
+  { value: "agriculture", label: "חקלאות", icon: "🌾" },
+  { value: "other", label: "אחר", icon: "💼" },
 ];
 
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
@@ -282,7 +297,7 @@ export default function WorkerProfile() {
                 בחר את הקטגוריות שאתה מוכן לעבוד בהן
               </p>
               <div className="flex flex-wrap gap-2">
-                {ALL_CATEGORIES.map((cat) => {
+                {PREFERENCE_CATEGORIES.map((cat) => {
                   const isSelected = selectedCategories.includes(cat.value);
                   return (
                     <button

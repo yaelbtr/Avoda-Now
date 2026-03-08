@@ -209,6 +209,8 @@ export default function PostJob() {
       isUrgent: data.isUrgent ?? false,
       isLocalBusiness: data.isLocalBusiness ?? false,
       showPhone: data.showPhone ?? false,
+      jobLocationMode,
+      jobSearchRadiusKm,
     });
   };
 

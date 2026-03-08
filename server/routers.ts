@@ -240,6 +240,10 @@ const jobInputSchema = z.object({
   jobTags: z.array(z.string()).optional(),
   /** ISO string for exact start date/time */
   startDateTime: z.string().datetime({ offset: true }).optional(),
+  /** Location mode for worker search: radius around job location or specific city */
+  jobLocationMode: z.enum(["radius", "city"]).default("radius"),
+  /** Search radius in km when jobLocationMode = radius */
+  jobSearchRadiusKm: z.number().int().min(1).max(100).default(5),
 });
 
 const jobsRouter = router({
@@ -320,9 +324,26 @@ const jobsRouter = router({
         postedBy: ctx.user.id,
         status: "active",
         jobTags: input.jobTags ?? [input.category],
+        jobLocationMode: input.jobLocationMode ?? "radius",
+        jobSearchRadiusKm: input.jobSearchRadiusKm ?? 5,
       });
-
-      // Fire-and-forget: notify matching workers via SMS (does not block the response)
+      // Fire-and-forget: call external matching API to pre-compute matching workers
+      const MATCHING_API_URL = process.env.MATCHING_API_URL;
+      if (MATCHING_API_URL) {
+        fetch(`${MATCHING_API_URL}/match-workers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            job_id: job.id,
+            job_description: input.description,
+            latitude: input.latitude,
+            longitude: input.longitude,
+            city: city,
+            location_mode: input.jobLocationMode ?? "radius",
+          }),
+        }).catch((err) => console.warn("[MatchAPI] Pre-compute call failed:", err));
+      }
+      // Fire-and-forget: notify matching workers via SMS (does not block the response))
       getWorkersMatchingJob(input.category, city, ctx.user.id)
         .then((workers) =>
           sendJobAlerts(
@@ -482,6 +503,12 @@ const jobsRouter = router({
           body: JSON.stringify({ job_id: input.jobId, worker_id: input.workerId }),
         });
         if (!res.ok) throw new Error(`Job offer API error: ${res.status}`);
+        // Notify worker via Push
+        sendPushToUser(input.workerId, {
+          title: "💼 הצעת עבודה חדשה!",
+          body: `מעסיק שלח לך הצעת עבודה למשרה: ${job.title}`,
+          url: "/my-applications",
+        }).catch((e) => console.warn("[JobOffer] Push to worker failed:", e));
         return { success: true, stub: false };
       } catch (err) {
         console.warn("[JobOffer] External API call failed:", err);

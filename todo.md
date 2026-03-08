@@ -752,3 +752,10 @@
 ## Worker Profile — Custom Job Tags
 - [x] Add free-text custom tags input to WorkerProfile matching preferences section
 - [x] Wire custom tags to existing workerTags field in DB via updateProfile
+
+## Spec Compliance Fixes
+- [x] Add jobLocationMode + jobSearchRadiusKm to PostJob create mutation payload
+- [x] Add jobLocationMode + jobSearchRadiusKm to jobInputSchema in routers.ts
+- [x] Fire matching API (POST /match-workers) automatically on job creation (fire-and-forget)
+- [x] Add Push notification trigger to worker when sendJobOffer is called
+- [x] Fix WorkerProfile categories to match spec list (add: טיפול בבעלי חיים, עזרה בבית, הובלות וסבלים, תחזוקה ותיקונים, עבודה משרדית, מכירות ושירות)

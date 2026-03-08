@@ -19,6 +19,8 @@ vi.mock("./db", () => ({
   getApplicationByWorkerAndJob: vi.fn(),
   createApplication: vi.fn(),
   getApplicationsForJob: vi.fn(),
+  getApplicationById: vi.fn(),
+  revealApplicationContact: vi.fn(),
   getPublicWorkerProfile: vi.fn(),
   // Other functions used by the router (return safe defaults)
   getActiveJobs: vi.fn().mockResolvedValue([]),
@@ -346,6 +348,129 @@ describe("user.getPublicProfile", () => {
     vi.mocked(db.getPublicWorkerProfile).mockResolvedValue(null);
 
     await expect(caller.user.getPublicProfile({ userId: 999 })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+});
+
+// ── Helper: make a mock application row ──────────────────────────────────────
+function makeAppRow(overrides: Partial<{
+  id: number;
+  jobId: number;
+  workerId: number;
+  jobPostedBy: number;
+  contactRevealed: boolean;
+  revealedAt: Date | null;
+  workerPhone: string | null;
+  workerName: string | null;
+  jobTitle: string;
+}> = {}) {
+  return {
+    id: 10,
+    jobId: 1,
+    workerId: 20,
+    status: "pending" as const,
+    message: null,
+    contactRevealed: false,
+    revealedAt: null,
+    createdAt: new Date(),
+    workerName: "Test Worker",
+    workerPhone: "+972501234567",
+    workerBio: null,
+    workerPreferredCity: "Tel Aviv",
+    workerPreferredCategories: ["delivery"],
+    workerTags: null,
+    workerCreatedAt: new Date(),
+    jobPostedBy: 99,
+    jobTitle: "Test Job",
+    ...overrides,
+  };
+}
+
+describe("jobs.getApplication", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns application without phone when contactRevealed=false", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 }); // job owner
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99, contactRevealed: false }));
+    const result = await caller.jobs.getApplication({ id: 10 });
+    expect(result.workerPhone).toBeNull();
+    expect(result.contactRevealed).toBe(false);
+  });
+
+  it("returns phone when contactRevealed=true", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(
+      makeAppRow({ jobPostedBy: 99, contactRevealed: true, revealedAt: new Date() })
+    );
+    const result = await caller.jobs.getApplication({ id: 10 });
+    expect(result.workerPhone).toBe("+972501234567");
+  });
+
+  it("throws FORBIDDEN for non-owner", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 42 }); // not the owner
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    await expect(caller.jobs.getApplication({ id: 10 })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+  });
+
+  it("throws NOT_FOUND when application does not exist", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(null);
+    await expect(caller.jobs.getApplication({ id: 999 })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+});
+
+describe("jobs.revealContact", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("reveals contact and returns phone for job owner", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    vi.mocked(db.revealApplicationContact).mockResolvedValue(undefined);
+    const result = await caller.jobs.revealContact({ id: 10 });
+    expect(result.success).toBe(true);
+    expect(result.workerPhone).toBe("+972501234567");
+    expect(db.revealApplicationContact).toHaveBeenCalledWith(10);
+  });
+
+  it("throws FORBIDDEN for non-owner", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 42 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(makeAppRow({ jobPostedBy: 99 }));
+    await expect(caller.jobs.revealContact({ id: 10 })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    expect(db.revealApplicationContact).not.toHaveBeenCalled();
+  });
+
+  it("throws NOT_FOUND when application does not exist", async () => {
+    const { appRouter } = await import("./routers");
+    const user = makeUser({ id: 99 });
+    const ctx = makeCtx(user);
+    const caller = appRouter.createCaller(ctx);
+    vi.mocked(db.getApplicationById).mockResolvedValue(null);
+    await expect(caller.jobs.revealContact({ id: 999 })).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });

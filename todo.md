@@ -508,3 +508,15 @@
 - [x] Frontend: /worker/:id public profile page for employers to view applicants
 - [x] App.tsx: route /worker/:id → PublicWorkerProfile page
 - [x] Vitest: 11 tests for application system (applyToJob, checkApplied, getApplications, getPublicProfile)
+
+## Controlled Contact Reveal for Applications
+- [x] DB: add contactRevealed boolean (default false) to applications table
+- [x] DB: add revealedAt timestamp to applications table
+- [x] DB: run migration
+- [x] Server: jobs.revealContact mutation — sets contactRevealed=true + revealedAt, only job owner
+- [x] Server: jobs.getApplication query — returns application + worker profile, only job owner
+- [x] Server: update applyToJob SMS link to /applications/{id} instead of /worker/{id}
+- [x] Frontend: /applications/:id page — worker profile read-only + "הצג פרטי התקשרות" button
+- [x] Frontend: contact reveal shows Phone (tel:) + WhatsApp (wa.me) buttons
+- [x] Frontend: route /applications/:id in App.tsx
+- [x] Vitest: tests for revealContact and getApplication procedures (7 new tests, 101 total)

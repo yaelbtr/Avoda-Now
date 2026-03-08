@@ -42,6 +42,8 @@ import {
   getApplicationByWorkerAndJob,
   createApplication,
   getApplicationsForJob,
+  getApplicationById,
+  revealApplicationContact,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import {
@@ -430,15 +432,18 @@ const jobsRouter = router({
       // Record the application
       await createApplication(ctx.user.id, input.jobId, input.message);
 
+      // Fetch the newly created application ID for the SMS link
+      const newApp = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
+
       // Send SMS notification to employer (fire-and-forget)
-      if (job.contactPhone) {
+      if (job.contactPhone && newApp) {
         const origin = input.origin ?? "https://job-now.manus.space";
-        const workerProfileUrl = `${origin}/worker/${ctx.user.id}`;
+        const applicationUrl = `${origin}/applications/${newApp.id}`;
         const workerName = ctx.user.name ?? "עובד";
         const smsBody =
           `📋 הגשת מועמדות חדשה ב-Job-Now!\n` +
           `${workerName} הגיש/ה מועמדות למשרה: "${job.title}"\n` +
-          `לצפייה בפרופיל העובד:\n${workerProfileUrl}`;
+          `לצפייה בפרופיל המועמד:\n${applicationUrl}`;
 
         import("./sms").then(({ sendSms }) => {
           sendSms(job.contactPhone!, smsBody).catch((err) =>
@@ -468,6 +473,45 @@ const jobsRouter = router({
     .query(async ({ input, ctx }) => {
       const existing = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
       return { applied: !!existing };
+    }),
+
+  /**
+   * Get a single application by ID.
+   * Returns worker profile + contactRevealed state.
+   * Only the job owner (employer) can access.
+   * Phone number is only returned if contactRevealed = true.
+   */
+  getApplication: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const app = await getApplicationById(input.id);
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
+      if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה למועמדות זו" });
+      }
+      return {
+        ...app,
+        // Only expose phone if employer has already revealed contact
+        workerPhone: app.contactRevealed ? app.workerPhone : null,
+      };
+    }),
+
+  /**
+   * Reveal contact details for an application.
+   * Sets contactRevealed = true, revealedAt = now.
+   * Only the job owner can call this.
+   */
+  revealContact: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const app = await getApplicationById(input.id);
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
+      if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה לפעולה זו" });
+      }
+      await revealApplicationContact(input.id);
+      // Return the phone number now that it's been revealed
+      return { success: true, workerPhone: app.workerPhone };
     }),
 });
 

@@ -24,6 +24,7 @@ import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 import WorkerProfile from "./pages/WorkerProfile";
 import PublicWorkerProfile from "./pages/PublicWorkerProfile";
+import ApplicationView from "./pages/ApplicationView";
 import { useState, useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -89,6 +90,7 @@ function Router() {
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />
                 <Route path="/worker/:id" component={PublicWorkerProfile} />
+                <Route path="/applications/:id" component={ApplicationView} />
                 <Route path="/404" component={NotFound} />
                 <Route component={NotFound} />
               </Switch>

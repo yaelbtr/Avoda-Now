@@ -797,6 +797,54 @@ export async function getPublicWorkerProfile(userId: number) {
   return result[0] ?? null;
 }
 
+/** Get a single application by ID (includes worker profile + contactRevealed state) */
+export async function getApplicationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: applications.id,
+      jobId: applications.jobId,
+      workerId: applications.workerId,
+      status: applications.status,
+      message: applications.message,
+      contactRevealed: applications.contactRevealed,
+      revealedAt: applications.revealedAt,
+      createdAt: applications.createdAt,
+      // Worker public profile
+      workerName: users.name,
+      workerPhone: users.phone,
+      workerBio: users.workerBio,
+      workerPreferredCity: users.preferredCity,
+      workerPreferredCategories: users.preferredCategories,
+      workerTags: users.workerTags,
+      workerCreatedAt: users.createdAt,
+      // Job info for authorization
+      jobPostedBy: jobs.postedBy,
+      jobTitle: jobs.title,
+    })
+    .from(applications)
+    .innerJoin(users, eq(applications.workerId, users.id))
+    .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .where(eq(applications.id, id))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Mark an application's contact as revealed by the employer */
+export async function revealApplicationContact(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(applications)
+    .set({
+      contactRevealed: true,
+      revealedAt: new Date(),
+      status: "viewed",
+    })
+    .where(eq(applications.id, id));
+}
+
 /** Get all applications for a specific job (for employer view) */
 export async function getApplicationsForJob(jobId: number) {
   const db = await getDb();

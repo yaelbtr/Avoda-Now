@@ -142,6 +142,10 @@ export const applications = mysqlTable("applications", {
   status: mysqlEnum("status", ["pending", "viewed", "accepted", "rejected"]).default("pending").notNull(),
   /** Optional message from the worker */
   message: text("message"),
+  /** Whether the employer has revealed the worker's contact details */
+  contactRevealed: boolean("contactRevealed").default(false).notNull(),
+  /** Timestamp when the employer first revealed contact details */
+  revealedAt: timestamp("revealedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

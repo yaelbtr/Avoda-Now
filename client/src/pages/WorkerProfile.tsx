@@ -115,10 +115,9 @@ export default function WorkerProfile() {
     },
     onError: () => toast.error("שגיאה בשמירת הגדרות ההתראות"),
   });
-
-  // ── Shared state ────────────────────────────────────────────────────────────
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // ── Shared state ──────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">("details");
+  const [name, setName] = useState("");  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [workerBio, setWorkerBio] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -746,8 +745,6 @@ export default function WorkerProfile() {
   }
 
   // ── EDIT MODE (existing worker) ──────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">("details");
-
   const TABS = [
     { id: "details" as const, label: "פרטים", icon: User },
     { id: "work" as const, label: "עבודה", icon: Briefcase },
@@ -756,13 +753,13 @@ export default function WorkerProfile() {
   ];
 
   return (
-    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.97 0.01 90)" }}>
+    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.95 0.01 90)" }}>
       {/* ── Hero Header ───────────────────────────────────────────────── */}
       <div
         className="relative overflow-hidden"
         style={{
           background: "linear-gradient(135deg, oklch(0.28 0.06 91) 0%, oklch(0.38 0.10 88) 100%)",
-          paddingBottom: "4.5rem",
+          paddingBottom: "3.5rem",
         }}
       >
         {/* Decorative circles */}
@@ -855,8 +852,11 @@ export default function WorkerProfile() {
       </div>
 
       {/* ── Tab Bar ────────────────────────────────────────────────────── */}
-      <div className="max-w-lg mx-auto px-4" style={{ marginTop: "-1.5rem" }}>
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-1 flex gap-1">
+      <div className="max-w-lg mx-auto px-4 relative" style={{ zIndex: 10, marginTop: "-1.5rem" }}>
+        <div
+          className="rounded-2xl p-1 flex gap-1 shadow-lg"
+          style={{ background: "oklch(0.22 0.05 91)", border: "1px solid oklch(0.35 0.08 88)" }}
+        >
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -864,12 +864,11 @@ export default function WorkerProfile() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? "text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                style={isActive ? { background: "oklch(0.40 0.10 88)" } : {}}
+                className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
+                style={isActive
+                  ? { background: "oklch(0.52 0.14 85)", color: "white", boxShadow: "0 2px 8px oklch(0.40 0.12 88 / 0.5)" }
+                  : { color: "oklch(0.72 0.06 88)" }
+                }
               >
                 <Icon className="h-4 w-4" />
                 {tab.label}

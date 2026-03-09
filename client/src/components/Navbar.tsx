@@ -63,6 +63,7 @@ export default function Navbar() {
     { href: "/find-jobs", label: "חפש עבודה", icon: MapPin },
     { href: "/find-jobs?filter=today", label: "עבודות להיום", icon: Flame },
     { href: "/my-applications", label: "מועמדויות", icon: Briefcase },
+    { href: "/my-applications?tab=saved", label: "משרות ששמרתי", icon: Bookmark },
     { href: "/worker-profile", label: "פרופיל", icon: User },
   ];
 

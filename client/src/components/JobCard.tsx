@@ -306,20 +306,23 @@ export function JobCard({
 
   // ── Compact variant (carousel) ────────────────────────────────────────────────
   if (variant === "compact") {
+    const CDN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ";
     const bgImages: Record<string, string> = {
-      food: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&fit=crop",
-      hospitality: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70&fit=crop",
-      cleaning: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70&fit=crop",
-      delivery: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400&q=70&fit=crop",
-      construction: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70&fit=crop",
-      security: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=400&q=70&fit=crop",
-      office: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70&fit=crop",
-      retail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=70&fit=crop",
-      events: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=70&fit=crop",
-      childcare: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&q=70&fit=crop",
-      eldercare: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&q=70&fit=crop",
-      tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70&fit=crop",
-      other: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=70&fit=crop",
+      // Israeli-themed category images
+      food:         `${CDN}/food_13babaca.jpg`,
+      hospitality:  `${CDN}/hospitality_4e40b631.jpg`,
+      construction: `${CDN}/construction_c2bb0958.jpg`,
+      delivery:     `${CDN}/delivery_91f37dee.jpg`,
+      office:       `${CDN}/office_4b15cb75.jpg`,
+      events:       `${CDN}/events_54d2596b.jpg`,
+      childcare:    `${CDN}/childcare_be8d0444.jpg`,
+      // Remaining categories use quality Unsplash fallbacks
+      cleaning:     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&fit=crop",
+      security:     "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=400&q=80&fit=crop",
+      retail:       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80&fit=crop",
+      eldercare:    "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&q=80&fit=crop",
+      tech:         "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80&fit=crop",
+      other:        "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=80&fit=crop",
     };
     const bgImage = bgImages[job.category] ?? bgImages.other;
     const salaryStr = formatSalary(job.salary ?? null, job.salaryType);

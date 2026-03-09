@@ -930,10 +930,15 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   <motion.div
                     key={`${badge}-${job.id}`}
                     className="snap-start shrink-0"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
+                    initial={{ opacity: 0, y: 28, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 22,
+                      delay: idx * 0.08,
+                    }}
                   >
                     <JobCard
                       job={{ ...job, isUrgent: badge === "urgent", contactPhone: job.contactPhone ?? null }}

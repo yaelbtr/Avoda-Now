@@ -82,6 +82,7 @@ import {
   smsProvider,
 } from "./smsProvider";
 import { adminProcedure } from "./_core/trpc";
+import { storagePut } from "./storage";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -999,6 +1000,23 @@ const userRouter = router({
         preferredTimeSlots: input.preferredTimeSlots,
       });
       return { success: true };
+    }),
+
+  /** Upload a profile photo to S3 and save the URL */
+  uploadProfilePhoto: protectedProcedure
+    .input(z.object({
+      /** Base64-encoded image data (without data: prefix) */
+      base64: z.string(),
+      /** MIME type: image/jpeg or image/png */
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const key = `profile-photos/${ctx.user.id}-${Date.now()}.${ext}`;
+      const buffer = Buffer.from(input.base64, "base64");
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      await updateWorkerProfile(ctx.user.id, { profilePhoto: url });
+      return { url };
     }),
 
   /** Get the current user's notification preferences */

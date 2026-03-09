@@ -53,6 +53,8 @@ export const users = mysqlTable("users", {
   preferredTimeSlots: json("preferredTimeSlots").$type<string[]>(),
   /** Short bio / note from worker */
   workerBio: text("workerBio"),
+  /** Worker's profile photo URL (stored in S3) */
+  profilePhoto: text("profilePhoto"),
   /** Worker's expected hourly rate in ILS */
   expectedHourlyRate: decimal("expectedHourlyRate", { precision: 8, scale: 2 }),
   /** Worker's current availability status */

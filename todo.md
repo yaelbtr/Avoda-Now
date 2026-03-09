@@ -794,3 +794,9 @@
 - [ ] Add first-time onboarding wizard mode to WorkerProfile (shown when signupCompleted=false)
 - [ ] Remove standalone /worker-signup page and route
 - [ ] Update HomeWorker redirect to /worker-profile for new workers
+
+## Worker Profile — Profile Photo
+- [ ] Add profilePhoto field to users table in schema.ts
+- [ ] Add uploadProfilePhoto tRPC procedure (S3 upload + save URL)
+- [ ] Add photo upload UI to WorkerProfile with friendly message
+- [ ] Show photo in PublicWorkerProfile and AvailableWorkers list

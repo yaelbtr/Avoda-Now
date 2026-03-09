@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2,
+  CheckCircle2, Camera,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 
@@ -127,6 +127,13 @@ export default function WorkerProfile() {
   const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+
+  const uploadPhotoMutation = trpc.user.uploadProfilePhoto.useMutation({
+    onSuccess: (data) => { setProfilePhoto(data.url); toast.success("תמונת הפרופיל עודכנה!"); },
+    onError: () => toast.error("שגיאה בהעלאת התמונה"),
+  });
 
   // ── Wizard state ─────────────────────────────────────────────────────────────
   const [wizardStep, setWizardStep] = useState(1);
@@ -145,6 +152,7 @@ export default function WorkerProfile() {
       setSearchRadiusKm(d.searchRadiusKm ?? 5);
       setPreferredDays((d.preferredDays as string[]) ?? []);
       setPreferredTimeSlots((d.preferredTimeSlots as string[]) ?? []);
+      setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
     }
     if (user?.email) setEmail(user.email);
   }, [profileQuery.data, user]);
@@ -674,6 +682,60 @@ export default function WorkerProfile() {
       </div>
 
       <div className="space-y-6">
+        {/* ── Profile Photo ───────────────────────────────────────────── */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h2 className="font-semibold text-foreground mb-1 flex items-center gap-2">
+            <Camera className="h-4 w-4 text-primary" />
+            תמונת פרופיל
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            עובדים עם תמונה מקבלים פי 3 יותר פניות ממעסיקים — תמונה מקצועית בונה אמון ומגדילה את הסיכוי שיבחרו בך 📸
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              {profilePhoto ? (
+                <img src={profilePhoto} alt="תמונת פרופיל" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+              ) : (
+                <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed border-border bg-muted">
+                  <User className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              {photoUploading && (
+                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
+                  <BrandLoader size="sm" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors text-sm font-medium">
+                <Camera className="h-4 w-4" />
+                {profilePhoto ? "החלף תמונה" : "העלה תמונה"}
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 5 * 1024 * 1024) { toast.error("התמונה גדולה מדי. מקסימום 5MB."); return; }
+                  setPhotoUploading(true);
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const base64 = (reader.result as string).split(",")[1];
+                    const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
+                    await uploadPhotoMutation.mutateAsync({ base64, mimeType });
+                    setPhotoUploading(false);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">JPG, PNG, WEBP · עד 5MB</p>
+            </div>
+          </div>
+        </div>
+
         {/* ── Basic info ─────────────────────────────────────────────────── */}
         <div className="bg-card border border-border rounded-xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">

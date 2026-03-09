@@ -100,7 +100,7 @@ export function WorkerProfilePreviewModal({
             <div className="flex items-start justify-between px-4 pb-3 pt-1">
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center"
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                 style={{ background: "oklch(0.93 0.02 100)", color: "#4F583B" }}
               >
                 <X className="h-4 w-4" />
@@ -125,11 +125,33 @@ export function WorkerProfilePreviewModal({
                   boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
                 }}
               >
-                {/* Avatar + name row */}
-                <div className="flex items-center gap-3 p-4" style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
-                  {/* Name on right (RTL) */}
+                {/* Avatar + name row — RTL: avatar on right, text on left */}
+                <div
+                  className="flex items-start gap-3 p-4"
+                  style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
+                >
+                  {/* Avatar — first child = rightmost in RTL */}
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt={name}
+                      className="w-16 h-16 rounded-full object-cover shrink-0"
+                      style={{ border: "2.5px solid #4F583B" }}
+                    />
+                  ) : (
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+                      style={{
+                        background: "oklch(0.92 0.04 122)",
+                        border: "2px dashed oklch(0.70 0.08 122)",
+                      }}
+                    >
+                      <User className="h-7 w-7" style={{ color: "#4F583B" }} />
+                    </div>
+                  )}
+                  {/* Text — second child = to the left of avatar in RTL */}
                   <div className="flex-1 min-w-0 text-right">
-                    <h3 className="text-base font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>
+                    <h3 className="text-lg font-black leading-tight" style={{ color: "#4F583B" }}>
                       {name || "שם לא הוזן"}
                     </h3>
                     {phone && (
@@ -138,38 +160,24 @@ export function WorkerProfilePreviewModal({
                       </p>
                     )}
                     {selectedCategoryLabels.length > 0 && (
-                      <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.08 122)" }}>
+                      <p className="text-xs mt-1" style={{ color: "oklch(0.50 0.08 122)" }}>
                         {selectedCategoryLabels
                           .slice(0, 2)
                           .map((c) => `${c.icon} ${c.label}`)
                           .join(" · ")}
-                        {selectedCategoryLabels.length > 2 && ` +${selectedCategoryLabels.length - 2}`}
+                        {selectedCategoryLabels.length > 2 && (
+                          <span className="font-bold"> +{selectedCategoryLabels.length - 2}</span>
+                        )}
                       </p>
                     )}
                   </div>
-                  {/* Avatar on left (appears on left in RTL = visual right) */}
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt={name}
-                      className="w-14 h-14 rounded-full object-cover shrink-0"
-                      style={{ border: "2.5px solid #4F583B" }}
-                    />
-                  ) : (
-                    <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-                      style={{
-                        background: "oklch(0.92 0.04 122)",
-                        border: "2px dashed oklch(0.70 0.08 122)",
-                      }}
-                    >
-                      <User className="h-6 w-6" style={{ color: "#4F583B" }} />
-                    </div>
-                  )}
                 </div>
 
                 {/* Bio */}
-                <div className="px-4 py-3 text-right" style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
+                <div
+                  className="px-4 py-3 text-right"
+                  style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
+                >
                   {bio ? (
                     <p className="text-sm leading-relaxed" style={{ color: "oklch(0.30 0.05 122)" }}>
                       {bio}
@@ -183,11 +191,16 @@ export function WorkerProfilePreviewModal({
 
                 {/* Categories */}
                 {selectedCategoryLabels.length > 0 && (
-                  <div className="px-4 py-3" style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
-                    <div className="flex items-center justify-end gap-1.5 mb-2">
+                  <div
+                    className="px-4 py-3"
+                    style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
+                  >
+                    {/* Section header — icon then label, right-aligned */}
+                    <div className="flex items-center gap-1.5 justify-end mb-2">
                       <span className="text-xs font-bold" style={{ color: "#4F583B" }}>תחומי עיסוק</span>
-                      <Briefcase className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+                      <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
                     </div>
+                    {/* Tags — wrap from right */}
                     <div className="flex flex-wrap gap-1.5 justify-end">
                       {selectedCategoryLabels.map((cat) => (
                         <span
@@ -204,17 +217,20 @@ export function WorkerProfilePreviewModal({
 
                 {/* Availability */}
                 {(selectedDayLabels.length > 0 || selectedTimeLabels.length > 0) && (
-                  <div className="px-4 py-3" style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
-                    <div className="flex items-center justify-end gap-1.5 mb-2">
+                  <div
+                    className="px-4 py-3"
+                    style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
+                  >
+                    <div className="flex items-center gap-1.5 justify-end mb-2">
                       <span className="text-xs font-bold" style={{ color: "#4F583B" }}>זמינות</span>
-                      <Clock className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+                      <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
                     </div>
                     {selectedDayLabels.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 justify-end mb-2">
                         {selectedDayLabels.map((d) => (
                           <span
                             key={d}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                             style={{ background: "#4F583B", color: "white" }}
                           >
                             {d}
@@ -240,9 +256,9 @@ export function WorkerProfilePreviewModal({
 
                 {/* Location */}
                 <div className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1.5 mb-1.5">
+                  <div className="flex items-center gap-1.5 justify-end mb-1.5">
                     <span className="text-xs font-bold" style={{ color: "#4F583B" }}>אזור עבודה</span>
-                    <MapPin className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+                    <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
                   </div>
                   {locationMode === "radius" ? (
                     <p className="text-sm text-right" style={{ color: "oklch(0.40 0.06 122)" }}>

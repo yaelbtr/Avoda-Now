@@ -370,41 +370,6 @@ export default function MyApplications() {
         {/* ── APPLICATIONS TAB ── */}
         {activeTab === "applications" && (
           <>
-            {/* Push notification prompt */}
-            {push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-4 rounded-2xl"
-                style={{
-                  background: "white",
-                  border: "1px solid oklch(0.87 0.04 84.0)",
-                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
-                }}
-              >
-                <div
-                  className="size-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}
-                >
-                  <Bell className="h-4 w-4" style={{ color: "oklch(0.38 0.07 125.0)" }} />
-                </div>
-                <p className="text-xs flex-1" style={{ color: "var(--text-secondary)" }}>
-                  הפעל התראות כדי לקבל עדכון מיידי כשמעסיק מגיב למועמדותך
-                </p>
-                <button
-                  onClick={push.subscribe}
-                  disabled={push.isLoading}
-                  className="text-xs px-3 py-1.5 rounded-xl font-bold shrink-0 transition-all"
-                  style={{
-                    background: "oklch(0.38 0.07 125.0)",
-                    color: "oklch(0.97 0.02 91)",
-                  }}
-                >
-                  הפעל
-                </button>
-              </motion.div>
-            )}
-
             {/* Push error */}
             {push.error && (
               <div
@@ -467,6 +432,41 @@ export default function MyApplications() {
                     <ChevronLeft className="h-4 w-4 opacity-60" />
                   </motion.button>
                 )}
+              </motion.div>
+            )}
+
+            {/* Push notification prompt */}
+            {push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 p-4 rounded-2xl"
+                style={{
+                  background: "white",
+                  border: "1px solid oklch(0.87 0.04 84.0)",
+                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
+                }}
+              >
+                <div
+                  className="size-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}
+                >
+                  <Bell className="h-4 w-4" style={{ color: "oklch(0.38 0.07 125.0)" }} />
+                </div>
+                <p className="text-xs flex-1" style={{ color: "var(--text-secondary)" }}>
+                  הפעל התראות כדי לקבל עדכון מיידי כשמעסיק מגיב למועמדותך
+                </p>
+                <button
+                  onClick={push.subscribe}
+                  disabled={push.isLoading}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold shrink-0 transition-all"
+                  style={{
+                    background: "oklch(0.38 0.07 125.0)",
+                    color: "oklch(0.97 0.02 91)",
+                  }}
+                >
+                  הפעל
+                </button>
               </motion.div>
             )}
 
@@ -804,7 +804,7 @@ export default function MyApplications() {
             )}
 
             {/* Sort bar */}
-            {!isLoading && savedJobs && savedJobs.length > 1 && (
+            {!isLoading && savedJobs && savedJobs.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap" dir="rtl">
                 <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>מיון:</span>
                 {([
@@ -846,6 +846,41 @@ export default function MyApplications() {
                   );
                 })}
               </div>
+            )}
+
+            {/* Push notification prompt — saved tab */}
+            {push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 p-4 rounded-2xl"
+                style={{
+                  background: "white",
+                  border: "1px solid oklch(0.87 0.04 84.0)",
+                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
+                }}
+              >
+                <div
+                  className="size-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}
+                >
+                  <Bell className="h-4 w-4" style={{ color: "oklch(0.38 0.07 125.0)" }} />
+                </div>
+                <p className="text-xs flex-1" style={{ color: "var(--text-secondary)" }}>
+                  הפעל התראות כדי לקבל עדכון מיידי כשמעסיק מפרסם משרות חדשות
+                </p>
+                <button
+                  onClick={push.subscribe}
+                  disabled={push.isLoading}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold shrink-0 transition-all"
+                  style={{
+                    background: "oklch(0.38 0.07 125.0)",
+                    color: "oklch(0.97 0.02 91)",
+                  }}
+                >
+                  הפעל
+                </button>
+              </motion.div>
             )}
 
             {/* Saved job cards */}

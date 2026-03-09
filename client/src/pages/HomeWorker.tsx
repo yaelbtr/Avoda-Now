@@ -930,7 +930,6 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   <motion.div
                     key={`${badge}-${job.id}`}
                     className="snap-start shrink-0"
-                    style={{ width: 220 }}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
@@ -938,6 +937,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   >
                     <JobCard
                       job={{ ...job, isUrgent: badge === "urgent", contactPhone: job.contactPhone ?? null }}
+                      variant="compact"
                       onLoginRequired={onLoginRequired}
                       onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
                     />

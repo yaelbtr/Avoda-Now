@@ -918,3 +918,8 @@
 - [x] הסרת SearchJobCard ו-CarouselJobCard — החלפה מלאה ב-JobCard
 - [x] כפתורי יצירת קשר ישירים (WhatsApp + טלפון) בכל כרטיסיה
 - [x] אחידות ב-HomeWorker list, FindJobs, MyApplications, carousel
+
+## גרסה קומפקטית של כרטיס משרה לקרוסלה
+- [x] הוספת prop variant="compact" ל-JobCard
+- [x] גרסה קומפקטית: כותרת, קטגוריה, מיקום, שכר, כפתורי WhatsApp + "צפה במשרה" בלבד
+- [x] עדכון שימוש ב-carousel ב-HomeWorker לגרסה קומפקטית

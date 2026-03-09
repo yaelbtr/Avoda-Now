@@ -61,6 +61,8 @@ export interface JobCardProps {
   onLoginRequired?: (message: string) => void;
   /** Called when card or "צפה במשרה" is clicked — opens bottom sheet */
   onCardClick?: (job: JobCardJob) => void;
+  /** compact: minimal card for carousel — shows only WhatsApp + "צפה במשרה" */
+  variant?: "default" | "compact";
 }
 
 const SITE_URL = "https://job-now.manus.space";
@@ -272,6 +274,7 @@ export function JobCard({
   isApplyPending,
   onLoginRequired,
   onCardClick,
+  variant = "default",
 }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
@@ -300,6 +303,171 @@ export function JobCard({
   const handleCardClick = () => {
     if (onCardClick) onCardClick(job);
   };
+
+  // ── Compact variant (carousel) ────────────────────────────────────────────────
+  if (variant === "compact") {
+    const bgImages: Record<string, string> = {
+      food: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70&fit=crop",
+      hospitality: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70&fit=crop",
+      cleaning: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70&fit=crop",
+      delivery: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400&q=70&fit=crop",
+      construction: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70&fit=crop",
+      security: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=400&q=70&fit=crop",
+      office: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70&fit=crop",
+      retail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=70&fit=crop",
+      events: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=70&fit=crop",
+      childcare: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&q=70&fit=crop",
+      eldercare: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&q=70&fit=crop",
+      tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=70&fit=crop",
+      other: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=70&fit=crop",
+    };
+    const bgImage = bgImages[job.category] ?? bgImages.other;
+    const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
+
+    return (
+      <motion.div
+        whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0,0,0,0.14)" }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-2xl overflow-hidden bg-white relative"
+        style={{
+          width: 210,
+          border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+          cursor: onCardClick ? "pointer" : undefined,
+          flexShrink: 0,
+        }}
+        dir="rtl"
+        onClick={onCardClick ? handleCardClick : undefined}
+      >
+        {/* Category image header */}
+        <div className="relative" style={{ height: 110, overflow: "hidden" }}>
+          <img
+            src={bgImage}
+            alt={getCategoryLabel(job.category)}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          {/* Gradient overlay */}
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%)" }}
+          />
+          {/* Category icon */}
+          <div
+            className="absolute bottom-2 right-2 w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+            style={{ background: "rgba(255,255,255,0.92)", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+          >
+            {getCategoryIcon(job.category)}
+          </div>
+          {/* Urgent / Today badge */}
+          {job.isUrgent && (
+            <span
+              className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold"
+              style={{ background: C_DANGER_HEX, color: "#fff" }}
+            >
+              <Zap className="h-2.5 w-2.5" />דחוף
+            </span>
+          )}
+          {!job.isUrgent && isToday && (
+            <span className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500 text-white">
+              <Flame className="h-2.5 w-2.5" />להיום
+            </span>
+          )}
+          {/* Salary badge bottom-left */}
+          <span
+            className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-black"
+            style={{
+              background: isVolunteer ? "oklch(0.65 0.22 160 / 0.90)" : "oklch(0.38 0.07 125.0 / 0.90)",
+              color: "#fff",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            {isVolunteer ? "💚 התנדבות" : salaryStr}
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className="p-3" dir="rtl">
+          <h3
+            className="font-bold text-[13px] leading-tight text-right mb-1"
+            style={{
+              color: "var(--text-primary)",
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {job.title}
+          </h3>
+          {job.businessName && (
+            <p className="text-[11px] truncate text-right mb-1" style={{ color: "var(--text-muted)" }}>
+              {job.businessName}
+            </p>
+          )}
+          <div className="flex items-center gap-1 text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+            <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.07 125.0)" }} />
+            <span className="truncate">{cityDisplay}</span>
+            <span className="mx-1 opacity-40">·</span>
+            <Clock className="h-3 w-3 shrink-0" />
+            <span className="truncate">{getStartTimeLabel(job.startTime)}</span>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2" dir="rtl">
+            {hasPhone ? (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={(e) => { e.stopPropagation(); contactViaWhatsApp(job.contactPhone!, job.title); }}
+                className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-[11px] font-bold flex-1"
+                style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)", color: "#fff" }}
+              >
+                <WhatsAppIcon />
+                <span>וואטסאפ</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={(e) => { e.stopPropagation(); handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת"); }}
+                className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-[11px] font-semibold flex-1"
+                style={{ background: "oklch(0.95 0.02 84)", border: "1px dashed oklch(0.78 0.06 84)", color: "var(--text-muted)" }}
+              >
+                <Lock className="h-3.5 w-3.5 shrink-0" />
+                <span>התחבר</span>
+              </motion.button>
+            )}
+            {onCardClick ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => { e.stopPropagation(); onCardClick(job); }}
+                className="p-2 rounded-xl shrink-0"
+                style={{ background: "oklch(0.95 0.02 84)", border: "1px solid oklch(0.87 0.04 84.0)", color: "oklch(0.50 0.07 125.0)" }}
+                title="צפה במשרה"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </motion.button>
+            ) : (
+              <Link href={`/job/${job.id}`}>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 rounded-xl shrink-0"
+                  style={{ background: "oklch(0.95 0.02 84)", border: "1px solid oklch(0.87 0.04 84.0)", color: "oklch(0.50 0.07 125.0)" }}
+                  title="צפה במשרה"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </motion.button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

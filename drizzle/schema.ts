@@ -304,6 +304,26 @@ export const phonePrefixes = mysqlTable("phone_prefixes", {
 export type PhonePrefix = typeof phonePrefixes.$inferSelect;
 export type InsertPhonePrefix = typeof phonePrefixes.$inferInsert;
 
+/**
+ * Audit log for phone number changes.
+ * Records every phone change attempt (successful or locked-out).
+ */
+export const phoneChangeLogs = mysqlTable("phone_change_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  /** Phone number before the change (E.164) */
+  oldPhone: varchar("oldPhone", { length: 20 }),
+  /** Phone number after the change (E.164) */
+  newPhone: varchar("newPhone", { length: 20 }),
+  /** IP address of the request */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  /** success | failed | locked */
+  result: mysqlEnum("result", ["success", "failed", "locked"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PhoneChangeLog = typeof phoneChangeLogs.$inferSelect;
+export type InsertPhoneChangeLog = typeof phoneChangeLogs.$inferInsert;
+
 export const savedJobs = mysqlTable("saved_jobs", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().references(() => users.id),

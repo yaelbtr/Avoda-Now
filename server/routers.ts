@@ -61,6 +61,8 @@ import {
   unsaveJob,
   getSavedJobIds,
   updateUserPhone,
+  logPhoneChange,
+  countRecentPhoneChangeFailures,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -90,6 +92,7 @@ import {
 } from "./smsProvider";
 import { adminProcedure } from "./_core/trpc";
 import { storagePut } from "./storage";
+import { notifyOwner } from "./_core/notification";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -1115,14 +1118,27 @@ const userRouter = router({
     }),
 
   /**
-   * Step 1 of phone change: send OTP to the new phone number.
-   * Validates the new number is not already in use, then sends OTP via Twilio Verify.
+   * Step 1 of phone change: send OTP to the new phone number via SMS.
+   * If SMS fails and user has email, offers email fallback.
+   * Enforces lockout after 5 failed verify attempts in last hour.
    */
   requestPhoneChangeOtp: protectedProcedure
     .input(z.object({ phone: z.string().min(9).max(20) }))
     .mutation(async ({ input, ctx }) => {
+      const ip = ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim()
+        ?? ctx.req.socket?.remoteAddress ?? "unknown";
+
       const normalized = normalizeIsraeliPhone(input.phone);
       if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון אינו תקין" });
+
+      // Check lockout: if user had 5+ failed verify attempts in last hour
+      const recentFailures = await countRecentPhoneChangeFailures(ctx.user.id);
+      if (recentFailures >= 5) {
+        await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
+        // Notify owner about lockout
+        notifyOwner({ title: "נעילת חשבון — שינוי טלפון", content: `משתמש ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) נחסם לאחר 5 ניסיונות כושלים. IP: ${ip}` }).catch(() => {});
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "החשבון נעול זמנית לשינוי טלפון. נסה שוב בעוד שעה." });
+      }
 
       // Check if number is already taken by another user
       const existing = await getUserByPhone(normalized);
@@ -1138,14 +1154,45 @@ const userRouter = router({
 
       const result = await smsProvider.sendOtp(normalized);
       if (!result.success) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error ?? "שגיאה בשליחת קוד" });
+        // SMS failed — check if user has email for fallback
+        const userEmail = ctx.user.email;
+        return {
+          success: false,
+          smsFailed: true,
+          hasEmailFallback: !!(userEmail && userEmail.includes("@")),
+          error: result.error ?? "שגיאה בשליחת קוד",
+          normalizedPhone: normalized,
+        };
       }
-      return { success: true, normalizedPhone: normalized };
+      return { success: true, smsFailed: false, hasEmailFallback: false, normalizedPhone: normalized };
     }),
 
   /**
-   * Step 2 of phone change: verify OTP and update phone in DB.
-   * On success, updates phone, phonePrefix, phoneNumber in users table.
+   * Email fallback: send OTP to user's registered email when SMS fails.
+   */
+  requestPhoneChangeOtpEmail: protectedProcedure
+    .input(z.object({ phone: z.string().min(9).max(20) }))
+    .mutation(async ({ input, ctx }) => {
+      const userEmail = ctx.user.email;
+      if (!userEmail || !userEmail.includes("@")) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "אין כתובת מייל רשומה בחשבון" });
+      }
+      const normalized = normalizeIsraeliPhone(input.phone);
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון אינו תקין" });
+
+      const result = await smsProvider.sendOtpToEmail(userEmail);
+      if (!result.success) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error ?? "שגיאה בשליחת קוד למייל" });
+      }
+      // Return masked email for display
+      const [local, domain] = userEmail.split("@");
+      const maskedEmail = `${local.slice(0, 2)}***@${domain}`;
+      return { success: true, maskedEmail, normalizedPhone: normalized };
+    }),
+
+  /**
+   * Step 2 of phone change: verify OTP (SMS or email) and update phone in DB.
+   * Enforces lockout after 5 failed attempts. Logs every attempt.
    */
   verifyPhoneChangeOtp: protectedProcedure
     .input(z.object({
@@ -1153,24 +1200,54 @@ const userRouter = router({
       code: z.string().length(6),
       phonePrefix: z.string().length(3).optional(),
       phoneNumber: z.string().length(7).optional(),
+      /** If true, verify against email channel instead of SMS */
+      useEmail: z.boolean().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
+      const ip = ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim()
+        ?? ctx.req.socket?.remoteAddress ?? "unknown";
+
       const normalized = normalizeIsraeliPhone(input.phone);
       if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון אינו תקין" });
+
+      // Check lockout before attempting
+      const recentFailures = await countRecentPhoneChangeFailures(ctx.user.id);
+      if (recentFailures >= 5) {
+        await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
+        notifyOwner({ title: "נעילת חשבון — שינוי טלפון", content: `משתמש ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) נחסם לאחר 5 ניסיונות כושלים. IP: ${ip}` }).catch(() => {});
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "החשבון נעול זמנית לשינוי טלפון. נסה שוב בעוד שעה." });
+      }
 
       // Rate limit verify attempts
       const attemptsOk = await checkAndIncrementVerifyAttempts(normalized);
       if (!attemptsOk) {
+        await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "failed" });
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "יותר מדי ניסיונות. נסה שוב מאוחר יותר" });
       }
 
-      const verifyResult = await smsProvider.verifyOtp(normalized, input.code);
-      if (!verifyResult.success) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "קוד האימות שגוי או פג תוקפו" });
+      let verifyResult;
+      if (input.useEmail && ctx.user.email) {
+        verifyResult = await smsProvider.verifyEmailOtp(ctx.user.email, input.code);
+      } else {
+        verifyResult = await smsProvider.verifyOtp(normalized, input.code);
       }
 
-      // Update phone in DB via a dedicated helper
+      if (!verifyResult.success || !verifyResult.approved) {
+        // Log failed attempt
+        await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "failed" });
+        // Check if now locked out
+        const failuresAfter = await countRecentPhoneChangeFailures(ctx.user.id);
+        if (failuresAfter >= 5) {
+          notifyOwner({ title: "נעילת חשבון — שינוי טלפון", content: `משתמש ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) הגיע ל-5 ניסיונות כושלים ונעקר לשעה. IP: ${ip}` }).catch(() => {});
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `קוד שגוי. החשבון נעול לשעה לאחר ${failuresAfter} ניסיונות כושלים.` });
+        }
+        const remaining = 5 - failuresAfter;
+        throw new TRPCError({ code: "BAD_REQUEST", message: `קוד האימות שגוי או פג תוקפו. נותרו עוד ${remaining} ניסיונות.` });
+      }
+
+      // Success — update phone in DB and log
       await updateUserPhone(ctx.user.id, normalized, input.phonePrefix ?? null, input.phoneNumber ?? null);
+      await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "success" });
 
       return { success: true };
     }),

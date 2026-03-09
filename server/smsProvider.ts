@@ -30,6 +30,12 @@ export interface SmsProvider {
    * Returns approved=true if the code matches and has not expired.
    */
   verifyOtp(phone: string, code: string): Promise<OtpVerifyResult>;
+
+  /** Send OTP via email channel (fallback when SMS fails) */
+  sendOtpToEmail(email: string): Promise<OtpSendResult>;
+
+  /** Verify OTP that was sent to email */
+  verifyEmailOtp(email: string, code: string): Promise<OtpVerifyResult>;
 }
 
 // ─── Twilio Verify Provider ───────────────────────────────────────────────────
@@ -116,6 +122,58 @@ class TwilioVerifyProvider implements SmsProvider {
     } catch (err) {
       console.error("[TwilioVerify] sendOtp fallback network error:", err);
       return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
+    }
+  }
+
+  /** Send OTP via email channel (Twilio Verify email) */
+  async sendOtpToEmail(email: string): Promise<OtpSendResult> {
+    if (!this.accountSid || !this.authToken || !this.serviceSid) {
+      return { success: false, error: "SMS service not configured" };
+    }
+    try {
+      const res = await fetch(`${this.baseUrl}/Verifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: this.authHeader,
+        },
+        body: new URLSearchParams({ To: email, Channel: "email" }).toString(),
+      });
+      const body = await res.json() as { status?: string; message?: string; code?: number };
+      if (!res.ok) {
+        console.error("[TwilioVerify] sendOtpToEmail failed:", body);
+        return { success: false, error: "לא ניתן לשלוח קוד למייל כרגע" };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[TwilioVerify] sendOtpToEmail network error:", err);
+      return { success: false, error: "שגיאה בשליחת קוד למייל" };
+    }
+  }
+
+  /** Verify OTP that was sent to email (same VerificationCheck endpoint) */
+  async verifyEmailOtp(email: string, code: string): Promise<OtpVerifyResult> {
+    if (!this.accountSid || !this.authToken || !this.serviceSid) {
+      return { success: false, approved: false, error: "SMS service not configured" };
+    }
+    try {
+      const res = await fetch(`${this.baseUrl}/VerificationCheck`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: this.authHeader,
+        },
+        body: new URLSearchParams({ To: email, Code: code }).toString(),
+      });
+      const body = await res.json() as { status?: string; message?: string; code?: number };
+      if (!res.ok) {
+        console.error("[TwilioVerify] verifyEmailOtp failed:", body);
+        return { success: false, approved: false, error: "קוד האימות שגוי" };
+      }
+      return { success: true, approved: body.status === "approved" };
+    } catch (err) {
+      console.error("[TwilioVerify] verifyEmailOtp network error:", err);
+      return { success: false, approved: false, error: "שגיאה בבדיקת הקוד" };
     }
   }
 

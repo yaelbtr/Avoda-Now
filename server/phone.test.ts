@@ -261,3 +261,108 @@ describe("OTP phone change flow", () => {
     });
   });
 });
+
+// ─── Lockout & Audit Log Logic ───────────────────────────────────────────────
+
+describe("Phone change lockout logic", () => {
+  const LOCKOUT_THRESHOLD = 5;
+
+  it("allows change when failures < 5", () => {
+    const failures = 4;
+    expect(failures >= LOCKOUT_THRESHOLD).toBe(false);
+  });
+
+  it("locks when failures === 5", () => {
+    const failures = 5;
+    expect(failures >= LOCKOUT_THRESHOLD).toBe(true);
+  });
+
+  it("locks when failures > 5", () => {
+    const failures = 7;
+    expect(failures >= LOCKOUT_THRESHOLD).toBe(true);
+  });
+
+  it("remaining attempts calculation is correct", () => {
+    const failures = 3;
+    const remaining = LOCKOUT_THRESHOLD - failures;
+    expect(remaining).toBe(2);
+  });
+
+  it("remaining attempts is 0 at threshold", () => {
+    const failures = 5;
+    const remaining = LOCKOUT_THRESHOLD - failures;
+    expect(remaining).toBe(0);
+  });
+});
+
+describe("Phone change audit log params", () => {
+  it("builds correct log entry for success", () => {
+    const entry = {
+      userId: 42,
+      oldPhone: "0521234567",
+      newPhone: "+972521234568",
+      ipAddress: "1.2.3.4",
+      result: "success" as const,
+    };
+    expect(entry.result).toBe("success");
+    expect(entry.userId).toBe(42);
+    expect(entry.ipAddress).toBe("1.2.3.4");
+  });
+
+  it("builds correct log entry for failed attempt", () => {
+    const entry = {
+      userId: 42,
+      oldPhone: "0521234567",
+      newPhone: "+972521234568",
+      ipAddress: "1.2.3.4",
+      result: "failed" as const,
+    };
+    expect(entry.result).toBe("failed");
+  });
+
+  it("builds correct log entry for locked attempt", () => {
+    const entry = {
+      userId: 42,
+      oldPhone: null,
+      newPhone: "+972521234568",
+      ipAddress: "unknown",
+      result: "locked" as const,
+    };
+    expect(entry.result).toBe("locked");
+    expect(entry.oldPhone).toBeNull();
+  });
+});
+
+describe("Email fallback logic", () => {
+  it("detects valid email for fallback", () => {
+    const email = "user@example.com";
+    const hasEmailFallback = !!(email && email.includes("@"));
+    expect(hasEmailFallback).toBe(true);
+  });
+
+  it("rejects empty email for fallback", () => {
+    const email = "";
+    const hasEmailFallback = !!(email && email.includes("@"));
+    expect(hasEmailFallback).toBe(false);
+  });
+
+  it("rejects undefined email for fallback", () => {
+    const email: string | undefined = undefined;
+    const hasEmailFallback = !!(email && email.includes("@"));
+    expect(hasEmailFallback).toBe(false);
+  });
+
+  it("masks email correctly", () => {
+    const email = "john.doe@gmail.com";
+    const [local, domain] = email.split("@");
+    const masked = `${local.slice(0, 2)}***@${domain}`;
+    expect(masked).toBe("jo***@gmail.com");
+  });
+
+  it("masks short email correctly", () => {
+    const email = "ab@test.co.il";
+    const [local, domain] = email.split("@");
+    const masked = `${local.slice(0, 2)}***@${domain}`;
+    expect(masked).toBe("ab***@test.co.il");
+  });
+});

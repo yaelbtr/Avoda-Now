@@ -18,6 +18,7 @@ import {
   cities,
   savedJobs,
   phonePrefixes,
+  phoneChangeLogs,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -218,6 +219,46 @@ export async function updateUserPhone(
     .update(users)
     .set({ phone, phonePrefix, phoneNumber })
     .where(eq(users.id, userId));
+}
+
+/** Log a phone change attempt for audit purposes */
+export async function logPhoneChange(params: {
+  userId: number;
+  oldPhone: string | null | undefined;
+  newPhone: string;
+  ipAddress: string;
+  result: "success" | "failed" | "locked";
+}) {
+  const db = await getDb();
+  if (!db) return; // non-critical, don't throw
+  await db.insert(phoneChangeLogs).values({
+    userId: params.userId,
+    oldPhone: params.oldPhone ?? null,
+    newPhone: params.newPhone,
+    ipAddress: params.ipAddress,
+    result: params.result,
+  });
+}
+
+/** Count failed OTP attempts for phone change in the last hour */
+export async function countRecentPhoneChangeFailures(
+  userId: number,
+  windowMs = 60 * 60 * 1000
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - windowMs);
+  const rows = await db
+    .select({ id: phoneChangeLogs.id })
+    .from(phoneChangeLogs)
+    .where(
+      and(
+        eq(phoneChangeLogs.userId, userId),
+        eq(phoneChangeLogs.result, "failed"),
+        gte(phoneChangeLogs.createdAt, since)
+      )
+    );
+  return rows.length;
 }
 
 // ─── Phone Prefixes ──────────────────────────────────────────────────────────

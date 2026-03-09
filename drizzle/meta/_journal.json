@@ -183,6 +183,13 @@
       "when": 1773080479468,
       "tag": "0025_rich_adam_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1773084789009,
+      "tag": "0026_rapid_klaw",
+      "breakpoints": true
     }
   ]
 }

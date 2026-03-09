@@ -825,3 +825,8 @@
 - [ ] PhoneChangeModal component with OTP flow
 - [ ] Wire into WorkerProfile — intercept phone save, open modal instead
 - [ ] Vitest tests for OTP phone change flow
+
+## Phone OTP Security Enhancements
+- [ ] Email fallback when SMS fails
+- [ ] Phone change audit log (phone_change_log table)
+- [ ] Account lockout after 5 failed OTP attempts with email alert

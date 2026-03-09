@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { combinePhone, type PhoneValue } from "./IsraeliPhoneInput";
 import { IsraeliPhoneInput } from "./IsraeliPhoneInput";
-import { X, Phone, ShieldCheck } from "lucide-react";
+import { X, Phone, ShieldCheck, Mail, Lock } from "lucide-react";
 
 interface PhoneChangeModalProps {
   open: boolean;
@@ -12,7 +12,7 @@ interface PhoneChangeModalProps {
   onSuccess: (newPhoneVal: PhoneValue) => void;
 }
 
-type Step = "enter_phone" | "enter_otp";
+type Step = "enter_phone" | "enter_otp" | "sms_failed" | "locked";
 
 export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalProps) {
   const [step, setStep] = useState<Step>("enter_phone");
@@ -20,9 +20,13 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
   const [normalizedPhone, setNormalizedPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(0);
+  const [useEmail, setUseEmail] = useState(false);
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [hasEmailFallback, setHasEmailFallback] = useState(false);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const requestOtp = trpc.user.requestPhoneChangeOtp.useMutation();
+  const requestOtpEmail = trpc.user.requestPhoneChangeOtpEmail.useMutation();
   const verifyOtp = trpc.user.verifyPhoneChangeOtp.useMutation();
 
   // Countdown timer for resend
@@ -40,6 +44,9 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
       setNormalizedPhone("");
       setOtp(["", "", "", "", "", ""]);
       setCountdown(0);
+      setUseEmail(false);
+      setMaskedEmail("");
+      setHasEmailFallback(false);
     }
   }, [open]);
 
@@ -53,34 +60,66 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
     }
     try {
       const res = await requestOtp.mutateAsync({ phone: combined });
+      if (res.smsFailed) {
+        // SMS failed — show fallback screen
+        setNormalizedPhone(res.normalizedPhone);
+        setHasEmailFallback(res.hasEmailFallback);
+        setStep("sms_failed");
+        return;
+      }
       setNormalizedPhone(res.normalizedPhone);
+      setUseEmail(false);
       setStep("enter_otp");
       setCountdown(30);
       toast.success(`קוד נשלח ל-${combined}`);
     } catch (err: any) {
-      toast.error(err?.message ?? "שגיאה בשליחת קוד");
+      if (err?.data?.code === "TOO_MANY_REQUESTS" && err?.message?.includes("נעול")) {
+        setStep("locked");
+      } else {
+        toast.error(err?.message ?? "שגיאה בשליחת קוד");
+      }
     }
   };
 
-  const handleVerifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length !== 6) {
-      toast.error("יש להזין קוד בן 6 ספרות");
-      return;
+  const handleSendEmailOtp = async () => {
+    try {
+      const res = await requestOtpEmail.mutateAsync({ phone: combinePhone(phoneVal) });
+      setNormalizedPhone(res.normalizedPhone);
+      setMaskedEmail(res.maskedEmail);
+      setUseEmail(true);
+      setStep("enter_otp");
+      setCountdown(30);
+      toast.success(`קוד נשלח למייל ${res.maskedEmail}`);
+    } catch (err: any) {
+      toast.error(err?.message ?? "שגיאה בשליחת קוד למייל");
     }
+  };
+
+  const doVerify = async (code: string) => {
     try {
       await verifyOtp.mutateAsync({
         phone: normalizedPhone,
         code,
         phonePrefix: phoneVal.prefix,
         phoneNumber: phoneVal.number,
+        useEmail,
       });
       toast.success("מספר הטלפון עודכן בהצלחה!");
       onSuccess(phoneVal);
       onClose();
     } catch (err: any) {
-      toast.error(err?.message ?? "קוד שגוי או פג תוקף");
+      if (err?.data?.code === "TOO_MANY_REQUESTS" && err?.message?.includes("נעול")) {
+        setStep("locked");
+      } else {
+        toast.error(err?.message ?? "קוד שגוי או פג תוקף");
+      }
     }
+  };
+
+  const handleVerifyOtp = () => {
+    const code = otp.join("");
+    if (code.length !== 6) { toast.error("יש להזין קוד בן 6 ספרות"); return; }
+    doVerify(code);
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -88,25 +127,9 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
     const newOtp = [...otp];
     newOtp[index] = digit;
     setOtp(newOtp);
-    if (digit && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-    // Auto-submit when all 6 digits entered
+    if (digit && index < 5) otpRefs.current[index + 1]?.focus();
     if (digit && index === 5 && newOtp.every((d) => d !== "")) {
-      setTimeout(() => {
-        verifyOtp.mutateAsync({
-          phone: normalizedPhone,
-          code: newOtp.join(""),
-          phonePrefix: phoneVal.prefix,
-          phoneNumber: phoneVal.number,
-        }).then(() => {
-          toast.success("מספר הטלפון עודכן בהצלחה!");
-          onSuccess(phoneVal);
-          onClose();
-        }).catch((err: any) => {
-          toast.error(err?.message ?? "קוד שגוי או פג תוקף");
-        });
-      }, 100);
+      setTimeout(() => doVerify(newOtp.join("")), 100);
     }
   };
 
@@ -119,10 +142,16 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
   const handleResend = async () => {
     if (countdown > 0) return;
     try {
-      await requestOtp.mutateAsync({ phone: combinePhone(phoneVal) });
+      if (useEmail) {
+        const res = await requestOtpEmail.mutateAsync({ phone: combinePhone(phoneVal) });
+        setMaskedEmail(res.maskedEmail);
+        toast.success(`קוד חדש נשלח למייל ${res.maskedEmail}`);
+      } else {
+        await requestOtp.mutateAsync({ phone: combinePhone(phoneVal) });
+        toast.success("קוד חדש נשלח");
+      }
       setOtp(["", "", "", "", "", ""]);
       setCountdown(30);
-      toast.success("קוד חדש נשלח");
     } catch (err: any) {
       toast.error(err?.message ?? "שגיאה בשליחת קוד");
     }
@@ -148,6 +177,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
           <X className="h-5 w-5" />
         </button>
 
+        {/* ── Step 1: Enter new phone ── */}
         {step === "enter_phone" && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
@@ -178,16 +208,94 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
           </div>
         )}
 
+        {/* ── SMS failed — offer email fallback ── */}
+        {step === "sms_failed" && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100">
+                <Phone className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground text-base">שליחת SMS נכשלה</h2>
+                <p className="text-xs text-muted-foreground">לא הצלחנו לשלוח קוד לטלפון</p>
+              </div>
+            </div>
+
+            {hasEmailFallback ? (
+              <>
+                <p className="text-sm text-foreground">
+                  ניתן לקבל את קוד האימות למייל הרשום בחשבון שלך.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSendEmailOtp}
+                  disabled={requestOtpEmail.isPending}
+                  className="w-full py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ background: "oklch(0.35 0.08 122)", color: "white" }}
+                >
+                  <Mail className="h-4 w-4" />
+                  {requestOtpEmail.isPending ? "שולח למייל..." : "שלח קוד למייל"}
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                לא נמצאה כתובת מייל בחשבון. אנא פנה לתמיכה.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setStep("enter_phone")}
+              className="w-full text-xs text-muted-foreground underline"
+            >
+              חזור לשינוי מספר
+            </button>
+          </div>
+        )}
+
+        {/* ── Locked out ── */}
+        {step === "locked" && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-100">
+                <Lock className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground text-base">החשבון נעול זמנית</h2>
+                <p className="text-xs text-muted-foreground">לשינוי מספר טלפון</p>
+              </div>
+            </div>
+            <p className="text-sm text-foreground">
+              לאחר 5 ניסיונות כושלים, האפשרות לשינוי מספר טלפון נעולה לשעה אחת.
+              נשלחה התראה לצוות האבטחה.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              אם זה לא אתה, פנה לתמיכה מיידית.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3 rounded-xl font-bold text-sm"
+              style={{ background: "oklch(0.35 0.08 122)", color: "white" }}
+            >
+              סגור
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 2: Enter OTP ── */}
         {step === "enter_otp" && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-                <ShieldCheck className="h-5 w-5" style={{ color: "#4F583B" }} />
+                {useEmail ? <Mail className="h-5 w-5" style={{ color: "#4F583B" }} /> : <ShieldCheck className="h-5 w-5" style={{ color: "#4F583B" }} />}
               </div>
               <div>
                 <h2 className="font-bold text-foreground text-base">אימות מספר טלפון</h2>
                 <p className="text-xs text-muted-foreground">
-                  הזן את הקוד שנשלח ל-{combinePhone(phoneVal)}
+                  {useEmail
+                    ? `הזן את הקוד שנשלח למייל ${maskedEmail}`
+                    : `הזן את הקוד שנשלח ל-${combinePhone(phoneVal)}`}
                 </p>
               </div>
             </div>
@@ -231,7 +339,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
                 <button
                   type="button"
                   onClick={handleResend}
-                  disabled={requestOtp.isPending}
+                  disabled={requestOtp.isPending || requestOtpEmail.isPending}
                   className="text-xs font-medium underline"
                   style={{ color: "oklch(0.45 0.1 122)" }}
                 >

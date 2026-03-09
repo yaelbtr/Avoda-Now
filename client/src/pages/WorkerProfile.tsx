@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
+import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
+import { Eye } from "lucide-react";
 
 // Spec-required preference categories for worker profile matching
 const PREFERENCE_CATEGORIES = [
@@ -91,6 +93,7 @@ export default function WorkerProfile() {
   const [, navigate] = useLocation();
 
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
   const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
 
   const updateMutation = trpc.user.updateProfile.useMutation({
@@ -147,6 +150,7 @@ export default function WorkerProfile() {
   // ── Wizard state ─────────────────────────────────────────────────────────────
   const [wizardStep, setWizardStep] = useState(1);
   const [wizardDone, setWizardDone] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Populate from server
   useEffect(() => {
@@ -760,15 +764,25 @@ export default function WorkerProfile() {
         <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)" }} />
 
         <div className="max-w-lg mx-auto px-4 pt-5 pb-4">
-          {/* Back button */}
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-sm mb-5 transition-opacity hover:opacity-60"
-            style={{ color: "#4F583B" }}
-          >
-            <ArrowRight className="h-4 w-4" />
-            חזרה
-          </button>
+          {/* Back button + Preview button */}
+          <div className="flex items-center justify-between mb-5">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
+              style={{ color: "#4F583B" }}
+            >
+              <ArrowRight className="h-4 w-4" />
+              חזרה
+            </button>
+            <button
+              onClick={() => setShowPreview(true)}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all hover:opacity-80"
+              style={{ background: "oklch(0.93 0.04 122)", color: "#4F583B", border: "1px solid oklch(0.85 0.06 122)" }}
+            >
+              <Eye className="h-3.5 w-3.5" />
+              תצוגת מעסיק
+            </button>
+          </div>
 
           {/* Avatar + info row */}
           <div className="flex items-center gap-4 mb-5">
@@ -1260,6 +1274,26 @@ export default function WorkerProfile() {
         )}
 
       </div>
+
+      {/* ── Preview Modal ─────────────────────────────────────────────────── */}
+      <WorkerProfilePreviewModal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        name={name || user?.name || ""}
+        photo={profilePhoto}
+        bio={workerBio}
+        categories={selectedCategories}
+        categoryLabels={PREFERENCE_CATEGORIES}
+        preferredDays={preferredDays}
+        preferredTimeSlots={preferredTimeSlots}
+        dayLabels={DAYS}
+        timeSlotLabels={TIME_SLOTS}
+        locationMode={locationMode}
+        preferredCities={preferredCities}
+        cityNames={(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe)}
+        searchRadiusKm={searchRadiusKm}
+        phone={profileQuery.data?.phone}
+      />
     </div>
   );
 }

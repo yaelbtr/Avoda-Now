@@ -169,6 +169,13 @@
       "when": 1773073919046,
       "tag": "0023_previous_warbird",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1773075067689,
+      "tag": "0024_sloppy_deadpool",
+      "breakpoints": true
     }
   ]
 }

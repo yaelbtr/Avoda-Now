@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame, Mail, Copy, Check } from "lucide-react";
+import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame, Mail, Copy, Check, Bookmark, BookmarkCheck, Star } from "lucide-react";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER,
   C_DANGER_HEX, C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
@@ -41,6 +41,9 @@ interface JobCardProps {
     distance?: number;
   };
   showDistance?: boolean;
+  isHighMatch?: boolean;
+  isSaved?: boolean;
+  onSaveToggle?: (jobId: number, saved: boolean) => void;
   onLoginRequired?: (message: string) => void;
 }
 
@@ -261,7 +264,7 @@ function SharePopover({ jobTitle, jobId, city, salary, salaryType }: { jobTitle:
   );
 }
 
-export default function JobCard({ job, showDistance = false, onLoginRequired }: JobCardProps) {
+export function JobCard({ job, showDistance, isHighMatch, isSaved, onSaveToggle, onLoginRequired }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
@@ -363,6 +366,12 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
               {isVolunteer && (
                 <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 bg-green-50 text-green-600 border border-green-200">
                   💚 התנדבות
+                </span>
+              )}
+              {isHighMatch && (
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0" style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
+                  <Star className="h-2.5 w-2.5 fill-current" />
+                  התאמה גבוהה
                 </span>
               )}
             </div>
@@ -476,6 +485,22 @@ export default function JobCard({ job, showDistance = false, onLoginRequired }: 
           </motion.div>
         )}
 
+        {onSaveToggle && (
+          <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+            <AppButton
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0"
+              style={{ color: isSaved ? "oklch(0.42 0.12 88)" : "var(--text-muted)" }}
+              onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
+              title={isSaved ? "בטל שמירה" : "שמור עבודה"}
+            >
+              {isSaved
+                ? <BookmarkCheck className="h-3.5 w-3.5" style={{ fill: "oklch(0.42 0.12 88)", color: "oklch(0.42 0.12 88)" }} />
+                : <Bookmark className="h-3.5 w-3.5" />}
+            </AppButton>
+          </motion.div>
+        )}
         <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
 
         <Link href={`/job/${job.id}`}>

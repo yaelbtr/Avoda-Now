@@ -55,6 +55,9 @@ import {
   updateNotificationPrefs,
   markEmployerApplicationsViewed,
   getCities,
+  saveJob,
+  unsaveJob,
+  getSavedJobIds,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1111,7 +1114,33 @@ const pushRouter = router({
   })),
 });
 
-// ─── App Router ─────────────────────────────────────────────────────
+// ─── Saved Jobs Router ───────────────────────────────────────────────
+
+const savedJobsRouter = router({
+  /** Save a job for the current worker */
+  save: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await saveJob(ctx.user.id, input.jobId);
+      return { success: true };
+    }),
+
+  /** Unsave (remove bookmark) a job */
+  unsave: protectedProcedure
+    .input(z.object({ jobId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await unsaveJob(ctx.user.id, input.jobId);
+      return { success: true };
+    }),
+
+  /** Get all saved job IDs for the current worker */
+  getSavedIds: protectedProcedure.query(async ({ ctx }) => {
+    const ids = await getSavedJobIds(ctx.user.id);
+    return { ids };
+  }),
+});
+
+// ─── App Router ───────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
@@ -1122,6 +1151,7 @@ export const appRouter = router({
   live: liveStatsRouter,
   user: userRouter,
   push: pushRouter,
+  savedJobs: savedJobsRouter,
 });
 
 export type AppRouter = typeof appRouter;

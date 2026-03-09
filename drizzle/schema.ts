@@ -284,3 +284,18 @@ export const cities = mysqlTable("cities", {
 });
 export type City = typeof cities.$inferSelect;
 export type InsertCity = typeof cities.$inferInsert;
+
+/**
+ * Saved (bookmarked) jobs per worker.
+ * Workers can save jobs to revisit later.
+ */
+export const savedJobs = mysqlTable("saved_jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  jobId: int("jobId").notNull(),
+  savedAt: timestamp("savedAt").defaultNow().notNull(),
+}, (t) => ({
+  userJobIdx: uniqueIndex("saved_jobs_user_job_idx").on(t.userId, t.jobId),
+}));
+export type SavedJob = typeof savedJobs.$inferSelect;
+export type InsertSavedJob = typeof savedJobs.$inferInsert;

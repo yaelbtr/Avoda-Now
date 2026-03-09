@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
-import JobCard from "@/components/JobCard";
+import { JobCard } from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import {
@@ -185,11 +185,20 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
   const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
   const nearbyQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: nearbyRadius, limit: 12 },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: nearbyRadius, limit: 8 },
     { enabled: !!userLat }
   );
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  const utils = trpc.useUtils();
+  const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
+  const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
+  const handleSaveToggle = (jobId: number, save: boolean) => {
+    if (!isAuthenticated) { onLoginRequired("כדי לשמור משרות יש להתחבר למערכת"); return; }
+    if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
+  };
   const setAvailableMutation = trpc.workers.setAvailable.useMutation({
     onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
     onError: () => setAvailabilityLoading(false),
@@ -1038,16 +1047,34 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <NearbyJobsMap jobs={jobs} userLat={userLat} userLng={userLng!} />
         ) : (
           <div className="space-y-3">
-            {jobs.map((job, i) => (
+            {jobs.slice(0, 8).map((job, i) => (
               <motion.div key={job.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.35 }}>
                 <div onClick={() => navigate(`/jobs/${job.id}`)} className="cursor-pointer">
                   <JobCard
                     job={job}
                     onLoginRequired={onLoginRequired}
+                    isSaved={savedIds.has(job.id)}
+                    onSaveToggle={handleSaveToggle}
                   />
                 </div>
               </motion.div>
             ))}
+            {jobs.length > 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                <button
+                  onClick={() => navigate("/find-jobs")}
+                  className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    background: "oklch(0.96 0.02 100)",
+                    border: "1.5px dashed oklch(0.80 0.06 84)",
+                    color: "oklch(0.42 0.10 88)",
+                  }}
+                >
+                  ראה את כל המשרות
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              </motion.div>
+            )}
           </div>
         )}
         </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
-import JobCard from "@/components/JobCard";
+import { JobCard } from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES } from "@shared/categories";

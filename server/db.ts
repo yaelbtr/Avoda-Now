@@ -16,6 +16,7 @@ import {
   pushSubscriptions,
   InsertPushSubscription,
   cities,
+  savedJobs,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1269,4 +1270,37 @@ export async function markEmployerApplicationsViewed(employerId: number): Promis
         eq(applications.status, "pending")
       )
     );
+}
+
+// ── Saved Jobs ────────────────────────────────────────────────────────────────
+
+/** Save a job for a worker. Silently ignores duplicate saves. */
+export async function saveJob(userId: number, jobId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(savedJobs).values({ userId, jobId });
+  } catch {
+    // Unique constraint violation = already saved, ignore
+  }
+}
+
+/** Remove a saved job for a worker. */
+export async function unsaveJob(userId: number, jobId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .delete(savedJobs)
+    .where(and(eq(savedJobs.userId, userId), eq(savedJobs.jobId, jobId)));
+}
+
+/** Get all saved job IDs for a worker. */
+export async function getSavedJobIds(userId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({ jobId: savedJobs.jobId })
+    .from(savedJobs)
+    .where(eq(savedJobs.userId, userId));
+  return rows.map((r) => r.jobId);
 }

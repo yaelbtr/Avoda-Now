@@ -764,3 +764,7 @@
 - [x] Add preferredDays (JSON array) and preferredTimeSlots (JSON array) to users table in schema
 - [x] Update updateWorkerProfile in db.ts and updateProfile in routers.ts
 - [x] Add days + time slots UI to WorkerProfile matching preferences section
+
+## Job Search — Time-of-Day Filter
+- [x] Add timeSlot filter UI (בוקר/צהריים/ערב/לילה) to job search page
+- [x] Filter jobs client-side by workingHours field matching selected time slot

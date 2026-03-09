@@ -92,6 +92,7 @@ export default function FindJobs() {
   );
   // Auto-trigger location lookup when arriving via ?filter=nearby
   const [autoNearby] = useState(filterParam === "nearby");
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
@@ -194,6 +195,29 @@ export default function FindJobs() {
       const startDt = (j as { startDateTime?: string | null }).startDateTime;
       const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
       return isUrgentJob || isToday || startsWithin24h;
+    });
+  }
+
+  // Filter by time slot if any selected
+  if (selectedTimeSlots.length > 0) {
+    const slotRanges: Record<string, [number, number]> = {
+      morning:   [6,  12],
+      afternoon: [12, 17],
+      evening:   [17, 22],
+      night:     [22, 30], // 22-06 next day → use 30 to handle wrap
+    };
+    jobs = jobs.filter(j => {
+      const wh = (j as { workingHours?: string | null }).workingHours;
+      if (!wh) return false;
+      // Parse first hour from strings like "08:00-16:00" or "08:00"
+      const match = wh.match(/(\d{1,2}):(\d{2})/);
+      if (!match) return false;
+      const startHour = parseInt(match[1], 10);
+      return selectedTimeSlots.some(slot => {
+        const [from, to] = slotRanges[slot];
+        if (slot === "night") return startHour >= 22 || startHour < 6;
+        return startHour >= from && startHour < to;
+      });
     });
   }
 
@@ -458,7 +482,58 @@ export default function FindJobs() {
             </div>
           </div>
 
-          {/* 5. Location */}
+          {/* 5. Time of day */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold mb-2 text-gray-500">שעות עבודה</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "morning",   label: "בוקר",    sub: "06–12", icon: "🌅" },
+                { value: "afternoon", label: "צהריים",  sub: "12–17", icon: "☀️" },
+                { value: "evening",   label: "ערב",     sub: "17–22", icon: "🌆" },
+                { value: "night",     label: "לילה",    sub: "22–06", icon: "🌙" },
+              ].map(slot => {
+                const isActive = selectedTimeSlots.includes(slot.value);
+                return (
+                  <button
+                    key={slot.value}
+                    onClick={() =>
+                      setSelectedTimeSlots(prev =>
+                        prev.includes(slot.value)
+                          ? prev.filter(s => s !== slot.value)
+                          : [...prev, slot.value]
+                      )
+                    }
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border"
+                    style={isActive ? {
+                      background: C_BRAND_HEX,
+                      color: "white",
+                      borderColor: C_BRAND_HEX,
+                      boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
+                    } : {
+                      background: C_PAGE_BG_HEX,
+                      color: C_TEXT_MUTED,
+                      borderColor: C_BORDER,
+                    }}
+                  >
+                    <span>{slot.icon}</span>
+                    <span>{slot.label}</span>
+                    <span className="opacity-60 text-[10px]">{slot.sub}</span>
+                  </button>
+                );
+              })}
+              {selectedTimeSlots.length > 0 && (
+                <button
+                  onClick={() => setSelectedTimeSlots([])}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs text-gray-400 border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                  נקה
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 6. Location */}
           <div>
             <p className="text-xs font-semibold mb-2 text-gray-500">מיקום</p>
             <div className="space-y-2">

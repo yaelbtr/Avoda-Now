@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, city_code, name_he, district FROM cities ORDER BY district, name_he;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, city_code, name_he, district FROM cities ORDER BY district, name_he;",
+  "rows": [
+    {
+      "id": "66",
+      "city_code": "7000",
+      "name_he": "אשדוד",
+      "district": "דרום"
+    },
+    {
+      "id": "67",
+      "city_code": "7100",
+      "name_he": "אשקלון",
+      "district": "דרום"
+    },
+    {
+      "id": "68",
+      "city_code": "8400",
+      "name_he": "באר שבע",
+      "district": "דרום"
+    },
+    {
+      "id": "59",
+      "city_code": "3000",
+      "name_he": "ירושלים",
+      "district": "ירושלים"
+    },
+    {
+      "id": "61",
+      "city_code": "6100",
+      "name_he": "בני ברק",
+      "district": "מרכז"
+    },
+    {
+      "id": "63",
+      "city_code": "6300",
+      "name_he": "גבעתיים",
+      "district": "מרכז"
+    },
+    {
+      "id": "65",
+      "city_code": "6600",
+      "name_he": "נתניה",
+      "district": "מרכז"
+    },
+    {
+      "id": "64",
+      "city_code": "6500",
+      "name_he": "פתח תקווה",
+      "district": "מרכז"
+    },
+    {
+      "id": "62",
+      "city_code": "6200",
+      "name_he": "רמת גן",
+      "district": "מרכז"
+    },
+    {
+      "id": "60",
+      "city_code": "5000",
+      "name_he": "תל אביב",
+      "district": "מרכז"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcity_code\tname_he\tdistrict\n66\t7000\tאשדוד\tדרום\n67\t7100\tאשקלון\tדרום\n68\t8400\tבאר שבע\tדרום\n59\t3000\tירושלים\tירושלים\n61\t6100\tבני ברק\tמרכז\n63\t6300\tגבעתיים\tמרכז\n65\t6600\tנתניה\tמרכז\n64\t6500\tפתח תקווה\tמרכז\n62\t6200\tרמת גן\tמרכז\n60\t5000\tתל אביב\tמרכז\n",
+  "stderr": "",
+  "execution_time_ms": 1501
+}

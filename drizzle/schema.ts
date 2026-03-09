@@ -35,8 +35,10 @@ export const users = mysqlTable("users", {
   workerTags: json("workerTags").$type<string[]>(),
   /** Worker's preferred job categories (JSON array of category values) */
   preferredCategories: json("preferredCategories").$type<string[]>(),
-  /** Worker's preferred city / area */
+  /** Worker's preferred city / area (legacy single city) */
   preferredCity: varchar("preferredCity", { length: 100 }),
+  /** Worker's preferred cities (JSON array of city IDs from the cities table) */
+  preferredCities: json("preferredCities").$type<number[]>(),
   /** Worker's location mode for matching: city or radius */
   locationMode: mysqlEnum("locationMode", ["city", "radius"]).default("city"),
   /** Worker's GPS latitude for radius-based matching */
@@ -265,3 +267,20 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 }));
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+/**
+ * Israeli cities reference table.
+ * Populated once from a seed script; read-only at runtime.
+ */
+export const cities = mysqlTable("cities", {
+  id: int("id").autoincrement().primaryKey(),
+  cityCode: int("city_code"),
+  nameHe: text("name_he").notNull(),
+  nameEn: text("name_en"),
+  district: varchar("district", { length: 100 }),
+  latitude: decimal("latitude", { precision: 10, scale: 7 }),
+  longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+export type City = typeof cities.$inferSelect;
+export type InsertCity = typeof cities.$inferInsert;

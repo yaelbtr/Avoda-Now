@@ -15,6 +15,7 @@ import {
   notificationBatches,
   pushSubscriptions,
   InsertPushSubscription,
+  cities,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -136,6 +137,7 @@ export async function getWorkerProfile(id: number) {
       preferenceText: users.preferenceText,
       preferredDays: users.preferredDays,
       preferredTimeSlots: users.preferredTimeSlots,
+      preferredCities: users.preferredCities,
       signupCompleted: users.signupCompleted,
       profilePhoto: users.profilePhoto,
     })
@@ -152,6 +154,7 @@ export async function updateWorkerProfile(
     preferredCity?: string | null;
     workerBio?: string | null;
     name?: string | null;
+    phone?: string | null;
     locationMode?: "city" | "radius";
     workerLatitude?: string | null;
     workerLongitude?: string | null;
@@ -160,6 +163,7 @@ export async function updateWorkerProfile(
     workerTags?: string[];
     preferredDays?: string[];
     preferredTimeSlots?: string[];
+    preferredCities?: number[];
     expectedHourlyRate?: number | null;
     availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
     signupCompleted?: boolean;
@@ -173,6 +177,7 @@ export async function updateWorkerProfile(
   if (data.preferredCity !== undefined) updateSet.preferredCity = data.preferredCity;
   if (data.workerBio !== undefined) updateSet.workerBio = data.workerBio;
   if (data.name !== undefined) updateSet.name = data.name;
+  if (data.phone !== undefined) updateSet.phone = data.phone;
   if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
   if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
   if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;
@@ -181,12 +186,33 @@ export async function updateWorkerProfile(
   if (data.workerTags !== undefined) updateSet.workerTags = data.workerTags;
   if (data.preferredDays !== undefined) updateSet.preferredDays = data.preferredDays;
   if (data.preferredTimeSlots !== undefined) updateSet.preferredTimeSlots = data.preferredTimeSlots;
+  if (data.preferredCities !== undefined) updateSet.preferredCities = data.preferredCities;
   if (data.expectedHourlyRate !== undefined) updateSet.expectedHourlyRate = data.expectedHourlyRate;
   if (data.availabilityStatus !== undefined) updateSet.availabilityStatus = data.availabilityStatus;
   if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
   if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
+}
+
+// ─── Cities ──────────────────────────────────────────────────────────────────
+
+/** Returns all active cities ordered by district then Hebrew name */
+export async function getCities() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: cities.id,
+      nameHe: cities.nameHe,
+      nameEn: cities.nameEn,
+      district: cities.district,
+      latitude: cities.latitude,
+      longitude: cities.longitude,
+    })
+    .from(cities)
+    .where(eq(cities.isActive, true))
+    .orderBy(asc(cities.district), asc(cities.nameHe));
 }
 
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────

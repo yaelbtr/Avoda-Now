@@ -162,6 +162,13 @@
       "when": 1773071631912,
       "tag": "0022_black_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1773073919046,
+      "tag": "0023_previous_warbird",
+      "breakpoints": true
     }
   ]
 }

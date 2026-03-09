@@ -1,0 +1,9 @@
+{
+  "query": "\nDELETE FROM cities;\n\nINSERT INTO cities (city_code, name_he, name_en, district, latitude, longitude) VALUES\n(3000,'ירושלים','Jerusalem','ירושלים',31.7683,35.2137),\n(5000,'תל אביב','Tel Aviv','מרכז',32.0853,34.7818),\n(6100,'בני ברק','Bnei Brak','מרכז',32.0853,34.8333),\n(6200,'רמת גן','Ramat Gan','מרכז',32.0823,34.8107),\n(6300,'גבעתיים','Givatayim','מרכז',32.0723,34.8125),\n(6500,'פתח תקווה','Petah Tikva','מרכז',32.0840,34.8878),\n(6600,'נתניה','Netanya','מרכז',32.3215,34.8532),\n(7000,'אשדוד','Ashdod','דרום',31.8014,34.6435),\n(7100,'אשקלון','Ashkelon','דרום',31.6693,34.5715),\n(8400,'באר שבע','Beer Sheva','דרום',31.2518,34.7915);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \nDELETE FROM cities;\n\nINSERT INTO cities (city_code, name_he, name_en, district, latitude, longitude) VALUES\n(3000,'ירושלים','Jerusalem','ירושלים',31.7683,35.2137),\n(5000,'תל אביב','Tel Aviv','מרכז',32.0853,34.7818),\n(6100,'בני ברק','Bnei Brak','מרכז',32.0853,34.8333),\n(6200,'רמת גן','Ramat Gan','מרכז',32.0823,34.8107),\n(6300,'גבעתיים','Givatayim','מרכז',32.0723,34.8125),\n(6500,'פתח תקווה','Petah Tikva','מרכז',32.0840,34.8878),\n(6600,'נתניה','Netanya','מרכז',32.3215,34.8532),\n(7000,'אשדוד','Ashdod','דרום',31.8014,34.6435),\n(7100,'אשקלון','Ashkelon','דרום',31.6693,34.5715),\n(8400,'באר שבע','Beer Sheva','דרום',31.2518,34.7915);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1857
+}

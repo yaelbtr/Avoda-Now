@@ -54,6 +54,7 @@ import {
   getNotificationPrefs,
   updateNotificationPrefs,
   markEmployerApplicationsViewed,
+  getCities,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -917,6 +918,11 @@ const userRouter = router({
     return profile;
   }),
 
+  /** Get all active cities for the city picker */
+  getCities: publicProcedure.query(async () => {
+    return getCities();
+  }),
+
   /** Get a public worker profile by user ID (for employers viewing applicants) */
   getPublicProfile: publicProcedure
     .input(z.object({ userId: z.number() }))
@@ -939,17 +945,28 @@ const userRouter = router({
         searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
         preferredCategories: z.array(z.string()),
         // Optional
+        phone: z.string().min(9).max(20).nullable().optional(),
         preferenceText: z.string().max(1000).nullable().optional(),
         expectedHourlyRate: z.number().min(0).max(10000).nullable().optional(),
         workerBio: z.string().max(500).nullable().optional(),
         availabilityStatus: z.enum(["available_now", "available_today", "available_hours", "not_available"]).nullable().optional(),
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
+        preferredCities: z.array(z.number().int()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Normalize phone if provided (only for OAuth users without phone)
+      let normalizedPhone: string | undefined = undefined;
+      if (input.phone && ctx.user.loginMethod !== "phone_otp") {
+        try {
+          normalizedPhone = normalizeIsraeliPhone(input.phone);
+          if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
+        } catch { normalizedPhone = undefined; }
+      }
       await updateWorkerProfile(ctx.user.id, {
         name: input.name,
+        phone: normalizedPhone,
         locationMode: input.locationMode,
         preferredCity: input.preferredCity,
         workerLatitude: input.workerLatitude,
@@ -962,6 +979,7 @@ const userRouter = router({
         availabilityStatus: input.availabilityStatus,
         preferredDays: input.preferredDays,
         preferredTimeSlots: input.preferredTimeSlots,
+        preferredCities: input.preferredCities,
         signupCompleted: true,
       });
       return { success: true };
@@ -971,6 +989,7 @@ const userRouter = router({
     .input(
       z.object({
         name: z.string().min(2).max(100).optional(),
+        phone: z.string().min(9).max(20).nullable().optional(),
         preferredCategories: z.array(z.string()).optional(),
         preferredCity: z.string().max(100).nullable().optional(),
         workerBio: z.string().max(500).nullable().optional(),
@@ -982,11 +1001,30 @@ const userRouter = router({
         workerTags: z.array(z.string().max(50)).max(20).optional(),
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
+        preferredCities: z.array(z.number().int()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Only allow phone update for OAuth (Google) users who don't have a phone yet
+      // or who logged in via OAuth (not phone OTP)
+      let normalizedPhone: string | undefined = undefined;
+      if (input.phone !== undefined && input.phone !== null) {
+        // Only allow if user authenticated via OAuth (not phone OTP)
+        if (ctx.user.loginMethod === "phone_otp") {
+          throw new Error("שינוי מספר טלפון אינו מותר למשתמשים שנכנסו עם OTP");
+        }
+        try {
+          normalizedPhone = normalizeIsraeliPhone(input.phone);
+          if (!isValidIsraeliPhone(normalizedPhone)) {
+            throw new Error("מספר טלפון לא תקין");
+          }
+        } catch {
+          throw new Error("מספר טלפון לא תקין");
+        }
+      }
       await updateWorkerProfile(ctx.user.id, {
         name: input.name,
+        phone: normalizedPhone,
         preferredCategories: input.preferredCategories,
         preferredCity: input.preferredCity,
         workerBio: input.workerBio,
@@ -998,6 +1036,7 @@ const userRouter = router({
         workerTags: input.workerTags,
         preferredDays: input.preferredDays,
         preferredTimeSlots: input.preferredTimeSlots,
+        preferredCities: input.preferredCities,
       });
       return { success: true };
     }),

@@ -8,6 +8,7 @@ interface AuthUser {
   phone: string | null;
   email: string | null;
   role: "user" | "admin";
+  loginMethod: string | null;
 }
 
 interface AuthContextValue {

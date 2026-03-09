@@ -14,6 +14,7 @@ import {
   CheckCircle2, Camera,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
+import { CityPicker } from "@/components/CityPicker";
 
 // Spec-required preference categories for worker profile matching
 const PREFERENCE_CATEGORIES = [
@@ -118,6 +119,7 @@ export default function WorkerProfile() {
   // ── Shared state ────────────────────────────────────────────────────────────
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [workerBio, setWorkerBio] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [preferenceText, setPreferenceText] = useState("");
@@ -126,6 +128,7 @@ export default function WorkerProfile() {
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
   const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+  const [preferredCities, setPreferredCities] = useState<number[]>([]);
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -151,6 +154,7 @@ export default function WorkerProfile() {
     if (profileQuery.data) {
       const d = profileQuery.data;
       setName(d.name ?? "");
+      setPhone(d.phone ?? "");
       setWorkerBio(d.workerBio ?? "");
       setSelectedCategories(d.preferredCategories ?? []);
       setPreferenceText(d.preferenceText ?? "");
@@ -159,6 +163,7 @@ export default function WorkerProfile() {
       setSearchRadiusKm(d.searchRadiusKm ?? 5);
       setPreferredDays((d.preferredDays as string[]) ?? []);
       setPreferredTimeSlots((d.preferredTimeSlots as string[]) ?? []);
+      setPreferredCities((d.preferredCities as number[]) ?? []);
       setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
     }
     if (user?.email) setEmail(user.email);
@@ -194,6 +199,8 @@ export default function WorkerProfile() {
     try {
       await completeSignupMutation.mutateAsync({
         name: name.trim() || (user?.name ?? ""),
+        // Pass phone only for OAuth users (Google) who don't have a phone yet
+        phone: (!user?.phone && phone.trim()) ? phone.trim() : undefined,
         locationMode,
         preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
         searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
@@ -202,6 +209,7 @@ export default function WorkerProfile() {
         workerBio: workerBio.trim() || null,
         preferredDays,
         preferredTimeSlots,
+        preferredCities,
       });
       setWizardDone(true);
     } catch {
@@ -213,6 +221,8 @@ export default function WorkerProfile() {
   const handleSave = () => {
     updateMutation.mutate({
       name: name.trim() || undefined,
+      // Allow phone update only for OAuth (Google) users who don't have a phone
+      phone: (!user?.phone && phone.trim()) ? phone.trim() : undefined,
       workerBio: workerBio.trim() || null,
       preferredCategories: selectedCategories,
       preferenceText: preferenceText.trim() || null,
@@ -221,6 +231,7 @@ export default function WorkerProfile() {
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
       preferredDays,
       preferredTimeSlots,
+      preferredCities,
     });
   };
 
@@ -374,16 +385,26 @@ export default function WorkerProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold mb-1.5 block">מספר טלפון</Label>
+                  <Label className="text-sm font-semibold mb-1.5 block">
+                    מספר טלפון
+                    {!user?.phone && <span className="text-muted-foreground font-normal text-xs mr-1">(לא חובה)</span>}
+                  </Label>
                   <Input
-                    value={profileQuery.data?.phone ?? ""}
-                    disabled
-                    className="text-right bg-muted text-muted-foreground"
+                    value={phone}
+                    onChange={user?.phone ? undefined : (e) => setPhone(e.target.value)}
+                    readOnly={!!user?.phone}
+                    placeholder={user?.phone ? undefined : "050-000-0000"}
+                    className={`text-right ${user?.phone ? "bg-muted text-muted-foreground" : ""}`}
                     dir="ltr"
+                    type="tel"
                   />
-                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" /> מאומת
-                  </p>
+                  {user?.phone ? (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> מאומת
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-1">מספר הטלפון ישמש ליצירת קשר עם מעסיקים</p>
+                  )}
                 </div>
               </div>
 
@@ -459,33 +480,33 @@ export default function WorkerProfile() {
                     )}
                   </div>
 
-                  {/* Option B: City */}
+                  {/* Option B: City multi-select */}
                   <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setLocationMode("city")}
-                    onKeyDown={(e) => e.key === "Enter" && setLocationMode("city")}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl border-2 transition-all ${
                       locationMode === "city"
                         ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
+                        : "border-border"
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-2">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setLocationMode("city")}
+                      onKeyDown={(e) => e.key === "Enter" && setLocationMode("city")}
+                      className="flex items-center gap-3 mb-2 cursor-pointer"
+                    >
                       <Building2 className="h-5 w-5 text-primary shrink-0" />
                       <div>
-                        <p className="font-semibold text-sm text-foreground">עבודות בעיר מסוימת</p>
-                        <p className="text-xs text-muted-foreground">הגבל חיפוש לעיר ספציפית</p>
+                        <p className="font-semibold text-sm text-foreground">עבודות בערים מסוימות</p>
+                        <p className="text-xs text-muted-foreground">בחר ערים אחת או יותר</p>
                       </div>
                     </div>
                     {locationMode === "city" && (
                       <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                        <Input
-                          value={preferredCity}
-                          onChange={(e) => setPreferredCity(e.target.value)}
-                          placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
-                          className="text-right"
-                          autoFocus
+                        <CityPicker
+                          selectedCityIds={preferredCities}
+                          onChange={setPreferredCities}
+                          compact
                         />
                       </div>
                     )}
@@ -947,12 +968,10 @@ export default function WorkerProfile() {
 
             {locationMode === "city" && (
               <div>
-                <p className="text-xs text-muted-foreground mb-2">עיר מועדפת:</p>
-                <Input
-                  value={preferredCity}
-                  onChange={(e) => setPreferredCity(e.target.value)}
-                  placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
-                  className="text-right"
+                <p className="text-xs text-muted-foreground mb-2">בחר ערים מועדפות:</p>
+                <CityPicker
+                  selectedCityIds={preferredCities}
+                  onChange={setPreferredCities}
                 />
               </div>
             )}

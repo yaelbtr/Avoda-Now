@@ -753,24 +753,18 @@ export default function WorkerProfile() {
   ];
 
   return (
-    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.96 0.01 90)" }}>
-      {/* ── Hero Header + Tabs (all inside dark gradient) ─────────────────── */}
-      <div
-        className="relative overflow-hidden"
-        style={{
-          background: "linear-gradient(160deg, oklch(0.24 0.06 91) 0%, oklch(0.34 0.10 88) 100%)",
-        }}
-      >
-        {/* Decorative circles */}
-        <div className="absolute -top-10 -left-10 w-56 h-56 rounded-full opacity-[0.07]" style={{ background: "oklch(0.80 0.14 85)" }} />
-        <div className="absolute bottom-0 right-0 w-40 h-40 rounded-full opacity-[0.07]" style={{ background: "oklch(0.80 0.14 85)" }} />
+    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.97 0.005 90)" }}>
+      {/* ── Hero Header + Tabs ───────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ background: "white" }}>
+        {/* Subtle top accent line */}
+        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, oklch(0.45 0.14 88) 0%, oklch(0.60 0.16 85) 100%)" }} />
 
-        <div className="max-w-lg mx-auto px-4 pt-5 pb-5">
+        <div className="max-w-lg mx-auto px-4 pt-5 pb-4">
           {/* Back button */}
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-sm mb-6 transition-opacity hover:opacity-70"
-            style={{ color: "oklch(0.78 0.06 88)" }}
+            className="flex items-center gap-1.5 text-sm mb-5 transition-opacity hover:opacity-60"
+            style={{ color: "oklch(0.50 0.08 88)" }}
           >
             <ArrowRight className="h-4 w-4" />
             חזרה
@@ -778,33 +772,33 @@ export default function WorkerProfile() {
 
           {/* Avatar + info row */}
           <div className="flex items-center gap-4 mb-5">
-            {/* Avatar with upload */}
+            {/* Circular avatar with upload */}
             <div className="relative shrink-0">
               {profilePhoto ? (
                 <img
                   src={profilePhoto}
                   alt="תמונת פרופיל"
-                  className="w-20 h-20 rounded-2xl object-cover"
-                  style={{ border: "3px solid oklch(0.55 0.12 88)" }}
+                  className="w-20 h-20 rounded-full object-cover"
+                  style={{ border: "3px solid oklch(0.55 0.12 88)", boxShadow: "0 2px 12px oklch(0.45 0.12 88 / 0.25)" }}
                 />
               ) : (
                 <label
                   htmlFor="photo-upload-hero"
-                  className="w-20 h-20 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-opacity hover:opacity-80"
-                  style={{ background: "oklch(0.32 0.07 88)", border: "2px dashed oklch(0.50 0.10 88)" }}
+                  className="w-20 h-20 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all hover:opacity-80"
+                  style={{ background: "oklch(0.93 0.04 88)", border: "2px dashed oklch(0.60 0.10 88)" }}
                 >
-                  <Camera className="h-6 w-6 mb-1" style={{ color: "oklch(0.70 0.10 88)" }} />
-                  <span className="text-xs font-medium" style={{ color: "oklch(0.70 0.10 88)" }}>הוסף</span>
+                  <Camera className="h-5 w-5 mb-0.5" style={{ color: "oklch(0.50 0.12 88)" }} />
+                  <span className="text-xs font-medium" style={{ color: "oklch(0.50 0.12 88)" }}>הוסף</span>
                 </label>
               )}
               {profilePhoto && (
                 <label
                   htmlFor="photo-upload-hero"
-                  className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
-                  style={{ background: "oklch(0.52 0.14 85)" }}
+                  className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
+                  style={{ background: "oklch(0.50 0.14 85)" }}
                   title="שנה תמונה"
                 >
-                  <Camera className="h-3.5 w-3.5 text-white" />
+                  <Camera className="h-3 w-3 text-white" />
                 </label>
               )}
               <input
@@ -828,39 +822,39 @@ export default function WorkerProfile() {
                 }}
               />
               {photoUploading && (
-                <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
                   <BrandLoader size="sm" />
                 </div>
               )}
             </div>
 
             {/* Name + meta + photo notice */}
-            <div className="flex-1">
-              <h1 className="text-xl font-black leading-tight" style={{ color: "oklch(0.97 0.02 90)" }}>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-black leading-tight truncate" style={{ color: "oklch(0.20 0.04 88)" }}>
                 {name || user?.name || "פרופיל שלי"}
               </h1>
               {profileQuery.data?.phone && (
-                <p className="text-sm mt-0.5" style={{ color: "oklch(0.75 0.06 88)" }}>
+                <p className="text-sm mt-0.5" style={{ color: "oklch(0.50 0.06 88)" }}>
                   {profileQuery.data.phone}
                 </p>
               )}
               {selectedCategories.length > 0 && (
-                <p className="text-xs mt-0.5" style={{ color: "oklch(0.68 0.08 88)" }}>
+                <p className="text-xs mt-0.5 truncate" style={{ color: "oklch(0.55 0.08 88)" }}>
                   {selectedCategories.slice(0, 2).map(v => PREFERENCE_CATEGORIES.find(c => c.value === v)?.label).filter(Boolean).join(" · ")}
                   {selectedCategories.length > 2 && ` +${selectedCategories.length - 2}`}
                 </p>
               )}
               {/* Employer photo notice */}
-              <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "oklch(0.78 0.12 85)" }}>
+              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: "oklch(0.50 0.10 85)" }}>
                 📸 התמונה תוצג למעסיקים פוטנציאליים
               </p>
             </div>
           </div>
 
-          {/* ── Tab Bar (inside hero) ─────────────────────────────────── */}
+          {/* ── Tab Bar ──────────────────────────────────────────────── */}
           <div
             className="rounded-2xl p-1 flex gap-1"
-            style={{ background: "oklch(0.18 0.04 91 / 0.6)", border: "1px solid oklch(0.40 0.08 88 / 0.4)" }}
+            style={{ background: "oklch(0.94 0.02 90)", border: "1px solid oklch(0.88 0.04 88)" }}
           >
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -871,8 +865,8 @@ export default function WorkerProfile() {
                   onClick={() => setActiveTab(tab.id)}
                   className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
                   style={isActive
-                    ? { background: "oklch(0.52 0.14 85)", color: "white", boxShadow: "0 2px 10px oklch(0.40 0.14 88 / 0.6)" }
-                    : { color: "oklch(0.68 0.06 88)" }
+                    ? { background: "oklch(0.45 0.12 88)", color: "white", boxShadow: "0 2px 8px oklch(0.40 0.12 88 / 0.35)" }
+                    : { color: "oklch(0.50 0.06 88)" }
                   }
                 >
                   <Icon className="h-4 w-4" />

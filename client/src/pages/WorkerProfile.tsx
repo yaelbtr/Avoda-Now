@@ -875,6 +875,27 @@ export default function WorkerProfile() {
               <p className="text-xs text-muted-foreground mt-1">מספר הטלפון אינו ניתן לשינוי</p>
             </div>
             <div>
+              <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
+                כתובת מייל
+                {user?.email && (
+                  <span className="text-xs text-green-600 font-normal">נלקח מחשבון Google</span>
+                )}
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                readOnly={!!user?.email}
+                className={`text-right ${user?.email ? "bg-muted text-muted-foreground" : ""}`}
+                dir="ltr"
+              />
+              {!user?.email && (
+                <p className="text-xs text-muted-foreground mt-1">כתובת המייל תשמש לקבלת עדכונים על משרות</p>
+              )}
+            </div>
+            <div>
               <label className="text-sm font-medium text-foreground mb-1 block">אודות</label>
               <Textarea
                 value={workerBio}

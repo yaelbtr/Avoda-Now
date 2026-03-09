@@ -770,8 +770,8 @@ export default function MyApplications() {
                       </p>
                     )}
 
-                    {/* View job link */}
-                    <div className="mt-2 text-left">
+                    {/* View job link + share */}
+                    <div className="mt-2 flex items-center gap-2 text-left">
                       <a
                         href={`/job/${app.jobId}`}
                         className="text-xs font-medium underline underline-offset-2"
@@ -779,6 +779,31 @@ export default function MyApplications() {
                       >
                         צפה במשרה
                       </a>
+                      <button
+                        onClick={async () => {
+                          const url = `${window.location.origin}/job/${app.jobId}`;
+                          const title = app.jobTitle ?? "משרה";
+                          const parts = [title];
+                          if (app.employerName) parts.push(app.employerName);
+                          if (app.jobCity) parts.push(`ב${app.jobCity}`);
+                          if (app.jobSalary) parts.push(formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly"));
+                          const text = parts.join(" | ");
+                          if (navigator.share) {
+                            try { await navigator.share({ title, text, url }); }
+                            catch {}
+                          } else {
+                            await navigator.clipboard.writeText(url);
+                            toast.success("קישור המשרה הועתק ללוח");
+                          }
+                        }}
+                        className="p-1 rounded-lg transition-all hover:bg-[oklch(0.38_0.07_125.0_/_0.08)]"
+                        title="שתף משרה"
+                        style={{ color: "var(--text-muted)" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "oklch(0.38 0.07 125.0)")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </motion.div>
                 );
@@ -1100,7 +1125,11 @@ export default function MyApplications() {
                           onClick={async () => {
                             const url = `${window.location.origin}/job/${job.id}`;
                             const title = job.title;
-                            const text = `${job.title}${job.city ? ` ב${job.city}` : ""}${job.salary ? ` | ${formatSalary(job.salary, job.salaryType ?? "hourly")}` : ""}`;
+                            const parts = [job.title];
+                            if (job.businessName) parts.push(job.businessName);
+                            if (job.city) parts.push(`ב${job.city}`);
+                            if (job.salary) parts.push(formatSalary(job.salary, job.salaryType ?? "hourly"));
+                            const text = parts.join(" | ");
                             if (navigator.share) {
                               try { await navigator.share({ title, text, url }); }
                               catch {}
@@ -1109,9 +1138,11 @@ export default function MyApplications() {
                               toast.success("קישור המשרה הועתק ללוח");
                             }
                           }}
-                          className="p-1 rounded-lg transition-all"
+                          className="p-1 rounded-lg transition-all hover:bg-[oklch(0.38_0.07_125.0_/_0.08)]"
                           title="שתף משרה"
                           style={{ color: "var(--text-muted)" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "oklch(0.38 0.07 125.0)")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
                         >
                           <Share2 className="h-3.5 w-3.5" />
                         </button>

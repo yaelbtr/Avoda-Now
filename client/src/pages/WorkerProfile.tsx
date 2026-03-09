@@ -232,6 +232,8 @@ export default function WorkerProfile() {
       preferredDays,
       preferredTimeSlots,
       preferredCities,
+      // Only pass email for non-Google users (Google email comes from OAuth)
+      email: !user?.email ? (email.trim() || null) : undefined,
     });
   };
 
@@ -744,6 +746,15 @@ export default function WorkerProfile() {
   }
 
   // ── EDIT MODE (existing worker) ──────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">("details");
+
+  const TABS = [
+    { id: "details" as const, label: "פרטים", icon: User },
+    { id: "work" as const, label: "עבודה", icon: Briefcase },
+    { id: "schedule" as const, label: "זמינות", icon: Bell },
+    { id: "settings" as const, label: "הגדרות", icon: BellOff },
+  ];
+
   return (
     <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.97 0.01 90)" }}>
       {/* ── Hero Header ───────────────────────────────────────────────── */}
@@ -843,9 +854,37 @@ export default function WorkerProfile() {
         </div>
       </div>
 
-      {/* ── Content ────────────────────────────────────────────────────── */}
-      <div className="max-w-lg mx-auto px-4 -mt-10 pb-10 space-y-4">
+      {/* ── Tab Bar ────────────────────────────────────────────────────── */}
+      <div className="max-w-lg mx-auto px-4" style={{ marginTop: "-1.5rem" }}>
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-1 flex gap-1">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? "text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                style={isActive ? { background: "oklch(0.40 0.10 88)" } : {}}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
+      {/* ── Tab Content ────────────────────────────────────────────────── */}
+      <div className="max-w-lg mx-auto px-4 mt-3 pb-10">
+
+        {/* ── TAB: פרטים ─────────────────────────────────────────────── */}
+        {activeTab === "details" && (
+        <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
           <div className="flex items-center gap-2 mb-4">
@@ -909,7 +948,27 @@ export default function WorkerProfile() {
             </div>
           </div>
         </div>
+        {/* Save button for details tab */}
+        <button
+          onClick={handleSave}
+          disabled={updateMutation.isPending}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60 mt-2"
+          style={{
+            background: updateMutation.isPending
+              ? "oklch(0.55 0.10 88)"
+              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+            color: "white",
+          }}
+        >
+          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+          שמור פרטים
+        </button>
+        </div>
+        )}
 
+        {/* ── TAB: עבודה ─────────────────────────────────────────────── */}
+        {activeTab === "work" && (
+        <div className="space-y-4">
         {/* ── Matching Preferences ─────────────────────────────────────────────── */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-5 space-y-5">
           <div className="flex items-center gap-2">
@@ -1033,6 +1092,35 @@ export default function WorkerProfile() {
                 />
               </div>
             )}
+           </div>
+        </div>
+        {/* Save button for work tab */}
+        <button
+          onClick={handleSave}
+          disabled={updateMutation.isPending}
+          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+          style={{
+            background: updateMutation.isPending
+              ? "oklch(0.55 0.10 88)"
+              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+            color: "white",
+          }}
+        >
+          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+          שמור העדפות
+        </button>
+        </div>
+        )}
+
+        {/* ── TAB: זמינות ─────────────────────────────────────────────── */}
+        {activeTab === "schedule" && (
+        <div className="space-y-4">
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
+              <Bell className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            </div>
+            <h2 className="font-bold text-foreground text-sm">זמינות לעבודה</h2>
           </div>
 
           {/* Preferred Schedule */}
@@ -1041,7 +1129,7 @@ export default function WorkerProfile() {
               זמני עבודה מועדפים
             </label>
             <p className="text-xs text-muted-foreground mb-3">
-              בחר את הימים ושעות שאתה מעדיף לעבוד בהם
+              בחר את הימים ושעות שאתה מוכן לעבוד בהם
             </p>
 
             <p className="text-xs font-medium text-muted-foreground mb-2">ימי עבודה:</p>
@@ -1103,12 +1191,11 @@ export default function WorkerProfile() {
             </div>
           </div>
         </div>
-
-         {/* ── Save button ────────────────────────────────────────────────── */}
+        {/* Save button for schedule tab */}
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2.5 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
           style={{
             background: updateMutation.isPending
               ? "oklch(0.55 0.10 88)"
@@ -1116,10 +1203,15 @@ export default function WorkerProfile() {
             color: "white",
           }}
         >
-          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-5 w-5" />}
-          שמור פרופיל
+          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+          שמור זמינות
         </button>
+        </div>
+        )}
 
+        {/* ── TAB: הגדרות ─────────────────────────────────────────────── */}
+        {activeTab === "settings" && (
+        <div className="space-y-4">
         {/* ── Notification Settings ─────────────────────────────────────────────── */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
           <div className="flex items-center gap-2 mb-4">
@@ -1165,6 +1257,9 @@ export default function WorkerProfile() {
             </p>
           )}
         </div>
+        </div>
+        )}
+
       </div>
     </div>
   );

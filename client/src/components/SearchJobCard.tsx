@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Heart, Send, Navigation, Building2 } from "lucide-react";
+import { MapPin, Heart, Send, Navigation, Building2, Bookmark, BookmarkCheck } from "lucide-react";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -32,6 +32,8 @@ interface SearchJob {
 interface SearchJobCardProps {
   job: SearchJob;
   showDistance?: boolean;
+  isSaved?: boolean;
+  onSaveToggle?: (jobId: number, saved: boolean) => void;
   onLoginRequired?: (msg: string) => void;
   onCardClick?: (job: SearchJob) => void;
 }
@@ -52,9 +54,9 @@ const CATEGORY_BG: Record<string, string> = {
   other: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=70&fit=crop",
 };
 
-const OLIVE = "#4F583B";
+const OLIVE = "oklch(0.40 0.10 88)";
 
-export default function SearchJobCard({ job, showDistance, onLoginRequired, onCardClick }: SearchJobCardProps) {
+export default function SearchJobCard({ job, showDistance, isSaved, onSaveToggle, onLoginRequired, onCardClick }: SearchJobCardProps) {
   const { isAuthenticated } = useAuth();
   const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
   const catIcon = getCategoryIcon(job.category);
@@ -269,6 +271,33 @@ export default function SearchJobCard({ job, showDistance, onLoginRequired, onCa
           )}
         </div>
       </div>
+
+      {/* ── Bookmark button ── */}
+      {onSaveToggle && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            background: isSaved ? "oklch(0.92 0.06 88)" : "rgba(255,255,255,0.85)",
+            border: isSaved ? "1px solid oklch(0.75 0.08 88)" : "1px solid #e8e0d0",
+            borderRadius: 8,
+            padding: "4px 6px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(4px)",
+            transition: "all 0.15s ease",
+          }}
+          title={isSaved ? "בטל שמירה" : "שמור עבודה"}
+        >
+          {isSaved
+            ? <BookmarkCheck size={14} style={{ color: OLIVE, fill: OLIVE }} />
+            : <Bookmark size={14} style={{ color: OLIVE }} />}
+        </button>
+      )}
 
       {/* ── Apply button (bottom strip) ── */}
       <button

@@ -1005,6 +1005,7 @@ const userRouter = router({
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
         preferredCities: z.array(z.number().int()).optional(),
+        email: z.string().email().max(320).nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1040,6 +1041,8 @@ const userRouter = router({
         preferredDays: input.preferredDays,
         preferredTimeSlots: input.preferredTimeSlots,
         preferredCities: input.preferredCities,
+        // Only allow email update for non-Google users (Google users get email from OAuth)
+        email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
       });
       return { success: true };
     }),

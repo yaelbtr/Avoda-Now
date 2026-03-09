@@ -169,6 +169,7 @@ export async function updateWorkerProfile(
     availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
     signupCompleted?: boolean;
     profilePhoto?: string | null;
+    email?: string | null;
   }
 ) {
   const db = await getDb();
@@ -192,6 +193,7 @@ export async function updateWorkerProfile(
   if (data.availabilityStatus !== undefined) updateSet.availabilityStatus = data.availabilityStatus;
   if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
   if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
+  if (data.email !== undefined) updateSet.email = data.email;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
 }
@@ -1303,4 +1305,34 @@ export async function getSavedJobIds(userId: number): Promise<number[]> {
     .from(savedJobs)
     .where(eq(savedJobs.userId, userId));
   return rows.map((r) => r.jobId);
+}
+
+/** Get full job details for all saved jobs of a worker, ordered by most recently saved. */
+export async function getSavedJobs(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      savedAt: savedJobs.savedAt,
+      id: jobs.id,
+      title: jobs.title,
+      category: jobs.category,
+      address: jobs.address,
+      city: jobs.city,
+      salary: jobs.salary,
+      salaryType: jobs.salaryType,
+      businessName: jobs.businessName,
+      startTime: jobs.startTime,
+      startDateTime: jobs.startDateTime,
+      isUrgent: jobs.isUrgent,
+      workersNeeded: jobs.workersNeeded,
+      expiresAt: jobs.expiresAt,
+      createdAt: jobs.createdAt,
+      contactPhone: jobs.contactPhone,
+    })
+    .from(savedJobs)
+    .innerJoin(jobs, eq(savedJobs.jobId, jobs.id))
+    .where(eq(savedJobs.userId, userId))
+    .orderBy(desc(savedJobs.savedAt));
+  return rows;
 }

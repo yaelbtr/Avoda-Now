@@ -170,6 +170,15 @@ export default function FindJobs() {
     { category: category === "all" ? undefined : category, limit: 50 },
     { enabled: showUrgentToday }
   );
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  const utilsFj = trpc.useUtils();
+  const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
+  const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
+  const handleSaveToggle = (jobId: number, save: boolean) => {
+    if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
+    if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
+  };
 
   type SearchJob = NonNullable<typeof searchQuery.data>[number] & { description?: string | null };
   type AnyJob = NonNullable<typeof searchQuery.data>[number] | NonNullable<typeof listQuery.data>[number];
@@ -727,6 +736,8 @@ export default function FindJobs() {
                     distance: "distance" in job ? (job as { distance: number }).distance : undefined,
                   }}
                   showDistance={!!userLat}
+                  isSaved={savedIds.has(job.id)}
+                  onSaveToggle={handleSaveToggle}
                   onLoginRequired={requireLogin}
                   onCardClick={(j) => { setBottomSheetJob(j as SearchJob); setBottomSheetOpen(true); }}
                 />

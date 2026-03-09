@@ -1133,11 +1133,16 @@ export default function WorkerProfile() {
             <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
               <button
                 type="button"
-                onClick={() => setLocationMode("radius")}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                onClick={() => {
+                  if (locationMode !== "radius") {
+                    setLocationMode("radius");
+                    setPreferredCities([]);
+                  }
+                }}
+                className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                   locationMode === "radius"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border text-muted-foreground"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border text-muted-foreground hover:border-primary/50"
                 }`}
               >
                 <Crosshair className="h-4 w-4" />
@@ -1145,11 +1150,16 @@ export default function WorkerProfile() {
               </button>
               <button
                 type="button"
-                onClick={() => setLocationMode("city")}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                onClick={() => {
+                  if (locationMode !== "city") {
+                    setLocationMode("city");
+                    setSearchRadiusKm(10);
+                  }
+                }}
+                className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                   locationMode === "city"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border text-muted-foreground"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border text-muted-foreground hover:border-primary/50"
                 }`}
               >
                 <Building2 className="h-4 w-4" />

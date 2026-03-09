@@ -779,3 +779,7 @@
 - [x] Step 5: Optional details (hourly rate, bio, availability)
 - [x] Wire /worker-signup route in App.tsx
 - [x] Redirect new workers from HomeWorker to /worker-signup if profile incomplete
+
+## Worker Signup — Step 3 Optional
+- [x] Make category selection (step 3) optional — enable "המשך" even with 0 categories selected
+- [x] Add "דלג" link below the continue button on step 3

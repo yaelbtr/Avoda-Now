@@ -597,7 +597,7 @@ export default function WorkerSignup() {
                   <Briefcase className="h-5 w-5 text-blue-500" />
                   <h2 className="text-lg font-bold text-gray-900">איזה עבודות מעניינות אותך?</h2>
                 </div>
-                <p className="text-xs text-gray-500 mb-5">ניתן לבחור מספר קטגוריות</p>
+                  <p className="text-xs text-gray-500 mb-5">ניתן לבחור מספר קטגוריות — לא חובה</p>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   {SIGNUP_CATEGORIES.map(cat => {
@@ -639,7 +639,6 @@ export default function WorkerSignup() {
                     variant="brand"
                     className="flex-1 h-12 rounded-xl font-bold"
                     onClick={goNext}
-                    disabled={selectedCategories.length === 0}
                   >
                     המשך
                     <ChevronLeft className="h-5 w-5 mr-1" />

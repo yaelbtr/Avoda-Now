@@ -10,7 +10,7 @@ import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
   HourglassIcon, ChevronRight, Phone, MessageCircle,
   Bell, BellOff, Bookmark, BookmarkX, Flame,
-  Search, ChevronLeft, ArrowUpDown, Loader2, Send,
+  Search, ChevronLeft, ArrowUpDown, Loader2, Send, Share2,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
 import { formatDistanceToNow } from "date-fns";
@@ -1088,13 +1088,34 @@ export default function MyApplications() {
 
                     {/* Action row */}
                     <div className="flex items-center justify-between gap-2 mt-3">
-                      <a
-                        href={`/job/${job.id}`}
-                        className="text-xs font-medium underline underline-offset-2"
-                        style={{ color: "oklch(0.50 0.07 125.0)" }}
-                      >
-                        צפה במשרה
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={`/job/${job.id}`}
+                          className="text-xs font-medium underline underline-offset-2"
+                          style={{ color: "oklch(0.50 0.07 125.0)" }}
+                        >
+                          צפה במשרה
+                        </a>
+                        <button
+                          onClick={async () => {
+                            const url = `${window.location.origin}/job/${job.id}`;
+                            const title = job.title;
+                            const text = `${job.title}${job.city ? ` ב${job.city}` : ""}${job.salary ? ` | ${formatSalary(job.salary, job.salaryType ?? "hourly")}` : ""}`;
+                            if (navigator.share) {
+                              try { await navigator.share({ title, text, url }); }
+                              catch {}
+                            } else {
+                              await navigator.clipboard.writeText(url);
+                              toast.success("קישור המשרה הועתק ללוח");
+                            }
+                          }}
+                          className="p-1 rounded-lg transition-all"
+                          title="שתף משרה"
+                          style={{ color: "var(--text-muted)" }}
+                        >
+                          <Share2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                       {!isExpired && (
                         appliedJobIds.has(job.id) ? (
                           <span

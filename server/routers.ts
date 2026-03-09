@@ -925,6 +925,43 @@ const userRouter = router({
       return profile;
     }),
 
+  /** Complete the worker onboarding signup flow — saves all required + optional fields at once */
+  completeSignup: protectedProcedure
+    .input(
+      z.object({
+        // Required
+        name: z.string().min(2).max(100),
+        locationMode: z.enum(["city", "radius"]),
+        preferredCity: z.string().max(100).nullable().optional(),
+        workerLatitude: z.string().nullable().optional(),
+        workerLongitude: z.string().nullable().optional(),
+        searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
+        preferredCategories: z.array(z.string()),
+        // Optional
+        preferenceText: z.string().max(1000).nullable().optional(),
+        expectedHourlyRate: z.number().min(0).max(10000).nullable().optional(),
+        workerBio: z.string().max(500).nullable().optional(),
+        availabilityStatus: z.enum(["available_now", "available_today", "available_hours", "not_available"]).nullable().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await updateWorkerProfile(ctx.user.id, {
+        name: input.name,
+        locationMode: input.locationMode,
+        preferredCity: input.preferredCity,
+        workerLatitude: input.workerLatitude,
+        workerLongitude: input.workerLongitude,
+        searchRadiusKm: input.searchRadiusKm ?? undefined,
+        preferredCategories: input.preferredCategories,
+        preferenceText: input.preferenceText,
+        expectedHourlyRate: input.expectedHourlyRate,
+        workerBio: input.workerBio,
+        availabilityStatus: input.availabilityStatus,
+        signupCompleted: true,
+      });
+      return { success: true };
+    }),
+
   /** Update the current user's worker profile */
   updateProfile: protectedProcedure
     .input(

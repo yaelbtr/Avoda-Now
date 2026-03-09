@@ -28,6 +28,7 @@ import ApplicationView from "./pages/ApplicationView";
 import JobApplications from "./pages/JobApplications";
 import MyApplications from "./pages/MyApplications";
 import MatchedWorkers from "./pages/MatchedWorkers";
+import WorkerSignup from "./pages/WorkerSignup";
 import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -101,6 +102,7 @@ function Router() {
                 <Route path="/jobs/:id/applications" component={JobApplications} />
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
+                <Route path="/worker-signup" component={WorkerSignup} />
                 <Route path="/worker-preferences">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/404" component={NotFound} />
                 <Route component={NotFound} />

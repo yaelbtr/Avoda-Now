@@ -53,6 +53,12 @@ export const users = mysqlTable("users", {
   preferredTimeSlots: json("preferredTimeSlots").$type<string[]>(),
   /** Short bio / note from worker */
   workerBio: text("workerBio"),
+  /** Worker's expected hourly rate in ILS */
+  expectedHourlyRate: decimal("expectedHourlyRate", { precision: 8, scale: 2 }),
+  /** Worker's current availability status */
+  availabilityStatus: mysqlEnum("availabilityStatus", ["available_now", "available_today", "available_hours", "not_available"]),
+  /** Whether the worker has completed the onboarding signup flow */
+  signupCompleted: boolean("signupCompleted").default(false).notNull(),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */
   notificationPrefs: mysqlEnum("notificationPrefs", ["both", "push_only", "sms_only", "none"]).default("both").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

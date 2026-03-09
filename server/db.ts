@@ -136,6 +136,7 @@ export async function getWorkerProfile(id: number) {
       preferenceText: users.preferenceText,
       preferredDays: users.preferredDays,
       preferredTimeSlots: users.preferredTimeSlots,
+      signupCompleted: users.signupCompleted,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -158,6 +159,9 @@ export async function updateWorkerProfile(
     workerTags?: string[];
     preferredDays?: string[];
     preferredTimeSlots?: string[];
+    expectedHourlyRate?: number | null;
+    availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
+    signupCompleted?: boolean;
   }
 ) {
   const db = await getDb();
@@ -175,6 +179,9 @@ export async function updateWorkerProfile(
   if (data.workerTags !== undefined) updateSet.workerTags = data.workerTags;
   if (data.preferredDays !== undefined) updateSet.preferredDays = data.preferredDays;
   if (data.preferredTimeSlots !== undefined) updateSet.preferredTimeSlots = data.preferredTimeSlots;
+  if (data.expectedHourlyRate !== undefined) updateSet.expectedHourlyRate = data.expectedHourlyRate;
+  if (data.availabilityStatus !== undefined) updateSet.availabilityStatus = data.availabilityStatus;
+  if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
 }

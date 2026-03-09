@@ -174,6 +174,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     return () => { if (autoScrollRef.current) clearInterval(autoScrollRef.current); };
   }, []);
 
+  // Redirect new workers who haven't completed signup yet
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  useEffect(() => {
+    if (profileQuery.data && profileQuery.data.signupCompleted === false) {
+      navigate("/worker-signup");
+    }
+  }, [profileQuery.data, navigate]);
+
   const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
   const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
   const nearbyQuery = trpc.jobs.search.useQuery(

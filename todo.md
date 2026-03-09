@@ -768,3 +768,14 @@
 ## Job Search — Time-of-Day Filter
 - [x] Add timeSlot filter UI (בוקר/צהריים/ערב/לילה) to job search page
 - [x] Filter jobs client-side by workingHours field matching selected time slot
+
+## Worker Signup Flow (Multi-Step)
+- [x] Add workerSignup tRPC procedure (saves all profile fields at once)
+- [x] Build WorkerSignup.tsx with 5 steps + progress indicator
+- [x] Step 1: Name + Phone (required)
+- [x] Step 2: Location preference — radius or city (required)
+- [x] Step 3: Category selection (required)
+- [x] Step 4: Preference text (optional but recommended)
+- [x] Step 5: Optional details (hourly rate, bio, availability)
+- [x] Wire /worker-signup route in App.tsx
+- [x] Redirect new workers from HomeWorker to /worker-signup if profile incomplete

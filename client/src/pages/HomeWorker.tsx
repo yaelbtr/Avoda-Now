@@ -724,8 +724,39 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
         </div>
       </section>
-
-      {/* ── Urgent / Today carousel ───────────────────────────────────────── */}
+      {/* ── Complete Profile Banner ─────────────────────────────────────────────────────────────────── */}
+      {isAuthenticated && profileQuery.data && (
+        (!profileQuery.data.preferredCategories?.length ||
+          (!profileQuery.data.preferredCity && !profileQuery.data.workerLatitude))
+      ) && (
+        <div className="relative z-10 px-4 mb-5">
+          <div
+            className="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl"
+            style={{ background: "oklch(0.97 0.02 95)", border: "1px solid oklch(0.88 0.05 90)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "oklch(0.88 0.08 85)" }}
+              >
+                <span className="text-base">💼</span>
+              </div>
+              <div>
+                <p className="text-[13px] font-black" style={{ color: "oklch(0.35 0.05 91)" }}>השלם את הפרופיל שלך</p>
+                <p className="text-[11px]" style={{ color: "oklch(0.55 0.04 91)" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/worker-profile")}
+              className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold"
+              style={{ background: "oklch(0.45 0.12 90)", color: "white" }}
+            >
+              עדכן עכשיו
+            </button>
+          </div>
+        </div>
+      )}
+      {/* ── Urgent / Today carousel ───────────────────────────────────────────────────────────────────── */}
       {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
         <section className="mb-10 relative z-10">
           <motion.div

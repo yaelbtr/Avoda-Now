@@ -54,11 +54,11 @@ const AVAILABILITY_OPTIONS = [
   { value: "available_hours", label: "פנוי בשעות מסוימות",  icon: "🕐" },
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 // ─── Step progress bar ────────────────────────────────────────────────────────
 function ProgressBar({ step }: { step: number }) {
-  const labels = ["פרטים בסיסיים", "מיקום", "סוגי עבודה", "העדפות", "פרטים נוספים"];
+  const labels = ["פרטים בסיסיים", "מיקום", "סוגי עבודה", "זמני עבודה", "העדפות", "פרטים נוספים"];
   return (
     <div className="mb-8">
       {/* Bar */}
@@ -133,14 +133,17 @@ export default function WorkerSignup() {
 
   // Step 3 — Categories
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  // Step 4 — Preference text
+  // Step 4 — Schedule (days + time slots)
+  const [preferredDays, setPreferredDays] = useState<string[]>([]);
+  const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+  // Step 5 — Preference text
   const [preferenceText, setPreferenceText] = useState("");
-
-  // Step 5 — Optional
+  // Step 6 — Optional
   const [expectedRate, setExpectedRate] = useState("");
   const [bio, setBio] = useState("");
   const [availability, setAvailability] = useState<string | null>(null);
+  // Email (from Google OAuth or manual)
+  const [email, setEmail] = useState(user?.email ?? "");
 
   // Mutations
   const sendOtp = trpc.auth.sendOtp.useMutation();
@@ -240,6 +243,8 @@ export default function WorkerSignup() {
         expectedHourlyRate: expectedRate ? parseFloat(expectedRate) : null,
         workerBio: bio.trim() || null,
         availabilityStatus: (availability as "available_now" | "available_today" | "available_hours" | null) ?? null,
+        preferredDays,
+        preferredTimeSlots,
       });
       await refetch?.();
       toast.success("הפרופיל נשמר! ברוך הבא 🎉");
@@ -309,6 +314,23 @@ export default function WorkerSignup() {
                     />
                   </div>
 
+                  {/* Email */}
+                  <div>
+                    <Label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-1.5 block">
+                      כתובת מייל
+                      {user?.email && <span className="mr-2 text-xs text-green-600 font-normal">נילא מחשבון Google</span>}
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="example@gmail.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="text-base h-12 rounded-xl border-gray-200"
+                      dir="ltr"
+                      readOnly={!!user?.email}
+                    />
+                  </div>
                   {/* Phone — only if not already logged in */}
                   {!user && (
                     <div>
@@ -438,9 +460,12 @@ export default function WorkerSignup() {
 
                 <div className="space-y-3">
                   {/* Option A — Radius */}
-                  <button
+                  <div
                     onClick={() => setLocationMode("radius")}
-                    className="w-full text-right rounded-xl border-2 p-4 transition-all"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => e.key === "Enter" && setLocationMode("radius")}
+                    className="w-full text-right rounded-xl border-2 p-4 transition-all cursor-pointer"
                     style={{
                       borderColor: locationMode === "radius" ? "#3c83f6" : "#e2e8f0",
                       background: locationMode === "radius" ? "#eff6ff" : "white",
@@ -509,12 +534,14 @@ export default function WorkerSignup() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </button>
-
+                  </div>
                   {/* Option B — City */}
-                  <button
+                  <div
                     onClick={() => setLocationMode("city")}
-                    className="w-full text-right rounded-xl border-2 p-4 transition-all"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => e.key === "Enter" && setLocationMode("city")}
+                    className="w-full text-right rounded-xl border-2 p-4 transition-all cursor-pointer"
                     style={{
                       borderColor: locationMode === "city" ? "#3c83f6" : "#e2e8f0",
                       background: locationMode === "city" ? "#eff6ff" : "white",
@@ -564,9 +591,8 @@ export default function WorkerSignup() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </button>
+                  </div>
                 </div>
-
                 <div className="flex gap-3 mt-6">
                   <AppButton variant="outline" className="flex-1 h-12 rounded-xl" onClick={goBack}>
                     <ChevronRight className="h-5 w-5 ml-1" />
@@ -648,9 +674,86 @@ export default function WorkerSignup() {
             </StepSlide>
           )}
 
-          {/* ── STEP 4: Preference text (optional) ── */}
+          {/* ── STEP 4: Schedule (days + time slots) ── */}
           {step === 4 && (
             <StepSlide dir={dir} key="step4">
+              <div
+                className="rounded-2xl p-6"
+                style={{ background: "white", boxShadow: "0 2px 16px rgba(0,0,0,0.07)", border: "1px solid #e8edf5" }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-5 w-5 text-blue-500" />
+                  <h2 className="text-lg font-bold text-gray-900">מתי אתה מעדיף לעבוד?</h2>
+                </div>
+                <div
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium mb-5"
+                  style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
+                >
+                  <Star className="h-3 w-3" />
+                  מומלץ — לא חובה
+                </div>
+                {/* Days */}
+                <div className="mb-5">
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">ימי עבודה מועדפים</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["א׳","ב׳","ג׳","ד׳","ה׳","ו׳","שבת"].map((day, i) => {
+                      const val = ["sun","mon","tue","wed","thu","fri","sat"][i];
+                      const active = preferredDays.includes(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => setPreferredDays(prev => active ? prev.filter(d => d !== val) : [...prev, val])}
+                          className="w-11 h-11 rounded-full text-sm font-bold border-2 transition-all"
+                          style={active ? { borderColor: "#3c83f6", background: "#eff6ff", color: "#2563eb" } : { borderColor: "#e2e8f0", background: "white", color: "#374151" }}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {/* Time slots */}
+                <div className="mb-2">
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">שעות עבודה מועדפות</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅" },
+                      { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️" },
+                      { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🌆" },
+                      { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙" },
+                    ].map(slot => {
+                      const active = preferredTimeSlots.includes(slot.value);
+                      return (
+                        <button
+                          key={slot.value}
+                          onClick={() => setPreferredTimeSlots(prev => active ? prev.filter(s => s !== slot.value) : [...prev, slot.value])}
+                          className="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all"
+                          style={active ? { borderColor: "#3c83f6", background: "#eff6ff" } : { borderColor: "#e2e8f0", background: "white" }}
+                        >
+                          <span className="text-xl">{slot.icon}</span>
+                          <span className="text-sm font-bold text-gray-800">{slot.label}</span>
+                          <span className="text-xs text-gray-400">{slot.sub}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <AppButton variant="outline" className="flex-1 h-12 rounded-xl" onClick={goBack}>
+                    <ChevronRight className="h-5 w-5 ml-1" />
+                    חזור
+                  </AppButton>
+                  <AppButton variant="brand" className="flex-1 h-12 rounded-xl font-bold" onClick={goNext}>
+                    המשך
+                    <ChevronLeft className="h-5 w-5 mr-1" />
+                  </AppButton>
+                </div>
+              </div>
+            </StepSlide>
+          )}
+          {/* ── STEP 5: Preference text (optional) ── */}
+          {step === 5 && (
+            <StepSlide dir={dir} key="step5">
               <div
                 className="rounded-2xl p-6"
                 style={{ background: "white", boxShadow: "0 2px 16px rgba(0,0,0,0.07)", border: "1px solid #e8edf5" }}
@@ -696,15 +799,15 @@ export default function WorkerSignup() {
             </StepSlide>
           )}
 
-          {/* ── STEP 5: Optional details ── */}
-          {step === 5 && (
-            <StepSlide dir={dir} key="step5">
+          {/* ── STEP 6: Optional details ── */}
+          {step === 6 && (
+            <StepSlide dir={dir} key="step6">
               <div
                 className="rounded-2xl p-6"
                 style={{ background: "white", boxShadow: "0 2px 16px rgba(0,0,0,0.07)", border: "1px solid #e8edf5" }}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="h-5 w-5 text-blue-500" />
+                  <User className="h-5 w-5 text-blue-500" />
                   <h2 className="text-lg font-bold text-gray-900">פרטים נוספים</h2>
                 </div>
                 <div
@@ -798,13 +901,13 @@ export default function WorkerSignup() {
         </AnimatePresence>
 
         {/* Skip optional steps */}
-        {(step === 4 || step === 5) && (
+        {(step === 4 || step === 5 || step === 6) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center mt-4"
           >
-            {step === 4 && (
+            {(step === 4 || step === 5) && (
               <button
                 className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 onClick={goNext}
@@ -812,7 +915,7 @@ export default function WorkerSignup() {
                 דלג על שלב זה ←
               </button>
             )}
-            {step === 5 && (
+            {step === 6 && (
               <button
                 className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 onClick={handleSubmit}

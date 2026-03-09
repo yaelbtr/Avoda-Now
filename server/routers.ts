@@ -942,6 +942,8 @@ const userRouter = router({
         expectedHourlyRate: z.number().min(0).max(10000).nullable().optional(),
         workerBio: z.string().max(500).nullable().optional(),
         availabilityStatus: z.enum(["available_now", "available_today", "available_hours", "not_available"]).nullable().optional(),
+        preferredDays: z.array(z.string()).optional(),
+        preferredTimeSlots: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -957,11 +959,12 @@ const userRouter = router({
         expectedHourlyRate: input.expectedHourlyRate,
         workerBio: input.workerBio,
         availabilityStatus: input.availabilityStatus,
+        preferredDays: input.preferredDays,
+        preferredTimeSlots: input.preferredTimeSlots,
         signupCompleted: true,
       });
       return { success: true };
     }),
-
   /** Update the current user's worker profile */
   updateProfile: protectedProcedure
     .input(

@@ -783,3 +783,9 @@
 ## Worker Signup — Step 3 Optional
 - [x] Make category selection (step 3) optional — enable "המשך" even with 0 categories selected
 - [x] Add "דלג" link below the continue button on step 3
+
+## Worker Signup — Email + Schedule Step + Profile Banner
+- [x] Add email field to step 1 of WorkerSignup (auto-filled from Google OAuth data)
+- [x] Add work schedule step (days + time slots) as step 4 in signup flow
+- [x] Add "complete profile" banner to HomeWorker for workers with no categories selected
+- [x] Verify categories are editable in WorkerProfile matching section

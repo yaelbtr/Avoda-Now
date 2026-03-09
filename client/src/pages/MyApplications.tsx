@@ -349,17 +349,6 @@ export default function MyApplications() {
             >
               <Briefcase className="h-4 w-4" />
               מועמדויות
-              {applications && applications.length > 0 && (
-                <span
-                  className="text-xs px-1.5 py-0.5 rounded-full font-bold"
-                  style={activeTab === "applications"
-                    ? { background: "rgba(255,255,255,0.20)", color: "white" }
-                    : { background: "oklch(0.87 0.03 100)", color: "oklch(0.40 0.04 100)" }
-                  }
-                >
-                  {applications.length}
-                </span>
-              )}
             </button>
             {/* Saved tab */}
             <button
@@ -372,17 +361,6 @@ export default function MyApplications() {
             >
               <Bookmark className="h-4 w-4" />
               שמורות
-              {savedJobs && savedJobs.length > 0 && (
-                <span
-                  className="text-xs px-1.5 py-0.5 rounded-full font-bold"
-                  style={activeTab === "saved"
-                    ? { background: "rgba(255,255,255,0.20)", color: "white" }
-                    : { background: "oklch(0.87 0.03 100)", color: "oklch(0.40 0.04 100)" }
-                  }
-                >
-                  {savedJobs.length}
-                </span>
-              )}
             </button>
           </div>
 

@@ -261,6 +261,31 @@ export async function countRecentPhoneChangeFailures(
   return rows.length;
 }
 
+/** Clear recent failed phone-change attempts for a user (admin action to release lockout) */
+export async function clearPhoneChangeLockout(
+  userId: number,
+  windowMs = 60 * 60 * 1000
+): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const since = new Date(Date.now() - windowMs);
+  // Delete failed/locked entries in the last hour for this user
+  const result = await db
+    .delete(phoneChangeLogs)
+    .where(
+      and(
+        eq(phoneChangeLogs.userId, userId),
+        or(
+          eq(phoneChangeLogs.result, "failed"),
+          eq(phoneChangeLogs.result, "locked")
+        ),
+        gte(phoneChangeLogs.createdAt, since)
+      )
+    );
+  // Return rows deleted count
+  return (result as unknown as { affectedRows?: number })?.affectedRows ?? 0;
+}
+
 // ─── Phone Prefixes ──────────────────────────────────────────────────────────
 
 /** Returns all active phone prefixes ordered by prefix */

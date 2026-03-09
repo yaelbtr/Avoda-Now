@@ -29,6 +29,7 @@ import {
   Clock,
   Eye,
   Flag,
+  LockOpen,
   Phone,
   Send,
   Shield,
@@ -165,6 +166,13 @@ export default function Admin() {
   });
   const cancelBatch = trpc.admin.cancelBatch.useMutation({
     onSuccess: () => { utils.admin.listBatches.invalidate(); toast.success("ה-batch בוטל"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const clearPhoneChangeLockout = trpc.admin.clearPhoneChangeLockout.useMutation({
+    onSuccess: (data) => {
+      utils.admin.listUsers.invalidate();
+      toast.success(`נעילת שינוי טלפון שוחררה (${data.deletedCount} רשומות נמחקו)`);
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -525,6 +533,20 @@ export default function Admin() {
                               קדם למנהל
                             </AppButton>
                           )}
+                          <AppButton
+                            size="sm"
+                            variant="outline"
+                            className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                            title="שחרר נעילת שינוי טלפון (מחיקת ניסיונות כושלים בשעה האחרונה)"
+                            onClick={() => confirm(
+                              "שחרור נעילת טלפון",
+                              `לשחרר את נעילת שינוי הטלפון של המשתמש ${u.phone}?\nפעולה זו תמחק את רשומות הניסיונות הכושלים בשעה האחרונה.`,
+                              () => clearPhoneChangeLockout.mutate({ userId: u.id })
+                            )}
+                          >
+                            <LockOpen className="w-4 h-4 ml-1" />
+                            שחרר נעילה
+                          </AppButton>
                         </div>
                       </div>
                     </CardContent>

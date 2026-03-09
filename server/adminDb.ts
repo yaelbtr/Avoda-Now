@@ -2,8 +2,8 @@
  * Admin-only database query helpers.
  * All functions here are called only from adminProcedure-protected routes.
  */
-import { and, count, desc, eq, sql } from "drizzle-orm";
-import { Job, applications, jobReports, jobs, notificationBatches, users } from "../drizzle/schema";
+import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
+import { Job, applications, jobReports, jobs, notificationBatches, phoneChangeLogs, users } from "../drizzle/schema";
 import { getDb } from "./db";
 
 // ─── Jobs Admin ───────────────────────────────────────────────────────────────
@@ -261,4 +261,62 @@ export async function adminCancelBatch(batchId: number) {
         eq(notificationBatches.status, "pending")
       )
     );
+}
+
+// ─── Phone Change Lockout ─────────────────────────────────────────────────────
+
+/**
+ * Check if a user is currently locked out from phone changes.
+ * Returns { locked, failureCount, lockedUntil } for display in admin panel.
+ */
+export async function adminGetPhoneChangeLockoutStatus(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  const since = new Date(Date.now() - windowMs);
+  const rows = await db
+    .select()
+    .from(phoneChangeLogs)
+    .where(
+      and(
+        eq(phoneChangeLogs.userId, userId),
+        or(
+          eq(phoneChangeLogs.result, "failed"),
+          eq(phoneChangeLogs.result, "locked")
+        ),
+        gte(phoneChangeLogs.createdAt, since)
+      )
+    );
+  const failureCount = rows.length;
+  const locked = failureCount >= 5;
+  // Estimate when lockout expires: 1h after the first failure in the window
+  const oldest = rows.sort((a, b) => new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime())[0];
+  const lockedUntil = locked && oldest
+    ? new Date(new Date(oldest.createdAt!).getTime() + windowMs)
+    : null;
+  return { locked, failureCount, lockedUntil };
+}
+
+/**
+ * Clear recent failed/locked phone-change log entries for a user.
+ * Returns the number of rows deleted.
+ */
+export async function adminClearPhoneChangeLockout(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const windowMs = 60 * 60 * 1000;
+  const since = new Date(Date.now() - windowMs);
+  const result = await db
+    .delete(phoneChangeLogs)
+    .where(
+      and(
+        eq(phoneChangeLogs.userId, userId),
+        or(
+          eq(phoneChangeLogs.result, "failed"),
+          eq(phoneChangeLogs.result, "locked")
+        ),
+        gte(phoneChangeLogs.createdAt, since)
+      )
+    );
+  return (result as unknown as { affectedRows?: number })?.affectedRows ?? 0;
 }

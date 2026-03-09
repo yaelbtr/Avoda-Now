@@ -70,6 +70,8 @@ import {
   adminApproveJob,
   adminBlockUser,
   adminCancelBatch,
+  adminGetPhoneChangeLockoutStatus,
+  adminClearPhoneChangeLockout,
   adminClearJobReports,
   adminDeleteJob,
   adminGetAllApplications,
@@ -828,6 +830,21 @@ const adminRouter = router({
     .mutation(async ({ input }) => {
       await adminCancelBatch(input.batchId);
       return { success: true };
+    }),
+
+  /** Get phone change lockout status for a specific user */
+  getPhoneChangeLockoutStatus: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ input }) => {
+      return adminGetPhoneChangeLockoutStatus(input.userId);
+    }),
+
+  /** Clear phone change lockout for a specific user (admin action) */
+  clearPhoneChangeLockout: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      const deletedCount = await adminClearPhoneChangeLockout(input.userId);
+      return { success: true, deletedCount };
     }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────

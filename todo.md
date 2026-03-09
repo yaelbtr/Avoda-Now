@@ -830,3 +830,8 @@
 - [ ] Email fallback when SMS fails
 - [ ] Phone change audit log (phone_change_log table)
 - [ ] Account lockout after 5 failed OTP attempts with email alert
+
+## Admin: Release Phone Change Lockout
+- [x] clearPhoneChangeLockout DB helper
+- [x] Admin tRPC procedure: clearPhoneChangeLockout
+- [x] Release Lockout button in admin users panel

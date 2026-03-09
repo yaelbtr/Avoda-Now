@@ -1085,14 +1085,13 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <div className="space-y-3">
             {jobs.slice(0, 8).map((job, i) => (
               <motion.div key={job.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.35 }}>
-                <div onClick={() => navigate(`/jobs/${job.id}`)} className="cursor-pointer">
-                  <JobCard
+                <JobCard
                     job={job}
                     onLoginRequired={onLoginRequired}
                     isSaved={savedIds.has(job.id)}
                     onSaveToggle={handleSaveToggle}
+                    onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
                   />
-                </div>
               </motion.div>
             ))}
             {jobs.length > 0 && (

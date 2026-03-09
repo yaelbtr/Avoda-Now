@@ -907,3 +907,8 @@
 - [x] החלפת כרטיסי משרה ב-HomeWorker
 - [x] החלפת כרטיסי משרה ב-FindJobs
 - [x] החלפת SearchJobCard usages בשאר הדפים
+
+## פתיחת פרטי משרה ב-Bottom Sheet Modal
+- [x] לחיצה על כרטיס משרה פותחת bottom sheet modal עם פרטי המשרה
+- [x] עיצוב modal לפי הדיזיין בתמונה (כותרת, אייקון קטגוריה, גריד פרטים, תיאור, תאריך תפוגה, כפתור הגשה)
+- [x] חיבור כל כרטיסי המשרות (JobCard, SearchJobCard, CarouselJobCard) לפתיחת ה-modal

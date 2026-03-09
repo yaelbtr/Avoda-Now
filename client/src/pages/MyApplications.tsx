@@ -17,6 +17,7 @@ import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
 import { JobCard } from "@/components/JobCard";
+import JobBottomSheet from "@/components/JobBottomSheet";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; bg: string; color: string; border: string }> = {
@@ -130,6 +131,19 @@ export default function MyApplications() {
   const [applyJobId, setApplyJobId] = useState<number | null>(null);
   const [applyMessage, setApplyMessage] = useState("");
   const [appliedJobIds, setAppliedJobIds] = useState<Set<number>>(new Set());
+
+  // Bottom sheet state
+  type BottomSheetJob = {
+    id: number; title: string; category: string; address: string;
+    city?: string | null; salary?: string | null; salaryType: string;
+    contactPhone: string | null; businessName?: string | null;
+    startTime: string; startDateTime?: Date | string | null;
+    isUrgent?: boolean | null; workersNeeded: number;
+    createdAt: Date | string; expiresAt?: Date | string | null;
+    distance?: number; description?: string | null;
+  };
+  const [bottomSheetJob, setBottomSheetJob] = useState<BottomSheetJob | null>(null);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   // Determine active tab from URL param
   const params = new URLSearchParams(search);
@@ -773,13 +787,29 @@ export default function MyApplications() {
 
                     {/* View job link + share */}
                     <div className="mt-2 flex items-center gap-2 text-left">
-                      <a
-                        href={`/job/${app.jobId}`}
+                      <button
+                        onClick={() => {
+                          setBottomSheetJob({
+                            id: app.jobId,
+                            title: app.jobTitle ?? "משרה",
+                            category: app.jobTitle ?? "other",
+                            address: app.jobAddress ?? "",
+                            city: app.jobCity,
+                            salary: app.jobSalary,
+                            salaryType: app.jobSalaryType ?? "hourly",
+                            contactPhone: null,
+                            businessName: app.employerName,
+                            startTime: "flexible",
+                            workersNeeded: 1,
+                            createdAt: app.createdAt,
+                          });
+                          setBottomSheetOpen(true);
+                        }}
                         className="text-xs font-medium underline underline-offset-2"
-                        style={{ color: "oklch(0.50 0.07 125.0)" }}
+                        style={{ color: "oklch(0.50 0.07 125.0)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                       >
                         צפה במשרה
-                      </a>
+                      </button>
                       <button
                         onClick={async () => {
                           const url = `${window.location.origin}/job/${app.jobId}`;
@@ -973,14 +1003,42 @@ export default function MyApplications() {
                         applyMutation.mutate({ jobId, message, origin })
                       }
                       isApplyPending={applyMutation.isPending}
+                      onCardClick={(j) => {
+                        setBottomSheetJob({
+                          id: j.id,
+                          title: j.title,
+                          category: j.category,
+                          address: j.address,
+                          city: j.city,
+                          salary: j.salary,
+                          salaryType: j.salaryType,
+                          contactPhone: j.contactPhone,
+                          businessName: j.businessName,
+                          startTime: j.startTime,
+                          startDateTime: j.startDateTime,
+                          isUrgent: j.isUrgent,
+                          workersNeeded: j.workersNeeded,
+                          createdAt: j.createdAt,
+                          expiresAt: j.expiresAt,
+                        });
+                        setBottomSheetOpen(true);
+                      }}
                     />
                   </motion.div>
                 );
               })}
             </AnimatePresence>
           </>
-        )}
+         )}
       </div>
+
+      {/* Job Details Bottom Sheet */}
+      <JobBottomSheet
+        job={bottomSheetJob}
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
+        isAuthenticated={isAuthenticated}
+      />
     </div>
   );
 }

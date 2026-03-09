@@ -53,6 +53,8 @@ interface JobCardProps {
   onLoginRequired?: (message: string) => void;
   /** Show saved-jobs card mode: unsave button, savedAt, inline apply panel */
   savedMode?: boolean;
+  /** Called when the card or "פרטים" button is clicked to open a details sheet */
+  onCardClick?: (job: JobCardProps["job"]) => void;
 }
 
 const SITE_URL = "https://job-now.manus.space";
@@ -272,7 +274,7 @@ function SharePopover({ jobTitle, jobId, city, salary, salaryType }: { jobTitle:
   );
 }
 
-export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, onSaveToggle, onUnsave, onApply, isApplyPending, onLoginRequired, savedMode }: JobCardProps) {
+export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, onSaveToggle, onUnsave, onApply, isApplyPending, onLoginRequired, savedMode, onCardClick }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
@@ -312,8 +314,10 @@ export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, on
         boxShadow: job.isUrgent
           ? `0 2px 12px ${C_DANGER_HEX}12`
           : "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+        cursor: onCardClick ? "pointer" : undefined,
       }}
       dir="rtl"
+      onClick={onCardClick ? () => onCardClick(job) : undefined}
     >
       {/* Urgent right border accent */}
       {job.isUrgent && (
@@ -524,13 +528,23 @@ export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, on
           /* Saved-mode action row: צפה במשרה + שתף + הגש מועמדות / applied badge */
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2">
-              <a
-                href={`/job/${job.id}`}
-                className="text-xs font-medium underline underline-offset-2"
-                style={{ color: "oklch(0.50 0.07 125.0)" }}
-              >
-                צפה במשרה
-              </a>
+              {onCardClick ? (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onCardClick(job); }}
+                  className="text-xs font-medium underline underline-offset-2"
+                  style={{ color: "oklch(0.50 0.07 125.0)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  צפה במשרה
+                </button>
+              ) : (
+                <a
+                  href={`/job/${job.id}`}
+                  className="text-xs font-medium underline underline-offset-2"
+                  style={{ color: "oklch(0.50 0.07 125.0)" }}
+                >
+                  צפה במשרה
+                </a>
+              )}
               <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
             </div>
             <div className="flex items-center gap-2">
@@ -635,14 +649,28 @@ export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, on
               </motion.div>
             )}
             <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
-            <Link href={`/job/${job.id}`}>
+            {onCardClick ? (
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <AppButton variant="secondary" size="sm" className="gap-1 text-xs font-bold">
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  className="gap-1 text-xs font-bold"
+                  onClick={(e) => { e.stopPropagation(); onCardClick(job); }}
+                >
                   <ChevronLeft className="h-3 w-3" />
                   פרטים
                 </AppButton>
               </motion.div>
-            </Link>
+            ) : (
+              <Link href={`/job/${job.id}`}>
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                  <AppButton variant="secondary" size="sm" className="gap-1 text-xs font-bold">
+                    <ChevronLeft className="h-3 w-3" />
+                    פרטים
+                  </AppButton>
+                </motion.div>
+              </Link>
+            )}
           </>
         )}
       </div>

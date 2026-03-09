@@ -256,7 +256,6 @@ export default function WorkerProfile() {
   // ── WIZARD MODE (new worker) ─────────────────────────────────────────────────
   if (isNewWorker) {
     const canProceedStep1 = name.trim().length >= 2;
-    const canProceedStep2 = locationMode === "radius" ? searchRadiusKm > 0 : preferredCity.trim().length > 0;
 
     return (
       <div className="max-w-lg mx-auto px-4 py-6" dir="rtl">
@@ -447,7 +446,7 @@ export default function WorkerProfile() {
                   variant="brand"
                   size="xl"
                   className="flex-1"
-                  disabled={!canProceedStep2}
+                  disabled={false}
                   onClick={() => setWizardStep(3)}
                 >
                   המשך

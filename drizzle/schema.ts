@@ -65,6 +65,10 @@ export const users = mysqlTable("users", {
   expectedHourlyRate: decimal("expectedHourlyRate", { precision: 8, scale: 2 }),
   /** Worker's current availability status */
   availabilityStatus: mysqlEnum("availabilityStatus", ["available_now", "available_today", "available_hours", "not_available"]),
+  /** Worker's average rating (1.0 - 5.0), set by employers after job completion */
+  workerRating: decimal("workerRating", { precision: 3, scale: 2 }),
+  /** Total number of jobs completed by this worker */
+  completedJobsCount: int("completedJobsCount").default(0).notNull(),
   /** Whether the worker has completed the onboarding signup flow */
   signupCompleted: boolean("signupCompleted").default(false).notNull(),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */

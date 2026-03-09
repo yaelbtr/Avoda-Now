@@ -835,3 +835,8 @@
 - [x] clearPhoneChangeLockout DB helper
 - [x] Admin tRPC procedure: clearPhoneChangeLockout
 - [x] Release Lockout button in admin users panel
+
+## Employer Worker Profile View
+- [ ] Add completedJobsCount to worker profile DB query
+- [ ] Add Haversine distance calculation from employer location
+- [ ] Update WorkerProfilePreviewModal: avatar, name, rating, availability, distance, categories, completedJobsCount

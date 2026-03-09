@@ -1512,6 +1512,9 @@ export default function WorkerProfile() {
         cityNames={(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe)}
         searchRadiusKm={searchRadiusKm}
         phone={profileQuery.data?.phone}
+        workerRating={profileQuery.data?.workerRating}
+        completedJobsCount={profileQuery.data?.completedJobsCount ?? 0}
+        availabilityStatus={profileQuery.data?.availabilityStatus ?? null}
       />
     </div>
   );

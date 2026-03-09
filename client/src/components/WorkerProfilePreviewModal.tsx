@@ -1,4 +1,4 @@
-import { X, MapPin, Clock, Briefcase, User, CheckCircle2 } from "lucide-react";
+import { X, MapPin, Clock, Briefcase, User, CheckCircle2, Star, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface PreviewProps {
@@ -18,6 +18,11 @@ interface PreviewProps {
   cityNames?: string[];
   searchRadiusKm: number;
   phone?: string | null;
+  // Employer-facing extras
+  workerRating?: string | null;
+  completedJobsCount?: number;
+  availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
+  distanceKm?: number | null;
 }
 
 // RTL-aware tag row: items flow right-to-left and wrap downward
@@ -27,7 +32,6 @@ const TagRow = ({ children }: { children: React.ReactNode }) => (
     flexDirection: "row-reverse",
     flexWrap: "wrap",
     gap: 6,
-    // align wrapped rows to the right
     justifyContent: "flex-start",
   }}>
     {children}
@@ -63,6 +67,35 @@ const Tag = ({ children, style }: { children: React.ReactNode; style?: React.CSS
   </span>
 );
 
+const AVAILABILITY_MAP: Record<string, { label: string; color: string; bg: string }> = {
+  available_now:   { label: "זמין עכשיו",   color: "#166534", bg: "#dcfce7" },
+  available_today: { label: "זמין היום",    color: "#92400e", bg: "#fef3c7" },
+  available_hours: { label: "זמין בשעות",   color: "#1e40af", bg: "#dbeafe" },
+  not_available:   { label: "לא זמין",      color: "#6b7280", bg: "#f3f4f6" },
+};
+
+function StarRating({ rating }: { rating: number }) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  return (
+    <span style={{ display: "inline-flex", gap: 2, alignItems: "center" }}>
+      {[1,2,3,4,5].map((i) => (
+        <Star
+          key={i}
+          size={13}
+          style={{
+            color: i <= full ? "#f59e0b" : (i === full + 1 && half ? "#f59e0b" : "#d1d5db"),
+            fill: i <= full ? "#f59e0b" : (i === full + 1 && half ? "#fde68a" : "none"),
+          }}
+        />
+      ))}
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e", marginRight: 2 }}>
+        {rating.toFixed(1)}
+      </span>
+    </span>
+  );
+}
+
 export function WorkerProfilePreviewModal({
   open,
   onClose,
@@ -79,6 +112,10 @@ export function WorkerProfilePreviewModal({
   cityNames = [],
   searchRadiusKm,
   phone,
+  workerRating,
+  completedJobsCount = 0,
+  availabilityStatus,
+  distanceKm,
 }: PreviewProps) {
   const selectedCategoryLabels = categories
     .map((v) => categoryLabels.find((c) => c.value === v))
@@ -103,6 +140,9 @@ export function WorkerProfilePreviewModal({
   const completionPct = Math.round(
     (completionItems.filter((i) => i.done).length / completionItems.length) * 100
   );
+
+  const ratingNum = workerRating ? parseFloat(workerRating) : null;
+  const avail = availabilityStatus ? AVAILABILITY_MAP[availabilityStatus] : null;
 
   return (
     <AnimatePresence>
@@ -147,7 +187,6 @@ export function WorkerProfilePreviewModal({
               justifyContent: "space-between",
               padding: "4px 16px 12px",
             }}>
-              {/* Title on the right (first in row-reverse) */}
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "oklch(0.68 0.14 80.8)", textTransform: "uppercase", margin: 0 }}>
                   תצוגה מקדימה
@@ -156,7 +195,6 @@ export function WorkerProfilePreviewModal({
                   כך נראה הפרופיל שלך למעסיקים
                 </h2>
               </div>
-              {/* X button on the left (second in row-reverse) */}
               <button
                 onClick={onClose}
                 style={{
@@ -180,7 +218,7 @@ export function WorkerProfilePreviewModal({
                 border: "1px solid oklch(0.92 0.02 100)",
                 boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
               }}>
-                {/* Avatar + name row — row-reverse so avatar is on the right */}
+                {/* Avatar + name row */}
                 <div style={{
                   display: "flex",
                   flexDirection: "row-reverse",
@@ -189,7 +227,7 @@ export function WorkerProfilePreviewModal({
                   padding: 16,
                   borderBottom: "1px solid oklch(0.95 0.02 100)",
                 }}>
-                  {/* Avatar — first in DOM = rightmost in row-reverse */}
+                  {/* Avatar */}
                   {photo ? (
                     <img
                       src={photo}
@@ -211,16 +249,14 @@ export function WorkerProfilePreviewModal({
                       <User size={28} style={{ color: "#4F583B" }} />
                     </div>
                   )}
-                  {/* Text — second in DOM = to the left of avatar */}
+
+                  {/* Text block */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontSize: 18, fontWeight: 900, color: "#4F583B", margin: 0, lineHeight: 1.2 }}>
                       {name || "שם לא הוזן"}
                     </h3>
-                    {phone && (
-                      <p style={{ fontSize: 12, color: "oklch(0.50 0.06 122)", margin: "2px 0 0" }}>
-                        {phone}
-                      </p>
-                    )}
+
+                    {/* Top categories summary */}
                     {selectedCategoryLabels.length > 0 && (
                       <p style={{ fontSize: 12, color: "oklch(0.50 0.08 122)", margin: "4px 0 0" }}>
                         {selectedCategoryLabels.slice(0, 2).map((c) => `${c.icon} ${c.label}`).join(" · ")}
@@ -228,6 +264,58 @@ export function WorkerProfilePreviewModal({
                           <strong> +{selectedCategoryLabels.length - 2}</strong>
                         )}
                       </p>
+                    )}
+
+                    {/* Stats row: rating · jobs · distance */}
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "row-reverse",
+                      flexWrap: "wrap",
+                      gap: "4px 12px",
+                      marginTop: 8,
+                      alignItems: "center",
+                    }}>
+                      {/* Rating */}
+                      {ratingNum !== null && ratingNum > 0 ? (
+                        <StarRating rating={ratingNum} />
+                      ) : (
+                        <span style={{ fontSize: 11, color: "#9ca3af" }}>אין דירוג עדיין</span>
+                      )}
+
+                      {/* Completed jobs */}
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 3,
+                        fontSize: 12, color: "#4F583B", fontWeight: 600,
+                      }}>
+                        <Briefcase size={12} />
+                        {completedJobsCount} עבודות
+                      </span>
+
+                      {/* Distance */}
+                      {distanceKm !== null && distanceKm !== undefined && (
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 3,
+                          fontSize: 12, color: "#4F583B", fontWeight: 600,
+                        }}>
+                          <MapPin size={12} />
+                          {distanceKm < 1 ? "פחות מ-1 ק\"מ" : `${distanceKm.toFixed(1)} ק"מ`}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Availability badge */}
+                    {avail && (
+                      <div style={{ marginTop: 8 }}>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          padding: "3px 10px", borderRadius: 9999,
+                          fontSize: 11, fontWeight: 700,
+                          color: avail.color, background: avail.bg,
+                        }}>
+                          <Zap size={11} />
+                          {avail.label}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -262,7 +350,7 @@ export function WorkerProfilePreviewModal({
                   </div>
                 )}
 
-                {/* Availability */}
+                {/* Availability days/time */}
                 {(selectedDayLabels.length > 0 || selectedTimeLabels.length > 0) && (
                   <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
                     <SectionHeader
@@ -328,7 +416,6 @@ export function WorkerProfilePreviewModal({
                 background: "white",
                 border: "1px solid oklch(0.92 0.02 100)",
               }}>
-                {/* Header row: % on left, label on right */}
                 <div style={{
                   display: "flex",
                   flexDirection: "row-reverse",
@@ -346,7 +433,6 @@ export function WorkerProfilePreviewModal({
                     {completionPct}%
                   </span>
                 </div>
-                {/* Progress bar — fills from right */}
                 <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, direction: "rtl" }}>
                   <div style={{
                     height: 8, borderRadius: 9999,
@@ -357,7 +443,6 @@ export function WorkerProfilePreviewModal({
                     transition: "width 0.5s ease",
                   }} />
                 </div>
-                {/* Grid items: text on right, icon on left */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{

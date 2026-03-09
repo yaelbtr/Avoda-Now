@@ -145,6 +145,10 @@ export async function getWorkerProfile(id: number) {
       profilePhoto: users.profilePhoto,
       phonePrefix: users.phonePrefix,
       phoneNumber: users.phoneNumber,
+      workerRating: users.workerRating,
+      completedJobsCount: users.completedJobsCount,
+      availabilityStatus: users.availabilityStatus,
+      expectedHourlyRate: users.expectedHourlyRate,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -1036,9 +1040,18 @@ export async function getPublicWorkerProfile(userId: number) {
       name: users.name,
       preferredCategories: users.preferredCategories,
       preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
       workerBio: users.workerBio,
       workerTags: users.workerTags,
       createdAt: users.createdAt,
+      profilePhoto: users.profilePhoto,
+      availabilityStatus: users.availabilityStatus,
+      workerRating: users.workerRating,
+      completedJobsCount: users.completedJobsCount,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      preferredDays: users.preferredDays,
+      preferredTimeSlots: users.preferredTimeSlots,
     })
     .from(users)
     .where(and(eq(users.id, userId), eq(users.status, "active")))

@@ -190,6 +190,13 @@
       "when": 1773084789009,
       "tag": "0026_rapid_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1773086395563,
+      "tag": "0027_tired_forge",
+      "breakpoints": true
     }
   ]
 }

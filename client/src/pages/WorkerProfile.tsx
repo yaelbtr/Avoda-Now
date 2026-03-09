@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2, Camera,
+  CheckCircle2, Camera, ChevronDown,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
@@ -153,6 +153,10 @@ export default function WorkerProfile() {
   const [wizardStep, setWizardStep] = useState(1);
   const [wizardDone, setWizardDone] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  // Collapsible sections — default collapsed
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   // Populate from server
   useEffect(() => {
@@ -915,14 +919,22 @@ export default function WorkerProfile() {
         {activeTab === "details" && (
         <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <button
+            type="button"
+            onClick={() => toggleSection("details-personal")}
+            className="w-full flex items-center gap-2 p-5 text-right"
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <User className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
-          </div>
-          <div className="space-y-3">
+            <h2 className="font-bold text-foreground text-sm flex-1">פרטים אישיים</h2>
+            <ChevronDown
+              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              style={{ transform: openSections["details-personal"] ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {openSections["details-personal"] ? <div className="px-5 pb-5 space-y-3">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">שם</label>
               <Input
@@ -988,7 +1000,7 @@ export default function WorkerProfile() {
               />
               <p className="text-xs text-muted-foreground mt-1 text-left">{workerBio.length}/500</p>
             </div>
-          </div>
+          </div> : null}
         </div>
         {/* Save button for details tab */}
         <button
@@ -1012,13 +1024,22 @@ export default function WorkerProfile() {
         {activeTab === "work" && (
         <div className="space-y-4">
         {/* ── Matching Preferences ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5 space-y-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <button
+            type="button"
+            onClick={() => toggleSection("work-matching")}
+            className="w-full flex items-center gap-2 p-5 text-right"
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Briefcase className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm">העדפות התאמה</h2>
-          </div>
+            <h2 className="font-bold text-foreground text-sm flex-1">תחומי עיסוק מועדפים</h2>
+            <ChevronDown
+              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              style={{ transform: openSections["work-matching"] ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {openSections["work-matching"] ? <div className="px-5 pb-5 space-y-5">
 
           {/* Preference text */}
           <div>
@@ -1135,6 +1156,7 @@ export default function WorkerProfile() {
               </div>
             )}
            </div>
+          </div> : null}
         </div>
         {/* Save button for work tab */}
         <button
@@ -1157,13 +1179,22 @@ export default function WorkerProfile() {
         {/* ── TAB: זמינות ─────────────────────────────────────────────── */}
         {activeTab === "schedule" && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <button
+            type="button"
+            onClick={() => toggleSection("schedule-avail")}
+            className="w-full flex items-center gap-2 p-5 text-right"
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm">זמינות לעבודה</h2>
-          </div>
+            <h2 className="font-bold text-foreground text-sm flex-1">זמינות לעבודה</h2>
+            <ChevronDown
+              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              style={{ transform: openSections["schedule-avail"] ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {openSections["schedule-avail"] ? <div className="px-5 pb-5">
 
           {/* Preferred Schedule */}
           <div>
@@ -1232,6 +1263,7 @@ export default function WorkerProfile() {
               })}
             </div>
           </div>
+          </div> : null}
         </div>
         {/* Save button for schedule tab */}
         <button
@@ -1255,16 +1287,25 @@ export default function WorkerProfile() {
         {activeTab === "settings" && (
         <div className="space-y-4">
         {/* ── Notification Settings ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <button
+            type="button"
+            onClick={() => toggleSection("settings-notif")}
+            className="w-full flex items-center gap-2 p-5 text-right"
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <div>
+            <div className="flex-1 text-right">
               <h2 className="font-bold text-foreground text-sm">הגדרות התראות</h2>
               <p className="text-xs text-muted-foreground">בחר כיצד תרצה לקבל עדכונים</p>
             </div>
-          </div>
+            <ChevronDown
+              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              style={{ transform: openSections["settings-notif"] ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {openSections["settings-notif"] ? <div className="px-5 pb-5">
           <div className="grid grid-cols-2 gap-2">
             {NOTIF_OPTIONS.map((opt) => {
               const isActive = notifPref === opt.value;
@@ -1298,6 +1339,7 @@ export default function WorkerProfile() {
               💡 ודא שהתראות דפדפן מופעלות בדף "מועמדויות שלי"
             </p>
           )}
+          </div> : null}
         </div>
         </div>
         )}

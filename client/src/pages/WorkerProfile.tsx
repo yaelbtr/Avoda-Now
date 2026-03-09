@@ -1038,7 +1038,14 @@ export default function WorkerProfile() {
               style={{ transform: openSections["work-categories"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </button>
-          {openSections["work-categories"] && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: openSections["work-categories"] ? "1fr" : "0fr",
+              transition: "grid-template-rows 0.25s ease",
+            }}
+          >
+          <div className="overflow-hidden">
           <div className="px-5 pb-5 space-y-4 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
             {/* Preference text */}
             <div className="pt-4">
@@ -1079,7 +1086,8 @@ export default function WorkerProfile() {
               </div>
             </div>
           </div>
-          )}
+          </div>
+          </div>
 
           {/* ── Divider ── */}
           <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} />
@@ -1099,7 +1107,14 @@ export default function WorkerProfile() {
               style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </button>
-          {openSections["work-location"] && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: openSections["work-location"] ? "1fr" : "0fr",
+              transition: "grid-template-rows 0.25s ease",
+            }}
+          >
+          <div className="overflow-hidden">
           <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
             <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
               <button
@@ -1158,7 +1173,8 @@ export default function WorkerProfile() {
               </div>
             )}
           </div>
-          )}
+          </div>
+          </div>
         </div>
         {/* Save button for work tab */}
         <button

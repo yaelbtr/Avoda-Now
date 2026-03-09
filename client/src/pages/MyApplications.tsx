@@ -120,6 +120,11 @@ export default function MyApplications() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Saved jobs sort
+  type SavedSortBy = "savedAt" | "salary" | "city";
+  const [savedSortBy, setSavedSortBy] = useState<SavedSortBy>("savedAt");
+  const [savedSortDir, setSavedSortDir] = useState<"desc" | "asc">("desc");
+
   // Determine active tab from URL param
   const params = new URLSearchParams(search);
   const tabParam = params.get("tab");
@@ -173,6 +178,26 @@ export default function MyApplications() {
 
     return list;
   }, [applications, filterStatus, sortOrder]);
+
+  // ── Saved jobs sort ───────────────────────────────────────────────────────
+  const sortedSavedJobs = useMemo(() => {
+    if (!savedJobs) return [];
+    const list = [...savedJobs];
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (savedSortBy === "savedAt") {
+        cmp = new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime();
+      } else if (savedSortBy === "salary") {
+        const sa = parseFloat(a.salary ?? "0") || 0;
+        const sb = parseFloat(b.salary ?? "0") || 0;
+        cmp = sa - sb;
+      } else if (savedSortBy === "city") {
+        cmp = (a.city ?? "").localeCompare(b.city ?? "", "he");
+      }
+      return savedSortDir === "desc" ? -cmp : cmp;
+    });
+    return list;
+  }, [savedJobs, savedSortBy, savedSortDir]);
 
   // ── Auth guard ────────────────────────────────────────────────────────────
   if (loading) {
@@ -626,9 +651,50 @@ export default function MyApplications() {
               </div>
             )}
 
+            {/* Sort bar */}
+            {!isLoading && savedJobs && savedJobs.length > 1 && (
+              <div className="flex items-center gap-2 flex-wrap" dir="rtl">
+                <span className="text-xs shrink-0" style={{ color: C_FAINT }}>מיון:</span>
+                {([
+                  { key: "savedAt", label: "תאריך שמירה" },
+                  { key: "salary",  label: "שכר" },
+                  { key: "city",    label: "עיר" },
+                ] as { key: "savedAt" | "salary" | "city"; label: string }[]).map(({ key, label }) => {
+                  const active = savedSortBy === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        if (active) {
+                          setSavedSortDir(d => d === "desc" ? "asc" : "desc");
+                        } else {
+                          setSavedSortBy(key);
+                          setSavedSortDir("desc");
+                        }
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-all"
+                      style={{
+                        background: active ? C_ACCENT : "oklch(1 0 0 / 0.05)",
+                        color: active ? "oklch(0.14 0.02 260)" : C_MID,
+                        border: `1px solid ${active ? C_ACCENT : "oklch(1 0 0 / 0.1)"}`,
+                        fontWeight: active ? 600 : 400,
+                      }}
+                    >
+                      {label}
+                      {active && (
+                        <span style={{ fontSize: "0.65rem" }}>
+                          {savedSortDir === "desc" ? " ↓" : " ↑"}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Saved job cards */}
             <AnimatePresence>
-              {!isLoading && savedJobs && savedJobs.map((job, idx) => {
+              {!isLoading && savedJobs && sortedSavedJobs.map((job, idx) => {
                 const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
                 const savedTimeAgo = formatDistanceToNow(new Date(job.savedAt), {
                   addSuffix: true,

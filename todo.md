@@ -854,3 +854,6 @@
 - [ ] Tab switching via URL param (?tab=saved)
 - [ ] Remove saved job button
 - [ ] Nav links open correct tab
+
+## Saved Jobs Sorting
+- [x] Sort saved jobs by save date, salary, or city

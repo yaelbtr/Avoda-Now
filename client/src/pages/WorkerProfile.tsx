@@ -753,18 +753,18 @@ export default function WorkerProfile() {
   ];
 
   return (
-    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.97 0.005 90)" }}>
+    <div className="min-h-screen" dir="rtl" style={{ backgroundColor: "var(--page-bg)" }}>
       {/* ── Hero Header + Tabs ───────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ background: "white" }}>
-        {/* Subtle top accent line */}
-        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, oklch(0.45 0.14 88) 0%, oklch(0.60 0.16 85) 100%)" }} />
+      <div className="relative overflow-hidden" style={{ backgroundColor: "var(--page-bg)", borderBottom: "1px solid oklch(0.92 0.02 100)" }}>
+        {/* Accent bar matching HomeWorker brand */}
+        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)" }} />
 
         <div className="max-w-lg mx-auto px-4 pt-5 pb-4">
           {/* Back button */}
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-1.5 text-sm mb-5 transition-opacity hover:opacity-60"
-            style={{ color: "oklch(0.50 0.08 88)" }}
+            style={{ color: "#4F583B" }}
           >
             <ArrowRight className="h-4 w-4" />
             חזרה
@@ -830,22 +830,22 @@ export default function WorkerProfile() {
 
             {/* Name + meta + photo notice */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-black leading-tight truncate" style={{ color: "oklch(0.20 0.04 88)" }}>
+              <h1 className="text-lg font-black leading-tight truncate" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>
                 {name || user?.name || "פרופיל שלי"}
               </h1>
               {profileQuery.data?.phone && (
-                <p className="text-sm mt-0.5" style={{ color: "oklch(0.50 0.06 88)" }}>
+                <p className="text-sm mt-0.5" style={{ color: "oklch(0.45 0.06 122)" }}>
                   {profileQuery.data.phone}
                 </p>
               )}
               {selectedCategories.length > 0 && (
-                <p className="text-xs mt-0.5 truncate" style={{ color: "oklch(0.55 0.08 88)" }}>
+                <p className="text-xs mt-0.5 truncate" style={{ color: "oklch(0.50 0.06 122)" }}>
                   {selectedCategories.slice(0, 2).map(v => PREFERENCE_CATEGORIES.find(c => c.value === v)?.label).filter(Boolean).join(" · ")}
                   {selectedCategories.length > 2 && ` +${selectedCategories.length - 2}`}
                 </p>
               )}
               {/* Employer photo notice */}
-              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: "oklch(0.50 0.10 85)" }}>
+              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: "oklch(0.68 0.14 80.8)" }}>
                 📸 התמונה תוצג למעסיקים פוטנציאליים
               </p>
             </div>
@@ -854,7 +854,7 @@ export default function WorkerProfile() {
           {/* ── Tab Bar ──────────────────────────────────────────────── */}
           <div
             className="rounded-2xl p-1 flex gap-1"
-            style={{ background: "oklch(0.94 0.02 90)", border: "1px solid oklch(0.88 0.04 88)" }}
+            style={{ background: "oklch(0.93 0.02 100)", border: "1px solid oklch(0.89 0.03 100)" }}
           >
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -865,8 +865,8 @@ export default function WorkerProfile() {
                   onClick={() => setActiveTab(tab.id)}
                   className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
                   style={isActive
-                    ? { background: "oklch(0.45 0.12 88)", color: "white", boxShadow: "0 2px 8px oklch(0.40 0.12 88 / 0.35)" }
-                    : { color: "oklch(0.50 0.06 88)" }
+                    ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
+                    : { color: "oklch(0.50 0.06 122)" }
                   }
                 >
                   <Icon className="h-4 w-4" />
@@ -885,10 +885,10 @@ export default function WorkerProfile() {
         {activeTab === "details" && (
         <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
-              <User className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <User className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
           </div>
@@ -954,8 +954,8 @@ export default function WorkerProfile() {
           className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60 mt-2"
           style={{
             background: updateMutation.isPending
-              ? "oklch(0.55 0.10 88)"
-              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+              ? "oklch(0.55 0.08 122)"
+              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
             color: "white",
           }}
         >
@@ -969,10 +969,10 @@ export default function WorkerProfile() {
         {activeTab === "work" && (
         <div className="space-y-4">
         {/* ── Matching Preferences ─────────────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-5 space-y-5">
+        <div className="rounded-2xl p-5 space-y-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
-              <Briefcase className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <Briefcase className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <h2 className="font-bold text-foreground text-sm">העדפות התאמה</h2>
           </div>
@@ -1100,8 +1100,8 @@ export default function WorkerProfile() {
           className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
           style={{
             background: updateMutation.isPending
-              ? "oklch(0.55 0.10 88)"
-              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+              ? "oklch(0.55 0.08 122)"
+              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
             color: "white",
           }}
         >
@@ -1114,10 +1114,10 @@ export default function WorkerProfile() {
         {/* ── TAB: זמינות ─────────────────────────────────────────────── */}
         {activeTab === "schedule" && (
         <div className="space-y-4">
-          <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
-              <Bell className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <h2 className="font-bold text-foreground text-sm">זמינות לעבודה</h2>
           </div>
@@ -1197,8 +1197,8 @@ export default function WorkerProfile() {
           className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
           style={{
             background: updateMutation.isPending
-              ? "oklch(0.55 0.10 88)"
-              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+              ? "oklch(0.55 0.08 122)"
+              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
             color: "white",
           }}
         >
@@ -1212,10 +1212,10 @@ export default function WorkerProfile() {
         {activeTab === "settings" && (
         <div className="space-y-4">
         {/* ── Notification Settings ─────────────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
-              <Bell className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <div>
               <h2 className="font-bold text-foreground text-sm">הגדרות התראות</h2>

@@ -1101,7 +1101,17 @@ export default function WorkerProfile() {
             <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
             </div>
-            <span className="font-bold text-foreground text-sm flex-1">מצב חיפוש עבודה</span>
+            <span className="font-bold text-foreground text-sm">מצב חיפוש עבודה</span>
+            {!openSections["work-location"] && (
+              <span className="flex-1 text-xs text-muted-foreground truncate text-right">
+                {locationMode === "radius"
+                  ? `לפי רדיוס · ${searchRadiusKm} ק"מ`
+                  : preferredCities.length === 0
+                  ? "לפי עיר"
+                  : `לפי עיר · ${(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe).join(", ")}`}
+              </span>
+            )}
+            {openSections["work-location"] && <span className="flex-1" />}
             <ChevronDown
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
               style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}

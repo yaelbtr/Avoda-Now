@@ -10,7 +10,7 @@ import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
   HourglassIcon, ChevronRight, Phone, MessageCircle,
   Bell, BellOff, Bookmark, BookmarkX, Flame,
-  Search, ChevronLeft, ArrowUpDown,
+  Search, ChevronLeft, ArrowUpDown, Loader2, Send,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
 import { formatDistanceToNow } from "date-fns";
@@ -125,6 +125,11 @@ export default function MyApplications() {
   const [savedSortBy, setSavedSortBy] = useState<SavedSortBy>("savedAt");
   const [savedSortDir, setSavedSortDir] = useState<"desc" | "asc">("desc");
 
+  // Quick-apply modal state
+  const [applyJobId, setApplyJobId] = useState<number | null>(null);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<number>>(new Set());
+
   // Determine active tab from URL param
   const params = new URLSearchParams(search);
   const tabParam = params.get("tab");
@@ -148,6 +153,27 @@ export default function MyApplications() {
   });
 
   const utils = trpc.useUtils();
+
+  // Quick-apply mutation
+  const applyMutation = trpc.jobs.applyToJob.useMutation({
+    onSuccess: (_, vars) => {
+      setAppliedJobIds(prev => new Set(Array.from(prev).concat(vars.jobId)));
+      setApplyJobId(null);
+      setApplyMessage("");
+      utils.jobs.myApplications.invalidate();
+      toast.success("המועמדות נשלחה! המעסיק יקבל הודעה.");
+    },
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setAppliedJobIds(prev => new Set(Array.from(prev).concat(applyJobId!)));
+        setApplyJobId(null);
+        toast.info("כבר הגשת מועמדות למשרה זו");
+      } else {
+        toast.error(err.message ?? "שגיאה בשליחת המועמדות");
+      }
+    },
+  });
+
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({
     onSuccess: () => {
       utils.savedJobs.getSavedJobs.invalidate();
@@ -989,8 +1015,72 @@ export default function MyApplications() {
                       </span>
                     </div>
 
+                    {/* Inline apply panel */}
+                    <AnimatePresence>
+                      {applyJobId === job.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div
+                            className="mt-3 p-3 rounded-xl"
+                            style={{ background: "oklch(0.97 0.02 100)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+                          >
+                            <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.38 0.07 125.0)" }}>
+                              הוסף הודעה קצרה (אופציונלי)
+                            </p>
+                            <textarea
+                              value={applyMessage}
+                              onChange={(e) => setApplyMessage(e.target.value)}
+                              placeholder="לדוגמא: יש לי ניסיון רלוונטי ואני זמין/ה להתחיל מחר..."
+                              maxLength={500}
+                              rows={2}
+                              dir="rtl"
+                              className="w-full text-xs rounded-lg p-2 resize-none outline-none"
+                              style={{
+                                border: "1px solid oklch(0.87 0.04 84.0)",
+                                background: "white",
+                                color: "var(--text-primary)",
+                                fontFamily: "inherit",
+                              }}
+                            />
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={() => { setApplyJobId(null); setApplyMessage(""); }}
+                                className="flex-none px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                style={{ background: "white", color: "var(--text-muted)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+                              >
+                                ביטול
+                              </button>
+                              <motion.button
+                                onClick={() => applyMutation.mutate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin })}
+                                disabled={applyMutation.isPending}
+                                whileTap={{ scale: 0.97 }}
+                                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold"
+                                style={{
+                                  background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                                  color: "oklch(0.97 0.02 91)",
+                                  opacity: applyMutation.isPending ? 0.7 : 1,
+                                }}
+                              >
+                                {applyMutation.isPending ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Send className="h-3.5 w-3.5" />
+                                )}
+                                שלח מועמדות
+                              </motion.button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     {/* Action row */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 mt-3">
                       <a
                         href={`/job/${job.id}`}
                         className="text-xs font-medium underline underline-offset-2"
@@ -999,20 +1089,40 @@ export default function MyApplications() {
                         צפה במשרה
                       </a>
                       {!isExpired && (
-                        <motion.button
-                          onClick={() => navigate(`/job/${job.id}`)}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.97 }}
-                          className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-bold transition-all"
-                          style={{
-                            background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                            color: "oklch(0.97 0.02 91)",
-                            boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)",
-                          }}
-                        >
-                          הגש מועמדות
-                          <ChevronLeft className="h-3.5 w-3.5 opacity-70" />
-                        </motion.button>
+                        appliedJobIds.has(job.id) ? (
+                          <span
+                            className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-bold"
+                            style={{
+                              background: "oklch(0.65 0.22 160 / 0.10)",
+                              color: "oklch(0.42 0.18 150)",
+                              border: "1px solid oklch(0.65 0.22 160 / 0.25)",
+                            }}
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            הגשת מועמדות
+                          </span>
+                        ) : (
+                          <motion.button
+                            onClick={() => {
+                              if (applyJobId === job.id) { setApplyJobId(null); setApplyMessage(""); }
+                              else { setApplyJobId(job.id); setApplyMessage(""); }
+                            }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-bold transition-all"
+                            style={{
+                              background: applyJobId === job.id
+                                ? "oklch(0.93 0.02 100)"
+                                : "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                              color: applyJobId === job.id ? "var(--text-secondary)" : "oklch(0.97 0.02 91)",
+                              boxShadow: applyJobId === job.id ? "none" : "0 2px 8px oklch(0.28 0.06 122 / 0.25)",
+                              border: applyJobId === job.id ? "1px solid oklch(0.87 0.04 84.0)" : "none",
+                            }}
+                          >
+                            הגש מועמדות
+                            <ChevronLeft className="h-3.5 w-3.5 opacity-70" />
+                          </motion.button>
+                        )
                       )}
                     </div>
                   </motion.div>

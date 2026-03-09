@@ -59,6 +59,12 @@ export default function Navbar() {
   );
   const hasUnread = (unreadCount ?? 0) > 0;
 
+  const { data: savedIdsData } = trpc.savedJobs.getSavedIds.useQuery(undefined, {
+    enabled: isAuthenticated && userMode === "worker",
+    staleTime: 30_000,
+  });
+  const savedJobsCount = savedIdsData?.ids?.length ?? 0;
+
   const workerLinks = [
     { href: "/find-jobs", label: "חפש עבודה", icon: MapPin },
     { href: "/find-jobs?filter=today", label: "עבודות להיום", icon: Flame },
@@ -211,6 +217,25 @@ export default function Navbar() {
                           {unreadCount}
                         </span>
                       )}
+                      {link.href === "/my-applications?tab=saved" && savedJobsCount > 0 && (
+                        <span
+                          style={{
+                            background: "oklch(0.55 0.18 145)",
+                            color: "white",
+                            fontSize: "0.6rem",
+                            fontWeight: 700,
+                            borderRadius: "9999px",
+                            minWidth: "1.1rem",
+                            height: "1.1rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "0 0.3rem",
+                          }}
+                        >
+                          {savedJobsCount}
+                        </span>
+                      )}
                     </motion.span>
                   </Link>
                 );
@@ -300,6 +325,26 @@ export default function Navbar() {
                           <Link href="/my-applications?tab=saved" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Bookmark className="h-4 w-4 shrink-0" style={{ color: BLUE }} />
                             <span>משרות ששמרתי</span>
+                            {savedJobsCount > 0 && (
+                              <span
+                                style={{
+                                  background: "oklch(0.55 0.18 145)",
+                                  color: "white",
+                                  fontSize: "0.6rem",
+                                  fontWeight: 700,
+                                  borderRadius: "9999px",
+                                  minWidth: "1.1rem",
+                                  height: "1.1rem",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: "0 0.3rem",
+                                  marginRight: "auto",
+                                }}
+                              >
+                                {savedJobsCount}
+                              </span>
+                            )}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -508,6 +553,26 @@ export default function Navbar() {
                               }}
                             >
                               {unreadCount}
+                            </span>
+                          )}
+                          {link.href === "/my-applications?tab=saved" && savedJobsCount > 0 && (
+                            <span
+                              style={{
+                                background: "oklch(0.55 0.18 145)",
+                                color: "white",
+                                fontSize: "0.6rem",
+                                fontWeight: 700,
+                                borderRadius: "9999px",
+                                minWidth: "1.1rem",
+                                height: "1.1rem",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "0 0.3rem",
+                                marginRight: "auto",
+                              }}
+                            >
+                              {savedJobsCount}
                             </span>
                           )}
                         </span>

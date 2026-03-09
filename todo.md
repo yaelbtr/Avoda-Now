@@ -857,3 +857,9 @@
 
 ## Saved Jobs Sorting
 - [x] Sort saved jobs by save date, salary, or city
+
+## Saved Jobs Badge in Navbar
+- [x] Show saved jobs count badge next to 'משרות ששמרתי' in navbar
+
+## עיצוב מחדש של עמוד /my-applications
+- [x] עיצוב עמוד מועמדויות ומשרות שמורות בשפת עיצוב זהה לעמוד הבית של העובד

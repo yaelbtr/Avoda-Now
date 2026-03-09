@@ -958,3 +958,6 @@
 - [x] הסרת כפתור "צפה במשרה" / ChevronLeft מגרסה רגילה של JobCard
 - [x] הסרת כפתור "צפה במשרה" / ChevronLeft מגרסה compact של JobCard
 - [x] הוספת hint text מעוצב "לחץ על הכרטיסיה לפרטים נוספים" בתחתית כל כרטיסיה
+
+## hint text צף ב-hover
+- [x] הצגת hint text רק בעת hover על הכרטיסיה (fade-in/out)

@@ -350,7 +350,7 @@ export function JobCard({
       <motion.div
         whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0,0,0,0.14)" }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-2xl overflow-hidden bg-white relative"
+        className="group rounded-2xl overflow-hidden bg-white relative"
         style={{
           width: 210,
           border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
@@ -468,13 +468,13 @@ export function JobCard({
                 </motion.button>
               )
             )}
-            {/* Hint text */}
+            {/* Hint text — visible only on hover */}
             <span
-              className="text-[9px] font-medium flex items-center gap-0.5 select-none shrink-0"
-              style={{ color: "oklch(0.62 0.05 100)", letterSpacing: "0.01em" }}
+              className="text-[9px] font-medium flex items-center gap-0.5 select-none shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{ color: "oklch(0.50 0.07 125.0)", letterSpacing: "0.01em" }}
             >
               לפרטים
-              <ChevronLeft className="h-2.5 w-2.5 opacity-60" />
+              <ChevronLeft className="h-2.5 w-2.5 opacity-70" />
             </span>
           </div>
         </div>
@@ -492,7 +492,7 @@ export function JobCard({
         borderColor: job.isUrgent ? `${C_DANGER_HEX}60` : "oklch(0.80 0.06 84.0)",
       }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl p-4 relative overflow-hidden bg-white"
+      className="group rounded-2xl p-4 relative overflow-hidden bg-white"
       style={{
         border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
         boxShadow: job.isUrgent
@@ -721,13 +721,13 @@ export function JobCard({
           )
         )}
 
-        {/* Hint text — pushes to the left */}
+        {/* Hint text — visible only on hover */}
         <span
-          className="ml-auto text-[10px] font-medium flex items-center gap-0.5 select-none"
-          style={{ color: "oklch(0.62 0.05 100)", letterSpacing: "0.01em" }}
+          className="ml-auto text-[10px] font-medium flex items-center gap-0.5 select-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{ color: "oklch(0.50 0.07 125.0)", letterSpacing: "0.01em" }}
         >
-          לחץ על הכרטיסיה לפרטים נוספים
-          <ChevronLeft className="h-3 w-3 opacity-60" />
+          לחץ לפרטים נוספים
+          <ChevronLeft className="h-3 w-3 opacity-70" />
         </span>
       </div>
     </motion.div>

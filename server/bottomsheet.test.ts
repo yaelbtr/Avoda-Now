@@ -143,7 +143,7 @@ describe("Job Details Bottom Sheet — getById procedure", () => {
     const result = await caller.jobs.getById({ id: 42 });
     expect(result.id).toBe(42);
     expect(result.description).toBe("דרוש מלצר/ית לעבודה בסופי שבוע");
-    expect(result.contactPhone).toBe("0501234567");
+    expect(result.contactPhone).toBeNull(); // contactPhone is always stripped server-side
     expect(result.expiresAt).toBeInstanceOf(Date);
   });
 

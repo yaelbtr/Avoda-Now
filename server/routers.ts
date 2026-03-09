@@ -267,8 +267,8 @@ const jobsRouter = router({
     .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
     .query(async ({ input, ctx }) => {
       const jobs = await getActiveJobs(input.limit ?? 50, input.category);
-      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
-      return jobs;
+      // Never expose contactPhone to workers or unauthenticated users
+      return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   search: publicProcedure
@@ -283,8 +283,8 @@ const jobsRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const jobs = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50);
-      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
-      return jobs;
+      // Never expose contactPhone to workers or unauthenticated users
+      return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   getById: publicProcedure
@@ -292,9 +292,8 @@ const jobsRouter = router({
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
-      // Never expose phone to unauthenticated users
-      if (!ctx.user) return { ...job, contactPhone: null };
-      return job;
+      // Never expose contactPhone to workers or unauthenticated users
+      return { ...job, contactPhone: null };
     }),
 
   create: protectedProcedure
@@ -443,8 +442,8 @@ const jobsRouter = router({
     .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
     .query(async ({ input, ctx }) => {
       const jobs = await getTodayJobs(input.limit ?? 50, input.category);
-      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
-      return jobs;
+      // Never expose contactPhone to workers or unauthenticated users
+      return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   /** Urgent jobs (isUrgent=true), sorted by newest */
@@ -452,8 +451,8 @@ const jobsRouter = router({
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input, ctx }) => {
       const jobs = await getUrgentJobs(input.limit ?? 20);
-      if (!ctx.user) return jobs.map(j => ({ ...j, contactPhone: null }));
-      return jobs;
+      // Never expose contactPhone to workers or unauthenticated users
+      return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   /**
@@ -1345,7 +1344,8 @@ const savedJobsRouter = router({
   /** Get full saved job details for the current worker */
   getSavedJobs: protectedProcedure.query(async ({ ctx }) => {
     const rows = await getSavedJobs(ctx.user.id);
-    return rows;
+    // Never expose contactPhone to workers
+    return rows.map(r => ({ ...r, contactPhone: null }));
   }),
 });
 

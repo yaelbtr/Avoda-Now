@@ -280,7 +280,8 @@ export function JobCard({
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
   const isToday = isJobToday(job.startDateTime, job.startTime);
-  const hasPhone = isAuthenticated && !!job.contactPhone;
+  // contactPhone is always null for workers (stripped server-side)
+  const hasPhone = false;
   const countdown = expiryCountdown(job.expiresAt);
   const isWartime = WARTIME_CATEGORIES.includes(job.category as typeof WARTIME_CATEGORIES[number]);
   const isSeasonal = SEASONAL_CATEGORIES.includes(job.category as typeof SEASONAL_CATEGORIES[number]);

@@ -149,10 +149,7 @@ export default function JobDetails() {
   const isVolunteer = job.salaryType === "volunteer";
   const jobUrl = `${SITE_URL}/job/${job.id}`;
   const shareText = encodeURIComponent(`מצאתי עבודה באתר AvodaNow 💼\n${job.title}\n${jobUrl}`);
-  const hasPhone = isAuthenticated && !!job.contactPhone;
-  const cleanPhone = hasPhone ? job.contactPhone!.replace(/\D/g, "") : "";
-  const intlPhone = cleanPhone.startsWith("0") ? "972" + cleanPhone.slice(1) : cleanPhone;
-  const contactText = encodeURIComponent(`שלום, ראיתי את המשרה "${job.title}" באתר AvodaNow ואני מעוניין/ת.`);
+  // contactPhone is never sent to workers — contact is via application only
 
   const distance = userLat && userLng
     ? (() => {
@@ -356,80 +353,10 @@ export default function JobDetails() {
             <span className="font-medium text-gray-900">{job.contactName}</span>
           </p>
 
-          {isAuthenticated && hasPhone ? (
-            <div className="flex flex-col gap-2">
-              {/* Phone number display */}
-              <div className="flex items-center gap-2 rounded-xl px-3 py-2 mb-1 bg-blue-50 border border-blue-200">
-                <Phone className="h-4 w-4 shrink-0 text-blue-600" />
-                <span dir="ltr" className="font-medium text-sm text-gray-900">
-                  {job.contactPhone}
-                </span>
-              </div>
-              <motion.a
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                href={`https://wa.me/${intlPhone}?text=${contactText}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all"
-                  style={{
-                    background: G_WHATSAPP,
-                    boxShadow: "0 0 20px rgba(37,211,102,0.3)",
-                  }}
-                >
-                  <WhatsAppIcon size="lg" />
-                  שלח הודעה בוואטסאפ
-                </button>
-              </motion.a>
-              <motion.a
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                href={`tel:${job.contactPhone}`}
-              >
-                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100">
-                  <Phone className="h-5 w-5" />
-                  התקשר עכשיו
-                </button>
-              </motion.a>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Masked phone */}
-              <div className="flex items-center gap-2 rounded-xl px-3 py-2 bg-gray-50 border border-dashed border-gray-300">
-                <Lock className="h-4 w-4 shrink-0 text-gray-400" />
-                <span className="text-sm tracking-widest text-gray-400">
-                  05X-XXX-XXXX
-                </span>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
-                style={{
-                  background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-                  boxShadow: `0 4px 16px ${C_BRAND_HEX}4d`,
-                }}
-                onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-              >
-                <Lock className="h-4 w-4" />
-                התחבר כדי לראות מספר טלפון
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all bg-green-50 border border-green-300 text-green-700 hover:bg-green-100"
-                onClick={() => requireLogin("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-              >
-                <WhatsAppIcon size="lg" />
-                התחבר כדי לשלוח וואטסאפ
-              </motion.button>
-              <p className="text-xs text-center text-gray-400">
-                כדי ליצור קשר עם המעסיק יש להתחבר למערכת
-              </p>
-            </div>
-          )}
+          {/* Contact via application only */}
+          <div className="space-y-3">
+            <p className="text-xs text-center text-gray-500">פנייה למעסיק מתבצעת דרך הגשת מועמדות בלבד</p>
+          </div>
 
           {/* Share — always visible */}
           <motion.a
@@ -499,7 +426,7 @@ export default function JobDetails() {
                 salary: job.salary ? String(job.salary) : "",
                 salaryType: job.salaryType ?? "hourly",
                 contactName: job.contactName,
-                contactPhone: job.contactPhone ?? "",
+                contactPhone: "", // contactPhone not exposed to workers
                 businessName: job.businessName ?? "",
                 workingHours: job.workingHours ?? "",
                 startTime: job.startTime ?? "flexible",

@@ -116,19 +116,6 @@ export default function JobBottomSheet({
     currentYRef.current = 0;
   };
 
-  const handleCall = () => {
-    if (!isAuthenticated) { onLoginRequired?.("כדי להתקשר יש להתחבר"); return; }
-    if (job?.contactPhone) window.location.href = `tel:${job.contactPhone}`;
-  };
-
-  const handleWhatsApp = () => {
-    if (!isAuthenticated) { onLoginRequired?.("כדי לשלוח הודעה יש להתחבר"); return; }
-    if (!job) return;
-    const phone = job.contactPhone?.replace(/\D/g, "") ?? "";
-    const text = encodeURIComponent(`היי, ראיתי את המשרה "${job.title}" באפליקציית AvodaNow ואשמח לשמוע פרטים נוספים.`);
-    window.open(`https://wa.me/972${phone.replace(/^0/, "")}?text=${text}`, "_blank");
-  };
-
   const handleApply = () => {
     if (!isAuthenticated) { onLoginRequired?.("כדי להגיש מועמדות יש להתחבר"); return; }
     if (applied) return;
@@ -151,7 +138,7 @@ export default function JobBottomSheet({
   const catLabel = getCategoryLabel(job.category);
   const isVolunteer = job.salaryType === "volunteer";
   const location = [job.businessName, job.city ?? job.address].filter(Boolean).join(", ");
-  const showPhoneNumber = job.showPhone && job.contactPhone;
+  // showPhoneNumber removed — contactPhone stripped server-side
 
   return (
     <>

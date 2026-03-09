@@ -130,6 +130,9 @@ export default function WorkerProfile() {
   const [locationMode, setLocationMode] = useState<"city" | "radius">("city");
   const [preferredCity, setPreferredCity] = useState("");
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
+  const [workerLatitude, setWorkerLatitude] = useState<string | null>(null);
+  const [workerLongitude, setWorkerLongitude] = useState<string | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
   const [preferredCities, setPreferredCities] = useState<number[]>([]);
@@ -179,6 +182,8 @@ export default function WorkerProfile() {
       setPreferredDays((d.preferredDays as string[]) ?? []);
       setPreferredTimeSlots((d.preferredTimeSlots as string[]) ?? []);
       setPreferredCities((d.preferredCities as number[]) ?? []);
+      setWorkerLatitude((d as any).workerLatitude ?? null);
+      setWorkerLongitude((d as any).workerLongitude ?? null);
       setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
     }
     if (user?.email) setEmail(user.email);
@@ -249,9 +254,11 @@ export default function WorkerProfile() {
       locationMode,
       preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
+      workerLatitude: locationMode === "radius" ? workerLatitude : null,
+      workerLongitude: locationMode === "radius" ? workerLongitude : null,
       preferredDays,
       preferredTimeSlots,
-      preferredCities,
+      preferredCities: locationMode === "city" ? preferredCities : [],
       // Only pass email for non-Google users (Google email comes from OAuth)
       email: !user?.email ? (email.trim() || null) : undefined,
     });
@@ -1166,36 +1173,105 @@ export default function WorkerProfile() {
                 לפי עיר
               </button>
             </div>
-            {locationMode === "radius" && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">רדיוס חיפוש מהמיקום שלי:</p>
-                <div className="flex gap-2">
-                  {[2, 5, 10, 20, 50].map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setSearchRadiusKm(r)}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
-                        searchRadiusKm === r
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      {r} ק"מ
-                    </button>
-                  ))}
+            {/* ── Radius content ── */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateRows: locationMode === "radius" ? "1fr" : "0fr",
+                transition: "grid-template-rows 0.25s ease",
+              }}
+            >
+              <div className="overflow-hidden">
+                <div className="space-y-3 pt-1">
+                  <p className="text-xs text-muted-foreground">רדיוס חיפוש מהמיקום שלי:</p>
+                  <div className="flex gap-2">
+                    {[2, 5, 10, 20, 50].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setSearchRadiusKm(r)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
+                          searchRadiusKm === r
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {r} ק"מ
+                      </button>
+                    ))}
+                  </div>
+                  {/* Geolocation button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        toast.error("הדפדפן שלך לא תומך באיתור מיקום");
+                        return;
+                      }
+                      setGeoLoading(true);
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          setWorkerLatitude(String(pos.coords.latitude));
+                          setWorkerLongitude(String(pos.coords.longitude));
+                          setGeoLoading(false);
+                          toast.success("מיקום נשמר בהצלחה!");
+                        },
+                        () => {
+                          setGeoLoading(false);
+                          toast.error("לא ניתן לאתר את המיקום. אנא אפשר גישה למיקום בהגדרות הדפדפן.");
+                        },
+                        { timeout: 10000 }
+                      );
+                    }}
+                    disabled={geoLoading}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all disabled:opacity-60"
+                    style={{
+                      borderColor: workerLatitude ? "oklch(0.55 0.14 145)" : "oklch(0.88 0.03 122)",
+                      background: workerLatitude ? "oklch(0.97 0.03 145)" : "oklch(0.98 0.01 122)",
+                      color: workerLatitude ? "oklch(0.35 0.12 145)" : "#4F583B",
+                    }}
+                  >
+                    {geoLoading ? (
+                      <><BrandLoader size="sm" /> מאתר...’</>
+                    ) : workerLatitude ? (
+                      <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר — לחץ לעדכון</>
+                    ) : (
+                      <><Crosshair className="h-3.5 w-3.5" /> השתמש במיקום הנוכחי שלי</>
+                    )}
+                  </button>
                 </div>
               </div>
-            )}
-            {locationMode === "city" && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">בחר ערים מועדפות:</p>
-                <CityPicker
-                  selectedCityIds={preferredCities}
-                  onChange={setPreferredCities}
-                />
+            </div>
+
+            {/* ── City content ── */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateRows: locationMode === "city" ? "1fr" : "0fr",
+                transition: "grid-template-rows 0.25s ease",
+              }}
+            >
+              <div className="overflow-hidden">
+                <div className="pt-1">
+                  <p className="text-xs text-muted-foreground mb-2">בחר ערים מועדפות (עד 5):</p>
+                  <CityPicker
+                    selectedCityIds={preferredCities}
+                    onChange={(ids) => {
+                      if (ids.length > 5) {
+                        toast.warning("ניתן לבחור עד 5 ערים בלבד");
+                        return;
+                      }
+                      setPreferredCities(ids);
+                    }}
+                  />
+                  {preferredCities.length >= 5 && (
+                    <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.55 0.14 30)" }}>
+                      ⚠️ הגעת למקסימום של 5 ערים
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
           </div>
           </div>

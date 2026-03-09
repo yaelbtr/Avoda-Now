@@ -386,6 +386,35 @@ export default function MyApplications() {
             </button>
           </div>
 
+          {/* Stats row */}
+          {(applications || savedJobs) && (
+            <div className="flex items-center justify-center gap-5 mt-4 pt-3" style={{ borderTop: "1px solid oklch(1 0 0 / 0.15)" }}>
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xl font-black" style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                  {applications ? applications.length : "–"}
+                </span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>מועמדויות</span>
+              </div>
+              <div style={{ width: 1, height: 32, background: "oklch(1 0 0 / 0.20)" }} />
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xl font-black" style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                  {savedJobs ? savedJobs.length : "–"}
+                </span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>משרות שמורות</span>
+              </div>
+              {applications && applications.filter(a => a.status === "accepted").length > 0 && (
+                <>
+                  <div style={{ width: 1, height: 32, background: "oklch(1 0 0 / 0.20)" }} />
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-xl font-black" style={{ color: "oklch(0.85 0.18 160)", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                      {applications.filter(a => a.status === "accepted").length}
+                    </span>
+                    <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>התקבלתי</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
         </div>
       </div>

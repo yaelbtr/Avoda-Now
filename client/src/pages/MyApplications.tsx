@@ -66,8 +66,8 @@ type MyApplication = {
   workerPhone?: string | null;
 };
 
-type FilterStatus = "all" | "pending" | "accepted" | "rejected";
-type SortOrder = "newest" | "oldest";
+type AppStatus = "pending" | "viewed" | "accepted" | "rejected";
+type AppSortBy = "jobDate" | "salary" | "city";
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function Shimmer({ width = "100%", height = 14, rounded = "0.5rem" }: {
@@ -114,8 +114,11 @@ export default function MyApplications() {
   const [, navigate] = useLocation();
   const search = useSearch();
   const { isAuthenticated, loading } = useAuth();
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  // Applications filter + sort
+  const [statusFilter, setStatusFilter] = useState<AppStatus[]>([]);
+  const [appSortBy, setAppSortBy] = useState<AppSortBy>("jobDate");
+  const [appSortDir, setAppSortDir] = useState<"desc" | "asc">("desc");
+  const [statusDropOpen, setStatusDropOpen] = useState(false);
 
   // Saved jobs sort
   type SavedSortBy = "savedAt" | "salary" | "city";
@@ -159,22 +162,32 @@ export default function MyApplications() {
     if (!applications) return [];
     let list = [...applications] as MyApplication[];
 
-    if (filterStatus !== "all") {
-      if (filterStatus === "pending") {
-        list = list.filter((a) => a.status === "pending" || a.status === "viewed");
-      } else {
-        list = list.filter((a) => a.status === filterStatus);
-      }
+    // Multi-status filter
+    if (statusFilter.length > 0) {
+      list = list.filter((a) => {
+        const s = a.status as AppStatus;
+        // "pending" pill covers both pending + viewed
+        if (statusFilter.includes("pending") && (s === "pending" || s === "viewed")) return true;
+        return statusFilter.includes(s);
+      });
     }
 
     list.sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      return sortOrder === "newest" ? tb - ta : ta - tb;
+      let cmp = 0;
+      if (appSortBy === "jobDate") {
+        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      } else if (appSortBy === "salary") {
+        const sa = parseFloat(a.jobSalary ?? "0") || 0;
+        const sb = parseFloat(b.jobSalary ?? "0") || 0;
+        cmp = sa - sb;
+      } else if (appSortBy === "city") {
+        cmp = (a.jobCity ?? "").localeCompare(b.jobCity ?? "", "he");
+      }
+      return appSortDir === "desc" ? -cmp : cmp;
     });
 
     return list;
-  }, [applications, filterStatus, sortOrder]);
+  }, [applications, statusFilter, appSortBy, appSortDir]);
 
   // ── Saved jobs sort ───────────────────────────────────────────────────────
   const sortedSavedJobs = useMemo(() => {
@@ -221,12 +234,6 @@ export default function MyApplications() {
     );
   }
 
-  const filterLabels: Record<FilterStatus, string> = {
-    all: "הכל",
-    pending: "ממתינות",
-    accepted: "התקבלתי",
-    rejected: "לא התקבלתי",
-  };
 
   const isLoading = activeTab === "applications" ? appsLoading : savedLoading;
 
@@ -435,15 +442,15 @@ export default function MyApplications() {
                 </div>
                 <div className="text-center">
                   <p className="text-base font-black mb-1" style={{ color: "var(--text-primary)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}>
-                    {filterStatus === "all" ? "עדיין לא הגשת מועמדות" : `אין מועמדויות בסטטוס "${filterLabels[filterStatus]}"`}
+                    {statusFilter.length === 0 ? "עדיין לא הגשת מועמדות" : "אין מועמדויות לסטטוס הנבחר"}
                   </p>
-                  {filterStatus === "all" && (
+                  {statusFilter.length === 0 && (
                     <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                       חפש משרות מתאימות והגש מועמדות
                     </p>
                   )}
                 </div>
-                {filterStatus === "all" && (
+                {statusFilter.length === 0 && (
                   <motion.button
                     onClick={() => navigate("/find-jobs")}
                     whileHover={{ scale: 1.02 }}
@@ -466,28 +473,116 @@ export default function MyApplications() {
             {/* Filter + Sort bar */}
             {!isLoading && applications && applications.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap" dir="rtl">
-                <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>סטטוס:</span>
-                {(["all", "pending", "accepted", "rejected"] as FilterStatus[]).map((s) => (
+                <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>מיון:</span>
+
+                {/* Sort pills */}
+                {([
+                  { key: "jobDate", label: "תאריך עבודה" },
+                  { key: "salary",  label: "שכר" },
+                  { key: "city",    label: "עיר" },
+                ] as { key: AppSortBy; label: string }[]).map(({ key, label }) => {
+                  const active = appSortBy === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        if (active) setAppSortDir(d => d === "desc" ? "asc" : "desc");
+                        else { setAppSortBy(key); setAppSortDir("desc"); }
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
+                      style={active
+                        ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
+                        : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
+                      }
+                    >
+                      {label}
+                      {active && <span style={{ fontSize: "0.65rem" }}>{appSortDir === "desc" ? " ↓" : " ↑"}</span>}
+                    </button>
+                  );
+                })}
+
+                {/* Status dropdown multi-checkbox */}
+                <div className="relative mr-auto" dir="rtl">
                   <button
-                    key={s}
-                    onClick={() => setFilterStatus(s)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
-                    style={filterStatus === s
+                    onClick={() => setStatusDropOpen(o => !o)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
+                    style={statusFilter.length > 0
                       ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
                       : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
                     }
                   >
-                    {filterLabels[s]}
+                    סטטוס
+                    {statusFilter.length > 0 && (
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold"
+                        style={{ background: "rgba(255,255,255,0.25)", color: "inherit" }}>
+                        {statusFilter.length}
+                      </span>
+                    )}
+                    <span style={{ fontSize: "0.6rem" }}>{statusDropOpen ? "▲" : "▼"}</span>
                   </button>
-                ))}
-                <button
-                  onClick={() => setSortOrder(o => o === "newest" ? "oldest" : "newest")}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold mr-auto"
-                  style={{ background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }}
-                >
-                  <ArrowUpDown className="h-3 w-3" />
-                  {sortOrder === "newest" ? "תאריך הגשה ↓" : "תאריך הגשה ↑"}
-                </button>
+
+                  <AnimatePresence>
+                    {statusDropOpen && (
+                      <>
+                        {/* Backdrop */}
+                        <div className="fixed inset-0 z-10" onClick={() => setStatusDropOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-0 top-full mt-1.5 z-20 rounded-2xl p-2 min-w-[160px]"
+                          style={{ background: "white", border: "1px solid oklch(0.87 0.04 84.0)", boxShadow: "0 8px 24px oklch(0.28 0.06 122 / 0.14)" }}
+                        >
+                          {([
+                            { key: "pending",  label: "ממתינות / נצפה" },
+                            { key: "accepted", label: "התקבלתי" },
+                            { key: "rejected", label: "לא התקבלתי" },
+                          ] as { key: AppStatus; label: string }[]).map(({ key, label }) => {
+                            const checked = statusFilter.includes(key);
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => setStatusFilter(prev =>
+                                  checked ? prev.filter(s => s !== key) : [...prev, key]
+                                )}
+                                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all text-right"
+                                style={checked
+                                  ? { background: "oklch(0.38 0.07 125.0 / 0.10)", color: "oklch(0.30 0.07 125.0)" }
+                                  : { background: "transparent", color: "var(--text-secondary)" }
+                                }
+                              >
+                                <span
+                                  className="flex items-center justify-center w-4 h-4 rounded shrink-0"
+                                  style={checked
+                                    ? { background: "oklch(0.38 0.07 125.0)", border: "1.5px solid oklch(0.38 0.07 125.0)" }
+                                    : { background: "white", border: "1.5px solid oklch(0.80 0.04 84.0)" }
+                                  }
+                                >
+                                  {checked && (
+                                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                                      <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                  )}
+                                </span>
+                                {label}
+                              </button>
+                            );
+                          })}
+                          {statusFilter.length > 0 && (
+                            <button
+                              onClick={() => { setStatusFilter([]); setStatusDropOpen(false); }}
+                              className="w-full mt-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                              style={{ background: "oklch(0.93 0.02 100)", color: "var(--text-muted)" }}
+                            >
+                              נקה הכל
+                            </button>
+                          )}
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
 

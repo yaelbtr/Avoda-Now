@@ -60,9 +60,12 @@ import {
   saveJob,
   unsaveJob,
   getSavedJobIds,
+  getSavedJobs,
   updateUserPhone,
   logPhoneChange,
   countRecentPhoneChangeFailures,
+  rateWorker,
+  getExistingRating,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1268,6 +1271,16 @@ const userRouter = router({
 
       return { success: true };
     }),
+
+  /** Quick availability status update without entering the full profile page */
+  quickUpdateAvailability: protectedProcedure
+    .input(z.object({
+      availabilityStatus: z.enum(["available_now", "available_today", "available_hours", "not_available"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      await updateWorkerProfile(ctx.user.id, { availabilityStatus: input.availabilityStatus });
+      return { success: true };
+    }),
 });
 
 // ─── Push Notifications Router ─────────────────────────────────────────────
@@ -1328,6 +1341,51 @@ const savedJobsRouter = router({
     const ids = await getSavedJobIds(ctx.user.id);
     return { ids };
   }),
+
+  /** Get full saved job details for the current worker */
+  getSavedJobs: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await getSavedJobs(ctx.user.id);
+    return rows;
+  }),
+});
+
+// ─── Ratings Router ─────────────────────────────────────────────
+
+const ratingsRouter = router({
+  /** Submit or update a rating for a worker (employer only) */
+  rateWorker: protectedProcedure
+    .input(
+      z.object({
+        workerId: z.number(),
+        rating: z.number().int().min(1).max(5),
+        comment: z.string().max(500).optional(),
+        applicationId: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.userMode !== "employer") {
+        throw new Error("Only employers can rate workers");
+      }
+      if (input.workerId === ctx.user.id) {
+        throw new Error("Cannot rate yourself");
+      }
+      const result = await rateWorker(
+        input.workerId,
+        ctx.user.id,
+        input.rating,
+        input.comment ?? null,
+        input.applicationId ?? null
+      );
+      return result;
+    }),
+
+  /** Get the current user's existing rating for a worker (for pre-filling UI) */
+  getMyRating: protectedProcedure
+    .input(z.object({ workerId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const existing = await getExistingRating(input.workerId, ctx.user.id);
+      return existing ?? null;
+    }),
 });
 
 // ─── App Router ───────────────────────────────────────────────────
@@ -1342,6 +1400,7 @@ export const appRouter = router({
   user: userRouter,
   push: pushRouter,
   savedJobs: savedJobsRouter,
+  ratings: ratingsRouter,
 });
 
 export type AppRouter = typeof appRouter;

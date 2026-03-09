@@ -19,6 +19,7 @@ import {
   savedJobs,
   phonePrefixes,
   phoneChangeLogs,
+  workerRatings,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1465,4 +1466,93 @@ export async function getSavedJobs(userId: number) {
     .where(eq(savedJobs.userId, userId))
     .orderBy(desc(savedJobs.savedAt));
   return rows;
+}
+
+// ── Worker Ratings ────────────────────────────────────────────────────────────
+
+/**
+ * Submit or update a rating from an employer for a worker.
+ * Uses INSERT ... ON DUPLICATE KEY UPDATE to allow re-rating.
+ * After insert/update, recalculates the worker's average rating and
+ * increments completedJobsCount only on a new rating (not an update).
+ */
+export async function rateWorker(
+  workerId: number,
+  employerId: number,
+  rating: number,
+  comment: string | null,
+  applicationId: number | null
+): Promise<{ isNew: boolean; newAverage: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Check if rating already exists
+  const existing = await db
+    .select({ id: workerRatings.id })
+    .from(workerRatings)
+    .where(
+      and(
+        eq(workerRatings.workerId, workerId),
+        eq(workerRatings.employerId, employerId)
+      )
+    )
+    .limit(1);
+  const isNew = existing.length === 0;
+
+  if (isNew) {
+    await db.insert(workerRatings).values({
+      workerId,
+      employerId,
+      applicationId: applicationId ?? undefined,
+      rating,
+      comment: comment ?? undefined,
+    });
+  } else {
+    await db
+      .update(workerRatings)
+      .set({ rating, comment: comment ?? undefined })
+      .where(
+        and(
+          eq(workerRatings.workerId, workerId),
+          eq(workerRatings.employerId, employerId)
+        )
+      );
+  }
+
+  // Recalculate average
+  const avgResult = await db
+    .select({ avg: sql<number>`AVG(${workerRatings.rating})`, cnt: count() })
+    .from(workerRatings)
+    .where(eq(workerRatings.workerId, workerId));
+
+  const newAverage = Number(avgResult[0]?.avg ?? rating);
+  const totalRatings = avgResult[0]?.cnt ?? 1;
+
+  // Update user's cached rating + completedJobsCount (only increment on new rating)
+  await db
+    .update(users)
+    .set({
+      workerRating: String(newAverage.toFixed(1)),
+      ...(isNew ? { completedJobsCount: sql`completedJobsCount + 1` } : {}),
+    })
+    .where(eq(users.id, workerId));
+
+  return { isNew, newAverage };
+}
+
+/** Get the existing rating from an employer for a worker (for pre-filling UI) */
+export async function getExistingRating(workerId: number, employerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(workerRatings)
+    .where(
+      and(
+        eq(workerRatings.workerId, workerId),
+        eq(workerRatings.employerId, employerId)
+      )
+    )
+    .limit(1);
+  return rows[0] ?? null;
 }

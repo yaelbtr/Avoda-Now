@@ -338,3 +338,27 @@ export const savedJobs = mysqlTable("saved_jobs", {
 }));
 export type SavedJob = typeof savedJobs.$inferSelect;
 export type InsertSavedJob = typeof savedJobs.$inferInsert;
+
+/**
+ * Worker ratings submitted by employers after job completion.
+ * One rating per employer per worker (unique constraint).
+ * workerRating on users table is auto-updated to the rolling average.
+ */
+export const workerRatings = mysqlTable("worker_ratings", {
+  id: int("id").autoincrement().primaryKey(),
+  /** The worker being rated */
+  workerId: int("workerId").notNull().references(() => users.id),
+  /** The employer submitting the rating */
+  employerId: int("employerId").notNull().references(() => users.id),
+  /** Optional: the job application this rating is tied to */
+  applicationId: int("applicationId"),
+  /** 1–5 stars */
+  rating: int("rating").notNull(),
+  /** Optional text review */
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  employerWorkerIdx: uniqueIndex("worker_ratings_employer_worker_idx").on(t.employerId, t.workerId),
+}));
+export type WorkerRating = typeof workerRatings.$inferSelect;
+export type InsertWorkerRating = typeof workerRatings.$inferInsert;

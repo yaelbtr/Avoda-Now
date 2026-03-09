@@ -197,6 +197,13 @@
       "when": 1773086395563,
       "tag": "0027_tired_forge",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1773086920324,
+      "tag": "0028_lying_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

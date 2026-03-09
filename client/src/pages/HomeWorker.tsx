@@ -18,6 +18,7 @@ import CarouselJobCard from "@/components/CarouselJobCard";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
+import { toast } from "sonner";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
 function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
@@ -137,6 +138,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
+  const [quickAvailOpen, setQuickAvailOpen] = useState(false);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
@@ -206,6 +208,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const setUnavailableMutation = trpc.workers.setUnavailable.useMutation({
     onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
     onError: () => setAvailabilityLoading(false),
+  });
+  const quickAvailMutation = trpc.user.quickUpdateAvailability.useMutation({
+    onSuccess: () => { profileQuery.refetch(); toast.success("סטאטוס זמינות עודכן!"); setQuickAvailOpen(false); },
+    onError: (e) => toast.error(e.message),
   });
 
   const urgentJobs = urgentQuery.data ?? [];
@@ -687,6 +693,36 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             : <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
           }
         </motion.button>
+
+        {/* Quick availability status update */}
+        {isAuthenticated && (
+          <div className="mb-3">
+            <button
+              onClick={() => setQuickAvailOpen(true)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all text-right"
+              style={{
+                background: "white",
+                border: "1px solid oklch(0.91 0.03 91.6)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.93 0.04 84.0)" }}>
+                  <Clock className="h-4 w-4" style={{ color: "oklch(0.55 0.06 84)" }} />
+                </div>
+                <div>
+                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>עדכן זמינות</p>
+                  <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>
+                    {profileQuery.data?.availabilityStatus === "available_now" ? "זמין עכשיו" :
+                     profileQuery.data?.availabilityStatus === "available_today" ? "זמין היום" :
+                     profileQuery.data?.availabilityStatus === "available_hours" ? "זמין בשעות מסוימות" :
+                     "לא זמין"}
+                  </p>
+                </div>
+              </div>
+              <ChevronLeft className="h-4 w-4 rotate-180 flex-shrink-0" style={{ color: "oklch(0.65 0.03 91)" }} />
+            </button>
+          </div>
+        )}
 
         {/* Location + Profile row */}
         <div className="flex gap-2.5">
@@ -1245,6 +1281,44 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             ))}
           </div>
           <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Quick Availability Dialog ─────────────────────────────────── */}
+      <Dialog open={quickAvailOpen} onOpenChange={setQuickAvailOpen}>
+        <DialogContent dir="rtl" className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-right">עדכן סטאטוס זמינות</DialogTitle>
+            <DialogDescription className="text-right">
+              בחר את סטאטוס הזמינות שלך לעבודה
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            {([
+              { value: "available_now", label: "זמין עכשיו", emoji: "🟢", desc: "פנוי מיידית" },
+              { value: "available_today", label: "זמין היום", emoji: "🟡", desc: "פנוי להיום" },
+              { value: "available_hours", label: "שעות מסוימות", emoji: "🕐", desc: "פנוי בשעות ספציפיות" },
+              { value: "not_available", label: "לא זמין", emoji: "🔴", desc: "לא פנוי כרגע" },
+            ] as const).map(({ value, label, emoji, desc }) => (
+              <motion.button
+                key={value}
+                onClick={() => quickAvailMutation.mutate({ availabilityStatus: value })}
+                disabled={quickAvailMutation.isPending}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                className="flex flex-col items-center justify-center py-4 px-2 rounded-xl border-2 transition-all"
+                style={{
+                  borderColor: profileQuery.data?.availabilityStatus === value ? "var(--brand)" : "var(--border)",
+                  background: profileQuery.data?.availabilityStatus === value ? "oklch(0.95 0.03 122)" : "white",
+                }}
+              >
+                <span className="text-2xl mb-1">{emoji}</span>
+                <span className="text-xs font-black" style={{ color: "var(--brand)" }}>{label}</span>
+                <span className="text-[10px] mt-0.5 text-center" style={{ color: "var(--muted-foreground)" }}>{desc}</span>
+              </motion.button>
+            ))}
+          </div>
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setQuickAvailOpen(false)}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
 

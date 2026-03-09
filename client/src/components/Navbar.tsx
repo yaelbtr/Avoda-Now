@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Briefcase, User, LogOut, PlusCircle, Menu, X, Shield,
-  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown,
+  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown, Bookmark,
 } from "lucide-react";
 
 import {
@@ -293,6 +293,12 @@ export default function Navbar() {
                           <Link href="/my-applications" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
                             <Briefcase className="h-4 w-4 shrink-0" style={{ color: BLUE }} />
                             <span>המועמדויות שלי</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-applications?tab=saved" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_PRIMARY }}>
+                            <Bookmark className="h-4 w-4 shrink-0" style={{ color: BLUE }} />
+                            <span>משרות ששמרתי</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>

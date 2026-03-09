@@ -840,3 +840,17 @@
 - [ ] Add completedJobsCount to worker profile DB query
 - [ ] Add Haversine distance calculation from employer location
 - [ ] Update WorkerProfilePreviewModal: avatar, name, rating, availability, distance, categories, completedJobsCount
+
+## Rating System & UX Improvements
+- [ ] worker_ratings table in schema
+- [ ] rateWorker tRPC procedure (employer only, after job completion)
+- [ ] Auto-update workerRating average and completedJobsCount on new rating
+- [ ] Star rating UI in ApplicationView and JobApplications cards
+- [ ] Quick availability update button on worker home page
+- [ ] Distance display in applicant cards (JobApplications page)
+
+## My Applications + Saved Jobs Tab
+- [ ] Add saved jobs tab to /my-applications page
+- [ ] Tab switching via URL param (?tab=saved)
+- [ ] Remove saved job button
+- [ ] Nav links open correct tab

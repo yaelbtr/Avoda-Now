@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AppButton } from "@/components/AppButton";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +13,11 @@ import {
   MapPin,
   MessageSquare,
   Phone,
+  Star,
   User,
   XCircle,
 } from "lucide-react";
+import { RateWorkerModal } from "@/components/RateWorkerModal";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 
@@ -53,6 +56,7 @@ function ApplicantCard({
   app: {
     id: number;
     status: string;
+    workerId?: number | null;
     workerName: string | null;
     workerPhone: string | null;
     workerBio: string | null;
@@ -66,6 +70,7 @@ function ApplicantCard({
   onReject: (id: number) => void;
   isPending: boolean;
 }) {
+  const [rateOpen, setRateOpen] = useState(false);
   const statusStyle = STATUS_STYLE[app.status] ?? { label: app.status, className: "bg-gray-100 text-gray-700" };
   const contactRevealed = app.contactRevealed && app.workerPhone;
   const phone = app.workerPhone ?? "";
@@ -163,11 +168,37 @@ function ApplicantCard({
             </div>
           )}
 
-          {app.status === "accepted" && !contactRevealed && (
-            <Badge className="bg-green-100 text-green-800 flex-shrink-0">
-              <CheckCircle className="w-3 h-3 ml-1" />
-              התקבל
-            </Badge>
+          {app.status === "accepted" && (
+            <div className="flex flex-col gap-2 flex-shrink-0">
+              {!contactRevealed && (
+                <Badge className="bg-green-100 text-green-800 flex-shrink-0">
+                  <CheckCircle className="w-3 h-3 ml-1" />
+                  התקבל
+                </Badge>
+              )}
+              {app.workerId && (
+                <AppButton
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-amber-600 border-amber-300 hover:bg-amber-50 min-w-[80px]"
+                  onClick={() => setRateOpen(true)}
+                >
+                  <Star className="w-4 h-4" />
+                  דרג
+                </AppButton>
+              )}
+            </div>
+          )}
+
+          {/* Rating modal */}
+          {app.workerId && (
+            <RateWorkerModal
+              open={rateOpen}
+              onClose={() => setRateOpen(false)}
+              workerId={app.workerId}
+              workerName={app.workerName ?? "עובד"}
+              applicationId={app.id}
+            />
           )}
         </div>
       </CardContent>

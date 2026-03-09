@@ -242,11 +242,21 @@ export default function MyApplications() {
           paddingTop: "env(safe-area-inset-top, 0px)",
         }}
       >
-        {/* Decorative dots */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div style={{ position: "absolute", top: 12, left: 20, width: 80, height: 80, borderRadius: "50%", background: "oklch(0.55 0.09 122 / 0.15)" }} />
-          <div style={{ position: "absolute", bottom: -20, right: 40, width: 120, height: 120, borderRadius: "50%", background: "oklch(0.55 0.09 122 / 0.10)" }} />
-        </div>
+        {/* Hero background image */}
+        <img
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/my-applications-hero-iyRXrGMtR7uTEGLVaADSBQ.webp"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
+          style={{ opacity: 0.75 }}
+        />
+        {/* Dark gradient overlay for text readability */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(to left, oklch(0.28 0.06 122 / 0.0) 0%, oklch(0.28 0.06 122 / 0.30) 45%, oklch(0.28 0.06 122 / 0.72) 100%)",
+          }}
+        />
 
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-5 pb-5">
           {/* Back button + title */}

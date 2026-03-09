@@ -753,56 +753,60 @@ export default function WorkerProfile() {
   ];
 
   return (
-    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.95 0.01 90)" }}>
-      {/* ── Hero Header ───────────────────────────────────────────────── */}
+    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.96 0.01 90)" }}>
+      {/* ── Hero Header + Tabs (all inside dark gradient) ─────────────────── */}
       <div
         className="relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, oklch(0.28 0.06 91) 0%, oklch(0.38 0.10 88) 100%)",
-          paddingBottom: "3.5rem",
+          background: "linear-gradient(160deg, oklch(0.24 0.06 91) 0%, oklch(0.34 0.10 88) 100%)",
         }}
       >
         {/* Decorative circles */}
-        <div className="absolute -top-10 -left-10 w-48 h-48 rounded-full opacity-10" style={{ background: "oklch(0.75 0.12 85)" }} />
-        <div className="absolute top-4 right-4 w-24 h-24 rounded-full opacity-10" style={{ background: "oklch(0.75 0.12 85)" }} />
+        <div className="absolute -top-10 -left-10 w-56 h-56 rounded-full opacity-[0.07]" style={{ background: "oklch(0.80 0.14 85)" }} />
+        <div className="absolute bottom-0 right-0 w-40 h-40 rounded-full opacity-[0.07]" style={{ background: "oklch(0.80 0.14 85)" }} />
 
-        <div className="max-w-lg mx-auto px-4 pt-5 pb-2">
+        <div className="max-w-lg mx-auto px-4 pt-5 pb-5">
+          {/* Back button */}
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-sm mb-5 transition-opacity hover:opacity-70"
-            style={{ color: "oklch(0.85 0.06 90)" }}
+            className="flex items-center gap-1.5 text-sm mb-6 transition-opacity hover:opacity-70"
+            style={{ color: "oklch(0.78 0.06 88)" }}
           >
             <ArrowRight className="h-4 w-4" />
             חזרה
           </button>
 
-          <div className="flex items-end gap-4">
-            {/* Avatar */}
+          {/* Avatar + info row */}
+          <div className="flex items-center gap-4 mb-5">
+            {/* Avatar with upload */}
             <div className="relative shrink-0">
               {profilePhoto ? (
                 <img
                   src={profilePhoto}
                   alt="תמונת פרופיל"
                   className="w-20 h-20 rounded-2xl object-cover"
-                  style={{ border: "3px solid oklch(0.65 0.10 88)" }}
+                  style={{ border: "3px solid oklch(0.55 0.12 88)" }}
                 />
               ) : (
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                  style={{ background: "oklch(0.40 0.08 88)", border: "3px solid oklch(0.50 0.10 88)" }}
+                <label
+                  htmlFor="photo-upload-hero"
+                  className="w-20 h-20 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-opacity hover:opacity-80"
+                  style={{ background: "oklch(0.32 0.07 88)", border: "2px dashed oklch(0.50 0.10 88)" }}
                 >
-                  <User className="h-9 w-9" style={{ color: "oklch(0.80 0.06 88)" }} />
-                </div>
+                  <Camera className="h-6 w-6 mb-1" style={{ color: "oklch(0.70 0.10 88)" }} />
+                  <span className="text-xs font-medium" style={{ color: "oklch(0.70 0.10 88)" }}>הוסף</span>
+                </label>
               )}
-              {/* Camera overlay */}
-              <label
-                htmlFor="photo-upload-hero"
-                className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
-                style={{ background: "oklch(0.55 0.14 88)" }}
-                title="שנה תמונה"
-              >
-                <Camera className="h-3.5 w-3.5 text-white" />
-              </label>
+              {profilePhoto && (
+                <label
+                  htmlFor="photo-upload-hero"
+                  className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
+                  style={{ background: "oklch(0.52 0.14 85)" }}
+                  title="שנה תמונה"
+                >
+                  <Camera className="h-3.5 w-3.5 text-white" />
+                </label>
+              )}
               <input
                 id="photo-upload-hero"
                 type="file"
@@ -830,51 +834,53 @@ export default function WorkerProfile() {
               )}
             </div>
 
-            {/* Name + meta */}
-            <div className="flex-1 pb-1">
+            {/* Name + meta + photo notice */}
+            <div className="flex-1">
               <h1 className="text-xl font-black leading-tight" style={{ color: "oklch(0.97 0.02 90)" }}>
                 {name || user?.name || "פרופיל שלי"}
               </h1>
               {profileQuery.data?.phone && (
-                <p className="text-sm mt-0.5" style={{ color: "oklch(0.78 0.06 88)" }}>
+                <p className="text-sm mt-0.5" style={{ color: "oklch(0.75 0.06 88)" }}>
                   {profileQuery.data.phone}
                 </p>
               )}
               {selectedCategories.length > 0 && (
-                <p className="text-xs mt-1" style={{ color: "oklch(0.72 0.08 88)" }}>
+                <p className="text-xs mt-0.5" style={{ color: "oklch(0.68 0.08 88)" }}>
                   {selectedCategories.slice(0, 2).map(v => PREFERENCE_CATEGORIES.find(c => c.value === v)?.label).filter(Boolean).join(" · ")}
                   {selectedCategories.length > 2 && ` +${selectedCategories.length - 2}`}
                 </p>
               )}
+              {/* Employer photo notice */}
+              <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "oklch(0.78 0.12 85)" }}>
+                📸 התמונה תוצג למעסיקים פוטנציאליים
+              </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Tab Bar ────────────────────────────────────────────────────── */}
-      <div className="max-w-lg mx-auto px-4 relative" style={{ zIndex: 10, marginTop: "-1.5rem" }}>
-        <div
-          className="rounded-2xl p-1 flex gap-1 shadow-lg"
-          style={{ background: "oklch(0.22 0.05 91)", border: "1px solid oklch(0.35 0.08 88)" }}
-        >
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
-                style={isActive
-                  ? { background: "oklch(0.52 0.14 85)", color: "white", boxShadow: "0 2px 8px oklch(0.40 0.12 88 / 0.5)" }
-                  : { color: "oklch(0.72 0.06 88)" }
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+          {/* ── Tab Bar (inside hero) ─────────────────────────────────── */}
+          <div
+            className="rounded-2xl p-1 flex gap-1"
+            style={{ background: "oklch(0.18 0.04 91 / 0.6)", border: "1px solid oklch(0.40 0.08 88 / 0.4)" }}
+          >
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
+                  style={isActive
+                    ? { background: "oklch(0.52 0.14 85)", color: "white", boxShadow: "0 2px 10px oklch(0.40 0.14 88 / 0.6)" }
+                    : { color: "oklch(0.68 0.06 88)" }
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

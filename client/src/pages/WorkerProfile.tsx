@@ -285,6 +285,53 @@ export default function WorkerProfile() {
                   <h2 className="font-bold text-foreground">פרטים בסיסיים</h2>
                 </div>
 
+                {/* Photo upload */}
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <div className="relative">
+                    {profilePhoto ? (
+                      <img src={profilePhoto} alt="תמונת פרופיל" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed border-border bg-muted">
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    {photoUploading && (
+                      <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
+                        <BrandLoader size="sm" />
+                      </div>
+                    )}
+                  </div>
+                  <label htmlFor="wizard-photo-upload" className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors text-xs font-medium">
+                    <Camera className="h-3.5 w-3.5" />
+                    {profilePhoto ? "החלף תמונה" : "הוסף תמונה (לא חובה)"}
+                  </label>
+                  <input
+                    id="wizard-photo-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { toast.error("התמונה גדולה מדי. מקסימום 5MB."); return; }
+                      setPhotoUploading(true);
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        const base64 = (reader.result as string).split(",")[1];
+                        const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
+                        await uploadPhotoMutation.mutateAsync({ base64, mimeType });
+                        setPhotoUploading(false);
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  {!profilePhoto && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      עובדים עם תמונה מקבלים פי 3 יותר פניות 📸
+                    </p>
+                  )}
+                </div>
+
                 <div>
                   <Label className="text-sm font-semibold mb-1.5 block">
                     שם מלא <span className="text-red-500">*</span>

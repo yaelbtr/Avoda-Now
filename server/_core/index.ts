@@ -48,7 +48,9 @@ async function startServer() {
   // ── Security headers (helmet) ─────────────────────────────────────────────
   app.use(securityHeaders);
 
-  // ── Body size limit: 10kb for API, larger only for file upload routes ─────
+  // ── Body size limit: 8mb for photo upload, 10kb for all other API routes ───
+  app.use("/api/trpc/users.uploadProfilePhoto", express.json({ limit: "8mb" }));
+  app.use("/api/trpc/users.uploadProfilePhoto", express.urlencoded({ limit: "8mb", extended: true }));
   app.use("/api/trpc", express.json({ limit: "10kb" }));
   app.use("/api/trpc", express.urlencoded({ limit: "10kb", extended: true }));
   app.use(express.json({ limit: "50mb" }));

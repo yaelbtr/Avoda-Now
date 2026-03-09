@@ -264,18 +264,18 @@ export default function MyApplications() {
             <button
               onClick={() => navigate("/")}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all"
-              style={{ background: "oklch(1 0 0 / 0.12)", color: "oklch(0.97 0.02 91)" }}
+              style={{ background: "oklch(1 0 0 / 0.18)", color: "white" }}
             >
               <ChevronRight className="h-5 w-5" />
             </button>
             <div className="flex-1">
               <h1
                 className="text-xl font-black leading-tight"
-                style={{ color: "oklch(0.97 0.02 91)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+                style={{ color: "white", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}
               >
                 {activeTab === "applications" ? "המועמדויות שלי" : "משרות ששמרתי"}
               </h1>
-              <p className="text-xs mt-0.5" style={{ color: "oklch(0.97 0.02 91 / 0.65)" }}>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.85)", textShadow: "0 1px 3px rgba(0,0,0,0.30)" }}>
                 {activeTab === "applications"
                   ? applications ? `${applications.length} מועמדויות סה"כ` : "טוען..."
                   : savedJobs ? `${savedJobs.length} משרות שמורות` : "טוען..."}
@@ -289,8 +289,8 @@ export default function MyApplications() {
                 disabled={push.isLoading}
                 className="flex items-center justify-center w-9 h-9 rounded-xl transition-all"
                 style={{
-                  background: push.isSubscribed ? "oklch(0.65 0.22 160 / 0.25)" : "oklch(1 0 0 / 0.12)",
-                  color: push.isSubscribed ? "oklch(0.65 0.22 160)" : "oklch(0.97 0.02 91 / 0.70)",
+                  background: push.isSubscribed ? "oklch(0.65 0.22 160 / 0.30)" : "oklch(1 0 0 / 0.18)",
+                  color: push.isSubscribed ? "oklch(0.85 0.18 160)" : "rgba(255,255,255,0.85)",
                 }}
                 title={push.isSubscribed ? "בטל התראות" : "הפעל התראות"}
               >
@@ -304,8 +304,8 @@ export default function MyApplications() {
                 onClick={() => setShowFilters((v) => !v)}
                 className="flex items-center justify-center w-9 h-9 rounded-xl transition-all"
                 style={{
-                  background: showFilters ? "oklch(0.82 0.15 80.8 / 0.25)" : "oklch(1 0 0 / 0.12)",
-                  color: showFilters ? "oklch(0.82 0.15 80.8)" : "oklch(0.97 0.02 91 / 0.70)",
+                  background: showFilters ? "oklch(0.82 0.15 80.8 / 0.30)" : "oklch(1 0 0 / 0.18)",
+                  color: showFilters ? "oklch(0.92 0.12 80.8)" : "rgba(255,255,255,0.85)",
                 }}
               >
                 <Filter className="h-4 w-4" />
@@ -316,69 +316,49 @@ export default function MyApplications() {
           {/* ── Tab switcher ── */}
           <div
             className="flex rounded-2xl p-1 gap-1"
-            style={{ background: "oklch(1 0 0 / 0.10)", border: "1px solid oklch(1 0 0 / 0.15)" }}
+            style={{ background: "oklch(0.93 0.02 100)", border: "1px solid oklch(0.89 0.03 100)" }}
           >
+            {/* Applications tab */}
             <button
               onClick={() => navigate("/my-applications")}
-              className="flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 px-3 rounded-xl transition-all"
-              style={{
-                background: activeTab === "applications"
-                  ? "oklch(0.82 0.15 80.8)"
-                  : "transparent",
-                color: activeTab === "applications"
-                  ? "oklch(0.22 0.03 122.3)"
-                  : "oklch(0.97 0.02 91 / 0.70)",
-                boxShadow: activeTab === "applications"
-                  ? "0 2px 8px oklch(0.68 0.14 80.8 / 0.35)"
-                  : "none",
-              }}
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-3 rounded-xl transition-all"
+              style={activeTab === "applications"
+                ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
+                : { background: "transparent", color: "oklch(0.40 0.04 100)" }
+              }
             >
               <Briefcase className="h-4 w-4" />
               מועמדויות
               {applications && applications.length > 0 && (
                 <span
                   className="text-xs px-1.5 py-0.5 rounded-full font-bold"
-                  style={{
-                    background: activeTab === "applications"
-                      ? "oklch(0.22 0.03 122.3 / 0.15)"
-                      : "oklch(1 0 0 / 0.15)",
-                    color: activeTab === "applications"
-                      ? "oklch(0.22 0.03 122.3)"
-                      : "oklch(0.97 0.02 91)",
-                  }}
+                  style={activeTab === "applications"
+                    ? { background: "rgba(255,255,255,0.20)", color: "white" }
+                    : { background: "oklch(0.87 0.03 100)", color: "oklch(0.40 0.04 100)" }
+                  }
                 >
                   {applications.length}
                 </span>
               )}
             </button>
+            {/* Saved tab */}
             <button
               onClick={() => navigate("/my-applications?tab=saved")}
-              className="flex-1 flex items-center justify-center gap-2 text-sm font-bold py-2.5 px-3 rounded-xl transition-all"
-              style={{
-                background: activeTab === "saved"
-                  ? "oklch(0.82 0.15 80.8)"
-                  : "transparent",
-                color: activeTab === "saved"
-                  ? "oklch(0.22 0.03 122.3)"
-                  : "oklch(0.97 0.02 91 / 0.70)",
-                boxShadow: activeTab === "saved"
-                  ? "0 2px 8px oklch(0.68 0.14 80.8 / 0.35)"
-                  : "none",
-              }}
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-3 rounded-xl transition-all"
+              style={activeTab === "saved"
+                ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
+                : { background: "transparent", color: "oklch(0.40 0.04 100)" }
+              }
             >
               <Bookmark className="h-4 w-4" />
               שמורות
               {savedJobs && savedJobs.length > 0 && (
                 <span
                   className="text-xs px-1.5 py-0.5 rounded-full font-bold"
-                  style={{
-                    background: activeTab === "saved"
-                      ? "oklch(0.22 0.03 122.3 / 0.15)"
-                      : "oklch(1 0 0 / 0.15)",
-                    color: activeTab === "saved"
-                      ? "oklch(0.22 0.03 122.3)"
-                      : "oklch(0.97 0.02 91)",
-                  }}
+                  style={activeTab === "saved"
+                    ? { background: "rgba(255,255,255,0.20)", color: "white" }
+                    : { background: "oklch(0.87 0.03 100)", color: "oklch(0.40 0.04 100)" }
+                  }
                 >
                   {savedJobs.length}
                 </span>

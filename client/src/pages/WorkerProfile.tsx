@@ -745,50 +745,58 @@ export default function WorkerProfile() {
 
   // ── EDIT MODE (existing worker) ──────────────────────────────────────────────
   return (
-    <div className="max-w-lg mx-auto px-4 py-6" dir="rtl">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => navigate("/")}
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowRight className="h-5 w-5" />
-        </button>
-        <h1 className="text-2xl font-bold text-foreground">הפרופיל שלי</h1>
-      </div>
+    <div className="min-h-screen" dir="rtl" style={{ background: "oklch(0.97 0.01 90)" }}>
+      {/* ── Hero Header ───────────────────────────────────────────────── */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, oklch(0.28 0.06 91) 0%, oklch(0.38 0.10 88) 100%)",
+          paddingBottom: "4.5rem",
+        }}
+      >
+        {/* Decorative circles */}
+        <div className="absolute -top-10 -left-10 w-48 h-48 rounded-full opacity-10" style={{ background: "oklch(0.75 0.12 85)" }} />
+        <div className="absolute top-4 right-4 w-24 h-24 rounded-full opacity-10" style={{ background: "oklch(0.75 0.12 85)" }} />
 
-      <div className="space-y-6">
-        {/* ── Profile Photo ───────────────────────────────────────────── */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Camera className="h-4 w-4 text-primary" />
-            תמונת פרופיל
-          </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            עובדים עם תמונה מקבלים פי 3 יותר פניות ממעסיקים — תמונה מקצועית בונה אמון ומגדילה את הסיכוי שיבחרו בך 📸
-          </p>
-          <div className="flex items-center gap-4">
+        <div className="max-w-lg mx-auto px-4 pt-5 pb-2">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm mb-5 transition-opacity hover:opacity-70"
+            style={{ color: "oklch(0.85 0.06 90)" }}
+          >
+            <ArrowRight className="h-4 w-4" />
+            חזרה
+          </button>
+
+          <div className="flex items-end gap-4">
+            {/* Avatar */}
             <div className="relative shrink-0">
               {profilePhoto ? (
-                <img src={profilePhoto} alt="תמונת פרופיל" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                <img
+                  src={profilePhoto}
+                  alt="תמונת פרופיל"
+                  className="w-20 h-20 rounded-2xl object-cover"
+                  style={{ border: "3px solid oklch(0.65 0.10 88)" }}
+                />
               ) : (
-                <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed border-border bg-muted">
-                  <User className="h-8 w-8 text-muted-foreground" />
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center"
+                  style={{ background: "oklch(0.40 0.08 88)", border: "3px solid oklch(0.50 0.10 88)" }}
+                >
+                  <User className="h-9 w-9" style={{ color: "oklch(0.80 0.06 88)" }} />
                 </div>
               )}
-              {photoUploading && (
-                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
-                  <BrandLoader size="sm" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors text-sm font-medium">
-                <Camera className="h-4 w-4" />
-                {profilePhoto ? "החלף תמונה" : "העלה תמונה"}
+              {/* Camera overlay */}
+              <label
+                htmlFor="photo-upload-hero"
+                className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
+                style={{ background: "oklch(0.55 0.14 88)" }}
+                title="שנה תמונה"
+              >
+                <Camera className="h-3.5 w-3.5 text-white" />
               </label>
               <input
-                id="photo-upload"
+                id="photo-upload-hero"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
@@ -807,18 +815,45 @@ export default function WorkerProfile() {
                   reader.readAsDataURL(file);
                 }}
               />
-              <p className="text-xs text-muted-foreground mt-1.5">JPG, PNG, WEBP · עד 5MB</p>
-              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">📢 התמונה תוצג למעסיקים פוטנציאלים</p>
+              {photoUploading && (
+                <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center">
+                  <BrandLoader size="sm" />
+                </div>
+              )}
+            </div>
+
+            {/* Name + meta */}
+            <div className="flex-1 pb-1">
+              <h1 className="text-xl font-black leading-tight" style={{ color: "oklch(0.97 0.02 90)" }}>
+                {name || user?.name || "פרופיל שלי"}
+              </h1>
+              {profileQuery.data?.phone && (
+                <p className="text-sm mt-0.5" style={{ color: "oklch(0.78 0.06 88)" }}>
+                  {profileQuery.data.phone}
+                </p>
+              )}
+              {selectedCategories.length > 0 && (
+                <p className="text-xs mt-1" style={{ color: "oklch(0.72 0.08 88)" }}>
+                  {selectedCategories.slice(0, 2).map(v => PREFERENCE_CATEGORIES.find(c => c.value === v)?.label).filter(Boolean).join(" · ")}
+                  {selectedCategories.length > 2 && ` +${selectedCategories.length - 2}`}
+                </p>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* ── Basic info ─────────────────────────────────────────────────── */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="h-4 w-4 text-primary" />
-            פרטים אישיים
-          </h2>
+      {/* ── Content ────────────────────────────────────────────────────── */}
+      <div className="max-w-lg mx-auto px-4 -mt-10 pb-10 space-y-4">
+
+        {/* ── Basic info card ─────────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
+              <User className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            </div>
+            <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
+          </div>
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">שם</label>
@@ -854,12 +889,14 @@ export default function WorkerProfile() {
           </div>
         </div>
 
-        {/* ── Matching Preferences ────────────────────────────────────────── */}
-        <div className="bg-card border border-border rounded-xl p-5 space-y-5">
-          <h2 className="font-semibold text-foreground flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-primary" />
-            העדפות התאמה
-          </h2>
+        {/* ── Matching Preferences ─────────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5 space-y-5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
+              <Briefcase className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            </div>
+            <h2 className="font-bold text-foreground text-sm">העדפות התאמה</h2>
+          </div>
 
           {/* Preference text */}
           <div>
@@ -1046,27 +1083,33 @@ export default function WorkerProfile() {
           </div>
         </div>
 
-        {/* ── Save button ──────────────────────────────────────────────────── */}
-        <AppButton
-          variant="brand"
-          size="xl"
+         {/* ── Save button ────────────────────────────────────────────────── */}
+        <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="w-full gap-2"
+          className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2.5 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+          style={{
+            background: updateMutation.isPending
+              ? "oklch(0.55 0.10 88)"
+              : "linear-gradient(135deg, oklch(0.42 0.12 88) 0%, oklch(0.52 0.14 85) 100%)",
+            color: "white",
+          }}
         >
           {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-5 w-5" />}
           שמור פרופיל
-        </AppButton>
+        </button>
 
-        {/* ── Notification Settings ───────────────────────────────────────── */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Bell className="h-4 w-4 text-primary" />
-            הגדרות התראות
-          </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            בחר כיצד תרצה לקבל עדכונים על מועמדויות ומשרות
-          </p>
+        {/* ── Notification Settings ─────────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.06 88)" }}>
+              <Bell className="h-3.5 w-3.5" style={{ color: "oklch(0.40 0.10 88)" }} />
+            </div>
+            <div>
+              <h2 className="font-bold text-foreground text-sm">הגדרות התראות</h2>
+              <p className="text-xs text-muted-foreground">בחר כיצד תרצה לקבל עדכונים</p>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {NOTIF_OPTIONS.map((opt) => {
               const isActive = notifPref === opt.value;

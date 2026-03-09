@@ -142,3 +142,122 @@ describe("Israeli phone number validation", () => {
     });
   });
 });
+
+// ─── Unit tests for OTP phone change flow logic ──────────────────────────────
+
+// Inline the normalizeIsraeliPhone logic (mirrors routers.ts)
+function normalizeIsraeliPhone(phone: string): string | null {
+  const cleaned = phone.replace(/\s|-/g, "");
+  // Accept 10-digit local format (05XXXXXXXX)
+  if (/^0[5][0-9]{8}$/.test(cleaned)) return cleaned;
+  // Accept +972 international format
+  if (/^\+972[5][0-9]{8}$/.test(cleaned)) return "0" + cleaned.slice(4);
+  return null;
+}
+
+function isOtpCodeFormat(code: string): boolean {
+  return /^\d{6}$/.test(code);
+}
+
+describe("OTP phone change flow", () => {
+  describe("normalizeIsraeliPhone", () => {
+    it("normalizes a valid 10-digit local phone", () => {
+      expect(normalizeIsraeliPhone("0521234567")).toBe("0521234567");
+    });
+
+    it("normalizes +972 international format", () => {
+      expect(normalizeIsraeliPhone("+972521234567")).toBe("0521234567");
+    });
+
+    it("strips spaces and dashes", () => {
+      expect(normalizeIsraeliPhone("052-123-4567")).toBe("0521234567");
+      expect(normalizeIsraeliPhone("052 123 4567")).toBe("0521234567");
+    });
+
+    it("returns null for landline numbers", () => {
+      expect(normalizeIsraeliPhone("0221234567")).toBeNull();
+    });
+
+    it("returns null for too-short numbers", () => {
+      expect(normalizeIsraeliPhone("052123")).toBeNull();
+    });
+
+    it("returns null for empty string", () => {
+      expect(normalizeIsraeliPhone("")).toBeNull();
+    });
+
+    it("returns null for non-Israeli mobile prefix", () => {
+      expect(normalizeIsraeliPhone("0401234567")).toBeNull();
+    });
+  });
+
+  describe("isOtpCodeFormat", () => {
+    it("accepts exactly 6 digits", () => {
+      expect(isOtpCodeFormat("123456")).toBe(true);
+      expect(isOtpCodeFormat("000000")).toBe(true);
+      expect(isOtpCodeFormat("999999")).toBe(true);
+    });
+
+    it("rejects fewer than 6 digits", () => {
+      expect(isOtpCodeFormat("12345")).toBe(false);
+      expect(isOtpCodeFormat("")).toBe(false);
+    });
+
+    it("rejects more than 6 digits", () => {
+      expect(isOtpCodeFormat("1234567")).toBe(false);
+    });
+
+    it("rejects non-digit characters", () => {
+      expect(isOtpCodeFormat("12345a")).toBe(false);
+      expect(isOtpCodeFormat("123-45")).toBe(false);
+    });
+  });
+
+  describe("phone change detection logic", () => {
+    function phoneChanged(
+      current: { prefix: string; number: string },
+      original: { prefix: string; number: string }
+    ): boolean {
+      const hasFullPhone = current.prefix.length === 3 && current.number.length === 7;
+      return hasFullPhone && (
+        current.prefix !== original.prefix ||
+        current.number !== original.number
+      );
+    }
+
+    it("detects a prefix change", () => {
+      expect(phoneChanged(
+        { prefix: "054", number: "1234567" },
+        { prefix: "052", number: "1234567" }
+      )).toBe(true);
+    });
+
+    it("detects a number change", () => {
+      expect(phoneChanged(
+        { prefix: "052", number: "7654321" },
+        { prefix: "052", number: "1234567" }
+      )).toBe(true);
+    });
+
+    it("returns false when phone is unchanged", () => {
+      expect(phoneChanged(
+        { prefix: "052", number: "1234567" },
+        { prefix: "052", number: "1234567" }
+      )).toBe(false);
+    });
+
+    it("returns false when new phone is incomplete", () => {
+      expect(phoneChanged(
+        { prefix: "05", number: "1234567" }, // prefix too short
+        { prefix: "052", number: "1234567" }
+      )).toBe(false);
+    });
+
+    it("returns false when number is incomplete", () => {
+      expect(phoneChanged(
+        { prefix: "052", number: "123456" }, // number too short
+        { prefix: "052", number: "1234567" }
+      )).toBe(false);
+    });
+  });
+});

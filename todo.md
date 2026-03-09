@@ -818,3 +818,10 @@
 - [x] UI: WorkerProfile wizard step 1 — replace Input with IsraeliPhoneInput
 - [x] UI: WorkerProfile details tab — replace Input with IsraeliPhoneInput (read-only for OTP users)
 - [x] Tests: 19 vitest tests for phone validation logic (all passing)
+
+## Phone Change OTP Verification
+- [ ] tRPC procedure: requestPhoneChangeOtp — sends OTP via Twilio Verify to new number
+- [ ] tRPC procedure: verifyPhoneChangeOtp — verifies code and updates phone in DB
+- [ ] PhoneChangeModal component with OTP flow
+- [ ] Wire into WorkerProfile — intercept phone save, open modal instead
+- [ ] Vitest tests for OTP phone change flow

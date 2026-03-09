@@ -18,6 +18,7 @@ import { CityPicker } from "@/components/CityPicker";
 import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
 import { Eye } from "lucide-react";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
+import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 
 // Spec-required preference categories for worker profile matching
 const PREFERENCE_CATEGORIES = [
@@ -139,6 +140,9 @@ export default function WorkerProfile() {
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [phoneChangeModalOpen, setPhoneChangeModalOpen] = useState(false);
+  // Track original phone to detect changes
+  const [originalPhoneVal, setOriginalPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
 
   const uploadPhoto = async (base64: string, mimeType: string) => {
     const res = await fetch("/api/upload-photo", {
@@ -169,9 +173,13 @@ export default function WorkerProfile() {
       setPhone(d.phone ?? "");
       // Populate split phone fields from DB or parse from combined phone
       if ((d as any).phonePrefix && (d as any).phoneNumber) {
-        setPhoneVal({ prefix: (d as any).phonePrefix, number: (d as any).phoneNumber });
+        const pv = { prefix: (d as any).phonePrefix, number: (d as any).phoneNumber };
+        setPhoneVal(pv);
+        setOriginalPhoneVal(pv);
       } else if (d.phone) {
-        setPhoneVal(parseIsraeliPhone(d.phone));
+        const pv = parseIsraeliPhone(d.phone);
+        setPhoneVal(pv);
+        setOriginalPhoneVal(pv);
       }
       setWorkerBio(d.workerBio ?? "");
       setSelectedCategories(d.preferredCategories ?? []);
@@ -239,9 +247,22 @@ export default function WorkerProfile() {
 
   // ── Profile save ─────────────────────────────────────────────────────────────
   const handleSave = () => {
-    // Build phone update payload for OAuth users only
-    const isPhoneOtp = user?.loginMethod === "phone_otp";
+    // Detect phone change: if user already has a phone and the new value differs, require OTP
     const hasFullPhone = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+    const phoneChanged = hasFullPhone && (
+      phoneVal.prefix !== originalPhoneVal.prefix ||
+      phoneVal.number !== originalPhoneVal.number
+    );
+    const userAlreadyHasPhone = !!(originalPhoneVal.prefix && originalPhoneVal.number);
+
+    if (phoneChanged && userAlreadyHasPhone) {
+      // Phone changed — require OTP verification first
+      setPhoneChangeModalOpen(true);
+      return;
+    }
+
+    // Build phone update payload for new users (no existing phone)
+    const isPhoneOtp = user?.loginMethod === "phone_otp";
     const phonePayload = (!isPhoneOtp && !user?.phone && hasFullPhone)
       ? { phone: combinePhone(phoneVal), phonePrefix: phoneVal.prefix, phoneNumber: phoneVal.number }
       : {};
@@ -1444,7 +1465,36 @@ export default function WorkerProfile() {
 
       </div>
 
-      {/* ── Preview Modal ─────────────────────────────────────────────────── */}
+      {/* ── Phone Change OTP Modal ──────────────────────────────────────────────────────────────── */}
+      <PhoneChangeModal
+        open={phoneChangeModalOpen}
+        onClose={() => setPhoneChangeModalOpen(false)}
+        onSuccess={(newPhoneVal) => {
+          // Phone verified and updated — refresh profile and update original
+          setOriginalPhoneVal(newPhoneVal);
+          setPhoneVal(newPhoneVal);
+          profileQuery.refetch();
+          setPhoneChangeModalOpen(false);
+          // Now save the rest of the profile (without phone payload)
+          updateMutation.mutate({
+            name: name.trim() || undefined,
+            workerBio: workerBio.trim() || null,
+            preferredCategories: selectedCategories,
+            preferenceText: preferenceText.trim() || null,
+            locationMode,
+            preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+            searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
+            workerLatitude: locationMode === "radius" ? workerLatitude : null,
+            workerLongitude: locationMode === "radius" ? workerLongitude : null,
+            preferredDays,
+            preferredTimeSlots,
+            preferredCities: locationMode === "city" ? preferredCities : [],
+            email: !user?.email ? (email.trim() || null) : undefined,
+          });
+        }}
+      />
+
+      {/* ── Preview Modal ──────────────────────────────────────────────────────────────── */}
       <WorkerProfilePreviewModal
         open={showPreview}
         onClose={() => setShowPreview(false)}

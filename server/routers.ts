@@ -60,6 +60,7 @@ import {
   saveJob,
   unsaveJob,
   getSavedJobIds,
+  updateUserPhone,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1110,6 +1111,67 @@ const userRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await updateNotificationPrefs(ctx.user.id, input.prefs);
+      return { success: true };
+    }),
+
+  /**
+   * Step 1 of phone change: send OTP to the new phone number.
+   * Validates the new number is not already in use, then sends OTP via Twilio Verify.
+   */
+  requestPhoneChangeOtp: protectedProcedure
+    .input(z.object({ phone: z.string().min(9).max(20) }))
+    .mutation(async ({ input, ctx }) => {
+      const normalized = normalizeIsraeliPhone(input.phone);
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון אינו תקין" });
+
+      // Check if number is already taken by another user
+      const existing = await getUserByPhone(normalized);
+      if (existing && existing.id !== ctx.user.id) {
+        throw new TRPCError({ code: "CONFLICT", message: "מספר זה כבר רשום במערכת" });
+      }
+
+      // Rate limit: max 5 OTP sends per phone per hour
+      const rateLimitOk = await checkAndIncrementSendRate(normalized);
+      if (!rateLimitOk) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "יותר מדי בקשות. נסה שוב בעוד שעה" });
+      }
+
+      const result = await smsProvider.sendOtp(normalized);
+      if (!result.success) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error ?? "שגיאה בשליחת קוד" });
+      }
+      return { success: true, normalizedPhone: normalized };
+    }),
+
+  /**
+   * Step 2 of phone change: verify OTP and update phone in DB.
+   * On success, updates phone, phonePrefix, phoneNumber in users table.
+   */
+  verifyPhoneChangeOtp: protectedProcedure
+    .input(z.object({
+      phone: z.string().min(9).max(20),
+      code: z.string().length(6),
+      phonePrefix: z.string().length(3).optional(),
+      phoneNumber: z.string().length(7).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const normalized = normalizeIsraeliPhone(input.phone);
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון אינו תקין" });
+
+      // Rate limit verify attempts
+      const attemptsOk = await checkAndIncrementVerifyAttempts(normalized);
+      if (!attemptsOk) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "יותר מדי ניסיונות. נסה שוב מאוחר יותר" });
+      }
+
+      const verifyResult = await smsProvider.verifyOtp(normalized, input.code);
+      if (!verifyResult.success) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "קוד האימות שגוי או פג תוקפו" });
+      }
+
+      // Update phone in DB via a dedicated helper
+      await updateUserPhone(ctx.user.id, normalized, input.phonePrefix ?? null, input.phoneNumber ?? null);
+
       return { success: true };
     }),
 });

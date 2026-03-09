@@ -203,6 +203,23 @@ export async function updateWorkerProfile(
   await db.update(users).set(updateSet).where(eq(users.id, id));
 }
 
+// ─── Phone Update ───────────────────────────────────────────────────────────
+
+/** Update a user's phone number and split prefix/number fields after OTP verification */
+export async function updateUserPhone(
+  userId: number,
+  phone: string,
+  phonePrefix: string | null,
+  phoneNumber: string | null
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(users)
+    .set({ phone, phonePrefix, phoneNumber })
+    .where(eq(users.id, userId));
+}
+
 // ─── Phone Prefixes ──────────────────────────────────────────────────────────
 
 /** Returns all active phone prefixes ordered by prefix */

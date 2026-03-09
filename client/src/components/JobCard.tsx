@@ -1,7 +1,8 @@
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame, Mail, Copy, Check, Bookmark, BookmarkCheck, Star } from "lucide-react";
+import { MapPin, Clock, Users, Share2, Phone, ChevronLeft, Lock, Zap, Timer, Flame, Mail, Copy, Check, Bookmark, BookmarkCheck, Star, BookmarkX, Send, Loader2, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER,
   C_DANGER_HEX, C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
@@ -39,12 +40,19 @@ interface JobCardProps {
     createdAt: Date | string;
     expiresAt?: Date | string | null;
     distance?: number;
+    savedAt?: Date | string | null;
   };
   showDistance?: boolean;
   isHighMatch?: boolean;
   isSaved?: boolean;
+  isApplied?: boolean;
   onSaveToggle?: (jobId: number, saved: boolean) => void;
+  onUnsave?: (jobId: number) => void;
+  onApply?: (jobId: number, message: string | undefined, origin: string) => void;
+  isApplyPending?: boolean;
   onLoginRequired?: (message: string) => void;
+  /** Show saved-jobs card mode: unsave button, savedAt, inline apply panel */
+  savedMode?: boolean;
 }
 
 const SITE_URL = "https://job-now.manus.space";
@@ -264,7 +272,7 @@ function SharePopover({ jobTitle, jobId, city, salary, salaryType }: { jobTitle:
   );
 }
 
-export function JobCard({ job, showDistance, isHighMatch, isSaved, onSaveToggle, onLoginRequired }: JobCardProps) {
+export function JobCard({ job, showDistance, isHighMatch, isSaved, isApplied, onSaveToggle, onUnsave, onApply, isApplyPending, onLoginRequired, savedMode }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? job.address.split(",")[0];
@@ -273,9 +281,19 @@ export function JobCard({ job, showDistance, isHighMatch, isSaved, onSaveToggle,
   const countdown = expiryCountdown(job.expiresAt);
   const isWartime = WARTIME_CATEGORIES.includes(job.category as typeof WARTIME_CATEGORIES[number]);
   const isSeasonal = SEASONAL_CATEGORIES.includes(job.category as typeof SEASONAL_CATEGORIES[number]);
+  const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
+  const [showApplyPanel, setShowApplyPanel] = useState(false);
+  const [applyMessage, setApplyMessage] = useState("");
 
   const handleRestrictedAction = (message: string) => {
     if (onLoginRequired) onLoginRequired(message);
+  };
+
+  const handleApplySubmit = () => {
+    if (!onApply) return;
+    onApply(job.id, applyMessage || undefined, window.location.origin);
+    setShowApplyPanel(false);
+    setApplyMessage("");
   };
 
   return (
@@ -443,78 +461,190 @@ export function JobCard({ job, showDistance, isHighMatch, isSaved, onSaveToggle,
         )}
       </div>
 
+      {/* Inline apply panel (savedMode) */}
+      {savedMode && (
+        <AnimatePresence>
+          {showApplyPanel && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div
+                className="mt-3 p-3 rounded-xl"
+                style={{ background: "oklch(0.97 0.02 100)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+              >
+                <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.38 0.07 125.0)" }}>
+                  הוסף הודעה קצרה (אופציונלי)
+                </p>
+                <textarea
+                  value={applyMessage}
+                  onChange={(e) => setApplyMessage(e.target.value)}
+                  placeholder="לדוגמא: יש לי ניסיון רלוונטי ואני זמין/ה להתחיל מחר..."
+                  maxLength={500}
+                  rows={2}
+                  dir="rtl"
+                  className="w-full text-xs rounded-lg p-2 resize-none outline-none"
+                  style={{ border: "1px solid oklch(0.87 0.04 84.0)", background: "white", color: "var(--text-primary)", fontFamily: "inherit" }}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => { setShowApplyPanel(false); setApplyMessage(""); }}
+                    className="flex-none px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    style={{ background: "white", color: "var(--text-muted)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+                  >
+                    ביטול
+                  </button>
+                  <motion.button
+                    onClick={handleApplySubmit}
+                    disabled={isApplyPending}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold"
+                    style={{
+                      background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                      color: "oklch(0.97 0.02 91)",
+                      opacity: isApplyPending ? 0.7 : 1,
+                    }}
+                  >
+                    {isApplyPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                    שלח מועמדות
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
       {/* Action buttons */}
       <div className="flex gap-1.5 flex-wrap" dir="rtl">
-        {hasPhone ? (
-          <>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
-              <AppButton
-                variant="whatsapp"
-                size="sm"
-                className="gap-1.5 text-xs w-full font-bold"
-                onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
+        {savedMode ? (
+          /* Saved-mode action row: צפה במשרה + שתף + הגש מועמדות / applied badge */
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-2">
+              <a
+                href={`/job/${job.id}`}
+                className="text-xs font-medium underline underline-offset-2"
+                style={{ color: "oklch(0.50 0.07 125.0)" }}
               >
-                <WhatsAppIcon />
-                <span className="truncate">וואטסאפ</span>
-              </AppButton>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
-              <AppButton
-                variant="secondary"
-                size="sm"
-                className="gap-1.5 text-xs w-full font-bold"
-                onClick={() => callPhone(job.contactPhone!)}
-              >
-                <Phone className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">התקשר</span>
-              </AppButton>
-            </motion.div>
-          </>
+                צפה במשרה
+              </a>
+              <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
+            </div>
+            <div className="flex items-center gap-2">
+              {onUnsave && (
+                <button
+                  onClick={() => onUnsave(job.id)}
+                  className="p-1.5 rounded-lg transition-all shrink-0"
+                  title="הסר מהשמורים"
+                  style={{ background: "oklch(0.65 0.22 25 / 0.06)", border: "1px solid oklch(0.65 0.22 25 / 0.15)", color: "oklch(0.60 0.22 25)" }}
+                >
+                  <BookmarkX className="h-4 w-4" />
+                </button>
+              )}
+              {!isExpired && (
+                isApplied ? (
+                  <span
+                    className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-bold"
+                    style={{ background: "oklch(0.65 0.22 160 / 0.10)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    הגשת מועמדות
+                  </span>
+                ) : (
+                  <motion.button
+                    onClick={() => {
+                      if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
+                      setShowApplyPanel(v => !v);
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl font-bold"
+                    style={{
+                      background: showApplyPanel
+                        ? "oklch(0.93 0.03 91.6)"
+                        : "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                      color: showApplyPanel ? "var(--text-muted)" : "oklch(0.97 0.02 91)",
+                    }}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    הגש מועמדות
+                  </motion.button>
+                )
+              )}
+            </div>
+          </div>
         ) : (
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1 min-w-0">
-            <AppButton
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs flex-1 min-w-0 w-full font-semibold"
-              style={{ borderStyle: "dashed", color: "var(--text-muted)" }}
-              onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
-            >
-              <Lock className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">התחבר לראות טלפון</span>
-            </AppButton>
-          </motion.div>
+          /* Normal mode: phone/whatsapp + save + share + details */
+          <>
+            {hasPhone ? (
+              <>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
+                  <AppButton
+                    variant="whatsapp"
+                    size="sm"
+                    className="gap-1.5 text-xs w-full font-bold"
+                    onClick={() => contactViaWhatsApp(job.contactPhone!, job.title)}
+                  >
+                    <WhatsAppIcon />
+                    <span className="truncate">וואטסאפ</span>
+                  </AppButton>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 min-w-0">
+                  <AppButton
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5 text-xs w-full font-bold"
+                    onClick={() => callPhone(job.contactPhone!)}
+                  >
+                    <Phone className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">התקשר</span>
+                  </AppButton>
+                </motion.div>
+              </>
+            ) : (
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1 min-w-0">
+                <AppButton
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs flex-1 min-w-0 w-full font-semibold"
+                  style={{ borderStyle: "dashed", color: "var(--text-muted)" }}
+                  onClick={() => handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת")}
+                >
+                  <Lock className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">התחבר לראות טלפון</span>
+                </AppButton>
+              </motion.div>
+            )}
+            {onSaveToggle && (
+              <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
+                <AppButton
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0"
+                  style={{ color: isSaved ? "oklch(0.42 0.12 88)" : "var(--text-muted)" }}
+                  onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
+                  title={isSaved ? "בטל שמירה" : "שמור עבודה"}
+                >
+                  {isSaved
+                    ? <BookmarkCheck className="h-3.5 w-3.5" style={{ fill: "oklch(0.42 0.12 88)", color: "oklch(0.42 0.12 88)" }} />
+                    : <Bookmark className="h-3.5 w-3.5" />}
+                </AppButton>
+              </motion.div>
+            )}
+            <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
+            <Link href={`/job/${job.id}`}>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <AppButton variant="secondary" size="sm" className="gap-1 text-xs font-bold">
+                  <ChevronLeft className="h-3 w-3" />
+                  פרטים
+                </AppButton>
+              </motion.div>
+            </Link>
+          </>
         )}
-
-        {onSaveToggle && (
-          <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
-            <AppButton
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0"
-              style={{ color: isSaved ? "oklch(0.42 0.12 88)" : "var(--text-muted)" }}
-              onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
-              title={isSaved ? "בטל שמירה" : "שמור עבודה"}
-            >
-              {isSaved
-                ? <BookmarkCheck className="h-3.5 w-3.5" style={{ fill: "oklch(0.42 0.12 88)", color: "oklch(0.42 0.12 88)" }} />
-                : <Bookmark className="h-3.5 w-3.5" />}
-            </AppButton>
-          </motion.div>
-        )}
-        <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
-
-        <Link href={`/job/${job.id}`}>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-            <AppButton
-              variant="secondary"
-              size="sm"
-              className="gap-1 text-xs font-bold"
-            >
-              <ChevronLeft className="h-3 w-3" />
-              פרטים
-            </AppButton>
-          </motion.div>
-        </Link>
       </div>
     </motion.div>
   );

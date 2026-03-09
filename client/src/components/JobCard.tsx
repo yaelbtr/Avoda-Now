@@ -278,7 +278,7 @@ export function JobCard({
 }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
-  const cityDisplay = job.city ?? job.address.split(",")[0];
+  const cityDisplay = job.city ?? "";
   const isToday = isJobToday(job.startDateTime, job.startTime);
   // contactPhone is always null for workers (stripped server-side)
   const hasPhone = false;
@@ -422,11 +422,7 @@ export function JobCard({
           >
             {job.title}
           </h3>
-          {job.businessName && (
-            <p className="text-[11px] truncate text-right mb-1" style={{ color: "var(--text-muted)" }}>
-              {job.businessName}
-            </p>
-          )}
+
           <div className="flex items-center gap-1 text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
             <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.07 125.0)" }} />
             <span className="truncate">{cityDisplay}</span>
@@ -557,9 +553,7 @@ export function JobCard({
               </span>
             )}
           </div>
-          {job.businessName && (
-            <p className="text-[11px] truncate mt-1 text-right" style={{ color: "var(--text-muted)" }}>{job.businessName}</p>
-          )}
+
         </div>
 
         {/* Left: salary */}
@@ -591,10 +585,7 @@ export function JobCard({
           <Clock className="h-3 w-3 shrink-0" />
           {getStartTimeLabel(job.startTime)}
         </span>
-        <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-          <Users className="h-3 w-3 shrink-0" />
-          {job.workersNeeded} עובדים
-        </span>
+
       </div>
 
       {/* ── Time row ── */}

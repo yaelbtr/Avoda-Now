@@ -961,3 +961,12 @@
 
 ## hint text צף ב-hover
 - [x] הצגת hint text רק בעת hover על הכרטיסיה (fade-in/out)
+
+## הסרת כמות עובדים ושם מעסיק מכרטיסיות
+- [x] הסרת workersNeeded מגרסה רגילה של JobCard
+- [x] הסרת businessName מגרסה רגילה של JobCard
+- [x] הסרת businessName מגרסה compact של JobCard
+
+## הצגת עיר בלבד בכרטיסיות
+- [x] החלפת address/cityDisplay בעיר בלבד (city) בגרסה רגילה
+- [x] החלפת address/cityDisplay בעיר בלבד (city) בגרסה compact

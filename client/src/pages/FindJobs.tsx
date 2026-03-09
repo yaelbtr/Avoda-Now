@@ -4,7 +4,7 @@ import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
-import SearchJobCard from "@/components/SearchJobCard";
+import { JobCard, type JobCardJob } from "@/components/JobCard";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import LoginModal from "@/components/LoginModal";
@@ -728,11 +728,12 @@ export default function FindJobs() {
           >
             {jobs.map(job => (
               <motion.div key={job.id} variants={itemVariants}>
-                <SearchJobCard
+                <JobCard
                   job={{
                     ...job,
                     salary: job.salary ?? null,
                     businessName: job.businessName ?? null,
+                    contactPhone: job.contactPhone ?? null,
                     distance: "distance" in job ? (job as { distance: number }).distance : undefined,
                   }}
                   showDistance={!!userLat}

@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import CarouselJobCard from "@/components/CarouselJobCard";
+// CarouselJobCard replaced by unified JobCard
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
@@ -936,11 +936,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
                   >
-                    <CarouselJobCard
-                      job={{ ...job, isUrgent: badge === "urgent" }}
-                      badge={badge}
+                    <JobCard
+                      job={{ ...job, isUrgent: badge === "urgent", contactPhone: job.contactPhone ?? null }}
                       onLoginRequired={onLoginRequired}
-                      onCardClick={(j) => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                      onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
                     />
                   </motion.div>
                 ))}

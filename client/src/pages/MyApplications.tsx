@@ -995,7 +995,6 @@ export default function MyApplications() {
                         workersNeeded: (job as any).workersNeeded ?? 1,
                         createdAt: (job as any).createdAt ?? new Date().toISOString(),
                       }}
-                      savedMode
                       isSaved
                       isApplied={appliedJobIds.has(job.id)}
                       onUnsave={(jobId) => unsaveMutation.mutate({ jobId })}
@@ -1012,7 +1011,7 @@ export default function MyApplications() {
                           city: j.city,
                           salary: j.salary,
                           salaryType: j.salaryType,
-                          contactPhone: j.contactPhone,
+                          contactPhone: j.contactPhone ?? null,
                           businessName: j.businessName,
                           startTime: j.startTime,
                           startDateTime: j.startDateTime,

@@ -912,3 +912,9 @@
 - [x] לחיצה על כרטיס משרה פותחת bottom sheet modal עם פרטי המשרה
 - [x] עיצוב modal לפי הדיזיין בתמונה (כותרת, אייקון קטגוריה, גריד פרטים, תיאור, תאריך תפוגה, כפתור הגשה)
 - [x] חיבור כל כרטיסי המשרות (JobCard, SearchJobCard, CarouselJobCard) לפתיחת ה-modal
+
+## איחוד כרטיסיות משרה לעיצוב אחיד
+- [x] עיצוב JobCard אחיד לפי עיצוב כרטיסיית "שמורות" (כפתורי WhatsApp + טלפון ישירים, שיתוף, שמירה, "צפה במשרה")
+- [x] הסרת SearchJobCard ו-CarouselJobCard — החלפה מלאה ב-JobCard
+- [x] כפתורי יצירת קשר ישירים (WhatsApp + טלפון) בכל כרטיסיה
+- [x] אחידות ב-HomeWorker list, FindJobs, MyApplications, carousel

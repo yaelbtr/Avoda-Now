@@ -789,3 +789,8 @@
 - [x] Add work schedule step (days + time slots) as step 4 in signup flow
 - [x] Add "complete profile" banner to HomeWorker for workers with no categories selected
 - [x] Verify categories are editable in WorkerProfile matching section
+
+## Worker Signup Integration into WorkerProfile
+- [ ] Add first-time onboarding wizard mode to WorkerProfile (shown when signupCompleted=false)
+- [ ] Remove standalone /worker-signup page and route
+- [ ] Update HomeWorker redirect to /worker-profile for new workers

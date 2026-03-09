@@ -178,7 +178,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
   useEffect(() => {
     if (profileQuery.data && profileQuery.data.signupCompleted === false) {
-      navigate("/worker-signup");
+      navigate("/worker-profile");
     }
   }, [profileQuery.data, navigate]);
 
@@ -725,10 +725,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
       {/* ── Complete Profile Banner ─────────────────────────────────────────────────────────────────── */}
-      {isAuthenticated && profileQuery.data && (
+      {isAuthenticated && profileQuery.data &&
         (!profileQuery.data.preferredCategories?.length ||
-          (!profileQuery.data.preferredCity && !profileQuery.data.workerLatitude))
-      ) && (
+          (!profileQuery.data.preferredCity && !profileQuery.data.workerLatitude)) && (
         <div className="relative z-10 px-4 mb-5">
           <div
             className="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl"

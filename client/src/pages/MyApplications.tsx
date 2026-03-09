@@ -9,8 +9,8 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
   HourglassIcon, ChevronRight, Phone, MessageCircle,
-  Bell, BellOff, Filter, ArrowUpDown, Bookmark, BookmarkX, Flame,
-  Search, ChevronLeft,
+  Bell, BellOff, Bookmark, BookmarkX, Flame,
+  Search, ChevronLeft, ArrowUpDown,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
 import { formatDistanceToNow } from "date-fns";
@@ -116,7 +116,6 @@ export default function MyApplications() {
   const { isAuthenticated, loading } = useAuth();
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-  const [showFilters, setShowFilters] = useState(false);
 
   // Saved jobs sort
   type SavedSortBy = "savedAt" | "salary" | "city";
@@ -298,19 +297,7 @@ export default function MyApplications() {
               </button>
             )}
 
-            {/* Filter toggle */}
-            {activeTab === "applications" && (
-              <button
-                onClick={() => setShowFilters((v) => !v)}
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all"
-                style={{
-                  background: showFilters ? "oklch(0.82 0.15 80.8 / 0.30)" : "oklch(1 0 0 / 0.18)",
-                  color: showFilters ? "oklch(0.92 0.12 80.8)" : "rgba(255,255,255,0.85)",
-                }}
-              >
-                <Filter className="h-4 w-4" />
-              </button>
-            )}
+
           </div>
 
           {/* ── Tab switcher ── */}
@@ -366,51 +353,7 @@ export default function MyApplications() {
             </button>
           </div>
 
-          {/* ── Filter / Sort bar (applications tab only) ── */}
-          <AnimatePresence>
-            {activeTab === "applications" && showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="flex flex-wrap gap-2 pt-3">
-                  {(["all", "pending", "accepted", "rejected"] as FilterStatus[]).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setFilterStatus(s)}
-                      className="text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
-                      style={{
-                        background: filterStatus === s
-                          ? "oklch(0.82 0.15 80.8)"
-                          : "oklch(1 0 0 / 0.12)",
-                        color: filterStatus === s
-                          ? "oklch(0.22 0.03 122.3)"
-                          : "oklch(0.97 0.02 91 / 0.75)",
-                        border: `1px solid ${filterStatus === s ? "oklch(0.82 0.15 80.8)" : "oklch(1 0 0 / 0.20)"}`,
-                      }}
-                    >
-                      {filterLabels[s]}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setSortOrder((o) => (o === "newest" ? "oldest" : "newest"))}
-                    className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all mr-auto"
-                    style={{
-                      background: "oklch(1 0 0 / 0.12)",
-                      color: "oklch(0.97 0.02 91 / 0.75)",
-                      border: "1px solid oklch(1 0 0 / 0.20)",
-                    }}
-                  >
-                    <ArrowUpDown className="h-3 w-3" />
-                    {sortOrder === "newest" ? "חדש לישן" : "ישן לחדש"}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+
         </div>
       </div>
 
@@ -518,6 +461,34 @@ export default function MyApplications() {
                   </motion.button>
                 )}
               </motion.div>
+            )}
+
+            {/* Filter + Sort bar */}
+            {!isLoading && applications && applications.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap" dir="rtl">
+                <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>סטטוס:</span>
+                {(["all", "pending", "accepted", "rejected"] as FilterStatus[]).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setFilterStatus(s)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
+                    style={filterStatus === s
+                      ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
+                      : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
+                    }
+                  >
+                    {filterLabels[s]}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setSortOrder(o => o === "newest" ? "oldest" : "newest")}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold mr-auto"
+                  style={{ background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+                >
+                  <ArrowUpDown className="h-3 w-3" />
+                  {sortOrder === "newest" ? "תאריך הגשה ↓" : "תאריך הגשה ↑"}
+                </button>
+              </div>
             )}
 
             {/* Application cards */}

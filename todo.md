@@ -929,3 +929,14 @@
 - [x] העלאת תמונות ל-CDN
 - [x] עדכון bgImages ב-JobCard compact variant
 - [x] הוספת stagger animation (80ms delay) לכרטיסיות הקרוסלה ב-HomeWorker
+
+## blur placeholder לתמונות קטגוריה
+- [ ] הוספת צבע רקע מותאם לכל קטגוריה כ-placeholder בזמן טעינה
+- [ ] fade-in חלק כשהתמונה מוכנה (onLoad + opacity transition)
+- [ ] shimmer animation על ה-placeholder
+
+## הסרת כפתורי יצירת קשר ישיר מכרטיסיות
+- [x] הסרת כפתורי WhatsApp + טלפון מ-JobCard (גרסה רגילה)
+- [x] הסרת כפתורי WhatsApp + טלפון מ-JobCard compact (קרוסלה)
+- [x] הסרת כפתורי WhatsApp + טלפון מ-JobBottomSheet
+- [x] השארת כפתור "הגש מועמדות" בלבד כדרך ליצירת קשר

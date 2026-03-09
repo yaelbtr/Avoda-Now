@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X, MapPin, Clock, Briefcase, Heart, Phone, MessageCircle, Send, Calendar, Users, CheckCircle2, Loader2 } from "lucide-react";
+import { X, MapPin, Clock, Briefcase, Heart, Send, Calendar, Users, CheckCircle2, Loader2 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -308,32 +308,7 @@ export default function JobBottomSheet({
             </div>
           )}
 
-          {/* Phone number display (only if showPhone=true) */}
-          {showPhoneNumber && (
-            <div
-              style={{
-                background: "#f0f4eb",
-                borderRadius: 14,
-                padding: "12px 14px",
-                marginBottom: 16,
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <Phone size={16} color={OLIVE} />
-              <div>
-                <p style={{ color: "#888", fontSize: 11, fontWeight: 600, margin: 0 }}>טלפון ליצירת קשר</p>
-                <a
-                  href={`tel:${job.contactPhone}`}
-                  style={{ color: OLIVE, fontSize: 15, fontWeight: 700, textDecoration: "none" }}
-                  dir="ltr"
-                >
-                  {job.contactPhone}
-                </a>
-              </div>
-            </div>
-          )}
+          {/* Phone number display removed — workers contact via application only */}
 
           {/* Apply message input (shown when user clicks apply) */}
           {showMessageInput && !applied && (
@@ -533,55 +508,7 @@ export default function JobBottomSheet({
             </button>
           )}
 
-          {/* Secondary row: Call + WhatsApp (only if showPhone) */}
-          {showPhoneNumber && !showMessageInput && (
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                onClick={handleCall}
-                style={{
-                  flex: 1,
-                  padding: "12px 0",
-                  borderRadius: 14,
-                  background: "#f0f4eb",
-                  color: OLIVE,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  border: "none",
-                  outline: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                }}
-              >
-                <Phone size={15} />
-                התקשר
-              </button>
-              <button
-                onClick={handleWhatsApp}
-                style={{
-                  flex: 1,
-                  padding: "12px 0",
-                  borderRadius: 14,
-                  background: "#e8f5e9",
-                  color: "#2e7d32",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  border: "none",
-                  outline: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                }}
-              >
-                <MessageCircle size={15} />
-                WhatsApp
-              </button>
-            </div>
-          )}
+          {/* Call/WhatsApp buttons removed — workers contact via application only */}
         </div>
       </div>
     </>

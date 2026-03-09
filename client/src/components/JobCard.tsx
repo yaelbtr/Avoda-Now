@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import {
-  MapPin, Clock, Users, Share2, Phone, Lock, Zap, Timer, Flame,
+  MapPin, Clock, Users, Share2, Zap, Timer, Flame,
   Mail, Copy, Check, Bookmark, BookmarkCheck, Star, BookmarkX,
   Send, Loader2, CheckCircle, ChevronLeft,
 } from "lucide-react";
@@ -327,6 +327,24 @@ export function JobCard({
     const bgImage = bgImages[job.category] ?? bgImages.other;
     const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
 
+    // Placeholder colors per category (dominant hue of the real image)
+    const placeholderColors: Record<string, string> = {
+      food:         "#c8a97e", // warm spice tones
+      hospitality:  "#2a3a4a", // dark hotel lobby
+      construction: "#8b7355", // sandy concrete
+      delivery:     "#c0392b", // Wolt red
+      office:       "#3d5a80", // cool blue office
+      events:       "#4a3728", // warm evening
+      childcare:    "#e8b86d", // warm yellow classroom
+      cleaning:     "#a8d8ea", // fresh light blue
+      security:     "#2c3e50", // dark navy
+      retail:       "#d4a96a", // warm shop
+      eldercare:    "#7fb3a0", // calm green
+      tech:         "#1a1a2e", // dark tech
+      other:        "#6b7280", // neutral gray
+    };
+    const placeholderColor = placeholderColors[job.category] ?? placeholderColors.other;
+
     return (
       <motion.div
         whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0,0,0,0.14)" }}
@@ -418,29 +436,6 @@ export function JobCard({
 
           {/* Action buttons */}
           <div className="flex items-center gap-2" dir="rtl">
-            {hasPhone ? (
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={(e) => { e.stopPropagation(); contactViaWhatsApp(job.contactPhone!, job.title); }}
-                className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-[11px] font-bold flex-1"
-                style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)", color: "#fff" }}
-              >
-                <WhatsAppIcon />
-                <span>וואטסאפ</span>
-              </motion.button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={(e) => { e.stopPropagation(); handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת"); }}
-                className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-[11px] font-semibold flex-1"
-                style={{ background: "oklch(0.95 0.02 84)", border: "1px dashed oklch(0.78 0.06 84)", color: "var(--text-muted)" }}
-              >
-                <Lock className="h-3.5 w-3.5 shrink-0" />
-                <span>התחבר</span>
-              </motion.button>
-            )}
             {onCardClick ? (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -647,45 +642,6 @@ export function JobCard({
 
       {/* ── Action buttons row ── */}
       <div className="flex items-center gap-2 w-full" dir="rtl">
-
-        {/* Primary: WhatsApp (if phone available) or lock */}
-        {hasPhone ? (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={(e) => { e.stopPropagation(); contactViaWhatsApp(job.contactPhone!, job.title); }}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-1 min-w-0"
-            style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)", color: "#fff" }}
-          >
-            <WhatsAppIcon />
-            <span className="truncate">וואטסאפ</span>
-          </motion.button>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={(e) => { e.stopPropagation(); handleRestrictedAction("כדי ליצור קשר עם המעסיק יש להתחבר למערכת"); }}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold flex-1 min-w-0"
-            style={{ background: "oklch(0.95 0.02 84)", border: "1px dashed oklch(0.78 0.06 84)", color: "var(--text-muted)" }}
-          >
-            <Lock className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">התחבר לראות</span>
-          </motion.button>
-        )}
-
-        {/* Phone button (only when authenticated) */}
-        {hasPhone && (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => { e.stopPropagation(); callPhone(job.contactPhone!); }}
-            className="p-2 rounded-xl shrink-0"
-            style={{ background: "oklch(0.95 0.02 84)", border: "1px solid oklch(0.87 0.04 84.0)", color: "var(--text-secondary)" }}
-            title="התקשר"
-          >
-            <Phone className="h-4 w-4" />
-          </motion.button>
-        )}
 
         {/* Save / Unsave */}
         {onUnsave ? (

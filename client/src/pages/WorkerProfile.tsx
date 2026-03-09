@@ -919,22 +919,14 @@ export default function WorkerProfile() {
         {activeTab === "details" && (
         <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <button
-            type="button"
-            onClick={() => toggleSection("details-personal")}
-            className="w-full flex items-center gap-2 p-5 text-right"
-          >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
               <User className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm flex-1">פרטים אישיים</h2>
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["details-personal"] ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-          {openSections["details-personal"] ? <div className="px-5 pb-5 space-y-3">
+            <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
+          </div>
+          <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">שם</label>
               <Input
@@ -1000,7 +992,7 @@ export default function WorkerProfile() {
               />
               <p className="text-xs text-muted-foreground mt-1 text-left">{workerBio.length}/500</p>
             </div>
-          </div> : null}
+          </div>
         </div>
         {/* Save button for details tab */}
         <button
@@ -1023,81 +1015,93 @@ export default function WorkerProfile() {
         {/* ── TAB: עבודה ─────────────────────────────────────────────── */}
         {activeTab === "work" && (
         <div className="space-y-4">
-        {/* ── Matching Preferences ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        {/* ── Work Preferences Card ─────────────────────────────────────────────── */}
+        <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+
+          {/* ── Sub-section: תחומי עיסוק מועדפים ── */}
           <button
             type="button"
-            onClick={() => toggleSection("work-matching")}
-            className="w-full flex items-center gap-2 p-5 text-right"
+            onClick={() => toggleSection("work-categories")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right"
           >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Briefcase className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+            <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <Briefcase className="h-3 w-3" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm flex-1">תחומי עיסוק מועדפים</h2>
+            <span className="font-bold text-foreground text-sm flex-1">תחומי עיסוק מועדפים</span>
+            {selectedCategories.length > 0 && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: "#4F583B" }}>
+                {selectedCategories.length}
+              </span>
+            )}
             <ChevronDown
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["work-matching"] ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{ transform: openSections["work-categories"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
           </button>
-          {openSections["work-matching"] ? <div className="px-5 pb-5 space-y-5">
-
-          {/* Preference text */}
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-              תיאור חופשי
-            </label>
-            <Textarea
-              value={preferenceText}
-              onChange={(e) => setPreferenceText(e.target.value)}
-              placeholder='לדוגמה: מחפש עבודה בשעות הבוקר, מוכן לנסוע עד 10 ק"מ, ניסיון בשמירה ובנייה...'
-              className="text-right resize-none"
-              rows={3}
-              maxLength={1000}
-            />
-            <p className="text-xs text-muted-foreground mt-1 text-left">{preferenceText.length}/1000</p>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              תחומי עיסוק מועדפים
-            </label>
-            <p className="text-xs text-muted-foreground mb-3">
-              בחר את הקטגוריות שאתה מוכן לעבוד בהן
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PREFERENCE_CATEGORIES.map((cat) => {
-                const isSelected = selectedCategories.includes(cat.value);
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => toggleCategory(cat.value)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
-                    }`}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                );
-              })}
+          {openSections["work-categories"] && (
+          <div className="px-5 pb-5 space-y-4 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
+            {/* Preference text */}
+            <div className="pt-4">
+              <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                תיאור חופשי
+              </label>
+              <Textarea
+                value={preferenceText}
+                onChange={(e) => setPreferenceText(e.target.value)}
+                placeholder='לדוגמא: מחפש עבודה בשעות הבוקר, מוכן לנסוע עד 10 ק"מ, ניסיון בשמירה ובנייה...'
+                className="text-right resize-none"
+                rows={3}
+                maxLength={1000}
+              />
+              <p className="text-xs text-muted-foreground mt-1 text-left">{preferenceText.length}/1000</p>
             </div>
-            {selectedCategories.length > 0 && (
-              <p className="text-xs text-primary mt-3 font-medium">
-                {selectedCategories.length} קטגוריות נבחרו
-              </p>
-            )}
+            {/* Categories */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-3">בחר את הקטגוריות שאתה מוכן לעבוד בהן</p>
+              <div className="flex flex-wrap gap-2">
+                {PREFERENCE_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategories.includes(cat.value);
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => toggleCategory(cat.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                      }`}
+                    >
+                      {cat.icon} {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+          )}
 
-          {/* Location mode */}
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-              מצב חיפוש עבודה
-            </label>
-            <div className="grid grid-cols-2 gap-2 mb-3">
+          {/* ── Divider ── */}
+          <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} />
+
+          {/* ── Sub-section: מצב חיפוש עבודה ── */}
+          <button
+            type="button"
+            onClick={() => toggleSection("work-location")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right"
+          >
+            <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
+            </div>
+            <span className="font-bold text-foreground text-sm flex-1">מצב חיפוש עבודה</span>
+            <ChevronDown
+              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {openSections["work-location"] && (
+          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
+            <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
               <button
                 type="button"
                 onClick={() => setLocationMode("radius")}
@@ -1123,7 +1127,6 @@ export default function WorkerProfile() {
                 לפי עיר
               </button>
             </div>
-
             {locationMode === "radius" && (
               <div>
                 <p className="text-xs text-muted-foreground mb-2">רדיוס חיפוש מהמיקום שלי:</p>
@@ -1145,7 +1148,6 @@ export default function WorkerProfile() {
                 </div>
               </div>
             )}
-
             {locationMode === "city" && (
               <div>
                 <p className="text-xs text-muted-foreground mb-2">בחר ערים מועדפות:</p>
@@ -1155,8 +1157,8 @@ export default function WorkerProfile() {
                 />
               </div>
             )}
-           </div>
-          </div> : null}
+          </div>
+          )}
         </div>
         {/* Save button for work tab */}
         <button
@@ -1179,22 +1181,13 @@ export default function WorkerProfile() {
         {/* ── TAB: זמינות ─────────────────────────────────────────────── */}
         {activeTab === "schedule" && (
         <div className="space-y-4">
-          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <button
-            type="button"
-            onClick={() => toggleSection("schedule-avail")}
-            className="w-full flex items-center gap-2 p-5 text-right"
-          >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+          <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <h2 className="font-bold text-foreground text-sm flex-1">זמינות לעבודה</h2>
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["schedule-avail"] ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-          {openSections["schedule-avail"] ? <div className="px-5 pb-5">
+            <h2 className="font-bold text-foreground text-sm">זמינות לעבודה</h2>
+          </div>
 
           {/* Preferred Schedule */}
           <div>
@@ -1263,7 +1256,6 @@ export default function WorkerProfile() {
               })}
             </div>
           </div>
-          </div> : null}
         </div>
         {/* Save button for schedule tab */}
         <button
@@ -1287,25 +1279,16 @@ export default function WorkerProfile() {
         {activeTab === "settings" && (
         <div className="space-y-4">
         {/* ── Notification Settings ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <button
-            type="button"
-            onClick={() => toggleSection("settings-notif")}
-            className="w-full flex items-center gap-2 p-5 text-right"
-          >
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
-            <div className="flex-1 text-right">
+            <div>
               <h2 className="font-bold text-foreground text-sm">הגדרות התראות</h2>
               <p className="text-xs text-muted-foreground">בחר כיצד תרצה לקבל עדכונים</p>
             </div>
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["settings-notif"] ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-          {openSections["settings-notif"] ? <div className="px-5 pb-5">
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {NOTIF_OPTIONS.map((opt) => {
               const isActive = notifPref === opt.value;
@@ -1339,7 +1322,6 @@ export default function WorkerProfile() {
               💡 ודא שהתראות דפדפן מופעלות בדף "מועמדויות שלי"
             </p>
           )}
-          </div> : null}
         </div>
         </div>
         )}

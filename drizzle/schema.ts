@@ -23,6 +23,10 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   /** E.164 phone number, e.g. +972501234567. Unique per user. */
   phone: varchar("phone", { length: 20 }).unique(),
+  /** Israeli phone prefix, e.g. "052" */
+  phonePrefix: varchar("phonePrefix", { length: 5 }),
+  /** 7-digit phone number without prefix, e.g. "1234567" */
+  phoneNumber: varchar("phoneNumber", { length: 7 }),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
@@ -286,9 +290,20 @@ export type City = typeof cities.$inferSelect;
 export type InsertCity = typeof cities.$inferInsert;
 
 /**
- * Saved (bookmarked) jobs per worker.
- * Workers can save jobs to revisit later.
+ * Israeli phone number prefixes lookup table.
+ * Seeded once; read-only at runtime.
  */
+export const phonePrefixes = mysqlTable("phone_prefixes", {
+  id: int("id").autoincrement().primaryKey(),
+  /** The 3-digit prefix, e.g. "050", "052" */
+  prefix: varchar("prefix", { length: 5 }).notNull().unique(),
+  /** Hebrew description, e.g. "פלאפון" */
+  description: varchar("description", { length: 100 }).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+export type PhonePrefix = typeof phonePrefixes.$inferSelect;
+export type InsertPhonePrefix = typeof phonePrefixes.$inferInsert;
+
 export const savedJobs = mysqlTable("saved_jobs", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().references(() => users.id),

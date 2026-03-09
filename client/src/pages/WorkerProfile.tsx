@@ -17,6 +17,7 @@ import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
 import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
 import { Eye } from "lucide-react";
+import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 
 // Spec-required preference categories for worker profile matching
 const PREFERENCE_CATEGORIES = [
@@ -122,6 +123,7 @@ export default function WorkerProfile() {
   const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">("details");
   const [name, setName] = useState("");  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
   const [workerBio, setWorkerBio] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [preferenceText, setPreferenceText] = useState("");
@@ -158,6 +160,12 @@ export default function WorkerProfile() {
       const d = profileQuery.data;
       setName(d.name ?? "");
       setPhone(d.phone ?? "");
+      // Populate split phone fields from DB or parse from combined phone
+      if ((d as any).phonePrefix && (d as any).phoneNumber) {
+        setPhoneVal({ prefix: (d as any).phonePrefix, number: (d as any).phoneNumber });
+      } else if (d.phone) {
+        setPhoneVal(parseIsraeliPhone(d.phone));
+      }
       setWorkerBio(d.workerBio ?? "");
       setSelectedCategories(d.preferredCategories ?? []);
       setPreferenceText(d.preferenceText ?? "");
@@ -222,10 +230,15 @@ export default function WorkerProfile() {
 
   // ── Profile save ─────────────────────────────────────────────────────────────
   const handleSave = () => {
+    // Build phone update payload for OAuth users only
+    const isPhoneOtp = user?.loginMethod === "phone_otp";
+    const hasFullPhone = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+    const phonePayload = (!isPhoneOtp && !user?.phone && hasFullPhone)
+      ? { phone: combinePhone(phoneVal), phonePrefix: phoneVal.prefix, phoneNumber: phoneVal.number }
+      : {};
     updateMutation.mutate({
       name: name.trim() || undefined,
-      // Allow phone update only for OAuth (Google) users who don't have a phone
-      phone: (!user?.phone && phone.trim()) ? phone.trim() : undefined,
+      ...phonePayload,
       workerBio: workerBio.trim() || null,
       preferredCategories: selectedCategories,
       preferenceText: preferenceText.trim() || null,
@@ -390,25 +403,28 @@ export default function WorkerProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold mb-1.5 block">
-                    מספר טלפון
-                    {!user?.phone && <span className="text-muted-foreground font-normal text-xs mr-1">(לא חובה)</span>}
-                  </Label>
-                  <Input
-                    value={phone}
-                    onChange={user?.phone ? undefined : (e) => setPhone(e.target.value)}
-                    readOnly={!!user?.phone}
-                    placeholder={user?.phone ? undefined : "050-000-0000"}
-                    className={`text-right ${user?.phone ? "bg-muted text-muted-foreground" : ""}`}
-                    dir="ltr"
-                    type="tel"
-                  />
-                  {user?.phone ? (
-                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> מאומת
-                    </p>
+                  {/* Phone field in wizard: OTP users have it read-only, OAuth users can enter */}
+                  {user?.loginMethod === "phone_otp" || user?.phone ? (
+                    <>
+                      <IsraeliPhoneInput
+                        value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(user?.phone)}
+                        onChange={() => {}}
+                        readOnly
+                        label="מספר טלפון"
+                      />
+                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> מאומת
+                      </p>
+                    </>
                   ) : (
-                    <p className="text-xs text-muted-foreground mt-1">מספר הטלפון ישמש ליצירת קשר עם מעסיקים</p>
+                    <>
+                      <IsraeliPhoneInput
+                        value={phoneVal}
+                        onChange={setPhoneVal}
+                        label="מספר טלפון"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">מספר הטלפון ישמש ליצירת קשר עם מעסיקים (לא חובה)</p>
+                    </>
                   )}
                 </div>
               </div>
@@ -917,14 +933,27 @@ export default function WorkerProfile() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">טלפון</label>
-              <Input
-                value={profileQuery.data?.phone ?? ""}
-                disabled
-                className="text-right bg-muted text-muted-foreground"
-                dir="ltr"
-              />
-              <p className="text-xs text-muted-foreground mt-1">מספר הטלפון אינו ניתן לשינוי</p>
+              {/* Phone field: read-only for OTP users, editable split input for OAuth users */}
+              {user?.loginMethod === "phone_otp" ? (
+                <>
+                  <label className="text-sm font-medium text-foreground mb-1 block">טלפון</label>
+                  <IsraeliPhoneInput
+                    value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(profileQuery.data?.phone)}
+                    onChange={() => {}}
+                    readOnly
+                    showLabel={false}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">מספר הטלפון אינו ניתן לשינוי</p>
+                </>
+              ) : (
+                <IsraeliPhoneInput
+                  value={phoneVal}
+                  onChange={setPhoneVal}
+                  disabled={!!user?.phone}
+                  readOnly={!!user?.phone}
+                  label="מספר טלפון"
+                />
+              )}
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">

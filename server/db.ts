@@ -17,6 +17,7 @@ import {
   InsertPushSubscription,
   cities,
   savedJobs,
+  phonePrefixes,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -141,6 +142,8 @@ export async function getWorkerProfile(id: number) {
       preferredCities: users.preferredCities,
       signupCompleted: users.signupCompleted,
       profilePhoto: users.profilePhoto,
+      phonePrefix: users.phonePrefix,
+      phoneNumber: users.phoneNumber,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -180,6 +183,8 @@ export async function updateWorkerProfile(
   if (data.workerBio !== undefined) updateSet.workerBio = data.workerBio;
   if (data.name !== undefined) updateSet.name = data.name;
   if (data.phone !== undefined) updateSet.phone = data.phone;
+  if ((data as any).phonePrefix !== undefined) updateSet.phonePrefix = (data as any).phonePrefix;
+  if ((data as any).phoneNumber !== undefined) updateSet.phoneNumber = (data as any).phoneNumber;
   if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
   if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
   if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;
@@ -196,6 +201,35 @@ export async function updateWorkerProfile(
   if (data.email !== undefined) updateSet.email = data.email;
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set(updateSet).where(eq(users.id, id));
+}
+
+// ─── Phone Prefixes ──────────────────────────────────────────────────────────
+
+/** Returns all active phone prefixes ordered by prefix */
+export async function getPhonePrefixes() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: phonePrefixes.id,
+      prefix: phonePrefixes.prefix,
+      description: phonePrefixes.description,
+    })
+    .from(phonePrefixes)
+    .where(eq(phonePrefixes.isActive, true))
+    .orderBy(asc(phonePrefixes.prefix));
+}
+
+/** Check if a prefix exists in the phone_prefixes table */
+export async function isValidPhonePrefix(prefix: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db
+    .select({ id: phonePrefixes.id })
+    .from(phonePrefixes)
+    .where(and(eq(phonePrefixes.prefix, prefix), eq(phonePrefixes.isActive, true)))
+    .limit(1);
+  return result.length > 0;
 }
 
 // ─── Cities ──────────────────────────────────────────────────────────────────

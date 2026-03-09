@@ -1,0 +1,9 @@
+{
+  "query": "\nINSERT INTO phone_prefixes (prefix, description, is_active) VALUES\n('050', 'פלאפון', 1),\n('052', 'פרטנר', 1),\n('053', 'סלקום', 1),\n('054', 'פרטנר', 1),\n('055', 'וירטואלי', 1),\n('056', 'HOT Mobile', 1),\n('057', 'HOT Mobile', 1),\n('058', 'וירטואלי', 1),\n('059', 'וירטואלי', 1)\nON DUPLICATE KEY UPDATE description = VALUES(description), is_active = VALUES(is_active);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \nINSERT INTO phone_prefixes (prefix, description, is_active) VALUES\n('050', 'פלאפון', 1),\n('052', 'פרטנר', 1),\n('053', 'סלקום', 1),\n('054', 'פרטנר', 1),\n('055', 'וירטואלי', 1),\n('056', 'HOT Mobile', 1),\n('057', 'HOT Mobile', 1),\n('058', 'וירטואלי', 1),\n('059', 'וירטואלי', 1)\nON DUPLICATE KEY UPDATE description = VALUES(description), is_active = VALUES(is_active);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1615
+}

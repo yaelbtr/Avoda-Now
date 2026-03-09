@@ -800,3 +800,21 @@
 - [ ] Add uploadProfilePhoto tRPC procedure (S3 upload + save URL)
 - [ ] Add photo upload UI to WorkerProfile with friendly message
 - [ ] Show photo in PublicWorkerProfile and AvailableWorkers list
+
+## Israeli Phone Number Input (Split Prefix + Number)
+- [x] DB: add phone_prefixes table (id, prefix, description, is_active)
+- [x] DB: add phone_prefix (varchar 3) and phone_number (varchar 7) columns to users table
+- [x] DB: push migration with pnpm db:push
+- [x] DB: seed phone_prefixes with 050, 052, 053, 054, 055, 058, 059
+- [x] Server: getPhonePrefixes query helper in db.ts
+- [x] Server: isValidPhonePrefix query helper in db.ts
+- [x] Server: getPhonePrefixes tRPC procedure (public, cached)
+- [x] Server: updateProfile — accept phonePrefix + phoneNumber, validate, save split + combined
+- [x] Server: getWorkerProfile — return phonePrefix + phoneNumber fields
+- [x] Component: IsraeliPhoneInput with RTL row-reverse layout
+- [x] Component: parseIsraeliPhone helper (parse combined → split)
+- [x] Component: combinePhone helper (split → combined for API)
+- [x] UI: LoginModal — replace single Input with IsraeliPhoneInput
+- [x] UI: WorkerProfile wizard step 1 — replace Input with IsraeliPhoneInput
+- [x] UI: WorkerProfile details tab — replace Input with IsraeliPhoneInput (read-only for OTP users)
+- [x] Tests: 19 vitest tests for phone validation logic (all passing)

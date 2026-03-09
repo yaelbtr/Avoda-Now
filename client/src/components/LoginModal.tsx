@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft } from "lucide-react";
 import { saveReturnPath, getGoogleLoginUrl } from "@/const";
+import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 
 interface LoginModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ const OTP_LENGTH = 6;
 export default function LoginModal({ open, onClose, message }: LoginModalProps) {
   const [step, setStep] = useState<"phone" | "otp" | "success">("phone");
   const [phone, setPhone] = useState("");
+  const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
   const [normalizedPhone, setNormalizedPhone] = useState("");
   const [name, setName] = useState("");
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -62,6 +64,7 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
       const t = setTimeout(() => {
         setStep("phone");
         setPhone("");
+        setPhoneVal({ prefix: "", number: "" });
         setNormalizedPhone("");
         setName("");
         setDigits(Array(OTP_LENGTH).fill(""));
@@ -117,9 +120,13 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleSend = () => {
-    const trimmed = phone.trim();
-    if (!trimmed) return toast.error("הכנס מספר טלפון");
-    sendOtp.mutate({ phone: trimmed });
+    // Build combined phone from split fields
+    const combined = phoneVal.prefix.length === 3 && phoneVal.number.length === 7
+      ? combinePhone(phoneVal)
+      : phone.trim();
+    if (!combined || combined.length < 9) return toast.error("הכנס מספר טלפון תקין");
+    setPhone(combined);
+    sendOtp.mutate({ phone: combined });
   };
 
   const submitOtp = useCallback((code: string) => {
@@ -210,22 +217,11 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
 
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-medium block mb-1.5 text-right">מספר טלפון</label>
-                <Input
-                  type="tel"
-                  placeholder="050-0000000"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  dir="ltr"
-                  style={{ textAlign: "left" }}
-                  autoComplete="tel"
-                  inputMode="tel"
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  className="h-11 text-base"
+                <IsraeliPhoneInput
+                  value={phoneVal}
+                  onChange={setPhoneVal}
+                  label="מספר טלפון"
                 />
-                <p className="text-xs text-muted-foreground mt-1 text-right">
-                  לדוגמה: 050-1234567 או +972501234567
-                </p>
               </div>
 
               <div>
@@ -247,7 +243,7 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
               size="lg"
               className="w-full"
               onClick={handleSend}
-              disabled={sendOtp.isPending || !phone.trim()}
+              disabled={sendOtp.isPending || (phoneVal.prefix.length !== 3 || phoneVal.number.length !== 7)}
             >
               {sendOtp.isPending
                 ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>

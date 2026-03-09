@@ -55,6 +55,8 @@ import {
   updateNotificationPrefs,
   markEmployerApplicationsViewed,
   getCities,
+  getPhonePrefixes,
+  isValidPhonePrefix,
   saveJob,
   unsaveJob,
   getSavedJobIds,
@@ -921,7 +923,11 @@ const userRouter = router({
     return profile;
   }),
 
-  /** Get all active cities for the city picker */
+  /** Get all active phone prefixes for the phone input component */
+  getPhonePrefixes: publicProcedure.query(async () => {
+    return getPhonePrefixes();
+  }),
+
   getCities: publicProcedure.query(async () => {
     return getCities();
   }),
@@ -993,6 +999,8 @@ const userRouter = router({
       z.object({
         name: z.string().min(2).max(100).optional(),
         phone: z.string().min(9).max(20).nullable().optional(),
+        phonePrefix: z.string().length(3).nullable().optional(),
+        phoneNumber: z.string().length(7).regex(/^\d{7}$/).nullable().optional(),
         preferredCategories: z.array(z.string()).optional(),
         preferredCity: z.string().max(100).nullable().optional(),
         workerBio: z.string().max(500).nullable().optional(),
@@ -1026,9 +1034,32 @@ const userRouter = router({
           throw new Error("מספר טלפון לא תקין");
         }
       }
+      // Validate and save split phone fields
+      let phonePrefix: string | undefined = undefined;
+      let phoneNumber: string | undefined = undefined;
+      if (input.phonePrefix !== undefined && input.phoneNumber !== undefined &&
+          input.phonePrefix !== null && input.phoneNumber !== null) {
+        const prefixValid = await isValidPhonePrefix(input.phonePrefix);
+        if (!prefixValid) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "קידומת טלפון לא תקינה" });
+        }
+        if (!/^\d{7}$/.test(input.phoneNumber)) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון חייב להכיל בדיוק 7 ספרות" });
+        }
+        phonePrefix = input.phonePrefix;
+        phoneNumber = input.phoneNumber;
+        // Also build the combined phone for the phone field
+        const combined = `${input.phonePrefix}${input.phoneNumber}`;
+        try {
+          normalizedPhone = normalizeIsraeliPhone(combined);
+          if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
+        } catch { normalizedPhone = undefined; }
+      }
       await updateWorkerProfile(ctx.user.id, {
         name: input.name,
         phone: normalizedPhone,
+        ...(phonePrefix !== undefined ? { phonePrefix } : {}),
+        ...(phoneNumber !== undefined ? { phoneNumber } : {}),
         preferredCategories: input.preferredCategories,
         preferredCity: input.preferredCity,
         workerBio: input.workerBio,

@@ -69,7 +69,6 @@ export function WorkerProfilePreviewModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          dir="rtl"
         >
           {/* Backdrop */}
           <motion.div
@@ -77,14 +76,16 @@ export function WorkerProfilePreviewModal({
             onClick={onClose}
           />
 
-          {/* Bottom Sheet */}
+          {/* Bottom Sheet — dir=rtl here so all children inherit */}
           <motion.div
+            dir="rtl"
             className="relative w-full"
             style={{
               maxHeight: "88vh",
               overflowY: "auto",
-              background: "var(--page-bg)",
+              background: "var(--page-bg, #f5f0e8)",
               borderRadius: "24px 24px 0 0",
+              textAlign: "right",
             }}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -92,81 +93,84 @@ export function WorkerProfilePreviewModal({
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: "oklch(0.82 0.02 100)" }} />
+            <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
+              <div style={{ width: 40, height: 4, borderRadius: 9999, background: "oklch(0.82 0.02 100)" }} />
             </div>
 
-            {/* Header */}
-            <div className="flex items-start justify-between px-4 pb-3 pt-1">
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: "oklch(0.93 0.02 100)", color: "#4F583B" }}
-              >
-                <X className="h-4 w-4" />
-              </button>
-              <div className="text-right">
-                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "oklch(0.68 0.14 80.8)" }}>
+            {/* Header: X on left (in RTL = visual left), title on right */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "4px 16px 12px" }}>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "oklch(0.68 0.14 80.8)", textTransform: "uppercase" }}>
                   תצוגה מקדימה
                 </p>
-                <h2 className="text-sm font-black" style={{ color: "#4F583B" }}>
+                <h2 style={{ fontSize: 14, fontWeight: 900, color: "#4F583B", margin: 0 }}>
                   כך נראה הפרופיל שלך למעסיקים
                 </h2>
               </div>
-            </div>
-
-            <div className="px-4 pb-8 space-y-3">
-              {/* ── Employer Card ── */}
-              <div
-                className="rounded-2xl overflow-hidden w-full"
+              <button
+                onClick={onClose}
                 style={{
-                  background: "white",
-                  border: "1px solid oklch(0.92 0.02 100)",
-                  boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
+                  width: 32, height: 32, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "oklch(0.93 0.02 100)", color: "#4F583B",
+                  border: "none", cursor: "pointer", flexShrink: 0,
                 }}
               >
-                {/* Avatar + name row — RTL: avatar on right, text on left */}
-                <div
-                  className="flex items-start gap-3 p-4"
-                  style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
-                >
-                  {/* Avatar — first child = rightmost in RTL */}
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ padding: "0 16px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* ── Employer Card ── */}
+              <div style={{
+                borderRadius: 16, overflow: "hidden", width: "100%",
+                background: "white",
+                border: "1px solid oklch(0.92 0.02 100)",
+                boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
+              }}>
+                {/* Avatar + name row */}
+                <div style={{
+                  display: "flex", flexDirection: "row", alignItems: "flex-start",
+                  gap: 12, padding: 16,
+                  borderBottom: "1px solid oklch(0.95 0.02 100)",
+                }}>
+                  {/* Avatar — first in DOM = rightmost in RTL */}
                   {photo ? (
                     <img
                       src={photo}
                       alt={name}
-                      className="w-16 h-16 rounded-full object-cover shrink-0"
-                      style={{ border: "2.5px solid #4F583B" }}
+                      style={{
+                        width: 64, height: 64, borderRadius: "50%",
+                        objectFit: "cover", flexShrink: 0,
+                        border: "2.5px solid #4F583B",
+                      }}
                     />
                   ) : (
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
-                      style={{
-                        background: "oklch(0.92 0.04 122)",
-                        border: "2px dashed oklch(0.70 0.08 122)",
-                      }}
-                    >
-                      <User className="h-7 w-7" style={{ color: "#4F583B" }} />
+                    <div style={{
+                      width: 64, height: 64, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                      background: "oklch(0.92 0.04 122)",
+                      border: "2px dashed oklch(0.70 0.08 122)",
+                    }}>
+                      <User size={28} style={{ color: "#4F583B" }} />
                     </div>
                   )}
-                  {/* Text — second child = to the left of avatar in RTL */}
-                  <div className="flex-1 min-w-0 text-right">
-                    <h3 className="text-lg font-black leading-tight" style={{ color: "#4F583B" }}>
+                  {/* Text — second in DOM = to the left of avatar in RTL */}
+                  <div style={{ flex: 1, minWidth: 0, textAlign: "right" }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 900, color: "#4F583B", margin: 0, lineHeight: 1.2 }}>
                       {name || "שם לא הוזן"}
                     </h3>
                     {phone && (
-                      <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.06 122)" }}>
+                      <p style={{ fontSize: 12, color: "oklch(0.50 0.06 122)", margin: "2px 0 0" }}>
                         {phone}
                       </p>
                     )}
                     {selectedCategoryLabels.length > 0 && (
-                      <p className="text-xs mt-1" style={{ color: "oklch(0.50 0.08 122)" }}>
-                        {selectedCategoryLabels
-                          .slice(0, 2)
-                          .map((c) => `${c.icon} ${c.label}`)
-                          .join(" · ")}
+                      <p style={{ fontSize: 12, color: "oklch(0.50 0.08 122)", margin: "4px 0 0" }}>
+                        {selectedCategoryLabels.slice(0, 2).map((c) => `${c.icon} ${c.label}`).join(" · ")}
                         {selectedCategoryLabels.length > 2 && (
-                          <span className="font-bold"> +{selectedCategoryLabels.length - 2}</span>
+                          <strong> +{selectedCategoryLabels.length - 2}</strong>
                         )}
                       </p>
                     )}
@@ -174,16 +178,13 @@ export function WorkerProfilePreviewModal({
                 </div>
 
                 {/* Bio */}
-                <div
-                  className="px-4 py-3 text-right"
-                  style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
-                >
+                <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)", textAlign: "right" }}>
                   {bio ? (
-                    <p className="text-sm leading-relaxed" style={{ color: "oklch(0.30 0.05 122)" }}>
+                    <p style={{ fontSize: 13, lineHeight: 1.6, color: "oklch(0.30 0.05 122)", margin: 0 }}>
                       {bio}
                     </p>
                   ) : (
-                    <p className="text-sm italic" style={{ color: "oklch(0.65 0.04 122)" }}>
+                    <p style={{ fontSize: 13, fontStyle: "italic", color: "oklch(0.65 0.04 122)", margin: 0 }}>
                       לא הוזן תיאור אישי
                     </p>
                   )}
@@ -191,22 +192,20 @@ export function WorkerProfilePreviewModal({
 
                 {/* Categories */}
                 {selectedCategoryLabels.length > 0 && (
-                  <div
-                    className="px-4 py-3"
-                    style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
-                  >
-                    {/* Section header — icon then label, right-aligned */}
-                    <div className="flex items-center gap-1.5 justify-end mb-2">
-                      <span className="text-xs font-bold" style={{ color: "#4F583B" }}>תחומי עיסוק</span>
-                      <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
+                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#4F583B" }}>תחומי עיסוק</span>
+                      <Briefcase size={14} style={{ color: "#4F583B", flexShrink: 0 }} />
                     </div>
-                    {/* Tags — wrap from right */}
-                    <div className="flex flex-wrap gap-1.5 justify-end">
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
                       {selectedCategoryLabels.map((cat) => (
                         <span
                           key={cat.value}
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                          style={{ background: "oklch(0.93 0.04 122)", color: "#4F583B" }}
+                          style={{
+                            padding: "4px 10px", borderRadius: 9999,
+                            fontSize: 12, fontWeight: 600,
+                            background: "oklch(0.93 0.04 122)", color: "#4F583B",
+                          }}
                         >
                           {cat.icon} {cat.label}
                         </span>
@@ -217,21 +216,22 @@ export function WorkerProfilePreviewModal({
 
                 {/* Availability */}
                 {(selectedDayLabels.length > 0 || selectedTimeLabels.length > 0) && (
-                  <div
-                    className="px-4 py-3"
-                    style={{ borderBottom: "1px solid oklch(0.95 0.02 100)" }}
-                  >
-                    <div className="flex items-center gap-1.5 justify-end mb-2">
-                      <span className="text-xs font-bold" style={{ color: "#4F583B" }}>זמינות</span>
-                      <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
+                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#4F583B" }}>זמינות</span>
+                      <Clock size={14} style={{ color: "#4F583B", flexShrink: 0 }} />
                     </div>
                     {selectedDayLabels.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 justify-end mb-2">
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end", marginBottom: 8 }}>
                         {selectedDayLabels.map((d) => (
                           <span
                             key={d}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                            style={{ background: "#4F583B", color: "white" }}
+                            style={{
+                              width: 32, height: 32, borderRadius: "50%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 12, fontWeight: 700, flexShrink: 0,
+                              background: "#4F583B", color: "white",
+                            }}
                           >
                             {d}
                           </span>
@@ -239,12 +239,15 @@ export function WorkerProfilePreviewModal({
                       </div>
                     )}
                     {selectedTimeLabels.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 justify-end">
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
                         {selectedTimeLabels.map((t) => (
                           <span
                             key={t.value}
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                            style={{ background: "oklch(0.93 0.04 122)", color: "#4F583B" }}
+                            style={{
+                              padding: "4px 10px", borderRadius: 9999,
+                              fontSize: 12, fontWeight: 600,
+                              background: "oklch(0.93 0.04 122)", color: "#4F583B",
+                            }}
                           >
                             {t.icon} {t.label}
                           </span>
@@ -255,29 +258,32 @@ export function WorkerProfilePreviewModal({
                 )}
 
                 {/* Location */}
-                <div className="px-4 py-3">
-                  <div className="flex items-center gap-1.5 justify-end mb-1.5">
-                    <span className="text-xs font-bold" style={{ color: "#4F583B" }}>אזור עבודה</span>
-                    <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#4F583B" }} />
+                <div style={{ padding: "12px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#4F583B" }}>אזור עבודה</span>
+                    <MapPin size={14} style={{ color: "#4F583B", flexShrink: 0 }} />
                   </div>
                   {locationMode === "radius" ? (
-                    <p className="text-sm text-right" style={{ color: "oklch(0.40 0.06 122)" }}>
+                    <p style={{ fontSize: 13, color: "oklch(0.40 0.06 122)", margin: 0, textAlign: "right" }}>
                       עד {searchRadiusKm} ק"מ מהמיקום שלי
                     </p>
                   ) : cityNames.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 justify-end">
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
                       {cityNames.map((city) => (
                         <span
                           key={city}
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                          style={{ background: "oklch(0.93 0.04 122)", color: "#4F583B" }}
+                          style={{
+                            padding: "4px 10px", borderRadius: 9999,
+                            fontSize: 12, fontWeight: 600,
+                            background: "oklch(0.93 0.04 122)", color: "#4F583B",
+                          }}
                         >
                           {city}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm italic text-right" style={{ color: "oklch(0.65 0.04 122)" }}>
+                    <p style={{ fontSize: 13, fontStyle: "italic", color: "oklch(0.65 0.04 122)", margin: 0, textAlign: "right" }}>
                       לא נבחרו ערים
                     </p>
                   )}
@@ -285,53 +291,47 @@ export function WorkerProfilePreviewModal({
               </div>
 
               {/* ── Profile Completion ── */}
-              <div
-                className="rounded-2xl p-4 w-full"
-                style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)" }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span
-                    className="text-lg font-black"
-                    style={{
-                      color: completionPct === 100 ? "oklch(0.55 0.15 145)" : "oklch(0.68 0.14 80.8)",
-                    }}
-                  >
+              <div style={{
+                borderRadius: 16, padding: 16, width: "100%",
+                background: "white",
+                border: "1px solid oklch(0.92 0.02 100)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{
+                    fontSize: 20, fontWeight: 900,
+                    color: completionPct === 100 ? "oklch(0.55 0.15 145)" : "oklch(0.68 0.14 80.8)",
+                  }}>
                     {completionPct}%
                   </span>
-                  <span className="text-sm font-bold" style={{ color: "#4F583B" }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#4F583B" }}>
                     השלמת פרופיל
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full mb-3" style={{ background: "oklch(0.92 0.02 100)" }}>
-                  <div
-                    className="h-2 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${completionPct}%`,
-                      background:
-                        completionPct === 100
-                          ? "oklch(0.55 0.15 145)"
-                          : "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)",
-                    }}
-                  />
+                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12 }}>
+                  <div style={{
+                    height: 8, borderRadius: 9999,
+                    width: `${completionPct}%`,
+                    background: completionPct === 100
+                      ? "oklch(0.55 0.15 145)"
+                      : "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)",
+                    transition: "width 0.5s ease",
+                  }} />
                 </div>
-                <div className="grid grid-cols-2 gap-y-1.5 gap-x-2">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
-                    <div key={item.label} className="flex items-center justify-end gap-1.5">
-                      <span
-                        className="text-xs"
-                        style={{ color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}
-                      >
+                    <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}>
                         {item.label}
                       </span>
                       <CheckCircle2
-                        className="h-3.5 w-3.5 shrink-0"
-                        style={{ color: item.done ? "oklch(0.55 0.15 145)" : "oklch(0.75 0.03 122)" }}
+                        size={14}
+                        style={{ color: item.done ? "oklch(0.55 0.15 145)" : "oklch(0.75 0.03 122)", flexShrink: 0 }}
                       />
                     </div>
                   ))}
                 </div>
                 {completionPct < 100 && (
-                  <p className="text-xs mt-3 text-right" style={{ color: "oklch(0.68 0.14 80.8)" }}>
+                  <p style={{ fontSize: 12, marginTop: 12, textAlign: "right", color: "oklch(0.68 0.14 80.8)" }}>
                     💡 פרופיל מלא מגדיל את הסיכוי לקבל פניות ממעסיקים
                   </p>
                 )}

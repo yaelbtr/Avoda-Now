@@ -332,11 +332,13 @@ export default function WorkerProfile() {
                       reader.readAsDataURL(file);
                     }}
                   />
-                  {!profilePhoto && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      עובדים עם תמונה מקבלים פי 3 יותר פניות 📸
-                    </p>
-                  )}
+                  <p className="text-xs text-center mt-1">
+                    {profilePhoto ? (
+                      <span className="text-blue-600 dark:text-blue-400 font-medium">📢 התמונה תוצג למעסיקים פוטנציאלים</span>
+                    ) : (
+                      <span className="text-muted-foreground">עובדים עם תמונה מקבלים פי 3 יותר פניות 📸</span>
+                    )}
+                  </p>
                 </div>
 
                 <div>
@@ -785,6 +787,7 @@ export default function WorkerProfile() {
                 }}
               />
               <p className="text-xs text-muted-foreground mt-1.5">JPG, PNG, WEBP · עד 5MB</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">📢 התמונה תוצג למעסיקים פוטנציאלים</p>
             </div>
           </div>
         </div>

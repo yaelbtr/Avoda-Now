@@ -43,6 +43,12 @@ export default function Navbar() {
     return stored ? new Date(stored) : new Date(0);
   }, []);
 
+  const { data: profileData } = trpc.user.getProfile.useQuery(undefined, {
+    enabled: isAuthenticated && userMode === "worker",
+    staleTime: 60_000,
+  });
+  const profilePhoto = profileData?.profilePhoto ?? null;
+
   const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
     { lastSeenAt },
     {
@@ -225,11 +231,15 @@ export default function Navbar() {
                         color: "var(--header-fg)",
                       }}
                     >
-                      <div
-                        className="w-6 h-6 rounded-lg flex items-center justify-center"
+                        <div
+                        className="w-6 h-6 rounded-lg overflow-hidden flex items-center justify-center"
                         style={{ background: "oklch(0.50 0.07 124.9)" }}
                       >
-                        <User className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
+                        {profilePhoto ? (
+                          <img src={profilePhoto} alt="פרופיל" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
+                        )}
                       </div>
                       <span className="hidden sm:inline text-sm font-medium max-w-[80px] truncate">
                         {user?.name ?? user?.phone ?? "פרופיל"}

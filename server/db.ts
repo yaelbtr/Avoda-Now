@@ -450,13 +450,16 @@ export async function getJobById(id: number) {
   return result[0];
 }
 
-export async function getActiveJobs(limit = 50, category?: string) {
+export async function getActiveJobs(limit = 50, category?: string, city?: string) {
   const db = await getDb();
   if (!db) return [];
   await expireOldJobs();
   const conditions = [or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!];
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
+  }
+  if (city && city !== "all") {
+    conditions.push(eq(jobs.city, city));
   }
   return db
     .select()
@@ -471,7 +474,8 @@ export async function getJobsNearLocation(
   lng: number,
   radiusKm: number,
   category?: string,
-  limit = 50
+  limit = 50,
+  city?: string
 ) {
   const db = await getDb();
   if (!db) return [];
@@ -491,6 +495,9 @@ export async function getJobsNearLocation(
   ];
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
+  }
+  if (city && city !== "all") {
+    conditions.push(eq(jobs.city, city));
   }
 
   return db

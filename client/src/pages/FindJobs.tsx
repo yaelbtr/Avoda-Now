@@ -98,8 +98,14 @@ export default function FindJobs() {
   const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch popular cities for quick filter chips
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  // Show top 8 most-used cities as chips (sorted alphabetically for now)
+  const popularCities = (citiesQuery.data ?? []).slice(0, 8);
 
   useEffect(() => {
     const cached = loadCachedLocation();
@@ -159,11 +165,11 @@ export default function FindJobs() {
   };
 
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50 },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50 },
+    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
@@ -242,6 +248,13 @@ export default function FindJobs() {
   }
 
   jobs = [...jobs].sort((a, b) => {
+    // When location is active, sort by distance first (server already returns sorted, but client-side urgent filter may reorder)
+    if (userLat) {
+      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+      if (aDist !== bDist) return aDist - bDist;
+    }
+    // Then by urgent
     const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
     const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
     return bUrgent - aUrgent;
@@ -395,6 +408,45 @@ export default function FindJobs() {
               <span className="text-xs font-normal opacity-80">— עבודות דחופות ועבודות שמתחילות היום</span>
             </motion.button>
           </div>
+
+          {/* 2b. City quick filter chips */}
+          {popularCities.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-500">סינון לפי עיר</p>
+                {selectedCity && (
+                  <button
+                    onClick={() => setSelectedCity(null)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                    נקה
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {popularCities.map(city => (
+                  <button
+                    key={city.id}
+                    onClick={() => setSelectedCity(selectedCity === city.nameHe ? null : city.nameHe)}
+                    className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                    style={selectedCity === city.nameHe ? {
+                      background: "#0ea5e9",
+                      color: "white",
+                      border: "1px solid #0ea5e9",
+                      boxShadow: "0 2px 8px rgba(14,165,233,0.3)",
+                    } : {
+                      background: "rgba(14,165,233,0.08)",
+                      color: "#0369a1",
+                      border: "1px solid rgba(14,165,233,0.25)",
+                    }}
+                  >
+                    📍 {city.nameHe}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Divider */}
           <div className="h-px bg-gray-100 mb-4" />
@@ -703,12 +755,23 @@ export default function FindJobs() {
           <p className="text-sm text-gray-500">
             {isLoading ? "מחפש..." : `${jobs.length} משרות נמצאו`}
           </p>
-          {userLat && (
-            <div className="flex items-center gap-1 text-xs text-blue-600">
-              <MapPin className="h-3 w-3" />
-              ממוין לפי מרחק ממך
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {selectedCity && (
+              <div className="flex items-center gap-1 text-xs text-sky-600 bg-sky-50 border border-sky-200 rounded-full px-2 py-0.5">
+                <MapPin className="h-3 w-3" />
+                {selectedCity}
+                <button onClick={() => setSelectedCity(null)} className="hover:text-sky-900 transition-colors">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            {userLat && (
+              <div className="flex items-center gap-1 text-xs text-blue-600">
+                <MapPin className="h-3 w-3" />
+                ממוין לפי מרחק
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* ── Job list ── */}

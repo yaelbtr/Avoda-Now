@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
+import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2 } from "lucide-react";
@@ -497,13 +498,17 @@ export default function PostJob() {
             )}
 
             {jobLocationMode === "city" && (
-              <input
-                type="text"
-                value={jobCity}
-                onChange={(e) => setJobCity(e.target.value)}
-                placeholder="שם העיר, לדוגמה: תל אביב"
-                className="w-full rounded-xl px-3 py-2 text-sm border border-border bg-background outline-none mt-1"
-              />
+              <div className="mt-1">
+                <CityAutocomplete
+                  value={jobCity}
+                  onChange={setJobCity}
+                  onSelect={(city, _lat, _lng) => {
+                    setJobCity(city);
+                    toast.success(`עיר נבחרה: ${city}`);
+                  }}
+                  placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
+                />
+              </div>
             )}
           </div>
 

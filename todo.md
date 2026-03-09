@@ -974,3 +974,20 @@
 ## תיקון הצגת עיר בכרטיסיות
 - [x] בדיקת מבנה שדות city ו-address בבסיס הנתונים
 - [x] תיקון לוגיקת חילוץ העיר מהכתובת כשהשדה city מכיל כתובת רחוב
+
+## מיון לפי מרחק (Geolocation)
+- [x] הוספת כפתור "קרוב אלי" ב-FindJobs
+- [x] שימוש ב-Geolocation API לקבלת מיקום המשתמש
+- [x] מיון משרות לפי מרחק עם נוסחת Haversine (client-side + server-side)
+
+## תיקון נתוני עיר קיימים ב-DB
+- [x] migration חד-פעמי לתיקון שדה city בכל המשרות הקיימות (8 records fixed)
+
+## סינון מהיר לפי עיר ב-FindJobs
+- [x] שליפת ערים מטבלת הערים הקיימת (trpc.user.getCities)
+- [x] הצגת chips של ערים נפוצות מעל רשימת המשרות
+- [x] סינון המשרות לפי עיר שנבחרה (server-side filter in list + search procedures)
+
+## אוטו-קומפליט לשדה עיר בטופס פרסום
+- [x] שליפת ערים מהטבלה הקיימת
+- [x] הוספת CityAutocomplete לשדה העיר ב-PostJob (Google Places autocomplete)

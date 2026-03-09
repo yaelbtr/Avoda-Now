@@ -468,32 +468,14 @@ export function JobCard({
                 </motion.button>
               )
             )}
-            {/* צפה במשרה */}
-            {onCardClick ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => { e.stopPropagation(); onCardClick(job); }}
-                className="p-2 rounded-xl shrink-0"
-                style={{ background: "oklch(0.95 0.02 84)", border: "1px solid oklch(0.87 0.04 84.0)", color: "oklch(0.50 0.07 125.0)" }}
-                title="צפה במשרה"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </motion.button>
-            ) : (
-              <Link href={`/job/${job.id}`}>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 rounded-xl shrink-0"
-                  style={{ background: "oklch(0.95 0.02 84)", border: "1px solid oklch(0.87 0.04 84.0)", color: "oklch(0.50 0.07 125.0)" }}
-                  title="צפה במשרה"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </motion.button>
-              </Link>
-            )}
+            {/* Hint text */}
+            <span
+              className="text-[9px] font-medium flex items-center gap-0.5 select-none shrink-0"
+              style={{ color: "oklch(0.62 0.05 100)", letterSpacing: "0.01em" }}
+            >
+              לפרטים
+              <ChevronLeft className="h-2.5 w-2.5 opacity-60" />
+            </span>
           </div>
         </div>
       </motion.div>
@@ -739,28 +721,14 @@ export function JobCard({
           )
         )}
 
-        {/* צפה במשרה */}
-        {onCardClick ? (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={(e) => { e.stopPropagation(); onCardClick(job); }}
-            className="text-xs font-semibold underline underline-offset-2 shrink-0 whitespace-nowrap"
-            style={{ background: "none", border: "none", cursor: "pointer", padding: "0 2px", color: "oklch(0.50 0.07 125.0)" }}
-          >
-            צפה במשרה
-          </motion.button>
-        ) : (
-          <Link href={`/job/${job.id}`}>
-            <span
-              className="text-xs font-semibold underline underline-offset-2 shrink-0 whitespace-nowrap"
-              style={{ color: "oklch(0.50 0.07 125.0)", cursor: "pointer" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              צפה במשרה
-            </span>
-          </Link>
-        )}
+        {/* Hint text — pushes to the left */}
+        <span
+          className="ml-auto text-[10px] font-medium flex items-center gap-0.5 select-none"
+          style={{ color: "oklch(0.62 0.05 100)", letterSpacing: "0.01em" }}
+        >
+          לחץ על הכרטיסיה לפרטים נוספים
+          <ChevronLeft className="h-3 w-3 opacity-60" />
+        </span>
       </div>
     </motion.div>
   );

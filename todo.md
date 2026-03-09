@@ -953,3 +953,8 @@
 - [x] הוספת כפתור "הגש מועמדות" ל-JobCard compact (קרוסלה)
 - [x] מצב "נשלחה מועמדות ✓" כשכבר הוגשה מועמדות לאותה משרה
 - [x] חיבור apply mutation ו-appliedJobIds ב-HomeWorker, FindJobs, MyApplications
+
+## הסרת כפתור "צפה במשרה" והוספת hint text
+- [x] הסרת כפתור "צפה במשרה" / ChevronLeft מגרסה רגילה של JobCard
+- [x] הסרת כפתור "צפה במשרה" / ChevronLeft מגרסה compact של JobCard
+- [x] הוספת hint text מעוצב "לחץ על הכרטיסיה לפרטים נוספים" בתחתית כל כרטיסיה

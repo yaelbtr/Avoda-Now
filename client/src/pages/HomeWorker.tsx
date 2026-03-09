@@ -197,6 +197,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const utils = trpc.useUtils();
   const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
+  // Applied job IDs (from myApplications)
+  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const appliedJobIds = new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const applyMutation = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
+    onError: (e: { message: string }) => toast.error(e.message),
+  });
+  const handleApply = (jobId: number, message: string | undefined, origin: string) => {
+    if (!isAuthenticated) { onLoginRequired("כדי להגיש מועמדות יש להתחבר"); return; }
+    applyMutation.mutate({ jobId, message, origin });
+  };
   const handleSaveToggle = (jobId: number, save: boolean) => {
     if (!isAuthenticated) { onLoginRequired("כדי לשמור משרות יש להתחבר למערכת"); return; }
     if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
@@ -945,6 +956,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                       variant="compact"
                       onLoginRequired={onLoginRequired}
                       onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
+                      onApply={handleApply}
+                      isApplied={appliedJobIds.has(job.id)}
+                      isApplyPending={applyMutation.isPending && applyMutation.variables?.jobId === job.id}
                     />
                   </motion.div>
                 ))}
@@ -1095,6 +1109,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                     isSaved={savedIds.has(job.id)}
                     onSaveToggle={handleSaveToggle}
                     onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
+                    onApply={handleApply}
+                    isApplied={appliedJobIds.has(job.id)}
+                    isApplyPending={applyMutation.isPending && applyMutation.variables?.jobId === job.id}
                   />
               </motion.div>
             ))}

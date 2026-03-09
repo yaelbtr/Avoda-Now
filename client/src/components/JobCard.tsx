@@ -437,6 +437,38 @@ export function JobCard({
 
           {/* Action buttons */}
           <div className="flex items-center gap-2" dir="rtl">
+            {/* Apply / Applied */}
+            {!isExpired && onApply && (
+              isApplied ? (
+                <span
+                  className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-xl font-bold shrink-0"
+                  style={{ background: "oklch(0.65 0.22 160 / 0.10)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}
+                >
+                  <CheckCircle className="h-3 w-3" />הגשת
+                </span>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
+                    onApply(job.id, undefined, window.location.origin);
+                  }}
+                  disabled={isApplyPending}
+                  className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-xl font-bold shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                    color: "oklch(0.97 0.02 91)",
+                    opacity: isApplyPending ? 0.7 : 1,
+                  }}
+                >
+                  {isApplyPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                  הגש
+                </motion.button>
+              )
+            )}
+            {/* צפה במשרה */}
             {onCardClick ? (
               <motion.button
                 whileHover={{ scale: 1.05 }}

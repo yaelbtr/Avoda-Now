@@ -175,6 +175,17 @@ export default function FindJobs() {
   const utilsFj = trpc.useUtils();
   const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
+  // Applied job IDs
+  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const applyMutationFj = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => { utilsFj.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
+    onError: (e: { message: string }) => toast.error(e.message),
+  });
+  const handleApplyFj = (jobId: number, message: string | undefined, origin: string) => {
+    if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר"); return; }
+    applyMutationFj.mutate({ jobId, message, origin });
+  };
   const handleSaveToggle = (jobId: number, save: boolean) => {
     if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
     if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
@@ -741,6 +752,9 @@ export default function FindJobs() {
                   onSaveToggle={handleSaveToggle}
                   onLoginRequired={requireLogin}
                   onCardClick={(j) => { setBottomSheetJob(j as SearchJob); setBottomSheetOpen(true); }}
+                  onApply={handleApplyFj}
+                  isApplied={appliedJobIdsFj.has(job.id)}
+                  isApplyPending={applyMutationFj.isPending && applyMutationFj.variables?.jobId === job.id}
                 />
               </motion.div>
             ))}

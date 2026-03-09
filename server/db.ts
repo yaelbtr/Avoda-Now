@@ -595,6 +595,17 @@ export async function getMyApplications(workerId: number) {
     .orderBy(desc(applications.createdAt));
 }
 
+/** Returns the set of job IDs the worker has already applied to */
+export async function getAppliedJobIds(workerId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({ jobId: applications.jobId })
+    .from(applications)
+    .where(eq(applications.workerId, workerId));
+  return rows.map((r) => r.jobId);
+}
+
 export async function updateJobStatus(id: number, userId: number, status: Job["status"]) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

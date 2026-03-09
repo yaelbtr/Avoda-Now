@@ -49,8 +49,7 @@ async function startServer() {
   app.use(securityHeaders);
 
   // ── Body size limit: 8mb for photo upload, 10kb for all other API routes ───
-  app.use("/api/trpc/users.uploadProfilePhoto", express.json({ limit: "8mb" }));
-  app.use("/api/trpc/users.uploadProfilePhoto", express.urlencoded({ limit: "8mb", extended: true }));
+  app.use("/api/upload-photo", express.json({ limit: "8mb" }));
   app.use("/api/trpc", express.json({ limit: "10kb" }));
   app.use("/api/trpc", express.urlencoded({ limit: "10kb", extended: true }));
   app.use(express.json({ limit: "50mb" }));
@@ -81,6 +80,33 @@ async function startServer() {
       res.json(data);
     } catch (err) {
       res.status(500).json({ error: "geocode failed" });
+    }
+  });
+
+  // ── Profile photo upload endpoint (8mb limit, auth required) ──────────────
+  app.post("/api/upload-photo", async (req, res) => {
+    try {
+      const { storagePut } = await import("../storage");
+      const { getDb } = await import("../db");
+      const { users } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      // Verify auth via sdk
+      const { sdk: sdkInstance } = await import("./sdk");
+      const authUser = await sdkInstance.authenticateRequest(req).catch(() => null);
+      if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+      const { base64, mimeType } = req.body as { base64: string; mimeType: string };
+      if (!base64 || !mimeType) return res.status(400).json({ error: "Missing base64 or mimeType" });
+      const buffer = Buffer.from(base64, "base64");
+      const ext = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
+      const key = `profile-photos/${authUser.id}-${Date.now()}.${ext}`;
+      const { url } = await storagePut(key, buffer, mimeType);
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+      await db.update(users).set({ profilePhoto: url }).where(eq(users.id, authUser.id));
+      res.json({ url });
+    } catch (err) {
+      console.error("[upload-photo]", err);
+      res.status(500).json({ error: "Upload failed" });
     }
   });
 

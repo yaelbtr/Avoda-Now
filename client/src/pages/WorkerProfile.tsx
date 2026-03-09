@@ -130,10 +130,17 @@ export default function WorkerProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
 
-  const uploadPhotoMutation = trpc.user.uploadProfilePhoto.useMutation({
-    onSuccess: (data) => { setProfilePhoto(data.url); toast.success("תמונת הפרופיל עודכנה!"); },
-    onError: () => toast.error("שגיאה בהעלאת התמונה"),
-  });
+  const uploadPhoto = async (base64: string, mimeType: string) => {
+    const res = await fetch("/api/upload-photo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64, mimeType }),
+    });
+    if (!res.ok) throw new Error("Upload failed");
+    const data = await res.json() as { url: string };
+    setProfilePhoto(data.url);
+    toast.success("תמונת הפרופיל עודכנה!");
+  };
 
   // ── Wizard state ─────────────────────────────────────────────────────────────
   const [wizardStep, setWizardStep] = useState(1);
@@ -319,7 +326,7 @@ export default function WorkerProfile() {
                       reader.onload = async () => {
                         const base64 = (reader.result as string).split(",")[1];
                         const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
-                        await uploadPhotoMutation.mutateAsync({ base64, mimeType });
+                        await uploadPhoto(base64, mimeType);
                         setPhotoUploading(false);
                       };
                       reader.readAsDataURL(file);
@@ -771,7 +778,7 @@ export default function WorkerProfile() {
                   reader.onload = async () => {
                     const base64 = (reader.result as string).split(",")[1];
                     const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
-                    await uploadPhotoMutation.mutateAsync({ base64, mimeType });
+                    await uploadPhoto(base64, mimeType);
                     setPhotoUploading(false);
                   };
                   reader.readAsDataURL(file);

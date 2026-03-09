@@ -322,7 +322,21 @@ const jobsRouter = router({
         ? 12 * 60 * 60 * 1000
         : durationDays * 24 * 60 * 60 * 1000;
       const expiresAt = new Date(Date.now() + expiresMs);
-      const city = input.city ?? input.address.split(",")[0].trim();
+      // Extract city from address: use the last meaningful part (city name)
+      // e.g. "הירקון/מבצע קדש, תל אביב" → "תל אביב"
+      const extractCityFromAddress = (addr: string): string => {
+        const parts = addr.split(",").map(p => p.trim()).filter(Boolean);
+        // Last part is usually the city; skip country/zip if present
+        for (let i = parts.length - 1; i >= 0; i--) {
+          const part = parts[i];
+          // Skip parts that look like country names or zip codes
+          if (/^\d+$/.test(part)) continue; // zip code
+          if (part === "ישראל" || part === "Israel") continue;
+          return part;
+        }
+        return parts[0] ?? addr;
+      };
+      const city = input.city ?? extractCityFromAddress(input.address);
 
       const job = await createJob({
         ...input,

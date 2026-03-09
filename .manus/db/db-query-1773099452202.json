@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, title, address, city FROM jobs ORDER BY id DESC LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, title, address, city FROM jobs ORDER BY id DESC LIMIT 15;",
+  "rows": [
+    {
+      "id": "60004",
+      "title": "מלצר",
+      "address": "אברבנאל 129, בני ברק, ישראל",
+      "city": "אברבנאל 129"
+    },
+    {
+      "id": "60003",
+      "title": "מלצר",
+      "address": "אברבנאל 129, בני ברק, ישראל",
+      "city": "אברבנאל 129"
+    },
+    {
+      "id": "60002",
+      "title": "מלצר",
+      "address": "QJ96+J6 אשדוד, ישראל",
+      "city": "QJ96+J6 אשדוד"
+    },
+    {
+      "id": "60001",
+      "title": "מלצר",
+      "address": "Q32C+WQ ירושלים, ישראל",
+      "city": "Q32C+WQ ירושלים"
+    },
+    {
+      "id": "30003",
+      "title": "ביביסיטר",
+      "address": "אברבנאל 121א בני ברק",
+      "city": "אברבנאל 121א בני ברק"
+    },
+    {
+      "id": "30002",
+      "title": "מנקה רחובות",
+      "address": "הירקון/מבצע קדש, בני ברק, ישראל",
+      "city": "הירקון/מבצע קדש"
+    },
+    {
+      "id": "30001",
+      "title": "שליח אוכל",
+      "address": "אברבנאל 129, בני ברק, ישראל",
+      "city": "אברבנאל 129"
+    },
+    {
+      "id": "1",
+      "title": "שליח אוכל",
+      "address": "אברבנאל",
+      "city": "אברבנאל"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\taddress\tcity\n60004\tמלצר\tאברבנאל 129, בני ברק, ישראל\tאברבנאל 129\n60003\tמלצר\tאברבנאל 129, בני ברק, ישראל\tאברבנאל 129\n60002\tמלצר\tQJ96+J6 אשדוד, ישראל\tQJ96+J6 אשדוד\n60001\tמלצר\tQ32C+WQ ירושלים, ישראל\tQ32C+WQ ירושלים\n30003\tביביסיטר\tאברבנאל 121א בני ברק\tאברבנאל 121א בני ברק\n30002\tמנקה רחובות\tהירקון/מבצע קדש, בני ברק, ישראל\tהירקון/מבצע קדש\n30001\tשליח אוכל\tאברבנאל 129, בני ברק, ישראל\tאברבנאל 129\n1\tשליח אוכל\tאברבנאל\tאברבנאל\n",
+  "stderr": "",
+  "execution_time_ms": 1748
+}

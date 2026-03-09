@@ -901,4 +901,9 @@
 ## קומפוננטה אחידה JobCard
 - [x] יצירת JobCard קומפוננטה מרכזית לכל כרטיסי המשרות
 - [x] החלפת כרטיסי משרה ב-MyApplications (שמורות + מועמדויות)
-- [ ] החלפת כרטיסי משרה ב-FindJobs / HomeWorker (בשלב הבא)
+- [x] החלפת כרטיסי משרה ב-FindJobs / HomeWorker
+
+## החלפת כל כרטיסי המשרות ב-JobCard מרכזית
+- [x] החלפת כרטיסי משרה ב-HomeWorker
+- [x] החלפת כרטיסי משרה ב-FindJobs
+- [x] החלפת SearchJobCard usages בשאר הדפים

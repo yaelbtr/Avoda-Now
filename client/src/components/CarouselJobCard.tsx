@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Heart, Send, Building2, Share2, Mail, Copy, Check } from "lucide-react";
+import React from "react";
+import { useState, useRef, useEffect } from "react";
+import { MapPin, Heart, Send, Building2, Share2, Mail, Copy, Check, Loader2, CheckCircle } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   getCategoryIcon,
@@ -8,6 +9,8 @@ import {
   getStartTimeLabel,
 } from "@shared/categories";
 import { useAuth } from "@/contexts/AuthContext";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { shareJobOnWhatsApp, shareJobByEmail, shareJobOnFacebook, shareJobOnTelegram, copyJobLink } from "@/components/JobCard";
 
 interface CarouselJob {
@@ -192,15 +195,29 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
   const isUrgent = badge === "urgent";
   const isVolunteer = job.salaryType === "volunteer";
   const bgImage = getCategoryBg(job.category);
+  const isExpired = job.expiresAt ? new Date(job.expiresAt).getTime() < Date.now() : false;
 
-  const handleApply = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isAuthenticated) {
-      onLoginRequired?.("כדי להגיש מועמדות יש להתחבר");
-      return;
-    }
-    shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType);
-  };
+  const [showApplyPanel, setShowApplyPanel] = useState(false);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [appliedLocally, setAppliedLocally] = useState(false);
+
+  const applyMutation = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => {
+      setAppliedLocally(true);
+      setShowApplyPanel(false);
+      setApplyMessage("");
+      toast.success("מועמדות הוגשה בהצלחה!");
+    },
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setAppliedLocally(true);
+        setShowApplyPanel(false);
+        toast.info("כבר הגשת מועמדות למשרה זו");
+      } else {
+        toast.error(err.message || "שגיאה בהגשת מועמדות");
+      }
+    },
+  });
 
   return (
     <div
@@ -401,16 +418,69 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
           </div>
         )}
 
+        {/* Inline apply panel */}
+        <AnimatePresence>
+          {showApplyPanel && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ overflow: "hidden", marginBottom: 8 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ background: "#f8f5ee", borderRadius: 10, padding: "8px 10px", border: "1px solid #e8e2d6" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: OLIVE, marginBottom: 5 }}>הוסף הודעה (אופציונלי)</p>
+                <textarea
+                  value={applyMessage}
+                  onChange={e => setApplyMessage(e.target.value)}
+                  placeholder="לדוגמא: יש לי ניסיון..."
+                  maxLength={500}
+                  rows={2}
+                  dir="rtl"
+                  style={{ width: "100%", fontSize: 10, borderRadius: 6, padding: "5px 7px", border: "1px solid #e8e2d6", background: "white", resize: "none", outline: "none", fontFamily: "inherit", marginBottom: 5, boxSizing: "border-box" }}
+                />
+                <div style={{ display: "flex", gap: 5 }}>
+                  <button
+                    onClick={() => { setShowApplyPanel(false); setApplyMessage(""); }}
+                    style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #e8e2d6", background: "white", fontSize: 10, fontWeight: 600, color: "#888", cursor: "pointer" }}
+                  >ביטול</button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); applyMutation.mutate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin }); }}
+                    disabled={applyMutation.isPending}
+                    style={{ flex: 1, padding: "5px 10px", borderRadius: 7, border: "none", background: OLIVE, color: "white", fontSize: 10, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: applyMutation.isPending ? 0.7 : 1 }}
+                  >
+                    {applyMutation.isPending ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={11} />}
+                    שלח מועמדות
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* CTA button row */}
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {appliedLocally || isExpired ? (
+            appliedLocally ? (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderRadius: 12, background: "oklch(0.65 0.22 160 / 0.12)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)", fontSize: 12, fontWeight: 700 }}>
+                <CheckCircle size={13} />
+                הגשת מועמדות
+              </div>
+            ) : (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderRadius: 12, background: "#f5f5f5", color: "#999", fontSize: 12, fontWeight: 700 }}>
+                משרה לא פעילה
+              </div>
+            )
+          ) : (
           <button
-            onClick={(e) => { e.stopPropagation(); handleApply(e); }}
+            onClick={(e) => { e.stopPropagation(); if (!isAuthenticated) { onLoginRequired?.("כדי להגיש מועמדות יש להתחבר"); return; } setShowApplyPanel(v => !v); }}
             style={{
               flex: 1,
               padding: "10px 0",
               borderRadius: 12,
-              background: OLIVE,
-              color: "#ffffff",
+              background: showApplyPanel ? "#e8e2d6" : OLIVE,
+              color: showApplyPanel ? OLIVE : "#ffffff",
               fontSize: 13,
               fontWeight: 700,
               border: "none",
@@ -420,15 +490,16 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
               alignItems: "center",
               justifyContent: "center",
               gap: 6,
-              boxShadow: "0 3px 10px rgba(79,88,59,0.28)",
+              boxShadow: showApplyPanel ? "none" : "0 3px 10px rgba(79,88,59,0.28)",
               transition: "background 0.15s ease",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "#3d4530")}
-            onMouseLeave={e => (e.currentTarget.style.background = OLIVE)}
+            onMouseEnter={e => { if (!showApplyPanel) (e.currentTarget as HTMLButtonElement).style.background = "#3d4530"; }}
+            onMouseLeave={e => { if (!showApplyPanel) (e.currentTarget as HTMLButtonElement).style.background = OLIVE; }}
           >
             <span>הגישו אותי להצעה זו</span>
             <Send size={14} />
           </button>
+          )}
 <CarouselSharePopover job={job} />
         </div>
       </div>

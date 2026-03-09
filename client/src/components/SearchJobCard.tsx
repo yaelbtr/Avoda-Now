@@ -1,5 +1,9 @@
 import React from "react";
-import { MapPin, Heart, Send, Navigation, Building2, Bookmark, BookmarkCheck } from "lucide-react";
+import { MapPin, Heart, Send, Navigation, Building2, Bookmark, BookmarkCheck, Loader2, CheckCircle, ChevronLeft } from "lucide-react";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -33,6 +37,7 @@ interface SearchJobCardProps {
   job: SearchJob;
   showDistance?: boolean;
   isSaved?: boolean;
+  isApplied?: boolean;
   onSaveToggle?: (jobId: number, saved: boolean) => void;
   onLoginRequired?: (msg: string) => void;
   onCardClick?: (job: SearchJob) => void;
@@ -56,7 +61,7 @@ const CATEGORY_BG: Record<string, string> = {
 
 const OLIVE = "oklch(0.40 0.10 88)";
 
-export default function SearchJobCard({ job, showDistance, isSaved, onSaveToggle, onLoginRequired, onCardClick }: SearchJobCardProps) {
+export default function SearchJobCard({ job, showDistance, isSaved, isApplied: isAppliedProp, onSaveToggle, onLoginRequired, onCardClick }: SearchJobCardProps) {
   const { isAuthenticated } = useAuth();
   const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
   const catIcon = getCategoryIcon(job.category);
@@ -64,14 +69,34 @@ export default function SearchJobCard({ job, showDistance, isSaved, onSaveToggle
   const location = job.city ?? job.address;
   const isVolunteer = job.salaryType === "volunteer";
   const bgImage = CATEGORY_BG[job.category] ?? CATEGORY_BG.other;
+  const isExpired = job.expiresAt ? new Date(job.expiresAt).getTime() < Date.now() : false;
 
-  const handleApply = (e: React.MouseEvent) => {
+  const [showApplyPanel, setShowApplyPanel] = useState(false);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [appliedLocally, setAppliedLocally] = useState(false);
+  const isApplied = isAppliedProp || appliedLocally;
+
+  const applyMutation = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => {
+      setAppliedLocally(true);
+      setShowApplyPanel(false);
+      setApplyMessage("");
+      toast.success("מועמדות הוגשה בהצלחה!");
+    },
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setAppliedLocally(true);
+        setShowApplyPanel(false);
+        toast.info("כבר הגשת מועמדות למשרה זו");
+      } else {
+        toast.error(err.message || "שגיאה בהגשת מועמדות");
+      }
+    },
+  });
+
+  const handleApplySubmit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isAuthenticated) {
-      onLoginRequired?.("כדי להגיש מועמדות יש להתחבר");
-      return;
-    }
-    shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType);
+    applyMutation.mutate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin });
   };
 
   return (
@@ -299,9 +324,51 @@ export default function SearchJobCard({ job, showDistance, isSaved, onSaveToggle
         </button>
       )}
 
+      {/* ── Inline apply panel ── */}
+      <AnimatePresence>
+        {showApplyPanel && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: "hidden", position: "absolute", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #f0ede6", padding: "10px 12px", zIndex: 10 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <p style={{ fontSize: 11, fontWeight: 700, color: OLIVE, marginBottom: 6 }}>הוסף הודעה קצרה (אופציונלי)</p>
+            <textarea
+              value={applyMessage}
+              onChange={e => setApplyMessage(e.target.value)}
+              placeholder="לדוגמא: יש לי ניסיון רלוונטי..."
+              maxLength={500}
+              rows={2}
+              dir="rtl"
+              style={{ width: "100%", fontSize: 11, borderRadius: 8, padding: "6px 8px", border: "1px solid #e8e2d6", background: "white", resize: "none", outline: "none", fontFamily: "inherit", marginBottom: 6 }}
+            />
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                onClick={() => { setShowApplyPanel(false); setApplyMessage(""); }}
+                style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #e8e2d6", background: "white", fontSize: 11, fontWeight: 600, color: "#888", cursor: "pointer" }}
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleApplySubmit}
+                disabled={applyMutation.isPending}
+                style={{ flex: 1, padding: "6px 12px", borderRadius: 8, border: "none", background: OLIVE, color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: applyMutation.isPending ? 0.7 : 1 }}
+              >
+                {applyMutation.isPending ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={12} />}
+                שלח מועמדות
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Apply button (bottom strip) ── */}
+      {!isApplied && !isExpired && (
       <button
-        onClick={handleApply}
+        onClick={(e) => { e.stopPropagation(); if (!isAuthenticated) { onLoginRequired?.("כדי להגיש מועמדות יש להתחבר"); return; } setShowApplyPanel(v => !v); }}
         style={{
           position: "absolute",
           bottom: 0,
@@ -328,6 +395,13 @@ export default function SearchJobCard({ job, showDistance, isSaved, onSaveToggle
         <Send size={13} />
         הגישו אותי להצעה זו
       </button>
+      )}
+      {isApplied && (
+        <div style={{ position: "absolute", bottom: 8, left: 12, right: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "oklch(0.65 0.22 160 / 0.15)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.30)", borderRadius: 10, padding: "5px 10px", fontSize: 11, fontWeight: 700 }}>
+          <CheckCircle size={12} />
+          הגשת מועמדות
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
+import { buildJobPath } from "@/lib/jobSlug";
 import {
   MapPin, Clock, Users, Share2, Zap, Timer, Flame,
   Mail, Copy, Check, Bookmark, BookmarkCheck, Star, BookmarkX,
@@ -66,7 +67,7 @@ export interface JobCardProps {
   variant?: "default" | "compact";
 }
 
-const SITE_URL = "https://job-now.manus.space";
+const SITE_URL = "https://avodanow.co.il";
 
 // ── Share helpers (exported for use in other components) ──────────────────────
 
@@ -82,7 +83,7 @@ export function shareJobOnWhatsApp(
     salary && salaryType !== "volunteer"
       ? `₪${parseFloat(salary).toLocaleString("he-IL")} ${salaryType === "hourly" ? "לשעה" : salaryType === "daily" ? "ליום" : "לחודש"}`
       : "התנדבות";
-  const jobUrl = `${SITE_URL}/job/${jobId}`;
+  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
   const text = encodeURIComponent(
     `עבודה זמנית:\n${jobTitle}\n${location}\n${salaryStr}\nפרטים כאן:\n${jobUrl}`
   );
@@ -101,7 +102,7 @@ export function shareJobByEmail(
     salary && salaryType !== "volunteer"
       ? `₪${parseFloat(salary).toLocaleString("he-IL")} ${salaryType === "hourly" ? "לשעה" : salaryType === "daily" ? "ליום" : "לחודש"}`
       : "התנדבות";
-  const jobUrl = `${SITE_URL}/job/${jobId}`;
+  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
   const subject = encodeURIComponent(`עבודה זמנית: ${jobTitle}`);
   const body = encodeURIComponent(
     `שלום,\n\nמצאתי משרה שעשויה לעניין אותך:\n${jobTitle}\n${location}\n${salaryStr}\n\nפרטים נוספים:\n${jobUrl}`
@@ -109,19 +110,19 @@ export function shareJobByEmail(
   window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
 }
 
-export function shareJobOnFacebook(jobId: number) {
-  const jobUrl = encodeURIComponent(`${SITE_URL}/job/${jobId}`);
+export function shareJobOnFacebook(jobId: number, jobTitle?: string, city?: string | null) {
+  const jobUrl = encodeURIComponent(`${SITE_URL}${buildJobPath(jobId, jobTitle ?? String(jobId), city)}`);
   window.open(`https://www.facebook.com/sharer/sharer.php?u=${jobUrl}`, "_blank");
 }
 
 export function shareJobOnTelegram(jobTitle: string, jobId: number, city?: string | null) {
-  const jobUrl = `${SITE_URL}/job/${jobId}`;
+  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
   const text = encodeURIComponent(`עבודה זמנית: ${jobTitle}${city ? ` - ${city}` : ""}\n${jobUrl}`);
   window.open(`https://t.me/share/url?url=${encodeURIComponent(jobUrl)}&text=${text}`, "_blank");
 }
 
-export function copyJobLink(jobId: number): Promise<void> {
-  const jobUrl = `${SITE_URL}/job/${jobId}`;
+export function copyJobLink(jobId: number, jobTitle?: string, city?: string | null): Promise<void> {
+  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle ?? String(jobId), city)}`;
   return navigator.clipboard.writeText(jobUrl);
 }
 

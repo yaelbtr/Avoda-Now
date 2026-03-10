@@ -130,7 +130,7 @@ export default function Footer() {
               {SEO_CITIES.map((city) => (
                 <li key={city}>
                   <a
-                    href={`/find-jobs?city=${encodeURIComponent(city)}`}
+                    href={`/jobs/${encodeURIComponent(city)}`}
                     className="text-[13px] transition-colors"
                     style={{ color: FG_PRIMARY }}
                     onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
@@ -155,18 +155,104 @@ export default function Footer() {
               {SEO_CATEGORIES.map((cat) => (
                 <li key={cat.value}>
                   <a
-                    href={`/find-jobs?category=${cat.value}`}
+                    href={`/jobs/${cat.value}`}
                     className="text-[13px] transition-colors"
                     style={{ color: FG_PRIMARY }}
                     onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
                   >
-                    {cat.label}
+                    עבודות {cat.label}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
+        </div>
+
+        {/* ── Time-based SEO links ── */}
+        <div className="mb-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
+          <h2
+            className="font-bold text-[11px] uppercase mb-3 mt-6 text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            משרות לפי זמן
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
+            {[
+              { href: "/jobs/today", label: "עבודות להיום" },
+              { href: "/jobs/immediate", label: "עבודות מיידיות" },
+              { href: "/jobs/evening", label: "עבודות ערב" },
+              { href: "/jobs/weekend", label: "עבודות סוף שבוע" },
+            ].map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-[13px] transition-colors"
+                  style={{ color: FG_PRIMARY }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Best Jobs + FAQ links ── */}
+        <div className="mb-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
+          <h2
+            className="font-bold text-[11px] uppercase mb-3 mt-6 text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            משרות מומלצות
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
+            {[
+              { href: "/best/delivery-jobs", label: "עבודות שליחויות הטובות" },
+              { href: "/best/student-jobs", label: "עבודות לסטודנטים" },
+              { href: "/best/evening-jobs", label: "עבודות ערב הטובות" },
+              { href: "/best/weekend-jobs", label: "עבודות סוף שבוע" },
+              { href: "/best/immediate-jobs", label: "עבודות מיידיות" },
+            ].map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-[13px] transition-colors"
+                  style={{ color: FG_PRIMARY }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <h2
+            className="font-bold text-[11px] uppercase mb-3 mt-5 text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            שאלות נפוצות
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
+            {[
+              { href: "/faq/jobs", label: "שאלות נפוצות על עבודה" },
+              { href: "/faq/delivery-jobs", label: "שאלות על שליחויות" },
+              { href: "/faq/student-jobs", label: "שאלות על עבודות לסטודנטים" },
+            ].map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-[13px] transition-colors"
+                  style={{ color: FG_PRIMARY }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* ── Guide links ── */}
@@ -191,6 +277,39 @@ export default function Footer() {
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href="/guide/student-jobs"
+                className="text-[13px] transition-colors"
+                style={{ color: FG_PRIMARY }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+              >
+                מדריך: עבודות לסטודנטים
+              </a>
+            </li>
+            <li>
+              <a
+                href="/guide/delivery-salary"
+                className="text-[13px] transition-colors"
+                style={{ color: FG_PRIMARY }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+              >
+                מדריך: שכר שליח
+              </a>
+            </li>
+            <li>
+              <a
+                href="/guide/passover-jobs"
+                className="text-[13px] transition-colors"
+                style={{ color: FG_PRIMARY }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+              >
+                מדריך: עבודות לפסח
+              </a>
+            </li>
             <li>
               <a
                 href="/guide/temporary-jobs"

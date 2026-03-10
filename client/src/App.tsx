@@ -32,6 +32,9 @@ import MatchedWorkers from "./pages/MatchedWorkers";
 import JobsLanding from "./pages/JobsLanding";
 import GuideHub from "./pages/GuideHub";
 import GuidePage from "./pages/GuidePage";
+import GuideTopicPage from "./pages/GuideTopicPage";
+import FAQPage from "./pages/FAQPage";
+import BestJobsPage from "./pages/BestJobsPage";
 import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -105,10 +108,19 @@ function Router() {
                 <Route path="/jobs/:id/applications" component={JobApplications} />
                 <Route path="/jobs/today/:city" component={JobsLanding} />
                 <Route path="/jobs/today" component={JobsLanding} />
+                <Route path="/jobs/evening/:city" component={JobsLanding} />
+                <Route path="/jobs/evening" component={JobsLanding} />
+                <Route path="/jobs/weekend/:city" component={JobsLanding} />
+                <Route path="/jobs/weekend" component={JobsLanding} />
+                <Route path="/jobs/immediate/:city" component={JobsLanding} />
+                <Route path="/jobs/immediate" component={JobsLanding} />
                 <Route path="/jobs/:category/:city" component={JobsLanding} />
                 <Route path="/jobs/:slug" component={JobsLanding} />
                 <Route path="/guide/temporary-jobs/:category" component={GuidePage} />
                 <Route path="/guide/temporary-jobs" component={GuideHub} />
+                <Route path="/guide/:topic" component={GuideTopicPage} />
+                <Route path="/faq/:slug" component={FAQPage} />
+                <Route path="/best/:slug" component={BestJobsPage} />
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>

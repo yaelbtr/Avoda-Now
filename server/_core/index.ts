@@ -182,11 +182,42 @@ async function startServer() {
       for (const cat of fallbackCats) urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
 
+    // /jobs/today, /jobs/evening, /jobs/weekend, /jobs/immediate — time-based pages
+    const TIME_FILTERS = ["today", "evening", "weekend", "immediate"];
+    for (const tf of TIME_FILTERS) {
+      urls.push(`<url><loc>${baseUrl}/jobs/${tf}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+    }
+    // /jobs/{time}/{city} — time + city combos for top cities
+    const TOP_CITIES = ["תל אביב","ירושלים","חיפה","ראשון לציון","פתח תקווה","אשדוד","נתניה","באר שבע","בני ברק","רמת גן"];
+    for (const tf of TIME_FILTERS) {
+      for (const city of TOP_CITIES) {
+        urls.push(`<url><loc>${baseUrl}/jobs/${tf}/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`);
+      }
+    }
+
     // /guide/temporary-jobs hub + all category sub-pages (always included — static content)
     const GUIDE_CATEGORIES = ["delivery","warehouse","kitchen","cleaning","childcare","eldercare","security","construction","retail","events","agriculture"];
     urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
     for (const cat of GUIDE_CATEGORIES) {
       urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs/${cat}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
+    }
+
+    // /guide/:topic — standalone guide pages
+    const GUIDE_TOPICS = ["student-jobs", "delivery-salary", "passover-jobs"];
+    for (const topic of GUIDE_TOPICS) {
+      urls.push(`<url><loc>${baseUrl}/guide/${topic}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
+    }
+
+    // /faq/:slug — FAQ pages
+    const FAQ_SLUGS = ["jobs", "delivery-jobs", "student-jobs"];
+    for (const slug of FAQ_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/faq/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`);
+    }
+
+    // /best/:slug — curated best-jobs pages
+    const BEST_SLUGS = ["delivery-jobs", "student-jobs", "evening-jobs", "weekend-jobs", "immediate-jobs"];
+    for (const slug of BEST_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/best/${slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
@@ -215,7 +246,11 @@ async function startServer() {
       const jobs = await getActiveJobs(100);
       const items = jobs.map((j) => {
         const title = `${j.title}${j.city ? ` ב${j.city}` : ""}`;
-        const link = `${baseUrl}/job/${j.id}`;
+        // Build slug-based URL: /job/{id}-{slug}
+        const titleSlug = j.title.trim().replace(/[\s_]+/g, "-").replace(/[^\u0590-\u05FF\w-]/g, "").replace(/-{2,}/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+        const citySlug = j.city ? j.city.trim().replace(/[\s_]+/g, "-").replace(/[^\u0590-\u05FF\w-]/g, "").slice(0, 30) : "";
+        const slug = [titleSlug, citySlug].filter(Boolean).join("-");
+        const link = slug ? `${baseUrl}/job/${j.id}-${slug}` : `${baseUrl}/job/${j.id}`;
         const pubDate = new Date(j.createdAt).toUTCString();
         const salary = j.salary
           ? `שכר: ₪${j.salary} ל${j.salaryType === "hourly" ? "שעה" : j.salaryType === "daily" ? "יום" : "חודש"}`

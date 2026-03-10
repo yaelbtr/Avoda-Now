@@ -1184,3 +1184,36 @@
 ## FindJobs — Move "דחוף להיום" Button
 - [x] Remove "דחוף להיום" button from inside the filter panel
 - [x] Add "דחוף להיום" button next to the green "עבודות קרוב אלי" button at the top
+
+## Full SEO Architecture Implementation
+
+### Phase 2 — Slug-based Job Pages
+- [ ] Add slug generation utility (Hebrew title → URL-safe slug)
+- [ ] Update /job/:id route to also accept /job/:id-:slug pattern
+- [ ] Update all job links across the app to use slug URLs
+- [ ] Verify JobPosting JSON-LD is present on job detail pages
+
+### Phase 3 — Time-based SEO Pages
+- [ ] Add /jobs/immediate route (עבודות מיידיות)
+- [ ] Add /jobs/evening and /jobs/evening/:city routes
+- [ ] Add /jobs/weekend and /jobs/weekend/:city routes
+- [ ] Extend JobsLanding to handle immediate/evening/weekend time filters
+
+### Phase 4 — Guide Pages (extended)
+- [ ] Add /guide/:topic generic route
+- [ ] Add guide topics: student-jobs, delivery-salary, passover-jobs
+- [ ] Add CTA links from each guide to relevant /jobs/* pages
+
+### Phase 5 — Structured Data & Sitemap
+- [ ] Add WebSite + SearchAction JSON-LD to homepage
+- [ ] Add Organization JSON-LD to homepage
+- [ ] Update sitemap to include all job pages, time-based pages, guide pages
+- [ ] Add noindex to zero-result pages in JobsLanding
+
+## AI Visibility Pages (2026-03-10)
+- [x] Create /faq/:slug pages with FAQPage JSON-LD schema (jobs, delivery-jobs, student-jobs)
+- [x] Create /best/:slug curated job pages with ItemList + FAQPage JSON-LD (delivery, student, evening, weekend, immediate)
+- [x] Register /faq/:slug and /best/:slug routes in App.tsx
+- [x] Add /faq/* and /best/* pages to sitemap.xml
+- [x] Add FAQ and best-jobs links to Footer
+- [x] Write vitest tests for FAQ and best-jobs data integrity (207 tests passing)

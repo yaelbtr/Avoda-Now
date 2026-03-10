@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
+import { parseJobId, buildJobPath } from "@/lib/jobSlug";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,7 +81,8 @@ const sectionVariants = {
 export default function JobDetails() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const jobId = parseInt(params.id ?? "0");
+  // Accept both /job/42 and /job/42-שליח-בתל-אביב formats
+  const jobId = parseJobId(params.id ?? "0");
   const { isAuthenticated, user } = useAuth();
 
   const { data: job, isLoading, error } = trpc.jobs.getById.useQuery(
@@ -149,7 +151,9 @@ export default function JobDetails() {
   const lat = parseFloat(job.latitude as string);
   const lng = parseFloat(job.longitude as string);
   const isVolunteer = job.salaryType === "volunteer";
-  const jobUrl = `${SITE_URL}/job/${job.id}`;
+  // Use slug-based URL for canonical and sharing
+  const jobPath = buildJobPath(job.id, job.title, job.city);
+  const jobUrl = `${SITE_URL}${jobPath}`;
   const shareText = encodeURIComponent(`מצאתי עבודה באתר AvodaNow 💼\n${job.title}\n${jobUrl}`);
   // contactPhone is never sent to workers — contact is via application only
 
@@ -185,7 +189,7 @@ export default function JobDetails() {
   useSEO({
     title: seoJobTitle,
     description: job.description.slice(0, 200),
-    canonical: `/job/${job.id}`,
+    canonical: jobPath,
     ogImage: `${SITE_URL}/og-image.png`,
   });
 
@@ -194,7 +198,7 @@ export default function JobDetails() {
     { name: "בית", path: "/" },
     { name: "חיפוש עבודה", path: "/find-jobs" },
     ...(jobCity ? [{ name: `עבודות ב${jobCity}`, path: `/jobs/${encodeURIComponent(jobCity)}` }] : []),
-    { name: job.title, path: `/job/${job.id}` },
+    { name: job.title, path: jobPath },
   ]);
 
   // ── JSON-LD JobPosting structured data ──────────────────────────────────

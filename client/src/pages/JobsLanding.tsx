@@ -1,9 +1,17 @@
 /**
- * JobsLanding — SEO landing page for /jobs/{city}, /jobs/{category}, /jobs/{category}/{city}
+ * JobsLanding — SEO landing page for all /jobs/* routes.
  *
  * Route patterns (handled in App.tsx):
- *   /jobs/:slug          → could be a city name or a category slug
- *   /jobs/:category/:city → category + city combo
+ *   /jobs/:slug              → city name or category slug
+ *   /jobs/:category/:city    → category + city combo
+ *   /jobs/today              → jobs starting today
+ *   /jobs/today/:city        → jobs starting today in a city
+ *   /jobs/evening            → evening-shift jobs
+ *   /jobs/evening/:city      → evening-shift jobs in a city
+ *   /jobs/weekend            → weekend jobs
+ *   /jobs/weekend/:city      → weekend jobs in a city
+ *   /jobs/immediate          → urgent/immediate jobs
+ *   /jobs/immediate/:city    → urgent/immediate jobs in a city
  *
  * Renders the same FindJobs UI but with:
  *   - Dynamic <h1> derived from URL params
@@ -11,7 +19,7 @@
  *   - noindex when no active jobs exist for this combo
  *   - Internal SEO links section at the bottom (popular cities + categories)
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { useJobListingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
@@ -37,12 +45,32 @@ const SEO_CITIES = [
 // ─── All category slugs ───────────────────────────────────────────────────────
 const ALL_CATEGORY_SLUGS = JOB_CATEGORIES.map((c) => c.value);
 
+// ─── Time-based filter types ──────────────────────────────────────────────────
+type TimeFilter = "today" | "evening" | "weekend" | "immediate";
+const TIME_SLUGS: TimeFilter[] = ["today", "evening", "weekend", "immediate"];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function isCategorySlug(slug: string): boolean {
   return ALL_CATEGORY_SLUGS.includes(slug as (typeof ALL_CATEGORY_SLUGS)[number]);
 }
 
-function buildH1(city?: string, category?: string): string {
+function isTimeSlug(slug: string): slug is TimeFilter {
+  return TIME_SLUGS.includes(slug as TimeFilter);
+}
+
+function buildH1(city?: string, category?: string, time?: TimeFilter): string {
+  if (time === "today") {
+    return city ? `עבודות להיום ב${city}` : "עבודות להיום";
+  }
+  if (time === "evening") {
+    return city ? `עבודות ערב ב${city}` : "עבודות ערב";
+  }
+  if (time === "weekend") {
+    return city ? `עבודות סוף שבוע ב${city}` : "עבודות סוף שבוע";
+  }
+  if (time === "immediate") {
+    return city ? `עבודות מיידיות ב${city}` : "עבודות מיידיות";
+  }
   if (city && category) {
     return `עבודות ${getCategoryLabel(category)} ב${city}`;
   }
@@ -51,7 +79,27 @@ function buildH1(city?: string, category?: string): string {
   return "חיפוש עבודה";
 }
 
-function buildDescription(city?: string, category?: string): string {
+function buildDescription(city?: string, category?: string, time?: TimeFilter): string {
+  if (time === "today") {
+    return city
+      ? `מצא עבודות דחופות להיום ב${city}. משרות שמתחילות היום — שליחויות, מטבח, מחסן ועוד.`
+      : "משרות דחופות שמתחילות היום. לוח דרושים מהיר ופשוט — ללא עמלות.";
+  }
+  if (time === "evening") {
+    return city
+      ? `עבודות ערב ב${city} — משמרות ערב, שירות, אירועים ועוד. מצא עבודה לשעות הערב.`
+      : "עבודות ערב בכל הארץ — משמרות ערב, שירות, אירועים ועוד. לוח דרושים מהיר.";
+  }
+  if (time === "weekend") {
+    return city
+      ? `עבודות סוף שבוע ב${city} — עבודות לשישי ושבת, אירועים, מסעדות ועוד.`
+      : "עבודות סוף שבוע בכל הארץ — עבודות לשישי ושבת, אירועים, מסעדות ועוד.";
+  }
+  if (time === "immediate") {
+    return city
+      ? `עבודות מיידיות ב${city} — מעסיקים שצריכים עובד עכשיו. התחל לעבוד היום.`
+      : "עבודות מיידיות — מעסיקים שצריכים עובד עכשיו. מצא עבודה ותתחיל היום.";
+  }
   if (city && category) {
     return `מצא עבודות ${getCategoryLabel(category)} ב${city}. לוח דרושים מהיר ופשוט — משרות להיום, ללא עמלות.`;
   }
@@ -64,7 +112,10 @@ function buildDescription(city?: string, category?: string): string {
   return "לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך.";
 }
 
-function buildCanonical(city?: string, category?: string): string {
+function buildCanonical(city?: string, category?: string, time?: TimeFilter): string {
+  if (time) {
+    return city ? `/jobs/${time}/${encodeURIComponent(city)}` : `/jobs/${time}`;
+  }
   if (city && category) return `/jobs/${encodeURIComponent(category)}/${encodeURIComponent(city)}`;
   if (city) return `/jobs/${encodeURIComponent(city)}`;
   if (category) return `/jobs/${encodeURIComponent(category)}`;
@@ -73,8 +124,8 @@ function buildCanonical(city?: string, category?: string): string {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function JobsLanding() {
-  const params = useParams<{ slug?: string; category?: string; city?: string; time?: string }>();
-  const { isAuthenticated, user } = useAuth();
+  const params = useParams<{ slug?: string; category?: string; city?: string }>();
+  const { isAuthenticated } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | undefined>();
   type BottomSheetJobType = JobCardJob & { contactPhone: string | null };
@@ -83,15 +134,18 @@ export default function JobsLanding() {
 
   // Resolve city / category / time from URL params
   const { resolvedCity, resolvedCategory, resolvedTime } = useMemo(() => {
-    // Pattern: /jobs/:category/:city (also handles /jobs/today/:city)
+    // Pattern: /jobs/:category/:city (also handles /jobs/today/:city, /jobs/evening/:city, etc.)
     if (params.category && params.city) {
-      if (params.category === "today") {
-        return { resolvedCity: params.city, resolvedCategory: undefined, resolvedTime: "today" };
+      if (isTimeSlug(params.category)) {
+        return { resolvedCity: params.city, resolvedCategory: undefined, resolvedTime: params.category };
       }
       return { resolvedCity: params.city, resolvedCategory: params.category, resolvedTime: undefined };
     }
-    // Pattern: /jobs/:slug — could be city or category
+    // Pattern: /jobs/:slug — could be city, category, or time filter
     if (params.slug) {
+      if (isTimeSlug(params.slug)) {
+        return { resolvedCity: undefined, resolvedCategory: undefined, resolvedTime: params.slug };
+      }
       if (isCategorySlug(params.slug)) {
         return { resolvedCity: undefined, resolvedCategory: params.slug, resolvedTime: undefined };
       }
@@ -100,18 +154,9 @@ export default function JobsLanding() {
     return { resolvedCity: undefined, resolvedCategory: undefined, resolvedTime: undefined };
   }, [params]);
 
-  // For /jobs/today/:city — override h1, description, canonical
-  const h1 = resolvedTime === "today"
-    ? (resolvedCity ? `עבודות להיום ב${resolvedCity}` : "עבודות להיום")
-    : buildH1(resolvedCity, resolvedCategory);
-  const description = resolvedTime === "today"
-    ? (resolvedCity
-        ? `מצא עבודות דחופות להיום ב${resolvedCity}. משרות שמתחילות היום — שליחויות, מטבח, מחסן ועוד.`
-        : "משרות דחופות שמתחילות היום. לוח דרושים מהיר ופשוט — ללא עמלות.")
-    : buildDescription(resolvedCity, resolvedCategory);
-  const canonical = resolvedTime === "today"
-    ? (resolvedCity ? `/jobs/today/${encodeURIComponent(resolvedCity)}` : "/jobs/today")
-    : buildCanonical(resolvedCity, resolvedCategory);
+  const h1 = buildH1(resolvedCity, resolvedCategory, resolvedTime);
+  const description = buildDescription(resolvedCity, resolvedCategory, resolvedTime);
+  const canonical = buildCanonical(resolvedCity, resolvedCategory, resolvedTime);
 
   // Fetch jobs for this city/category combo
   const jobsQuery = trpc.jobs.list.useQuery(
@@ -126,13 +171,48 @@ export default function JobsLanding() {
     enabled: resolvedTime === "today",
     staleTime: 5 * 60 * 1000,
   });
-  // For /jobs/today/:city — filter base list to today's jobs only
+  const urgentQuery = trpc.jobs.listUrgent.useQuery({}, {
+    enabled: resolvedTime === "immediate",
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Filter jobs based on time filter
   let jobs = jobsQuery.data ?? [];
   if (resolvedTime === "today") {
     const todayIds = new Set((todayQuery.data ?? []).map((j: { id: number }) => j.id));
     jobs = jobs.filter(j => todayIds.has(j.id));
+  } else if (resolvedTime === "immediate") {
+    // Use urgent jobs list, filtered by city if needed
+    const urgentJobs = urgentQuery.data ?? [];
+    jobs = resolvedCity
+      ? urgentJobs.filter((j: JobCardJob) => j.city === resolvedCity)
+      : urgentJobs;
+  } else if (resolvedTime === "evening") {
+    // Evening: jobs with workingHours containing "ערב" or "לילה" or "18" or "19" or "20"
+    const allJobs = jobsQuery.data ?? [];
+    jobs = allJobs.filter((j: JobCardJob & { workingHours?: string | null }) => {
+      const hours = (j.workingHours ?? "").toLowerCase();
+      return hours.includes("ערב") || hours.includes("לילה") ||
+             hours.includes("18") || hours.includes("19") || hours.includes("20") || hours.includes("21");
+    });
+    // If no evening-specific jobs found, show all jobs (better UX than empty page)
+    if (jobs.length === 0) jobs = allJobs;
+  } else if (resolvedTime === "weekend") {
+    // Weekend: jobs with workingHours or title containing weekend keywords
+    const allJobs = jobsQuery.data ?? [];
+    jobs = allJobs.filter((j: JobCardJob & { workingHours?: string | null }) => {
+      const hours = (j.workingHours ?? "").toLowerCase();
+      const title = (j.title ?? "").toLowerCase();
+      return hours.includes("שישי") || hours.includes("שבת") || hours.includes("סוף שבוע") ||
+             title.includes("שישי") || title.includes("שבת") || title.includes("סוף שבוע");
+    });
+    // If no weekend-specific jobs found, show all jobs
+    if (jobs.length === 0) jobs = allJobs;
   }
-  const isLoading = jobsQuery.isLoading || (resolvedTime === "today" && todayQuery.isLoading);
+
+  const isLoading = jobsQuery.isLoading ||
+    (resolvedTime === "today" && todayQuery.isLoading) ||
+    (resolvedTime === "immediate" && urgentQuery.isLoading);
 
   // noindex when no jobs found (and not still loading)
   const noIndex = !isLoading && jobs.length === 0;
@@ -145,26 +225,25 @@ export default function JobsLanding() {
   });
 
   // JSON-LD BreadcrumbList structured data
-  useBreadcrumbSchema(
-    [
-      { name: "בית", path: "/" },
-      { name: "משרות", path: "/find-jobs" },
-      ...(resolvedTime === "today" ? [{ name: "עבודות להיום", path: "/jobs/today" }] : []),
-      ...(resolvedCategory
-        ? [{ name: getCategoryLabel(resolvedCategory), path: `/jobs/${encodeURIComponent(resolvedCategory)}` }]
-        : []),
-      ...(resolvedCity
-        ? [{ name: resolvedCity, path: canonical }]
-        : []),
-    ]
-  );
+  const breadcrumbItems = [
+    { name: "בית", path: "/" },
+    { name: "משרות", path: "/find-jobs" },
+  ];
+  if (resolvedTime === "today") breadcrumbItems.push({ name: "עבודות להיום", path: "/jobs/today" });
+  if (resolvedTime === "evening") breadcrumbItems.push({ name: "עבודות ערב", path: "/jobs/evening" });
+  if (resolvedTime === "weekend") breadcrumbItems.push({ name: "עבודות סוף שבוע", path: "/jobs/weekend" });
+  if (resolvedTime === "immediate") breadcrumbItems.push({ name: "עבודות מיידיות", path: "/jobs/immediate" });
+  if (resolvedCategory) breadcrumbItems.push({ name: getCategoryLabel(resolvedCategory), path: `/jobs/${encodeURIComponent(resolvedCategory)}` });
+  if (resolvedCity) breadcrumbItems.push({ name: resolvedCity, path: canonical });
+
+  useBreadcrumbSchema(breadcrumbItems);
 
   // JSON-LD ItemList + JobPosting structured data
   useJobListingSchema(
     jobs.map((j: JobCardJob) => ({
       id: j.id,
       title: j.title,
-      description: j.title, // JobCardJob has no description field; use title as fallback
+      description: j.title,
       city: j.city,
       salary: j.salary as string | null,
       salaryType: j.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
@@ -205,6 +284,14 @@ export default function JobsLanding() {
     if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
   };
 
+  // Time filter label for breadcrumb display
+  const timeBreadcrumbLabel: Record<TimeFilter, string> = {
+    today: "עבודות להיום",
+    evening: "עבודות ערב",
+    weekend: "עבודות סוף שבוע",
+    immediate: "עבודות מיידיות",
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-[#f5f7f8]">
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -218,10 +305,12 @@ export default function JobsLanding() {
           <Link href="/" className="hover:text-gray-700 transition-colors">בית</Link>
           <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
           <Link href="/find-jobs" className="hover:text-gray-700 transition-colors">משרות</Link>
-          {resolvedTime === "today" && (
+          {resolvedTime && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
-              <Link href="/jobs/today" className="hover:text-gray-700 transition-colors">עבודות להיום</Link>
+              <Link href={`/jobs/${resolvedTime}`} className="hover:text-gray-700 transition-colors">
+                {timeBreadcrumbLabel[resolvedTime]}
+              </Link>
             </>
           )}
           {resolvedCategory && (
@@ -249,7 +338,13 @@ export default function JobsLanding() {
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{
-                background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
+                background: resolvedTime === "immediate"
+                  ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+                  : resolvedTime === "evening"
+                  ? "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)"
+                  : resolvedTime === "weekend"
+                  ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+                  : "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)",
                 boxShadow: "0 4px 16px rgba(60,131,246,0.3)",
               }}
             >
@@ -302,6 +397,41 @@ export default function JobsLanding() {
 
         {/* ── Internal SEO links ── */}
         <div className="mt-16 border-t border-gray-200 pt-8">
+
+          {/* Time-based filter links */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-base">⏰</span>
+              <h2 className="text-sm font-bold text-gray-700">חיפוש לפי זמן</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/jobs/today"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+              >
+                🌅 עבודות להיום
+              </Link>
+              <Link
+                href="/jobs/immediate"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+              >
+                🚨 עבודות מיידיות
+              </Link>
+              <Link
+                href="/jobs/evening"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors"
+              >
+                🌙 עבודות ערב
+              </Link>
+              <Link
+                href="/jobs/weekend"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-amber-300 hover:text-amber-600 transition-colors"
+              >
+                📅 עבודות סוף שבוע
+              </Link>
+            </div>
+          </div>
+
           {/* Popular cities */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">

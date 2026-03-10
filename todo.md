@@ -1076,3 +1076,21 @@
 
 ## Bug Fix — MobileDrawer Bottom Nav Overlap
 - [x] Fix MobileDrawer: bottom content hidden under MobileBottomNav — add pb-20 to nav
+
+## SEO Landing Pages
+- [ ] Create /jobs/{city}, /jobs/{category}, /jobs/{category}/{city} routes
+- [ ] JobsLanding page: dynamic H1, meta title/description, noindex when no jobs
+- [ ] Add internal SEO links section (popular cities + categories) at bottom of JobsLanding
+- [ ] Dynamic sitemap: include /jobs/* routes only for city/category combos with active jobs
+- [ ] Update robots.txt to allow /jobs/*
+
+## Auto-Close MobileDrawer on Scroll
+- [ ] Close MobileDrawer automatically when user scrolls the main page
+
+## SEO Landing Pages & Drawer Scroll Close (Session Mar 10)
+- [x] Create JobsLanding page with dynamic H1/meta/noindex and internal SEO links
+- [x] Add /jobs/:slug and /jobs/:category/:city routes to App.tsx
+- [x] Add getJobCountByCityAndCategory function to db.ts
+- [x] Add seoRouter with cityJobCounts procedure to routers.ts
+- [x] Update sitemap.xml to be dynamic with real job counts from DB (10min cache)
+- [x] Auto-close MobileDrawer when user scrolls down >=60px

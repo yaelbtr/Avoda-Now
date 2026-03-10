@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +35,22 @@ export default function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
+  const lastScrollY = useRef(0);
+
+  // Close drawer when user scrolls down ≥ 60px
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY - lastScrollY.current > 60) {
+        setMobileOpen(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    lastScrollY.current = window.scrollY;
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [mobileOpen]);
 
   // ── Unread applications badge ────────────────────────────────────────────
   // lastSeenAt is stored in localStorage when worker visits /my-applications

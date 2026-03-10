@@ -16,7 +16,7 @@ import {
   antiEnumeration,
 } from "../security";
 import { makeRequest } from "./map";
-import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent } from "../db";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory } from "../db";
 import { sendSms } from "../sms";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -110,38 +110,74 @@ async function startServer() {
     }
   });
 
-  // ── SEO: sitemap.xml ────────────────────────────────────────────────────────
-  app.get("/sitemap.xml", (_req, res) => {
+  // ── SEO: sitemap.xml (dynamic — includes /jobs/* routes with real job counts) ────────────────
+  // In-process cache: regenerate at most once every 10 minutes
+  let _sitemapCache: { xml: string; ts: number } | null = null;
+  const SITEMAP_CACHE_TTL = 10 * 60 * 1000;
+
+  app.get("/sitemap.xml", async (_req, res) => {
+    const now = Date.now();
+    if (_sitemapCache && now - _sitemapCache.ts < SITEMAP_CACHE_TTL) {
+      res.setHeader("Content-Type", "application/xml");
+      res.setHeader("Cache-Control", "public, max-age=600");
+      return res.send(_sitemapCache.xml);
+    }
+
     const baseUrl = "https://avodanow.co.il";
-    const cities = [
-      "תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה",
-      "אשדוד", "נתניה", "באר שבע", "בני ברק", "רמת גן",
-      "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
-    ];
-    const categories = [
-      "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
-      "security", "construction", "childcare", "eldercare", "retail",
-      "events", "other",
-    ];
-    const now = new Date().toISOString().split("T")[0];
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    // Static pages
     const urls: string[] = [
       `<url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
       `<url><loc>${baseUrl}/find-jobs</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>`,
       `<url><loc>${baseUrl}/post-job</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`,
     ];
-    for (const city of cities) {
-      urls.push(`<url><loc>${baseUrl}/find-jobs?city=${encodeURIComponent(city)}</loc><lastmod>${now}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
-    }
-    for (const cat of categories) {
-      urls.push(`<url><loc>${baseUrl}/find-jobs?category=${encodeURIComponent(cat)}</loc><lastmod>${now}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
-    }
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
-    res.setHeader("Content-Type", "application/xml");
-    res.setHeader("Cache-Control", "public, max-age=3600");
-    res.send(xml);
-  });
 
-  // ── SEO: robots.txt ──────────────────────────────────────────────────────────
+    try {
+      // Dynamic pages: only include city/category combos that have active jobs
+      const jobCounts = await getJobCountByCityAndCategory();
+
+      // Build sets of cities and categories that have jobs
+      const activeCities = new Set<string>();
+      const activeCategories = new Set<string>();
+      const activeCombos = new Set<string>(); // "category|city"
+
+      for (const row of jobCounts) {
+        if (row.city) activeCities.add(row.city);
+        if (row.category) activeCategories.add(row.category);
+        if (row.city && row.category) activeCombos.add(`${row.category}|${row.city}`);
+      }
+
+      // /jobs/{city}
+      for (const city of Array.from(activeCities)) {
+        urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+      }
+
+      // /jobs/{category}
+      for (const cat of Array.from(activeCategories)) {
+        urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+      }
+
+      // /jobs/{category}/{city}
+      for (const combo of Array.from(activeCombos)) {
+        const [cat, city] = combo.split("|");
+        urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`);
+      }
+    } catch (err) {
+      console.warn("[sitemap] DB query failed, using static fallback:", err);
+      // Fallback: add static city/category pages
+      const fallbackCities = ["תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה"];
+      const fallbackCats = ["delivery", "warehouse", "kitchen", "cleaning", "security"];
+      for (const city of fallbackCities) urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+      for (const cat of fallbackCats) urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+    }
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+    _sitemapCache = { xml, ts: Date.now() };
+    res.setHeader("Content-Type", "application/xml");
+    res.setHeader("Cache-Control", "public, max-age=600");
+    res.send(xml);
+  });  // ── SEO: robots.txt ──────────────────────────────────────────────────────────
   app.get("/robots.txt", (_req, res) => {
     const content = [
       "User-agent: *",

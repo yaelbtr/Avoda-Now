@@ -66,6 +66,7 @@ import {
   countRecentPhoneChangeFailures,
   rateWorker,
   getExistingRating,
+  getJobCountByCityAndCategory,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1402,8 +1403,26 @@ const ratingsRouter = router({
       return existing ?? null;
     }),
 });
+// ─── SEO Router ─────────────────────────────────────────────────────
 
-// ─── App Router ───────────────────────────────────────────────────
+// Simple in-process cache for SEO stats (10 min TTL)
+let _seoStatsCache: { data: Awaited<ReturnType<typeof getJobCountByCityAndCategory>>; ts: number } | null = null;
+const SEO_CACHE_TTL_MS = 10 * 60 * 1000;
+
+const seoRouter = router({
+  /** Returns job counts per city/category for dynamic sitemap and SEO pages */
+  cityJobCounts: publicProcedure.query(async () => {
+    const now = Date.now();
+    if (_seoStatsCache && now - _seoStatsCache.ts < SEO_CACHE_TTL_MS) {
+      return _seoStatsCache.data;
+    }
+    const data = await getJobCountByCityAndCategory();
+    _seoStatsCache = { data, ts: now };
+    return data;
+  }),
+});
+
+// ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
@@ -1416,6 +1435,6 @@ export const appRouter = router({
   push: pushRouter,
   savedJobs: savedJobsRouter,
   ratings: ratingsRouter,
+  seo: seoRouter,
 });
-
 export type AppRouter = typeof appRouter;

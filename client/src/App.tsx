@@ -29,6 +29,7 @@ import ApplicationView from "./pages/ApplicationView";
 import JobApplications from "./pages/JobApplications";
 import MyApplications from "./pages/MyApplications";
 import MatchedWorkers from "./pages/MatchedWorkers";
+import JobsLanding from "./pages/JobsLanding";
 import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -100,6 +101,8 @@ function Router() {
                 <Route path="/worker/:id" component={PublicWorkerProfile} />
                 <Route path="/applications/:id" component={ApplicationView} />
                 <Route path="/jobs/:id/applications" component={JobApplications} />
+                <Route path="/jobs/:category/:city" component={JobsLanding} />
+                <Route path="/jobs/:slug" component={JobsLanding} />
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>

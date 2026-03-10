@@ -1558,6 +1558,24 @@ export async function rateWorker(
   return { isNew, newAverage };
 }
 
+/** Returns job counts grouped by city and category — used for dynamic SEO sitemap */
+export async function getJobCountByCityAndCategory(): Promise<
+  Array<{ city: string | null; category: string | null; cnt: number }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      city: jobs.city,
+      category: jobs.category,
+      cnt: sql<number>`COUNT(*)`,
+    })
+    .from(jobs)
+    .where(or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!)
+    .groupBy(jobs.city, jobs.category);
+  return rows.map((r) => ({ city: r.city ?? null, category: r.category ?? null, cnt: Number(r.cnt) }));
+}
+
 /** Get the existing rating from an employer for a worker (for pre-filling UI) */
 export async function getExistingRating(workerId: number, employerId: number) {
   const db = await getDb();

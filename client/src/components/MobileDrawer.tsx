@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Flame, Briefcase, Bookmark, User, PlusCircle, Users,
-  RefreshCw, RotateCcw, Shield, LogOut, X,
+  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -252,6 +252,67 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </button>
               )}
             </nav>
+
+            {/* Legal & Contact footer */}
+            <div
+              className="shrink-0 px-3 pb-4 pt-2"
+              style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
+            >
+              {/* Legal links */}
+              <p style={SECTION_LABEL_STYLE}>מידע משפטי</p>
+              <div className="flex flex-col gap-0.5 mb-3">
+                <Link href="/terms">
+                  <span
+                    className={ITEM_BASE}
+                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                    onClick={handleLink}
+                  >
+                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1">תנאי שימוש</span>
+                  </span>
+                </Link>
+                <Link href="/privacy">
+                  <span
+                    className={ITEM_BASE}
+                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                    onClick={handleLink}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1">מדיניות פרטיות</span>
+                  </span>
+                </Link>
+                <div
+                  className={ITEM_BASE}
+                  style={{ color: "oklch(0.65 0.14 145)", fontSize: "0.8rem", cursor: "default" }}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="flex-1">מאובטח ומוגן</span>
+                </div>
+              </div>
+
+              {/* Email */}
+              <a
+                href="mailto:info@avodanow.co.il"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all"
+                style={{
+                  color: "oklch(0.9904 0.0107 95.3 / 0.55)",
+                  background: "oklch(0.42 0.07 124.9 / 0.3)",
+                  border: "1px solid oklch(0.42 0.07 124.9 / 0.4)",
+                  textDecoration: "none",
+                }}
+              >
+                <Mail className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--citrus)" }} />
+                <span>info@avodanow.co.il</span>
+              </a>
+
+              {/* Copyright */}
+              <p
+                className="text-center mt-2.5"
+                style={{ fontSize: "0.65rem", color: "oklch(0.9904 0.0107 95.3 / 0.25)" }}
+              >
+                © AvodaNow 2026 · כל הזכויות שמורות
+              </p>
+            </div>
           </motion.div>
         </>
       )}

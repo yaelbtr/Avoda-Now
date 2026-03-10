@@ -1061,3 +1061,6 @@
 - [x] Generate OG default image (1200x630) and upload to CDN
 - [x] Update useSEO hook to use CDN OG image URL
 - [ ] Submit sitemap to Google Search Console (manual step after domain deployment)
+
+## Mobile Drawer — Legal & Contact Section
+- [x] Add legal/contact section to bottom of MobileDrawer: email, terms, privacy, copyright

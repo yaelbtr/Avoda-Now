@@ -25,6 +25,7 @@ import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
   C_DANGER_HEX, C_TEXT_MUTED, C_SUCCESS_HEX,
 } from "@/lib/colors";
+import { reverseGeocode } from "@/lib/reverseGeocode";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
@@ -36,9 +37,9 @@ const SEO_CITIES = [
   "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
 ];
 
-interface CachedLocation { lat: number; lng: number; savedAt: number; }
+interface CachedLocation { lat: number; lng: number; cityName?: string; savedAt: number; }
 
-function loadCachedLocation(): { lat: number; lng: number } | null {
+function loadCachedLocation(): { lat: number; lng: number; cityName?: string } | null {
   try {
     const raw = localStorage.getItem(LOCATION_CACHE_KEY);
     if (!raw) return null;
@@ -47,13 +48,13 @@ function loadCachedLocation(): { lat: number; lng: number } | null {
       localStorage.removeItem(LOCATION_CACHE_KEY);
       return null;
     }
-    return { lat: cached.lat, lng: cached.lng };
+    return { lat: cached.lat, lng: cached.lng, cityName: cached.cityName };
   } catch { return null; }
 }
 
-function saveLocationCache(lat: number, lng: number) {
+function saveLocationCache(lat: number, lng: number, cityName?: string) {
   try {
-    localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({ lat, lng, savedAt: Date.now() }));
+    localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({ lat, lng, cityName, savedAt: Date.now() }));
   } catch {}
 }
 
@@ -107,6 +108,7 @@ export default function FindJobs() {
   const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
+  const [geoCity, setGeoCity] = useState<string | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
@@ -137,17 +139,22 @@ export default function FindJobs() {
 
   useEffect(() => {
     const cached = loadCachedLocation();
-    if (cached) { setUserLat(cached.lat); setUserLng(cached.lng); }
-    else if (autoNearby) {
+    if (cached) {
+      setUserLat(cached.lat);
+      setUserLng(cached.lng);
+      if (cached.cityName) setGeoCity(cached.cityName);
+    } else if (autoNearby) {
       // Auto-start geolocation when arriving via "בקרבת מקום" button
       setLocating(true);
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const { latitude, longitude } = pos.coords;
           setUserLat(latitude); setUserLng(longitude);
-          saveLocationCache(latitude, longitude);
           setLocating(false); setLocationDenied(false);
-          toast.success("מיקום נמצא — מציג עבודות קרובות אליך");
+          const city = await reverseGeocode(latitude, longitude);
+          setGeoCity(city);
+          saveLocationCache(latitude, longitude, city ?? undefined);
+          toast.success(city ? `מיקום נמצא — מציג עבודות ליד ${city}` : "מיקום נמצא — מציג עבודות קרובות אליך");
         },
         () => {
           setLocating(false); setLocationDenied(true); setShowCityInput(true);
@@ -164,12 +171,14 @@ export default function FindJobs() {
     setLocating(true);
     setShowLocationDialog(false);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
         setUserLat(latitude); setUserLng(longitude);
-        saveLocationCache(latitude, longitude);
         setLocating(false); setLocationDenied(false); setAutoExpandedRadius(false);
-        toast.success("מיקום נמצא — מציג עבודות קרובות אליך");
+        const city = await reverseGeocode(latitude, longitude);
+        setGeoCity(city);
+        saveLocationCache(latitude, longitude, city ?? undefined);
+        toast.success(city ? `מיקום נמצא — מציג עבודות ליד ${city}` : "מיקום נמצא — מציג עבודות קרובות אליך");
       },
       () => {
         setLocating(false); setLocationDenied(true); setShowCityInput(true);
@@ -180,14 +189,14 @@ export default function FindJobs() {
 
   const handleLocationButtonClick = () => {
     if (userLat) {
-      setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);
+      setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false);
       toast("מיקום בוטל"); return;
     }
     setShowLocationDialog(true);
   };
 
   const handleCitySelect = (city: string, lat: number, lng: number) => {
-    setUserLat(lat); setUserLng(lng); saveLocationCache(lat, lng);
+    setUserLat(lat); setUserLng(lng); setGeoCity(city); saveLocationCache(lat, lng, city);
     setShowCityInput(false); setAutoExpandedRadius(false);
     toast.success(`מציג עבודות קרוב ל${city}`);
   };
@@ -391,12 +400,14 @@ export default function FindJobs() {
                   <MapPin className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-green-800">מציג עבודות קרוב אליך</p>
+                  <p className="text-sm font-bold text-green-800">
+                    {geoCity ? `מציג עבודות ליד ${geoCity}` : "מציג עבודות קרוב אליך"}
+                  </p>
                   <p className="text-xs text-green-600">בטווח {radiusKm} ק"מ ממיקומך הנוכחי</p>
                 </div>
               </div>
               <button
-                onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
+                onClick={() => { setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
                 className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-medium transition-colors text-green-700 border border-green-300 bg-white hover:bg-green-50"
               >
                 <X className="h-3 w-3" />

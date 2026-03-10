@@ -1137,3 +1137,8 @@
 - [x] Show distance badge on each job card when geolocation is active
 - [x] Show "מציג עבודות ב-5 ק״מ ממך" status indicator when geo filter is active
 - [x] Allow user to clear the geo filter
+
+## Reverse Geocoding — Geo Status Bar
+- [x] Reverse geocode GPS coordinates to Hebrew city name after geolocation succeeds
+- [x] Display resolved city name in status bar: "מציג עבודות ליד {city}"
+- [x] Cache resolved city name alongside lat/lng in localStorage

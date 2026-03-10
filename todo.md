@@ -1025,3 +1025,6 @@
 - [x] חיבור hamburger ל-MobileDrawer (מחליף את ה-inline mobile nav)
 - [x] הוספת pb-16 md:pb-0 ל-main למניעת כיסוי תוכן
 - [x] תמיכה ב-RTL ועיצוב מותאם מובייל
+
+## Haptic Feedback ב-Bottom Nav
+- [x] הוספת navigator.vibrate(10) לכל לחיצה על פריטי ה-bottom nav (עם בדיקת תמיכה)

@@ -67,6 +67,11 @@ export default function MobileBottomNav() {
                 minWidth: 60,
                 color: isActive ? "var(--citrus)" : "oklch(0.9904 0.0107 95.3 / 0.55)",
               }}
+              onClick={() => {
+                if (typeof navigator !== "undefined" && navigator.vibrate) {
+                  navigator.vibrate(10);
+                }
+              }}
             >
               <span className="relative">
                 <Icon

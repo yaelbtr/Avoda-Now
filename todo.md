@@ -1064,3 +1064,6 @@
 
 ## Mobile Drawer — Legal & Contact Section
 - [x] Add legal/contact section to bottom of MobileDrawer: email, terms, privacy, copyright
+
+## Mobile Drawer — Report a Problem
+- [x] Add "דווח על בעיה" mailto button in MobileDrawer legal section

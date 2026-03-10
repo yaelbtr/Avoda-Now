@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Flame, Briefcase, Bookmark, User, PlusCircle, Users,
-  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2,
+  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -290,20 +290,37 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </div>
               </div>
 
-              {/* Email */}
-              <a
-                href="mailto:info@avodanow.co.il"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all"
-                style={{
-                  color: "oklch(0.9904 0.0107 95.3 / 0.55)",
-                  background: "oklch(0.42 0.07 124.9 / 0.3)",
-                  border: "1px solid oklch(0.42 0.07 124.9 / 0.4)",
-                  textDecoration: "none",
-                }}
-              >
-                <Mail className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--citrus)" }} />
-                <span>info@avodanow.co.il</span>
-              </a>
+              {/* Email + Report row */}
+              <div className="flex gap-2">
+                <a
+                  href="mailto:info@avodanow.co.il"
+                  className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all"
+                  style={{
+                    color: "oklch(0.9904 0.0107 95.3 / 0.55)",
+                    background: "oklch(0.42 0.07 124.9 / 0.3)",
+                    border: "1px solid oklch(0.42 0.07 124.9 / 0.4)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <Mail className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--citrus)" }} />
+                  <span>info@avodanow.co.il</span>
+                </a>
+
+                <a
+                  href={`mailto:info@avodanow.co.il?subject=${encodeURIComponent('דיווח על בעיה ב-AvodaNow')}&body=${encodeURIComponent('שלום,\n\nאני רוצה לדווח על בעיה הבאה:\n\n[תאר את הבעיה כאן]\n\nתודה,')}`}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs transition-all"
+                  style={{
+                    color: "oklch(0.75 0.12 35 / 0.85)",
+                    background: "oklch(0.35 0.06 35 / 0.25)",
+                    border: "1px solid oklch(0.45 0.08 35 / 0.4)",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span>דווח בעיה</span>
+                </a>
+              </div>
 
               {/* Copyright */}
               <p

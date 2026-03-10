@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, MapPin, Clock, Briefcase, Heart, Send, Calendar, Users, CheckCircle2, Loader2 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { trpc } from "@/lib/trpc";
@@ -29,6 +30,7 @@ interface JobBottomSheetProps {
   onClose: () => void;
   onLoginRequired?: (msg: string) => void;
   isAuthenticated: boolean;
+  layoutId?: string;
 }
 
 const OLIVE = "#4F583B";
@@ -39,6 +41,7 @@ export default function JobBottomSheet({
   onClose,
   onLoginRequired,
   isAuthenticated,
+  layoutId,
 }: JobBottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
@@ -157,9 +160,10 @@ export default function JobBottomSheet({
       />
 
       {/* Sheet */}
-      <div
+      <motion.div
         ref={sheetRef}
         dir="rtl"
+        layoutId={layoutId}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -497,7 +501,7 @@ export default function JobBottomSheet({
 
           {/* Call/WhatsApp buttons removed — workers contact via application only */}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

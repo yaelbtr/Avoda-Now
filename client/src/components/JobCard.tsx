@@ -7,6 +7,7 @@ import {
   Send, Loader2, CheckCircle, ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   C_BRAND_HEX, C_DANGER_HEX, C_SUCCESS_HEX,
 } from "@/lib/colors";
@@ -496,15 +497,35 @@ export function JobCard({
             />
           </div>
 
-          {/* Hint text — visible only on hover */}
+          {/* Hint tooltip — visible only on hover */}
           <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <span
-              className="text-[9px] font-medium flex items-center gap-0.5 select-none"
-              style={{ color: "oklch(0.55 0.05 125.0)", letterSpacing: "0.01em" }}
-            >
-              לחץ לפרטים נוספים
-              <ChevronLeft className="h-2.5 w-2.5 opacity-70" />
-            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center gap-0.5 text-[9px] font-semibold select-none cursor-pointer rounded-full px-2 py-0.5"
+                  style={{
+                    color: "oklch(0.38 0.09 122)",
+                    background: "oklch(0.96 0.03 122 / 0.7)",
+                    border: "1px solid oklch(0.88 0.06 122 / 0.5)",
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  לחץ לפרטים
+                  <ChevronLeft className="h-2.5 w-2.5 opacity-80" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="text-xs font-bold px-3 py-2 rounded-xl shadow-lg"
+                style={{
+                  background: "oklch(0.25 0.06 122)",
+                  color: "oklch(0.97 0.02 91)",
+                  border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+                }}
+              >
+                לחץ לצפייה בפרטי המשרה המלאים
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </motion.div>
@@ -745,14 +766,36 @@ export function JobCard({
           )
         )}
 
-        {/* Hint text — visible only on hover */}
-        <span
-          className="ml-auto text-[10px] font-medium flex items-center gap-0.5 select-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          style={{ color: "oklch(0.50 0.07 125.0)", letterSpacing: "0.01em" }}
-        >
-          לחץ לפרטים נוספים
-          <ChevronLeft className="h-3 w-3 opacity-70" />
-        </span>
+        {/* Hint tooltip — visible only on hover */}
+        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex items-center gap-0.5 text-[10px] font-semibold select-none cursor-pointer rounded-full px-2.5 py-1"
+                style={{
+                  color: "oklch(0.38 0.09 122)",
+                  background: "oklch(0.96 0.03 122 / 0.7)",
+                  border: "1px solid oklch(0.88 0.06 122 / 0.5)",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                צפייה בפרטים
+                <ChevronLeft className="h-3 w-3 opacity-80" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="text-xs font-bold px-3 py-2 rounded-xl shadow-lg"
+              style={{
+                background: "oklch(0.25 0.06 122)",
+                color: "oklch(0.97 0.02 91)",
+                border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+              }}
+            >
+              לחץ לצפייה בפרטי המשרה המלאים
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </motion.div>
   );

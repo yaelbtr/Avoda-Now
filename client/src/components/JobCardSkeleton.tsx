@@ -98,59 +98,41 @@ export default function JobCardSkeleton() {
   );
 }
 
-// ── Carousel tile skeleton (matches new CarouselJobCard design) ───────────────
+// ── Carousel tile skeleton (matches compact JobCard 210px design) ─────────────
 export function CarouselJobCardSkeleton() {
   return (
     <div
       style={{
         background: "#ffffff",
-        border: "1px solid #e8e8e8",
+        border: "1px solid oklch(0.87 0.04 84.0)",
         borderRadius: "1rem",
         overflow: "hidden",
-        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.05)",
-        width: 288,
+        boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+        width: 210,
         flexShrink: 0,
       }}
       dir="rtl"
     >
       {/* Image area */}
-      <Shimmer width="100%" height={200} rounded="0" />
+      <Shimmer width="100%" height={110} rounded="0" />
 
       {/* Content area */}
-      <div style={{ padding: "0 20px 20px", position: "relative", paddingTop: 44 }}>
-        {/* Floating icon placeholder */}
-        <div
-          style={{
-            position: "absolute",
-            top: -36,
-            right: 20,
-            width: 72,
-            height: 72,
-            borderRadius: "0.75rem",
-            background: "#ffffff",
-            boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
-            border: "1px solid #f0f0f0",
-            overflow: "hidden",
-          }}
-        >
-          <Shimmer width="100%" height={72} rounded="0" />
-        </div>
+      <div style={{ padding: "12px" }}>
+        {/* Category badge */}
+        <Shimmer width={80} height={18} rounded="9999px" className="mb-2" />
 
         {/* Title */}
-        <Shimmer width="75%" height={20} className="mb-2" />
-        <Shimmer width="50%" height={14} className="mb-4" />
+        <Shimmer width="85%" height={14} className="mb-1" />
+        <Shimmer width="60%" height={14} className="mb-3" />
 
-        {/* Divider */}
-        <div style={{ borderTop: "1px solid #f0f0f0", marginBottom: 16 }} />
+        {/* Location row */}
+        <Shimmer width="70%" height={12} className="mb-3" />
 
-        {/* Time + salary row */}
-        <div className="flex items-center justify-between mb-4">
-          <Shimmer width={90} height={34} rounded="0.5rem" />
-          <Shimmer width={70} height={22} />
+        {/* Action row: button + share icon */}
+        <div className="flex items-center justify-between">
+          <Shimmer width={60} height={30} rounded="0.75rem" />
+          <Shimmer width={30} height={30} rounded="0.75rem" />
         </div>
-
-        {/* CTA button */}
-        <Shimmer width="100%" height={48} rounded="0.75rem" />
       </div>
     </div>
   );

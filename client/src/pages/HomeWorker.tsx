@@ -947,6 +947,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 {allCarouselJobs.map(({ job, badge }) => (
                   <motion.div
                     key={`${badge}-${job.id}`}
+                    layoutId={`carousel-card-${job.id}`}
                     className="snap-start shrink-0"
                     variants={{
                       hidden: { opacity: 0, y: 32, scale: 0.93 },
@@ -1356,6 +1357,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         onClose={() => setBottomSheetOpen(false)}
         onLoginRequired={onLoginRequired}
         isAuthenticated={isAuthenticated}
+        layoutId={bottomSheetJob ? `carousel-card-${bottomSheetJob.id}` : undefined}
       />
     </div>
   );

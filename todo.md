@@ -999,3 +999,10 @@
 
 ## אנימציית כניסה לקרוסלה
 - [x] הוספת staggerChildren לקרוסלת הכרטיסיות — כל כרטיסייה נכנסת בהדרגה אחת אחרי השנייה
+
+## Shared Element Animation + Skeleton Loading
+- [x] הוספת layoutId לכרטיסיות קרוסלה ו-bottom sheet לאנימציית shared element
+- [x] עדכון skeleton loading ל-210px (compact card) וודא שמוצג בזמן טעינה
+
+## טולטיפ מעוצב בכרטיסיות
+- [x] החלפת title="לחץ לפרטים..." בטולטיפ Radix מעוצב בשתי וריאנטי הכרטיסייה (compact + standard)

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -72,6 +73,13 @@ export default function PostJob() {
   const [jobCity, setJobCity] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
+
+  useSEO({
+    title: "פרסום משרה",
+    description: "פרסם משרה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
+    canonical: "/post-job",
+    noIndex: true,
+  });
 
   // CAPTCHA state
   const [captcha, setCaptcha] = useState(generateCaptcha);

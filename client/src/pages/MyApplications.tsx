@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useSearch } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -116,6 +117,14 @@ export default function MyApplications() {
   const [, navigate] = useLocation();
   const search = useSearch();
   const { isAuthenticated, loading } = useAuth();
+
+  useSEO({
+    title: "המועמדויות שלי",
+    description: "צפה בסטטוס המועמדויות שלך למשרות זמניות.",
+    canonical: "/my-applications",
+    noIndex: true,
+  });
+
   // Applications filter + sort
   const [statusFilter, setStatusFilter] = useState<AppStatus[]>([]);
   const [appSortBy, setAppSortBy] = useState<AppSortBy>("jobDate");

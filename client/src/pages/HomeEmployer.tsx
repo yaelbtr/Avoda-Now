@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -118,6 +119,12 @@ export default function HomeEmployer() {
   const [activeWorkerIdx, setActiveWorkerIdx] = useState(0);
   const workerAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const workerPausedRef = useRef(false);
+
+  useSEO({
+    title: "מעסיקים — מצא עובדים",
+    description: "פרסם משרה בחינם ומצא עובדים זמינים קרוב אליך. ללא עמלות, ללא בירוקרטיה.",
+    canonical: "/",
+  });
 
   useEffect(() => {
     if (navigator.geolocation) {

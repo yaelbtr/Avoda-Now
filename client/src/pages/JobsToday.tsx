@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
 import { JobCard } from "@/components/JobCard";
@@ -14,6 +15,12 @@ export default function JobsToday() {
   const [category, setCategory] = useState("all");
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+
+  useSEO({
+    title: "עבודות להיום",
+    description: "משרות דחופות ליום זה. הירשם עכשיו לעבודות זמניות והתחל לעבוד היום.",
+    canonical: "/jobs-today",
+  });
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);

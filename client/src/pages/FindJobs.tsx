@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearch } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
+import { getCategoryLabel } from "@shared/categories";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
@@ -102,6 +104,24 @@ export default function FindJobs() {
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic SEO meta tags
+  const seoTitle = selectedCity
+    ? `עבודות ב${selectedCity}`
+    : category !== "all"
+    ? `עבודות ${getCategoryLabel(category)}`
+    : "חיפוש עבודה";
+  const seoDescription = selectedCity
+    ? `מצא עבודות זמניות ב${selectedCity}. משרות להיום, שליחויות, מחסן, מטבח ועוד.`
+    : category !== "all"
+    ? `מצא עבודות ${getCategoryLabel(category)} קרוב אליך. לוח דרושים מהיר ופשוט.`
+    : "לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך — שליחויות, מחסן, מטבח ועוד.";
+  const seoCanonical = selectedCity
+    ? `/find-jobs?city=${encodeURIComponent(selectedCity)}`
+    : category !== "all"
+    ? `/find-jobs?category=${encodeURIComponent(category)}`
+    : "/find-jobs";
+  useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical });
 
   // Fetch popular cities for quick filter chips
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });

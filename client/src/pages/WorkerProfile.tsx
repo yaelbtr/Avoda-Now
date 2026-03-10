@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
@@ -93,6 +94,13 @@ function WizardProgress({ step, total }: { step: number; total: number }) {
 export default function WorkerProfile() {
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+
+  useSEO({
+    title: "הפרופיל שלי",
+    description: "עדכן את פרופיל העובד שלך וקבל התראויות למשרות זמניות.",
+    canonical: "/worker-profile",
+    noIndex: true,
+  });
 
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });

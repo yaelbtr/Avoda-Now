@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
@@ -142,6 +143,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
+  useSEO({
+    title: "דף הבית",
+    description: "מצא עבודות זמניות קרוב אליך. שליחויות, מחסן, מטבח ועוד — לוח דרושים מהיר ופשוט.",
+    canonical: "/",
+  });
+
   const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPausedRef = useRef(false);
   // Touch swipe state

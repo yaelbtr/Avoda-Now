@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -359,6 +360,13 @@ export default function MyJobs() {
   const { isAuthenticated, loading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  useSEO({
+    title: "המשרות שלי",
+    description: "נהל את המשרות שפרסמת וצפה במועמדים.",
+    canonical: "/my-jobs",
+    noIndex: true,
+  });
   const [expandedApplicants, setExpandedApplicants] = useState<Set<number>>(new Set());
 
   const utils = trpc.useUtils();

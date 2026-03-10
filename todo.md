@@ -1039,3 +1039,25 @@
 - [x] sitemap.xml דינמי — Express endpoint עם 15 ערים + 12 קטגוריות + 3 עמודים ראשיים
 - [x] robots.txt עם Allow /find-jobs, Allow /post-job, Disallow /api/, Sitemap directive
 - [x] הסתרת footer במובייל (hidden md:block ב-App.tsx)
+
+## SEO Meta Tags
+- [ ] יצירת useSEO hook לניהול title, description, og:image, canonical דינמיים
+- [ ] הוספת meta tags לכל הדפים הראשיים (Home, FindJobs, PostJob, Profile)
+- [ ] canonical link למניעת תוכן כפול
+
+## SEO Improvements (Session 2026-03-10)
+- [x] Create useSEO hook with title, description, og:image, canonical, noIndex support
+- [x] Apply useSEO to FindJobs page with dynamic city/category meta tags
+- [x] Apply useSEO to HomeWorker page
+- [x] Apply useSEO to HomeEmployer page
+- [x] Apply useSEO to PostJob page (noIndex=true)
+- [x] Apply useSEO to MyApplications page (noIndex=true)
+- [x] Apply useSEO to JobsToday page
+- [x] Apply useSEO to WorkerProfile page (noIndex=true)
+- [x] Apply useSEO to MyJobs page (noIndex=true)
+- [x] Update index.html with full static OG meta tags (og:title, og:description, og:image, og:url, og:locale)
+- [x] Add Twitter Card meta tags to index.html
+- [x] Add static canonical link to index.html
+- [x] Generate OG default image (1200x630) and upload to CDN
+- [x] Update useSEO hook to use CDN OG image URL
+- [ ] Submit sitemap to Google Search Console (manual step after domain deployment)

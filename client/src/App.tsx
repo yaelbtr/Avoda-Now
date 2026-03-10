@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
+import MobileBottomNav from "./components/MobileBottomNav";
 import Footer from "./components/Footer";
 import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
@@ -75,7 +76,7 @@ function Router() {
       <Navbar />
       <GuestLoginBanner />
 
-      <main className="flex-1" style={{ overflow: "hidden" }}>
+      <main className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }}>
         <AnimatePresence mode="wait">
           {showRoleSelection ? (
             <RoleSelectionScreen
@@ -111,6 +112,7 @@ function Router() {
         </AnimatePresence>
       </main>
 
+      <MobileBottomNav />
       <Footer />
     </div>
   );

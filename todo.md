@@ -1018,3 +1018,10 @@
 
 ## ניקוי mobile sidebar
 - [x] הסתרת ה-dropdown במובייל (hidden md:block) — רק ה-sidebar מוצג במובייל, רק ה-dropdown ב-desktop
+
+## ניווט מובייל חדש
+- [x] יצירת MobileBottomNav — 4 פריטים קבועים בתחתית המסך (Search, Flame, FileText, User)
+- [x] יצירת MobileDrawer — תפריט צד עם קטגוריות (ניווט, אזור אישי, מערכת) + backdrop
+- [x] חיבור hamburger ל-MobileDrawer (מחליף את ה-inline mobile nav)
+- [x] הוספת pb-16 md:pb-0 ל-main למניעת כיסוי תוכן
+- [x] תמיכה ב-RTL ועיצוב מותאם מובייל

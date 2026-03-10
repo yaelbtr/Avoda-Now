@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
+import MobileDrawer from "./MobileDrawer";
 import { AppButton } from "@/components/AppButton";
 import {
   DropdownMenu,
@@ -408,168 +409,14 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile nav */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="md:hidden overflow-hidden"
-              dir="rtl"
-              style={{
-                borderTop: `1px solid ${HEADER_DIVIDER}`,
-                background: "var(--header-bg)",
-              }}
-            >
-              <nav className="max-w-2xl mx-auto px-4 py-4 flex flex-col gap-1">
-                {isAuthenticated && userMode && (
-                  <div
-                    className="px-3 py-2.5 text-xs rounded-xl mb-2 flex items-center gap-2"
-                    style={{
-                      color: "oklch(0.9904 0.0107 95.3 / 0.6)",
-                      background: "oklch(0.42 0.07 124.9)",
-                      border: `1px solid ${HEADER_DIVIDER}`,
-                    }}
-                  >
-                    <span className="text-base">{userMode === "worker" ? "👷" : "💼"}</span>
-                    מחובר כ: {userMode === "worker" ? "מחפש עבודה" : "מעסיק"}
-                  </div>
-                )}
-
-                {navLinks.map((link, i) => {
-                  const isActive = location === link.href;
-                  return (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      <Link href={link.href}>
-                        <span
-                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-right cursor-pointer"
-                          style={{
-                            background: isActive ? ACTIVE_BG : "transparent",
-                            color: isActive ? "var(--citrus)" : "#e8eae5",
-                            border: isActive ? `1px solid oklch(0.50 0.07 124.9)` : "1px solid transparent",
-                          }}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          <link.icon className="h-4 w-4 shrink-0" />
-                          {link.label}
-                          {link.href === "/my-applications" && hasUnread && (
-                            <span
-                              style={{
-                                background: "oklch(0.60 0.22 25)",
-                                color: "white",
-                                fontSize: "0.6rem",
-                                fontWeight: 700,
-                                borderRadius: "9999px",
-                                minWidth: "1.1rem",
-                                height: "1.1rem",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                padding: "0 0.3rem",
-                                marginRight: "auto",
-                              }}
-                            >
-                              {unreadCount}
-                            </span>
-                          )}
-                          {link.href === "/my-applications?tab=saved" && savedJobsCount > 0 && (
-                            <span
-                              style={{
-                                background: "oklch(0.55 0.18 145)",
-                                color: "white",
-                                fontSize: "0.6rem",
-                                fontWeight: 700,
-                                borderRadius: "9999px",
-                                minWidth: "1.1rem",
-                                height: "1.1rem",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                padding: "0 0.3rem",
-                                marginRight: "auto",
-                              }}
-                            >
-                              {savedJobsCount}
-                            </span>
-                          )}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-
-                {isAuthenticated && (
-                  <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${HEADER_DIVIDER}` }}>
-                    <button
-                      onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setMobileOpen(false); }}
-                      className="flex items-center gap-2.5 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ color: "#e8eae5" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = ACTIVE_BG)}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      <RefreshCw className="h-4 w-4 shrink-0" />
-                      {userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}
-                    </button>
-
-                    <button
-                      onClick={() => { resetUserMode(); setMobileOpen(false); }}
-                      className="flex items-center gap-2.5 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ color: "#e8eae5" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = ACTIVE_BG)}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      <RotateCcw className="h-4 w-4 shrink-0" />
-                      אפס בחירת תפקיד
-                    </button>
-
-                    {user?.role === "admin" && (
-                      <Link href="/admin">
-                        <span
-                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                          style={{ color: "var(--citrus)" }}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          <Shield className="h-4 w-4 shrink-0" />
-                          פאנל ניהול
-                        </span>
-                      </Link>
-                    )}
-
-                    <button
-                      onClick={() => { logout(); setMobileOpen(false); }}
-                      className="flex items-center gap-2.5 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <LogOut className="h-4 w-4 shrink-0" />
-                      התנתק
-                    </button>
-                  </div>
-                )}
-
-                {!isAuthenticated && (
-                  <button
-                    onClick={() => { setLoginOpen(true); setMobileOpen(false); }}
-                    className="w-full mt-3 py-3 rounded-xl text-sm font-bold transition-all"
-                    style={{
-                      background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
-                      color: "oklch(0.22 0.03 122.3)",
-                      boxShadow: "0 2px 10px oklch(0.82 0.15 80.8 / 0.4)",
-                    }}
-                  >
-                    כניסה
-                  </button>
-                )}
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
+
+      {/* Mobile drawer - replaces inline mobile nav */}
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onLoginOpen={() => setLoginOpen(true)}
+      />
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>

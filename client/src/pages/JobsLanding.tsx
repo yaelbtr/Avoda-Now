@@ -14,7 +14,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
-import { useJobListingSchema } from "@/hooks/useStructuredData";
+import { useJobListingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { trpc } from "@/lib/trpc";
 import { JOB_CATEGORIES, getCategoryLabel } from "@shared/categories";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
@@ -122,6 +122,20 @@ export default function JobsLanding() {
     canonical,
     noIndex,
   });
+
+  // JSON-LD BreadcrumbList structured data
+  useBreadcrumbSchema(
+    [
+      { name: "בית", path: "/" },
+      { name: "משרות", path: "/find-jobs" },
+      ...(resolvedCategory
+        ? [{ name: getCategoryLabel(resolvedCategory), path: `/jobs/${encodeURIComponent(resolvedCategory)}` }]
+        : []),
+      ...(resolvedCity
+        ? [{ name: resolvedCity, path: canonical }]
+        : []),
+    ]
+  );
 
   // JSON-LD ItemList + JobPosting structured data
   useJobListingSchema(

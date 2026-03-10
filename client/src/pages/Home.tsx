@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useOrganizationSchema } from "@/hooks/useStructuredData";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
 import HomeWorker from "./HomeWorker";
@@ -60,6 +61,9 @@ export default function Home() {
   const { userMode, isLoadingMode: modeLoading } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+
+  // JSON-LD Organization schema for Google Knowledge Panel
+  useOrganizationSchema();
 
   const handleLoginRequired = (msg: string) => {
     setLoginMessage(msg);

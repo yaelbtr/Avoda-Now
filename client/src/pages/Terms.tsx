@@ -1,6 +1,32 @@
 import { Link } from "wouter";
+import { useFAQSchema } from "@/hooks/useStructuredData";
+
+const TERMS_FAQS = [
+  {
+    question: "האם AvodaNow גובה עמלות?",
+    answer: "לא. AvodaNow היא פלטפורמה חינמית לחלוטין עבור עובדים ומעסיקים. אין עמלות, אין דמי תיווך.",
+  },
+  {
+    question: "כמה משרות אפשר לפרסם?",
+    answer: "מעסיק יכול לפרסם עד 3 משרות פעילות בו-זמנית.",
+  },
+  {
+    question: "האם AvodaNow אחראית להסכמי העסקה?",
+    answer: "לא. AvodaNow מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה. כל עסקה היא בין הצדדים ישירות.",
+  },
+  {
+    question: "מה קורה אם משרה מקבלת דיווחים?",
+    answer: "משרות שיקבלו 3 דיווחים או יותר יועברו לבדיקה ועלולות להוסר מהפלטפורמה.",
+  },
+  {
+    question: "כיצד יוצרים קשר עם התמיכה?",
+    answer: "ניתן לפנות אלינו בכתובת info@avodanow.co.il לכל שאלה או בעיה.",
+  },
+];
 
 export default function Terms() {
+  useFAQSchema(TERMS_FAQS);
+
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-foreground mb-2">תנאי שימוש</h1>

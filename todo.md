@@ -1099,3 +1099,8 @@
 - [x] Create useJobPostingSchema hook for single job pages (/job/:id)
 - [x] Apply JobPosting schema to JobDetails/JobPublic page
 - [x] Add ItemList + JobPosting schema to JobsLanding SEO pages
+
+## Structured Data — Additional Schemas
+- [x] Add useBreadcrumbSchema hook and apply to JobsLanding (/jobs/{category}/{city})
+- [x] Add useOrganizationSchema hook and apply to Home page
+- [x] Add useFAQSchema hook and apply to Terms page

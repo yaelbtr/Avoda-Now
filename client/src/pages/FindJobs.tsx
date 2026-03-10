@@ -16,7 +16,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
 import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
-  Navigation, AlertCircle, SlidersHorizontal,
+  Navigation, AlertCircle, SlidersHorizontal, UserCheck, ChevronDown, ChevronUp,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { useLocation } from "wouter";
@@ -109,6 +109,8 @@ export default function FindJobs() {
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [geoCity, setGeoCity] = useState<string | null>(null);
+  // Filter panel open/collapsed state — starts undefined until profile is loaded
+  const [filterOpen, setFilterOpen] = useState<boolean | undefined>(undefined);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
@@ -131,6 +133,35 @@ export default function FindJobs() {
     ? `/find-jobs?category=${encodeURIComponent(category)}`
     : "/find-jobs";
   useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical });
+
+  // Worker profile — used to decide whether to auto-collapse the filter panel
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Auth loading state from context
+  const { loading: authLoading } = useAuth();
+
+  // Auto-collapse filter panel once profile data is available
+  useEffect(() => {
+    // Wait until auth state is resolved
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      // Not logged in — show filter panel open
+      setFilterOpen(prev => prev ?? true);
+      return;
+    }
+    // Authenticated — wait for profile data
+    if (profileQuery.isLoading) return;
+    const profile = profileQuery.data;
+    const hasProfile =
+      (profile?.preferredCategories && profile.preferredCategories.length > 0) ||
+      !!profile?.preferredCity;
+    // Only set once (when still undefined) to avoid overriding manual user toggle
+    setFilterOpen(prev => prev ?? !hasProfile);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
   // Fetch popular cities for quick filter chips
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
@@ -481,13 +512,97 @@ export default function FindJobs() {
           style={{ ...lightPanel, padding: "1.25rem", marginBottom: "1.5rem" }}
           dir="rtl"
         >
-          {/* Filter header */}
-          <div className="flex items-center gap-2 mb-4">
-            <SlidersHorizontal className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-bold text-gray-900">
-              סינון וחיפוש
-            </span>
-          </div>
+          {/* Filter header — clickable toggle */}
+          <button
+            className="w-full flex items-center justify-between gap-2 mb-0"
+            onClick={() => setFilterOpen(v => !v)}
+            aria-expanded={filterOpen}
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-bold text-gray-900">סינון וחיפוש</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Active filter badges */}
+              {!filterOpen && (
+                <div className="flex items-center gap-1 flex-wrap justify-end">
+                  {category !== "all" && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                      {JOB_CATEGORIES.find(c => c.value === category)?.icon} {JOB_CATEGORIES.find(c => c.value === category)?.label ?? category}
+                    </span>
+                  )}
+                  {selectedCity && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-medium">
+                      📍 {selectedCity}
+                    </span>
+                  )}
+                  {userLat && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                      📍 {geoCity ?? "מיקום"}
+                    </span>
+                  )}
+                  {showUrgentToday && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
+                      🔥 דחוף
+                    </span>
+                  )}
+                </div>
+              )}
+              {filterOpen
+                ? <ChevronUp className="h-4 w-4 text-gray-400 shrink-0" />
+                : <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />}
+            </div>
+          </button>
+
+          {/* Profile recommendation banner — shown when panel is open and user has no profile */}
+          <AnimatePresence>
+            {filterOpen && isAuthenticated && !profileQuery.isLoading && (() => {
+              const profile = profileQuery.data;
+              const hasProfile =
+                (profile?.preferredCategories && profile.preferredCategories.length > 0) ||
+                !!profile?.preferredCity;
+              return !hasProfile ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-3 overflow-hidden"
+                >
+                  <Link href="/profile">
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-90"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(79,70,229,0.05) 100%)",
+                        border: "1px solid rgba(99,102,241,0.25)",
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center shrink-0">
+                        <UserCheck className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-indigo-800">מלא את הפרופיל שלך</p>
+                        <p className="text-xs text-indigo-600">הגדר קטגוריות ועיר מועדפת כדי שנסנן עבורך אוטומטית</p>
+                      </div>
+                      <span className="text-xs text-indigo-500 font-medium shrink-0">לפרופיל ←</span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ) : null;
+            })()}
+          </AnimatePresence>
+
+          {/* Collapsible filter body */}
+          <AnimatePresence initial={false}>
+            {filterOpen && (
+              <motion.div
+                key="filter-body"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+          <div className="mt-4">
 
           {/* 1. Search */}
           <div className="relative mb-4">
@@ -823,6 +938,10 @@ export default function FindJobs() {
               </AnimatePresence>
             </div>
           </div>
+          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* ── Smart radius expand suggestion ── */}

@@ -1142,3 +1142,9 @@
 - [x] Reverse geocode GPS coordinates to Hebrew city name after geolocation succeeds
 - [x] Display resolved city name in status bar: "מציג עבודות ליד {city}"
 - [x] Cache resolved city name alongside lat/lng in localStorage
+
+## Filter Panel Auto-Collapse — FindJobs
+- [x] Auto-collapse filter panel for users with a filled worker profile (category/city set)
+- [x] Show filter panel open by default for users without a profile
+- [x] Add profile-completion recommendation banner inside filter panel for users without a profile
+- [x] Allow manual toggle of filter panel open/closed at any time

@@ -1148,3 +1148,20 @@
 - [x] Show filter panel open by default for users without a profile
 - [x] Add profile-completion recommendation banner inside filter panel for users without a profile
 - [x] Allow manual toggle of filter panel open/closed at any time
+
+## SEO Checklist — Missing Items Implementation
+
+### High Priority
+- [x] Add `noindex` to FindJobs when there are no results
+- [x] Add `canonical` tag to JobDetails page via `useSEO`
+- [x] Add `BreadcrumbList` JSON-LD structured data to JobDetails
+- [x] Add `Disallow: /admin` to robots.txt
+
+### Medium Priority
+- [x] Add `/jobs/today/:city` SEO route (time+city landing page)
+- [x] Add RSS feed endpoint `/jobs/rss.xml`
+- [x] Add visual breadcrumb UI component to JobDetails
+- [x] Add visual breadcrumb UI component to JobsLanding
+
+### Low Priority
+- [ ] Add SEO content pages (עבודות לפסח, עבודה זמנית, עבודה לסטודנטים)

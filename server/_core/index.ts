@@ -17,7 +17,7 @@ import {
   antiEnumeration,
 } from "../security";
 import { makeRequest } from "./map";
-import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory } from "../db";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs } from "../db";
 import { sendSms } from "../sms";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -187,7 +187,71 @@ async function startServer() {
     res.setHeader("Content-Type", "application/xml");
     res.setHeader("Cache-Control", "public, max-age=600");
     res.send(xml);
-  });  // ── SEO: robots.txt ──────────────────────────────────────────────────────────
+  });
+
+  // ── SEO: RSS feed /jobs/rss.xml ────────────────────────────────────────────────────────────────
+  let _rssCache: { xml: string; ts: number } | null = null;
+  const RSS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+  app.get("/jobs/rss.xml", async (_req, res) => {
+    const now = Date.now();
+    if (_rssCache && now - _rssCache.ts < RSS_CACHE_TTL) {
+      res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=600");
+      return res.send(_rssCache.xml);
+    }
+
+    const baseUrl = "https://avodanow.co.il";
+    const buildDate = new Date().toUTCString();
+
+    try {
+      const jobs = await getActiveJobs(100);
+      const items = jobs.map((j) => {
+        const title = `${j.title}${j.city ? ` ב${j.city}` : ""}`;
+        const link = `${baseUrl}/job/${j.id}`;
+        const pubDate = new Date(j.createdAt).toUTCString();
+        const salary = j.salary
+          ? `שכר: ₪${j.salary} ל${j.salaryType === "hourly" ? "שעה" : j.salaryType === "daily" ? "יום" : "חודש"}`
+          : "";
+        const desc = [j.description?.slice(0, 300), salary].filter(Boolean).join(" | ");
+        return [
+          "  <item>",
+          `    <title><![CDATA[${title}]]></title>`,
+          `    <link>${link}</link>`,
+          `    <guid isPermaLink="true">${link}</guid>`,
+          `    <pubDate>${pubDate}</pubDate>`,
+          `    <description><![CDATA[${desc}]]></description>`,
+          ...(j.category ? [`    <category><![CDATA[${j.category}]]></category>`] : []),
+          "  </item>",
+        ].join("\n");
+      });
+
+      const xml = [
+        `<?xml version="1.0" encoding="UTF-8"?>`,
+        `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
+        `<channel>`,
+        `  <title>AvodaNow — משרות זמניות</title>`,
+        `  <link>${baseUrl}</link>`,
+        `  <description>לוח דרושים מהיר ופשוט — עבודות זמניות קרוב אליך</description>`,
+        `  <language>he</language>`,
+        `  <lastBuildDate>${buildDate}</lastBuildDate>`,
+        `  <atom:link href="${baseUrl}/jobs/rss.xml" rel="self" type="application/rss+xml"/>`,
+        ...items,
+        `</channel>`,
+        `</rss>`,
+      ].join("\n");
+
+      _rssCache = { xml, ts: Date.now() };
+      res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=600");
+      res.send(xml);
+    } catch (err) {
+      console.error("[rss] Failed to generate RSS feed:", err);
+      res.status(500).send("RSS generation failed");
+    }
+  });
+
+  // ── SEO: robots.txt ──────────────────────────────────────────────────────────────────
   app.get("/robots.txt", (_req, res) => {
     const content = [
       "User-agent: *",

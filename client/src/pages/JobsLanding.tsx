@@ -23,7 +23,7 @@ import JobBottomSheet from "@/components/JobBottomSheet";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
-import { MapPin, Briefcase, Search } from "lucide-react";
+import { MapPin, Briefcase, Search, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { saveReturnPath } from "@/const";
 
@@ -73,7 +73,7 @@ function buildCanonical(city?: string, category?: string): string {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function JobsLanding() {
-  const params = useParams<{ slug?: string; category?: string; city?: string }>();
+  const params = useParams<{ slug?: string; category?: string; city?: string; time?: string }>();
   const { isAuthenticated, user } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | undefined>();
@@ -81,25 +81,37 @@ export default function JobsLanding() {
   const [bottomSheetJob, setBottomSheetJob] = useState<BottomSheetJobType | null>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
 
-  // Resolve city / category from URL params
-  const { resolvedCity, resolvedCategory } = useMemo(() => {
-    // Pattern: /jobs/:category/:city
+  // Resolve city / category / time from URL params
+  const { resolvedCity, resolvedCategory, resolvedTime } = useMemo(() => {
+    // Pattern: /jobs/:category/:city (also handles /jobs/today/:city)
     if (params.category && params.city) {
-      return { resolvedCity: params.city, resolvedCategory: params.category };
+      if (params.category === "today") {
+        return { resolvedCity: params.city, resolvedCategory: undefined, resolvedTime: "today" };
+      }
+      return { resolvedCity: params.city, resolvedCategory: params.category, resolvedTime: undefined };
     }
     // Pattern: /jobs/:slug — could be city or category
     if (params.slug) {
       if (isCategorySlug(params.slug)) {
-        return { resolvedCity: undefined, resolvedCategory: params.slug };
+        return { resolvedCity: undefined, resolvedCategory: params.slug, resolvedTime: undefined };
       }
-      return { resolvedCity: params.slug, resolvedCategory: undefined };
+      return { resolvedCity: params.slug, resolvedCategory: undefined, resolvedTime: undefined };
     }
-    return { resolvedCity: undefined, resolvedCategory: undefined };
+    return { resolvedCity: undefined, resolvedCategory: undefined, resolvedTime: undefined };
   }, [params]);
 
-  const h1 = buildH1(resolvedCity, resolvedCategory);
-  const description = buildDescription(resolvedCity, resolvedCategory);
-  const canonical = buildCanonical(resolvedCity, resolvedCategory);
+  // For /jobs/today/:city — override h1, description, canonical
+  const h1 = resolvedTime === "today"
+    ? (resolvedCity ? `עבודות להיום ב${resolvedCity}` : "עבודות להיום")
+    : buildH1(resolvedCity, resolvedCategory);
+  const description = resolvedTime === "today"
+    ? (resolvedCity
+        ? `מצא עבודות דחופות להיום ב${resolvedCity}. משרות שמתחילות היום — שליחויות, מטבח, מחסן ועוד.`
+        : "משרות דחופות שמתחילות היום. לוח דרושים מהיר ופשוט — ללא עמלות.")
+    : buildDescription(resolvedCity, resolvedCategory);
+  const canonical = resolvedTime === "today"
+    ? (resolvedCity ? `/jobs/today/${encodeURIComponent(resolvedCity)}` : "/jobs/today")
+    : buildCanonical(resolvedCity, resolvedCategory);
 
   // Fetch jobs for this city/category combo
   const jobsQuery = trpc.jobs.list.useQuery(
@@ -110,8 +122,17 @@ export default function JobsLanding() {
     },
     { staleTime: 5 * 60 * 1000 }
   );
-  const jobs = jobsQuery.data ?? [];
-  const isLoading = jobsQuery.isLoading;
+  const todayQuery = trpc.jobs.listToday.useQuery({}, {
+    enabled: resolvedTime === "today",
+    staleTime: 5 * 60 * 1000,
+  });
+  // For /jobs/today/:city — filter base list to today's jobs only
+  let jobs = jobsQuery.data ?? [];
+  if (resolvedTime === "today") {
+    const todayIds = new Set((todayQuery.data ?? []).map((j: { id: number }) => j.id));
+    jobs = jobs.filter(j => todayIds.has(j.id));
+  }
+  const isLoading = jobsQuery.isLoading || (resolvedTime === "today" && todayQuery.isLoading);
 
   // noindex when no jobs found (and not still loading)
   const noIndex = !isLoading && jobs.length === 0;
@@ -128,6 +149,7 @@ export default function JobsLanding() {
     [
       { name: "בית", path: "/" },
       { name: "משרות", path: "/find-jobs" },
+      ...(resolvedTime === "today" ? [{ name: "עבודות להיום", path: "/jobs/today" }] : []),
       ...(resolvedCategory
         ? [{ name: getCategoryLabel(resolvedCategory), path: `/jobs/${encodeURIComponent(resolvedCategory)}` }]
         : []),
@@ -186,6 +208,40 @@ export default function JobsLanding() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f5f7f8]">
       <div className="max-w-2xl mx-auto px-4 py-8">
+
+        {/* ── Visual Breadcrumb ── */}
+        <nav
+          aria-label="ניווט אתר"
+          className="flex items-center gap-1 text-sm mb-5 flex-wrap text-gray-400"
+          dir="rtl"
+        >
+          <Link href="/" className="hover:text-gray-700 transition-colors">בית</Link>
+          <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+          <Link href="/find-jobs" className="hover:text-gray-700 transition-colors">משרות</Link>
+          {resolvedTime === "today" && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+              <Link href="/jobs/today" className="hover:text-gray-700 transition-colors">עבודות להיום</Link>
+            </>
+          )}
+          {resolvedCategory && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+              <Link
+                href={`/jobs/${encodeURIComponent(resolvedCategory)}`}
+                className="hover:text-gray-700 transition-colors"
+              >
+                {getCategoryLabel(resolvedCategory)}
+              </Link>
+            </>
+          )}
+          {resolvedCity && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+              <span className="text-gray-600 font-medium">{resolvedCity}</span>
+            </>
+          )}
+        </nav>
 
         {/* ── Page header ── */}
         <div className="mb-8">

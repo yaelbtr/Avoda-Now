@@ -132,7 +132,15 @@ export default function FindJobs() {
     : category !== "all"
     ? `/find-jobs?category=${encodeURIComponent(category)}`
     : "/find-jobs";
-  useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical });
+  // noindex when a specific filter is active but no results found (avoids crawl budget waste)
+  const hasActiveFilter = selectedCity !== "" || category !== "all";
+  const [noIndexReady, setNoIndexReady] = useState(false);
+  useSEO({
+    title: seoTitle,
+    description: seoDescription,
+    canonical: seoCanonical,
+    noIndex: noIndexReady,
+  });
 
   // Worker profile — used to decide whether to auto-collapse the filter panel
   const profileQuery = trpc.user.getProfile.useQuery(undefined, {
@@ -333,6 +341,15 @@ export default function FindJobs() {
       setAutoExpandedRadius(true);
     }
   }, [isLoading, userLat, jobs.length, radiusKm, autoExpandedRadius]);
+
+  // noindex: set when filter is active, query finished, and no results found
+  useEffect(() => {
+    if (!isLoading && hasActiveFilter && jobs.length === 0) {
+      setNoIndexReady(true);
+    } else {
+      setNoIndexReady(false);
+    }
+  }, [isLoading, hasActiveFilter, jobs.length]);
 
   return (
     <div

@@ -101,6 +101,8 @@ function Router() {
                 <Route path="/worker/:id" component={PublicWorkerProfile} />
                 <Route path="/applications/:id" component={ApplicationView} />
                 <Route path="/jobs/:id/applications" component={JobApplications} />
+                <Route path="/jobs/today/:city" component={JobsLanding} />
+                <Route path="/jobs/today" component={JobsLanding} />
                 <Route path="/jobs/:category/:city" component={JobsLanding} />
                 <Route path="/jobs/:slug" component={JobsLanding} />
                 <Route path="/my-applications" component={MyApplications} />

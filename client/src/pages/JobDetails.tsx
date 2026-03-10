@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +22,8 @@ import {
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { useJobPostingSchema } from "@/hooks/useStructuredData";
+import { useJobPostingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
+import { useSEO } from "@/hooks/useSEO";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
   C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
@@ -177,6 +178,25 @@ export default function JobDetails() {
     (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
   );
 
+  // ── SEO: canonical + OG tags via useSEO ───────────────────────────────
+  const jobCity = job.city ?? job.address.split(",")[0];
+  const salaryText = isVolunteer ? "התנדבות" : job.salary ? `₪${job.salary} ל${job.salaryType === "hourly" ? "שעה" : job.salaryType === "daily" ? "יום" : "חודש"}` : "";
+  const seoJobTitle = `${job.title}${jobCity ? ` ב${jobCity}` : ""}${salaryText ? ` – ${salaryText}` : ""}`;
+  useSEO({
+    title: seoJobTitle,
+    description: job.description.slice(0, 200),
+    canonical: `/job/${job.id}`,
+    ogImage: `${SITE_URL}/og-image.png`,
+  });
+
+  // ── JSON-LD BreadcrumbList ────────────────────────────────────────────────
+  useBreadcrumbSchema([
+    { name: "בית", path: "/" },
+    { name: "חיפוש עבודה", path: "/find-jobs" },
+    ...(jobCity ? [{ name: `עבודות ב${jobCity}`, path: `/jobs/${encodeURIComponent(jobCity)}` }] : []),
+    { name: job.title, path: `/job/${job.id}` },
+  ]);
+
   // ── JSON-LD JobPosting structured data ──────────────────────────────────
   useJobPostingSchema({
     id: job.id,
@@ -199,21 +219,34 @@ export default function JobDetails() {
     >
 
 
-      <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
-
       <div className="relative max-w-2xl mx-auto px-4 py-8">
 
-        {/* ── Back button ── */}
-        <motion.button
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
+        {/* ── Visual Breadcrumb ── */}
+        <motion.nav
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          onClick={() => navigate("/find-jobs")}
-          className="flex items-center gap-1 text-sm mb-6 transition-colors text-gray-500 hover:text-gray-900"
+          aria-label="ניווט אתר"
+          className="flex items-center gap-1 text-sm mb-6 flex-wrap"
+          dir="rtl"
         >
-          <ChevronRight className="h-4 w-4" />
-          חזור לחיפוש
-        </motion.button>
+          <Link href="/" className="text-gray-400 hover:text-gray-700 transition-colors">בית</Link>
+          <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+          <Link href="/find-jobs" className="text-gray-400 hover:text-gray-700 transition-colors">חיפוש עבודה</Link>
+          {jobCity && (
+            <>
+              <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+              <Link
+                href={`/jobs/${encodeURIComponent(jobCity)}`}
+                className="text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                {`עבודות ב${jobCity}`}
+              </Link>
+            </>
+          )}
+          <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+          <span className="text-gray-600 font-medium truncate max-w-[160px]">{job.title}</span>
+        </motion.nav>
 
         {/* ── Header card ── */}
         <motion.div

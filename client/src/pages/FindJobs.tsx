@@ -98,7 +98,8 @@ export default function FindJobs() {
   const [bottomSheetJob, setBottomSheetJob] = useState<SearchJob | null>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const initialCity = params.get("city") ?? null;
+  const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 

@@ -1028,3 +1028,9 @@
 
 ## Haptic Feedback ב-Bottom Nav
 - [x] הוספת navigator.vibrate(10) לכל לחיצה על פריטי ה-bottom nav (עם בדיקת תמיכה)
+
+## Footer SEO + מינימלי
+- [x] קטע קישורי SEO — 12 ערים (תל אביב, ירושלים, חיפה ועוד) עם קישורי /find-jobs?city=
+- [x] קטע קישורי SEO — 12 קטגוריות עם קישורי /find-jobs?category=
+- [x] footer מינימלי עם תנאי שימוש + פרטיות + זכויות
+- [x] קישורים crawlable ב-<a href> אמיתיים + FindJobs קורא ?city= מה-URL

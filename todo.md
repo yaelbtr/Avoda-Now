@@ -1165,3 +1165,12 @@
 
 ### Low Priority
 - [ ] Add SEO content pages (עבודות לפסח, עבודה זמנית, עבודה לסטודנטים)
+
+## Guide / Topic Cluster Section
+- [x] Write Hebrew guide content for all 12 category sub-pages (300-600 words each)
+- [x] Build GuideHub page at /guide/temporary-jobs
+- [x] Build GuidePage component for /guide/temporary-jobs/:category
+- [x] Register /guide/temporary-jobs and /guide/temporary-jobs/:category routes in App.tsx
+- [x] Add internal links from guide pages to /jobs/{category} and /jobs/{category}/{city}
+- [x] Add guide links to sitemap.xml
+- [x] Add "מדריך" nav link to desktop footer and mobile nav

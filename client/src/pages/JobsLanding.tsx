@@ -322,7 +322,7 @@ export default function JobsLanding() {
           </div>
 
           {/* Popular categories */}
-          <div>
+          <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="h-4 w-4 text-blue-500" />
               <h2 className="text-sm font-bold text-gray-700">חיפוש לפי קטגוריה</h2>
@@ -337,6 +337,31 @@ export default function JobsLanding() {
                   {cat.icon} עבודות {cat.label}
                 </Link>
               ))}
+            </div>
+          </div>
+
+          {/* Guide links */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-base">📖</span>
+              <h2 className="text-sm font-bold text-gray-700">מדריכים לעבודות זמניות</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {JOB_CATEGORIES.filter((c) => c.value !== "other").map((cat) => (
+                <Link
+                  key={cat.value}
+                  href={`/guide/temporary-jobs/${cat.value}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors"
+                >
+                  מדריך: {cat.label}
+                </Link>
+              ))}
+              <Link
+                href="/guide/temporary-jobs"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+              >
+                כל המדריכים →
+              </Link>
             </div>
           </div>
         </div>

@@ -169,6 +169,42 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* ── Guide links ── */}
+        <div className="mb-8" style={{ borderTop: `1px solid ${DIVIDER}` }}>
+          <h2
+            className="font-bold text-[11px] uppercase mb-3 mt-6 text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            מדריכים לעבודות זמניות
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
+            {SEO_CATEGORIES.filter((c) => c.value !== "other").map((cat) => (
+              <li key={cat.value}>
+                <a
+                  href={`/guide/temporary-jobs/${cat.value}`}
+                  className="text-[13px] transition-colors"
+                  style={{ color: FG_PRIMARY }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+                >
+                  מדריך: {cat.label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                href="/guide/temporary-jobs"
+                className="text-[13px] font-semibold transition-colors"
+                style={{ color: ACCENT }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT)}
+              >
+                כל המדריכים →
+              </a>
+            </li>
+          </ul>
+        </div>
+
         {/* ── Minimal legal footer ── */}
         <div
           className="pt-5 flex flex-col sm:flex-row items-center justify-between gap-3"

@@ -182,6 +182,13 @@ async function startServer() {
       for (const cat of fallbackCats) urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
 
+    // /guide/temporary-jobs hub + all category sub-pages (always included — static content)
+    const GUIDE_CATEGORIES = ["delivery","warehouse","kitchen","cleaning","childcare","eldercare","security","construction","retail","events","agriculture"];
+    urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
+    for (const cat of GUIDE_CATEGORIES) {
+      urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs/${cat}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
+    }
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
     _sitemapCache = { xml, ts: Date.now() };
     res.setHeader("Content-Type", "application/xml");

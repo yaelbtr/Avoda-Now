@@ -1094,3 +1094,8 @@
 - [x] Add seoRouter with cityJobCounts procedure to routers.ts
 - [x] Update sitemap.xml to be dynamic with real job counts from DB (10min cache)
 - [x] Auto-close MobileDrawer when user scrolls down >=60px
+
+## Structured Data — JSON-LD JobPosting
+- [x] Create useJobPostingSchema hook for single job pages (/job/:id)
+- [x] Apply JobPosting schema to JobDetails/JobPublic page
+- [x] Add ItemList + JobPosting schema to JobsLanding SEO pages

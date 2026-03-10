@@ -14,6 +14,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
+import { useJobListingSchema } from "@/hooks/useStructuredData";
 import { trpc } from "@/lib/trpc";
 import { JOB_CATEGORIES, getCategoryLabel } from "@shared/categories";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
@@ -121,6 +122,21 @@ export default function JobsLanding() {
     canonical,
     noIndex,
   });
+
+  // JSON-LD ItemList + JobPosting structured data
+  useJobListingSchema(
+    jobs.map((j: JobCardJob) => ({
+      id: j.id,
+      title: j.title,
+      description: j.title, // JobCardJob has no description field; use title as fallback
+      city: j.city,
+      salary: j.salary as string | null,
+      salaryType: j.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
+      isUrgent: j.isUrgent ?? undefined,
+    })),
+    h1,
+    canonical
+  );
 
   // Saved jobs
   const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });

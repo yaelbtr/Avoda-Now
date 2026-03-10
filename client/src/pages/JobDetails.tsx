@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
+import { useJobPostingSchema } from "@/hooks/useStructuredData";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
   C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
@@ -175,6 +176,21 @@ export default function JobDetails() {
     "עבודה זמנית:" + "\n" + job.title + "\n" + (job.city ?? job.address.split(",")[0]) + "\n" +
     (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
   );
+
+  // ── JSON-LD JobPosting structured data ──────────────────────────────────
+  useJobPostingSchema({
+    id: job.id,
+    title: job.title,
+    description: job.description,
+    city: job.city,
+    address: job.address,
+    salary: job.salary as string | null,
+    salaryType: job.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
+    businessName: job.businessName,
+    createdAt: job.createdAt,
+    expiresAt: job.expiresAt,
+    isUrgent: job.isUrgent,
+  });
 
   return (
     <div

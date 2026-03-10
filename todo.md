@@ -1104,3 +1104,8 @@
 - [x] Add useBreadcrumbSchema hook and apply to JobsLanding (/jobs/{category}/{city})
 - [x] Add useOrganizationSchema hook and apply to Home page
 - [x] Add useFAQSchema hook and apply to Terms page
+
+## Structured Data — WebSite, LocalBusiness, Privacy FAQ
+- [x] Add useWebSiteSchema hook (WebSite + SearchAction) and apply to Home page
+- [x] Add useLocalBusinessSchema hook and apply to Home page
+- [x] Add FAQPage schema to Privacy page

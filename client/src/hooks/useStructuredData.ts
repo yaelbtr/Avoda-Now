@@ -249,3 +249,70 @@ export function useFAQSchema(faqs: FAQItem[]) {
     return () => removeScript("ld-faq");
   }, [faqs.length]);
 }
+
+// ── Hook: WebSite + SearchAction (Sitelinks Search Box) ───────────────────────
+//
+// Inject once on the homepage. Enables Google to show a search box in SERPs.
+// The search URL pattern must match your actual search route.
+
+export function useWebSiteSchema() {
+  useEffect(() => {
+    injectScript("ld-website", {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: BASE_URL,
+      description:
+        "AvodaNow — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+      inLanguage: "he",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${BASE_URL}/find-jobs?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    });
+    return () => removeScript("ld-website");
+  }, []);
+}
+
+// ── Hook: LocalBusiness ───────────────────────────────────────────────────────
+//
+// Strengthens local search presence for queries like "עבודה בתל אביב".
+
+export function useLocalBusinessSchema() {
+  useEffect(() => {
+    injectScript("ld-local-business", {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: SITE_NAME,
+      url: BASE_URL,
+      logo: LOGO_URL,
+      image: LOGO_URL,
+      description:
+        "AvodaNow — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+      email: "info@avodanow.co.il",
+      areaServed: {
+        "@type": "Country",
+        name: "Israel",
+        "@id": "https://www.wikidata.org/wiki/Q801",
+      },
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "IL",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "info@avodanow.co.il",
+        contactType: "customer support",
+        availableLanguage: "Hebrew",
+      },
+      sameAs: [BASE_URL],
+      priceRange: "חינם",
+      openingHours: "Mo-Su 00:00-23:59",
+    });
+    return () => removeScript("ld-local-business");
+  }, []);
+}

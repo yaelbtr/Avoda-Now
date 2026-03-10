@@ -1,4 +1,31 @@
+import { useFAQSchema } from "@/hooks/useStructuredData";
+
+const PRIVACY_FAQS = [
+  {
+    question: "איזה מידע AvodaNow אוספת עליי?",
+    answer: "אנו אוספים מספר טלפון לצורך אימות זהות, פרטי משרות שפורסמו, ומיקום גיאוגרפי רק כאשר ניתנת הרשאה מפורשת.",
+  },
+  {
+    question: "האם AvodaNow מוכרת מידע לגורמים שלישיים?",
+    answer: "לא. אנו לא מוכרים או משתפים מידע אישי עם צדדים שלישיים.",
+  },
+  {
+    question: "כיצד המידע שלי מוגן?",
+    answer: "אנו נוקטים באמצעי אבטחה סבירים כולל הצפנת תקשורת HTTPS ואחסון מאובטח.",
+  },
+  {
+    question: "האם אפשר למחוק את החשבון שלי?",
+    answer: "כן. ניתן לפנות אלינו בכתובת info@avodanow.co.il ונמחק את החשבון ואת כל המידע הקשור אליו.",
+  },
+  {
+    question: "האם AvodaNow משתמשת בעוגיות?",
+    answer: "כן, אנו משתמשים בעוגיות ההפעלה בלבד לשמירת סשן התחברות. אין שימוש בעוגיות פרסום.",
+  },
+];
+
 export default function Privacy() {
+  useFAQSchema(PRIVACY_FAQS);
+
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות פרטיות</h1>

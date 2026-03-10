@@ -410,8 +410,23 @@ export function JobCard({
 
         {/* Content */}
         <div className="p-3" dir="rtl">
+          {/* Category badge */}
+          <div className="mb-1.5">
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+              style={{
+                background: "oklch(0.96 0.03 122 / 0.8)",
+                color: "oklch(0.38 0.09 122)",
+                border: "1px solid oklch(0.88 0.06 122 / 0.5)",
+              }}
+            >
+              <span className="text-[11px]">{getCategoryIcon(job.category)}</span>
+              {getCategoryLabel(job.category)}
+            </span>
+          </div>
+
           <h3
-            className="font-bold text-[13px] leading-tight text-right mb-1"
+            className="font-bold text-[13px] leading-tight text-right mb-1.5"
             style={{
               color: "var(--text-primary)",
               overflow: "hidden",
@@ -426,50 +441,68 @@ export function JobCard({
           <div className="flex items-center gap-1 text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
             <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.07 125.0)" }} />
             <span className="truncate">{cityDisplay}</span>
-            <span className="mx-1 opacity-40">·</span>
-            <Clock className="h-3 w-3 shrink-0" />
-            <span className="truncate">{getStartTimeLabel(job.startTime)}</span>
+            {job.startTime !== "flexible" && (
+              <>
+                <span className="mx-0.5 opacity-40">·</span>
+                <Clock className="h-3 w-3 shrink-0" />
+                <span className="truncate">{getStartTimeLabel(job.startTime)}</span>
+              </>
+            )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2" dir="rtl">
-            {/* Apply / Applied */}
-            {!isExpired && onApply && (
-              isApplied ? (
-                <span
-                  className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-xl font-bold shrink-0"
-                  style={{ background: "oklch(0.65 0.22 160 / 0.10)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}
-                >
-                  <CheckCircle className="h-3 w-3" />הגשת
-                </span>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
-                    onApply(job.id, undefined, window.location.origin);
-                  }}
-                  disabled={isApplyPending}
-                  className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-xl font-bold shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                    color: "oklch(0.97 0.02 91)",
-                    opacity: isApplyPending ? 0.7 : 1,
-                  }}
-                >
-                  {isApplyPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-                  הגש
-                </motion.button>
-              )
-            )}
-            {/* Hint text — visible only on hover */}
+          {/* Action buttons row */}
+          <div className="flex items-center justify-between gap-1.5" dir="rtl">
+            <div className="flex items-center gap-1.5">
+              {/* Apply / Applied */}
+              {!isExpired && onApply && (
+                isApplied ? (
+                  <span
+                    className="flex items-center gap-1 text-[10px] px-2 py-1.5 rounded-xl font-bold shrink-0"
+                    style={{ background: "oklch(0.65 0.22 160 / 0.10)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}
+                  >
+                    <CheckCircle className="h-3 w-3" />הגשת ✓
+                  </span>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
+                      onApply(job.id, undefined, window.location.origin);
+                    }}
+                    disabled={isApplyPending}
+                    className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-xl font-bold shrink-0"
+                    style={{
+                      background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                      color: "oklch(0.97 0.02 91)",
+                      opacity: isApplyPending ? 0.7 : 1,
+                    }}
+                  >
+                    {isApplyPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                    הגש
+                  </motion.button>
+                )
+              )}
+            </div>
+
+            {/* Share button */}
+            <SharePopover
+              jobTitle={job.title}
+              jobId={job.id}
+              city={job.city}
+              salary={job.salary}
+              salaryType={job.salaryType}
+            />
+          </div>
+
+          {/* Hint text — visible only on hover */}
+          <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <span
-              className="text-[9px] font-medium flex items-center gap-0.5 select-none shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ color: "oklch(0.50 0.07 125.0)", letterSpacing: "0.01em" }}
+              className="text-[9px] font-medium flex items-center gap-0.5 select-none"
+              style={{ color: "oklch(0.55 0.05 125.0)", letterSpacing: "0.01em" }}
             >
-              לפרטים
+              לחץ לפרטים נוספים
               <ChevronLeft className="h-2.5 w-2.5 opacity-70" />
             </span>
           </div>

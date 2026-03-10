@@ -394,7 +394,7 @@ export default function FindJobs() {
           </p>
         </motion.div>
 
-        {/* ── Jobs Near Me hero button ── */}
+        {/* ── Jobs Near Me hero button + Urgent Today button ── */}
         <AnimatePresence>
           {!userLat && (
             <motion.div
@@ -402,7 +402,7 @@ export default function FindJobs() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.35 }}
-              className="mb-5"
+              className="mb-5 flex flex-col gap-2"
             >
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -472,6 +472,28 @@ export default function FindJobs() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Urgent Today button (always visible, below geo area) ── */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setShowUrgentToday(!showUrgentToday)}
+          className="w-full mb-5 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all"
+          style={showUrgentToday ? {
+            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+            color: "white",
+            border: "1px solid #ef4444",
+            boxShadow: "0 4px 14px rgba(239,68,68,0.35)",
+          } : {
+            background: "rgba(239,68,68,0.07)",
+            color: "#dc2626",
+            border: "1px solid rgba(239,68,68,0.3)",
+          }}
+        >
+          <Flame className="h-4 w-4" />
+          דחוף להיום
+          <span className="text-xs font-normal opacity-75">— עבודות דחופות ועבודות שמתחילות היום</span>
+        </motion.button>
 
         {/* ── Location Permission Dialog ── */}
         <AnimatePresence>
@@ -629,29 +651,6 @@ export default function FindJobs() {
                   className="pr-10 text-right bg-[#f5f7f8] border-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
-            </div>
-
-            {/* ── Quick filter: urgent today ── */}
-            <div className="pt-3 pb-0">
-              <p className="text-[11px] font-semibold mb-2 text-gray-400 uppercase tracking-wide">סינון מהיר</p>
-              <button
-                onClick={() => setShowUrgentToday(!showUrgentToday)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
-                style={showUrgentToday ? {
-                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                  color: "white",
-                  border: "1px solid #ef4444",
-                  boxShadow: "0 4px 12px rgba(239,68,68,0.3)",
-                } : {
-                  background: "rgba(239,68,68,0.08)",
-                  color: "#ef4444",
-                  border: "1px solid rgba(239,68,68,0.25)",
-                }}
-              >
-                <Flame className="h-4 w-4" />
-                דחוף להיום
-                <span className="text-xs font-normal opacity-80">— עבודות דחופות ועבודות שמתחילות היום</span>
-              </button>
             </div>
 
             {/* ══ Row 1: תחומי עיסוק מועדפים ══ */}

@@ -1180,3 +1180,7 @@
 - [x] Collapsible row: "תחומי עיסוק מועדפים" with count badge and category chips
 - [x] Collapsible row: "מצב חיפוש עבודה לפי עיר" with city selector
 - [x] "שמור העדפות" button that triggers search and saves to profile
+
+## FindJobs — Move "דחוף להיום" Button
+- [x] Remove "דחוף להיום" button from inside the filter panel
+- [x] Add "דחוף להיום" button next to the green "עבודות קרוב אלי" button at the top

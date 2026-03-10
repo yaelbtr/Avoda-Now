@@ -504,14 +504,14 @@ export function JobCard({
         </TooltipTrigger>
         <TooltipContent
           side="bottom"
-          sideOffset={2}
-          className="text-[11px] font-medium px-2 py-1 rounded-md z-50"
+          sideOffset={-28}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full z-50 pointer-events-none"
           style={{
-            background: "rgba(30,30,30,0.75)",
-            color: "rgba(255,255,255,0.88)",
+            background: "rgba(212,175,55,0.82)",
+            color: "rgba(50,35,0,0.95)",
             border: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            backdropFilter: "blur(4px)",
+            boxShadow: "none",
+            backdropFilter: "blur(3px)",
           }}
         >
           לחץ לפרטים
@@ -761,14 +761,14 @@ export function JobCard({
       </TooltipTrigger>
       <TooltipContent
         side="bottom"
-        sideOffset={2}
-        className="text-[11px] font-medium px-2 py-1 rounded-md z-50"
+        sideOffset={-28}
+        className="text-[11px] font-semibold px-2.5 py-1 rounded-full z-50 pointer-events-none"
         style={{
-          background: "rgba(30,30,30,0.75)",
-          color: "rgba(255,255,255,0.88)",
+          background: "rgba(212,175,55,0.82)",
+          color: "rgba(50,35,0,0.95)",
           border: "none",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          backdropFilter: "blur(4px)",
+          boxShadow: "none",
+          backdropFilter: "blur(3px)",
         }}
       >
         לחץ לפרטים

@@ -251,13 +251,11 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   כניסה
                 </button>
               )}
-            </nav>
-
-            {/* Legal & Contact footer */}
-            <div
-              className="shrink-0 px-3 pb-4 pt-2"
-              style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
-            >
+              {/* Legal & Contact footer — inside scroll so it's always reachable */}
+              <div
+                className="px-1 pb-4 pt-2 mt-2"
+                style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
+              >
               {/* Legal links */}
               <p style={SECTION_LABEL_STYLE}>מידע משפטי</p>
               <div className="flex flex-col gap-0.5 mb-3">
@@ -329,7 +327,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               >
                 © AvodaNow 2026 · כל הזכויות שמורות
               </p>
-            </div>
+              </div>
+            </nav>
           </motion.div>
         </>
       )}

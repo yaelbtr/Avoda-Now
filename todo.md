@@ -1070,3 +1070,6 @@
 
 ## Bug Fix — MobileDrawer Overflow
 - [x] Fix MobileDrawer: items overlap at bottom when content exceeds screen height — add overflow-y scroll
+
+## Bug Fix — MobileDrawer Footer Cutoff
+- [x] Fix MobileDrawer: elements after "מאובטח ומוגן" are not visible (footer cut off)

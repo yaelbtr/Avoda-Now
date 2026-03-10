@@ -183,6 +183,9 @@ export default function HomeEmployer() {
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer_809b2625.jpg"
           alt=""
           aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "55% 25%" }}
         />
@@ -284,6 +287,9 @@ export default function HomeEmployer() {
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer_809b2625.jpg"
           alt=""
           aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "50% 25%" }}
         />

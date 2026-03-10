@@ -232,6 +232,8 @@ export function WorkerProfilePreviewModal({
                     <img
                       src={photo}
                       alt={name}
+                      loading="lazy"
+                      decoding="async"
                       style={{
                         width: 64, height: 64, borderRadius: "50%",
                         objectFit: "cover", flexShrink: 0,

@@ -303,6 +303,8 @@ export default function MyApplications() {
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/my-applications-hero-iyRXrGMtR7uTEGLVaADSBQ.webp"
           alt=""
           aria-hidden="true"
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
           style={{ opacity: 0.75 }}
         />

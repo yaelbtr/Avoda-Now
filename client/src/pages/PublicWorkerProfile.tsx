@@ -160,6 +160,8 @@ export default function PublicWorkerProfile() {
             <img
               src={profile.profilePhoto}
               alt={profile.name ?? ""}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: 72, height: 72, borderRadius: "50%",
                 objectFit: "cover", flexShrink: 0,

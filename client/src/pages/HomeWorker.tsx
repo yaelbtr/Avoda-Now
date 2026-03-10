@@ -295,6 +295,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
             alt=""
             aria-hidden="true"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ objectPosition: "60% 35%" }}
           />
@@ -386,6 +389,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
           alt=""
           aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "70% 60%" }}
         />
@@ -1162,6 +1168,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
             alt=""
+            loading="lazy"
+            decoding="async"
             style={{
               width: "100%",
               height: "100%",

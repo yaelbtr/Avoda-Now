@@ -1112,3 +1112,6 @@
 
 ## Performance — Preconnect Hints
 - [x] Add preconnect + dns-prefetch hints to index.html for CDN and API domains
+
+## Performance — Lazy Loading Images
+- [x] Add loading="lazy" decoding="async" to images in JobCard, JobDetails, JobsLanding, and other job pages

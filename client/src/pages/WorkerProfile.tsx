@@ -365,7 +365,7 @@ export default function WorkerProfile() {
                 <div className="flex flex-col items-center gap-2 py-2">
                   <div className="relative">
                     {profilePhoto ? (
-                      <img src={profilePhoto} alt="תמונת פרופיל" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                      <img src={profilePhoto} alt="תמונת פרופיל" loading="lazy" decoding="async" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
                     ) : (
                       <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed border-border bg-muted">
                         <User className="h-8 w-8 text-muted-foreground" />
@@ -848,6 +848,8 @@ export default function WorkerProfile() {
                 <img
                   src={profilePhoto}
                   alt="תמונת פרופיל"
+                  loading="lazy"
+                  decoding="async"
                   className="w-20 h-20 rounded-full object-cover"
                   style={{ border: "3px solid oklch(0.55 0.12 88)", boxShadow: "0 2px 12px oklch(0.45 0.12 88 / 0.25)" }}
                 />

@@ -280,7 +280,7 @@ export default function Navbar() {
                         style={{ background: "oklch(0.50 0.07 124.9)" }}
                       >
                         {profilePhoto ? (
-                          <img src={profilePhoto} alt="פרופיל" className="w-full h-full object-cover" />
+                          <img src={profilePhoto} alt="פרופיל" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         ) : (
                           <User className="h-3.5 w-3.5" style={{ color: "var(--citrus)" }} />
                         )}

@@ -1174,3 +1174,9 @@
 - [x] Add internal links from guide pages to /jobs/{category} and /jobs/{category}/{city}
 - [x] Add guide links to sitemap.xml
 - [x] Add "מדריך" nav link to desktop footer and mobile nav
+
+## FindJobs Filter Panel Rebuild (Profile-style UI)
+- [x] Rebuild filter panel to match WorkerProfile preferences UI style
+- [x] Collapsible row: "תחומי עיסוק מועדפים" with count badge and category chips
+- [x] Collapsible row: "מצב חיפוש עבודה לפי עיר" with city selector
+- [x] "שמור העדפות" button that triggers search and saves to profile

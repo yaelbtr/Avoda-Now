@@ -110,7 +110,9 @@ export default function FindJobs() {
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [geoCity, setGeoCity] = useState<string | null>(null);
   // Filter panel open/collapsed state — starts undefined until profile is loaded
-  const [filterOpen, setFilterOpen] = useState<boolean | undefined>(undefined);
+  const [filterOpen, setFilterOpen] = useState<boolean>(false);
+  // Which sub-section inside the filter panel is expanded (profile-style accordion)
+  const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
@@ -151,13 +153,18 @@ export default function FindJobs() {
   // Auth loading state from context
   const { loading: authLoading } = useAuth();
 
-  // Auto-collapse filter panel once profile data is available
+  // Track whether we've already done the initial auto-open decision
+  const filterInitialized = useRef(false);
+
+  // Auto-open filter panel only for users without a profile (runs once)
   useEffect(() => {
+    if (filterInitialized.current) return;
     // Wait until auth state is resolved
     if (authLoading) return;
     if (!isAuthenticated) {
       // Not logged in — show filter panel open
-      setFilterOpen(prev => prev ?? true);
+      filterInitialized.current = true;
+      setFilterOpen(true);
       return;
     }
     // Authenticated — wait for profile data
@@ -166,8 +173,9 @@ export default function FindJobs() {
     const hasProfile =
       (profile?.preferredCategories && profile.preferredCategories.length > 0) ||
       !!profile?.preferredCity;
-    // Only set once (when still undefined) to avoid overriding manual user toggle
-    setFilterOpen(prev => prev ?? !hasProfile);
+    // Open for users without a profile, keep closed for users with a profile
+    filterInitialized.current = true;
+    if (!hasProfile) setFilterOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
@@ -571,394 +579,375 @@ export default function FindJobs() {
             </div>
           </button>
 
-          {/* Profile recommendation banner — shown when panel is open and user has no profile */}
-          <AnimatePresence>
-            {filterOpen && isAuthenticated && !profileQuery.isLoading && (() => {
-              const profile = profileQuery.data;
-              const hasProfile =
-                (profile?.preferredCategories && profile.preferredCategories.length > 0) ||
-                !!profile?.preferredCity;
-              return !hasProfile ? (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 overflow-hidden"
-                >
-                  <Link href="/profile">
-                    <div
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-90"
-                      style={{
-                        background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(79,70,229,0.05) 100%)",
-                        border: "1px solid rgba(99,102,241,0.25)",
-                      }}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center shrink-0">
-                        <UserCheck className="h-4 w-4 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-indigo-800">מלא את הפרופיל שלך</p>
-                        <p className="text-xs text-indigo-600">הגדר קטגוריות ועיר מועדפת כדי שנסנן עבורך אוטומטית</p>
-                      </div>
-                      <span className="text-xs text-indigo-500 font-medium shrink-0">לפרופיל ←</span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ) : null;
-            })()}
-          </AnimatePresence>
-
-          {/* Collapsible filter body */}
-          <AnimatePresence initial={false}>
-            {filterOpen && (
-              <motion.div
-                key="filter-body"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-          <div className="mt-4">
-
-          {/* 1. Search */}
-          <div className="relative mb-4">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
-            <Input
-              placeholder="חפש לפי תפקיד, עיר או מילת מפתח..."
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              className="pr-10 text-right bg-[#f5f7f8] border-gray-200 text-gray-900 placeholder:text-gray-400"
-            />
-          </div>
-
-          {/* 2. Quick filter: urgent today */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold mb-2 text-gray-500">סינון מהיר</p>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowUrgentToday(!showUrgentToday)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
-              style={showUrgentToday ? {
-                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "white",
-                border: "1px solid #ef4444",
-                boxShadow: "0 4px 12px rgba(239,68,68,0.3)",
-              } : {
-                background: "rgba(239,68,68,0.08)",
-                color: "#ef4444",
-                border: "1px solid rgba(239,68,68,0.25)",
-              }}
-            >
-              <Flame className="h-4 w-4" />
-              דחוף להיום
-              <span className="text-xs font-normal opacity-80">— עבודות דחופות ועבודות שמתחילות היום</span>
-            </motion.button>
-          </div>
-
-          {/* 2b. City quick filter chips */}
-          {popularCities.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-gray-500">סינון לפי עיר</p>
-                {selectedCity && (
-                  <button
-                    onClick={() => setSelectedCity(null)}
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                    נקה
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {popularCities.map(city => (
-                  <button
-                    key={city.id}
-                    onClick={() => setSelectedCity(selectedCity === city.nameHe ? null : city.nameHe)}
-                    className="px-3 py-1 rounded-full text-xs font-medium transition-all"
-                    style={selectedCity === city.nameHe ? {
-                      background: "#0ea5e9",
-                      color: "white",
-                      border: "1px solid #0ea5e9",
-                      boxShadow: "0 2px 8px rgba(14,165,233,0.3)",
-                    } : {
-                      background: "rgba(14,165,233,0.08)",
-                      color: "#0369a1",
-                      border: "1px solid rgba(14,165,233,0.25)",
-                    }}
-                  >
-                    📍 {city.nameHe}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="h-px bg-gray-100 mb-4" />
-
-          {/* 3. Category */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold mb-2 text-gray-500">קטגוריה</p>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                onClick={() => setCategory("all")}
-                className="px-3 py-1 rounded-full text-xs font-medium transition-all"
-                style={category === "all" ? {
-                  background: C_BRAND_HEX,
-                  color: "white",
-                  border: `1px solid ${C_BRAND_HEX}`,
-                  boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
-                } : {
-                  background: C_PAGE_BG_HEX,
-                  color: C_TEXT_MUTED,
-                  border: `1px solid ${C_BORDER}`,
-                }}
-              >
-                הכל
-              </button>
-              {JOB_CATEGORIES.map(cat => (
-                <button
-                  key={cat.value}
-                  onClick={() => setCategory(cat.value)}
-                  className="px-3 py-1 rounded-full text-xs font-medium transition-all"
-                  style={category === cat.value ? {
-                    background: C_BRAND_HEX,
-                    color: "white",
-                    border: `1px solid ${C_BRAND_HEX}`,
-                    boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
-                  } : {
-                    background: C_BRAND_HEX,
-                    color: "#64748b",
-                    border: "1px solid #e2e8f0",
+          {/* ── Profile recommendation banner ── */}
+          {isAuthenticated && !profileQuery.isLoading && (() => {
+            const profile = profileQuery.data;
+            const hasProfile =
+              (profile?.preferredCategories && profile.preferredCategories.length > 0) ||
+              !!profile?.preferredCity;
+            return !hasProfile ? (
+              <Link href="/profile">
+                <div
+                  className="flex items-center gap-3 px-4 py-3 mt-3 rounded-xl cursor-pointer transition-all hover:opacity-90"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(79,70,229,0.05) 100%)",
+                    border: "1px solid rgba(99,102,241,0.25)",
                   }}
                 >
-                  {cat.icon} {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center shrink-0">
+                    <UserCheck className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-indigo-800">מלא את הפרופיל שלך</p>
+                    <p className="text-xs text-indigo-600">הגדר קטגוריות ועיר מועדפת כדי שנסנן עבורך אוטומטית</p>
+                  </div>
+                  <span className="text-xs text-indigo-500 font-medium shrink-0">לפרופיל ←</span>
+                </div>
+              </Link>
+            ) : null;
+          })()}
 
-          {/* 4. Special categories */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold mb-2 text-gray-500">קטגוריות מיוחדות</p>
-            <div className="flex flex-wrap gap-2">
-              {SPECIAL_CATEGORIES.map(cat => {
-                const isActive = category === cat.value;
-                  const colorMap: Record<string, { activeBg: string; activeColor: string; inactiveBg: string; inactiveColor: string; inactiveBorder: string; activeBorder: string; glow: string }> = {
-                  purple: {
-                    activeBg: "#7c3aed",
-                    activeColor: "white",
-                    activeBorder: "#7c3aed",
-                    inactiveBg: "rgba(124,58,237,0.08)",
-                    inactiveColor: "#7c3aed",
-                    inactiveBorder: "rgba(124,58,237,0.3)",
-                    glow: "0 2px 8px rgba(124,58,237,0.3)",
-                  },
-                  amber: {
-                    activeBg: "#d97706",
-                    activeColor: "white",
-                    activeBorder: "#d97706",
-                    inactiveBg: "rgba(217,119,6,0.08)",
-                    inactiveColor: "#d97706",
-                    inactiveBorder: "rgba(217,119,6,0.3)",
-                    glow: "0 2px 8px rgba(217,119,6,0.3)",
-                  },
-                  green: {
-                    activeBg: "#16a34a",
-                    activeColor: "white",
-                    activeBorder: "#16a34a",
-                    inactiveBg: "rgba(22,163,74,0.08)",
-                    inactiveColor: "#16a34a",
-                    inactiveBorder: "rgba(22,163,74,0.3)",
-                    glow: "0 2px 8px rgba(22,163,74,0.3)",
-                  },
-                };
-                const c = colorMap[cat.color] ?? colorMap.purple;
-                return (
-                  <motion.button
-                    key={cat.value}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => setCategory(isActive ? "all" : cat.value)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-                    style={isActive ? {
-                      background: c.activeBg,
-                      color: c.activeColor,
-                      border: `1px solid ${c.activeBorder}`,
-                      boxShadow: c.glow,
-                    } : {
-                      background: c.inactiveBg,
-                      color: c.inactiveColor,
-                      border: `1px solid ${c.inactiveBorder}`,
-                    }}
-                  >
-                    {cat.icon} {cat.label}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 5. Time of day */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold mb-2 text-gray-500">שעות עבודה</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "morning",   label: "בוקר",    sub: "06–12", icon: "🌅" },
-                { value: "afternoon", label: "צהריים",  sub: "12–17", icon: "☀️" },
-                { value: "evening",   label: "ערב",     sub: "17–22", icon: "🌆" },
-                { value: "night",     label: "לילה",    sub: "22–06", icon: "🌙" },
-              ].map(slot => {
-                const isActive = selectedTimeSlots.includes(slot.value);
-                return (
-                  <button
-                    key={slot.value}
-                    onClick={() =>
-                      setSelectedTimeSlots(prev =>
-                        prev.includes(slot.value)
-                          ? prev.filter(s => s !== slot.value)
-                          : [...prev, slot.value]
-                      )
-                    }
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border"
-                    style={isActive ? {
-                      background: C_BRAND_HEX,
-                      color: "white",
-                      borderColor: C_BRAND_HEX,
-                      boxShadow: `0 2px 8px ${C_BRAND_HEX}4d`,
-                    } : {
-                      background: C_PAGE_BG_HEX,
-                      color: C_TEXT_MUTED,
-                      borderColor: C_BORDER,
-                    }}
-                  >
-                    <span>{slot.icon}</span>
-                    <span>{slot.label}</span>
-                    <span className="opacity-60 text-[10px]">{slot.sub}</span>
-                  </button>
-                );
-              })}
-              {selectedTimeSlots.length > 0 && (
-                <button
-                  onClick={() => setSelectedTimeSlots([])}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs text-gray-400 border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                  נקה
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* 6. Location */}
+          {/* ── Collapsible filter body — profile style ── */}
+          <div
+            style={{
+              maxHeight: filterOpen === true ? "2000px" : "0px",
+              overflow: "hidden",
+              transition: filterOpen === true ? "max-height 0.4s ease" : "max-height 0.25s ease",
+            }}
+          >
           <div>
-            <p className="text-xs font-semibold mb-2 text-gray-500">מיקום</p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <AppButton
-                    variant={userLat ? "brand" : "outline"}
-                    size="sm"
-                    onClick={handleLocationButtonClick}
-                    disabled={locating}
-                    className="gap-2 shrink-0"
-                  >
-                    {locating ? <BrandLoader size="sm" />
-                      : userLat ? <MapPin className="h-4 w-4" />
-                      : <LocateFixed className="h-4 w-4" />}
-                    {locating ? "מאתר מיקום..." : userLat ? "ממוין לפי מרחק ממך" : "📍 הצג עבודות קרובות אלי"}
-                  </AppButton>
-                </motion.div>
+          <div className="space-y-0">
 
-                {userLat && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
-                    className="flex items-center gap-1 text-xs rounded-full px-2 py-1 transition-colors text-gray-500 border border-gray-200 bg-white hover:bg-gray-50"
-                  >
-                    <X className="h-3 w-3" />
-                    בטל מיקום
-                  </motion.button>
-                )}
-
-                {!userLat && !showCityInput && (
-                  <button
-                    onClick={() => { setShowCityInput(true); setTimeout(() => cityInputRef.current?.focus(), 100); }}
-                    className="text-xs transition-colors text-blue-600 hover:text-blue-800"
-                  >
-                    הזן עיר ידנית
-                  </button>
-                )}
+            {/* ── Search text ── */}
+            <div className="pt-4 pb-0">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
+                <Input
+                  placeholder="חפש לפי תפקיד, עיר או מילת מפתח..."
+                  value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  className="pr-10 text-right bg-[#f5f7f8] border-gray-200 text-gray-900 placeholder:text-gray-400"
+                />
               </div>
-
-              {/* Radius selector */}
-              <AnimatePresence>
-                {userLat && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex gap-1.5 flex-wrap overflow-hidden"
-                  >
-                    {RADIUS_OPTIONS.map(r => (
-                      <button
-                        key={r.value}
-                        onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                        className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
-                        style={radiusKm === r.value ? {
-                          background: C_BRAND_HEX,
-                          color: "white",
-                          border: "1px solid #3c83f6",
-                        } : {
-                    background: C_PAGE_BG_HEX,
-                    color: C_TEXT_MUTED,
-                    border: `1px solid ${C_BORDER}`,
-
-                        }}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* City autocomplete */}
-              <AnimatePresence>
-                {showCityInput && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex gap-2 items-start overflow-hidden"
-                  >
-                    <div className="flex-1">
-                      <CityAutocomplete
-                        value={citySearch}
-                        onChange={setCitySearch}
-                        onSelect={handleCitySelect}
-                        inputRef={cityInputRef}
-                      />
-                    </div>
-                    <button
-                      onClick={() => { setShowCityInput(false); setCitySearch(""); }}
-                      className="mt-2 transition-colors text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
+
+            {/* ── Quick filter: urgent today ── */}
+            <div className="pt-3 pb-0">
+              <p className="text-[11px] font-semibold mb-2 text-gray-400 uppercase tracking-wide">סינון מהיר</p>
+              <button
+                onClick={() => setShowUrgentToday(!showUrgentToday)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                style={showUrgentToday ? {
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "white",
+                  border: "1px solid #ef4444",
+                  boxShadow: "0 4px 12px rgba(239,68,68,0.3)",
+                } : {
+                  background: "rgba(239,68,68,0.08)",
+                  color: "#ef4444",
+                  border: "1px solid rgba(239,68,68,0.25)",
+                }}
+              >
+                <Flame className="h-4 w-4" />
+                דחוף להיום
+                <span className="text-xs font-normal opacity-80">— עבודות דחופות ועבודות שמתחילות היום</span>
+              </button>
+            </div>
+
+            {/* ══ Row 1: תחומי עיסוק מועדפים ══ */}
+            <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} className="mt-4">
+              <button
+                type="button"
+                onClick={() => setOpenFilterSection(s => s === "categories" ? null : "categories")}
+                className="w-full flex items-center gap-2 py-4 text-right"
+              >
+                <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+                  <Briefcase className="h-3 w-3" style={{ color: "#4F583B" }} />
+                </div>
+                <span className="font-bold text-sm flex-1" style={{ color: "#1a1a1a" }}>תחומי עיסוק מועדפים</span>
+                {category !== "all" && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: "#4F583B" }}>
+                    1
+                  </span>
+                )}
+                <ChevronDown
+                  className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                  style={{ transform: openFilterSection === "categories" ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </button>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateRows: openFilterSection === "categories" ? "1fr" : "0fr",
+                  transition: "grid-template-rows 0.25s ease",
+                }}
+              >
+                <div className="overflow-hidden">
+                  <div className="pb-4" style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+                    <div className="pt-3">
+                      <p className="text-xs text-muted-foreground mb-3">בחר את הקטגוריות שאתה מחפש</p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setCategory("all")}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                            category === "all"
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                          }`}
+                        >
+                          הכל
+                        </button>
+                        {JOB_CATEGORIES.map(cat => (
+                          <button
+                            key={cat.value}
+                            onClick={() => setCategory(category === cat.value ? "all" : cat.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                              category === cat.value
+                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                            }`}
+                          >
+                            {cat.icon} {cat.label}
+                          </button>
+                        ))}
+                        {SPECIAL_CATEGORIES.map(cat => (
+                          <button
+                            key={cat.value}
+                            onClick={() => setCategory(category === cat.value ? "all" : cat.value)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                              category === cat.value
+                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
+                            }`}
+                          >
+                            {cat.icon} {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ══ Row 2: מצב חיפוש עבודה לפי עיר ══ */}
+            <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+              <button
+                type="button"
+                onClick={() => setOpenFilterSection(s => s === "location" ? null : "location")}
+                className="w-full flex items-center gap-2 py-4 text-right"
+              >
+                <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+                  <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
+                </div>
+                <span className="font-bold text-sm" style={{ color: "#1a1a1a" }}>מצב חיפוש עבודה</span>
+                <span
+                  className="flex-1 text-xs text-muted-foreground truncate text-right"
+                  style={{
+                    opacity: openFilterSection === "location" ? 0 : 1,
+                    transition: "opacity 0.2s ease",
+                    pointerEvents: "none",
+                  }}
+                >
+                  {userLat
+                    ? `לפי מיקום · ${radiusKm} ק"מ${geoCity ? ` · ${geoCity}` : ""}`
+                    : selectedCity
+                    ? `לפי עיר · ${selectedCity}`
+                    : "לפי עיר"}
+                </span>
+                <ChevronDown
+                  className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                  style={{ transform: openFilterSection === "location" ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </button>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateRows: openFilterSection === "location" ? "1fr" : "0fr",
+                  transition: "grid-template-rows 0.25s ease",
+                }}
+              >
+                <div className="overflow-hidden">
+                  <div className="pb-4" style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+
+                    {/* Mode toggle: radius vs city */}
+                    <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => { if (!userLat) handleLocationButtonClick(); }}
+                        className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                          userLat
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        <LocateFixed className="h-4 w-4" />
+                        {locating ? "מאתר..." : userLat ? `${radiusKm} ק"מ ממני` : "לפי מיקום"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (userLat) { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }
+                          setShowCityInput(true);
+                          setTimeout(() => cityInputRef.current?.focus(), 100);
+                        }}
+                        className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                          !userLat && (selectedCity || showCityInput)
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        <MapPin className="h-4 w-4" />
+                        {selectedCity ? selectedCity : "לפי עיר"}
+                      </button>
+                    </div>
+
+                    {/* Radius chips — shown when geo is active */}
+                    {userLat && (
+                      <div className="flex gap-1.5 flex-wrap mb-3">
+                        {RADIUS_OPTIONS.map(r => (
+                          <button
+                            key={r.value}
+                            onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border-2 ${
+                              radiusKm === r.value
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border text-muted-foreground"
+                            }`}
+                          >
+                            {r.label}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs text-gray-400 border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          <X className="h-3 w-3" /> בטל
+                        </button>
+                      </div>
+                    )}
+
+                    {/* City quick chips */}
+                    {!userLat && popularCities.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-muted-foreground mb-2">ערים פופולריות:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {popularCities.map(city => (
+                            <button
+                              key={city.id}
+                              onClick={() => { setSelectedCity(selectedCity === city.nameHe ? null : city.nameHe); setShowCityInput(false); }}
+                              className={`px-3 py-1 rounded-full text-xs font-medium border-2 transition-all ${
+                                selectedCity === city.nameHe
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                              }`}
+                            >
+                              {city.nameHe}
+                            </button>
+                          ))}
+                          {selectedCity && (
+                            <button
+                              onClick={() => setSelectedCity(null)}
+                              className="flex items-center gap-1 px-2 py-1 rounded-full text-xs text-gray-400 border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                            >
+                              <X className="h-3 w-3" /> נקה
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* City autocomplete */}
+                    {showCityInput && !userLat && (
+                      <div className="flex gap-2 items-start">
+                        <div className="flex-1">
+                          <CityAutocomplete
+                            value={citySearch}
+                            onChange={setCitySearch}
+                            onSelect={handleCitySelect}
+                            inputRef={cityInputRef}
+                          />
+                        </div>
+                        <button
+                          onClick={() => { setShowCityInput(false); setCitySearch(""); }}
+                          className="mt-2 transition-colors text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Time of day */}
+                    <div className="mt-3">
+                      <p className="text-xs text-muted-foreground mb-2">שעות עבודה (אופציונלי):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: "morning",   label: "בוקר",    sub: "06–12", icon: "🌅" },
+                          { value: "afternoon", label: "צהריים",  sub: "12–17", icon: "☀️" },
+                          { value: "evening",   label: "ערב",     sub: "17–22", icon: "🌆" },
+                          { value: "night",     label: "לילה",    sub: "22–06", icon: "🌙" },
+                        ].map(slot => {
+                          const isActive = selectedTimeSlots.includes(slot.value);
+                          return (
+                            <button
+                              key={slot.value}
+                              onClick={() =>
+                                setSelectedTimeSlots(prev =>
+                                  prev.includes(slot.value)
+                                    ? prev.filter(s => s !== slot.value)
+                                    : [...prev, slot.value]
+                                )
+                              }
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border-2 ${
+                                isActive
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border text-muted-foreground"
+                              }`}
+                            >
+                              <span>{slot.icon}</span>
+                              <span>{slot.label}</span>
+                              <span className="opacity-60 text-[10px]">{slot.sub}</span>
+                            </button>
+                          );
+                        })}
+                        {selectedTimeSlots.length > 0 && (
+                          <button
+                            onClick={() => setSelectedTimeSlots([])}
+                            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs text-gray-400 border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                          >
+                            <X className="h-3 w-3" /> נקה
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ══ Save / Search button ══ */}
+            <div className="pt-2 pb-1" style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterOpen(false);
+                  toast.success("הסינון עודכן");
+                }}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98]"
+                style={{
+                  background: "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
+                  color: "white",
+                }}
+              >
+                <Search className="h-4 w-4" />
+                שמור העדפות
+              </button>
+            </div>
+
           </div>
           </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </div>
         </motion.div>
 
         {/* ── Smart radius expand suggestion ── */}

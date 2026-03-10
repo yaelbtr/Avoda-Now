@@ -1121,3 +1121,9 @@
 
 ## Performance — Cache-Control Headers
 - [x] Add Cache-Control headers in server: immutable for hashed assets, no-store for API, no-cache for HTML
+
+## SEO — robots.txt Private Paths
+- [x] Add Disallow for /post-job, /my-jobs, /profile, /my-applications, /worker-profile in robots.txt
+
+## Performance — Gzip/Brotli Compression
+- [x] Add compression middleware to Express server for gzip/brotli response compression

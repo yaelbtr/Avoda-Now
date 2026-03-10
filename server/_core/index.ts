@@ -1,4 +1,5 @@
 import "dotenv/config";
+import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -44,6 +45,9 @@ async function startServer() {
 
   // ── Trust proxy: required for accurate IP detection behind load balancers ───
   app.set("trust proxy", 1);
+
+  // ── Compression: gzip/brotli for all text responses (JSON, HTML, XML) ──────
+  app.use(compression({ threshold: 1024 })); // only compress responses > 1KB
 
   // ── Security headers (helmet) ─────────────────────────────────────────────
   app.use(securityHeaders);
@@ -189,7 +193,16 @@ async function startServer() {
       "User-agent: *",
       "Allow: /",
       "Allow: /find-jobs",
-      "Allow: /post-job",
+      "Allow: /jobs",
+      "Allow: /jobs/",
+      "",
+      "# Private pages — require login, no SEO value",
+      "Disallow: /post-job",
+      "Disallow: /my-jobs",
+      "Disallow: /my-applications",
+      "Disallow: /profile",
+      "Disallow: /worker-profile",
+      "Disallow: /admin",
       "Disallow: /api/",
       "Disallow: /dashboard",
       "",

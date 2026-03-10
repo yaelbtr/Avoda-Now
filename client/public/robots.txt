@@ -1,19 +1,20 @@
-# Job-Now robots.txt
-# Disallow all bots from accessing the API and admin areas
+# AvodaNow robots.txt
+# https://avodanow.co.il
 
 User-agent: *
-Disallow: /api/
-Disallow: /admin/
+
+# Private / authenticated pages — do not index
 Disallow: /post-job
 Disallow: /my-jobs
+Disallow: /profile
+Disallow: /my-applications
+Disallow: /worker-profile
 
-# Allow only the public-facing pages
+# Internal API — never crawl
+Disallow: /api/
+
+# Allow all public pages
 Allow: /
-Allow: /find-jobs
-Allow: /job/
-
-# Crawl delay to prevent aggressive crawling
-Crawl-delay: 10
 
 # Sitemap
-Sitemap: https://job-now.manus.space/sitemap.xml
+Sitemap: https://avodanow.co.il/sitemap.xml

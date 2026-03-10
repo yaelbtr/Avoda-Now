@@ -1127,3 +1127,6 @@
 
 ## Performance — Gzip/Brotli Compression
 - [x] Add compression middleware to Express server for gzip/brotli response compression
+
+## Internal SEO Links — FindJobs Page
+- [x] Add SEO links section at the bottom of FindJobs results: context-aware city/category links

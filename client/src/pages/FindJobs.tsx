@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearch } from "wouter";
+import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { getCategoryLabel } from "@shared/categories";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
@@ -28,6 +28,13 @@ import {
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
+
+// ── Popular cities for SEO internal links ────────────────────────────────────
+const SEO_CITIES = [
+  "תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה",
+  "אשדוד", "נתניה", "באר שבע", "בני ברק", "רמת גן",
+  "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
+];
 
 interface CachedLocation { lat: number; lng: number; savedAt: number; }
 
@@ -844,6 +851,93 @@ export default function FindJobs() {
             ))}
           </motion.div>
         )}
+      </div>
+
+      {/* ── Internal SEO links ── */}
+      <div className="max-w-2xl mx-auto px-4 mt-12 border-t border-gray-200 pt-8 pb-24" dir="rtl">
+        {/* Context-aware section: when a city is selected, show categories for that city */}
+        {selectedCity && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Briefcase className="h-4 w-4 text-blue-500" />
+              <h2 className="text-sm font-bold text-gray-700">
+                עוד משרות ב{selectedCity}
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {JOB_CATEGORIES.map((cat) => (
+                <Link
+                  key={cat.value}
+                  href={`/jobs/${cat.value}/${encodeURIComponent(selectedCity)}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                >
+                  {cat.icon} עבודות {cat.label} ב{selectedCity}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Context-aware section: when a category is selected, show cities for that category */}
+        {category !== "all" && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="h-4 w-4 text-blue-500" />
+              <h2 className="text-sm font-bold text-gray-700">
+                עבודות {getCategoryLabel(category)} לפי עיר
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {SEO_CITIES.map((city) => (
+                <Link
+                  key={city}
+                  href={`/jobs/${category}/${encodeURIComponent(city)}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                >
+                  עבודות {getCategoryLabel(category)} ב{city}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Always show: popular cities */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="h-4 w-4 text-blue-500" />
+            <h2 className="text-sm font-bold text-gray-700">חיפוש לפי עיר</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {SEO_CITIES.filter((c) => c !== selectedCity).map((city) => (
+              <Link
+                key={city}
+                href={`/jobs/${encodeURIComponent(city)}`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+              >
+                עבודות ב{city}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Always show: popular categories */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase className="h-4 w-4 text-blue-500" />
+            <h2 className="text-sm font-bold text-gray-700">חיפוש לפי קטגוריה</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {JOB_CATEGORIES.filter((c) => c.value !== category).map((cat) => (
+              <Link
+                key={cat.value}
+                href={`/jobs/${cat.value}`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+              >
+                {cat.icon} עבודות {cat.label}
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
 
       <LoginModal

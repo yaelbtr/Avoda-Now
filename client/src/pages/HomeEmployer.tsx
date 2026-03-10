@@ -186,6 +186,8 @@ export default function HomeEmployer() {
           loading="eager"
           fetchPriority="high"
           decoding="async"
+          width={800}
+          height={480}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "55% 25%" }}
         />
@@ -290,6 +292,8 @@ export default function HomeEmployer() {
           loading="eager"
           fetchPriority="high"
           decoding="async"
+          width={1440}
+          height={540}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "50% 25%" }}
         />

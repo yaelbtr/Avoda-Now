@@ -1115,3 +1115,6 @@
 
 ## Performance — Lazy Loading Images
 - [x] Add loading="lazy" decoding="async" to images in JobCard, JobDetails, JobsLanding, and other job pages
+
+## Performance — CLS Fix (Hero Images)
+- [x] Add width/height to hero images in HomeWorker and HomeEmployer to prevent Layout Shift

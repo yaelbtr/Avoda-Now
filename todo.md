@@ -1130,3 +1130,10 @@
 
 ## Internal SEO Links — FindJobs Page
 - [x] Add SEO links section at the bottom of FindJobs results: context-aware city/category links
+
+## Jobs Near Me — Geolocation Button
+- [x] Add prominent "עבודות קרוב אלי" button in FindJobs SEO links section and filter bar
+- [x] On click: request browser geolocation, store lat/lng in state, pass to job search query
+- [x] Show distance badge on each job card when geolocation is active
+- [x] Show "מציג עבודות ב-5 ק״מ ממך" status indicator when geo filter is active
+- [x] Allow user to clear the geo filter

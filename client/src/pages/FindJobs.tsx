@@ -329,6 +329,83 @@ export default function FindJobs() {
           </p>
         </motion.div>
 
+        {/* ── Jobs Near Me hero button ── */}
+        <AnimatePresence>
+          {!userLat && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.35 }}
+              className="mb-5"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleLocationButtonClick}
+                disabled={locating}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-white relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                  boxShadow: "0 6px 24px rgba(22,163,74,0.35)",
+                }}
+              >
+                {/* Pulse ring */}
+                {!locating && (
+                  <span className="absolute right-5 flex h-8 w-8">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-25" />
+                    <span className="relative inline-flex rounded-full h-8 w-8 items-center justify-center">
+                      <MapPin className="h-5 w-5 text-white" />
+                    </span>
+                  </span>
+                )}
+                {locating ? (
+                  <><BrandLoader size="sm" /><span>מאתר מיקום...</span></>
+                ) : (
+                  <>
+                    <span className="mr-10 text-base">עבודות קרוב אלי</span>
+                    <span className="text-green-200 text-sm font-normal">— מצא משרות בסביבתך עכשיו</span>
+                  </>
+                )}
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Active geo status bar ── */}
+        <AnimatePresence>
+          {userLat && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.35 }}
+              className="mb-5 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl"
+              style={{
+                background: "linear-gradient(135deg, rgba(22,163,74,0.1) 0%, rgba(21,128,61,0.06) 100%)",
+                border: "1px solid rgba(22,163,74,0.3)",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-green-100 border border-green-300 flex items-center justify-center shrink-0">
+                  <MapPin className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-green-800">מציג עבודות קרוב אליך</p>
+                  <p className="text-xs text-green-600">בטווח {radiusKm} ק"מ ממיקומך הנוכחי</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-medium transition-colors text-green-700 border border-green-300 bg-white hover:bg-green-50"
+              >
+                <X className="h-3 w-3" />
+                בטל
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ── Location Permission Dialog ── */}
         <AnimatePresence>
           {showLocationDialog && (
@@ -855,6 +932,33 @@ export default function FindJobs() {
 
       {/* ── Internal SEO links ── */}
       <div className="max-w-2xl mx-auto px-4 mt-12 border-t border-gray-200 pt-8 pb-24" dir="rtl">
+
+        {/* Jobs near me shortcut — only shown when geo is not active */}
+        {!userLat && (
+          <div className="mb-8">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLocationButtonClick}
+              disabled={locating}
+              className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-right"
+              style={{
+                background: "linear-gradient(135deg, rgba(22,163,74,0.08) 0%, rgba(21,128,61,0.04) 100%)",
+                border: "1.5px dashed rgba(22,163,74,0.4)",
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
+                <LocateFixed className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-green-800">עבודות קרוב אלי</p>
+                <p className="text-xs text-green-600">אפשר גישה למיקום להצגת משרות בסביבתך</p>
+              </div>
+              <Navigation className="h-4 w-4 text-green-500 shrink-0" />
+            </motion.button>
+          </div>
+        )}
+
         {/* Context-aware section: when a city is selected, show categories for that city */}
         {selectedCity && (
           <div className="mb-8">

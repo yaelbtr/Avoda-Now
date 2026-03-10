@@ -503,16 +503,18 @@ export function JobCard({
       </motion.div>
         </TooltipTrigger>
         <TooltipContent
-          side="top"
-          sideOffset={6}
-          className="text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg z-50"
+          side="bottom"
+          sideOffset={2}
+          className="text-[11px] font-medium px-2 py-1 rounded-md z-50"
           style={{
-            background: "oklch(0.25 0.06 122)",
-            color: "oklch(0.97 0.02 91)",
-            border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+            background: "rgba(30,30,30,0.75)",
+            color: "rgba(255,255,255,0.88)",
+            border: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            backdropFilter: "blur(4px)",
           }}
         >
-          לחץ לפרטים נוספים
+          לחץ לפרטים
         </TooltipContent>
       </Tooltip>
     );
@@ -758,16 +760,18 @@ export function JobCard({
     </motion.div>
       </TooltipTrigger>
       <TooltipContent
-        side="top"
-        sideOffset={6}
-        className="text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg z-50"
+        side="bottom"
+        sideOffset={2}
+        className="text-[11px] font-medium px-2 py-1 rounded-md z-50"
         style={{
-          background: "oklch(0.25 0.06 122)",
-          color: "oklch(0.97 0.02 91)",
-          border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+          background: "rgba(30,30,30,0.75)",
+          color: "rgba(255,255,255,0.88)",
+          border: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          backdropFilter: "blur(4px)",
         }}
       >
-        לחץ לפרטים נוספים
+        לחץ לפרטים
       </TooltipContent>
     </Tooltip>
   );

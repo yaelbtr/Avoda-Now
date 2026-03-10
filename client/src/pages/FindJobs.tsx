@@ -640,19 +640,6 @@ export default function FindJobs() {
           <div>
           <div className="space-y-0">
 
-            {/* ── Search text ── */}
-            <div className="pt-4 pb-0">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
-                <Input
-                  placeholder="חפש לפי תפקיד, עיר או מילת מפתח..."
-                  value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
-                  className="pr-10 text-right bg-[#f5f7f8] border-gray-200 text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
-            </div>
-
             {/* ══ Row 1: תחומי עיסוק מועדפים ══ */}
             <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} className="mt-4">
               <button

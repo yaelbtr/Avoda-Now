@@ -245,6 +245,7 @@ export default function Navbar() {
             {/* Auth actions */}
             <div className="flex items-center gap-2">
               {isAuthenticated ? (
+                <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <motion.button
@@ -340,6 +341,7 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                </div>
               ) : (
                 <div className="flex items-center gap-2">
                   {/* Guest role badge + switch button */}

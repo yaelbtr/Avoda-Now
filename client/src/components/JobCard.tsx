@@ -7,6 +7,7 @@ import {
   Send, Loader2, CheckCircle, ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   C_BRAND_HEX, C_DANGER_HEX, C_SUCCESS_HEX,
 } from "@/lib/colors";
@@ -347,6 +348,8 @@ export function JobCard({
     const placeholderColor = placeholderColors[job.category] ?? placeholderColors.other;
 
     return (
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
       <motion.div
         whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0,0,0,0.14)" }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -355,7 +358,7 @@ export function JobCard({
           width: 210,
           border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-          cursor: onCardClick ? "pointer" : undefined,
+          cursor: "pointer",
           flexShrink: 0,
         }}
         dir="rtl"
@@ -498,10 +501,26 @@ export function JobCard({
 
         </div>
       </motion.div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          sideOffset={6}
+          className="text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg z-50"
+          style={{
+            background: "oklch(0.25 0.06 122)",
+            color: "oklch(0.97 0.02 91)",
+            border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+          }}
+        >
+          לחץ לפרטים נוספים
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
   return (
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
     <motion.div
       whileHover={{
         y: -2,
@@ -517,7 +536,7 @@ export function JobCard({
         boxShadow: job.isUrgent
           ? `0 2px 12px ${C_DANGER_HEX}12`
           : "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
-        cursor: onCardClick ? "pointer" : undefined,
+        cursor: "pointer",
       }}
       dir="rtl"
       onClick={onCardClick ? handleCardClick : undefined}
@@ -737,5 +756,19 @@ export function JobCard({
 
       </div>
     </motion.div>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        sideOffset={6}
+        className="text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg z-50"
+        style={{
+          background: "oklch(0.25 0.06 122)",
+          color: "oklch(0.97 0.02 91)",
+          border: "1px solid oklch(0.35 0.08 122 / 0.5)",
+        }}
+      >
+        לחץ לפרטים נוספים
+      </TooltipContent>
+    </Tooltip>
   );
 }

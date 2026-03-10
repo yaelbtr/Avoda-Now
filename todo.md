@@ -1006,3 +1006,6 @@
 
 ## טולטיפ מעוצב בכרטיסיות
 - [x] החלפת title="לחץ לפרטים..." בטולטיפ Radix מעוצב בשתי וריאנטי הכרטיסייה (compact + standard)
+
+## Cursor + Tooltip על כרטיסיות
+- [x] הוספת cursor pointer וטולטיפ Radix "לחץ לפרטים נוספים" על הכרטיסייה כולה (compact + standard)

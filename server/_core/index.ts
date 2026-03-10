@@ -48,6 +48,12 @@ async function startServer() {
   // ── Security headers (helmet) ─────────────────────────────────────────────
   app.use(securityHeaders);
 
+  // ── Cache-Control: API responses must never be cached by browsers/CDNs ─────
+  app.use("/api", (_req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    next();
+  });
+
   // ── Body size limit: 8mb for photo upload, 10kb for all other API routes ───
   app.use("/api/upload-photo", express.json({ limit: "8mb" }));
   app.use("/api/trpc", express.json({ limit: "10kb" }));

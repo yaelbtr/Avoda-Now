@@ -1118,3 +1118,6 @@
 
 ## Performance — CLS Fix (Hero Images)
 - [x] Add width/height to hero images in HomeWorker and HomeEmployer to prevent Layout Shift
+
+## Performance — Cache-Control Headers
+- [x] Add Cache-Control headers in server: immutable for hashed assets, no-store for API, no-cache for HTML

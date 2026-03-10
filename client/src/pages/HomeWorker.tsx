@@ -892,10 +892,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--brand)" }} />
                 </button>
               )}
-              <div
+              <motion.div
                 id="job-carousel"
                 className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                variants={{
+                  hidden: {},
+                  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+                }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
                 onMouseEnter={() => { isPausedRef.current = true; }}
                 onMouseLeave={() => { isPausedRef.current = false; }}
                 onTouchStart={(e) => {
@@ -937,18 +944,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   setActiveCarouselIdx(idx);
                 }}
               >
-                {allCarouselJobs.map(({ job, badge }, idx) => (
+                {allCarouselJobs.map(({ job, badge }) => (
                   <motion.div
                     key={`${badge}-${job.id}`}
                     className="snap-start shrink-0"
-                    initial={{ opacity: 0, y: 28, scale: 0.95 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true, amount: 0.15 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 22,
-                      delay: idx * 0.08,
+                    variants={{
+                      hidden: { opacity: 0, y: 32, scale: 0.93 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { type: "spring", stiffness: 280, damping: 24 },
+                      },
                     }}
                   >
                     <JobCard
@@ -962,7 +969,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                     />
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {/* ── Navigation dots ── */}
               {carouselTotal > 1 && (

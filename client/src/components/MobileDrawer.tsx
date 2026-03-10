@@ -163,7 +163,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
+            <nav className="flex-1 px-2 py-3 pb-20 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
               {/* Section: ניווט */}
               {userMode === "worker" && (
                 <>

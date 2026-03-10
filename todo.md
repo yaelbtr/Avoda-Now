@@ -1073,3 +1073,6 @@
 
 ## Bug Fix — MobileDrawer Footer Cutoff
 - [x] Fix MobileDrawer: elements after "מאובטח ומוגן" are not visible (footer cut off)
+
+## Bug Fix — MobileDrawer Bottom Nav Overlap
+- [x] Fix MobileDrawer: bottom content hidden under MobileBottomNav — add pb-20 to nav

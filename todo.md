@@ -1109,3 +1109,6 @@
 - [x] Add useWebSiteSchema hook (WebSite + SearchAction) and apply to Home page
 - [x] Add useLocalBusinessSchema hook and apply to Home page
 - [x] Add FAQPage schema to Privacy page
+
+## Performance — Preconnect Hints
+- [x] Add preconnect + dns-prefetch hints to index.html for CDN and API domains

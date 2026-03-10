@@ -80,6 +80,43 @@ const lightPanel = {
   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
 } as React.CSSProperties;
 
+// ── Inline helper: save preferences to worker profile ──────────────────────
+function UpdatePrefsBtn({ category, selectedCity }: { category: string; selectedCity: string | null }) {
+  const utils = trpc.useUtils();
+  const updateProfile = trpc.user.updateProfile.useMutation({
+    onSuccess: () => {
+      utils.user.getProfile.invalidate();
+      toast.success("העדפות עודכנו בהצלחה");
+    },
+    onError: () => toast.error("שגיאה בעדכון העדפות"),
+  });
+
+  return (
+    <button
+      type="button"
+      disabled={updateProfile.isPending}
+      onClick={() =>
+        updateProfile.mutate({
+          preferredCategories: category && category !== "all" ? [category] : [],
+          preferredCity: selectedCity ?? null,
+        })
+      }
+      className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+      style={{
+        background: "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
+        color: "white",
+      }}
+    >
+      {updateProfile.isPending ? (
+        <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+      ) : (
+        <UserCheck className="h-4 w-4" />
+      )}
+      עדכן את העדפות שלי
+    </button>
+  );
+}
+
 export default function FindJobs() {
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
@@ -912,22 +949,26 @@ export default function FindJobs() {
               </div>
             </div>
 
-            {/* ══ Save / Search button ══ */}
-            <div className="pt-2 pb-1" style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+            {/* ══ Two action buttons ══ */}
+            <div className="pt-2 pb-1 flex flex-col gap-2" style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}>
+              {/* Button 1: Update profile preferences */}
+              <UpdatePrefsBtn category={category} selectedCity={selectedCity} />
+              {/* Button 2: Search / apply filter */}
               <button
                 type="button"
                 onClick={() => {
                   setFilterOpen(false);
-                  toast.success("הסינון עודכן");
+                  toast.success("מציג תוצאות מסוננות");
                 }}
-                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98]"
+                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                 style={{
-                  background: "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-                  color: "white",
+                  background: "oklch(0.96 0.02 122)",
+                  color: "#4F583B",
+                  border: "1.5px solid oklch(0.88 0.05 122)",
                 }}
               >
                 <Search className="h-4 w-4" />
-                שמור העדפות
+                חפש וסנן
               </button>
             </div>
 

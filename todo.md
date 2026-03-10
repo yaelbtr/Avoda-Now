@@ -1034,3 +1034,8 @@
 - [x] קטע קישורי SEO — 12 קטגוריות עם קישורי /find-jobs?category=
 - [x] footer מינימלי עם תנאי שימוש + פרטיות + זכויות
 - [x] קישורים crawlable ב-<a href> אמיתיים + FindJobs קורא ?city= מה-URL
+
+## SEO Improvements
+- [x] sitemap.xml דינמי — Express endpoint עם 15 ערים + 12 קטגוריות + 3 עמודים ראשיים
+- [x] robots.txt עם Allow /find-jobs, Allow /post-job, Disallow /api/, Sitemap directive
+- [x] הסתרת footer במובייל (hidden md:block ב-App.tsx)

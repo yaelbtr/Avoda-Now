@@ -113,7 +113,9 @@ function Router() {
       </main>
 
       <MobileBottomNav />
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -110,6 +110,54 @@ async function startServer() {
     }
   });
 
+  // ── SEO: sitemap.xml ────────────────────────────────────────────────────────
+  app.get("/sitemap.xml", (_req, res) => {
+    const baseUrl = "https://avodanow.co.il";
+    const cities = [
+      "תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה",
+      "אשדוד", "נתניה", "באר שבע", "בני ברק", "רמת גן",
+      "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
+    ];
+    const categories = [
+      "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
+      "security", "construction", "childcare", "eldercare", "retail",
+      "events", "other",
+    ];
+    const now = new Date().toISOString().split("T")[0];
+    const urls: string[] = [
+      `<url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
+      `<url><loc>${baseUrl}/find-jobs</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>`,
+      `<url><loc>${baseUrl}/post-job</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`,
+    ];
+    for (const city of cities) {
+      urls.push(`<url><loc>${baseUrl}/find-jobs?city=${encodeURIComponent(city)}</loc><lastmod>${now}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+    }
+    for (const cat of categories) {
+      urls.push(`<url><loc>${baseUrl}/find-jobs?category=${encodeURIComponent(cat)}</loc><lastmod>${now}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+    }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+    res.setHeader("Content-Type", "application/xml");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(xml);
+  });
+
+  // ── SEO: robots.txt ──────────────────────────────────────────────────────────
+  app.get("/robots.txt", (_req, res) => {
+    const content = [
+      "User-agent: *",
+      "Allow: /",
+      "Allow: /find-jobs",
+      "Allow: /post-job",
+      "Disallow: /api/",
+      "Disallow: /dashboard",
+      "",
+      "Sitemap: https://avodanow.co.il/sitemap.xml",
+    ].join("\n");
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(content);
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

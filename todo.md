@@ -1009,3 +1009,6 @@
 
 ## Cursor + Tooltip על כרטיסיות
 - [x] הוספת cursor pointer וטולטיפ Radix "לחץ לפרטים נוספים" על הכרטיסייה כולה (compact + standard)
+
+## Badge "חדש" על משרות חדשות
+- [x] הוספת נקודה ירוקה מהבהבת (animate-ping) בפינה שמאלית עליונה למשרות שפורסמו בשעה האחרונה (compact + standard)

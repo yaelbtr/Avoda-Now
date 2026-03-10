@@ -287,6 +287,7 @@ export function JobCard({
   const isWartime = WARTIME_CATEGORIES.includes(job.category as typeof WARTIME_CATEGORIES[number]);
   const isSeasonal = SEASONAL_CATEGORIES.includes(job.category as typeof SEASONAL_CATEGORIES[number]);
   const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
+  const isNew = job.createdAt && (Date.now() - new Date(job.createdAt).getTime()) < 60 * 60 * 1000;
   const [showApplyPanel, setShowApplyPanel] = useState(false);
   const [applyMessage, setApplyMessage] = useState("");
 
@@ -364,6 +365,22 @@ export function JobCard({
         dir="rtl"
         onClick={onCardClick ? handleCardClick : undefined}
       >
+        {/* "New" green pulsing dot — top-left corner */}
+        {isNew && (
+          <span
+            className="absolute top-2 left-2 z-10 flex items-center justify-center"
+            style={{ width: 10, height: 10 }}
+          >
+            <span
+              className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+              style={{ background: "#22c55e" }}
+            />
+            <span
+              className="relative inline-flex rounded-full"
+              style={{ width: 8, height: 8, background: "#16a34a" }}
+            />
+          </span>
+        )}
         {/* Category image header */}
         <div className="relative" style={{ height: 110, overflow: "hidden" }}>
           <img
@@ -503,15 +520,17 @@ export function JobCard({
       </motion.div>
         </TooltipTrigger>
         <TooltipContent
-          side="bottom"
-          sideOffset={-28}
-          className="text-[11px] font-semibold px-2.5 py-1 rounded-full z-50 pointer-events-none"
+          side="top"
+          align="center"
+          sideOffset={-70}
+          hideArrow
+          className="text-[11px] font-semibold px-3 py-1.5 rounded-full z-50 pointer-events-none"
           style={{
-            background: "rgba(212,175,55,0.82)",
-            color: "rgba(50,35,0,0.95)",
+            background: "rgba(255,240,100,0.55)",
+            color: "rgba(60,45,0,0.9)",
             border: "none",
             boxShadow: "none",
-            backdropFilter: "blur(3px)",
+            backdropFilter: "blur(4px)",
           }}
         >
           לחץ לפרטים
@@ -549,6 +568,23 @@ export function JobCard({
           className="absolute top-0 right-0 w-[3px] h-full rounded-r-2xl"
           style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)` }}
         />
+      )}
+
+      {/* "New" green pulsing dot — top-left corner */}
+      {isNew && (
+        <span
+          className="absolute top-3 left-3 z-10 flex items-center justify-center"
+          style={{ width: 10, height: 10 }}
+        >
+          <span
+            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+            style={{ background: "#22c55e" }}
+          />
+          <span
+            className="relative inline-flex rounded-full"
+            style={{ width: 8, height: 8, background: "#16a34a" }}
+          />
+        </span>
       )}
 
       {/* ── Header: title + category icon + salary ── */}
@@ -760,15 +796,17 @@ export function JobCard({
     </motion.div>
       </TooltipTrigger>
       <TooltipContent
-        side="bottom"
-        sideOffset={-28}
-        className="text-[11px] font-semibold px-2.5 py-1 rounded-full z-50 pointer-events-none"
+        side="top"
+        align="center"
+        sideOffset={-80}
+        hideArrow
+        className="text-[11px] font-semibold px-3 py-1.5 rounded-full z-50 pointer-events-none"
         style={{
-          background: "rgba(212,175,55,0.82)",
-          color: "rgba(50,35,0,0.95)",
+          background: "rgba(255,240,100,0.55)",
+          color: "rgba(60,45,0,0.9)",
           border: "none",
           boxShadow: "none",
-          backdropFilter: "blur(3px)",
+          backdropFilter: "blur(4px)",
         }}
       >
         לחץ לפרטים

@@ -128,7 +128,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               background: "var(--header-bg)",
               borderLeft: "1px solid oklch(0.42 0.07 124.9)",
               boxShadow: "-8px 0 32px oklch(0 0 0 / 0.35)",
-              overflowY: "auto",
+              overflowY: "hidden",
             }}
           >
             {/* Header */}
@@ -163,7 +163,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5">
+            <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
               {/* Section: ניווט */}
               {userMode === "worker" && (
                 <>

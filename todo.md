@@ -1067,3 +1067,6 @@
 
 ## Mobile Drawer — Report a Problem
 - [x] Add "דווח על בעיה" mailto button in MobileDrawer legal section
+
+## Bug Fix — MobileDrawer Overflow
+- [x] Fix MobileDrawer: items overlap at bottom when content exceeds screen height — add overflow-y scroll

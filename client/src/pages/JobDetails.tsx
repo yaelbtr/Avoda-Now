@@ -128,6 +128,49 @@ export default function JobDetails() {
 
   const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
+  // ── SEO hooks MUST be called before any early returns (Rules of Hooks) ──────
+  const _jobCity = job ? (job.city ?? job.address?.split(",")[0] ?? "") : "";
+  const _isVolunteer = job?.salaryType === "volunteer";
+  const _salaryText = _isVolunteer ? "התנדבות" : job?.salary ? `₪${job.salary} ל${job?.salaryType === "hourly" ? "שעה" : job?.salaryType === "daily" ? "יום" : "חודש"}` : "";
+  const _seoJobTitle = job ? `${job.title}${_jobCity ? ` ב${_jobCity}` : ""}${_salaryText ? ` – ${_salaryText}` : ""}` : "AvodaNow | מצא עבודה";
+  const _jobPath = job ? buildJobPath(job.id, job.title, job.city) : "";
+
+  useSEO({
+    title: _seoJobTitle,
+    description: job ? job.description.slice(0, 200) : "",
+    canonical: _jobPath || undefined,
+    ogImage: `${SITE_URL}/og-image.png`,
+  });
+
+  useBreadcrumbSchema(
+    job
+      ? [
+          { name: "בית", path: "/" },
+          { name: "חיפוש עבודה", path: "/find-jobs" },
+          ...(_jobCity ? [{ name: `עבודות ב${_jobCity}`, path: `/jobs/${encodeURIComponent(_jobCity)}` }] : []),
+          { name: job.title, path: _jobPath },
+        ]
+      : [{ name: "בית", path: "/" }]
+  );
+
+  useJobPostingSchema(
+    job
+      ? {
+          id: job.id,
+          title: job.title,
+          description: job.description,
+          city: job.city,
+          address: job.address,
+          salary: job.salary as string | null,
+          salaryType: job.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
+          businessName: job.businessName,
+          createdAt: job.createdAt,
+          expiresAt: job.expiresAt,
+          isUrgent: job.isUrgent,
+        }
+      : null
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" style={{ background: C_PAGE_BG_HEX }}>
@@ -182,40 +225,6 @@ export default function JobDetails() {
     (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
   );
 
-  // ── SEO: canonical + OG tags via useSEO ───────────────────────────────
-  const jobCity = job.city ?? job.address.split(",")[0];
-  const salaryText = isVolunteer ? "התנדבות" : job.salary ? `₪${job.salary} ל${job.salaryType === "hourly" ? "שעה" : job.salaryType === "daily" ? "יום" : "חודש"}` : "";
-  const seoJobTitle = `${job.title}${jobCity ? ` ב${jobCity}` : ""}${salaryText ? ` – ${salaryText}` : ""}`;
-  useSEO({
-    title: seoJobTitle,
-    description: job.description.slice(0, 200),
-    canonical: jobPath,
-    ogImage: `${SITE_URL}/og-image.png`,
-  });
-
-  // ── JSON-LD BreadcrumbList ────────────────────────────────────────────────
-  useBreadcrumbSchema([
-    { name: "בית", path: "/" },
-    { name: "חיפוש עבודה", path: "/find-jobs" },
-    ...(jobCity ? [{ name: `עבודות ב${jobCity}`, path: `/jobs/${encodeURIComponent(jobCity)}` }] : []),
-    { name: job.title, path: jobPath },
-  ]);
-
-  // ── JSON-LD JobPosting structured data ──────────────────────────────────
-  useJobPostingSchema({
-    id: job.id,
-    title: job.title,
-    description: job.description,
-    city: job.city,
-    address: job.address,
-    salary: job.salary as string | null,
-    salaryType: job.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
-    businessName: job.businessName,
-    createdAt: job.createdAt,
-    expiresAt: job.expiresAt,
-    isUrgent: job.isUrgent,
-  });
-
   return (
     <div
       dir="rtl"
@@ -237,14 +246,14 @@ export default function JobDetails() {
           <Link href="/" className="text-gray-400 hover:text-gray-700 transition-colors">בית</Link>
           <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
           <Link href="/find-jobs" className="text-gray-400 hover:text-gray-700 transition-colors">חיפוש עבודה</Link>
-          {jobCity && (
+          {_jobCity && (
             <>
               <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
               <Link
-                href={`/jobs/${encodeURIComponent(jobCity)}`}
+                href={`/jobs/${encodeURIComponent(_jobCity)}`}
                 className="text-gray-400 hover:text-gray-700 transition-colors"
               >
-                {`עבודות ב${jobCity}`}
+                {`עבודות ב${_jobCity}`}
               </Link>
             </>
           )}

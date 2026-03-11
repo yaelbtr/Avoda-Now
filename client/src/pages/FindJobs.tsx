@@ -143,32 +143,6 @@ function QuickStats() {
   );
 }
 
-// ── Category chip ────────────────────────────────────────────────────────────
-function CategoryChip({ value, label, icon, active, onClick }: {
-  value: string; label: string; icon: string; active: boolean; onClick: () => void;
-}) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      whileTap={{ scale: 0.94 }}
-      className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold transition-all border-2 shrink-0"
-      style={active ? {
-        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-        borderColor: "transparent",
-        color: "oklch(0.96 0.04 80)",
-        boxShadow: "0 3px 10px oklch(0.28 0.06 122 / 0.30)",
-      } : {
-        background: "white",
-        borderColor: C_BORDER,
-        color: "oklch(0.30 0.05 122)",
-      }}
-    >
-      <span>{icon}</span>
-      <span>{label}</span>
-    </motion.button>
-  );
-}
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function FindJobs() {
@@ -503,19 +477,6 @@ export default function FindJobs() {
                 <X className="h-4 w-4" />
               </button>
             )}
-          </div>
-        </motion.div>
-
-        {/* Category chips */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2 }}
-          className="mb-4"
-        >
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-            <CategoryChip value="all" label="הכל" icon="✨" active={category === "all"} onClick={() => setCategory("all")} />
-            {dbCategories.map(cat => (
-              <CategoryChip key={cat.slug} value={cat.slug} label={cat.name} icon={cat.icon ?? "💼"} active={category === cat.slug} onClick={() => setCategory(cat.slug)} />
-            ))}
           </div>
         </motion.div>
 

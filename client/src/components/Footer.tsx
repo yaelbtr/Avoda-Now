@@ -1,4 +1,5 @@
 import { Briefcase, Mail, Zap, Users } from "lucide-react";
+import { useCategories } from "@/hooks/useCategories";
 
 const FG_PRIMARY  = "oklch(0.9904 0.0107 95.3 / 0.85)";
 const FG_MUTED    = "oklch(0.9904 0.0107 95.3 / 0.45)";
@@ -21,23 +22,10 @@ const SEO_CITIES = [
   "רחובות",
 ];
 
-// SEO categories — value + Hebrew label for crawlable links
-const SEO_CATEGORIES = [
-  { value: "delivery", label: "שליחויות" },
-  { value: "warehouse", label: "מחסן" },
-  { value: "kitchen", label: "מטבח" },
-  { value: "cleaning", label: "ניקיון" },
-  { value: "security", label: "אבטחה" },
-  { value: "construction", label: "בנייה" },
-  { value: "childcare", label: "טיפול בילדים" },
-  { value: "eldercare", label: "טיפול בקשישים" },
-  { value: "retail", label: "קמעונאות" },
-  { value: "events", label: "אירועים" },
-  { value: "agriculture", label: "חקלאות" },
-  { value: "other", label: "אחר" },
-];
+
 
 export default function Footer() {
+  const { categories: seoCategories } = useCategories();
   return (
     <footer
       dir="rtl"
@@ -152,16 +140,16 @@ export default function Footer() {
               משרות לפי קטגוריה
             </h2>
             <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
-              {SEO_CATEGORIES.map((cat) => (
-                <li key={cat.value}>
+              {seoCategories.map((cat) => (
+                <li key={cat.slug}>
                   <a
-                    href={`/jobs/${cat.value}`}
+                    href={`/jobs/${cat.slug}`}
                     className="text-[13px] transition-colors"
                     style={{ color: FG_PRIMARY }}
                     onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
                   >
-                    עבודות {cat.label}
+                    עבודות {cat.name}
                   </a>
                 </li>
               ))}
@@ -264,16 +252,16 @@ export default function Footer() {
             מדריכים לעבודות זמניות
           </h2>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
-            {SEO_CATEGORIES.filter((c) => c.value !== "other").map((cat) => (
-              <li key={cat.value}>
+            {seoCategories.map((cat) => (
+              <li key={cat.slug}>
                 <a
-                  href={`/guide/temporary-jobs/${cat.value}`}
+                  href={`/guide/temporary-jobs/${cat.slug}`}
                   className="text-[13px] transition-colors"
                   style={{ color: FG_PRIMARY }}
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
                 >
-                  מדריך: {cat.label}
+                  מדריך: {cat.name}
                 </a>
               </li>
             ))}

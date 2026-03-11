@@ -204,6 +204,13 @@
       "when": 1773086920324,
       "tag": "0028_lying_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1773268261709,
+      "tag": "0029_true_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

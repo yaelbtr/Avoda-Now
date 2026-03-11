@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
-import { getCategoryLabel } from "@shared/categories";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
@@ -11,7 +10,8 @@ import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { useAuth } from "@/contexts/AuthContext";
 import CityAutocomplete from "@/components/CityAutocomplete";
-import { JOB_CATEGORIES, SPECIAL_CATEGORIES, RADIUS_OPTIONS } from "@shared/categories";
+import { RADIUS_OPTIONS } from "@shared/categories";
+import { useCategories } from "@/hooks/useCategories";
 import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
   Navigation, AlertCircle, SlidersHorizontal, UserCheck, ChevronDown,
@@ -172,6 +172,7 @@ function CategoryChip({ value, label, icon, active, onClick }: {
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function FindJobs() {
+  const { categories: dbCategories, isLoading: catsLoading } = useCategories();
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
   const initialCategory = params.get("category") ?? "all";
@@ -213,11 +214,12 @@ export default function FindJobs() {
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
-  const seoTitle = selectedCity ? `עבודות ב${selectedCity}` : category !== "all" ? `עבודות ${getCategoryLabel(category)}` : "עבודות בית ואירועים";
+  const catName = dbCategories.find(c => c.slug === category)?.name ?? category;
+  const seoTitle = selectedCity ? `עבודות ב${selectedCity}` : category !== "all" ? `עבודות ${catName}` : "עבודות בית ואירועים";
   const seoDescription = selectedCity
     ? `מצא עבודות זמניות ב${selectedCity}. משרות להיום, שליחויות, מחסן, מטבח ועוד.`
     : category !== "all"
-    ? `עובדים ל${getCategoryLabel(category)} זמינים תוך דקות — הגדר זמינות וקבל פנייה ישירות.`
+    ? `עובדים ל${catName} זמינים תוך דקות — הגדר זמינות וקבל פנייה ישירות.`
     : "AvodaNow — עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד — הגדר זמינות וקבל עבודה.";
   const seoCanonical = selectedCity
     ? `/find-jobs?city=${encodeURIComponent(selectedCity)}`
@@ -445,7 +447,7 @@ export default function FindJobs() {
             {selectedCity ? (
               <>עבודות ב<span style={{ color: "oklch(0.85 0.14 80.8)" }}>{selectedCity}</span></>
             ) : category !== "all" ? (
-              <>עבודות <span style={{ color: "oklch(0.85 0.14 80.8)" }}>{getCategoryLabel(category)}</span></>
+              <>עבודות <span style={{ color: "oklch(0.85 0.14 80.8)" }}>{catName}</span></>
             ) : (
               <>הגדר זמינות<br /><span style={{ color: "oklch(0.85 0.14 80.8)" }}>קבל עבודה תוך דקות</span></>
             )}
@@ -511,8 +513,8 @@ export default function FindJobs() {
         >
           <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
             <CategoryChip value="all" label="הכל" icon="✨" active={category === "all"} onClick={() => setCategory("all")} />
-            {JOB_CATEGORIES.map(cat => (
-              <CategoryChip key={cat.value} value={cat.value} label={cat.label} icon={cat.icon} active={category === cat.value} onClick={() => setCategory(cat.value)} />
+            {dbCategories.map(cat => (
+              <CategoryChip key={cat.slug} value={cat.slug} label={cat.name} icon={cat.icon ?? "💼"} active={category === cat.slug} onClick={() => setCategory(cat.slug)} />
             ))}
           </div>
         </motion.div>
@@ -693,7 +695,7 @@ export default function FindJobs() {
                     <span className="font-bold text-sm flex-1" style={{ color: "oklch(0.22 0.03 122.3)" }}>תחומי עיסוק</span>
                     {category !== "all" && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
-                        {JOB_CATEGORIES.find(c => c.value === category)?.icon} {JOB_CATEGORIES.find(c => c.value === category)?.label}
+                        {dbCategories.find(c => c.slug === category)?.icon} {catName}
                       </span>
                     )}
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200"
@@ -702,22 +704,11 @@ export default function FindJobs() {
                   <div style={{ display: "grid", gridTemplateRows: openFilterSection === "categories" ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
                     <div className="overflow-hidden">
                       <div className="pt-3 flex flex-wrap gap-2">
-                        {[{ value: "all", label: "הכל", icon: "✨" }, ...JOB_CATEGORIES].map(cat => (
-                          <button key={cat.value} onClick={() => setCategory(cat.value)}
+                        {[{ slug: "all", name: "הכל", icon: "✨" }, ...dbCategories].map(cat => (
+                          <button key={cat.slug} onClick={() => setCategory(cat.slug)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
-                            style={category === cat.value ? activePill : inactivePill}>
-                            {cat.icon} {cat.label}
-                          </button>
-                        ))}
-                        {SPECIAL_CATEGORIES.map(cat => (
-                          <button key={cat.value} onClick={() => setCategory(cat.value)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
-                            style={category === cat.value ? activePill : {
-                              background: cat.color === "purple" ? "oklch(0.97 0.02 300)" : cat.color === "amber" ? "oklch(0.97 0.03 80)" : "oklch(0.97 0.04 160)",
-                              borderColor: cat.color === "purple" ? "oklch(0.80 0.08 300)" : cat.color === "amber" ? "oklch(0.80 0.10 80)" : "oklch(0.80 0.12 160)",
-                              color: cat.color === "purple" ? "oklch(0.40 0.15 300)" : cat.color === "amber" ? "oklch(0.40 0.12 80)" : "oklch(0.35 0.15 160)",
-                            }}>
-                            {cat.icon} {cat.label}
+                            style={category === cat.slug ? activePill : inactivePill}>
+                            {cat.icon} {cat.name}
                           </button>
                         ))}
                       </div>
@@ -891,7 +882,7 @@ export default function FindJobs() {
               <button onClick={() => setCategory("all")}
                 className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
                 style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
-                {JOB_CATEGORIES.find(c => c.value === category)?.icon} {JOB_CATEGORIES.find(c => c.value === category)?.label}
+                {dbCategories.find(c => c.slug === category)?.icon} {catName}
                 <X className="h-2.5 w-2.5" />
               </button>
             )}
@@ -993,11 +984,11 @@ export default function FindJobs() {
                 <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עוד משרות ב{selectedCity}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
-                {JOB_CATEGORIES.map(cat => (
-                  <Link key={cat.value} href={`/jobs/${cat.value}/${encodeURIComponent(selectedCity)}`}
+                {dbCategories.map(cat => (
+                  <Link key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
                     style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                    {cat.icon} עבודות {cat.label} ב{selectedCity}
+                    {cat.icon} עבודות {cat.name} ב{selectedCity}
                   </Link>
                 ))}
               </div>
@@ -1007,14 +998,14 @@ export default function FindJobs() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <MapPin className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
-                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עבודות {getCategoryLabel(category)} לפי עיר</h2>
+                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עבודות {catName} לפי עיר</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 {SEO_CITIES.map(city => (
                   <Link key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
                     style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                    עבודות {getCategoryLabel(category)} ב{city}
+                    עבודות {catName} ב{city}
                   </Link>
                 ))}
               </div>
@@ -1041,11 +1032,11 @@ export default function FindJobs() {
               <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי קטגוריה</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {JOB_CATEGORIES.filter(c => c.value !== category).map(cat => (
-                <Link key={cat.value} href={`/jobs/${cat.value}`}
+              {dbCategories.filter(c => c.slug !== category).map(cat => (
+                <Link key={cat.slug} href={`/jobs/${cat.slug}`}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
                   style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                  {cat.icon} עבודות {cat.label}
+                  {cat.icon} עבודות {cat.name}
                 </Link>
               ))}
             </div>

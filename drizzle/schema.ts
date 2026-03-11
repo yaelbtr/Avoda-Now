@@ -362,3 +362,30 @@ export const workerRatings = mysqlTable("worker_ratings", {
 }));
 export type WorkerRating = typeof workerRatings.$inferSelect;
 export type InsertWorkerRating = typeof workerRatings.$inferInsert;
+
+/**
+ * Admin-managed job categories.
+ * Replaces the hardcoded JOB_CATEGORIES and SPECIAL_CATEGORIES arrays.
+ * All screens fetch categories dynamically from this table.
+ */
+export const categories = mysqlTable("categories", {
+  id: int("id").autoincrement().primaryKey(),
+  /** URL-safe slug used as the category value in jobs, filters, and SEO routes */
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  /** Hebrew display name */
+  name: varchar("name", { length: 100 }).notNull(),
+  /** Emoji or icon string for display */
+  icon: varchar("icon", { length: 16 }).default("💼"),
+  /** Logical group: e.g. "home", "events", "special", "general" */
+  groupName: varchar("groupName", { length: 64 }).default("general"),
+  /** Optional CDN URL to a category image */
+  imageUrl: text("imageUrl"),
+  /** Whether the category is visible to users and included in filters */
+  isActive: boolean("isActive").default(true).notNull(),
+  /** Display order (lower = shown first) */
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = typeof categories.$inferInsert;

@@ -1217,3 +1217,18 @@
 - [x] Add /faq/* and /best/* pages to sitemap.xml
 - [x] Add FAQ and best-jobs links to Footer
 - [x] Write vitest tests for FAQ and best-jobs data integrity (207 tests passing)
+
+## Dynamic Admin-Managed Categories (Mar 12 2026)
+- [ ] Add `categories` table to Drizzle schema (id, name, groupName, imageUrl, isActive, createdAt, updatedAt)
+- [ ] Push DB migration (pnpm db:push)
+- [ ] Add DB helpers: getCategories, getCategoryById, createCategory, updateCategory, deleteCategory
+- [ ] Add tRPC procedures: categories.list (public, active only), categories.adminList (all), categories.create, categories.update, categories.toggleActive, categories.delete
+- [ ] Build admin categories page /admin/categories with CRUD table (add, edit, toggle active, delete)
+- [ ] Seed initial categories (cleaning, events, repairs, gardening, etc.)
+- [ ] Migrate FindJobs category chips to use dynamic categories from DB
+- [ ] Migrate PostJob category selector to use dynamic categories from DB
+- [ ] Migrate HomeWorker category section to use dynamic categories from DB
+- [ ] Migrate Footer SEO links to use dynamic categories from DB
+- [ ] Migrate JobsLanding SEO pages to use dynamic categories from DB
+- [ ] Migrate shared/categories.ts — keep as fallback/seed only, not as source of truth
+- [ ] Write vitest tests for categories procedures

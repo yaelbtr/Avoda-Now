@@ -18,7 +18,8 @@ import { MapView } from "@/components/Map";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
-import { JOB_CATEGORIES, SALARY_TYPES, START_TIMES } from "@shared/categories";
+import { SALARY_TYPES, START_TIMES } from "@shared/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -61,6 +62,7 @@ function generateCaptcha() {
 
 export default function PostJob() {
   const [, navigate] = useLocation();
+  const { categories: dbCategories } = useCategories();
   const { isAuthenticated, user } = useAuth();
   const { userMode, setUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
@@ -432,9 +434,9 @@ export default function PostJob() {
                 <SelectValue placeholder="בחר קטגוריה" />
               </SelectTrigger>
               <SelectContent>
-                {JOB_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.icon} {cat.label}
+                {dbCategories.map((cat) => (
+                  <SelectItem key={cat.slug} value={cat.slug}>
+                    {cat.icon} {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>

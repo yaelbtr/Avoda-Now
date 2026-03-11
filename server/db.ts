@@ -20,6 +20,8 @@ import {
   phonePrefixes,
   phoneChangeLogs,
   workerRatings,
+  categories,
+  Category,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1591,4 +1593,127 @@ export async function getExistingRating(workerId: number, employerId: number) {
     )
     .limit(1);
   return rows[0] ?? null;
+}
+
+// ─── Categories ───────────────────────────────────────────────────────────────
+
+/** Get all active categories (for public use) */
+export async function getActiveCategories(): Promise<Category[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(categories)
+    .where(eq(categories.isActive, true))
+    .orderBy(categories.sortOrder, categories.id);
+}
+
+/** Get all categories including inactive (for admin) */
+export async function getAllCategories(): Promise<Category[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(categories)
+    .orderBy(categories.sortOrder, categories.id);
+}
+
+/** Get a single category by slug */
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.slug, slug))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** Create a new category */
+export async function createCategory(data: {
+  slug: string;
+  name: string;
+  icon?: string;
+  groupName?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.insert(categories).values({
+    slug: data.slug,
+    name: data.name,
+    icon: data.icon ?? "💼",
+    groupName: data.groupName ?? "general",
+    imageUrl: data.imageUrl ?? null,
+    isActive: data.isActive ?? true,
+    sortOrder: data.sortOrder ?? 0,
+  });
+}
+
+/** Update an existing category */
+export async function updateCategory(id: number, data: {
+  slug?: string;
+  name?: string;
+  icon?: string;
+  groupName?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.update(categories).set(data).where(eq(categories.id, id));
+}
+
+/** Toggle isActive for a category */
+export async function toggleCategoryActive(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const rows = await db.select({ isActive: categories.isActive }).from(categories).where(eq(categories.id, id)).limit(1);
+  if (!rows[0]) throw new Error("Category not found");
+  await db.update(categories).set({ isActive: !rows[0].isActive }).where(eq(categories.id, id));
+}
+
+/** Delete a category (admin only) */
+export async function deleteCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  await db.delete(categories).where(eq(categories.id, id));
+}
+
+/** Seed initial categories if the table is empty */
+export async function seedCategoriesIfEmpty() {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await db.select({ id: categories.id }).from(categories).limit(1);
+  if (existing.length > 0) return; // already seeded
+
+  const seed = [
+    { slug: "cleaning",       name: "ניקיון",              icon: "🧹", groupName: "home",    sortOrder: 1 },
+    { slug: "events",         name: "אירועים",             icon: "🎉", groupName: "events",  sortOrder: 2 },
+    { slug: "gardening",      name: "גינון",               icon: "🌿", groupName: "home",    sortOrder: 3 },
+    { slug: "repairs",        name: "תיקונים כלליים",      icon: "🔧", groupName: "home",    sortOrder: 4 },
+    { slug: "plumbing",       name: "אינסטלציה",           icon: "🚿", groupName: "home",    sortOrder: 5 },
+    { slug: "electricity",    name: "חשמל",                icon: "⚡", groupName: "home",    sortOrder: 6 },
+    { slug: "moving",         name: "הובלות",              icon: "📦", groupName: "home",    sortOrder: 7 },
+    { slug: "childcare",      name: "טיפול בילדים",        icon: "👶", groupName: "care",    sortOrder: 8 },
+    { slug: "eldercare",      name: "טיפול בקשישים",       icon: "🧓", groupName: "care",    sortOrder: 9 },
+    { slug: "catering",       name: "קייטרינג ובישול",     icon: "🍳", groupName: "events",  sortOrder: 10 },
+    { slug: "serving",        name: "הגשה ושירות",         icon: "🍽️", groupName: "events",  sortOrder: 11 },
+    { slug: "security",       name: "אבטחה",               icon: "🛡️", groupName: "general", sortOrder: 12 },
+    { slug: "delivery",       name: "שליחויות",            icon: "🚴", groupName: "general", sortOrder: 13 },
+    { slug: "retail",         name: "קמעונאות",            icon: "🛍️", groupName: "general", sortOrder: 14 },
+    { slug: "warehouse",      name: "מחסן",                icon: "🏭", groupName: "general", sortOrder: 15 },
+    { slug: "agriculture",    name: "חקלאות",              icon: "🌾", groupName: "general", sortOrder: 16 },
+    { slug: "emergency_support", name: "סיוע בחירום",     icon: "🆘", groupName: "special", sortOrder: 17 },
+    { slug: "volunteer",      name: "התנדבות",             icon: "💚", groupName: "special", sortOrder: 18 },
+    { slug: "other",          name: "אחר",                 icon: "💼", groupName: "general", sortOrder: 99 },
+  ];
+
+  for (const cat of seed) {
+    await db.insert(categories).values({ ...cat, isActive: true });
+  }
 }

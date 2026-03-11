@@ -67,6 +67,13 @@ import {
   rateWorker,
   getExistingRating,
   getJobCountByCityAndCategory,
+  getActiveCategories,
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  toggleCategoryActive,
+  deleteCategory,
+  seedCategoriesIfEmpty,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1422,6 +1429,77 @@ const seoRouter = router({
   }),
 });
 
+// ─── Categories Router ─────────────────────────────────────────────
+
+const categoriesRouter = router({
+  /** Get all active categories (public) */
+  list: publicProcedure.query(async () => {
+    return getActiveCategories();
+  }),
+  /** Get all categories including inactive (admin only) */
+  adminList: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    return getAllCategories();
+  }),
+  /** Create a new category (admin only) */
+  create: protectedProcedure
+    .input(z.object({
+      slug: z.string().min(2).max(64).regex(/^[a-z0-9_]+$/, "Slug must be lowercase letters, numbers, or underscores"),
+      name: z.string().min(1).max(100),
+      icon: z.string().max(16).optional(),
+      groupName: z.string().max(64).optional(),
+      imageUrl: z.string().url().optional().or(z.literal("")),
+      isActive: z.boolean().optional(),
+      sortOrder: z.number().int().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await createCategory(input);
+      return { success: true };
+    }),
+  /** Update an existing category (admin only) */
+  update: protectedProcedure
+    .input(z.object({
+      id: z.number().int(),
+      slug: z.string().min(2).max(64).regex(/^[a-z0-9_]+$/).optional(),
+      name: z.string().min(1).max(100).optional(),
+      icon: z.string().max(16).optional(),
+      groupName: z.string().max(64).optional(),
+      imageUrl: z.string().url().optional().or(z.literal("")),
+      isActive: z.boolean().optional(),
+      sortOrder: z.number().int().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { id, ...data } = input;
+      await updateCategory(id, data);
+      return { success: true };
+    }),
+  /** Toggle isActive for a category (admin only) */
+  toggleActive: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await toggleCategoryActive(input.id);
+      return { success: true };
+    }),
+  /** Delete a category (admin only) */
+  delete: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await deleteCategory(input.id);
+      return { success: true };
+    }),
+  /** Seed initial categories if table is empty (admin only) */
+  seed: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await seedCategoriesIfEmpty();
+      return { success: true };
+    }),
+});
+
 // ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -1436,5 +1514,6 @@ export const appRouter = router({
   savedJobs: savedJobsRouter,
   ratings: ratingsRouter,
   seo: seoRouter,
+  categories: categoriesRouter,
 });
 export type AppRouter = typeof appRouter;

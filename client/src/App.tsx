@@ -21,6 +21,7 @@ import MyJobs from "./pages/MyJobs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Admin from "./pages/Admin";
+import AdminCategories from "./pages/AdminCategories";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 import WorkerProfile from "./pages/WorkerProfile";
@@ -100,6 +101,7 @@ function Router() {
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
                 <Route path="/admin" component={Admin} />
+                <Route path="/admin/categories" component={AdminCategories} />
                 <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />

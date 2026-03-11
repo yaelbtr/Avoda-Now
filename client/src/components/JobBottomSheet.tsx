@@ -14,7 +14,7 @@ interface JobBottomSheetProps {
     city?: string | null;
     salary?: string | null;
     salaryType: string;
-    contactPhone: string | null;
+    contactPhone: string | null | undefined;
     showPhone?: boolean | null;
     businessName?: string | null;
     startTime: string;

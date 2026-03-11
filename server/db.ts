@@ -1717,3 +1717,37 @@ export async function seedCategoriesIfEmpty() {
     await db.insert(categories).values({ ...cat, isActive: true });
   }
 }
+
+// ─── Worker Reviews ────────────────────────────────────────────────────────────
+/**
+ * Get all reviews for a worker, with employer name and photo.
+ * Returns newest first, max 50 entries.
+ */
+export async function getWorkerReviews(workerId: number): Promise<
+  Array<{
+    id: number;
+    rating: number;
+    comment: string | null;
+    createdAt: Date;
+    employerName: string | null;
+    employerPhoto: string | null;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: workerRatings.id,
+      rating: workerRatings.rating,
+      comment: workerRatings.comment,
+      createdAt: workerRatings.createdAt,
+      employerName: users.name,
+      employerPhoto: users.profilePhoto,
+    })
+    .from(workerRatings)
+    .innerJoin(users, eq(workerRatings.employerId, users.id))
+    .where(eq(workerRatings.workerId, workerId))
+    .orderBy(desc(workerRatings.createdAt))
+    .limit(50);
+  return rows;
+}

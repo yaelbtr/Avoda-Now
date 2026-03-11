@@ -66,6 +66,7 @@ import {
   countRecentPhoneChangeFailures,
   rateWorker,
   getExistingRating,
+  getWorkerReviews,
   getJobCountByCityAndCategory,
   getActiveCategories,
   getAllCategories,
@@ -1408,6 +1409,12 @@ const ratingsRouter = router({
     .query(async ({ input, ctx }) => {
       const existing = await getExistingRating(input.workerId, ctx.user.id);
       return existing ?? null;
+    }),
+  /** Get all public reviews for a worker */
+  getWorkerReviews: publicProcedure
+    .input(z.object({ workerId: z.number() }))
+    .query(async ({ input }) => {
+      return getWorkerReviews(input.workerId);
     }),
 });
 // ─── SEO Router ─────────────────────────────────────────────────────

@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AppButton } from "@/components/AppButton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -63,21 +61,12 @@ const EMPTY_FORM = {
   sortOrder: 0,
 };
 
-export default function AdminCategories() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
-
-
+/** Embeddable categories management panel — used as a tab inside Admin.tsx */
+export function AdminCategoriesTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-
-  // Redirect non-admins
-  if (user && user.role !== "admin") {
-    navigate("/");
-    return null;
-  }
 
   const utils = trpc.useUtils();
 
@@ -87,6 +76,7 @@ export default function AdminCategories() {
     onSuccess: () => {
       toast.success("קטגוריה נוצרה בהצלחה");
       utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
       setDialogOpen(false);
     },
     onError: (e) => toast.error(e.message),
@@ -96,13 +86,17 @@ export default function AdminCategories() {
     onSuccess: () => {
       toast.success("קטגוריה עודכנה בהצלחה");
       utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
       setDialogOpen(false);
     },
     onError: (e) => toast.error(e.message),
   });
 
   const toggleMut = trpc.categories.toggleActive.useMutation({
-    onSuccess: () => utils.categories.adminList.invalidate(),
+    onSuccess: () => {
+      utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -110,6 +104,7 @@ export default function AdminCategories() {
     onSuccess: () => {
       toast.success("קטגוריה נמחקה");
       utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
       setDeleteConfirmId(null);
     },
     onError: (e) => toast.error(e.message),
@@ -119,6 +114,7 @@ export default function AdminCategories() {
     onSuccess: () => {
       toast.success("קטגוריות ברירת מחדל נוספו");
       utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
     },
     onError: (e) => toast.error(e.message),
   });
@@ -158,16 +154,16 @@ export default function AdminCategories() {
   const groupLabel = (g: string | null) => GROUP_OPTIONS.find(o => o.value === g)?.label ?? g ?? "כללי";
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
-      <div className="border-b bg-card px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div dir="rtl">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
           <Tag className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-bold">ניהול קטגוריות</h1>
+          <h2 className="text-lg font-semibold">ניהול קטגוריות</h2>
           <Badge variant="secondary">{cats.length} קטגוריות</Badge>
         </div>
         <div className="flex gap-2">
-          <Button
+          <AppButton
             variant="outline"
             size="sm"
             onClick={() => seedMut.mutate()}
@@ -175,29 +171,30 @@ export default function AdminCategories() {
           >
             <RefreshCw className="h-4 w-4 ml-1" />
             טען ברירת מחדל
-          </Button>
-          <Button size="sm" onClick={openCreate}>
+          </AppButton>
+          <AppButton size="sm" onClick={openCreate}>
             <Plus className="h-4 w-4 ml-1" />
             קטגוריה חדשה
-          </Button>
+          </AppButton>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="p-6">
-        {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">טוען קטגוריות...</div>
-        ) : cats.length === 0 ? (
-          <div className="text-center py-12">
-            <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">אין קטגוריות עדיין</p>
-            <Button onClick={() => seedMut.mutate()} disabled={seedMut.isPending}>
-              <RefreshCw className="h-4 w-4 ml-1" />
-              טען קטגוריות ברירת מחדל
-            </Button>
-          </div>
-        ) : (
-          <div className="rounded-lg border bg-card overflow-hidden">
+      {/* Table / Empty state */}
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">טוען קטגוריות...</div>
+      ) : cats.length === 0 ? (
+        <div className="text-center py-12">
+          <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <p className="text-muted-foreground mb-4">אין קטגוריות עדיין</p>
+          <AppButton onClick={() => seedMut.mutate()} disabled={seedMut.isPending}>
+            <RefreshCw className="h-4 w-4 ml-1" />
+            טען קטגוריות ברירת מחדל
+          </AppButton>
+        </div>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -219,9 +216,7 @@ export default function AdminCategories() {
                     <TableCell className="font-medium">{cat.name}</TableCell>
                     <TableCell className="font-mono text-sm text-muted-foreground">{cat.slug}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {groupLabel(cat.groupName)}
-                      </Badge>
+                      <Badge variant="outline" className="text-xs">{groupLabel(cat.groupName)}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{cat.sortOrder}</TableCell>
                     <TableCell>
@@ -233,22 +228,17 @@ export default function AdminCategories() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => openEdit(cat)}
-                        >
+                        <AppButton variant="outline" size="sm" onClick={() => openEdit(cat)}>
                           <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        </AppButton>
+                        <AppButton
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive border-destructive/30 hover:bg-destructive/10"
                           onClick={() => setDeleteConfirmId(cat.id)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        </AppButton>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -256,8 +246,52 @@ export default function AdminCategories() {
               </TableBody>
             </Table>
           </div>
-        )}
-      </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {cats.map((cat) => (
+              <div
+                key={cat.id}
+                className={`rounded-lg border bg-card p-4 ${!cat.isActive ? "opacity-50" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl flex-shrink-0">{cat.icon}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{cat.name}</p>
+                      <p className="text-xs font-mono text-muted-foreground">{cat.slug}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">{groupLabel(cat.groupName)}</Badge>
+                        <span className="text-xs text-muted-foreground">סדר: {cat.sortOrder}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <Switch
+                      checked={cat.isActive}
+                      onCheckedChange={() => toggleMut.mutate({ id: cat.id })}
+                      disabled={toggleMut.isPending}
+                    />
+                    <div className="flex gap-1">
+                      <AppButton variant="outline" size="sm" onClick={() => openEdit(cat)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </AppButton>
+                      <AppButton
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                        onClick={() => setDeleteConfirmId(cat.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </AppButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -346,13 +380,13 @@ export default function AdminCategories() {
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>ביטול</Button>
-            <Button
+            <AppButton variant="outline" onClick={() => setDialogOpen(false)}>ביטול</AppButton>
+            <AppButton
               onClick={handleSubmit}
               disabled={createMut.isPending || updateMut.isPending}
             >
               {editingId ? "שמור שינויים" : "צור קטגוריה"}
-            </Button>
+            </AppButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -369,17 +403,22 @@ export default function AdminCategories() {
             <span className="text-amber-600 text-sm">שים לב: משרות קיימות עם קטגוריה זו לא יושפעו.</span>
           </p>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>ביטול</Button>
-            <Button
+            <AppButton variant="outline" onClick={() => setDeleteConfirmId(null)}>ביטול</AppButton>
+            <AppButton
               variant="destructive"
               onClick={() => deleteConfirmId && deleteMut.mutate({ id: deleteConfirmId })}
               disabled={deleteMut.isPending}
             >
               מחק קטגוריה
-            </Button>
+            </AppButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
+}
+
+/** Legacy standalone page — kept for backward compatibility, redirects to admin panel */
+export default function AdminCategories() {
+  return <AdminCategoriesTab />;
 }

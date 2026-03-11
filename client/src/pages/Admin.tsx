@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AdminCategoriesTab } from "./AdminCategories";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/AppButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ import {
   Phone,
   Send,
   Shield,
+  Tag,
   Trash2,
   TrendingUp,
   UserCheck,
@@ -253,6 +255,10 @@ export default function Admin() {
             <TabsTrigger value="batches" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               הודעות מקובצות
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              קטגוריות
             </TabsTrigger>
           </TabsList>
 
@@ -757,6 +763,11 @@ export default function Admin() {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          {/* ─── Categories Tab ─── */}
+          <TabsContent value="categories">
+            <AdminCategoriesTab />
           </TabsContent>
 
         </Tabs>

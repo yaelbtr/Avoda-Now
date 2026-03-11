@@ -213,12 +213,12 @@ export default function FindJobs() {
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
-  const seoTitle = selectedCity ? `עבודות ב${selectedCity}` : category !== "all" ? `עבודות ${getCategoryLabel(category)}` : "חיפוש עבודה";
+  const seoTitle = selectedCity ? `עבודות ב${selectedCity}` : category !== "all" ? `עבודות ${getCategoryLabel(category)}` : "עבודות בית ואירועים";
   const seoDescription = selectedCity
     ? `מצא עבודות זמניות ב${selectedCity}. משרות להיום, שליחויות, מחסן, מטבח ועוד.`
     : category !== "all"
-    ? `מצא עבודות ${getCategoryLabel(category)} קרוב אליך. לוח דרושים מהיר ופשוט.`
-    : "לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך — שליחויות, מחסן, מטבח ועוד.";
+    ? `עובדים ל${getCategoryLabel(category)} זמינים תוך דקות — הגדר זמינות וקבל פנייה ישירות.`
+    : "AvodaNow — עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד — הגדר זמינות וקבל עבודה.";
   const seoCanonical = selectedCity
     ? `/find-jobs?city=${encodeURIComponent(selectedCity)}`
     : category !== "all" ? `/find-jobs?category=${encodeURIComponent(category)}` : "/find-jobs";
@@ -428,7 +428,7 @@ export default function FindJobs() {
           >
             <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
             <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-              לוח דרושים מהיר ופשוט
+              עבודות בית ואירועים — תוך דקות
             </span>
           </motion.div>
 
@@ -447,7 +447,7 @@ export default function FindJobs() {
             ) : category !== "all" ? (
               <>עבודות <span style={{ color: "oklch(0.85 0.14 80.8)" }}>{getCategoryLabel(category)}</span></>
             ) : (
-              <>מצא עבודה<br /><span style={{ color: "oklch(0.85 0.14 80.8)" }}>שמתאימה לך</span></>
+              <>הגדר זמינות<br /><span style={{ color: "oklch(0.85 0.14 80.8)" }}>קבל עבודה תוך דקות</span></>
             )}
           </motion.h1>
 

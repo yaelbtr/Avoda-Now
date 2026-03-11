@@ -37,20 +37,20 @@ function useCountUp(endValue: number, duration: number, triggered: boolean) {
 /* ── How it works steps ───────────────────────────────────────────── */
 const HOW_IT_WORKS_EMPLOYER = [
   {
-    step: "1", title: "פרסם משרה", icon: Plus,
-    desc: "מלא פרטי המשרה — סוג עבודה, מיקום, שכר ושעות",
+    step: "1", title: "פרסם צורך", icon: Plus,
+    desc: "ניקיון, אירוע, תיקון ועוד — פרסם בדיוק מה אתה צריך",
     imgUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&q=80",
     reverse: false,
   },
   {
     step: "2", title: "קבל פניות", icon: Phone,
-    desc: "עובדים יצרו איתך קשר ישירות — ללא תיווך ועמלות",
+    desc: "עובדים זמינים באזורך רואים את הצורך ופונים אליך ישירות — תוך דקות",
     imgUrl: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=200&q=80",
     reverse: true,
   },
   {
     step: "3", title: "בחר עובד", icon: CheckCircle2,
-    desc: "בחר את המתאים ביותר ותתחיל לעבוד מיד",
+    desc: "סגור ישיר בוואטסאפ או בטלפון — העובד מגיע ומתחיל את העבודה",
     imgUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=200&q=80",
     reverse: false,
   },
@@ -121,8 +121,8 @@ export default function HomeEmployer() {
   const workerPausedRef = useRef(false);
 
   useSEO({
-    title: "מעסיקים — מצא עובדים",
-    description: "פרסם משרה בחינם ומצא עובדים זמינים קרוב אליך. ללא עמלות, ללא בירוקרטיה.",
+    title: "מעסיקים — קבל עובדים תוך דקות",
+    description: "פרסם צורך ועובדים זמינים באזורך יפנו אליך ישירות. ניקיון, אירועים, תיקונים ועוד — ללא עמלות.",
     canonical: "/",
   });
 
@@ -180,7 +180,7 @@ export default function HomeEmployer() {
       <section className="relative overflow-hidden md:hidden" style={{ minHeight: "480px" }}>
         {/* Background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer_809b2625.jpg"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
           alt=""
           aria-hidden="true"
           loading="eager"
@@ -223,8 +223,8 @@ export default function HomeEmployer() {
             className="text-[32px] leading-[1.15] font-black mb-2"
             style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
           >
-            עובדים מקצועיים<br />
-            <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מוכנים לעבוד עכשיו</span>
+            צריך עובד לבית?<br />
+            <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>קבל אחד תוך דקות</span>
           </motion.h1>
 
           <motion.p
@@ -232,7 +232,7 @@ export default function HomeEmployer() {
             className="text-[13px] font-semibold leading-relaxed mb-5"
             style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
           >
-            פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
+            ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
           </motion.p>
 
         </div>
@@ -258,7 +258,7 @@ export default function HomeEmployer() {
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Zap size={15} />
-            פרסם עבודה דחופה
+            פרסם צורך עכשיו
             <ChevronLeft size={15} style={{ opacity: 0.65 }} />
           </motion.button>
           <motion.button
@@ -286,7 +286,7 @@ export default function HomeEmployer() {
         style={{ minHeight: "540px" }}
       >
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer_809b2625.jpg"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
           alt=""
           aria-hidden="true"
           loading="eager"
@@ -343,7 +343,7 @@ export default function HomeEmployer() {
             className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[300px]"
             style={{ color: "oklch(0.90 0.03 80 / 0.80)", textShadow: "0 1px 8px oklch(0.12 0.06 122 / 0.50)" }}
           >
-            פרסם משרה דחופה ומצא עובדים זמינים באזורך — ללא עמלות, ללא תיווך
+            ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
           </motion.p>
 
           <StatsRow activeJobs={activeJobs} workers={workers.length} />
@@ -365,7 +365,7 @@ export default function HomeEmployer() {
               transition={{ type: "spring", stiffness: 420, damping: 22 }}
             >
               <Zap size={15} />
-              פרסם עבודה דחופה
+              פרסם צורך עכשיו
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </motion.button>
             <motion.button

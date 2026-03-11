@@ -85,7 +85,7 @@ export default function Footer() {
                 Avoda<span style={{ color: ACCENT }}>Now</span>
               </span>
               <span className="text-[9px] font-bold uppercase" style={{ color: FG_MUTED, letterSpacing: "0.14em" }}>
-                עבודה עכשיו
+                עובדים תוך דקות
               </span>
             </div>
           </div>
@@ -358,7 +358,7 @@ export default function Footer() {
 
         {/* Disclaimer */}
         <p className="text-[11px] text-center mt-3 leading-relaxed" style={{ color: FG_MUTED }}>
-          פלטפורמה זו מחברת בין עובדים למעסיקים בלבד. הפלטפורמה אינה אחראית לתנאי העסקה.
+          AvodaNow אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
         </p>
       </div>
     </footer>

@@ -101,22 +101,22 @@ function StatsRow() {
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "מחפשים עבודה",
-    desc: "עינו במגוון עבודות בסביבה הקרובה אלייך.",
+    title: "הגדר זמינות",
+    desc: "לחץ 'זמין עכשיו' — מעסיקים יראו אותך מיד ויפנו אליך ישירות.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBamn2qup2cLZLS0F7g_ak0WLTInI6W80vxhpKaOVS5LvEDl1LbNhdRUjazjOJujODYDKCCm0wVmr68y6wo4HiA7bPMUmFZ4hEQMndLqGlbGLjfLqtiqyD2AMY9TidSzS_hPgu5Ur5Z2MBpFBvusjARNnk7FNagj5vM5F9-d-Okq_vbnvzcmYLSObdJ9OJMzZZWzrsgw3HIN_x9coQBlKMfGlWR0eNLV0mX2VSSizcok2morIGRV6Ge2fGy_kA6s1H6jaOUll8DcA",
     reverse: false,
   },
   {
     step: "02",
-    title: "סוגרים פרטים",
-    desc: "שיחה קצרה עם המפרסמים בטלפון או בוואטסאפ.",
+    title: "קבל פנייה תוך דקות",
+    desc: "מעסיקים שצריכים עובד עכשיו יפנו אליך ישירות — ללא תיווך, ללא המתנה.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAStrMaRfZDifQeV-VACZz7ZypB1K8qO0mfWH-7GKp9zP5N0IFSgQpYT8gGJfOxyxssudU0ma8TE9HYWViNqn1eNoc7_qkfar8L0c38K28sRu-_lwd2DFueAtvndwsNLlxCicO5asK-g-NFLhaSWhOxM5Lx7tQalZGYbZlc-cGOJHfX0VMMQvGKi69yA7_YyxYFmg51eaSrjgIb2kEHbOcTexFsWld1x3UCbPcBhX92Us5OHKPCI2Wbzy1VcqYfh8U6aCD_3lOdng",
     reverse: true,
   },
   {
     step: "03",
-    title: "מתחילים להרוויח",
-    desc: "ביצוע העבודה וקבלת תשלום מיידי בסיום.",
+    title: "עבוד וקבל תשלום",
+    desc: "הגע, עבוד, קבל תשלום — פשוט כמו שזה נשמע.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmsOM6ool_591rxa3QrTQJ_siNP3M919Xa5n12iJHU9-myKDCxxkIXJLVpXND4AON1Q8eRBnMPtrBeggN_C4S0lJ5lumxRI4XROt9rXnjP5Krt1MAn8P4EnpBkn24bwAgR163Pw2pImLomXOGNpz-MCOZ8aI6DDwDbqiFoOBi2D-UsT1OV5mTJyv3BKGljWdOH2cGAdggVOjFgQ0oQ8lCPYfY4Fgpq2UzIf2KqNukQ6Z4NgQAXUPUyrHbEzkXWFccR4AfTBcUzbw",
     reverse: false,
   },
@@ -145,7 +145,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   useSEO({
     title: "דף הבית",
-    description: "מצא עבודות זמניות קרוב אליך. שליחויות, מחסן, מטבח ועוד — לוח דרושים מהיר ופשוט.",
+    description: "AvodaNow — הפלטפורמה שמספקת עובדים תוך דקות. הגדר זמינות, קבל עבודה, התחל לעבוד.",
     canonical: "/",
   });
 
@@ -292,7 +292,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Full image with text at top + woman visible in center */}
         <div className="relative w-full" style={{ height: "480px" }}>
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp"
             alt=""
             aria-hidden="true"
             loading="eager"
@@ -332,7 +332,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             >
               <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
               <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-                הדרך המהירה למצוא עבודה
+                עבודות בית ואירועים — תוך דקות
               </span>
             </motion.div>
 
@@ -341,8 +341,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               className="text-[34px] leading-[1.15] font-black mb-2"
               style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
             >
-              עבודות מזדמנות<br />
-              <span style={{ color: "oklch(0.68 0.14 80.8)" }}>מחכות לך עכשיו</span>
+              הגדר זמינות —<br />
+              <span style={{ color: "oklch(0.68 0.14 80.8)" }}>קבל עבודה תוך דקות</span>
             </motion.h1>
 
             <motion.p
@@ -350,7 +350,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               className="text-[13px] font-semibold leading-relaxed"
               style={{ color: "oklch(0.22 0.06 122)", maxWidth: "270px" }}
             >
-              קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+              ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
             </motion.p>
           </div>
         </div>
@@ -374,7 +374,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
               <Search size={15} />
-              חפש עבודה עכשיו
+              הגדר זמינות עכשיו
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </motion.button>
           </motion.div>
@@ -388,7 +388,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       >
         {/* Full-bleed background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-v2_dd81e8e7.png"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp"
           alt=""
           aria-hidden="true"
           loading="eager"
@@ -426,7 +426,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
             <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-              הדרך המהירה למצוא עבודה
+              עבודות בית ואירועים — תוך דקות
             </span>
           </motion.div>
 
@@ -435,9 +435,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="text-[42px] leading-[1.1] font-black mb-4"
             style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 12px oklch(0.97 0.02 91 / 0.80), 0 2px 20px oklch(0.97 0.02 91 / 0.60)" }}
           >
-            עבודות מזדמנות<br />
+            הגדר זמינות —<br />
             <span style={{ color: "oklch(0.68 0.14 80.8)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.3)" }}>
-              מחכות לך עכשיו
+              קבל עבודה תוך דקות
             </span>
           </motion.h1>
 
@@ -446,7 +446,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[280px]"
             style={{ color: "oklch(0.18 0.06 122)", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70), 0 2px 16px oklch(0.97 0.02 91 / 0.50)" }}
           >
-            קשר ישיר עם מי שצריכים אותך — ללא עמלות ובהתאמה אישית
+            ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
           </motion.p>
 
           <StatsRow />
@@ -468,7 +468,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               transition={{ type: "spring", stiffness: 420, damping: 22 }}
             >
               <Search size={15} />
-              חפש עבודה עכשיו
+              הגדר זמינות עכשיו
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </motion.button>
           </motion.div>
@@ -1214,7 +1214,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             }}
           >
             <Search size={16} style={{ color: "var(--brand)" }} />
-            חיפוש עבודה מזדמנת
+            חיפוש עבודות
           </motion.button>
         </div>
       </section>

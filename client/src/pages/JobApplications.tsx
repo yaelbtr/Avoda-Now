@@ -45,8 +45,28 @@ const STATUS_STYLE: Record<string, { label: string; className: string }> = {
   rejected: { label: "נדחה", className: "bg-red-100 text-red-800" },
 };
 
-// ── Applicant card ────────────────────────────────────────────────────────────
+// ── Star rating display ─────────────────────────────────────────────────────
+function MiniStars({ rating }: { rating: number }) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className="w-3 h-3"
+          style={{
+            color: i <= full ? "#f59e0b" : i === full + 1 && half ? "#f59e0b" : "#d1d5db",
+            fill: i <= full ? "#f59e0b" : i === full + 1 && half ? "#fde68a" : "none",
+          }}
+        />
+      ))}
+      <span className="text-xs font-bold text-amber-700 mr-0.5">{rating.toFixed(1)}</span>
+    </span>
+  );
+}
 
+// ── Applicant card ────────────────────────────────────────────────────────────
 function ApplicantCard({
   app,
   onAccept,
@@ -65,6 +85,8 @@ function ApplicantCard({
     contactRevealed: boolean;
     createdAt: Date | string;
     distanceKm: number | null;
+    workerRating?: string | null;
+    completedJobsCount?: number;
   };
   onAccept: (id: number) => void;
   onReject: (id: number) => void;
@@ -74,6 +96,7 @@ function ApplicantCard({
   const statusStyle = STATUS_STYLE[app.status] ?? { label: app.status, className: "bg-gray-100 text-gray-700" };
   const contactRevealed = app.contactRevealed && app.workerPhone;
   const phone = app.workerPhone ?? "";
+  const rating = app.workerRating ? parseFloat(app.workerRating) : null;
 
   return (
     <Card
@@ -104,6 +127,24 @@ function ApplicantCard({
                 <Briefcase className="w-3.5 h-3.5" />
                 {timeAgo(app.createdAt)}
               </span>
+              {/* Rating + completed jobs */}
+              {rating !== null && rating > 0 ? (
+                <span className="flex items-center gap-1">
+                  <MiniStars rating={rating} />
+                  {(app.completedJobsCount ?? 0) > 0 && (
+                    <span className="text-xs text-muted-foreground">({app.completedJobsCount} עבודות)</span>
+                  )}
+                </span>
+              ) : (
+                (app.completedJobsCount ?? 0) > 0 ? (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Briefcase className="w-3 h-3" />
+                    {app.completedJobsCount} עבודות
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">עובד חדש</span>
+                )
+              )}
             </div>
 
             {app.workerBio && (

@@ -1147,6 +1147,8 @@ export async function getApplicationsForJob(jobId: number) {
       workerBio: users.workerBio,
       workerPreferredCity: users.preferredCity,
       workerTags: users.workerTags,
+      workerRating: users.workerRating,
+      completedJobsCount: users.completedJobsCount,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
@@ -1191,6 +1193,8 @@ export async function getApplicationsForJobWithDistance(
       workerPreferredCity: users.preferredCity,
       workerTags: users.workerTags,
       distanceKm: distanceExpr,
+      workerRating: users.workerRating,
+      completedJobsCount: users.completedJobsCount,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
@@ -1506,7 +1510,30 @@ export async function rateWorker(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  // Check if rating already exists
+  // Validate: if applicationId provided, ensure it is accepted and belongs to this employer+worker
+  if (applicationId !== null) {
+    const app = await db
+      .select({ id: applications.id, status: applications.status, workerId: applications.workerId })
+      .from(applications)
+      .where(
+        and(
+          eq(applications.id, applicationId),
+          eq(applications.workerId, workerId)
+        )
+      )
+      .limit(1);
+    if (app.length === 0) throw new Error("Application not found");
+    if (app[0].status !== "accepted") throw new Error("Worker must be accepted before rating");
+    // Prevent duplicate rating per application
+    const dupApp = await db
+      .select({ id: workerRatings.id })
+      .from(workerRatings)
+      .where(eq(workerRatings.applicationId, applicationId))
+      .limit(1);
+    if (dupApp.length > 0) throw new Error("Already rated for this application");
+  }
+
+  // Check if rating already exists (employer → worker, any application)
   const existing = await db
     .select({ id: workerRatings.id })
     .from(workerRatings)

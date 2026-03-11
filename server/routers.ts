@@ -419,6 +419,26 @@ const jobsRouter = router({
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
       if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await updateJobStatus(input.id, ctx.user.id, input.status);
+
+      // When job is closed, notify employer to rate accepted workers
+      if (input.status === "closed") {
+        try {
+          const allApps = await getApplicationsForJob(input.id);
+          const acceptedWorkers = allApps.filter((a) => a.status === "accepted");
+          if (acceptedWorkers.length > 0) {
+            const workerNames = acceptedWorkers.map((a) => a.workerName ?? "עובד").join(", ");
+            await sendPushToUser(ctx.user.id, {
+              title: "⭐ דרגו את העובדים שלכם",
+              body: `המשרה "${job.title}" הסתיימה. דרגו את: ${workerNames}`,
+              url: `/my-jobs/${input.id}/applications`,
+            });
+          }
+        } catch (e) {
+          // Non-critical — don't fail the mutation
+          console.error("[Rating notification] Failed:", e);
+        }
+      }
+
       return { success: true };
     }),
 

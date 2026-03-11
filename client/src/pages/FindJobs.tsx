@@ -27,7 +27,7 @@ import { reverseGeocode } from "@/lib/reverseGeocode";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
-const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-workers-city_4c4f6dc8.jpg";
+const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp";
 
 const SEO_CITIES = [
   "תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה",

@@ -225,7 +225,39 @@ export default function Admin() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 w-full justify-start overflow-x-auto">
+          {/* Mobile: 2-column grid nav */}
+          <div className="md:hidden grid grid-cols-2 gap-2 mb-6">
+            {[
+              { value: "stats", icon: <TrendingUp className="w-4 h-4" />, label: "סטטיסטיקות" },
+              { value: "jobs", icon: <Briefcase className="w-4 h-4" />, label: "משרות", badge: stats?.underReviewJobs },
+              { value: "reports", icon: <Flag className="w-4 h-4" />, label: "דיווחים", badge: stats?.underReviewJobs },
+              { value: "users", icon: <Users className="w-4 h-4" />, label: "משתמשים" },
+              { value: "applications", icon: <Briefcase className="w-4 h-4" />, label: "מועמדויות" },
+              { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
+              { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
+            ].map((item) => (
+              <button
+                key={item.value}
+                onClick={() => setActiveTab(item.value)}
+                className={`flex items-center justify-center gap-2 px-3 py-3 rounded-lg border text-sm font-medium transition-colors relative ${
+                  activeTab === item.value
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-background text-muted-foreground border-border hover:bg-muted"
+                }`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="absolute -top-1.5 -left-1.5 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop: horizontal tabs */}
+          <TabsList className="hidden md:flex mb-6 w-full justify-start">
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               סטטיסטיקות

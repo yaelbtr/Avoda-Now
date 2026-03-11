@@ -1,0 +1,127 @@
+{
+  "query": "SELECT id, slug, name, icon, groupName, isActive, sortOrder FROM categories ORDER BY sortOrder, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, slug, name, icon, groupName, isActive, sortOrder FROM categories ORDER BY sortOrder, id;",
+  "rows": [
+    {
+      "id": "1",
+      "slug": "cleaning",
+      "name": "ניקיון",
+      "icon": "🧹",
+      "groupName": "בית",
+      "isActive": "1",
+      "sortOrder": "10"
+    },
+    {
+      "id": "2",
+      "slug": "events",
+      "name": "אירועים",
+      "icon": "🎉",
+      "groupName": "אירועים",
+      "isActive": "1",
+      "sortOrder": "20"
+    },
+    {
+      "id": "3",
+      "slug": "kitchen",
+      "name": "מטבח ובישול",
+      "icon": "👨‍🍳",
+      "groupName": "אירועים",
+      "isActive": "1",
+      "sortOrder": "30"
+    },
+    {
+      "id": "4",
+      "slug": "serving",
+      "name": "הגשה ושירות",
+      "icon": "🍽️",
+      "groupName": "אירועים",
+      "isActive": "1",
+      "sortOrder": "40"
+    },
+    {
+      "id": "5",
+      "slug": "gardening",
+      "name": "גינון",
+      "icon": "🌿",
+      "groupName": "בית",
+      "isActive": "1",
+      "sortOrder": "50"
+    },
+    {
+      "id": "6",
+      "slug": "plumbing",
+      "name": "אינסטלציה",
+      "icon": "🔧",
+      "groupName": "תיקונים",
+      "isActive": "0",
+      "sortOrder": "60"
+    },
+    {
+      "id": "7",
+      "slug": "electricity",
+      "name": "חשמל",
+      "icon": "⚡",
+      "groupName": "תיקונים",
+      "isActive": "1",
+      "sortOrder": "70"
+    },
+    {
+      "id": "8",
+      "slug": "moving",
+      "name": "הובלות",
+      "icon": "📦",
+      "groupName": "בית",
+      "isActive": "1",
+      "sortOrder": "80"
+    },
+    {
+      "id": "9",
+      "slug": "childcare",
+      "name": "טיפול בילדים",
+      "icon": "👶",
+      "groupName": "טיפול",
+      "isActive": "1",
+      "sortOrder": "90"
+    },
+    {
+      "id": "10",
+      "slug": "eldercare",
+      "name": "טיפול בקשישים",
+      "icon": "🧓",
+      "groupName": "טיפול",
+      "isActive": "1",
+      "sortOrder": "100"
+    },
+    {
+      "id": "11",
+      "slug": "delivery",
+      "name": "שליחויות",
+      "icon": "🛵",
+      "groupName": "כללי",
+      "isActive": "1",
+      "sortOrder": "110"
+    },
+    {
+      "id": "12",
+      "slug": "security",
+      "name": "אבטחה",
+      "icon": "🛡️",
+      "groupName": "כללי",
+      "isActive": "1",
+      "sortOrder": "120"
+    },
+    {
+      "id": "13",
+      "slug": "other",
+      "name": "אחר",
+      "icon": "💼",
+      "groupName": "כללי",
+      "isActive": "1",
+      "sortOrder": "130"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tslug\tname\ticon\tgroupName\tisActive\tsortOrder\n1\tcleaning\tניקיון\t🧹\tבית\t1\t10\n2\tevents\tאירועים\t🎉\tאירועים\t1\t20\n3\tkitchen\tמטבח ובישול\t👨‍🍳\tאירועים\t1\t30\n4\tserving\tהגשה ושירות\t🍽️\tאירועים\t1\t40\n5\tgardening\tגינון\t🌿\tבית\t1\t50\n6\tplumbing\tאינסטלציה\t🔧\tתיקונים\t0\t60\n7\telectricity\tחשמל\t⚡\tתיקונים\t1\t70\n8\tmoving\tהובלות\t📦\tבית\t1\t80\n9\tchildcare\tטיפול בילדים\t👶\tטיפול\t1\t90\n10\teldercare\tטיפול בקשישים\t🧓\tטיפול\t1\t100\n11\tdelivery\tשליחויות\t🛵\tכללי\t1\t110\n12\tsecurity\tאבטחה\t🛡️\tכללי\t1\t120\n13\tother\tאחר\t💼\tכללי\t1\t130\n",
+  "stderr": "",
+  "execution_time_ms": 1542
+}

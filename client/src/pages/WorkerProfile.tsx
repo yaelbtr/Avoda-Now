@@ -20,26 +20,7 @@ import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModa
 import { Eye } from "lucide-react";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
-
-// Spec-required preference categories for worker profile matching
-const PREFERENCE_CATEGORIES = [
-  { value: "delivery", label: "שליחויות", icon: "🚴" },
-  { value: "warehouse", label: "מחסן ולוגיסטיקה", icon: "📦" },
-  { value: "cleaning", label: "ניקיון וסידור", icon: "🧹" },
-  { value: "kitchen", label: "מסעדות ואירועים", icon: "🍳" },
-  { value: "childcare", label: "טיפול בילדים", icon: "👶" },
-  { value: "petcare", label: "טיפול בבעלי חיים", icon: "🐾" },
-  { value: "homehelp", label: "עזרה בבית", icon: "🏠" },
-  { value: "moving", label: "הובלות וסבלים", icon: "🚚" },
-  { value: "maintenance", label: "תחזוקה ותיקונים", icon: "🔧" },
-  { value: "office", label: "עבודה משרדית", icon: "💻" },
-  { value: "sales", label: "מכירות ושירות", icon: "🛍️" },
-  { value: "construction", label: "בנייה", icon: "🏗️" },
-  { value: "security", label: "אבטחה", icon: "🛡️" },
-  { value: "eldercare", label: "טיפול בקשישים", icon: "🧓" },
-  { value: "agriculture", label: "חקלאות", icon: "🌾" },
-  { value: "other", label: "אחר", icon: "💼" },
-];
+import { useCategories } from "@/hooks/useCategories";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -101,6 +82,10 @@ export default function WorkerProfile() {
     canonical: "/worker-profile",
     noIndex: true,
   });
+
+  const { categories: dbCategories } = useCategories();
+  // Map DB categories to the shape expected by the UI
+  const PREFERENCE_CATEGORIES = dbCategories.map(c => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
 
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });

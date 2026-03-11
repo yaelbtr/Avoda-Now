@@ -1,16 +1,11 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/AppButton";
-import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
 import { User, MapPin, Briefcase, Phone, ArrowRight, Star, Zap, CheckCircle2 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
-
-const ALL_CATEGORIES = [
-  ...JOB_CATEGORIES,
-  ...SPECIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label, icon: c.icon })),
-];
+import { useCategories } from "@/hooks/useCategories";
 
 const OLIVE = "#4F583B";
 
@@ -61,6 +56,9 @@ export default function PublicWorkerProfile() {
   const [, navigate] = useLocation();
   const userId = parseInt(params.id ?? "0");
   const { user: currentUser } = useAuth();
+
+  const { categories: dbCategories } = useCategories();
+  const ALL_CATEGORIES = dbCategories.map(c => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
 
   const profileQuery = trpc.user.getPublicProfile.useQuery(
     { userId },

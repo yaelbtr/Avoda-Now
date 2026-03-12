@@ -50,11 +50,12 @@ const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
 
 /**
- * Detects if the user arrived from manus.im (referrer or hostname) and stores
- * a bypass flag in sessionStorage so maintenance mode is skipped for this session.
+ * Synchronously sets the manus bypass flag in localStorage if the current
+ * hostname is a manus domain. This runs at module evaluation time so the
+ * flag is available on the very first render before any useEffect fires.
  */
-function ManusMaintenanceBypass() {
-  useEffect(() => {
+(function initManusMaintenanceBypass() {
+  try {
     const referrer = document.referrer || "";
     const hostname = window.location.hostname || "";
     const isManusOrigin =
@@ -65,9 +66,11 @@ function ManusMaintenanceBypass() {
     if (isManusOrigin) {
       localStorage.setItem(MANUS_BYPASS_KEY, "1");
     }
-  }, []);
-  return null;
-}
+  } catch (_) { /* localStorage may be unavailable in some environments */ }
+})();
+
+// Kept as a no-op component so the JSX reference below still compiles
+function ManusMaintenanceBypass() { return null; }
 
 /** Captures ?ref=userId from the URL and stores it in localStorage. */
 function ReferralCapture() {

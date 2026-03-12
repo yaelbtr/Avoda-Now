@@ -1392,3 +1392,6 @@
 - [x] Client: Banner added to JobsLanding.tsx (compact, after jobs list)
 - [x] Tests: push.notifications.test.ts — 6 tests covering fan-out, no-match guard, isUrgent flag, subscribe/unsubscribe/vapidKey
 - [x] All 268 tests passing, 0 TypeScript errors
+
+## Bug Fix — Blank page on /find-jobs and other pages
+- [x] Diagnose and fix syntax/runtime error causing blank pages after push notification changes

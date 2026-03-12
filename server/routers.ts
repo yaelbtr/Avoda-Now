@@ -158,7 +158,11 @@ const authRouter = router({
    * Normalizes phone to E.164, enforces rate limits, then calls Twilio.
    */
   sendOtp: publicProcedure
-    .input(z.object({ phone: z.string().min(9).max(20) }))
+    .input(z.object({
+      phone: z.string().min(9).max(20),
+      isRegistration: z.boolean().optional(),
+      termsAccepted: z.boolean().optional(),
+    }))
     .mutation(async ({ input, ctx }) => {
       // Normalize to E.164
       let phone: string;
@@ -176,6 +180,17 @@ const authRouter = router({
       const existingUser = await getUserByPhone(phone);
       if (existingUser?.role === "test") {
         return { success: true, phone, testBypass: true };
+      }
+
+      // For registration flow: enforce terms acceptance server-side
+      // Only enforce when explicitly registering a new user (not for existing users logging in)
+      if (input.isRegistration && !existingUser) {
+        if (!input.termsAccepted) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
+          });
+        }
       }
 
       // IP-based + phone-based rate limiting
@@ -214,6 +229,7 @@ const authRouter = router({
         code: z.string().min(4).max(8),
         name: z.string().max(100).optional(),
         email: z.string().email().max(320).optional(),
+        termsAccepted: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -273,6 +289,13 @@ const authRouter = router({
       // Find or create user
       let user = await getUserByPhone(phone);
       if (!user) {
+        // Enforce terms acceptance for new users
+        if (!input.termsAccepted) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
+          });
+        }
         user = await createUserByPhone(phone, input.name, input.email);
       } else {
         await updateUserLastSignedIn(user.id);

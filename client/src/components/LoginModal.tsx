@@ -203,7 +203,11 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       pendingRegData.current = { name: regName.trim(), email: regEmail.trim() };
     }
     setPhone(combined);
-    sendOtp.mutate({ phone: combined });
+    sendOtp.mutate({
+      phone: combined,
+      isRegistration: activeTab === "register",
+      termsAccepted: activeTab === "register" ? termsAccepted : undefined,
+    });
   };
 
   const submitOtp = useCallback((code: string) => {
@@ -212,7 +216,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     verifyOtp.mutate({
       phone: normalizedPhone || phone,
       code,
-      ...(reg ? { name: reg.name, email: reg.email || undefined } : {}),
+      ...(reg ? { name: reg.name, email: reg.email || undefined, termsAccepted: true } : {}),
     });
   }, [verifyOtp, normalizedPhone, phone]);
 

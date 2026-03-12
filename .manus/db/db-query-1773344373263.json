@@ -1,0 +1,25 @@
+{
+  "query": "SELECT status, COUNT(*) as cnt FROM jobs GROUP BY status; SELECT COUNT(*) as total_users FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT status, COUNT(*) as cnt FROM jobs GROUP BY status; SELECT COUNT(*) as total_users FROM users;",
+  "rows": [
+    {
+      "status": "closed",
+      "cnt": "2"
+    },
+    {
+      "status": "active",
+      "cnt": "3"
+    },
+    {
+      "status": "expired",
+      "cnt": "3"
+    }
+  ],
+  "messages": [
+    "total_users",
+    "4"
+  ],
+  "stdout": "status\tcnt\nclosed\t2\nactive\t3\nexpired\t3\ntotal_users\n4\n",
+  "stderr": "",
+  "execution_time_ms": 1853
+}

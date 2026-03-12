@@ -1585,3 +1585,6 @@
 - [x] After successful OTP login during maintenance: check if user is admin
 - [x] If not admin → close modal, stay on MaintenancePage (non-admin cannot bypass)
 - [x] If admin → maintenance gate re-checks and lets them through automatically
+
+## Fix QuickStats Banner (Mar 12, 2026)
+- [x] Fix QuickStats — RoleSelectionScreen badge now uses real heroStats data (hides when <50 active jobs / <50 closed / <100 workers)

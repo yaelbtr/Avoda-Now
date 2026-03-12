@@ -92,21 +92,23 @@ function RoleCard({
             background: "linear-gradient(to bottom, oklch(0 0 0 / 0.0) 30%, oklch(0 0 0 / 0.55) 100%)",
           }}
         />
-        {/* Badge overlay */}
-        <motion.div
-          className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
-          style={{
-            background: "oklch(1 0 0 / 0.92)",
-            color: C_BRAND,
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
-          }}
-          animate={{ y: hovered ? -2 : 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {badgeIcon}
-          {badge}
-        </motion.div>
+        {/* Badge overlay — hidden when badge is empty */}
+        {badge && (
+          <motion.div
+            className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
+            style={{
+              background: "oklch(1 0 0 / 0.92)",
+              color: C_BRAND,
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
+            }}
+            animate={{ y: hovered ? -2 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {badgeIcon}
+            {badge}
+          </motion.div>
+        )}
         {/* Subtitle chip */}
         <div
           className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -290,6 +292,20 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
     setTimeout(() => setCardsVisible(true), 150);
   };
 
+  // Fetch real stats for the worker card badge (conditional display)
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const hs = heroStatsQuery.data;
+  // Determine badge text: active jobs if >50, else closed jobs if >50, else workers if >100, else null
+  const workerBadge: string | null = (() => {
+    if (!hs) return null;
+    if (hs.activeJobs > 50)         return `${hs.activeJobs}+ משרות פעילות`;
+    if (hs.closedJobs > 50)         return `${hs.closedJobs}+ משרות שנסגרו`;
+    if (hs.registeredWorkers > 100) return `${hs.registeredWorkers}+ עובדים רשומים`;
+    return null;
+  })();
+
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
       // Notify parent — parent will remove this component from DOM,
@@ -410,8 +426,8 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       "קשר ישיר עם המעסיק",
                       "ללא עמלות ודמי תיווך",
                     ]}
-                    badge="500+ משרות"
-                    badgeIcon={<Zap className="h-3 w-3" />}
+                    badge={workerBadge ?? ""}
+                    badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
                     buttonLabel="המשך כעובד"
                     loading={loading === "worker"}
                     disabled={!!loading}

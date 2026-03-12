@@ -1469,3 +1469,13 @@
 - [x] Fix "לפי מיקום" button in FindJobs filter panel - button now calls doGetLocation() directly
 - [x] Verify handleLocationButtonClick is wired to the button correctly
 - [x] Added disabled state and BrandLoader spinner while locating
+
+## Vitest: dayOfWeek Filter Tests (Mar 12, 2026)
+- [x] Test getActiveJobs builds correct SQL condition for dayOfWeek (via router mock)
+- [x] Test getJobsNearLocation builds correct SQL condition for dayOfWeek (via router mock)
+- [x] Test jobs.list tRPC procedure passes dayOfWeek to getActiveJobs (9 tests)
+- [x] Test jobs.search tRPC procedure passes dayOfWeek to getJobsNearLocation (9 tests)
+- [x] Test DAY_NAME_TO_NUM mapping (0=Sun..6=Sat JS convention) (6 tests)
+- [x] Test MySQL DAYOFWEEK conversion (JS+1 = MySQL) (5 tests)
+- [x] Test edge cases: empty array, pagination, combined filters (4 tests)
+- [x] Total: 33 new tests in server/dayOfWeek.test.ts — all passing (301 total)

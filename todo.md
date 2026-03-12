@@ -1411,3 +1411,6 @@
 ## FindJobs UX Fixes (Round 2)
 - [x] Fix sort select: "ברירת מחדל" overflows "הצג לפי" label — use placeholder approach instead of overlay label
 - [x] Move quick filter chips (עבודות קרוב אלי, דחוף, היום, מחר, השבוע) inside the filter modal at the top
+
+## FindJobs UX Fixes (Round 3)
+- [x] Show total active filter count (panel filters + quick chips: location, urgent, date) on "סנן לפי" button badge when panel is closed

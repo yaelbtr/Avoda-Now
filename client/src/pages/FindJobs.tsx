@@ -383,7 +383,14 @@ export default function FindJobs() {
   useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, sortBy, dateFilter, searchText]);
   const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
   const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const activeFilterCount = [category !== "all", !!selectedCity || !!userLat, showUrgentToday, selectedTimeSlots.length > 0].filter(Boolean).length;
+  // Total active filters: panel filters + quick chips (location, urgent, date)
+  const activeFilterCount = [
+    category !== "all",
+    !!selectedCity || !!userLat,
+    showUrgentToday,
+    selectedTimeSlots.length > 0,
+    !!dateFilter,
+  ].filter(Boolean).length;
 
   // ── Pill style helper ──────────────────────────────────────────────────────
   const activePill = {

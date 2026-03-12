@@ -1636,3 +1636,12 @@
 - [x] Post-OTP role selection step (worker / employer) inside modal
 - [x] Quick setup step after role selection (categories + city, optional)
 - [x] Profile completion score + banner in WorkerProfile
+
+## User Management Table Redesign (Mar 12, 2026)
+- [x] Redesign users tab in Admin panel as a data table
+- [x] Table columns: name, phone, role, status, created, last login, actions
+- [x] Table actions: edit (modal), delete (confirm), block/unblock, promote
+- [x] Add "הוסף משתמש" button with form modal (name, phone, role)
+- [x] Backend: admin.createUser procedure
+- [x] Backend: admin.updateUser procedure (name, phone, role, status)
+- [x] Backend: admin.deleteUser procedure

@@ -110,6 +110,16 @@ export default function Admin() {
     onConfirm: () => void;
   }>({ open: false, title: "", description: "", onConfirm: () => {} });
 
+  // User management modals
+  const [userSearch, setUserSearch] = useState("");
+  const [editUserModal, setEditUserModal] = useState<{
+    open: boolean;
+    user: { id: number; name: string | null; phone: string | null; role: string; status: string } | null;
+  }>({ open: false, user: null });
+  const [editUserForm, setEditUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin", status: "active" as "active" | "suspended" });
+  const [addUserModal, setAddUserModal] = useState(false);
+  const [addUserForm, setAddUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin" });
+
   const utils = trpc.useUtils();
 
   // Queries
@@ -179,6 +189,18 @@ export default function Admin() {
       utils.admin.listUsers.invalidate();
       toast.success(`נעילת שינוי טלפון שוחררה (${data.deletedCount} רשומות נמחקו)`);
     },
+    onError: (e) => toast.error(e.message),
+  });
+  const createUserMutation = trpc.admin.createUser.useMutation({
+    onSuccess: () => { utils.admin.listUsers.invalidate(); setAddUserModal(false); setAddUserForm({ name: "", phone: "", role: "user" }); toast.success("המשתמש נוצר בהצלחה"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateUserMutation = trpc.admin.updateUser.useMutation({
+    onSuccess: () => { utils.admin.listUsers.invalidate(); setEditUserModal({ open: false, user: null }); toast.success("המשתמש עודכן"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteUserMutation = trpc.admin.deleteUser.useMutation({
+    onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("המשתמש נמחק"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -550,92 +572,281 @@ export default function Admin() {
 
           {/* ─── Users Tab ─── */}
           <TabsContent value="users">
-            <h2 className="text-lg font-semibold mb-4">ניהול משתמשים ({usersQuery.data?.length ?? 0})</h2>
+            {/* Header row */}
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <h2 className="text-lg font-semibold">ניהול משתמשים ({usersQuery.data?.length ?? 0})</h2>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="חיפוש שם / טלפון..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="border border-border rounded-lg px-3 py-1.5 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-48"
+                  dir="rtl"
+                />
+                <AppButton
+                  size="sm"
+                  variant="brand"
+                  onClick={() => setAddUserModal(true)}
+                >
+                  <Users className="w-4 h-4 ml-1" />
+                  הוסף משתמש
+                </AppButton>
+              </div>
+            </div>
+
             {usersQuery.isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Card key={i}><CardContent className="pt-4 pb-4"><div className="h-12 bg-muted animate-pulse rounded" /></CardContent></Card>
+              <div className="space-y-2">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-10 bg-muted animate-pulse rounded-lg" />
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
-                {(usersQuery.data ?? []).map((u) => (
-                  <Card key={u.id} className={u.status === "suspended" ? "border-red-300 bg-red-50/30 opacity-75" : ""}>
-                    <CardContent className="pt-4 pb-4">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="font-medium">{u.name ?? "ללא שם"}</span>
-                            <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+              <div className="overflow-x-auto rounded-xl border border-border">
+                <table className="w-full text-sm" dir="rtl">
+                  <thead>
+                    <tr className="bg-muted/60 text-muted-foreground text-xs">
+                      <th className="text-right px-3 py-2.5 font-semibold">שם</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">טלפון</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">תפקיד</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">סטטוס</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">הצטרף</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">כניסה אחרונה</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">פעולות</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(usersQuery.data ?? [])
+                      .filter(u =>
+                        !userSearch ||
+                        (u.name ?? "").includes(userSearch) ||
+                        (u.phone ?? "").includes(userSearch)
+                      )
+                      .map((u, idx) => (
+                        <tr
+                          key={u.id}
+                          className={`border-t border-border transition-colors hover:bg-muted/30 ${
+                            u.status === "suspended" ? "bg-red-50/40 opacity-80" : idx % 2 === 0 ? "" : "bg-muted/10"
+                          }`}
+                        >
+                          <td className="px-3 py-2.5 font-medium">{u.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{u.phone ?? "—"}</td>
+                          <td className="px-3 py-2.5">
+                            <Badge variant={u.role === "admin" ? "default" : "secondary"} className="text-xs">
                               {u.role === "admin" ? "מנהל" : "משתמש"}
                             </Badge>
-                            {u.status === "suspended" && (
-                              <Badge variant="destructive">חסום</Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {u.phone ?? "ללא טלפון"} · הצטרף: {new Date(u.createdAt).toLocaleDateString("he-IL")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            כניסה אחרונה: {new Date(u.lastSignedIn).toLocaleDateString("he-IL")}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {u.status === "suspended" ? (
-                            <AppButton
-                              size="sm"
-                              variant="outline"
-                              className="text-green-600 border-green-300 hover:bg-green-50"
-                              onClick={() => confirm("הסרת חסימה", `להסיר חסימה מהמשתמש ${u.phone}?`, () => unblockUser.mutate({ userId: u.id }))}
-                            >
-                              <UserCheck className="w-4 h-4 ml-1" />
-                              בטל חסימה
-                            </AppButton>
-                          ) : (
-                            <AppButton
-                              size="sm"
-                              variant="outline"
-                              className="text-red-600 border-red-300 hover:bg-red-50"
-                              onClick={() => confirm("חסימת משתמש", `לחסום את המשתמש ${u.phone}?`, () => blockUser.mutate({ userId: u.id }))}
-                            >
-                              <Ban className="w-4 h-4 ml-1" />
-                              חסום
-                            </AppButton>
-                          )}
-                          {u.role !== "admin" && (
-                            <AppButton
-                              size="sm"
-                              variant="outline"
-                              onClick={() => confirm("קידום למנהל", `לקדם את ${u.phone} לתפקיד מנהל?`, () => setUserRole.mutate({ userId: u.id, role: "admin" }))}
-                            >
-                              <Shield className="w-4 h-4 ml-1" />
-                              קדם למנהל
-                            </AppButton>
-                          )}
-                          <AppButton
-                            size="sm"
-                            variant="outline"
-                            className="text-amber-600 border-amber-300 hover:bg-amber-50"
-                            title="שחרר נעילת שינוי טלפון (מחיקת ניסיונות כושלים בשעה האחרונה)"
-                            onClick={() => confirm(
-                              "שחרור נעילת טלפון",
-                              `לשחרר את נעילת שינוי הטלפון של המשתמש ${u.phone}?\nפעולה זו תמחק את רשומות הניסיונות הכושלים בשעה האחרונה.`,
-                              () => clearPhoneChangeLockout.mutate({ userId: u.id })
-                            )}
-                          >
-                            <LockOpen className="w-4 h-4 ml-1" />
-                            שחרר נעילה
-                          </AppButton>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {usersQuery.data?.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">אין משתמשים</div>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {u.status === "suspended"
+                              ? <Badge variant="destructive" className="text-xs">חסום</Badge>
+                              : <Badge variant="outline" className="text-xs text-green-700 border-green-300">פעיל</Badge>
+                            }
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(u.createdAt).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(u.lastSignedIn).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5">
+                            <div className="flex items-center gap-1.5">
+                              {/* Edit */}
+                              <button
+                                title="ערוך"
+                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
+                                onClick={() => {
+                                  setEditUserForm({
+                                    name: u.name ?? "",
+                                    phone: u.phone ?? "",
+                                    role: u.role as "user" | "admin",
+                                    status: u.status as "active" | "suspended",
+                                  });
+                                  setEditUserModal({ open: true, user: u });
+                                }}
+                              >
+                                <Wrench className="w-3.5 h-3.5" />
+                              </button>
+                              {/* Block / Unblock */}
+                              {u.status === "suspended" ? (
+                                <button
+                                  title="בטל חסימה"
+                                  className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                  onClick={() => confirm("ביטול חסימה", `לבטל חסימה מהמשתמש ${u.phone}?`, () => unblockUser.mutate({ userId: u.id }))}
+                                >
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  title="חסום"
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                                  onClick={() => confirm("חסימת משתמש", `לחסום את המשתמש ${u.phone}?`, () => blockUser.mutate({ userId: u.id }))}
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {/* Promote / Demote */}
+                              <button
+                                title={u.role === "admin" ? "הורד למשתמש" : "קדם למנהל"}
+                                className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600 transition-colors"
+                                onClick={() => confirm(
+                                  u.role === "admin" ? "הורדת תפקיד" : "קידום למנהל",
+                                  `ל${u.role === "admin" ? "הוריד" : "קדם"} את ${u.phone}?`,
+                                  () => setUserRole.mutate({ userId: u.id, role: u.role === "admin" ? "user" : "admin" })
+                                )}
+                              >
+                                <Shield className="w-3.5 h-3.5" />
+                              </button>
+                              {/* Unlock phone */}
+                              <button
+                                title="שחרר נעילת טלפון"
+                                className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors"
+                                onClick={() => confirm("שחרור נעילת טלפון", `לשחרר נעילת שינוי טלפון של ${u.phone}?`, () => clearPhoneChangeLockout.mutate({ userId: u.id }))}
+                              >
+                                <LockOpen className="w-3.5 h-3.5" />
+                              </button>
+                              {/* Delete */}
+                              <button
+                                title="מחק"
+                                className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                                onClick={() => confirm("מחיקת משתמש", `למחוק לצמיתת את המשתמש ${u.phone}? פעולה זו בלתי הפיכה!`, () => deleteUserMutation.mutate({ userId: u.id }))}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+                {(usersQuery.data ?? []).filter(u =>
+                  !userSearch || (u.name ?? "").includes(userSearch) || (u.phone ?? "").includes(userSearch)
+                ).length === 0 && (
+                  <div className="text-center py-10 text-muted-foreground">לא נמצאו משתמשים</div>
                 )}
               </div>
             )}
+
+            {/* ─── Add User Modal ─── */}
+            <Dialog open={addUserModal} onOpenChange={setAddUserModal}>
+              <DialogContent dir="rtl" className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>הוסף משתמש ידנית</DialogTitle>
+                  <DialogDescription>יצירת משתמש חדש במערכת ללא אימות OTP</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-2">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">טלפון *</label>
+                    <input
+                      type="tel"
+                      placeholder="0501234567"
+                      value={addUserForm.phone}
+                      onChange={(e) => setAddUserForm(f => ({ ...f, phone: e.target.value }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">שם (אופציונלי)</label>
+                    <input
+                      type="text"
+                      placeholder="שם מלא"
+                      value={addUserForm.name}
+                      onChange={(e) => setAddUserForm(f => ({ ...f, name: e.target.value }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">תפקיד</label>
+                    <select
+                      value={addUserForm.role}
+                      onChange={(e) => setAddUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="user">משתמש</option>
+                      <option value="admin">מנהל</option>
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter className="gap-2">
+                  <AppButton variant="outline" onClick={() => setAddUserModal(false)}>בטל</AppButton>
+                  <AppButton
+                    variant="brand"
+                    disabled={!addUserForm.phone.trim() || createUserMutation.isPending}
+                    onClick={() => createUserMutation.mutate(addUserForm)}
+                  >
+                    {createUserMutation.isPending ? "יוצר..." : "צור משתמש"}
+                  </AppButton>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* ─── Edit User Modal ─── */}
+            <Dialog open={editUserModal.open} onOpenChange={(o) => !o && setEditUserModal({ open: false, user: null })}>
+              <DialogContent dir="rtl" className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>עריכת משתמש</DialogTitle>
+                  <DialogDescription>{editUserModal.user?.phone}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-2">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">שם</label>
+                    <input
+                      type="text"
+                      value={editUserForm.name}
+                      onChange={(e) => setEditUserForm(f => ({ ...f, name: e.target.value }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">טלפון</label>
+                    <input
+                      type="tel"
+                      value={editUserForm.phone}
+                      onChange={(e) => setEditUserForm(f => ({ ...f, phone: e.target.value }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">תפקיד</label>
+                    <select
+                      value={editUserForm.role}
+                      onChange={(e) => setEditUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="user">משתמש</option>
+                      <option value="admin">מנהל</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">סטטוס</label>
+                    <select
+                      value={editUserForm.status}
+                      onChange={(e) => setEditUserForm(f => ({ ...f, status: e.target.value as "active" | "suspended" }))}
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="active">פעיל</option>
+                      <option value="suspended">חסום</option>
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter className="gap-2">
+                  <AppButton variant="outline" onClick={() => setEditUserModal({ open: false, user: null })}>בטל</AppButton>
+                  <AppButton
+                    variant="brand"
+                    disabled={updateUserMutation.isPending}
+                    onClick={() => editUserModal.user && updateUserMutation.mutate({
+                      userId: editUserModal.user.id,
+                      name: editUserForm.name || undefined,
+                      phone: editUserForm.phone || undefined,
+                      role: editUserForm.role,
+                      status: editUserForm.status,
+                    })}
+                  >
+                    {updateUserMutation.isPending ? "שומר..." : "שמור שינויים"}
+                  </AppButton>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* ─── Applications Tab ─── */}

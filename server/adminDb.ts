@@ -108,6 +108,41 @@ export async function adminSetUserRole(userId: number, role: "user" | "admin") {
   await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 
+export async function adminCreateUser(data: { phone: string; name?: string; role?: "user" | "admin" }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Check for duplicate phone
+  const existing = await db.select({ id: users.id }).from(users).where(eq(users.phone, data.phone)).limit(1);
+  if (existing.length > 0) throw new Error("מספר טלפון כבר קיים במערכת");
+  const openId = `manual_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const [inserted] = await db.insert(users).values({
+    phone: data.phone,
+    name: data.name ?? null,
+    role: data.role ?? "user",
+    openId,
+    status: "active",
+  });
+  return { id: (inserted as any).insertId as number };
+}
+
+export async function adminUpdateUser(userId: number, data: { name?: string; phone?: string; role?: "user" | "admin"; status?: "active" | "suspended" }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateData: Record<string, unknown> = {};
+  if (data.name !== undefined) updateData.name = data.name || null;
+  if (data.phone !== undefined) updateData.phone = data.phone || null;
+  if (data.role !== undefined) updateData.role = data.role;
+  if (data.status !== undefined) updateData.status = data.status;
+  if (Object.keys(updateData).length === 0) return;
+  await db.update(users).set(updateData).where(eq(users.id, userId));
+}
+
+export async function adminDeleteUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(users).where(eq(users.id, userId));
+}
+
 // ─── Reports Admin ────────────────────────────────────────────────────────────
 
 export async function adminGetAllReports(limit = 200) {

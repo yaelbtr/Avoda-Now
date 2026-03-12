@@ -310,11 +310,18 @@ const jobInputSchema = z.object({
 
 const jobsRouter = router({
   list: publicProcedure
-    .input(z.object({ category: z.string().optional(), limit: z.number().optional(), city: z.string().optional(), dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional() }))
-    .query(async ({ input, ctx }) => {
-      const jobs = await getActiveJobs(input.limit ?? 50, input.category, input.city, input.dateFilter);
-      // Never expose contactPhone to workers or unauthenticated users
-      return jobs.map(j => ({ ...j, contactPhone: null }));
+    .input(z.object({
+      category: z.string().optional(),
+      limit: z.number().int().min(1).max(50).optional(),
+      city: z.string().optional(),
+      dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
+      page: z.number().int().min(1).default(1),
+    }))
+    .query(async ({ input }) => {
+      const limit = input.limit ?? 10;
+      const offset = (input.page - 1) * limit;
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset);
+      return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
   search: publicProcedure
@@ -324,15 +331,17 @@ const jobsRouter = router({
         lng: z.number(),
         radiusKm: z.number().default(10),
         category: z.string().optional(),
-        limit: z.number().optional(),
+        limit: z.number().int().min(1).max(50).optional(),
         city: z.string().optional(),
         dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
+        page: z.number().int().min(1).default(1),
       })
     )
-    .query(async ({ input, ctx }) => {
-      const jobs = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50, input.city, input.dateFilter);
-      // Never expose contactPhone to workers or unauthenticated users
-      return jobs.map(j => ({ ...j, contactPhone: null }));
+    .query(async ({ input }) => {
+      const limit = input.limit ?? 10;
+      const offset = (input.page - 1) * limit;
+      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset);
+      return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
   getById: publicProcedure

@@ -184,6 +184,8 @@ export default function FindJobs() {
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">("default");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
@@ -302,8 +304,11 @@ export default function FindJobs() {
     if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
   };
 
-  type AnyJob = NonNullable<typeof searchQuery.data>[number] | NonNullable<typeof listQuery.data>[number];
-  let jobs: AnyJob[] = userLat ? (searchQuery.data ?? []) : (listQuery.data ?? []);
+  // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let jobs: AnyJob[] = userLat ? (((searchQuery.data as any)?.jobs ?? []) as AnyJob[]) : (((listQuery.data as any)?.jobs ?? []) as AnyJob[]);
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
 
   if (searchText.trim()) {
@@ -366,15 +371,17 @@ export default function FindJobs() {
     return bUrgent - aUrgent;
   });
 
-  useEffect(() => {
+   useEffect(() => {
     if (!isLoading && userLat && jobs.length === 0 && radiusKm < 50 && !autoExpandedRadius) setAutoExpandedRadius(true);
   }, [isLoading, userLat, jobs.length, radiusKm, autoExpandedRadius]);
-
   useEffect(() => {
     if (!isLoading && hasActiveFilter && jobs.length === 0) setNoIndexReady(true);
     else setNoIndexReady(false);
   }, [isLoading, hasActiveFilter, jobs.length]);
-
+  // Reset to page 1 when filters change
+  useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, sortBy, dateFilter, searchText]);
+  const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
+  const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const activeFilterCount = [category !== "all", !!selectedCity || !!userLat, showUrgentToday, selectedTimeSlots.length > 0].filter(Boolean).length;
 
   // ── Pill style helper ──────────────────────────────────────────────────────
@@ -1057,7 +1064,7 @@ export default function FindJobs() {
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
             className="space-y-3"
           >
-            {jobs.map(job => {
+            {pagedJobs.map(job => {
               const j = job as unknown as JobCardJob & { distance?: number };
               return (
                 <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
@@ -1073,6 +1080,54 @@ export default function FindJobs() {
               );
             })}
           </motion.div>
+        )}
+
+        {/* ── Pagination ─────────────────────────────────────────────────────── */}
+        {!isLoading && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6 mb-2" dir="rtl">
+            <button
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === 1}
+              className="px-3 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-30"
+              style={{ background: currentPage === 1 ? 'oklch(0.94 0.02 122)' : 'oklch(0.35 0.08 122)', color: currentPage === 1 ? 'oklch(0.50 0.05 122)' : 'oklch(0.96 0.04 80)' }}
+            >
+              הקודם
+            </button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              // Show pages around current page
+              let pageNum: number;
+              if (totalPages <= 5) pageNum = i + 1;
+              else if (currentPage <= 3) pageNum = i + 1;
+              else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+              else pageNum = currentPage - 2 + i;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="w-9 h-9 rounded-xl text-sm font-bold transition-all"
+                  style={currentPage === pageNum
+                    ? { background: 'oklch(0.35 0.08 122)', color: 'oklch(0.96 0.04 80)', boxShadow: '0 2px 8px oklch(0.28 0.06 122 / 0.3)' }
+                    : { background: 'white', color: 'oklch(0.30 0.05 122)', border: '1px solid oklch(0.88 0.02 122)' }
+                  }
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-30"
+              style={{ background: currentPage === totalPages ? 'oklch(0.94 0.02 122)' : 'oklch(0.35 0.08 122)', color: currentPage === totalPages ? 'oklch(0.50 0.05 122)' : 'oklch(0.96 0.04 80)' }}
+            >
+              הבא
+            </button>
+          </div>
+        )}
+        {!isLoading && totalPages > 1 && (
+          <p className="text-center text-xs mt-1 mb-4" style={{ color: 'oklch(0.55 0.04 122)' }}>
+            עמוד {currentPage} מתוך {totalPages} ({jobs.length} משרות)
+          </p>
         )}
 
         {/* Location prompt when no geo */}

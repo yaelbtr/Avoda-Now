@@ -235,7 +235,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
   const urgentJobs = urgentQuery.data ?? [];
   const todayJobs = todayQuery.data ?? [];
-  const jobs = userLat ? (nearbyQuery.data ?? []) : (latestQuery.data ?? []);
+  // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
+  type JobItem = { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jobs = (userLat ? ((nearbyQuery.data as any)?.jobs ?? []) : ((latestQuery.data as any)?.jobs ?? [])) as JobItem[];
   const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
   const isAvailable = !!workerStatusQuery.data;
 

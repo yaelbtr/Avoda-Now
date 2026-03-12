@@ -176,38 +176,40 @@ export default function JobsLanding() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Extract jobs array from paginated response (jobs.list returns { jobs, total, page, limit })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawJobsData: JobCardJob[] = ((jobsQuery.data as any)?.jobs ?? []) as JobCardJob[];
+
   // Filter jobs based on time filter
-  let jobs = jobsQuery.data ?? [];
+  let jobs: JobCardJob[] = rawJobsData;
   if (resolvedTime === "today") {
     const todayIds = new Set((todayQuery.data ?? []).map((j: { id: number }) => j.id));
-    jobs = jobs.filter(j => todayIds.has(j.id));
+    jobs = rawJobsData.filter(j => todayIds.has(j.id));
   } else if (resolvedTime === "immediate") {
     // Use urgent jobs list, filtered by city if needed
-    const urgentJobs = urgentQuery.data ?? [];
+    const urgentJobs = (urgentQuery.data ?? []) as JobCardJob[];
     jobs = resolvedCity
       ? urgentJobs.filter((j: JobCardJob) => j.city === resolvedCity)
       : urgentJobs;
   } else if (resolvedTime === "evening") {
     // Evening: jobs with workingHours containing "ערב" or "לילה" or "18" or "19" or "20"
-    const allJobs = jobsQuery.data ?? [];
-    jobs = allJobs.filter((j: JobCardJob & { workingHours?: string | null }) => {
+    jobs = rawJobsData.filter((j: JobCardJob & { workingHours?: string | null }) => {
       const hours = (j.workingHours ?? "").toLowerCase();
       return hours.includes("ערב") || hours.includes("לילה") ||
              hours.includes("18") || hours.includes("19") || hours.includes("20") || hours.includes("21");
     });
     // If no evening-specific jobs found, show all jobs (better UX than empty page)
-    if (jobs.length === 0) jobs = allJobs;
+    if (jobs.length === 0) jobs = rawJobsData;
   } else if (resolvedTime === "weekend") {
     // Weekend: jobs with workingHours or title containing weekend keywords
-    const allJobs = jobsQuery.data ?? [];
-    jobs = allJobs.filter((j: JobCardJob & { workingHours?: string | null }) => {
+    jobs = rawJobsData.filter((j: JobCardJob & { workingHours?: string | null }) => {
       const hours = (j.workingHours ?? "").toLowerCase();
       const title = (j.title ?? "").toLowerCase();
       return hours.includes("שישי") || hours.includes("שבת") || hours.includes("סוף שבוע") ||
              title.includes("שישי") || title.includes("שבת") || title.includes("סוף שבוע");
     });
     // If no weekend-specific jobs found, show all jobs
-    if (jobs.length === 0) jobs = allJobs;
+    if (jobs.length === 0) jobs = rawJobsData;
   }
 
   const isLoading = jobsQuery.isLoading ||

@@ -71,3 +71,36 @@ export async function sendPushToUser(userId: number, payload: PushPayload): Prom
     })
   );
 }
+
+/**
+ * Fan-out: send a "new job" push notification to all workers whose profile
+ * matches the given job category and city.
+ * Uses getWorkersMatchingJob from db.ts (same matching logic as SMS alerts).
+ * Fire-and-forget — errors are logged but never thrown.
+ */
+export async function sendJobPushNotifications(
+  workerIds: number[],
+  job: { title: string; city: string | null; category: string; isUrgent: boolean; id: number }
+): Promise<number> {
+  ensureInit();
+  if (!initialized || workerIds.length === 0) return 0;
+  const urgentPrefix = job.isUrgent ? "🔴 דחוף! " : "💼 ";
+  const cityPart = job.city ? ` ב${job.city}` : "";
+  const payload: PushPayload = {
+    title: `${urgentPrefix}משרה חדשה תואמת לפרופיל שלך`,
+    body: `${job.title}${cityPart}`,
+    url: `/jobs/${job.id}`,
+    icon: "/favicon.ico",
+  };
+  let sent = 0;
+  // Process in parallel batches of 20 to avoid overwhelming the push service
+  const BATCH = 20;
+  for (let i = 0; i < workerIds.length; i += BATCH) {
+    const batch = workerIds.slice(i, i + BATCH);
+    const results = await Promise.allSettled(batch.map((id) => sendPushToUser(id, payload)));
+    for (const r of results) {
+      if (r.status === "fulfilled") sent++;
+    }
+  }
+  return sent;
+}

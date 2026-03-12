@@ -29,8 +29,10 @@ const mockJob = (id: number) => ({
 });
 
 vi.mock("./db", () => ({
-  getActiveJobs: vi.fn().mockResolvedValue([mockJob(1)]),
-  getJobsNearLocation: vi.fn().mockResolvedValue([mockJob(2)]),
+  // getActiveJobs returns { rows, total } for jobs.list (paginated)
+  getActiveJobs: vi.fn().mockResolvedValue({ rows: [mockJob(1)], total: 1 }),
+  // getJobsNearLocation returns { rows, total } for jobs.search (paginated)
+  getJobsNearLocation: vi.fn().mockResolvedValue({ rows: [{ ...mockJob(2), distance: 1.5 }], total: 1 }),
   getJobById: vi.fn().mockResolvedValue(mockJob(3)),
   getTodayJobs: vi.fn().mockResolvedValue([mockJob(4)]),
   getUrgentJobs: vi.fn().mockResolvedValue([{ ...mockJob(5), isUrgent: true }]),
@@ -56,15 +58,17 @@ describe("contactPhone privacy — server-side stripping", () => {
     it("strips contactPhone for unauthenticated users", async () => {
       const { appRouter } = await import("./routers");
       const caller = appRouter.createCaller(makeCtx(null));
-      const jobs = await caller.jobs.list({});
-      expect(jobs[0].contactPhone).toBeNull();
+      // jobs.list now returns { jobs, total, page, limit }
+      const result = await caller.jobs.list({});
+      expect(result.jobs[0].contactPhone).toBeNull();
     });
 
     it("strips contactPhone for authenticated workers", async () => {
       const { appRouter } = await import("./routers");
       const caller = appRouter.createCaller(makeCtx({ id: 99, role: "user" }));
-      const jobs = await caller.jobs.list({});
-      expect(jobs[0].contactPhone).toBeNull();
+      // jobs.list now returns { jobs, total, page, limit }
+      const result = await caller.jobs.list({});
+      expect(result.jobs[0].contactPhone).toBeNull();
     });
   });
 
@@ -72,15 +76,17 @@ describe("contactPhone privacy — server-side stripping", () => {
     it("strips contactPhone for authenticated workers", async () => {
       const { appRouter } = await import("./routers");
       const caller = appRouter.createCaller(makeCtx({ id: 99, role: "user" }));
-      const jobs = await caller.jobs.search({ lat: 32.0, lng: 34.8 });
-      expect(jobs[0].contactPhone).toBeNull();
+      // jobs.search now returns { jobs, total, page, limit }
+      const result = await caller.jobs.search({ lat: 32.0, lng: 34.8 });
+      expect(result.jobs[0].contactPhone).toBeNull();
     });
 
     it("strips contactPhone for unauthenticated users", async () => {
       const { appRouter } = await import("./routers");
       const caller = appRouter.createCaller(makeCtx(null));
-      const jobs = await caller.jobs.search({ lat: 32.0, lng: 34.8 });
-      expect(jobs[0].contactPhone).toBeNull();
+      // jobs.search now returns { jobs, total, page, limit }
+      const result = await caller.jobs.search({ lat: 32.0, lng: 34.8 });
+      expect(result.jobs[0].contactPhone).toBeNull();
     });
   });
 

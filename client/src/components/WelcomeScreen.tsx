@@ -104,8 +104,9 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
               <div className="flex justify-center py-8">
                 <BrandLoader size="sm" />
               </div>
-            ) : urgentJobsQuery.data && urgentJobsQuery.data.length > 0 ? (
-              urgentJobsQuery.data.slice(0, 3).map((job) => (
+            ) : urgentJobsQuery.data && ((urgentJobsQuery.data as unknown as { jobs: unknown[] }).jobs?.length ?? 0) > 0 ? (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((urgentJobsQuery.data as any).jobs as Array<{ id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string }>).slice(0, 3).map((job) => (
                 <div
                   key={job.id}
                   onClick={() => exitTo(`/job/${job.id}`)}

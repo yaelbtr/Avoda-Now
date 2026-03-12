@@ -84,7 +84,7 @@ export default function BestJobsPage() {
     { enabled: !!page }
   );
 
-  const jobs = jobsData ?? [];
+  const jobs = (jobsData as { jobs?: { id: number; title: string; description?: string | null; city?: string | null; category?: string | null; salary?: string | number | null; salaryType?: string | null; createdAt: Date }[] } | undefined)?.jobs ?? [];
 
   useSEO(
     page

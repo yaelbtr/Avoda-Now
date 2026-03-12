@@ -485,9 +485,15 @@ export async function getJobById(id: number) {
   return result[0];
 }
 
-export async function getActiveJobs(limit = 50, category?: string, city?: string, dateFilter?: "today" | "tomorrow" | "this_week") {
+export async function getActiveJobs(
+  limit = 50,
+  category?: string,
+  city?: string,
+  dateFilter?: "today" | "tomorrow" | "this_week",
+  offset = 0
+): Promise<{ rows: (typeof jobs.$inferSelect)[]; total: number }> {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) return { rows: [], total: 0 };
   await expireOldJobs();
   const conditions = [or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!];
   if (category && category !== "all") {
@@ -512,12 +518,12 @@ export async function getActiveJobs(limit = 50, category?: string, city?: string
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     }
   }
-  return db
-    .select()
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(desc(jobs.createdAt))
-    .limit(limit);
+  const whereClause = and(...conditions);
+  const [rows, countResult] = await Promise.all([
+    db.select().from(jobs).where(whereClause).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset),
+    db.select({ total: count() }).from(jobs).where(whereClause),
+  ]);
+  return { rows, total: countResult[0]?.total ?? 0 };
 }
 
 export async function getJobsNearLocation(
@@ -527,10 +533,11 @@ export async function getJobsNearLocation(
   category?: string,
   limit = 50,
   city?: string,
-  dateFilter?: "today" | "tomorrow" | "this_week"
-) {
+  dateFilter?: "today" | "tomorrow" | "this_week",
+  offset = 0
+): Promise<{ rows: Array<Record<string, unknown> & { distance: number }>; total: number }> {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) return { rows: [], total: 0 };
   await expireOldJobs();
 
   const distanceExpr = sql<number>`
@@ -568,41 +575,42 @@ export async function getJobsNearLocation(
     }
   }
 
-  return db
-    .select({
-      id: jobs.id,
-      title: jobs.title,
-      description: jobs.description,
-      category: jobs.category,
-      address: jobs.address,
-      city: jobs.city,
-      latitude: jobs.latitude,
-      longitude: jobs.longitude,
-      salary: jobs.salary,
-      salaryType: jobs.salaryType,
-      contactPhone: jobs.contactPhone,
-      contactName: jobs.contactName,
-      businessName: jobs.businessName,
-      workingHours: jobs.workingHours,
-      startTime: jobs.startTime,
-      workersNeeded: jobs.workersNeeded,
-      activeDuration: jobs.activeDuration,
-      expiresAt: jobs.expiresAt,
-      postedBy: jobs.postedBy,
-      status: jobs.status,
-      reportCount: jobs.reportCount,
-      jobTags: jobs.jobTags,
-      createdAt: jobs.createdAt,
-      updatedAt: jobs.updatedAt,
-      jobDate: jobs.jobDate,
-      workStartTime: jobs.workStartTime,
-      workEndTime: jobs.workEndTime,
-      distance: distanceExpr,
-    })
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(distanceExpr, desc(jobs.createdAt))
-    .limit(limit);
+  const selectFields = {
+    id: jobs.id,
+    title: jobs.title,
+    description: jobs.description,
+    category: jobs.category,
+    address: jobs.address,
+    city: jobs.city,
+    latitude: jobs.latitude,
+    longitude: jobs.longitude,
+    salary: jobs.salary,
+    salaryType: jobs.salaryType,
+    contactPhone: jobs.contactPhone,
+    contactName: jobs.contactName,
+    businessName: jobs.businessName,
+    workingHours: jobs.workingHours,
+    startTime: jobs.startTime,
+    workersNeeded: jobs.workersNeeded,
+    activeDuration: jobs.activeDuration,
+    expiresAt: jobs.expiresAt,
+    postedBy: jobs.postedBy,
+    status: jobs.status,
+    reportCount: jobs.reportCount,
+    jobTags: jobs.jobTags,
+    createdAt: jobs.createdAt,
+    updatedAt: jobs.updatedAt,
+    jobDate: jobs.jobDate,
+    workStartTime: jobs.workStartTime,
+    workEndTime: jobs.workEndTime,
+    distance: distanceExpr,
+  };
+  const whereClause = and(...conditions);
+  const [rows, countResult] = await Promise.all([
+    db.select(selectFields).from(jobs).where(whereClause).orderBy(distanceExpr, desc(jobs.createdAt)).limit(limit).offset(offset),
+    db.select({ total: count() }).from(jobs).where(whereClause),
+  ]);
+  return { rows: rows as Array<Record<string, unknown> & { distance: number }>, total: countResult[0]?.total ?? 0 };
 }
 
 export async function getMyJobs(userId: number) {

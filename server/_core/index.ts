@@ -243,7 +243,7 @@ async function startServer() {
     const buildDate = new Date().toUTCString();
 
     try {
-      const jobs = await getActiveJobs(100);
+      const { rows: jobs } = await getActiveJobs(100);
       const items = jobs.map((j) => {
         const title = `${j.title}${j.city ? ` ב${j.city}` : ""}`;
         // Build slug-based URL: /job/{id}-{slug}

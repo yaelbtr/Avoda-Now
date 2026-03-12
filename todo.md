@@ -1358,3 +1358,25 @@
 - [x] FindJobs: add sort state (salary desc, date desc, distance asc)
 - [x] FindJobs: sort chips row between results header and job list
 - [x] FindJobs: client-side sort logic applied to jobs array (salary, date, distance, default)
+
+## Push Notifications (Mar 12, 2026)
+
+- [ ] DB: pushSubscriptions table (userId, endpoint, p256dh, auth, createdAt)
+- [ ] Server: subscribe/unsubscribe tRPC procedures
+- [ ] Server: sendJobPushNotifications helper — match workers by category + city
+- [ ] Server: call sendJobPushNotifications inside createJob mutation
+- [ ] Frontend: service worker (sw.js) for push event handling
+- [ ] Frontend: notification permission prompt in Navbar/HomeWorker
+- [ ] Frontend: subscribe mutation wired to permission grant
+- [ ] Tests: push subscription procedures
+
+## Pagination System (Completed)
+- [x] jobs.list procedure: returns { jobs, total, page, limit } instead of Job[]
+- [x] jobs.search procedure: returns { jobs, total, page, limit } instead of Job[]
+- [x] FindJobs.tsx: updated to extract .jobs from paginated response + pagination UI (page numbers, prev/next)
+- [x] JobsLanding.tsx: updated to extract .jobs from paginated response
+- [x] HomeWorker.tsx: updated to extract .jobs from paginated response
+- [x] WelcomeScreen.tsx: updated to extract .jobs from paginated response
+- [x] BestJobsPage.tsx: already handled paginated response
+- [x] contactphone.privacy.test.ts: updated mocks and assertions for new paginated response format
+- [x] All 262 tests passing, 0 TypeScript errors

@@ -1430,3 +1430,20 @@
 ## FindJobs Filter Panel Collapsible Sections
 - [x] Make "שעות עבודה" and "ימי עבודה" sections collapsible like "תחומי עיסוק" and "מיקום"
 - [x] Replace hardcoded city chips with active region cities from backend (regions.getActiveCities)
+
+## Bug Fix — Blank page on /find-jobs (Round 2)
+- [x] Fix blank page on חיפוש עבודה after latest filter panel changes (was stale checkpoint, dev server working correctly)
+
+## FindJobs Day Filter (Mar 12, 2026)
+- [ ] Add day-of-week filter chips to filter panel (ראשון-שבת)
+- [ ] Wire day filter to backend jobs.list / jobs.search query
+
+## Job Card "Today" Badge (Mar 12, 2026)
+- [x] Add "היום" badge on job cards for jobs starting today (green badge via jobDate, orange via startTime)
+- [x] Badge should be visually distinct (green for scheduled today, orange for startTime=today)
+
+## Filter Persistence (Mar 12, 2026)
+- [x] Save active filters to localStorage so they persist across page visits (auto-save on change)
+- [x] Restore saved filters on page load (category, city, timeSlots, days, sortBy)
+- [x] Show "מסנן שמור" indicator when using saved filters
+- [x] Clear saved filters when user clicks "נקה סינון"

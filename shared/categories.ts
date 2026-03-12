@@ -73,13 +73,20 @@ export function formatDistance(km: number): string {
 
 /**
  * Returns true if the job is starting within the next 24 hours.
- * Checks both the exact startDateTime timestamp and the legacy startTime enum.
+ * Checks the jobDate field, startDateTime timestamp, and the legacy startTime enum.
  */
 export function isJobToday(
   startDateTime: Date | string | null | undefined,
-  startTime: string
+  startTime: string,
+  jobDate?: string | null
 ): boolean {
   if (startTime === "today") return true;
+  // Check jobDate (YYYY-MM-DD) — most reliable for scheduled jobs
+  if (jobDate) {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (jobDate === todayStr) return true;
+  }
   if (!startDateTime) return false;
   const dt = startDateTime instanceof Date ? startDateTime : new Date(startDateTime);
   if (isNaN(dt.getTime())) return false;

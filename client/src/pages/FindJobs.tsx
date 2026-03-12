@@ -28,6 +28,39 @@ import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
+const FILTER_PREFS_KEY = "findJobs_filters";
+
+// ── Filter persistence helpers ────────────────────────────────────────────────
+interface SavedFilters {
+  category: string;
+  selectedCity: string | null;
+  selectedTimeSlots: string[];
+  selectedDays: string[];
+  sortBy: "distance" | "salary" | "date" | "default";
+  savedAt: number;
+}
+
+function loadSavedFilters(): Partial<SavedFilters> | null {
+  try {
+    const raw = localStorage.getItem(FILTER_PREFS_KEY);
+    if (!raw) return null;
+    const parsed: SavedFilters = JSON.parse(raw);
+    // Expire after 7 days
+    if (Date.now() - parsed.savedAt > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(FILTER_PREFS_KEY);
+      return null;
+    }
+    return parsed;
+  } catch { return null; }
+}
+
+function saveFiltersToStorage(filters: Omit<SavedFilters, 'savedAt'>) {
+  try { localStorage.setItem(FILTER_PREFS_KEY, JSON.stringify({ ...filters, savedAt: Date.now() })); } catch {}
+}
+
+function clearSavedFilters() {
+  try { localStorage.removeItem(FILTER_PREFS_KEY); } catch {}
+}
 const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp";
 
 const SEO_CITIES = [
@@ -153,7 +186,13 @@ export default function FindJobs() {
   const initialCategory = params.get("category") ?? "all";
   const { isAuthenticated } = useAuth();
 
-  const [category, setCategory] = useState(initialCategory);
+  // Load saved filters from localStorage (URL params take priority)
+  const _savedFilters = loadSavedFilters();
+  const filterParam = params.get("filter");
+  const initialCity = params.get("city") ?? _savedFilters?.selectedCity ?? null;
+  const resolvedCategory = initialCategory !== "all" ? initialCategory : (_savedFilters?.category ?? "all");
+
+  const [category, setCategory] = useState(resolvedCategory);
   const [radiusKm, setRadiusKm] = useState(10);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -163,13 +202,12 @@ export default function FindJobs() {
   const [citySearch, setCitySearch] = useState("");
   const [showCityInput, setShowCityInput] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const filterParam = params.get("filter");
   const [showUrgentToday, setShowUrgentToday] = useState(
     params.get("urgent") === "1" || params.get("help") === "1" || filterParam === "today"
   );
   const [autoNearby] = useState(filterParam === "nearby");
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>(_savedFilters?.selectedTimeSlots ?? []);
+  const [selectedDays, setSelectedDays] = useState<string[]>(_savedFilters?.selectedDays ?? []);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [bottomSheetJob, setBottomSheetJob] = useState<null | {
@@ -185,12 +223,13 @@ export default function FindJobs() {
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
-  const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">("default");
+  const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "default");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
-  const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
+  // Computed: whether current filters match saved filters (for UI indicator)
+  const hasSavedFilters = (category !== "all" || !!selectedCity || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
@@ -391,6 +430,14 @@ export default function FindJobs() {
   }, [isLoading, hasActiveFilter, jobs.length]);
   // Reset to page 1 when filters change
   useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
+  // Auto-save non-trivial filters to localStorage
+  useEffect(() => {
+    const hasFilters = category !== "all" || !!selectedCity || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
+    if (hasFilters) {
+      saveFiltersToStorage({ category, selectedCity, selectedTimeSlots, selectedDays, sortBy });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, selectedCity, selectedTimeSlots, selectedDays, sortBy]);
   const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
   const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   // Total active filters: panel filters + quick chips (location, urgent, date)
@@ -1012,6 +1059,7 @@ export default function FindJobs() {
                         setDateFilter(null);
                         setShowUrgentToday(false);
                         setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);
+                        clearSavedFilters();
                         toast("סינון נקה");
                       }}
                       className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
@@ -1063,6 +1111,14 @@ export default function FindJobs() {
             {showUrgentToday && !isLoading && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
                 🔥 דחוף
+              </span>
+            )}
+            {hasSavedFilters && activeFilterCount > 0 && !isLoading && (
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+                style={{ background: "oklch(0.94 0.04 210 / 0.6)", color: "oklch(0.38 0.10 210)", border: "1px solid oklch(0.82 0.08 210 / 0.4)" }}
+              >
+                💾 מסנן שמור
               </span>
             )}
           </div>

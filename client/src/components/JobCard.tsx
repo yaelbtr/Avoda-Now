@@ -309,7 +309,14 @@ export function JobCard({
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? "";
-  const isToday = isJobToday(job.startDateTime, job.startTime);
+  const isToday = isJobToday(job.startDateTime, job.startTime, job.jobDate);
+  // Check if job is specifically scheduled for today (via jobDate field) — shows green badge
+  const isJobDateToday = (() => {
+    if (!job.jobDate) return false;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return job.jobDate === todayStr;
+  })();
   // contactPhone is always null for workers (stripped server-side)
   const hasPhone = false;
   const countdown = expiryCountdown(job.expiresAt);
@@ -439,7 +446,12 @@ export function JobCard({
               <Zap className="h-2.5 w-2.5" />דחוף
             </span>
           )}
-          {!job.isUrgent && isToday && (
+          {!job.isUrgent && isJobDateToday && (
+            <span className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
+              <Calendar className="h-2.5 w-2.5" />היום
+            </span>
+          )}
+          {!job.isUrgent && isToday && !isJobDateToday && (
             <span className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500 text-white">
               <Flame className="h-2.5 w-2.5" />להיום
             </span>
@@ -666,7 +678,12 @@ export function JobCard({
                 <Zap className="h-2.5 w-2.5" />דחוף
               </span>
             )}
-            {isToday && !job.isUrgent && (
+            {isJobDateToday && !job.isUrgent && (
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.95 0.08 145)", color: "oklch(0.32 0.12 145)", border: "1px solid oklch(0.80 0.10 145)" }}>
+                <Calendar className="h-2.5 w-2.5" />היום
+              </span>
+            )}
+            {isToday && !isJobDateToday && !job.isUrgent && (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200">
                 <Flame className="h-2.5 w-2.5" />להיום
               </span>

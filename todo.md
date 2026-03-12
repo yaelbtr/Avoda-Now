@@ -1395,3 +1395,15 @@
 
 ## Bug Fix — Blank page on /find-jobs and other pages
 - [x] Diagnose and fix syntax/runtime error causing blank pages after push notification changes
+
+## FindJobs UX Redesign — Search/Filter Area
+- [ ] Move profile completion banner above search bar
+- [ ] Replace sort chips with a Select dropdown ("הצג לפי")
+- [ ] Add "סנן לפי" button that opens the existing filter modal
+- [ ] Add quick-filter chips (עבודות קרוב אלי, דחוף, היום, מחר, השבוע) above category tabs
+
+## FindJobs UX Redesign — Search Area
+- [x] Move profile completion banner above search bar
+- [x] Replace quick-action row with "הצג לפי" select + "סנן לפי" button
+- [x] Move quick filter chips (עבודות קרוב אלי, דחוף, היום, מחר, השבוע) above job list
+- [x] "נקה הכל" chip to clear all active quick filters at once

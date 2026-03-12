@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { buildJobPath } from "@/lib/jobSlug";
 import {
-  MapPin, Clock, Users, Share2, Zap, Timer, Flame,
+  MapPin, Clock, Users, Share2, Zap, Timer, Flame, Calendar,
   Mail, Copy, Check, Bookmark, BookmarkCheck, Star, BookmarkX,
   Send, Loader2, CheckCircle, ChevronLeft,
 } from "lucide-react";
@@ -48,6 +48,9 @@ export interface JobCardJob {
   savedAt?: Date | string | null;
   hourlyRate?: string | null;
   estimatedHours?: string | null;
+  jobDate?: string | null;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
 }
 
 export interface JobCardProps {
@@ -484,7 +487,7 @@ export function JobCard({
             {job.title}
           </h3>
 
-          <div className="flex items-center gap-1 text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+            <div className="flex items-center gap-1 text-[11px] mb-1.5" style={{ color: "var(--text-muted)" }}>
             <MapPin className="h-3 w-3 shrink-0" style={{ color: "oklch(0.50 0.07 125.0)" }} />
             <span className="truncate">{cityDisplay}</span>
             {job.startTime !== "flexible" && (
@@ -495,6 +498,27 @@ export function JobCard({
               </>
             )}
           </div>
+
+          {/* Date + work hours row */}
+          {(job.jobDate || (job.workStartTime && job.workEndTime)) ? (
+            <div className="flex items-center gap-1 text-[11px] mb-3 font-medium" style={{ color: "oklch(0.38 0.10 122)" }}>
+              {job.jobDate && (
+                <>
+                  <Calendar className="h-3 w-3 shrink-0" />
+                  <span>{new Date(job.jobDate + 'T00:00:00').toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</span>
+                </>
+              )}
+              {job.jobDate && job.workStartTime && job.workEndTime && (
+                <span className="mx-0.5 opacity-40">·</span>
+              )}
+              {job.workStartTime && job.workEndTime && (
+                <>
+                  <Clock className="h-3 w-3 shrink-0" />
+                  <span>{job.workStartTime}–{job.workEndTime}</span>
+                </>
+              )}
+            </div>
+          ) : <div className="mb-3" />}
 
           {/* Action buttons row */}
           <div className="flex items-center justify-between gap-1.5" dir="rtl">

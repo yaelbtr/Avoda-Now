@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useRef, useEffect } from "react";
-import { MapPin, Heart, Send, Building2, Share2, Mail, Copy, Check, Loader2, CheckCircle } from "lucide-react";
+import { MapPin, Heart, Send, Building2, Share2, Mail, Copy, Check, Loader2, CheckCircle, Calendar, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   getCategoryIcon,
@@ -30,6 +30,9 @@ interface CarouselJob {
   createdAt: Date | string;
   expiresAt?: Date | string | null;
   distance?: number;
+  jobDate?: string | null;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
 }
 
 interface CarouselJobCardProps {
@@ -344,6 +347,27 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
           <div style={{ display: "flex", alignItems: "center", gap: 4, color: `${OLIVE}bb`, fontSize: 11, fontWeight: 500, marginBottom: 10, direction: "rtl" }}>
             <MapPin size={11} style={{ color: OLIVE, flexShrink: 0 }} />
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>{job.city ?? job.address}</span>
+          </div>
+        )}
+
+        {/* Date + work hours row */}
+        {(job.jobDate || (job.workStartTime && job.workEndTime)) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "oklch(0.38 0.10 122)", marginBottom: 6, direction: "rtl" }}>
+            {job.jobDate && (
+              <>
+                <Calendar size={11} style={{ flexShrink: 0 }} />
+                <span>{new Date(job.jobDate + 'T00:00:00').toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</span>
+              </>
+            )}
+            {job.jobDate && job.workStartTime && job.workEndTime && (
+              <span style={{ opacity: 0.4, margin: "0 2px" }}>·</span>
+            )}
+            {job.workStartTime && job.workEndTime && (
+              <>
+                <Clock size={11} style={{ flexShrink: 0 }} />
+                <span>{job.workStartTime}–{job.workEndTime}</span>
+              </>
+            )}
           </div>
         )}
 

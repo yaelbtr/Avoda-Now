@@ -485,7 +485,7 @@ export async function getJobById(id: number) {
   return result[0];
 }
 
-export async function getActiveJobs(limit = 50, category?: string, city?: string) {
+export async function getActiveJobs(limit = 50, category?: string, city?: string, dateFilter?: "today" | "tomorrow" | "this_week") {
   const db = await getDb();
   if (!db) return [];
   await expireOldJobs();
@@ -495,6 +495,22 @@ export async function getActiveJobs(limit = 50, category?: string, city?: string
   }
   if (city && city !== "all") {
     conditions.push(eq(jobs.city, city));
+  }
+  if (dateFilter) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().slice(0, 10);
+    if (dateFilter === "today") {
+      conditions.push(eq(jobs.jobDate, todayStr));
+    } else if (dateFilter === "tomorrow") {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      conditions.push(eq(jobs.jobDate, tomorrow.toISOString().slice(0, 10)));
+    } else if (dateFilter === "this_week") {
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
+    }
   }
   return db
     .select()
@@ -510,7 +526,8 @@ export async function getJobsNearLocation(
   radiusKm: number,
   category?: string,
   limit = 50,
-  city?: string
+  city?: string,
+  dateFilter?: "today" | "tomorrow" | "this_week"
 ) {
   const db = await getDb();
   if (!db) return [];
@@ -533,6 +550,22 @@ export async function getJobsNearLocation(
   }
   if (city && city !== "all") {
     conditions.push(eq(jobs.city, city));
+  }
+  if (dateFilter) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().slice(0, 10);
+    if (dateFilter === "today") {
+      conditions.push(eq(jobs.jobDate, todayStr));
+    } else if (dateFilter === "tomorrow") {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      conditions.push(eq(jobs.jobDate, tomorrow.toISOString().slice(0, 10)));
+    } else if (dateFilter === "this_week") {
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
+    }
   }
 
   return db
@@ -561,6 +594,9 @@ export async function getJobsNearLocation(
       jobTags: jobs.jobTags,
       createdAt: jobs.createdAt,
       updatedAt: jobs.updatedAt,
+      jobDate: jobs.jobDate,
+      workStartTime: jobs.workStartTime,
+      workEndTime: jobs.workEndTime,
       distance: distanceExpr,
     })
     .from(jobs)

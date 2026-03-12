@@ -1344,3 +1344,11 @@
 - [ ] Make workStartTime / workEndTime optional (remove required validation)
 - [ ] Add quick-select time preset buttons: בוקר (06:00-14:00), צהרים (12:00-20:00), ערב (16:00-22:00), לילה (22:00-06:00)
 - [ ] Preset buttons auto-fill both start and end time fields
+
+## Date Display & Filter (Mar 12, 2026)
+
+- [ ] JobCard: show date + hours row below description
+- [ ] CarouselJobCard: show date + hours row
+- [ ] SearchJobCard: show date + hours row
+- [ ] FindJobs: date filter buttons (היום / מחר / השבוע)
+- [ ] Backend: support dateFilter param in jobs.search procedure

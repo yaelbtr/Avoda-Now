@@ -182,6 +182,7 @@ export default function FindJobs() {
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
+  const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
@@ -269,11 +270,11 @@ export default function FindJobs() {
   };
 
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined },
+    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
@@ -889,6 +890,36 @@ export default function FindJobs() {
             );
           })()}
         </AnimatePresence>
+
+        {/* Date filter chips */}
+        <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1" dir="rtl" style={{ scrollbarWidth: "none" }}>
+          {(["today", "tomorrow", "this_week"] as const).map((f) => {
+            const labels: Record<string, string> = { today: "📅 היום", tomorrow: "📅 מחר", this_week: "📅 השבוע" };
+            const active = dateFilter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setDateFilter(active ? null : f)}
+                className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                style={active
+                  ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
+                  : { background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)" }
+                }
+              >
+                {labels[f]}
+              </button>
+            );
+          })}
+          {dateFilter && (
+            <button
+              onClick={() => setDateFilter(null)}
+              className="shrink-0 text-xs font-medium px-2 py-1.5 rounded-full flex items-center gap-1"
+              style={{ background: "oklch(0.97 0.01 122)", color: "oklch(0.50 0.06 122)", border: "1px solid oklch(0.88 0.03 122)" }}
+            >
+              <X className="h-3 w-3" /> נקה
+            </button>
+          )}
+        </div>
 
         {/* Results header */}
         <div className="flex items-center justify-between mb-4">

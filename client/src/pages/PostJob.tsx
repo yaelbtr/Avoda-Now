@@ -20,7 +20,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
@@ -474,31 +474,10 @@ export default function PostJob() {
     );
   }
 
-  const handleWhatsAppPublish = () => {
-    const message = encodeURIComponent(
-      `שלום, אני רוצה לפרסם עבודה:
-
-שם העסק:
-סוג העבודה:
-מיקום:
-שכר:
-טלפון ליצירת קשר:`
-    );
-    window.open(`https://wa.me/?text=${message}`, "_blank");
-  };
-
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-start justify-between mb-2">
-        <button
-          type="button"
-          onClick={handleWhatsAppPublish}
-          className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium transition-colors"
-        >
-          <MessageCircle className="h-4 w-4" />
-          פרסם דרך WhatsApp
-        </button>
-        <h1 className="text-2xl font-bold text-foreground text-right">פרסם משרה</h1>
+        <h1 className="text-2xl font-bold text-foreground text-right w-full">פרסם משרה</h1>
       </div>
       <p className="text-muted-foreground mb-6 text-sm text-right">מלא את הפרטים ומצא עובדים תוך דקות</p>
 

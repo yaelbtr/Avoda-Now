@@ -310,9 +310,9 @@ const jobInputSchema = z.object({
 
 const jobsRouter = router({
   list: publicProcedure
-    .input(z.object({ category: z.string().optional(), limit: z.number().optional(), city: z.string().optional() }))
+    .input(z.object({ category: z.string().optional(), limit: z.number().optional(), city: z.string().optional(), dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional() }))
     .query(async ({ input, ctx }) => {
-      const jobs = await getActiveJobs(input.limit ?? 50, input.category, input.city);
+      const jobs = await getActiveJobs(input.limit ?? 50, input.category, input.city, input.dateFilter);
       // Never expose contactPhone to workers or unauthenticated users
       return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
@@ -326,10 +326,11 @@ const jobsRouter = router({
         category: z.string().optional(),
         limit: z.number().optional(),
         city: z.string().optional(),
+        dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const jobs = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50, input.city);
+      const jobs = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, input.limit ?? 50, input.city, input.dateFilter);
       // Never expose contactPhone to workers or unauthenticated users
       return jobs.map(j => ({ ...j, contactPhone: null }));
     }),

@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Heart, Send, Navigation, Building2, Bookmark, BookmarkCheck, Loader2, CheckCircle, ChevronLeft } from "lucide-react";
+import { MapPin, Heart, Send, Navigation, Building2, Bookmark, BookmarkCheck, Loader2, CheckCircle, ChevronLeft, Calendar, Clock } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -31,6 +31,9 @@ interface SearchJob {
   expiresAt?: Date | string | null;
   distance?: number;
   description?: string | null;
+  jobDate?: string | null;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
 }
 
 interface SearchJobCardProps {
@@ -239,6 +242,26 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
               )}
             </div>
           )}
+        {/* Date + work hours row */}
+        {(job.jobDate || (job.workStartTime && job.workEndTime)) && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "oklch(0.38 0.10 122)", marginTop: 4, direction: "rtl" }}>
+            {job.jobDate && (
+              <>
+                <Calendar size={10} style={{ flexShrink: 0 }} />
+                <span>{new Date(job.jobDate + 'T00:00:00').toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</span>
+              </>
+            )}
+            {job.jobDate && job.workStartTime && job.workEndTime && (
+              <span style={{ opacity: 0.4, margin: "0 2px" }}>·</span>
+            )}
+            {job.workStartTime && job.workEndTime && (
+              <>
+                <Clock size={10} style={{ flexShrink: 0 }} />
+                <span>{job.workStartTime}–{job.workEndTime}</span>
+              </>
+            )}
+          </div>
+        )}
         </div>
 
         {/* Bottom: time badge + salary / volunteer */}

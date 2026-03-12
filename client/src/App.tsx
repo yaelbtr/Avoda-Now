@@ -36,6 +36,8 @@ import GuideTopicPage from "./pages/GuideTopicPage";
 import FAQPage from "./pages/FAQPage";
 import BestJobsPage from "./pages/BestJobsPage";
 import WorkerLandingPage from "./pages/WorkerLandingPage";
+import AdminRegionsPage from "./pages/AdminRegionsPage";
+import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -101,6 +103,8 @@ function Router() {
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
                 <Route path="/admin" component={Admin} />
+                <Route path="/admin/regions" component={AdminRegionsPage} />
+                <Route path="/admin/regions/:id" component={AdminRegionDetailPage} />
                 <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />

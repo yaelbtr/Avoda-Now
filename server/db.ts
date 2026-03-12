@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte, or, sql, asc } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lte, ne, or, sql, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertJob,
@@ -25,6 +25,8 @@ import {
   regions,
   Region,
   InsertRegion,
+  workerRegions,
+  WorkerRegion,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1870,61 +1872,142 @@ export async function findNearestRegion(lat: number, lng: number): Promise<Regio
 }
 
 /**
- * Associate a worker with a region.
- * - If the worker already belongs to a different region, decrement the old region's count.
- * - Increment the new region's count.
- * - If currentWorkers >= minWorkersRequired and status is collecting_workers → set status to active.
- * Returns the updated region (or undefined if regionId is null).
+ * Sync a worker's region memberships.
+ * Called whenever a worker updates their GPS location or preferred cities.
+ *
+ * Strategy:
+ *   1. GPS radius: add all regions whose center is within the worker's searchRadiusKm.
+ *   2. Preferred cities: add regions whose centerCity matches any of the worker's preferred city names.
+ *   3. Remove old memberships that no longer apply.
+ *   4. Update currentWorkers count for all affected regions.
+ *   5. Auto-activate any region that reaches its threshold.
+ */
+export async function syncWorkerRegions(
+  workerId: number,
+  opts: {
+    lat?: number | null;
+    lng?: number | null;
+    searchRadiusKm?: number | null;
+    preferredCityNames?: string[];
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const allRegions = await db.select().from(regions);
+  const newRegionEntries: { regionId: number; distanceKm: number | null; matchType: "gps_radius" | "preferred_city" }[] = [];
+
+  for (const region of allRegions) {
+    const rLat = parseFloat(region.centerLat);
+    const rLng = parseFloat(region.centerLng);
+    let matched = false;
+    let distKm: number | null = null;
+
+    // 1. GPS radius match
+    if (opts.lat != null && opts.lng != null) {
+      const dist = haversineKm(opts.lat, opts.lng, rLat, rLng);
+      const radius = opts.searchRadiusKm ?? region.activationRadiusKm;
+      if (dist <= radius) {
+        matched = true;
+        distKm = Math.round(dist * 1000) / 1000;
+        newRegionEntries.push({ regionId: region.id, distanceKm: distKm, matchType: "gps_radius" });
+        continue;
+      }
+    }
+
+    // 2. Preferred city match
+    if (!matched && opts.preferredCityNames && opts.preferredCityNames.length > 0) {
+      const regionCityNorm = region.centerCity.trim();
+      if (opts.preferredCityNames.some((c) => c.trim() === regionCityNorm)) {
+        newRegionEntries.push({ regionId: region.id, distanceKm: null, matchType: "preferred_city" });
+      }
+    }
+  }
+
+  // Get current memberships
+  const existing = await db
+    .select({ regionId: workerRegions.regionId })
+    .from(workerRegions)
+    .where(eq(workerRegions.workerId, workerId));
+  const existingIds = new Set(existing.map((r) => r.regionId));
+  const newIds = new Set(newRegionEntries.map((r) => r.regionId));
+
+  // Regions to remove
+  const toRemove = Array.from(existingIds).filter((id) => !newIds.has(id));
+  // Regions to add
+  const toAdd = newRegionEntries.filter((r) => !existingIds.has(r.regionId));
+
+  // Remove stale memberships
+  if (toRemove.length > 0) {
+    await db
+      .delete(workerRegions)
+      .where(and(eq(workerRegions.workerId, workerId), inArray(workerRegions.regionId, toRemove)));
+  }
+
+  // Insert new memberships
+  for (const entry of toAdd) {
+    await db.insert(workerRegions).values({
+      workerId,
+      regionId: entry.regionId,
+      distanceKm: entry.distanceKm != null ? String(entry.distanceKm) : null,
+      matchType: entry.matchType,
+    }).onDuplicateKeyUpdate({ set: { matchType: entry.matchType, distanceKm: entry.distanceKm != null ? String(entry.distanceKm) : null } });
+  }
+
+  // Also keep users.regionId pointing to the nearest GPS region (for backward compat)
+  if (opts.lat != null && opts.lng != null) {
+    const gpsEntries = newRegionEntries.filter((r) => r.matchType === "gps_radius");
+    const nearest = gpsEntries.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999))[0];
+    await db.update(users).set({ regionId: nearest?.regionId ?? null }).where(eq(users.id, workerId));
+  }
+
+  // Recount all affected regions and auto-activate
+  const affectedIds = Array.from(new Set([...toRemove, ...toAdd.map((r) => r.regionId)]));
+  for (const regionId of affectedIds) {
+    await _recountAndMaybeActivate(db, regionId);
+  }
+}
+
+/** Internal: recount worker_regions for a region and auto-activate if threshold met */
+async function _recountAndMaybeActivate(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  regionId: number
+): Promise<void> {
+  const rows = await db
+    .select({ cnt: count() })
+    .from(workerRegions)
+    .where(eq(workerRegions.regionId, regionId));
+  const cnt = rows[0]?.cnt ?? 0;
+  await db.update(regions).set({ currentWorkers: cnt }).where(eq(regions.id, regionId));
+
+  // Auto-activate if threshold met
+  const region = await getRegionById(regionId);
+  if (region && region.status === "collecting_workers" && cnt >= region.minWorkersRequired) {
+    await db.update(regions).set({ status: "active" }).where(eq(regions.id, regionId));
+    console.log(`[Regions] Region "${region.name}" auto-activated! (${cnt} workers)`);
+  }
+}
+
+/**
+ * Legacy shim — kept so existing callers in routers.ts don't break.
+ * Delegates to syncWorkerRegions with GPS-only mode.
+ * @deprecated Use syncWorkerRegions directly.
  */
 export async function associateWorkerWithRegion(
   workerId: number,
   newRegionId: number | null,
   oldRegionId: number | null
 ): Promise<Region | undefined> {
-  const db = await getDb();
-  if (!db) return undefined;
-
-  // Decrement old region if changed
-  if (oldRegionId && oldRegionId !== newRegionId) {
-    await db
-      .update(regions)
-      .set({ currentWorkers: sql`GREATEST(0, ${regions.currentWorkers} - 1)` })
-      .where(eq(regions.id, oldRegionId));
-  }
-
+  // This shim is kept for backward compat; new code should call syncWorkerRegions.
   if (!newRegionId) {
-    // Clear worker's region
-    await db.update(users).set({ regionId: null }).where(eq(users.id, workerId));
+    const db = await getDb();
+    if (db) {
+      await db.delete(workerRegions).where(eq(workerRegions.workerId, workerId));
+      await db.update(users).set({ regionId: null }).where(eq(users.id, workerId));
+    }
     return undefined;
   }
-
-  // Increment new region (only if it's a new association)
-  if (newRegionId !== oldRegionId) {
-    await db
-      .update(regions)
-      .set({ currentWorkers: sql`${regions.currentWorkers} + 1` })
-      .where(eq(regions.id, newRegionId));
-  }
-
-  // Update worker's regionId
-  await db.update(users).set({ regionId: newRegionId }).where(eq(users.id, workerId));
-
-  // Fetch updated region and auto-activate if threshold met
-  const updated = await getRegionById(newRegionId);
-  if (
-    updated &&
-    updated.status === "collecting_workers" &&
-    updated.currentWorkers >= updated.minWorkersRequired
-  ) {
-    await db
-      .update(regions)
-      .set({ status: "active" })
-      .where(eq(regions.id, newRegionId));
-    console.log(`[Regions] Region "${updated.name}" auto-activated! (${updated.currentWorkers} workers)`);
-    return { ...updated, status: "active" };
-  }
-
-  return updated;
+  return getRegionById(newRegionId);
 }
 
 /**
@@ -1971,15 +2054,65 @@ export async function checkRegionActiveForJob(
   return { allowed: false, regionName: region.name, regionSlug: region.slug };
 }
 
-/** Recount workers per region from the users table (admin utility) */
+/** Recount workers per region from the worker_regions table (admin utility) */
 export async function recountRegionWorkers(regionId: number): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
   const rows = await db
     .select({ cnt: count() })
-    .from(users)
-    .where(eq(users.regionId, regionId));
+    .from(workerRegions)
+    .where(eq(workerRegions.regionId, regionId));
   const cnt = rows[0]?.cnt ?? 0;
   await db.update(regions).set({ currentWorkers: cnt }).where(eq(regions.id, regionId));
   return cnt;
+}
+
+/** Admin: create a new region */
+export async function createRegion(data: InsertRegion): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(regions).values(data);
+  return (result[0] as { insertId: number }).insertId;
+}
+
+/** Admin: delete a region and all its worker_regions entries */
+export async function deleteRegion(regionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(workerRegions).where(eq(workerRegions.regionId, regionId));
+  await db.delete(regions).where(eq(regions.id, regionId));
+}
+
+/**
+ * Admin: list workers associated with a region via worker_regions.
+ * Returns worker profile info plus distance_km and match_type.
+ */
+export async function getWorkersByRegion(regionId: number): Promise<
+  Array<{
+    id: number;
+    name: string | null;
+    profilePhoto: string | null;
+    preferredCity: string | null;
+    distanceKm: string | null;
+    matchType: string;
+    createdAt: Date;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      profilePhoto: users.profilePhoto,
+      preferredCity: users.preferredCity,
+      distanceKm: workerRegions.distanceKm,
+      matchType: workerRegions.matchType,
+      createdAt: workerRegions.createdAt,
+    })
+    .from(workerRegions)
+    .innerJoin(users, eq(workerRegions.workerId, users.id))
+    .where(eq(workerRegions.regionId, regionId))
+    .orderBy(asc(workerRegions.distanceKm));
+  return rows;
 }

@@ -147,15 +147,22 @@ export function AdminRegionsTab() {
             {regions?.length ?? 0} אזורים רשומים
           </p>
         </div>
-        <AppButton
-          variant="secondary"
-          size="sm"
-          onClick={() => seedRegions.mutate()}
-          disabled={seedRegions.isPending}
-        >
-          <RefreshCw className="w-4 h-4 ml-1" />
-          הוסף אזורים ראשוניים
-        </AppButton>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/regions">
+            <AppButton variant="brand" size="sm">
+              ניהול מלא
+            </AppButton>
+          </Link>
+          <AppButton
+            variant="secondary"
+            size="sm"
+            onClick={() => seedRegions.mutate()}
+            disabled={seedRegions.isPending}
+          >
+            <RefreshCw className="w-4 h-4 ml-1" />
+            הוסף אזורים ראשוניים
+          </AppButton>
+        </div>
       </div>
 
       {/* Region cards */}
@@ -242,6 +249,17 @@ export function AdminRegionsTab() {
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </AppButton>
+
+                  <Link href={`/admin/regions/${region.id}`}>
+                    <AppButton
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 px-2"
+                      title="פרטי אזור"
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                    </AppButton>
+                  </Link>
 
                   <Link href={`/work/${region.slug}`} target="_blank">
                     <AppButton

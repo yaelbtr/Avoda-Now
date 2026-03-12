@@ -80,6 +80,10 @@ import {
   getRegionById,
   findNearestRegion,
   associateWorkerWithRegion,
+  syncWorkerRegions,
+  createRegion,
+  deleteRegion,
+  getWorkersByRegion,
   updateRegionStatus,
   updateRegion,
   seedRegionsIfEmpty,
@@ -1166,20 +1170,27 @@ const userRouter = router({
         email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
       });
 
-      // ── Region association: when worker saves GPS coordinates, find nearest region ──
-      if (input.workerLatitude && input.workerLongitude) {
-        try {
-          const lat = parseFloat(input.workerLatitude);
-          const lng = parseFloat(input.workerLongitude);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            const nearestRegion = await findNearestRegion(lat, lng);
-            const oldRegionId = ctx.user.regionId ?? null;
-            const newRegionId = nearestRegion?.id ?? null;
-            await associateWorkerWithRegion(ctx.user.id, newRegionId, oldRegionId);
-          }
-        } catch (err) {
-          console.warn("[Regions] Failed to associate worker with region:", err);
+      // ── Multi-region association: sync GPS radius + preferred cities ──
+      try {
+        const lat = input.workerLatitude ? parseFloat(input.workerLatitude) : null;
+        const lng = input.workerLongitude ? parseFloat(input.workerLongitude) : null;
+        const searchRadiusKm = input.searchRadiusKm ?? null;
+        // Resolve preferred city names from IDs if provided
+        let preferredCityNames: string[] = [];
+        if (input.preferredCities && input.preferredCities.length > 0) {
+          const cityRows = await getCities();
+          preferredCityNames = cityRows
+            .filter((c) => input.preferredCities!.includes(c.id))
+            .map((c) => c.nameHe);
         }
+        await syncWorkerRegions(ctx.user.id, {
+          lat: lat && !isNaN(lat) ? lat : null,
+          lng: lng && !isNaN(lng) ? lng : null,
+          searchRadiusKm,
+          preferredCityNames,
+        });
+      } catch (err) {
+        console.warn("[Regions] Failed to sync worker regions:", err);
       }
 
       return { success: true };
@@ -1609,7 +1620,8 @@ const regionsRouter = router({
       id: z.number().int(),
       name: z.string().min(2).max(100).optional(),
       minWorkersRequired: z.number().int().min(1).optional(),
-      activationRadiusKm: z.number().int().min(1).max(100).optional(),
+      activationRadiusKm: z.number().int().min(1).max(200).optional(),
+      radiusMinutes: z.number().int().min(1).max(120).optional(),
       description: z.string().max(500).nullable().optional(),
       imageUrl: z.string().url().nullable().optional(),
       status: z.enum(["collecting_workers", "active", "paused"]).optional(),
@@ -1636,6 +1648,65 @@ const regionsRouter = router({
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await seedRegionsIfEmpty();
       return { success: true };
+    }),
+
+  /** Admin: create a new region */
+  create: protectedProcedure
+    .input(z.object({
+      slug: z.string().min(2).max(64).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens"),
+      name: z.string().min(2).max(100),
+      centerCity: z.string().min(2).max(100),
+      centerLat: z.string(),
+      centerLng: z.string(),
+      activationRadiusKm: z.number().int().min(1).max(200).default(15),
+      radiusMinutes: z.number().int().min(1).max(120).default(20),
+      minWorkersRequired: z.number().int().min(1).default(50),
+      description: z.string().max(500).nullable().optional(),
+      status: z.enum(["collecting_workers", "active", "paused"]).default("collecting_workers"),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const id = await createRegion({
+        slug: input.slug,
+        name: input.name,
+        centerCity: input.centerCity,
+        centerLat: input.centerLat,
+        centerLng: input.centerLng,
+        activationRadiusKm: input.activationRadiusKm,
+        radiusMinutes: input.radiusMinutes,
+        minWorkersRequired: input.minWorkersRequired,
+        description: input.description ?? null,
+        status: input.status,
+        currentWorkers: 0,
+      });
+      return { success: true, id };
+    }),
+
+  /** Admin: delete a region */
+  delete: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await deleteRegion(input.id);
+      return { success: true };
+    }),
+
+  /** Admin: list workers in a region */
+  getWorkers: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return getWorkersByRegion(input.id);
+    }),
+
+  /** Get region by ID (admin) */
+  getById: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const region = await getRegionById(input.id);
+      if (!region) throw new TRPCError({ code: "NOT_FOUND", message: "אזור לא נמצא" });
+      return region;
     }),
 });
 

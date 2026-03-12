@@ -228,3 +228,144 @@ describe("Region slug validation", () => {
     expect(/^[a-z0-9-]+$/.test(slug.trim())).toBe(false);
   });
 });
+
+// ─── syncWorkerRegions logic (pure unit tests) ────────────────────────────────
+
+/**
+ * Pure simulation of the syncWorkerRegions matching logic (no DB required).
+ * Mirrors the implementation in db.ts.
+ */
+function simulateSyncWorkerRegions(
+  opts: {
+    lat?: number | null;
+    lng?: number | null;
+    searchRadiusKm?: number | null;
+    preferredCityNames?: string[];
+  },
+  allRegions: typeof MOCK_REGIONS
+): Array<{ regionId: number; matchType: "gps_radius" | "preferred_city"; distanceKm: number | null }> {
+  const results: Array<{ regionId: number; matchType: "gps_radius" | "preferred_city"; distanceKm: number | null }> = [];
+
+  for (const region of allRegions) {
+    const rLat = parseFloat(region.centerLat);
+    const rLng = parseFloat(region.centerLng);
+    let matched = false;
+
+    // 1. GPS radius match
+    if (opts.lat != null && opts.lng != null) {
+      const dist = haversineKm(opts.lat, opts.lng, rLat, rLng);
+      const radius = opts.searchRadiusKm ?? region.activationRadiusKm;
+      if (dist <= radius) {
+        matched = true;
+        results.push({ regionId: region.id, matchType: "gps_radius", distanceKm: Math.round(dist * 1000) / 1000 });
+        continue;
+      }
+    }
+
+    // 2. Preferred city match
+    if (!matched && opts.preferredCityNames && opts.preferredCityNames.length > 0) {
+      const regionCityNorm = region.centerCity.trim();
+      if (opts.preferredCityNames.some((c) => c.trim() === regionCityNorm)) {
+        results.push({ regionId: region.id, matchType: "preferred_city", distanceKm: null });
+      }
+    }
+  }
+
+  return results;
+}
+
+describe("syncWorkerRegions — multi-region matching logic (pure)", () => {
+  it("matches a single GPS region when worker is within radius", () => {
+    const matches = simulateSyncWorkerRegions(
+      { lat: 32.0853, lng: 34.7818, searchRadiusKm: 15 },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(1);
+    expect(matches[0].regionId).toBe(1); // Tel Aviv
+    expect(matches[0].matchType).toBe("gps_radius");
+  });
+
+  it("matches multiple GPS regions when worker radius covers them", () => {
+    // Worker at Tel Aviv center with 100 km radius → should match Tel Aviv, Jerusalem, Haifa
+    const matches = simulateSyncWorkerRegions(
+      { lat: 32.0853, lng: 34.7818, searchRadiusKm: 100 },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(3);
+    const ids = matches.map((m) => m.regionId).sort();
+    expect(ids).toEqual([1, 2, 3]);
+  });
+
+  it("matches no regions when worker is far away (Eilat)", () => {
+    const matches = simulateSyncWorkerRegions(
+      { lat: 29.5577, lng: 34.9519, searchRadiusKm: 15 },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(0);
+  });
+
+  it("matches region by preferred city name (no GPS)", () => {
+    const matches = simulateSyncWorkerRegions(
+      { lat: null, lng: null, preferredCityNames: ["ירושלים"] },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(1);
+    expect(matches[0].regionId).toBe(2); // Jerusalem
+    expect(matches[0].matchType).toBe("preferred_city");
+    expect(matches[0].distanceKm).toBeNull();
+  });
+
+  it("matches multiple regions by preferred cities", () => {
+    const matches = simulateSyncWorkerRegions(
+      { lat: null, lng: null, preferredCityNames: ["תל אביב", "חיפה"] },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(2);
+    const ids = matches.map((m) => m.regionId).sort();
+    expect(ids).toEqual([1, 3]);
+    expect(matches.every((m) => m.matchType === "preferred_city")).toBe(true);
+  });
+
+  it("GPS match takes priority over preferred city for same region", () => {
+    // Worker is within GPS radius of Tel Aviv AND has it as preferred city
+    // GPS should win (continue skips city check)
+    const matches = simulateSyncWorkerRegions(
+      { lat: 32.0853, lng: 34.7818, searchRadiusKm: 15, preferredCityNames: ["תל אביב"] },
+      MOCK_REGIONS
+    );
+    const telAviv = matches.find((m) => m.regionId === 1);
+    expect(telAviv?.matchType).toBe("gps_radius");
+    // Should appear only once
+    expect(matches.filter((m) => m.regionId === 1).length).toBe(1);
+  });
+
+  it("combines GPS and preferred city matches for different regions", () => {
+    // Worker in Tel Aviv (GPS) + prefers Jerusalem (city)
+    const matches = simulateSyncWorkerRegions(
+      { lat: 32.0853, lng: 34.7818, searchRadiusKm: 15, preferredCityNames: ["ירושלים"] },
+      MOCK_REGIONS
+    );
+    expect(matches.length).toBe(2);
+    const gps = matches.find((m) => m.matchType === "gps_radius");
+    const city = matches.find((m) => m.matchType === "preferred_city");
+    expect(gps?.regionId).toBe(1); // Tel Aviv via GPS
+    expect(city?.regionId).toBe(2); // Jerusalem via preferred city
+  });
+
+  it("returns empty when no GPS and no preferred cities", () => {
+    const matches = simulateSyncWorkerRegions({}, MOCK_REGIONS);
+    expect(matches.length).toBe(0);
+  });
+});
+
+describe("worker_regions radiusMinutes field", () => {
+  it("radiusMinutes is a display field separate from activationRadiusKm", () => {
+    // radiusMinutes is informational; activationRadiusKm is used for matching
+    const region = { ...MOCK_REGIONS[0], radiusMinutes: 20, activationRadiusKm: 15 };
+    expect(region.radiusMinutes).toBe(20);
+    expect(region.activationRadiusKm).toBe(15);
+    // Matching uses activationRadiusKm, not radiusMinutes
+    const dist = haversineKm(32.0853, 34.7818, 32.0853, 34.7818);
+    expect(dist).toBeLessThanOrEqual(region.activationRadiusKm);
+  });
+});

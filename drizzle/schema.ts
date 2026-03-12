@@ -5,6 +5,7 @@ import {
   json,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -413,6 +414,8 @@ export const regions = mysqlTable("regions", {
   centerLng: decimal("centerLng", { precision: 10, scale: 7 }).notNull(),
   /** Radius in km within which workers are counted for this region */
   activationRadiusKm: int("activationRadiusKm").default(15).notNull(),
+  /** Radius expressed in travel-time minutes (display only, informational) */
+  radiusMinutes: int("radiusMinutes").default(20).notNull(),
   /** Minimum workers required to transition status → active */
   minWorkersRequired: int("minWorkersRequired").default(50).notNull(),
   /** Current number of workers associated with this region */
@@ -428,3 +431,25 @@ export const regions = mysqlTable("regions", {
 });
 export type Region = typeof regions.$inferSelect;
 export type InsertRegion = typeof regions.$inferInsert;
+
+/**
+ * worker_regions — many-to-many mapping between workers and regions.
+ * A worker can belong to multiple regions:
+ *   1. Any region whose center is within the worker's GPS radius.
+ *   2. Any region whose centerCity matches one of the worker's preferredCities.
+ */
+export const workerRegions = mysqlTable(
+  "worker_regions",
+  {
+    workerId: int("worker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    regionId: int("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
+    /** Distance in km between worker location and region center (null for city-based matches) */
+    distanceKm: decimal("distance_km", { precision: 8, scale: 3 }),
+    /** How the association was created: gps_radius | preferred_city */
+    matchType: mysqlEnum("match_type", ["gps_radius", "preferred_city"]).default("gps_radius").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.workerId, t.regionId] })]
+);
+export type WorkerRegion = typeof workerRegions.$inferSelect;
+export type InsertWorkerRegion = typeof workerRegions.$inferInsert;

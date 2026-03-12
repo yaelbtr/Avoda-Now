@@ -218,6 +218,13 @@
       "when": 1773273389674,
       "tag": "0030_tricky_joystick",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1773274457192,
+      "tag": "0031_glossy_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

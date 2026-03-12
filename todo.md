@@ -1249,3 +1249,19 @@
 - [x] Admin: Regions management tab in /admin panel (list, edit status, view worker counts)
 - [x] Admin: Ability to manually activate/pause/reset regions
 - [x] Tests: 242 tests passing — haversine, region selection, employer block, auto-activation threshold, slug validation
+
+## Regional Activation — Gap Fixes
+
+- [x] DB: add worker_regions table (worker_id, region_id, distance_km, match_type, created_at)
+- [x] DB: add radiusMinutes field to regions table (alongside activationRadiusKm)
+- [x] DB: push migrations
+- [x] Server: replace single-region association with multi-region (worker_regions table)
+- [x] Server: associate worker with ALL regions within GPS radius (not just nearest)
+- [x] Server: associate worker with regions whose centerCity matches any preferredCity
+- [x] Server: recountRegionWorkers — count from worker_regions table
+- [x] Server: regions.create procedure (admin)
+- [x] Server: regions.delete procedure (admin)
+- [x] Server: regions.getWorkers procedure — list workers in a region with distance_km and match_type
+- [x] Frontend: /admin/regions standalone page (full table with create/edit/delete/activate/pause)
+- [x] Frontend: /admin/regions/:id detail page — worker list, progress bar, activation controls
+- [x] Frontend: Add route /admin/regions and /admin/regions/:id to App.tsx

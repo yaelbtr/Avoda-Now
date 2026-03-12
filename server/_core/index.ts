@@ -17,7 +17,7 @@ import {
   antiEnumeration,
 } from "../security";
 import { makeRequest } from "./map";
-import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs } from "../db";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
 import { sendSms } from "../sms";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -345,6 +345,8 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Seed regions on first startup
+    seedRegionsIfEmpty().catch((err) => console.warn("[Regions] Seed failed:", err));
   });
 }
 

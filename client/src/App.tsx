@@ -35,6 +35,7 @@ import GuidePage from "./pages/GuidePage";
 import GuideTopicPage from "./pages/GuideTopicPage";
 import FAQPage from "./pages/FAQPage";
 import BestJobsPage from "./pages/BestJobsPage";
+import WorkerLandingPage from "./pages/WorkerLandingPage";
 import { useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -121,6 +122,7 @@ function Router() {
                 <Route path="/guide/:topic" component={GuideTopicPage} />
                 <Route path="/faq/:slug" component={FAQPage} />
                 <Route path="/best/:slug" component={BestJobsPage} />
+                <Route path="/work/:slug" component={WorkerLandingPage} />
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>

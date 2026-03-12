@@ -75,6 +75,16 @@ import {
   toggleCategoryActive,
   deleteCategory,
   seedCategoriesIfEmpty,
+  getRegions,
+  getRegionBySlug,
+  getRegionById,
+  findNearestRegion,
+  associateWorkerWithRegion,
+  updateRegionStatus,
+  updateRegion,
+  seedRegionsIfEmpty,
+  recountRegionWorkers,
+  checkRegionActiveForJob,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -316,6 +326,19 @@ const jobsRouter = router({
           code: "FORBIDDEN",
           message: "הגעת למגבלת 3 משרות פעילות. סגור משרה קיימת כדי לפרסם חדשה.",
         });
+      }
+
+      // ── Regional access control: block posting if region is not yet active ──
+      // Admins bypass the regional check
+      if (ctx.user.role !== "admin") {
+        const regionCheck = await checkRegionActiveForJob(input.latitude, input.longitude);
+        if (!regionCheck.allowed) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `האזור עדיין בהרצה ונפתח בקרוב למעסיקים.`,
+            cause: { regionName: regionCheck.regionName, regionSlug: regionCheck.regionSlug },
+          });
+        }
       }
       // Phone must come from the authenticated user — never trust client-supplied phone
       const contactPhone = ctx.user.phone ?? input.contactPhone;
@@ -1142,6 +1165,23 @@ const userRouter = router({
         // Only allow email update for non-Google users (Google users get email from OAuth)
         email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
       });
+
+      // ── Region association: when worker saves GPS coordinates, find nearest region ──
+      if (input.workerLatitude && input.workerLongitude) {
+        try {
+          const lat = parseFloat(input.workerLatitude);
+          const lng = parseFloat(input.workerLongitude);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const nearestRegion = await findNearestRegion(lat, lng);
+            const oldRegionId = ctx.user.regionId ?? null;
+            const newRegionId = nearestRegion?.id ?? null;
+            await associateWorkerWithRegion(ctx.user.id, newRegionId, oldRegionId);
+          }
+        } catch (err) {
+          console.warn("[Regions] Failed to associate worker with region:", err);
+        }
+      }
+
       return { success: true };
     }),
 
@@ -1527,6 +1567,78 @@ const categoriesRouter = router({
     }),
 });
 
+// ─── Regions Router ─────────────────────────────────────────────────────────
+
+const regionsRouter = router({
+  /** List all regions (public) */
+  list: publicProcedure.query(async () => {
+    return getRegions();
+  }),
+
+  /** Get a single region by slug (public) */
+  getBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const region = await getRegionBySlug(input.slug);
+      if (!region) throw new TRPCError({ code: "NOT_FOUND", message: "אזור לא נמצא" });
+      return region;
+    }),
+
+  /** Check if the region at given coordinates is active (public) */
+  checkActive: publicProcedure
+    .input(z.object({ lat: z.number(), lng: z.number() }))
+    .query(async ({ input }) => {
+      return checkRegionActiveForJob(input.lat, input.lng);
+    }),
+
+  /** Admin: update region status */
+  updateStatus: protectedProcedure
+    .input(z.object({
+      id: z.number().int(),
+      status: z.enum(["collecting_workers", "active", "paused"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await updateRegionStatus(input.id, input.status);
+      return { success: true };
+    }),
+
+  /** Admin: update region settings */
+  update: protectedProcedure
+    .input(z.object({
+      id: z.number().int(),
+      name: z.string().min(2).max(100).optional(),
+      minWorkersRequired: z.number().int().min(1).optional(),
+      activationRadiusKm: z.number().int().min(1).max(100).optional(),
+      description: z.string().max(500).nullable().optional(),
+      imageUrl: z.string().url().nullable().optional(),
+      status: z.enum(["collecting_workers", "active", "paused"]).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { id, ...data } = input;
+      await updateRegion(id, data);
+      return { success: true };
+    }),
+
+  /** Admin: recount workers for a region from the users table */
+  recount: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const count = await recountRegionWorkers(input.id);
+      return { success: true, count };
+    }),
+
+  /** Admin: seed initial regions if table is empty */
+  seed: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await seedRegionsIfEmpty();
+      return { success: true };
+    }),
+});
+
 // ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -1542,5 +1654,6 @@ export const appRouter = router({
   ratings: ratingsRouter,
   seo: seoRouter,
   categories: categoriesRouter,
+  regions: regionsRouter,
 });
 export type AppRouter = typeof appRouter;

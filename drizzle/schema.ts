@@ -71,6 +71,8 @@ export const users = mysqlTable("users", {
   completedJobsCount: int("completedJobsCount").default(0).notNull(),
   /** Whether the worker has completed the onboarding signup flow */
   signupCompleted: boolean("signupCompleted").default(false).notNull(),
+  /** The region this worker is associated with (set automatically on profile save) */
+  regionId: int("regionId"),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */
   notificationPrefs: mysqlEnum("notificationPrefs", ["both", "push_only", "sms_only", "none"]).default("both").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -389,3 +391,40 @@ export const categories = mysqlTable("categories", {
 });
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;
+
+/**
+ * Regional activation system.
+ * Each region has a center city with GPS coordinates.
+ * Workers who register within activationRadiusKm are associated with the region.
+ * When currentWorkers >= minWorkersRequired the region becomes active
+ * and employers in that region can start posting jobs.
+ */
+export const regions = mysqlTable("regions", {
+  id: int("id").autoincrement().primaryKey(),
+  /** URL-safe slug, e.g. "tel-aviv", "bnei-brak" */
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  /** Hebrew display name, e.g. "תל אביב" */
+  name: varchar("name", { length: 100 }).notNull(),
+  /** Name of the center city in Hebrew */
+  centerCity: varchar("centerCity", { length: 100 }).notNull(),
+  /** GPS latitude of the region center */
+  centerLat: decimal("centerLat", { precision: 10, scale: 7 }).notNull(),
+  /** GPS longitude of the region center */
+  centerLng: decimal("centerLng", { precision: 10, scale: 7 }).notNull(),
+  /** Radius in km within which workers are counted for this region */
+  activationRadiusKm: int("activationRadiusKm").default(15).notNull(),
+  /** Minimum workers required to transition status → active */
+  minWorkersRequired: int("minWorkersRequired").default(50).notNull(),
+  /** Current number of workers associated with this region */
+  currentWorkers: int("currentWorkers").default(0).notNull(),
+  /** collecting_workers → active → paused */
+  status: mysqlEnum("status", ["collecting_workers", "active", "paused"]).default("collecting_workers").notNull(),
+  /** Optional short description shown on the worker landing page */
+  description: text("description"),
+  /** Optional hero image URL for the worker landing page */
+  imageUrl: text("imageUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Region = typeof regions.$inferSelect;
+export type InsertRegion = typeof regions.$inferInsert;

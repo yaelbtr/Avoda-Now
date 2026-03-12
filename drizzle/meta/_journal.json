@@ -211,6 +211,13 @@
       "when": 1773268261709,
       "tag": "0029_true_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1773273389674,
+      "tag": "0030_tricky_joystick",
+      "breakpoints": true
     }
   ]
 }

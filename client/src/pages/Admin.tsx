@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AdminCategoriesTab } from "./AdminCategories";
+import { AdminRegionsTab } from "./AdminRegions";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/AppButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,7 @@ import {
   Eye,
   Flag,
   LockOpen,
+  MapPin,
   Phone,
   Send,
   Shield,
@@ -235,6 +237,7 @@ export default function Admin() {
               { value: "applications", icon: <Briefcase className="w-4 h-4" />, label: "מועמדויות" },
               { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
               { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
+              { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -291,6 +294,10 @@ export default function Admin() {
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
               קטגוריות
+            </TabsTrigger>
+            <TabsTrigger value="regions" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              אזורים
             </TabsTrigger>
           </TabsList>
 
@@ -800,6 +807,10 @@ export default function Admin() {
           {/* ─── Categories Tab ─── */}
           <TabsContent value="categories">
             <AdminCategoriesTab />
+          </TabsContent>
+
+          <TabsContent value="regions">
+            <AdminRegionsTab />
           </TabsContent>
 
         </Tabs>

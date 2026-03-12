@@ -1232,3 +1232,20 @@
 - [ ] Migrate JobsLanding SEO pages to use dynamic categories from DB
 - [ ] Migrate shared/categories.ts — keep as fallback/seed only, not as source of truth
 - [ ] Write vitest tests for categories procedures
+
+## Regional Activation System
+
+- [x] DB: add regions table (id, name, slug, centerCity, centerLat, centerLng, activationRadiusKm, minWorkersRequired, currentWorkers, status, description, imageUrl, createdAt, updatedAt)
+- [x] DB: add regionId FK to users table (worker's associated region)
+- [x] DB: push migrations
+- [x] Seed initial regions: Tel Aviv, Jerusalem, Haifa, Bnei Brak, Ashdod, Beer Sheva, Netanya, Rishon LeZion + more (12 total)
+- [x] Server: region DB helpers (getRegions, getRegionBySlug, getRegionById, findNearestRegion, associateWorkerWithRegion, checkRegionActiveForJob, updateRegionStatus, updateRegion, recountRegionWorkers, seedRegionsIfEmpty, haversineKm)
+- [x] Server: worker.updateProfile — after saving lat/lng, find nearest region within radius, associate worker, update count, auto-activate if threshold met
+- [x] Server: regions tRPC procedures (regions.list, regions.getBySlug, regions.checkActive, regions.updateStatus, regions.update, regions.recount, regions.seed)
+- [x] Server: jobs.create — check if employer's city region is active; throw error with Hebrew message if not (admins bypass)
+- [x] Frontend: /work/:slug worker landing pages (pre-activation sign-up)
+- [x] Frontend: WorkerLandingPage component — hero, region stats (X workers joined, Y needed), CTA to register
+- [x] Frontend: PostJob — region-not-active error surfaced via tRPC FORBIDDEN error
+- [x] Admin: Regions management tab in /admin panel (list, edit status, view worker counts)
+- [x] Admin: Ability to manually activate/pause/reset regions
+- [x] Tests: 242 tests passing — haversine, region selection, employer block, auto-activation threshold, slug validation

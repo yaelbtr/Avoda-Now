@@ -22,6 +22,9 @@ import {
   workerRatings,
   categories,
   Category,
+  regions,
+  Region,
+  InsertRegion,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1777,4 +1780,206 @@ export async function getWorkerReviews(workerId: number): Promise<
     .orderBy(desc(workerRatings.createdAt))
     .limit(50);
   return rows;
+}
+
+// ─── Regions ─────────────────────────────────────────────────────────────────
+
+/** Haversine distance in km between two GPS coordinates */
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Return all regions ordered by name */
+export async function getRegions(): Promise<Region[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(regions).orderBy(asc(regions.name));
+}
+
+/** Return a single region by its slug */
+export async function getRegionBySlug(slug: string): Promise<Region | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(regions).where(eq(regions.slug, slug)).limit(1);
+  return rows[0];
+}
+
+/** Return a single region by its id */
+export async function getRegionById(id: number): Promise<Region | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(regions).where(eq(regions.id, id)).limit(1);
+  return rows[0];
+}
+
+/**
+ * Seed initial Israeli regions if the table is empty.
+ * Called once at server startup.
+ */
+export async function seedRegionsIfEmpty(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await db.select({ id: regions.id }).from(regions).limit(1);
+  if (existing.length > 0) return;
+
+  const initialRegions: InsertRegion[] = [
+    { slug: "tel-aviv",       name: "תל אביב",        centerCity: "תל אביב",      centerLat: "32.0853000", centerLng: "34.7818000", activationRadiusKm: 15, minWorkersRequired: 50 },
+    { slug: "jerusalem",      name: "ירושלים",         centerCity: "ירושלים",       centerLat: "31.7683000", centerLng: "35.2137000", activationRadiusKm: 15, minWorkersRequired: 50 },
+    { slug: "haifa",          name: "חיפה",            centerCity: "חיפה",          centerLat: "32.7940000", centerLng: "34.9896000", activationRadiusKm: 15, minWorkersRequired: 30 },
+    { slug: "bnei-brak",      name: "בני ברק",         centerCity: "בני ברק",       centerLat: "32.0841000", centerLng: "34.8338000", activationRadiusKm: 8,  minWorkersRequired: 30 },
+    { slug: "ashdod",         name: "אשדוד",           centerCity: "אשדוד",         centerLat: "31.8040000", centerLng: "34.6550000", activationRadiusKm: 12, minWorkersRequired: 30 },
+    { slug: "beer-sheva",     name: "באר שבע",         centerCity: "באר שבע",       centerLat: "31.2518000", centerLng: "34.7913000", activationRadiusKm: 15, minWorkersRequired: 30 },
+    { slug: "netanya",        name: "נתניה",           centerCity: "נתניה",         centerLat: "32.3215000", centerLng: "34.8532000", activationRadiusKm: 12, minWorkersRequired: 30 },
+    { slug: "rishon-lezion",  name: "ראשון לציון",     centerCity: "ראשון לציון",   centerLat: "31.9730000", centerLng: "34.7925000", activationRadiusKm: 12, minWorkersRequired: 30 },
+    { slug: "petah-tikva",    name: "פתח תקווה",       centerCity: "פתח תקווה",     centerLat: "32.0840000", centerLng: "34.8878000", activationRadiusKm: 10, minWorkersRequired: 30 },
+    { slug: "holon",          name: "חולון",           centerCity: "חולון",         centerLat: "32.0167000", centerLng: "34.7750000", activationRadiusKm: 8,  minWorkersRequired: 20 },
+    { slug: "ramat-gan",      name: "רמת גן",          centerCity: "רמת גן",        centerLat: "32.0684000", centerLng: "34.8248000", activationRadiusKm: 8,  minWorkersRequired: 20 },
+    { slug: "herzliya",       name: "הרצליה",          centerCity: "הרצליה",        centerLat: "32.1663000", centerLng: "34.8436000", activationRadiusKm: 10, minWorkersRequired: 20 },
+  ];
+
+  await db.insert(regions).values(initialRegions);
+  console.log(`[Regions] Seeded ${initialRegions.length} initial regions.`);
+}
+
+/**
+ * Find the nearest region to a given GPS coordinate that is within its activationRadiusKm.
+ * Returns undefined if no region is within range.
+ */
+export async function findNearestRegion(lat: number, lng: number): Promise<Region | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const allRegions = await db.select().from(regions);
+  let nearest: Region | undefined;
+  let nearestDist = Infinity;
+  for (const region of allRegions) {
+    const dist = haversineKm(lat, lng, parseFloat(region.centerLat), parseFloat(region.centerLng));
+    if (dist <= region.activationRadiusKm && dist < nearestDist) {
+      nearest = region;
+      nearestDist = dist;
+    }
+  }
+  return nearest;
+}
+
+/**
+ * Associate a worker with a region.
+ * - If the worker already belongs to a different region, decrement the old region's count.
+ * - Increment the new region's count.
+ * - If currentWorkers >= minWorkersRequired and status is collecting_workers → set status to active.
+ * Returns the updated region (or undefined if regionId is null).
+ */
+export async function associateWorkerWithRegion(
+  workerId: number,
+  newRegionId: number | null,
+  oldRegionId: number | null
+): Promise<Region | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  // Decrement old region if changed
+  if (oldRegionId && oldRegionId !== newRegionId) {
+    await db
+      .update(regions)
+      .set({ currentWorkers: sql`GREATEST(0, ${regions.currentWorkers} - 1)` })
+      .where(eq(regions.id, oldRegionId));
+  }
+
+  if (!newRegionId) {
+    // Clear worker's region
+    await db.update(users).set({ regionId: null }).where(eq(users.id, workerId));
+    return undefined;
+  }
+
+  // Increment new region (only if it's a new association)
+  if (newRegionId !== oldRegionId) {
+    await db
+      .update(regions)
+      .set({ currentWorkers: sql`${regions.currentWorkers} + 1` })
+      .where(eq(regions.id, newRegionId));
+  }
+
+  // Update worker's regionId
+  await db.update(users).set({ regionId: newRegionId }).where(eq(users.id, workerId));
+
+  // Fetch updated region and auto-activate if threshold met
+  const updated = await getRegionById(newRegionId);
+  if (
+    updated &&
+    updated.status === "collecting_workers" &&
+    updated.currentWorkers >= updated.minWorkersRequired
+  ) {
+    await db
+      .update(regions)
+      .set({ status: "active" })
+      .where(eq(regions.id, newRegionId));
+    console.log(`[Regions] Region "${updated.name}" auto-activated! (${updated.currentWorkers} workers)`);
+    return { ...updated, status: "active" };
+  }
+
+  return updated;
+}
+
+/**
+ * Admin: update a region's status manually.
+ */
+export async function updateRegionStatus(
+  regionId: number,
+  status: "collecting_workers" | "active" | "paused"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(regions).set({ status }).where(eq(regions.id, regionId));
+}
+
+/**
+ * Admin: update region settings.
+ */
+export async function updateRegion(
+  regionId: number,
+  data: Partial<Pick<InsertRegion, "name" | "minWorkersRequired" | "activationRadiusKm" | "description" | "imageUrl" | "status">>
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(regions).set(data as Record<string, unknown>).where(eq(regions.id, regionId));
+}
+
+/**
+ * Check whether the region that covers a given city/lat/lng is active.
+ * Used before allowing an employer to post a job.
+ * Returns { allowed: true } or { allowed: false, regionName: string }.
+ */
+export async function checkRegionActiveForJob(
+  lat: number,
+  lng: number
+): Promise<{ allowed: boolean; regionName?: string; regionSlug?: string }> {
+  const region = await findNearestRegion(lat, lng);
+  if (!region) {
+    // No region defined for this location → allow posting (open market)
+    return { allowed: true };
+  }
+  if (region.status === "active") {
+    return { allowed: true };
+  }
+  return { allowed: false, regionName: region.name, regionSlug: region.slug };
+}
+
+/** Recount workers per region from the users table (admin utility) */
+export async function recountRegionWorkers(regionId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ cnt: count() })
+    .from(users)
+    .where(eq(users.regionId, regionId));
+  const cnt = rows[0]?.cnt ?? 0;
+  await db.update(regions).set({ currentWorkers: cnt }).where(eq(regions.id, regionId));
+  return cnt;
 }

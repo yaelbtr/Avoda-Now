@@ -26,6 +26,10 @@ vi.mock("./db", () => ({
   getUserByPhone: vi.fn(),
   createUserByPhone: vi.fn(),
   updateUserLastSignedIn: vi.fn(),
+  // Regional activation system
+  checkRegionActiveForJob: vi.fn().mockResolvedValue({ allowed: true }),
+  findNearestRegion: vi.fn().mockResolvedValue(undefined),
+  associateWorkerWithRegion: vi.fn().mockResolvedValue(undefined),
 }));
 
 import * as db from "./db";

@@ -188,7 +188,7 @@ export default function JobBottomSheet({
           <div style={{ width: 40, height: 4, borderRadius: 99, background: "#d1cdc4" }} />
         </div>
 
-        {/* Close button */}
+        {/* Close button — must sit above the scrollable content div */}
         <button
           onClick={onClose}
           style={{
@@ -204,6 +204,7 @@ export default function JobBottomSheet({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            zIndex: 10,
           }}
         >
           <X size={16} color="#666" />

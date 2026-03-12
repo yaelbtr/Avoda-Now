@@ -116,9 +116,9 @@ export default function Admin() {
     open: boolean;
     user: { id: number; name: string | null; phone: string | null; role: string; status: string } | null;
   }>({ open: false, user: null });
-  const [editUserForm, setEditUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin", status: "active" as "active" | "suspended" });
+  const [editUserForm, setEditUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin" | "test", status: "active" as "active" | "suspended" });
   const [addUserModal, setAddUserModal] = useState(false);
-  const [addUserForm, setAddUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin" });
+  const [addUserForm, setAddUserForm] = useState({ name: "", phone: "", role: "user" as "user" | "admin" | "test" });
 
   const utils = trpc.useUtils();
 
@@ -632,8 +632,11 @@ export default function Admin() {
                           <td className="px-3 py-2.5 font-medium">{u.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
                           <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{u.phone ?? "—"}</td>
                           <td className="px-3 py-2.5">
-                            <Badge variant={u.role === "admin" ? "default" : "secondary"} className="text-xs">
-                              {u.role === "admin" ? "מנהל" : "משתמש"}
+                            <Badge
+                              variant={u.role === "admin" ? "default" : u.role === "test" ? "outline" : "secondary"}
+                              className={`text-xs ${u.role === "test" ? "border-orange-400 text-orange-600" : ""}`}
+                            >
+                              {u.role === "admin" ? "מנהל" : u.role === "test" ? "טסט" : "משתמש"}
                             </Badge>
                           </td>
                           <td className="px-3 py-2.5">
@@ -680,18 +683,7 @@ export default function Admin() {
                                   <Ban className="w-3.5 h-3.5" />
                                 </button>
                               )}
-                              {/* Promote / Demote */}
-                              <button
-                                title={u.role === "admin" ? "הורד למשתמש" : "קדם למנהל"}
-                                className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600 transition-colors"
-                                onClick={() => confirm(
-                                  u.role === "admin" ? "הורדת תפקיד" : "קידום למנהל",
-                                  `ל${u.role === "admin" ? "הוריד" : "קדם"} את ${u.phone}?`,
-                                  () => setUserRole.mutate({ userId: u.id, role: u.role === "admin" ? "user" : "admin" })
-                                )}
-                              >
-                                <Shield className="w-3.5 h-3.5" />
-                              </button>
+
                               {/* Unlock phone */}
                               <button
                                 title="שחרר נעילת טלפון"
@@ -757,11 +749,12 @@ export default function Admin() {
                     <label className="text-sm font-medium block mb-1">תפקיד</label>
                     <select
                       value={addUserForm.role}
-                      onChange={(e) => setAddUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" }))}
+                      onChange={(e) => setAddUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
                       className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
                     >
                       <option value="user">משתמש</option>
                       <option value="admin">מנהל</option>
+                      <option value="test">טסט</option>
                     </select>
                   </div>
                 </div>
@@ -810,11 +803,12 @@ export default function Admin() {
                     <label className="text-sm font-medium block mb-1">תפקיד</label>
                     <select
                       value={editUserForm.role}
-                      onChange={(e) => setEditUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" }))}
+                      onChange={(e) => setEditUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
                       className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
                     >
-                      <option value="user">משתמש</option>
-                      <option value="admin">מנהל</option>
+                  <option value="user">משתמש</option>
+                    <option value="admin">מנהל</option>
+                    <option value="test">טסט</option>
                     </select>
                   </div>
                   <div>

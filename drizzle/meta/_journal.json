@@ -260,6 +260,13 @@
       "when": 1773341565286,
       "tag": "0036_brief_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1773351989107,
+      "tag": "0037_secret_black_bird",
+      "breakpoints": true
     }
   ]
 }

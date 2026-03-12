@@ -33,7 +33,7 @@ export const users = mysqlTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   /** active | suspended */
   status: mysqlEnum("status", ["active", "suspended"]).default("active").notNull(),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "test"]).default("user").notNull(),
   /** User's chosen mode: worker (job seeker) or employer (job poster). Null = not yet chosen. */
   userMode: mysqlEnum("userMode", ["worker", "employer"]),
   /** JSON array of normalized skill/interest tags for future AI matching */

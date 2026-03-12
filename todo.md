@@ -1645,3 +1645,11 @@
 - [x] Backend: admin.createUser procedure
 - [x] Backend: admin.updateUser procedure (name, phone, role, status)
 - [x] Backend: admin.deleteUser procedure
+
+## User Role Changes (Mar 12, 2026)
+- [x] Add 'test' role enum to users table in schema
+- [x] Run db:push migration
+- [x] Update adminSetUserRole / adminUpdateUser to accept 'test' role
+- [x] Remove promote-to-admin button from user management table
+- [x] Update role selects in add/edit user modals to include 'test'
+- [x] Update role badge display to show 'טסט' label

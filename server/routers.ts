@@ -961,7 +961,7 @@ const adminRouter = router({
 
   /** Set user role */
   setUserRole: adminProcedure
-    .input(z.object({ userId: z.number(), role: z.enum(["user", "admin"]) }))
+    .input(z.object({ userId: z.number(), role: z.enum(["user", "admin", "test"]) }))
     .mutation(async ({ input }) => { await adminSetUserRole(input.userId, input.role); return { success: true }; }),
 
   /** Manually create a user */
@@ -969,7 +969,7 @@ const adminRouter = router({
     .input(z.object({
       phone: z.string().min(9),
       name: z.string().optional(),
-      role: z.enum(["user", "admin"]).optional(),
+      role: z.enum(["user", "admin", "test"]).optional(),
     }))
     .mutation(async ({ input }) => {
       const normalized = normalizeIsraeliPhone(input.phone);
@@ -983,7 +983,7 @@ const adminRouter = router({
       userId: z.number(),
       name: z.string().optional(),
       phone: z.string().optional(),
-      role: z.enum(["user", "admin"]).optional(),
+      role: z.enum(["user", "admin", "test"]).optional(),
       status: z.enum(["active", "suspended"]).optional(),
     }))
     .mutation(async ({ input }) => {

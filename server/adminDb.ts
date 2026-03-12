@@ -102,13 +102,13 @@ export async function adminUnblockUser(userId: number) {
   await db.update(users).set({ status: "active" }).where(eq(users.id, userId));
 }
 
-export async function adminSetUserRole(userId: number, role: "user" | "admin") {
+export async function adminSetUserRole(userId: number, role: "user" | "admin" | "test") {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 
-export async function adminCreateUser(data: { phone: string; name?: string; role?: "user" | "admin" }) {
+export async function adminCreateUser(data: { phone: string; name?: string; role?: "user" | "admin" | "test" }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   // Check for duplicate phone
@@ -125,7 +125,7 @@ export async function adminCreateUser(data: { phone: string; name?: string; role
   return { id: (inserted as any).insertId as number };
 }
 
-export async function adminUpdateUser(userId: number, data: { name?: string; phone?: string; role?: "user" | "admin"; status?: "active" | "suspended" }) {
+export async function adminUpdateUser(userId: number, data: { name?: string; phone?: string; role?: "user" | "admin" | "test"; status?: "active" | "suspended" }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const updateData: Record<string, unknown> = {};

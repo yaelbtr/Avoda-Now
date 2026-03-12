@@ -198,11 +198,7 @@ export default function Navbar() {
                     }}
                     aria-label="הפרופיל שלי"
                   >
-                    {profilePhoto ? (
-                      <img src={profilePhoto} alt="פרופיל" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="h-5 w-5" />
-                    )}
+                    <User className="h-5 w-5" />
                   </motion.button>
                 </Link>
               )}

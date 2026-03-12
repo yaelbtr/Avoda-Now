@@ -213,6 +213,7 @@ const authRouter = router({
         phone: z.string().min(9).max(20),
         code: z.string().min(4).max(8),
         name: z.string().max(100).optional(),
+        email: z.string().email().max(320).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -272,7 +273,7 @@ const authRouter = router({
       // Find or create user
       let user = await getUserByPhone(phone);
       if (!user) {
-        user = await createUserByPhone(phone, input.name);
+        user = await createUserByPhone(phone, input.name, input.email);
       } else {
         await updateUserLastSignedIn(user.id);
       }

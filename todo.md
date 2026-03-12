@@ -1659,3 +1659,9 @@
 - [x] Backend: maintenance mode bypass for test users
 - [x] Frontend: LoginModal hint for test users about bypass code
 - [x] Frontend: maintenance page bypass for test users
+
+## Registration Flow Update (Mar 13, 2026)
+- [x] Separate login vs registration in LoginModal
+- [x] Registration: collect name, phone, email + terms checkbox
+- [x] Backend: store email during registration (sendOtp/verifyOtp)
+- [x] Terms checkbox must be checked before sending OTP

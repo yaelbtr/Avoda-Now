@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
+  User, Mail,
 } from "lucide-react";
 import { saveReturnPath, getGoogleLoginUrl } from "@/const";
 import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
@@ -42,16 +43,31 @@ type Step = "phone" | "otp" | "role" | "setup" | "success";
 export default function LoginModal({ open, onClose, message, maintenanceMode, onNonAdminLogin }: LoginModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("login");
   const [step, setStep] = useState<Step>("phone");
+
+  // Shared phone state
   const [phone, setPhone] = useState("");
   const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
   const [normalizedPhone, setNormalizedPhone] = useState("");
+
+  // Registration-only fields
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // OTP state
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [isTestBypass, setIsTestBypass] = useState(false);
+
+  // Post-OTP setup state
   const [selectedRole, setSelectedRole] = useState<"worker" | "employer" | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [setupSaving, setSetupSaving] = useState(false);
-  const [isTestBypass, setIsTestBypass] = useState(false);
+
+  // Pending registration data to pass to verifyOtp
+  const pendingRegData = useRef<{ name: string; email: string } | null>(null);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { refetch } = useAuth();
@@ -84,11 +100,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setPhone("");
         setPhoneVal({ prefix: "", number: "" });
         setNormalizedPhone("");
+        setRegName("");
+        setRegEmail("");
+        setTermsAccepted(false);
         setDigits(Array(OTP_LENGTH).fill(""));
         setResendCountdown(0);
         setSelectedRole(null);
         setSelectedCategories([]);
         setSelectedCity("");
+        pendingRegData.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
       }, 300);
       return () => clearTimeout(t);
@@ -101,8 +121,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setPhone("");
     setPhoneVal({ prefix: "", number: "" });
     setNormalizedPhone("");
+    setRegName("");
+    setRegEmail("");
+    setTermsAccepted(false);
     setDigits(Array(OTP_LENGTH).fill(""));
     setResendCountdown(0);
+    pendingRegData.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -137,10 +161,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         onNonAdminLogin?.();
         return;
       }
-      // Refresh auth state
       await refetch();
       queryClient.invalidateQueries();
-      // If user already has a role, skip role selection
       if (data.user?.userMode) {
         setStep("success");
         setTimeout(() => {
@@ -150,7 +172,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           if (returnPath) navigate(returnPath);
         }, 800);
       } else {
-        // New user — show role selection
         setStep("role");
       }
     },
@@ -170,18 +191,29 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   });
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
+  const isPhoneValid = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+
   const handleSend = () => {
-    const combined = phoneVal.prefix.length === 3 && phoneVal.number.length === 7
-      ? combinePhone(phoneVal)
-      : phone.trim();
+    const combined = isPhoneValid ? combinePhone(phoneVal) : phone.trim();
     if (!combined || combined.length < 9) return toast.error("הכנס מספר טלפון תקין");
+    if (activeTab === "register") {
+      if (!regName.trim()) return toast.error("יש להכניס שם מלא");
+      if (!termsAccepted) return toast.error("יש לאשר את תנאי השימוש");
+      // Store registration data to pass to verifyOtp
+      pendingRegData.current = { name: regName.trim(), email: regEmail.trim() };
+    }
     setPhone(combined);
     sendOtp.mutate({ phone: combined });
   };
 
   const submitOtp = useCallback((code: string) => {
     if (code.length !== OTP_LENGTH) return;
-    verifyOtp.mutate({ phone: normalizedPhone || phone, code });
+    const reg = pendingRegData.current;
+    verifyOtp.mutate({
+      phone: normalizedPhone || phone,
+      code,
+      ...(reg ? { name: reg.name, email: reg.email || undefined } : {}),
+    });
   }, [verifyOtp, normalizedPhone, phone]);
 
   const handleDigitChange = (index: number, value: string) => {
@@ -250,7 +282,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         });
       }
     } catch {
-      // non-blocking — profile can be completed later
+      // non-blocking
     } finally {
       setSetupSaving(false);
     }
@@ -260,11 +292,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       onClose();
       queryClient.invalidateQueries();
       const returnPath = popReturnPath();
-      if (returnPath) {
-        navigate(returnPath);
-      } else {
-        navigate(selectedRole === "employer" ? "/" : "/find-jobs");
-      }
+      if (returnPath) navigate(returnPath);
+      else navigate(selectedRole === "employer" ? "/" : "/find-jobs");
     }, 700);
   };
 
@@ -275,11 +304,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       onClose();
       queryClient.invalidateQueries();
       const returnPath = popReturnPath();
-      if (returnPath) {
-        navigate(returnPath);
-      } else {
-        navigate(selectedRole === "employer" ? "/" : "/find-jobs");
-      }
+      if (returnPath) navigate(returnPath);
+      else navigate(selectedRole === "employer" ? "/" : "/find-jobs");
     }, 700);
   };
 
@@ -290,8 +316,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   };
 
   const isOtpComplete = digits.every(d => d !== "");
-  const displayPhone = formatPhoneDisplay(phone);
-  const isPhoneValid = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+  const displayPhone = formatPhoneDisplay(normalizedPhone || phone);
 
   if (!open) return null;
 
@@ -355,7 +380,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   ))}
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-4">
+                  {/* Header */}
                   <div className="text-center space-y-1 pt-1">
                     <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3"
                       style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
@@ -371,18 +397,90 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         ? message
                         : activeTab === "login"
                           ? "הכנס מספר טלפון ונשלח לך קוד אימות"
-                          : "הרשמה פשוטה — פחות מ-10 שניות"}
+                          : "מלא את הפרטים ונשלח לך קוד אימות"}
                     </p>
                   </div>
 
+                  {/* ── REGISTER: extra fields ── */}
+                  {activeTab === "register" && (
+                    <>
+                      {/* Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          שם מלא <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={regName}
+                          onChange={e => setRegName(e.target.value)}
+                          placeholder="ישראל ישראלי"
+                          className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          dir="rtl"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          כתובת מייל <span className="text-xs text-muted-foreground">(אופציונלי)</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={regEmail}
+                          onChange={e => setRegEmail(e.target.value)}
+                          placeholder="example@gmail.com"
+                          className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          dir="ltr"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Phone */}
                   <IsraeliPhoneInput value={phoneVal} onChange={setPhoneVal} label="מספר טלפון" />
 
+                  {/* ── REGISTER: terms checkbox ── */}
+                  {activeTab === "register" && (
+                    <label className="flex items-start gap-2.5 cursor-pointer group">
+                      <div className="relative mt-0.5 flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={termsAccepted}
+                          onChange={e => setTermsAccepted(e.target.checked)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            termsAccepted
+                              ? "border-primary bg-primary"
+                              : "border-border group-hover:border-primary/50"
+                          }`}
+                        >
+                          {termsAccepted && <CheckCircle2 className="h-3 w-3 text-white" />}
+                        </div>
+                      </div>
+                      <span className="text-sm text-muted-foreground leading-relaxed">
+                        קראתי ואני מסכים/ה ל
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1" onClick={e => e.stopPropagation()}>תנאי השימוש</a>
+                        ול
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1" onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
+                      </span>
+                    </label>
+                  )}
+
+                  {/* Send OTP button */}
                   <AppButton
                     variant="brand"
                     size="lg"
                     className="w-full"
                     onClick={handleSend}
-                    disabled={sendOtp.isPending || !isPhoneValid}
+                    disabled={
+                      sendOtp.isPending ||
+                      !isPhoneValid ||
+                      (activeTab === "register" && (!regName.trim() || !termsAccepted))
+                    }
                   >
                     {sendOtp.isPending
                       ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
@@ -410,12 +508,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     {activeTab === "login" ? "כניסה עם Google" : "הרשמה עם Google"}
                   </button>
 
-                  <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                    בהמשך אתה מסכים ל
-                    <a href="/terms" className="text-primary hover:underline mx-1">תנאי השימוש</a>
-                    ול
-                    <a href="/privacy" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
-                  </p>
+                  {/* Login-only: terms note */}
+                  {activeTab === "login" && (
+                    <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                      בהמשך אתה מסכים ל
+                      <a href="/terms" className="text-primary hover:underline mx-1">תנאי השימוש</a>
+                      ול
+                      <a href="/privacy" className="text-primary hover:underline mx-1">מדיניות הפרטיות</a>
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -431,14 +532,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   <h2 className="text-xl font-bold">{isTestBypass ? "אימות משתמש טסט" : "אימות קוד SMS"}</h2>
                   <p className="text-sm text-muted-foreground">
                     {isTestBypass
-                      ? <>הכנס את <span className="font-semibold text-foreground">6 הספרות הראשונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
+                      ? <>הכנס את <span className="font-semibold text-foreground">6 הספרות הראשונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
                       : <>הכנס את הקוד שנשלח ל-<span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span></>
                     }
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium block text-right">{isTestBypass ? "קוד טסט (6 ספרות ראשונות של הטלפון)" : "קוד אימות (6 ספרות)"}</label>
+                  <label className="text-sm font-medium block text-right">
+                    {isTestBypass ? "קוד טסט (6 ספרות ראשונות של הטלפון)" : "קוד אימות (6 ספרות)"}
+                  </label>
                   <div className="flex gap-2 justify-center" dir="ltr">
                     {Array.from({ length: OTP_LENGTH }, (_, i) => (
                       <input
@@ -464,7 +567,9 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground text-center">{isTestBypass ? "קוד ביצוע בלבד — ללא SMS" : "הקוד תקף ל-10 דקות · מקסימום 3 ניסיונות"}</p>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {isTestBypass ? "קוד ביצוע בלבד — ללא SMS" : "הקוד תקף ל-10 דקות · מקסימום 3 ניסיונות"}
+                  </p>
                 </div>
 
                 <AppButton
@@ -517,10 +622,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleRoleSelect("worker")}
                     className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all text-center"
-                    style={{
-                      borderColor: "oklch(0.88 0.04 84.0)",
-                      background: "oklch(0.98 0.01 122.3)",
-                    }}
+                    style={{ borderColor: "oklch(0.88 0.04 84.0)", background: "oklch(0.98 0.01 122.3)" }}
                     whileHover={{ borderColor: "oklch(0.50 0.09 124.9)", scale: 1.02 }}
                   >
                     <div className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -538,10 +640,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleRoleSelect("employer")}
                     className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all text-center"
-                    style={{
-                      borderColor: "oklch(0.88 0.04 84.0)",
-                      background: "oklch(0.98 0.01 122.3)",
-                    }}
+                    style={{ borderColor: "oklch(0.88 0.04 84.0)", background: "oklch(0.98 0.01 122.3)" }}
                     whileHover={{ borderColor: "oklch(0.50 0.09 124.9)", scale: 1.02 }}
                   >
                     <div className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -575,7 +674,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   </p>
                 </div>
 
-                {/* Worker: category multi-select */}
                 {selectedRole === "worker" && dbCategories.length > 0 && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium block">קטגוריות עבודה (אופציונלי)</label>
@@ -604,7 +702,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   </div>
                 )}
 
-                {/* City picker */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium block">עיר / אזור (אופציונלי)</label>
                   <CityAutocomplete
@@ -625,12 +722,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   >
                     {setupSaving ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שומר...</> : "התחל"}
                   </AppButton>
-                  <AppButton
-                    variant="outline"
-                    size="lg"
-                    onClick={handleSkipSetup}
-                    disabled={setupSaving}
-                  >
+                  <AppButton variant="outline" size="lg" onClick={handleSkipSetup} disabled={setupSaving}>
                     דלג
                   </AppButton>
                 </div>

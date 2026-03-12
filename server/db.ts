@@ -93,7 +93,7 @@ export async function getUserByPhone(phone: string) {
   return result[0];
 }
 
-export async function createUserByPhone(phone: string, name?: string) {
+export async function createUserByPhone(phone: string, name?: string, email?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const openId = `phone_${phone}_${Date.now()}`;
@@ -101,6 +101,7 @@ export async function createUserByPhone(phone: string, name?: string) {
     openId,
     phone,
     name: name ?? null,
+    email: email ?? null,
     loginMethod: "phone_otp",
     lastSignedIn: new Date(),
   });

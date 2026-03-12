@@ -495,8 +495,20 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                   <button
                     type="button"
-                    onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-                    className="w-full h-11 flex items-center justify-center gap-3 rounded-lg border border-border bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 shadow-sm"
+                    onClick={() => {
+                      if (activeTab === "register" && !termsAccepted) {
+                        toast.error("יש לאשר את תנאי השימוש לפני הרשמה");
+                        return;
+                      }
+                      saveReturnPath();
+                      window.location.href = getGoogleLoginUrl();
+                    }}
+                    disabled={activeTab === "register" && !termsAccepted}
+                    className={`w-full h-11 flex items-center justify-center gap-3 rounded-lg border border-border transition-colors text-sm font-medium shadow-sm ${
+                      activeTab === "register" && !termsAccepted
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                        : "bg-white hover:bg-gray-50 text-gray-700"
+                    }`}
                   >
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>

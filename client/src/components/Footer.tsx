@@ -97,10 +97,12 @@ export default function Footer() {
                 <span>{jobsBadge}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: FG_MUTED }}>
-              <Users className="h-3 w-3" style={{ color: ACCENT }} />
-              <span>אלפי עובדים</span>
-            </div>
+            {hs && hs.registeredWorkers > 0 && (
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: FG_MUTED }}>
+                <Users className="h-3 w-3" style={{ color: ACCENT }} />
+                <span>{hs.registeredWorkers}+ עובדים רשומים</span>
+              </div>
+            )}
             <a
               href="mailto:info@avodanow.co.il"
               className="inline-flex items-center gap-1.5 text-xs transition-colors"

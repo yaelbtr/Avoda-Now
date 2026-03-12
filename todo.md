@@ -1594,3 +1594,6 @@
 
 ## Footer Badge Dynamic (Mar 12, 2026)
 - [x] Update Footer.tsx badge from hardcoded "500+ משרות" to real heroStats data (hidden when thresholds not met)
+
+## Footer Workers Text Dynamic (Mar 12, 2026)
+- [x] Replace hardcoded "אלפי עובדים" in Footer with real registeredWorkers count from heroStats (hidden when 0)

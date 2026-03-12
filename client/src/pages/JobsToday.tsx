@@ -9,6 +9,7 @@ import { saveReturnPath } from "@/const";
 import { JOB_CATEGORIES } from "@shared/categories";
 import { Flame, Briefcase, ChevronRight } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
+import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 
 export default function JobsToday() {
   const [, navigate] = useLocation();
@@ -96,9 +97,7 @@ export default function JobsToday() {
 
       {/* Job list */}
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <BrandLoader size="md" />
-        </div>
+        <JobCardSkeletonList count={4} />
       ) : jobs.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Flame className="h-12 w-12 mx-auto mb-3 opacity-20 text-red-400" />

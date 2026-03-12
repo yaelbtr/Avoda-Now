@@ -18,6 +18,7 @@ import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
 import { JobCard } from "@/components/JobCard";
+import JobCardSkeleton from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 
 // ── Status config ─────────────────────────────────────────────────────────────
@@ -73,45 +74,7 @@ type AppStatus = "pending" | "viewed" | "accepted" | "rejected";
 type AppSortBy = "jobDate" | "salary" | "city";
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
-function Shimmer({ width = "100%", height = 14, rounded = "0.5rem" }: {
-  width?: string | number; height?: number; rounded?: string;
-}) {
-  return (
-    <div style={{ width, height, borderRadius: rounded, background: "oklch(0.89 0.05 84.0 / 0.6)", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-      <motion.div
-        style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(90deg, transparent 0%, oklch(0.95 0.03 91.6 / 0.8) 40%, white 50%, oklch(0.95 0.03 91.6 / 0.8) 60%, transparent 100%)",
-          backgroundSize: "200% 100%",
-        }}
-        animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
-      />
-    </div>
-  );
-}
-
-function CardSkeleton() {
-  return (
-    <div style={{
-      background: "white",
-      border: "1px solid oklch(0.87 0.04 84.0)",
-      borderRadius: "1rem",
-      padding: "1rem",
-      boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
-    }}>
-      <div className="flex items-start gap-3 mb-3">
-        <Shimmer width={40} height={40} rounded="0.75rem" />
-        <div className="flex-1 space-y-2">
-          <Shimmer width="55%" height={14} />
-          <Shimmer width="35%" height={11} />
-        </div>
-        <Shimmer width={72} height={24} rounded="9999px" />
-      </div>
-      <Shimmer width="80%" height={11} />
-    </div>
-  );
-}
+// CardSkeleton is now the shared JobCardSkeleton from @/components/JobCardSkeleton
 
 export default function MyApplications() {
   const [, navigate] = useLocation();
@@ -447,7 +410,7 @@ export default function MyApplications() {
             {/* Loading */}
             {isLoading && (
               <div className="space-y-3">
-                {[0, 1, 2].map((i) => <CardSkeleton key={i} />)}
+                {[0, 1, 2].map((i) => <JobCardSkeleton key={i} delay={i * 0.07} />)}
               </div>
             )}
 
@@ -860,7 +823,7 @@ export default function MyApplications() {
             {/* Loading */}
             {isLoading && (
               <div className="space-y-3">
-                {[0, 1, 2].map((i) => <CardSkeleton key={i} />)}
+                {[0, 1, 2].map((i) => <JobCardSkeleton key={i} delay={i * 0.07} />)}
               </div>
             )}
 

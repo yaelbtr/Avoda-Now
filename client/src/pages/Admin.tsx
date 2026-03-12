@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
@@ -192,6 +193,18 @@ export default function Admin() {
       // Also invalidate the public maintenance status so the gate updates immediately
       utils.maintenance.status.invalidate();
       toast.success(data.active ? "מצב תחזוקה הופעל" : "מצב תחזוקה בוטל");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const [maintenanceMsg, setMaintenanceMsg] = useState<string | null>(null);
+  // Sync textarea with DB value once loaded (null = not yet synced)
+  const maintenanceMsgFromDb = maintenanceModeQuery.data?.message ?? "";
+  const displayMsg = maintenanceMsg !== null ? maintenanceMsg : maintenanceMsgFromDb;
+  const setMaintenanceMessage = trpc.admin.setMaintenanceMessage.useMutation({
+    onSuccess: () => {
+      utils.admin.getMaintenanceMode.invalidate();
+      utils.maintenance.status.invalidate();
+      toast.success("ההודעה נשמרה בהצלחה");
     },
     onError: (e) => toast.error(e.message),
   });
@@ -903,6 +916,38 @@ export default function Admin() {
                   <p className="text-xs text-muted-foreground">
                     הגדרה זו נשמרת במסד הנתונים ונכנסת לתוקף מידי.
                   </p>
+
+                  {/* Custom message */}
+                  <div className="border-t pt-4 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium block mb-1">
+                        הודעה מותאמת למשתמשים (אופציונלי)
+                      </label>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        הטקסט יוצג בדף התחזוקה. לדוגמה: &quot;נחזור בשעה 18:00&quot;. השאר ריק להודעת ברירת מחדל.
+                      </p>
+                      <Textarea
+                        dir="rtl"
+                        placeholder="לדוגמה: האתר בתחזוקה מתוכננת. נחזור בשעה 18:00."
+                        value={displayMsg}
+                        onChange={(e) => setMaintenanceMsg(e.target.value)}
+                        maxLength={500}
+                        rows={3}
+                        className="resize-none text-sm"
+                      />
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-muted-foreground">{displayMsg.length}/500</span>
+                        <AppButton
+                          variant="brand"
+                          size="sm"
+                          onClick={() => setMaintenanceMessage.mutate({ message: displayMsg })}
+                          disabled={setMaintenanceMessage.isPending}
+                        >
+                          {setMaintenanceMessage.isPending ? "שומר..." : "שמור הודעה"}
+                        </AppButton>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

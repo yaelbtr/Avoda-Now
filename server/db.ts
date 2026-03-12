@@ -2524,6 +2524,11 @@ export async function isMaintenanceModeActive(): Promise<boolean> {
   return val === "true";
 }
 
+export async function getMaintenanceMessage(): Promise<string> {
+  const val = await getSystemSetting("maintenanceMessage");
+  return val ?? "";
+}
+
 /**
  * Returns counts needed for the hero stats banner on the Home page.
  * Used for conditional display logic:

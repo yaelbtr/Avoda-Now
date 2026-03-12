@@ -1610,3 +1610,15 @@
 ## Navbar Fixes (Mar 12, 2026)
 - [x] Fix /profile route returning 404 — register route in App.tsx
 - [x] Style user icon in mobile navbar consistently with other icons (same size/color/active state)
+
+## Custom Maintenance Message (Mar 12, 2026)
+- [ ] Add maintenanceMessage field to systemSettings DB table
+- [ ] Add getMaintenanceSettings and setMaintenanceMessage tRPC procedures
+- [ ] Admin panel: textarea to set custom maintenance message
+- [ ] MaintenancePage: display custom message when set
+
+## Login Modal Redesign (Mar 12, 2026)
+- [x] Redesign LoginModal as full-page overlay (covers entire screen)
+- [x] Add 2 tabs: התחברות (login via OTP) and הרשמה (register via OTP)
+- [x] Register tab: collect name + phone, then OTP verification
+- [x] Login tab: phone input + OTP verification (existing flow)

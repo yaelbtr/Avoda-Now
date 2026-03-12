@@ -104,6 +104,7 @@ import {
   getSystemSetting,
   setSystemSetting,
   isMaintenanceModeActive,
+  getMaintenanceMessage,
   getHeroStats,
 } from "./db";
 import { sendJobAlerts } from "./sms";
@@ -1010,10 +1011,13 @@ const adminRouter = router({
       return { success: true, deletedCount };
     }),
 
-  /** Get current maintenance mode status */
+  /** Get current maintenance mode status + message */
   getMaintenanceMode: adminProcedure.query(async () => {
-    const active = await isMaintenanceModeActive();
-    return { active };
+    const [active, message] = await Promise.all([
+      isMaintenanceModeActive(),
+      getMaintenanceMessage(),
+    ]);
+    return { active, message };
   }),
 
   /** Toggle maintenance mode on/off */
@@ -1022,6 +1026,14 @@ const adminRouter = router({
     .mutation(async ({ input }) => {
       await setSystemSetting("maintenanceMode", input.active ? "true" : "false");
       return { success: true, active: input.active };
+    }),
+
+  /** Set custom maintenance message shown to users */
+  setMaintenanceMessage: adminProcedure
+    .input(z.object({ message: z.string().max(500) }))
+    .mutation(async ({ input }) => {
+      await setSystemSetting("maintenanceMessage", input.message);
+      return { success: true };
     }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
@@ -1934,10 +1946,13 @@ const referralRouter = router({
 // ─── Maintenance Router ────────────────────────────────────────────────────────────────────
 
 const maintenanceRouter = router({
-  /** Public: check if maintenance mode is active */
+  /** Public: check if maintenance mode is active + custom message */
   status: publicProcedure.query(async () => {
-    const active = await isMaintenanceModeActive();
-    return { active };
+    const [active, message] = await Promise.all([
+      isMaintenanceModeActive(),
+      getMaintenanceMessage(),
+    ]);
+    return { active, message };
   }),
 });
 

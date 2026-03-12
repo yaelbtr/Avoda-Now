@@ -1292,3 +1292,14 @@
 
 - [x] City autocomplete not working — fixed: CityAutocomplete now queries cities table via trpc.user.searchCities (58 cities seeded); Google Places used as enhancement only
 - [x] WorkerProfile: added "יציאה ללא שמירה" button next to save button in all 3 tabs (details, work, schedule)
+
+## Referral System
+
+- [x] DB: add referredBy (optional FK to users.id) to users table, push migration
+- [x] Frontend: on any page load, if ?ref=X in URL, save X to localStorage (ReferralCapture in App.tsx)
+- [x] Backend: applyRef tRPC mutation — reads stored ref from localStorage after login and saves referredBy
+- [x] Share buttons: append ?ref={userId} to all shared URLs (JobCard, CarouselJobCard, JobDetails)
+- [x] My Referrals page at /my-referrals — shows count, referral link, and list of referred users
+- [x] Navbar + MobileDrawer: "הפניות שלי" link in user menu
+- [ ] Admin: referrals tab showing who referred whom and count
+- [x] Tests: 11 referral tests in referrals.test.ts (262 total tests passing)

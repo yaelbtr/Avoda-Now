@@ -1,4 +1,5 @@
-import { and, count, desc, eq, gte, inArray, like, lte, ne, or, sql, asc } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNull, like, lte, ne, or, sql, asc } from "drizzle-orm";
+import { alias as aliasedTable } from "drizzle-orm/mysql-core";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertJob,
@@ -2300,4 +2301,69 @@ export async function getWorkerRegionStatus(workerId: number): Promise<{
     .map((r) => ({ id: r.regionId, name: r.regionName, slug: r.regionSlug, status: r.regionStatus }));
 
   return { hasAnyRegion: true, hasActiveRegion, inactiveRegions };
+}
+
+// ─── Referral helpers ─────────────────────────────────────────────────────────
+
+/** Set referredBy on a user only if it hasn't been set yet (first-time only). */
+export async function applyReferral(userId: number, referrerId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  if (userId === referrerId) return; // cannot refer yourself
+  // Only set if not already set
+  await db
+    .update(users)
+    .set({ referredBy: referrerId })
+    .where(and(eq(users.id, userId), isNull(users.referredBy)));
+}
+
+/** Get all users referred by a given user ID. */
+export async function getReferralsByUser(referrerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      phone: users.phone,
+      userMode: users.userMode,
+      createdAt: users.createdAt,
+      signupCompleted: users.signupCompleted,
+    })
+    .from(users)
+    .where(eq(users.referredBy, referrerId))
+    .orderBy(desc(users.createdAt));
+}
+
+/** Get referral count for a user. */
+export async function getReferralCount(referrerId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db
+    .select({ count: count() })
+    .from(users)
+    .where(eq(users.referredBy, referrerId));
+  return result[0]?.count ?? 0;
+}
+
+/** Admin: get all referral pairs (referrer + referred). */
+export async function getAllReferrals() {
+  const db = await getDb();
+  if (!db) return [];
+  const referrers = aliasedTable(users, "referrers");
+  return db
+    .select({
+      referrerId: referrers.id,
+      referrerName: referrers.name,
+      referrerPhone: referrers.phone,
+      referredId: users.id,
+      referredName: users.name,
+      referredPhone: users.phone,
+      referredMode: users.userMode,
+      referredAt: users.createdAt,
+    })
+    .from(users)
+    .innerJoin(referrers, eq(users.referredBy, referrers.id))
+    .orderBy(desc(users.createdAt));
 }

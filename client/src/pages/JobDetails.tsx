@@ -196,7 +196,8 @@ export default function JobDetails() {
   const isVolunteer = job.salaryType === "volunteer";
   // Use slug-based URL for canonical and sharing
   const jobPath = buildJobPath(job.id, job.title, job.city);
-  const jobUrl = `${SITE_URL}${jobPath}`;
+  const referrerId = user?.id ?? null;
+  const jobUrl = `${SITE_URL}${jobPath}${referrerId ? `?ref=${referrerId}` : ""}`;
   const shareText = encodeURIComponent(`מצאתי עבודה באתר AvodaNow 💼\n${job.title}\n${jobUrl}`);
   // contactPhone is never sent to workers — contact is via application only
 

@@ -65,6 +65,8 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const referrerId = user?.id ?? null;
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -76,7 +78,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
 
   const handleCopyLink = async () => {
     try {
-      await copyJobLink(job.id);
+      await copyJobLink(job.id, job.title, job.city, referrerId);
       setCopied(true);
       setTimeout(() => { setCopied(false); setOpen(false); }, 1200);
     } catch {
@@ -130,7 +132,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
           >
             {/* WhatsApp */}
             <button
-              onClick={() => { shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType); setOpen(false); }}
+              onClick={() => { shareJobOnWhatsApp(job.title, job.id, job.city, job.salary, job.salaryType, referrerId); setOpen(false); }}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#25D366", width: "100%", textAlign: "right" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -140,7 +142,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
             </button>
             {/* Telegram */}
             <button
-              onClick={() => { shareJobOnTelegram(job.title, job.id, job.city); setOpen(false); }}
+              onClick={() => { shareJobOnTelegram(job.title, job.id, job.city, referrerId); setOpen(false); }}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#0088cc", width: "100%", textAlign: "right" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#e8f4fb")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -150,7 +152,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
             </button>
             {/* Facebook */}
             <button
-              onClick={() => { shareJobOnFacebook(job.id); setOpen(false); }}
+              onClick={() => { shareJobOnFacebook(job.id, job.title, job.city, referrerId); setOpen(false); }}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#1877F2", width: "100%", textAlign: "right" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#eef2fb")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -160,7 +162,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
             </button>
             {/* Email */}
             <button
-              onClick={() => { shareJobByEmail(job.title, job.id, job.city, job.salary, job.salaryType); setOpen(false); }}
+              onClick={() => { shareJobByEmail(job.title, job.id, job.city, job.salary, job.salaryType, referrerId); setOpen(false); }}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: OLIVE, width: "100%", textAlign: "right" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#f5f0e4")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}

@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Flame, Briefcase, Bookmark, User, PlusCircle, Users,
-  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2, AlertTriangle,
+  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2, AlertTriangle, Gift,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -189,6 +189,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>האזור האישי</p>
                   {navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
                   {navItem("/worker-profile", User, "הפרופיל שלי")}
+                  {navItem("/my-referrals", Gift, "הפניות שלי")}
                 </>
               )}
 

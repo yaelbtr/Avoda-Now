@@ -95,6 +95,10 @@ import {
   getRegionNotificationSubscribers,
   cancelRegionNotification,
   getWorkerRegionStatus,
+  applyReferral,
+  getReferralsByUser,
+  getReferralCount,
+  getAllReferrals,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -1806,6 +1810,33 @@ const regionsRouter = router({
     }),
 });
 
+// ─── Referral Router ────────────────────────────────────────────────────────
+
+const referralRouter = router({
+  /** Apply a referral code to the current user (only if not already set). */
+  applyRef: protectedProcedure
+    .input(z.object({ referrerId: z.number().int().positive() }))
+    .mutation(async ({ input, ctx }) => {
+      await applyReferral(ctx.user.id, input.referrerId);
+      return { success: true };
+    }),
+
+  /** Get my referral stats (count + list of referred users). */
+  myStats: protectedProcedure.query(async ({ ctx }) => {
+    const [referrals, count] = await Promise.all([
+      getReferralsByUser(ctx.user.id),
+      getReferralCount(ctx.user.id),
+    ]);
+    return { count, referrals };
+  }),
+
+  /** Admin: get all referral pairs. */
+  adminAll: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    return getAllReferrals();
+  }),
+});
+
 // ─── App Router ─────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -1822,5 +1853,6 @@ export const appRouter = router({
   seo: seoRouter,
   categories: categoriesRouter,
   regions: regionsRouter,
+  referral: referralRouter,
 });
 export type AppRouter = typeof appRouter;

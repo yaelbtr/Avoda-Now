@@ -78,16 +78,23 @@ export function shareJobOnWhatsApp(
   jobId: number,
   city?: string | null,
   salary?: string | null,
-  salaryType?: string
+  salaryType?: string,
+  referrerId?: number | null
 ) {
   const location = city ?? "";
   const salaryStr =
     salary && salaryType !== "volunteer"
       ? `₪${parseFloat(salary).toLocaleString("he-IL")} ${salaryType === "hourly" ? "לשעה" : salaryType === "daily" ? "ליום" : "לחודש"}`
       : "התנדבות";
-  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
+  const basePath = buildJobPath(jobId, jobTitle, city);
+  const jobUrl = `${SITE_URL}${basePath}${referrerId ? `?ref=${referrerId}` : ""}`;
   const text = encodeURIComponent(
-    `עבודה זמנית:\n${jobTitle}\n${location}\n${salaryStr}\nפרטים כאן:\n${jobUrl}`
+    `עבודה זמנית:
+${jobTitle}
+${location}
+${salaryStr}
+פרטים כאן:
+${jobUrl}`
   );
   window.open(`https://wa.me/?text=${text}`, "_blank");
 }
@@ -97,34 +104,48 @@ export function shareJobByEmail(
   jobId: number,
   city?: string | null,
   salary?: string | null,
-  salaryType?: string
+  salaryType?: string,
+  referrerId?: number | null
 ) {
   const location = city ?? "";
   const salaryStr =
     salary && salaryType !== "volunteer"
       ? `₪${parseFloat(salary).toLocaleString("he-IL")} ${salaryType === "hourly" ? "לשעה" : salaryType === "daily" ? "ליום" : "לחודש"}`
       : "התנדבות";
-  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
+  const basePath = buildJobPath(jobId, jobTitle, city);
+  const jobUrl = `${SITE_URL}${basePath}${referrerId ? `?ref=${referrerId}` : ""}`;
   const subject = encodeURIComponent(`עבודה זמנית: ${jobTitle}`);
   const body = encodeURIComponent(
-    `שלום,\n\nמצאתי משרה שעשויה לעניין אותך:\n${jobTitle}\n${location}\n${salaryStr}\n\nפרטים נוספים:\n${jobUrl}`
+    `שלום,
+
+מצאתי משרה שעשויה לעניין אותך:
+${jobTitle}
+${location}
+${salaryStr}
+
+פרטים נוספים:
+${jobUrl}`
   );
   window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
 }
 
-export function shareJobOnFacebook(jobId: number, jobTitle?: string, city?: string | null) {
-  const jobUrl = encodeURIComponent(`${SITE_URL}${buildJobPath(jobId, jobTitle ?? String(jobId), city)}`);
+export function shareJobOnFacebook(jobId: number, jobTitle?: string, city?: string | null, referrerId?: number | null) {
+  const basePath = buildJobPath(jobId, jobTitle ?? String(jobId), city);
+  const jobUrl = encodeURIComponent(`${SITE_URL}${basePath}${referrerId ? `?ref=${referrerId}` : ""}`);
   window.open(`https://www.facebook.com/sharer/sharer.php?u=${jobUrl}`, "_blank");
 }
 
-export function shareJobOnTelegram(jobTitle: string, jobId: number, city?: string | null) {
-  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle, city)}`;
-  const text = encodeURIComponent(`עבודה זמנית: ${jobTitle}${city ? ` - ${city}` : ""}\n${jobUrl}`);
+export function shareJobOnTelegram(jobTitle: string, jobId: number, city?: string | null, referrerId?: number | null) {
+  const basePath = buildJobPath(jobId, jobTitle, city);
+  const jobUrl = `${SITE_URL}${basePath}${referrerId ? `?ref=${referrerId}` : ""}`;
+  const text = encodeURIComponent(`עבודה זמנית: ${jobTitle}${city ? ` - ${city}` : ""}
+${jobUrl}`);
   window.open(`https://t.me/share/url?url=${encodeURIComponent(jobUrl)}&text=${text}`, "_blank");
 }
 
-export function copyJobLink(jobId: number, jobTitle?: string, city?: string | null): Promise<void> {
-  const jobUrl = `${SITE_URL}${buildJobPath(jobId, jobTitle ?? String(jobId), city)}`;
+export function copyJobLink(jobId: number, jobTitle?: string, city?: string | null, referrerId?: number | null): Promise<void> {
+  const basePath = buildJobPath(jobId, jobTitle ?? String(jobId), city);
+  const jobUrl = `${SITE_URL}${basePath}${referrerId ? `?ref=${referrerId}` : ""}`;
   return navigator.clipboard.writeText(jobUrl);
 }
 
@@ -178,6 +199,8 @@ export function SharePopover({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const referrerId = user?.id ?? null;
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -189,7 +212,7 @@ export function SharePopover({
 
   const handleCopyLink = async () => {
     try {
-      await copyJobLink(jobId);
+      await copyJobLink(jobId, jobTitle, city, referrerId);
       setCopied(true);
       setTimeout(() => { setCopied(false); setOpen(false); }, 1200);
     } catch { setOpen(false); }
@@ -237,19 +260,19 @@ export function SharePopover({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <button onClick={() => { shareJobOnWhatsApp(jobTitle, jobId, city, salary, salaryType); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#25D366", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            <button onClick={() => { shareJobOnWhatsApp(jobTitle, jobId, city, salary, salaryType, referrerId); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#25D366", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 15, height: 15, flexShrink: 0 }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
               שתף ב-WhatsApp
             </button>
-            <button onClick={() => { shareJobOnTelegram(jobTitle, jobId, city); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#0088cc", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#e8f4fb")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            <button onClick={() => { shareJobOnTelegram(jobTitle, jobId, city, referrerId); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#0088cc", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#e8f4fb")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 15, height: 15, flexShrink: 0 }}><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
               שתף ב-Telegram
             </button>
-            <button onClick={() => { shareJobOnFacebook(jobId); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#1877F2", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#eef2fb")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            <button onClick={() => { shareJobOnFacebook(jobId, jobTitle, city, referrerId); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#1877F2", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#eef2fb")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 15, height: 15, flexShrink: 0 }}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
               שתף ב-Facebook
             </button>
-            <button onClick={() => { shareJobByEmail(jobTitle, jobId, city, salary, salaryType); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#4F583B", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#f5f0e4")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            <button onClick={() => { shareJobByEmail(jobTitle, jobId, city, salary, salaryType, referrerId); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#4F583B", width: "100%", textAlign: "right" }} onMouseEnter={e => (e.currentTarget.style.background = "#f5f0e4")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               <Mail style={{ width: 15, height: 15, flexShrink: 0 }} />
               שתף ב-Email
             </button>

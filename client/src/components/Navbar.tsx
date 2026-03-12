@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Briefcase, User, LogOut, PlusCircle, Menu, X, Shield,
-  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown, Bookmark,
+  HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown, Bookmark, Gift,
 } from "lucide-react";
 
 import {
@@ -348,6 +348,12 @@ export default function Navbar() {
                       </DropdownMenuItem>
                     )}
 
+                    <DropdownMenuItem asChild>
+                      <Link href="/my-referrals" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
+                        <Gift className="h-4 w-4 shrink-0" />
+                        <span>הפניות שלי</span>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator style={{ background: "oklch(0.87 0.04 84.0)" }} />
                     <DropdownMenuItem
                       onClick={logout}

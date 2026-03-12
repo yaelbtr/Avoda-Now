@@ -38,9 +38,44 @@ import BestJobsPage from "./pages/BestJobsPage";
 import WorkerLandingPage from "./pages/WorkerLandingPage";
 import AdminRegionsPage from "./pages/AdminRegionsPage";
 import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
-import { useEffect } from "react";
+import MyReferrals from "./pages/MyReferrals";
+import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
+import { trpc } from "./lib/trpc";
+
+const REFERRAL_KEY = "avodanow_ref";
+
+/** Captures ?ref=userId from the URL and stores it in localStorage. */
+function ReferralCapture() {
+  const { user, isAuthenticated } = useAuth();
+  const applied = useRef(false);
+  const applyRef = trpc.referral.applyRef.useMutation();
+
+  // Step 1: On any page load, capture ?ref= param and store it
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref && /^\d+$/.test(ref)) {
+      localStorage.setItem(REFERRAL_KEY, ref);
+    }
+  }, []);
+
+  // Step 2: After login, apply the stored referral code once
+  useEffect(() => {
+    if (!isAuthenticated || !user || applied.current) return;
+    const stored = localStorage.getItem(REFERRAL_KEY);
+    if (!stored) return;
+    const referrerId = parseInt(stored, 10);
+    if (!referrerId || referrerId === user.id) return;
+    applied.current = true;
+    applyRef.mutate({ referrerId }, {
+      onSuccess: () => localStorage.removeItem(REFERRAL_KEY),
+    });
+  }, [isAuthenticated, user, applyRef]);
+
+  return null;
+}
 
 /**
  * Invisible component that preloads the Google Maps script in the background
@@ -129,6 +164,7 @@ function Router() {
                 <Route path="/work/:slug" component={WorkerLandingPage} />
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
+                <Route path="/my-referrals" component={MyReferrals} />
                 <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/worker-preferences">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/404" component={NotFound} />
@@ -156,6 +192,7 @@ function App() {
             <UserModeProvider>
               <Toaster position="top-center" dir="rtl" />
               <MapsPreloader />
+              <ReferralCapture />
               <Router />
             </UserModeProvider>
           </AuthProvider>

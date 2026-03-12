@@ -410,6 +410,25 @@ export default function Navbar() {
                 </div>
               )}
 
+              {/* Mobile profile shortcut — visible only on mobile when authenticated */}
+              {isAuthenticated && userMode === "worker" && (
+                <Link href="/profile">
+                  <motion.button
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
+                    className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl"
+                    style={{
+                      background: location === "/profile" ? ACTIVE_BG : "transparent",
+                      color: location === "/profile" ? "var(--citrus)" : "#e8eae5",
+                      border: `1px solid ${location === "/profile" ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                    }}
+                    aria-label="הפרופיל שלי"
+                  >
+                    <User className="h-5 w-5" />
+                  </motion.button>
+                </Link>
+              )}
+
               {/* Mobile menu toggle */}
               <motion.button
                 whileHover={{ scale: 1.08 }}

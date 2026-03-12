@@ -1597,3 +1597,9 @@
 
 ## Footer Workers Text Dynamic (Mar 12, 2026)
 - [x] Replace hardcoded "אלפי עובדים" in Footer with real registeredWorkers count from heroStats (hidden when 0)
+
+## Profile Shortcut in Header Dropdown (Mar 12, 2026)
+- [x] Add "הפרופיל שלי" shortcut button inside the user dropdown in the top navigation header (already existed for workers; added mobile icon button)
+
+## Mobile Profile Icon in Navbar (Mar 12, 2026)
+- [x] Add user/profile icon button in mobile top navbar (next to hamburger menu) — links to /profile for workers, active state highlighted

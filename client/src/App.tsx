@@ -63,7 +63,7 @@ function ManusMaintenanceBypass() {
       hostname.endsWith(".manus.space") ||
       hostname.endsWith(".manus.computer");
     if (isManusOrigin) {
-      sessionStorage.setItem(MANUS_BYPASS_KEY, "1");
+      localStorage.setItem(MANUS_BYPASS_KEY, "1");
     }
   }, []);
   return null;
@@ -127,7 +127,7 @@ function Router() {
   });
   const isAdmin = user?.role === "admin";
   const isTestUser = user?.role === "test";
-  const hasManusSessionBypass = sessionStorage.getItem(MANUS_BYPASS_KEY) === "1";
+  const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
   if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
     return <MaintenancePage />;

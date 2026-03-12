@@ -1414,3 +1414,7 @@
 
 ## FindJobs UX Fixes (Round 3)
 - [x] Show total active filter count (panel filters + quick chips: location, urgent, date) on "סנן לפי" button badge when panel is closed
+
+## FindJobs Filter Panel Button Redesign
+- [x] Add "נקה סינון" button next to "הצג תוצאות" in one row (smaller buttons)
+- [x] "שמור כהעדפות שלי" below the two buttons with distinct dashed-border style

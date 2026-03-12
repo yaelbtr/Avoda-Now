@@ -72,11 +72,11 @@ function UpdatePrefsBtn({ category, selectedCity }: { category: string; selected
         preferredCategories: category && category !== "all" ? [category] : [],
         preferredCity: selectedCity ?? null,
       })}
-      className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
+      className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-60"
       style={{
-        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-        color: "oklch(0.96 0.04 80)",
-        boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
+        background: "transparent",
+        color: "oklch(0.38 0.07 122)",
+        border: "1.5px dashed oklch(0.72 0.07 122)",
       }}
     >
       {updateProfile.isPending
@@ -918,14 +918,33 @@ export default function FindJobs() {
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5 mt-1">
+                  {/* Row 1: Show results + Clear filters */}
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => { setFilterOpen(false); toast.success("מציג תוצאות מסוננות"); }}
+                      className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                      style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)", boxShadow: "0 3px 12px oklch(0.28 0.06 122 / 0.30)" }}>
+                      <Search className="h-3.5 w-3.5" />
+                      הצג תוצאות
+                    </button>
+                    <button type="button"
+                      onClick={() => {
+                        setCategory("all");
+                        setSelectedCity(null);
+                        setSelectedTimeSlots([]);
+                        setDateFilter(null);
+                        setShowUrgentToday(false);
+                        setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);
+                        toast("סינון נקה");
+                      }}
+                      className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                      style={{ background: "oklch(0.96 0.02 122)", color: "oklch(0.45 0.06 122)", border: "1.5px solid oklch(0.88 0.04 122)" }}>
+                      <X className="h-3.5 w-3.5" />
+                      נקה סינון
+                    </button>
+                  </div>
+                  {/* Row 2: Save preferences — distinct dashed/outlined style */}
                   <UpdatePrefsBtn category={category} selectedCity={selectedCity} />
-                  <button type="button" onClick={() => { setFilterOpen(false); toast.success("מציג תוצאות מסוננות"); }}
-                    className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                    style={{ background: "oklch(0.96 0.02 122)", color: C_BRAND_HEX, border: `1.5px solid oklch(0.88 0.05 122)` }}>
-                    <Search className="h-4 w-4" />
-                    הצג תוצאות
-                  </button>
                 </div>
               </div>
             </motion.div>

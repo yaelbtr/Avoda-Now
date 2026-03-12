@@ -561,47 +561,52 @@ export default function FindJobs() {
           className="flex gap-2 mb-4"
         >
           {/* Sort select — הצג לפי */}
-          <div className="relative flex-1">
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              className="w-full appearance-none py-3 pr-4 pl-9 rounded-2xl font-bold text-sm cursor-pointer outline-none transition-all"
-              style={{
-                background: "white",
-                border: `1.5px solid ${C_BORDER}`,
-                color: "oklch(0.30 0.05 122)",
-                boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.08)",
-              }}
-            >
-              <option value="default">⚡ ברירת מחדל</option>
-              <option value="salary">💰 שכר גבוה</option>
-              <option value="date">🕐 חדש ביותר</option>
-              {userLat && <option value="distance">📍 קרוב אלי</option>}
-            </select>
-            <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: "oklch(0.50 0.05 122)" }} />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-semibold pointer-events-none" style={{ color: "oklch(0.55 0.05 122)" }}>הצג לפי</span>
+          <div className="flex-1 flex flex-col gap-1">
+            <span className="text-[11px] font-semibold pr-1" style={{ color: "oklch(0.55 0.05 122)" }}>הצג לפי</span>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                className="w-full appearance-none py-2.5 pr-3 pl-8 rounded-xl font-bold text-sm cursor-pointer outline-none transition-all"
+                style={{
+                  background: "white",
+                  border: `1.5px solid ${C_BORDER}`,
+                  color: "oklch(0.30 0.05 122)",
+                  boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.08)",
+                }}
+              >
+                <option value="default">⚡ ברירת מחדל</option>
+                <option value="salary">💰 שכר גבוה</option>
+                <option value="date">🕐 חדש ביותר</option>
+                {userLat && <option value="distance">📍 קרוב אלי</option>}
+              </select>
+              <ChevronDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: "oklch(0.50 0.05 122)" }} />
+            </div>
           </div>
           {/* Filter button — סנן לפי */}
-          <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            onClick={() => setFilterOpen(v => !v)}
-            className="relative flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm transition-all"
-            style={filterOpen ? {
-              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-              color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
-            } : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            <span>סנן לפי</span>
-            {activeFilterCount > 0 && (
-              <span
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center"
-                style={{ background: C_DANGER_HEX, color: "white" }}
-              >
-                {activeFilterCount}
-              </span>
-            )}
-          </motion.button>
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold pr-1 opacity-0 select-none">סנן</span>
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={() => setFilterOpen(v => !v)}
+              className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
+              style={filterOpen ? {
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
+              } : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>סנן לפי</span>
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center"
+                  style={{ background: C_DANGER_HEX, color: "white" }}
+                >
+                  {activeFilterCount}
+                </span>
+              )}
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Location dialog */}
@@ -677,7 +682,72 @@ export default function FindJobs() {
               className="overflow-hidden mb-4"
             >
               <div className="rounded-2xl p-4" style={{ background: "white", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.10)" }}>
-
+                {/* ── Quick filter chips at top of filter panel ── */}
+                <div className="mb-4 pb-4" style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }}>
+                  <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.45 0.05 122)" }}>סנן מהיר</p>
+                  <div className="flex flex-wrap gap-2" dir="rtl">
+                    {/* Location chip */}
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleLocationButtonClick}
+                      disabled={locating}
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                      style={userLat ? {
+                        background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
+                        color: "white",
+                      } : {
+                        background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)",
+                      }}
+                    >
+                      {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
+                      <span>{userLat ? (geoCity ?? "קרוב אלי") : "עבודות קרוב אלי"}</span>
+                      {userLat && (
+                        <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
+                      )}
+                    </motion.button>
+                    {/* Urgent chip */}
+                    <button
+                      onClick={() => setShowUrgentToday(v => !v)}
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                      style={showUrgentToday ? {
+                        background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)",
+                        color: "white",
+                      } : {
+                        background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)",
+                      }}
+                    >
+                      <Flame className="h-3.5 w-3.5" />
+                      <span>דחוף</span>
+                    </button>
+                    {/* Date chips */}
+                    {(["today", "tomorrow", "this_week"] as const).map((f) => {
+                      const labels: Record<string, string> = { today: "📅 היום", tomorrow: "📅 מחר", this_week: "📅 השבוע" };
+                      const active = dateFilter === f;
+                      return (
+                        <button
+                          key={f}
+                          onClick={() => setDateFilter(active ? null : f)}
+                          className="text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                          style={active
+                            ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
+                            : { background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)" }
+                          }
+                        >
+                          {labels[f]}
+                        </button>
+                      );
+                    })}
+                    {(dateFilter || showUrgentToday || userLat) && (
+                      <button
+                        onClick={() => { setDateFilter(null); setShowUrgentToday(false); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }}
+                        className="text-xs font-medium px-2 py-1.5 rounded-full flex items-center gap-1"
+                        style={{ background: "oklch(0.97 0.01 122)", color: "oklch(0.50 0.06 122)", border: "1px solid oklch(0.88 0.03 122)" }}
+                      >
+                        <X className="h-3 w-3" /> נקה הכל
+                      </button>
+                    )}
+                  </div>
+                </div>
                 {/* Profile recommendation */}
                 {isAuthenticated && !profileQuery.isLoading && (() => {
                   const profile = profileQuery.data;
@@ -913,69 +983,7 @@ export default function FindJobs() {
           </div>
         </div>
 
-        {/* ── Quick filter chips (location, urgent, date) ── */}
-        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" dir="rtl" style={{ scrollbarWidth: "none" }}>
-          {/* Location chip */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleLocationButtonClick}
-            disabled={locating}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
-            style={userLat ? {
-              background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
-              color: "white",
-            } : {
-              background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)",
-            }}
-          >
-            {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
-            <span>{userLat ? (geoCity ?? "קרוב אלי") : "עבודות קרוב אלי"}</span>
-            {userLat && (
-              <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
-            )}
-          </motion.button>
-          {/* Urgent chip */}
-          <button
-            onClick={() => setShowUrgentToday(v => !v)}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
-            style={showUrgentToday ? {
-              background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)",
-              color: "white",
-            } : {
-              background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)",
-            }}
-          >
-            <Flame className="h-3.5 w-3.5" />
-            <span>דחוף</span>
-          </button>
-          {/* Date chips */}
-          {(["today", "tomorrow", "this_week"] as const).map((f) => {
-            const labels: Record<string, string> = { today: "📅 היום", tomorrow: "📅 מחר", this_week: "📅 השבוע" };
-            const active = dateFilter === f;
-            return (
-              <button
-                key={f}
-                onClick={() => setDateFilter(active ? null : f)}
-                className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
-                style={active
-                  ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                  : { background: "oklch(0.96 0.02 122)", color: "oklch(0.40 0.08 122)", border: "1px solid oklch(0.85 0.04 122)" }
-                }
-              >
-                {labels[f]}
-              </button>
-            );
-          })}
-          {(dateFilter || showUrgentToday || userLat) && (
-            <button
-              onClick={() => { setDateFilter(null); setShowUrgentToday(false); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }}
-              className="shrink-0 text-xs font-medium px-2 py-1.5 rounded-full flex items-center gap-1"
-              style={{ background: "oklch(0.97 0.01 122)", color: "oklch(0.50 0.06 122)", border: "1px solid oklch(0.88 0.03 122)" }}
-            >
-              <X className="h-3 w-3" /> נקה הכל
-            </button>
-          )}
-        </div>
+        {/* Quick chips shown below results header when filter is closed */}
 
         {/* Job list */}
         {isLoading ? (

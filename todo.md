@@ -1407,3 +1407,7 @@
 - [x] Replace quick-action row with "הצג לפי" select + "סנן לפי" button
 - [x] Move quick filter chips (עבודות קרוב אלי, דחוף, היום, מחר, השבוע) above job list
 - [x] "נקה הכל" chip to clear all active quick filters at once
+
+## FindJobs UX Fixes (Round 2)
+- [x] Fix sort select: "ברירת מחדל" overflows "הצג לפי" label — use placeholder approach instead of overlay label
+- [x] Move quick filter chips (עבודות קרוב אלי, דחוף, היום, מחר, השבוע) inside the filter modal at the top

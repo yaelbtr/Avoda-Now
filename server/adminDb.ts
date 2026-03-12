@@ -5,6 +5,7 @@
 import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
 import { Job, applications, jobReports, jobs, notificationBatches, phoneChangeLogs, users } from "../drizzle/schema";
 import { getDb } from "./db";
+import { normalizeIsraeliPhone } from "./smsProvider";
 
 // ─── Jobs Admin ───────────────────────────────────────────────────────────────
 
@@ -111,12 +112,19 @@ export async function adminSetUserRole(userId: number, role: "user" | "admin" | 
 export async function adminCreateUser(data: { phone: string; name?: string; role?: "user" | "admin" | "test" }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // Normalize phone to E.164 before storing
+  let normalizedPhone: string;
+  try {
+    normalizedPhone = normalizeIsraeliPhone(data.phone);
+  } catch {
+    throw new Error("מספר טלפון לא תקין");
+  }
   // Check for duplicate phone
-  const existing = await db.select({ id: users.id }).from(users).where(eq(users.phone, data.phone)).limit(1);
+  const existing = await db.select({ id: users.id }).from(users).where(eq(users.phone, normalizedPhone)).limit(1);
   if (existing.length > 0) throw new Error("מספר טלפון כבר קיים במערכת");
   const openId = `manual_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const [inserted] = await db.insert(users).values({
-    phone: data.phone,
+    phone: normalizedPhone,
     name: data.name ?? null,
     role: data.role ?? "user",
     openId,
@@ -130,7 +138,17 @@ export async function adminUpdateUser(userId: number, data: { name?: string; pho
   if (!db) throw new Error("Database not available");
   const updateData: Record<string, unknown> = {};
   if (data.name !== undefined) updateData.name = data.name || null;
-  if (data.phone !== undefined) updateData.phone = data.phone || null;
+  if (data.phone !== undefined) {
+    if (data.phone) {
+      try {
+        updateData.phone = normalizeIsraeliPhone(data.phone);
+      } catch {
+        throw new Error("מספר טלפון לא תקין");
+      }
+    } else {
+      updateData.phone = null;
+    }
+  }
   if (data.role !== undefined) updateData.role = data.role;
   if (data.status !== undefined) updateData.status = data.status;
   if (Object.keys(updateData).length === 0) return;

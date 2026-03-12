@@ -1622,3 +1622,17 @@
 - [x] Add 2 tabs: התחברות (login via OTP) and הרשמה (register via OTP)
 - [x] Register tab: collect name + phone, then OTP verification
 - [x] Login tab: phone input + OTP verification (existing flow)
+
+## Progressive Onboarding Flow (Mar 12, 2026)
+- [ ] LoginModal: remove name field, phone-only step 1 (no name required)
+- [ ] LoginModal: after OTP success show inline role selection (Worker / Employer) instead of navigating away
+- [ ] Role-specific quick setup: Worker → categories multi-select + city; Employer → city only
+- [ ] After setup: redirect Worker to /find-jobs, Employer to /post-job
+- [ ] Progressive profile banners on WorkerProfile page (photo, description, experience prompts)
+- [ ] Profile completion score (%) on WorkerProfile and employer profile pages
+
+## Progressive Onboarding Flow (Mar 12, 2026)
+- [x] LoginModal: phone → OTP only (no name field), tabs for login/register
+- [x] Post-OTP role selection step (worker / employer) inside modal
+- [x] Quick setup step after role selection (categories + city, optional)
+- [x] Profile completion score + banner in WorkerProfile

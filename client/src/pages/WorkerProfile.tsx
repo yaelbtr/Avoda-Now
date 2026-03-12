@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2, Camera, ChevronDown, X,
+  CheckCircle2, Camera, ChevronDown, X, AlertTriangle, TrendingUp,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
@@ -214,6 +214,20 @@ export default function WorkerProfile() {
       prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
     );
   };
+
+  // ── Profile completion score ────────────────────────────────────────────────
+  const completionScore = (() => {
+    const checks = [
+      !!name.trim(),                          // שם
+      !!profilePhoto,                          // תמונת פרופיל
+      selectedCategories.length > 0,           // קטגוריות
+      !!(preferredCity || preferredCities.length > 0), // מיקום
+      !!workerBio.trim(),                      // ביו
+      !!preferenceText.trim(),                 // תיאור העדפות
+      preferredDays.length > 0,               // ימים מועדפים
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  });
 
   // ── Wizard submit ────────────────────────────────────────────────────────────
   const handleWizardSubmit = async () => {
@@ -935,10 +949,81 @@ export default function WorkerProfile() {
         </div>
       </div>
 
-      {/* ── Tab Content ────────────────────────────────────────────────── */}
+      {/* ── Tab Content ──────────────────────────────────────────────────────────── */}
       <div className="max-w-lg mx-auto px-4 mt-3 pb-10">
 
-        {/* ── TAB: פרטים ─────────────────────────────────────────────── */}
+        {/* ── Profile Completion Banner ──────────────────────────────────────────── */}
+        {(() => {
+          const score = completionScore();
+          if (score >= 100) return null;
+          const missingItems = [
+            !name.trim() && "שם מלא",
+            !profilePhoto && "תמונת פרופיל",
+            selectedCategories.length === 0 && "קטגוריות עבודה",
+            !preferredCity && preferredCities.length === 0 && "אזור מועדף",
+            !workerBio.trim() && "ביו קצר",
+          ].filter(Boolean) as string[];
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 rounded-2xl p-4"
+              style={{
+                background: score >= 70
+                  ? "oklch(0.97 0.04 122 / 0.9)"
+                  : "oklch(0.97 0.06 80 / 0.9)",
+                border: score >= 70
+                  ? "1px solid oklch(0.85 0.08 122)"
+                  : "1px solid oklch(0.85 0.10 80)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {score >= 70
+                    ? <TrendingUp className="h-4 w-4" style={{ color: "oklch(0.50 0.09 124.9)" }} />
+                    : <AlertTriangle className="h-4 w-4" style={{ color: "oklch(0.55 0.12 76.7)" }} />}
+                  <span className="text-sm font-bold" style={{ color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)" }}>
+                    פרופיל {score}% מושלם
+                  </span>
+                </div>
+                <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  {score >= 70 ? "כמעט שם!" : "השלם להגדיל חשיפות"}
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full h-2 rounded-full mb-3" style={{ background: "oklch(0.90 0.03 100)" }}>
+                <motion.div
+                  className="h-2 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${score}%` }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  style={{
+                    background: score >= 70
+                      ? "linear-gradient(90deg, oklch(0.50 0.09 124.9), oklch(0.60 0.12 88))"
+                      : "linear-gradient(90deg, oklch(0.55 0.12 76.7), oklch(0.68 0.14 80.8))",
+                  }}
+                />
+              </div>
+              {missingItems.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>חסר:</span>
+                  {missingItems.map(item => (
+                    <span
+                      key={item}
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{
+                        background: score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
+                        color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                      }}
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          );
+        })()}{/* ── TAB: פרטים ─────────────────────────────────────────────── */}
         {activeTab === "details" && (
         <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}

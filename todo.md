@@ -1492,3 +1492,17 @@
 ## Bug: City Selection Doesn't Clear Location Mode (Mar 12, 2026)
 - [x] handleCitySelect now sets selectedCity and clears userLat/userLng/geoCity (was incorrectly setting userLat)
 - [x] Popular city chip click also clears userLat/userLng/geoCity
+
+## Multi-City Filter (Mar 12, 2026)
+- [ ] Replace selectedCity (string|null) with selectedCities (string[]) in FindJobs state
+- [ ] Update getActiveJobs and getJobsNearLocation in db.ts to accept cities: string[]
+- [ ] Update jobs.list and jobs.search tRPC procedures to accept cities array
+- [ ] Update city autocomplete: selecting a city adds it to selectedCities (toggle)
+- [ ] Update popular city chips: clicking toggles city in/out of selectedCities
+- [ ] Show selected cities as removable chips in the filter panel
+- [ ] Update filter persistence (localStorage) to save selectedCities array
+- [ ] Update SEO title/canonical to reflect multi-city selection
+- [ ] Update SmartEmptyState to handle selectedCities array
+
+## Bottom Nav: Replace Profile with Home (Mar 12, 2026)
+- [x] Replaced "הפרופיל שלי" button in bottom nav with "מסך הבית" (Home icon, links to /)

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Flame, FileText, User } from "lucide-react";
+import { Search, Flame, FileText, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/find-jobs", label: "חיפוש עבודה", icon: Search },
   { href: "/find-jobs?filter=today", label: "עבודות להיום", icon: Flame },
   { href: "/my-applications", label: "המועמדויות שלי", icon: FileText },
-  { href: "/worker-profile", label: "הפרופיל שלי", icon: User },
+  { href: "/", label: "מסך הבית", icon: Home },
 ];
 
 export default function MobileBottomNav() {

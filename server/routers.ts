@@ -315,6 +315,8 @@ const jobsRouter = router({
       category: z.string().optional(),
       limit: z.number().int().min(1).max(50).optional(),
       city: z.string().optional(),
+      /** Multi-city filter — takes precedence over city when provided */
+      cities: z.array(z.string().min(1)).max(20).optional(),
       dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
       page: z.number().int().min(1).default(1),
       /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
@@ -323,7 +325,7 @@ const jobsRouter = router({
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek);
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -336,6 +338,8 @@ const jobsRouter = router({
         category: z.string().optional(),
         limit: z.number().int().min(1).max(50).optional(),
         city: z.string().optional(),
+        /** Multi-city filter — takes precedence over city when provided */
+        cities: z.array(z.string().min(1)).max(20).optional(),
         dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
         page: z.number().int().min(1).default(1),
         /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
@@ -345,7 +349,7 @@ const jobsRouter = router({
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek);
+      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 

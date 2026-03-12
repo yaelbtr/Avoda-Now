@@ -491,7 +491,8 @@ export async function getActiveJobs(
   city?: string,
   dateFilter?: "today" | "tomorrow" | "this_week",
   offset = 0,
-  dayOfWeek?: number[] // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
+  dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
+  cities?: string[]     // multi-city filter (takes precedence over city when provided)
 ): Promise<{ rows: (typeof jobs.$inferSelect)[]; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
@@ -500,8 +501,12 @@ export async function getActiveJobs(
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
   }
-  if (city && city !== "all") {
-    conditions.push(eq(jobs.city, city));
+  // Multi-city filter takes precedence over single city
+  const effectiveCities = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
+  if (effectiveCities.length === 1) {
+    conditions.push(eq(jobs.city, effectiveCities[0]));
+  } else if (effectiveCities.length > 1) {
+    conditions.push(inArray(jobs.city, effectiveCities));
   }
   if (dateFilter) {
     const today = new Date();
@@ -546,7 +551,8 @@ export async function getJobsNearLocation(
   city?: string,
   dateFilter?: "today" | "tomorrow" | "this_week",
   offset = 0,
-  dayOfWeek?: number[] // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
+  dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
+  cities?: string[]     // multi-city filter (takes precedence over city when provided)
 ): Promise<{ rows: Array<Record<string, unknown> & { distance: number }>; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
@@ -567,8 +573,12 @@ export async function getJobsNearLocation(
   if (category && category !== "all") {
     conditions.push(eq(jobs.category, category as Job["category"]));
   }
-  if (city && city !== "all") {
-    conditions.push(eq(jobs.city, city));
+  // Multi-city filter takes precedence over single city
+  const effectiveCitiesNear = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
+  if (effectiveCitiesNear.length === 1) {
+    conditions.push(eq(jobs.city, effectiveCitiesNear[0]));
+  } else if (effectiveCitiesNear.length > 1) {
+    conditions.push(inArray(jobs.city, effectiveCitiesNear));
   }
   if (dateFilter) {
     const today = new Date();

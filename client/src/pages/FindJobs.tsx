@@ -33,7 +33,8 @@ const FILTER_PREFS_KEY = "findJobs_filters";
 // ── Filter persistence helpers ────────────────────────────────────────────────
 interface SavedFilters {
   category: string;
-  selectedCity: string | null;
+  selectedCity: string | null;   // legacy — kept for backward-compat
+  selectedCities: string[];       // multi-city filter (primary)
   selectedTimeSlots: string[];
   selectedDays: string[];
   sortBy: "distance" | "salary" | "date" | "default";
@@ -505,7 +506,12 @@ export default function FindJobs() {
   // Load saved filters from localStorage (URL params take priority)
   const _savedFilters = loadSavedFilters();
   const filterParam = params.get("filter");
-  const initialCity = params.get("city") ?? _savedFilters?.selectedCity ?? null;
+  // Multi-city: URL ?city=X seeds a single city; saved filters may have array
+  const urlCity = params.get("city");
+  const initialCities: string[] = urlCity
+    ? [urlCity]
+    : (_savedFilters?.selectedCities ?? (_savedFilters?.selectedCity ? [_savedFilters.selectedCity] : []));
+  const initialCity = initialCities[0] ?? null; // legacy single-city compat
   const resolvedCategory = initialCategory !== "all" ? initialCategory : (_savedFilters?.category ?? "all");
 
   const [category, setCategory] = useState(resolvedCategory);
@@ -543,9 +549,11 @@ export default function FindJobs() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
+  const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
+  const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
+  // Keep selectedCity in sync with selectedCities[0] for SEO/URL/legacy usage
   // Computed: whether current filters match saved filters (for UI indicator)
-  const hasSavedFilters = (category !== "all" || !!selectedCity || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
+  const hasSavedFilters = (category !== "all" || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
@@ -636,12 +644,14 @@ export default function FindJobs() {
   // DAY_NAME_TO_NUM is defined as a module-level constant (see top of file)
   const dayOfWeekParam = selectedDays.length > 0 ? selectedDays.map(d => DAY_NAME_TO_NUM[d]).filter((n): n is number => n !== undefined) : undefined;
 
+  // Use multi-city array for queries; fall back to single city for backward-compat
+  const citiesParam = selectedCities.length > 0 ? selectedCities : undefined;
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { category: category === "all" ? undefined : category, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
@@ -747,12 +757,12 @@ export default function FindJobs() {
   useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
   // Auto-save non-trivial filters to localStorage
   useEffect(() => {
-    const hasFilters = category !== "all" || !!selectedCity || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
+    const hasFilters = category !== "all" || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
     if (hasFilters) {
-      saveFiltersToStorage({ category, selectedCity, selectedTimeSlots, selectedDays, sortBy });
+      saveFiltersToStorage({ category, selectedCity: selectedCities[0] ?? null, selectedCities, selectedTimeSlots, selectedDays, sortBy });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, selectedCity, selectedTimeSlots, selectedDays, sortBy]);
+  }, [category, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
   const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
   const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   // Total active filters: panel filters + quick chips (location, urgent, date)

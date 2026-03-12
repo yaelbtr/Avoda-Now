@@ -20,7 +20,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
@@ -75,6 +75,12 @@ export default function PostJob() {
   const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
   const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
   const [jobCity, setJobCity] = useState("");
+  // New fields: date, work hours, images
+  const [jobDate, setJobDate] = useState("");
+  const [workStartTime, setWorkStartTime] = useState("");
+  const [workEndTime, setWorkEndTime] = useState("");
+  const [jobImages, setJobImages] = useState<string[]>([]); // S3 URLs
+  const [uploadingImages, setUploadingImages] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
 
@@ -152,6 +158,40 @@ export default function PostJob() {
   });
 
   const utils = trpc.useUtils();
+
+  const uploadJobImage = trpc.jobs.uploadJobImage.useMutation();
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const remaining = 5 - jobImages.length;
+    if (remaining <= 0) { toast.error("ניתן להעלות עד 5 תמונות"); return; }
+    const toUpload = files.slice(0, remaining);
+    setUploadingImages(true);
+    try {
+      const urls: string[] = [];
+      for (const file of toUpload) {
+        if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} גדולה מדי (מקסימום 5MB)`); continue; }
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
+        if (!["image/jpeg", "image/png", "image/webp"].includes(mimeType)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
+        const result = await uploadJobImage.mutateAsync({ base64, mimeType });
+        urls.push(result.url);
+      }
+      setJobImages(prev => [...prev, ...urls]);
+      if (urls.length > 0) toast.success(`${urls.length} תמונות הועלו בהצלחה`);
+    } catch {
+      toast.error("שגיאה בהעלאת תמונה");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
+    }
+  };
 
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
@@ -276,6 +316,10 @@ export default function PostJob() {
       showPhone: data.showPhone ?? false,
       jobLocationMode,
       jobSearchRadiusKm,
+      jobDate: jobDate || undefined,
+      workStartTime: workStartTime || undefined,
+      workEndTime: workEndTime || undefined,
+      imageUrls: jobImages.length > 0 ? jobImages : undefined,
     });
   };
 
@@ -799,7 +843,7 @@ export default function PostJob() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="workingHours">שעות עבודה</Label>
+              <Label htmlFor="workingHours">שעות עבודה (טקסט חופשי)</Label>
               <Input
                 id="workingHours"
                 placeholder="08:00-16:00"
@@ -808,6 +852,85 @@ export default function PostJob() {
               />
             </div>
           </div>
+
+          {/* Date + exact work hours */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="jobDate">תאריך העבודה</Label>
+              <Input
+                id="jobDate"
+                type="date"
+                value={jobDate}
+                onChange={e => setJobDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="workStartTime">שעת התחלה</Label>
+              <Input
+                id="workStartTime"
+                type="time"
+                value={workStartTime}
+                onChange={e => setWorkStartTime(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="workEndTime">שעת סיום</Label>
+              <Input
+                id="workEndTime"
+                type="time"
+                value={workEndTime}
+                onChange={e => setWorkEndTime(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Job Images */}
+        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-foreground text-right">תמונות מהמקום (אופציונלי)</h2>
+            <span className="text-xs text-muted-foreground">{jobImages.length}/5</span>
+          </div>
+          <p className="text-xs text-muted-foreground text-right bg-primary/5 border border-primary/20 rounded-lg p-3">
+            📸 הוספת תמונות תעזור לעובדים להבין את העבודה ולקבל החלטה מהר יותר.
+          </p>
+          {/* Image previews */}
+          {jobImages.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {jobImages.map((url, i) => (
+                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                  <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setJobImages(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {jobImages.length < 5 && (
+            <label className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-border rounded-xl p-4 hover:border-primary/50 transition-colors">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={uploadingImages}
+              />
+              {uploadingImages ? (
+                <><Loader2 className="w-5 h-5 animate-spin text-primary" /><span className="text-sm text-muted-foreground">מעלה תמונות...</span></>
+              ) : (
+                <><ImagePlus className="w-5 h-5 text-muted-foreground" /><span className="text-sm text-muted-foreground">לחץ להוספת תמונות (עד {5 - jobImages.length} נוספות)</span></>
+              )}
+            </label>
+          )}
         </div>
 
         {/* Contact */}

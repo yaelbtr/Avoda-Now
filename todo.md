@@ -1303,3 +1303,31 @@
 - [x] Navbar + MobileDrawer: "הפניות שלי" link in user menu
 - [ ] Admin: referrals tab showing who referred whom and count
 - [x] Tests: 11 referral tests in referrals.test.ts (262 total tests passing)
+
+## Job Card Enhancements (Mar 2026)
+
+- [ ] DB: add jobDate (date), workStartTime (text), workEndTime (text) to jobs table
+- [ ] DB: add imageUrls (JSON array, max 5) to jobs table
+- [ ] DB: push migration
+- [ ] PostJob: add date picker for jobDate
+- [ ] PostJob: add time range inputs (workStartTime, workEndTime) e.g. 14:00–16:00
+- [ ] PostJob: add image upload (up to 5 images) with S3 storage + encouragement text
+- [ ] JobDetails/BottomSheet: show jobDate and work hours range
+- [ ] JobDetails/BottomSheet: show up to 5 job images in scrollable gallery
+- [ ] JobDetails/BottomSheet: show employer profile photo (from users table)
+- [ ] Worker: add "הסר מועמדות" (withdraw) button — only if job not expired and worker hasn't completed the job
+- [ ] Backend: applications.withdraw mutation
+- [ ] Tests: withdraw mutation, image upload validation
+
+## Job Card Enhancements (Mar 12, 2026)
+
+- [x] DB: add jobDate, workStartTime, workEndTime, imageUrls fields to jobs table, migration pushed
+- [x] PostJob form: date picker, time range (start/end), image upload (up to 5 with preview + delete)
+- [x] PostJob form: tip text "הוספת תמונות תעזור לעובדים להבין את העבודה ולקבל החלטה מהר יותר"
+- [x] JobDetails: show employer profile photo (if available) instead of category icon in header
+- [x] JobDetails: show job date and work hours (start-end) in details grid
+- [x] JobDetails: image gallery with lightbox (scrollable thumbnails, full-screen viewer with prev/next)
+- [x] JobDetails: withdraw application button for workers (only when job is active, not expired)
+- [x] Server: uploadJobImage procedure for S3 upload
+- [x] Server: withdrawApplication procedure wired to UI
+- [x] All 262 tests passing

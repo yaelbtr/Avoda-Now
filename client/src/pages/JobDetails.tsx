@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
   Briefcase, DollarSign, AlertCircle, Flag, CheckCircle2,
-  Lock, Copy, Zap, Timer,
+  Lock, Copy, Zap, Timer, Calendar, ImageIcon, ChevronLeft,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import {
@@ -90,6 +90,14 @@ export default function JobDetails() {
     { enabled: !!jobId }
   );
 
+  // Fetch employer profile for profile photo (only if job has a postedBy)
+  const { data: employerProfile } = trpc.user.getPublicProfile.useQuery(
+    { userId: job?.postedBy ?? 0 },
+    { enabled: !!job?.postedBy }
+  );
+
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
+
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
@@ -115,6 +123,23 @@ export default function JobDetails() {
     onSuccess: () => { toast.success("המשרה סוגרה בהצלחה! 🎉"); navigate("/my-jobs"); },
     onError: (e) => toast.error(e.message),
   });
+
+  // Worker's own application for this job (to show withdraw button)
+  const { data: myApplications } = trpc.jobs.myApplications.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+  });
+  const myApplicationForJob = myApplications?.find(a => a.jobId === jobId);
+
+  const withdrawMutation = trpc.jobs.withdrawApplication.useMutation({
+    onSuccess: () => {
+      toast.success("מועמדות בוטלה בהצלחה");
+      utils.jobs.myApplications.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const utils = trpc.useUtils();
 
   const handleMapReady = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -271,16 +296,24 @@ export default function JobDetails() {
           style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
         >
           <div className="flex items-start gap-4 mb-4">
-            {/* Category icon */}
-            <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
-              style={{
-                background: `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
-                border: `1px solid ${C_BRAND_HEX}26`,
-              }}
-            >
-              {getCategoryIcon(job.category)}
-            </div>
+            {/* Category icon or employer profile photo */}
+            {employerProfile?.profilePhoto ? (
+              <img
+                src={employerProfile.profilePhoto}
+                alt={job.businessName ?? job.contactName}
+                className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-200"
+              />
+            ) : (
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                style={{
+                  background: `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
+                  border: `1px solid ${C_BRAND_HEX}26`,
+                }}
+              >
+                {getCategoryIcon(job.category)}
+              </div>
+            )}
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-black leading-tight mb-1 text-gray-900">
@@ -346,6 +379,20 @@ export default function JobDetails() {
               <Users className="h-4 w-4 shrink-0 text-blue-500" />
               {job.workersNeeded} עובדים דרושים
             </div>
+            {/* Date */}
+            {(job as any).jobDate && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <Calendar className="h-4 w-4 shrink-0 text-blue-500" />
+                <span>תאריך: {new Date((job as any).jobDate).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}</span>
+              </div>
+            )}
+            {/* Work hours */}
+            {((job as any).workStartTime || (job as any).workEndTime) && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <Clock className="h-4 w-4 shrink-0 text-orange-500" />
+                <span>שעות: {(job as any).workStartTime ?? ""}{(job as any).workStartTime && (job as any).workEndTime ? " עד " : ""}{(job as any).workEndTime ?? ""}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 col-span-2">
               <DollarSign className="h-4 w-4 shrink-0 text-blue-500" />
               <span className={`font-semibold ${isVolunteer ? "text-green-600" : "text-blue-600"}`}>
@@ -374,9 +421,82 @@ export default function JobDetails() {
           </p>
         </motion.div>
 
+        {/* ── Job Images Gallery ── */}
+        {(job as any).imageUrls && JSON.parse((job as any).imageUrls ?? "[]").length > 0 && (() => {
+          const images: string[] = JSON.parse((job as any).imageUrls ?? "[]");
+          return (
+            <motion.div
+              custom={2}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
+            >
+              <h2 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
+                  <ImageIcon className="h-3.5 w-3.5 text-blue-600" />
+                </div>
+                תמונות מהמקום
+              </h2>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {images.map((url, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setGalleryIndex(i)}
+                    className="shrink-0 w-28 h-28 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
+                  >
+                    <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+              {/* Lightbox */}
+              {galleryIndex !== null && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                  onClick={() => setGalleryIndex(null)}
+                >
+                  <button
+                    type="button"
+                    className="absolute top-4 right-4 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
+                    onClick={() => setGalleryIndex(null)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  {galleryIndex > 0 && (
+                    <button
+                      type="button"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
+                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) - 1); }}
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  )}
+                  {galleryIndex < images.length - 1 && (
+                    <button
+                      type="button"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
+                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) + 1); }}
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  <img
+                    src={images[galleryIndex]}
+                    alt={`תמונה ${galleryIndex + 1}`}
+                    className="max-w-full max-h-[80vh] rounded-xl object-contain"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="absolute bottom-4 text-white text-sm">{galleryIndex + 1} / {images.length}</div>
+                </div>
+              )}
+            </motion.div>
+          );
+        })()}
+
         {/* ── Map ── */}
         <motion.div
-          custom={2}
+          custom={3}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
@@ -438,6 +558,37 @@ export default function JobDetails() {
             </button>
           </motion.a>
         </motion.div>
+
+        {/* ── Worker: withdraw application ── */}
+        <AnimatePresence>
+          {!isOwner && isAuthenticated && myApplicationForJob && job.status === "active" && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              className="mb-4"
+            >
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                onClick={() => {
+                  if (confirm("האם אתה בטוח שברצונך לבטל את המועמדות?")) {
+                    withdrawMutation.mutate({ applicationId: myApplicationForJob.id });
+                  }
+                }}
+                disabled={withdrawMutation.isPending}
+              >
+                {withdrawMutation.isPending ? (
+                  <BrandLoader size="sm" />
+                ) : (
+                  <>❌ בטל מועמדות</>
+                )}
+              </motion.button>
+              <p className="text-xs text-center text-gray-400 mt-1">ניתן לבטל מועמדות רק כל עוד המשרה פעילה</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── Owner: mark as filled ── */}
         <AnimatePresence>

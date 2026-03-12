@@ -171,6 +171,14 @@ export const jobs = mysqlTable("jobs", {
   estimatedHours: decimal("estimatedHours", { precision: 5, scale: 1 }),
   /** Whether the employer's phone number is visible to workers on the job card */
   showPhone: boolean("showPhone").default(false).notNull(),
+  /** Specific date for the job in YYYY-MM-DD format (e.g. "2026-03-15") */
+  jobDate: varchar("jobDate", { length: 10 }),
+  /** Work start time in HH:MM format (e.g. "14:00") */
+  workStartTime: varchar("workStartTime", { length: 5 }),
+  /** Work end time in HH:MM format (e.g. "18:00") */
+  workEndTime: varchar("workEndTime", { length: 5 }),
+  /** JSON array of up to 5 S3 image URLs uploaded by the employer */
+  imageUrls: json("imageUrls").$type<string[]>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

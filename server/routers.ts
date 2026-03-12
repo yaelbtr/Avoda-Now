@@ -99,6 +99,7 @@ import {
   getReferralsByUser,
   getReferralCount,
   getAllReferrals,
+  withdrawApplication,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -297,6 +298,14 @@ const jobInputSchema = z.object({
   hourlyRate: z.number().min(0).max(10000).optional(),
   /** Estimated number of hours for the job (e.g. 4) */
   estimatedHours: z.number().min(0.5).max(24).optional(),
+  /** Specific date for the job in YYYY-MM-DD format */
+  jobDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  /** Work start time in HH:MM format */
+  workStartTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  /** Work end time in HH:MM format */
+  workEndTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  /** Up to 5 S3 image URLs uploaded by the employer */
+  imageUrls: z.array(z.string().url()).max(5).optional(),
 });
 
 const jobsRouter = router({
@@ -412,6 +421,10 @@ const jobsRouter = router({
         jobTags: input.jobTags ?? [input.category],
         jobLocationMode: input.jobLocationMode ?? "radius",
         jobSearchRadiusKm: input.jobSearchRadiusKm ?? 5,
+        jobDate: input.jobDate ?? null,
+        workStartTime: input.workStartTime ?? null,
+        workEndTime: input.workEndTime ?? null,
+        imageUrls: input.imageUrls ?? null,
       });
       // Fire-and-forget: call external matching API to pre-compute matching workers
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
@@ -822,12 +835,39 @@ const jobsRouter = router({
       if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה לפעולה זו" });
       }
-      await revealApplicationContact(input.id);
+       await revealApplicationContact(input.id);
       // Return the phone number now that it's been revealed
       return { success: true, workerPhone: app.workerPhone };
     }),
-});
 
+  /** Worker withdraws their own application. Only allowed if job is still active. */
+  withdrawApplication: protectedProcedure
+    .input(z.object({ applicationId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const result = await withdrawApplication(input.applicationId, ctx.user.id);
+      if (!result.success) {
+        const msg = result.reason === "not_found" ? "מועמדות לא נמצאה"
+          : result.reason === "job_expired" ? "לא ניתן לבטל מועמדות למשרה שפג תוקפה או נסגרה"
+          : "לא ניתן לבטל מועמדות";
+        throw new TRPCError({ code: result.reason === "not_found" ? "NOT_FOUND" : "FORBIDDEN", message: msg });
+      }
+      return { success: true };
+    }),
+
+  /** Upload a job image to S3 and return the URL. Max 5 per job. */
+  uploadJobImage: protectedProcedure
+    .input(z.object({
+      base64: z.string(),
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const key = `job-images/${ctx.user.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const buffer = Buffer.from(input.base64, "base64");
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      return { url };
+    }),
+});
 // ─── Admin Router ─────────────────────────────────────────────────────────────
 
 const adminRouter = router({

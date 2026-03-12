@@ -2367,3 +2367,32 @@ export async function getAllReferrals() {
     .innerJoin(referrers, eq(users.referredBy, referrers.id))
     .orderBy(desc(users.createdAt));
 }
+
+/** Worker withdraws their application from a job.
+ * Only allowed if the job is still active/not expired and the application belongs to the worker.
+ */
+export async function withdrawApplication(applicationId: number, workerId: number): Promise<{ success: boolean; reason?: string }> {
+  const db = await getDb();
+  if (!db) return { success: false, reason: "db_unavailable" };
+  // Fetch the application with job status
+  const rows = await db
+    .select({
+      id: applications.id,
+      workerId: applications.workerId,
+      jobStatus: jobs.status,
+      jobExpiresAt: jobs.expiresAt,
+    })
+    .from(applications)
+    .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .where(and(eq(applications.id, applicationId), eq(applications.workerId, workerId)))
+    .limit(1);
+  const app = rows[0];
+  if (!app) return { success: false, reason: "not_found" };
+  if (app.workerId !== workerId) return { success: false, reason: "forbidden" };
+  // Block withdrawal if job is already expired or closed
+  const isExpired = app.jobStatus === "expired" || app.jobStatus === "closed"
+    || (app.jobExpiresAt != null && new Date(app.jobExpiresAt) < new Date());
+  if (isExpired) return { success: false, reason: "job_expired" };
+  await db.delete(applications).where(eq(applications.id, applicationId));
+  return { success: true };
+}

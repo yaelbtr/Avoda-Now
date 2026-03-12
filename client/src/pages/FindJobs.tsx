@@ -624,9 +624,12 @@ export default function FindJobs() {
     setShowLocationDialog(true);
   };
 
-  const handleCitySelect = (city: string, lat: number, lng: number) => {
-    setUserLat(lat); setUserLng(lng); setGeoCity(city); saveLocationCache(lat, lng, city);
-    setShowCityInput(false); setAutoExpandedRadius(false); toast.success(`מציג עבודות קרוב ל${city}`);
+  const handleCitySelect = (city: string, _lat: number, _lng: number) => {
+    // City mode: set selectedCity and clear location mode (mutual exclusion)
+    setSelectedCity(city);
+    setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false);
+    setShowCityInput(false); setCitySearch("");
+    toast.success(`מציג עבודות ב${city}`);
   };
 
   // Convert selectedDays (string names) to JS day numbers (0=Sun..6=Sat) for backend
@@ -1259,7 +1262,7 @@ export default function FindJobs() {
                         {!userLat && popularCities.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {popularCities.map((city: string) => (
-                              <button key={city} onClick={() => { setSelectedCity(city); setShowCityInput(false); }}
+                              <button key={city} onClick={() => { setSelectedCity(city); setShowCityInput(false); setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); }}
                                 className="px-2.5 py-1 rounded-full text-xs font-medium border transition-all"
                                 style={selectedCity === city ? { background: "oklch(0.92 0.04 122)", borderColor: "oklch(0.70 0.07 122)", color: C_BRAND_HEX } : inactivePill}>
                                 {city}

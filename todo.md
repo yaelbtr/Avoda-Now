@@ -1488,3 +1488,7 @@
 - [x] "לפי מיקום" mode: shows only km-radius chips, city controls hidden, selectedCity reset to null
 - [x] "לפי עיר" mode: shows only city controls (input + popular cities), km chips hidden, userLat/userLng/geoCity reset
 - [x] Switching modes resets the other mode's state (mutual exclusion enforced)
+
+## Bug: City Selection Doesn't Clear Location Mode (Mar 12, 2026)
+- [x] handleCitySelect now sets selectedCity and clears userLat/userLng/geoCity (was incorrectly setting userLat)
+- [x] Popular city chip click also clears userLat/userLng/geoCity

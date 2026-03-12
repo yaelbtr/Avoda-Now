@@ -609,6 +609,7 @@ export default function Admin() {
                       <th className="text-right px-3 py-2.5 font-semibold">שם</th>
                       <th className="text-right px-3 py-2.5 font-semibold">טלפון</th>
                       <th className="text-right px-3 py-2.5 font-semibold">תפקיד</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">קוד טסט</th>
                       <th className="text-right px-3 py-2.5 font-semibold">סטטוס</th>
                       <th className="text-right px-3 py-2.5 font-semibold">הצטרף</th>
                       <th className="text-right px-3 py-2.5 font-semibold">כניסה אחרונה</th>
@@ -638,6 +639,19 @@ export default function Admin() {
                             >
                               {u.role === "admin" ? "מנהל" : u.role === "test" ? "טסט" : "משתמש"}
                             </Badge>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {u.role === "test" && u.phone ? (
+                              <span
+                                className="font-mono text-xs font-bold px-2 py-1 rounded bg-orange-50 border border-orange-200 text-orange-700 select-all cursor-pointer"
+                                title="קוד כניסה — לחץ להעתק"
+                                onClick={() => { navigator.clipboard.writeText(u.phone!.replace(/\D/g, "").slice(0, 6)); toast.success("קוד הועתק"); }}
+                              >
+                                {u.phone.replace(/\D/g, "").slice(0, 6)}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
                           </td>
                           <td className="px-3 py-2.5">
                             {u.status === "suspended"

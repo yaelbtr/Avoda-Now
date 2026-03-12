@@ -181,6 +181,7 @@ function Router() {
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/my-referrals" component={MyReferrals} />
+                <Route path="/profile">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/worker-preferences">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
                 <Route path="/404" component={NotFound} />

@@ -1606,3 +1606,7 @@
 
 ## Mobile Navbar Reorganization (Mar 12, 2026)
 - [x] Reorganize mobile top navbar: ☰ (right) | 👤 user icon | Logo (center) | 📋 applications | 🔖 saved jobs (left)
+
+## Navbar Fixes (Mar 12, 2026)
+- [x] Fix /profile route returning 404 — register route in App.tsx
+- [x] Style user icon in mobile navbar consistently with other icons (same size/color/active state)

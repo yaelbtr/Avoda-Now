@@ -186,15 +186,15 @@ export default function Navbar() {
               </motion.button>
               {/* User icon — only when authenticated */}
               {isAuthenticated && (
-                <Link href={userMode === "worker" ? "/profile" : "/my-jobs"}>
+                <Link href={userMode === "worker" ? "/worker-profile" : "/my-jobs"}>
                   <motion.button
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.92 }}
-                    className="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl"
                     style={{
-                      background: (location === "/profile" || location === "/my-jobs") ? ACTIVE_BG : "transparent",
-                      color: (location === "/profile" || location === "/my-jobs") ? "var(--citrus)" : "#e8eae5",
-                      border: `1px solid ${(location === "/profile" || location === "/my-jobs") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                      background: (location === "/worker-profile" || location === "/my-jobs") ? ACTIVE_BG : "transparent",
+                      color: (location === "/worker-profile" || location === "/my-jobs") ? "var(--citrus)" : "#e8eae5",
+                      border: `1px solid ${(location === "/worker-profile" || location === "/my-jobs") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                     }}
                     aria-label="הפרופיל שלי"
                   >
@@ -489,7 +489,7 @@ export default function Navbar() {
 
                     {userMode === "worker" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
+                        <Link href="/worker-profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
                           <User className="h-4 w-4 shrink-0" />
                           <span>הפרופיל שלי</span>
                         </Link>

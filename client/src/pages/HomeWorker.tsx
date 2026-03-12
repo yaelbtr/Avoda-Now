@@ -1267,17 +1267,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <a
               key={slug}
               href={`/work/${slug}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-              style={{
-                background: "white",
-                border: "1.5px solid oklch(0.85 0.06 84.0)",
-                color: "var(--brand)",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.04 91.6)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "white"; }}
+              className="city-chip"
             >
-              📍 {name}
+              {name}
             </a>
           ))}
         </div>

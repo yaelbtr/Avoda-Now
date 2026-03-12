@@ -202,7 +202,7 @@ export default function GuidePage() {
               <Link
                 key={city}
                 href={`/jobs/${entry.category}/${encodeURIComponent(city)}`}
-                className="px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors bg-gray-50 hover:bg-blue-50"
+                className="city-chip"
               >
                 {`${label} ב${city}`}
               </Link>

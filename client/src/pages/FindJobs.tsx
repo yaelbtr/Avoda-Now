@@ -401,8 +401,7 @@ function SmartEmptyState({
                 <button
                   key={city}
                   onClick={() => onSelectCity(city)}
-                  className="px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-                  style={{ background: "white", color: "oklch(0.35 0.12 210)", border: "1px solid oklch(0.82 0.08 210)" }}
+                  className="city-chip"
                 >
                   {city}
                 </button>
@@ -483,8 +482,7 @@ function SmartEmptyState({
             <button
               key={city}
               onClick={() => onSelectCity(city)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
-              style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}
+              className="city-chip"
             >
               עבודות ב{city}
             </button>
@@ -1273,8 +1271,7 @@ export default function FindJobs() {
                           <div className="flex flex-wrap gap-1.5">
                             {popularCities.map((city: string) => (
                               <button key={city} onClick={() => { setSelectedCity(city); setShowCityInput(false); setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); }}
-                                className="px-2.5 py-1 rounded-full text-xs font-medium border transition-all"
-                                style={selectedCity === city ? { background: "oklch(0.92 0.04 122)", borderColor: "oklch(0.70 0.07 122)", color: C_BRAND_HEX } : inactivePill}>
+                                className={`city-chip${selectedCity === city ? " active" : ""}`}>
                                 {city}
                               </button>
                             ))}
@@ -1651,8 +1648,7 @@ export default function FindJobs() {
               <div className="flex flex-wrap gap-2">
                 {SEO_CITIES.map(city => (
                   <Link key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                    style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
+                    className="city-chip">
                     עבודות {catName} ב{city}
                   </Link>
                 ))}
@@ -1667,8 +1663,7 @@ export default function FindJobs() {
             <div className="flex flex-wrap gap-2">
               {SEO_CITIES.filter(c => c !== selectedCity).map(city => (
                 <Link key={city} href={`/jobs/${encodeURIComponent(city)}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                  style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
+                  className="city-chip">
                   עבודות ב{city}
                 </Link>
               ))}

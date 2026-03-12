@@ -457,7 +457,7 @@ export default function JobsLanding() {
                 <Link
                   key={city}
                   href={`/jobs/${encodeURIComponent(city)}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                  className="city-chip"
                 >
                   עבודות ב{city}
                 </Link>

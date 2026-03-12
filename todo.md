@@ -1506,3 +1506,11 @@
 
 ## Bottom Nav: Replace Profile with Home (Mar 12, 2026)
 - [x] Replaced "הפרופיל שלי" button in bottom nav with "מסך הבית" (Home icon, links to /)
+
+## Shared city-chip CSS Class (Mar 12, 2026)
+- [x] Found all city chip render locations: HomeWorker, FindJobs (3 places), JobsLanding, GuidePage
+- [x] Added .city-chip class to index.css (white bg, rounded-full, pink 📍 via ::before, brand border, .active state)
+- [x] Applied .city-chip in FindJobs.tsx (popular cities, SmartEmptyState nearby + popular, SEO links x2)
+- [x] Applied .city-chip in HomeWorker.tsx (city links section)
+- [x] Applied .city-chip in JobsLanding.tsx (SEO city links)
+- [x] Applied .city-chip in GuidePage.tsx (city-specific links)

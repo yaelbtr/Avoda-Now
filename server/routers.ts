@@ -225,15 +225,15 @@ const authRouter = router({
       }
 
       // Test-user bypass: check if this phone belongs to a 'test' role user
-      // Test users authenticate with the last 5 digits of their phone number
+      // Test users authenticate with the first 6 digits of their phone number
       const testUserCheck = await getUserByPhone(phone);
       if (testUserCheck?.role === "test") {
-        // Extract last 5 digits from the E.164 phone number (e.g. +972501234567 → "34567")
-        const last5 = phone.replace(/\D/g, "").slice(-5);
-        if (input.code !== last5) {
+        // Extract first 6 digits from the E.164 phone number (e.g. +972501234567 → "972501")
+        const first6 = phone.replace(/\D/g, "").slice(0, 6);
+        if (input.code !== first6) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "קוד האימות שגוי. הכנס את 5 הספרות האחרונות של הטלפון.",
+            message: "קוד האימות שגוי. הכנס את 6 הספרות הראשונות של הטלפון.",
           });
         }
         // Bypass Twilio — issue session directly

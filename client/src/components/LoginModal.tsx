@@ -119,7 +119,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       const bypass = (data as any).testBypass === true;
       setIsTestBypass(bypass);
       if (bypass) {
-        toast.success("משתמש טסט — הכנס את 5 הספרות האחרונות של הטלפון");
+        toast.success("משתמש טסט — הכנס את 6 הספרות הראשונות של הטלפון");
       } else {
         startResendTimer();
         toast.success("קוד אימות נשלח לטלפון שלך 📱");
@@ -431,14 +431,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   <h2 className="text-xl font-bold">{isTestBypass ? "אימות משתמש טסט" : "אימות קוד SMS"}</h2>
                   <p className="text-sm text-muted-foreground">
                     {isTestBypass
-                      ? <>הכנס את <span className="font-semibold text-foreground">5 הספרות האחרונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
+                      ? <>הכנס את <span className="font-semibold text-foreground">6 הספרות הראשונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
                       : <>הכנס את הקוד שנשלח ל-<span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span></>
                     }
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium block text-right">{isTestBypass ? "קוד טסט (5 ספרות אחרונות של הטלפון)" : "קוד אימות (6 ספרות)"}</label>
+                  <label className="text-sm font-medium block text-right">{isTestBypass ? "קוד טסט (6 ספרות ראשונות של הטלפון)" : "קוד אימות (6 ספרות)"}</label>
                   <div className="flex gap-2 justify-center" dir="ltr">
                     {Array.from({ length: OTP_LENGTH }, (_, i) => (
                       <input

@@ -1291,3 +1291,4 @@
 ## Bug Fixes
 
 - [x] City autocomplete not working — fixed: CityAutocomplete now queries cities table via trpc.user.searchCities (58 cities seeded); Google Places used as enhancement only
+- [x] WorkerProfile: added "יציאה ללא שמירה" button next to save button in all 3 tabs (details, work, schedule)

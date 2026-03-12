@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2, Camera, ChevronDown,
+  CheckCircle2, Camera, ChevronDown, X,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
@@ -1018,20 +1018,32 @@ export default function WorkerProfile() {
           </div>
         </div>
         {/* Save button for details tab */}
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60 mt-2"
-          style={{
-            background: updateMutation.isPending
-              ? "oklch(0.55 0.08 122)"
-              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-            color: "white",
-          }}
-        >
-          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-          שמור פרטים
-        </button>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => navigate(-1 as any)}
+            disabled={updateMutation.isPending}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+            יציאה ללא שמירה
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{
+              background: updateMutation.isPending
+                ? "oklch(0.55 0.08 122)"
+                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
+              color: "white",
+            }}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור פרטים
+          </button>
+        </div>
         </div>
         )}
 
@@ -1293,20 +1305,32 @@ export default function WorkerProfile() {
           </div>
         </div>
         {/* Save button for work tab */}
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-          style={{
-            background: updateMutation.isPending
-              ? "oklch(0.55 0.08 122)"
-              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-            color: "white",
-          }}
-        >
-          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-          שמור העדפות
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate(-1 as any)}
+            disabled={updateMutation.isPending}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+            יציאה ללא שמירה
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{
+              background: updateMutation.isPending
+                ? "oklch(0.55 0.08 122)"
+                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
+              color: "white",
+            }}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור העדפות
+          </button>
+        </div>
         </div>
         )}
 
@@ -1390,20 +1414,32 @@ export default function WorkerProfile() {
           </div>
         </div>
         {/* Save button for schedule tab */}
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-          style={{
-            background: updateMutation.isPending
-              ? "oklch(0.55 0.08 122)"
-              : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-            color: "white",
-          }}
-        >
-          {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-          שמור זמינות
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate(-1 as any)}
+            disabled={updateMutation.isPending}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+            יציאה ללא שמירה
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{
+              background: updateMutation.isPending
+                ? "oklch(0.55 0.08 122)"
+                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
+              color: "white",
+            }}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור זמינות
+          </button>
+        </div>
         </div>
         )}
 

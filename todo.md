@@ -1588,3 +1588,6 @@
 
 ## Fix QuickStats Banner (Mar 12, 2026)
 - [x] Fix QuickStats — RoleSelectionScreen badge now uses real heroStats data (hides when <50 active jobs / <50 closed / <100 workers)
+
+## Fix QuickStats in FindJobs (Mar 12, 2026 - v2)
+- [x] Fix QuickStats in FindJobs — found in HomeWorker.tsx StatsRow (hardcoded useCountDown), now uses real heroStats data

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT status, COUNT(*) as cnt FROM jobs GROUP BY status ORDER BY cnt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT status, COUNT(*) as cnt FROM jobs GROUP BY status ORDER BY cnt DESC;",
+  "rows": [
+    {
+      "status": "active",
+      "cnt": "3"
+    },
+    {
+      "status": "expired",
+      "cnt": "3"
+    },
+    {
+      "status": "closed",
+      "cnt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "status\tcnt\nactive\t3\nexpired\t3\nclosed\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1503
+}

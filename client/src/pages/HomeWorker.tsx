@@ -46,11 +46,25 @@ function useCountDown(startValue: number, endValue: number, duration: number, tr
 function StatsRow() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
-  const jobs = useCountDown(750, 500, 1400, inView);
-  const pct = useCountDown(150, 100, 1200, inView);
+
+  // Fetch real counts for conditional display
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const hs = heroStatsQuery.data;
+
+  // Determine the dynamic stat (priority order)
+  const dynamicStat: { display: string; label: string; Icon: typeof Briefcase } | null = (() => {
+    if (!hs) return null;
+    if (hs.activeJobs > 50)           return { display: `+${hs.activeJobs}`, label: "משרות פעילות", Icon: Briefcase };
+    if (hs.closedJobs > 50)           return { display: `+${hs.closedJobs}`, label: "משרות שנסגרו", Icon: Briefcase };
+    if (hs.registeredWorkers > 100)   return { display: `+${hs.registeredWorkers}`, label: "עובדים רשומים", Icon: Briefcase };
+    return null;
+  })();
+
   const statsData = [
-    { display: `+${jobs}`, label: "עבודות פעילות", Icon: Briefcase },
-    { display: `${pct}%`, label: "ללא עמלות", Icon: BadgePercent },
+    ...(dynamicStat ? [dynamicStat] : []),
+    { display: "100%", label: "ללא עמלות", Icon: BadgePercent },
     { display: "24/7", label: "זמין תמיד", Icon: Clock },
   ];
   return (

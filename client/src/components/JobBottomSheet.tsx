@@ -144,29 +144,43 @@ export default function JobBottomSheet({
   // showPhoneNumber removed — contactPhone stripped server-side
 
   return (
-    <>
+    <AnimatePresence>
+      {open && (
+      <>
       {/* Backdrop */}
-      <div
+      <motion.div
+        key="backdrop"
         onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         style={{
           position: "fixed",
           inset: 0,
           background: "rgba(0,0,0,0.45)",
           zIndex: 50,
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
-          transition: "opacity 0.3s ease",
         }}
       />
 
       {/* Sheet */}
       <motion.div
+        key="sheet"
         ref={sheetRef}
         dir="rtl"
         layoutId={layoutId}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        initial={{ y: "100%", opacity: 0.6 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{
+          type: "spring",
+          stiffness: 320,
+          damping: 32,
+          mass: 0.9,
+        }}
         style={{
           position: "fixed",
           bottom: 0,
@@ -176,8 +190,6 @@ export default function JobBottomSheet({
           background: "#ffffff",
           borderRadius: "24px 24px 0 0",
           boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
-          transform: open ? "translateY(0)" : "translateY(100%)",
-          transition: "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
           maxHeight: "88vh",
           display: "flex",
           flexDirection: "column",
@@ -503,7 +515,9 @@ export default function JobBottomSheet({
           {/* Call/WhatsApp buttons removed — workers contact via application only */}
         </div>
       </motion.div>
-    </>
+      </>
+      )}
+    </AnimatePresence>
   );
 }
 

@@ -842,49 +842,63 @@ export default function FindJobs() {
                 className="mb-4"
               >
                 <Link href="/worker-profile">
-                  <div
-                    className="relative flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer overflow-hidden"
-                    style={{
-                      background: "white",
-                      border: "1.5px solid oklch(0.72 0.12 80 / 0.5)",
-                      boxShadow: "0 2px 12px oklch(0.28 0.06 122 / 0.08)",
+                  {/* Outer glow wrapper — pulses the box-shadow */}
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        "0 0 0px 0px rgba(181,134,42,0)",
+                        "0 0 12px 4px rgba(181,134,42,0.35)",
+                        "0 0 0px 0px rgba(181,134,42,0)",
+                      ],
                     }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                    className="rounded-2xl"
+                    style={{ padding: "2px", background: "linear-gradient(135deg, #b5862a 0%, #e8c96a 50%, #b5862a 100%)", backgroundSize: "200% 200%" }}
                   >
-                    {/* Animated pulsing border overlay */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl pointer-events-none"
-                      style={{ border: "2px solid #b5862a", borderRadius: "1rem" }}
-                      animate={{ opacity: [0.3, 0.9, 0.3], scale: [1, 1.012, 1] }}
-                      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                    {/* Icon */}
+                    {/* Inner card */}
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                      }}
+                      className="relative flex items-center gap-3 px-4 py-3 rounded-[14px] cursor-pointer overflow-hidden"
+                      style={{ background: "#fffdf7" }}
                     >
-                      <Briefcase className="h-5 w-5" style={{ color: "oklch(0.92 0.08 80)" }} />
+                      {/* Shimmer sweep */}
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: "linear-gradient(105deg, transparent 30%, rgba(255,220,100,0.25) 50%, transparent 70%)",
+                          backgroundSize: "200% 100%",
+                        }}
+                        animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
+                        transition={{ duration: 2.8, repeat: Infinity, ease: "linear", repeatDelay: 1.2 }}
+                      />
+                      {/* Icon */}
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                        style={{
+                          background: "linear-gradient(135deg, #3a5c2a 0%, #2c4820 100%)",
+                        }}
+                      >
+                        <Briefcase className="h-5 w-5" style={{ color: "#d4a843" }} />
+                      </div>
+                      {/* Text */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black" style={{ color: "#1e3318" }}>השלם את הפרופיל שלך</p>
+                        <p className="text-xs mt-0.5 leading-snug" style={{ color: "#4a6b3a" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
+                      </div>
+                      {/* CTA button */}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.96 }}
+                        className="shrink-0 px-4 py-2 rounded-xl text-xs font-black"
+                        style={{
+                          background: "linear-gradient(135deg, #3a5c2a 0%, #2c4820 100%)",
+                          color: "#d4a843",
+                          boxShadow: "0 2px 8px rgba(44,72,32,0.3)",
+                        }}
+                      >
+                        עדכן עכשיו
+                      </motion.div>
                     </div>
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black" style={{ color: "oklch(0.22 0.06 122)" }}>השלם את הפרופיל שלך</p>
-                      <p className="text-xs mt-0.5 leading-snug" style={{ color: "oklch(0.42 0.05 122)" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
-                    </div>
-                    {/* CTA button */}
-                    <motion.div
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.97 }}
-                      className="shrink-0 px-4 py-2 rounded-xl text-xs font-black"
-                      style={{
-                        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                        color: "oklch(0.96 0.06 80)",
-                        boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.3)",
-                      }}
-                    >
-                      עדכן עכשיו
-                    </motion.div>
-                  </div>
+                  </motion.div>
                 </Link>
               </motion.div>
             );

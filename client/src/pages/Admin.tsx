@@ -671,7 +671,7 @@ export default function Admin() {
                                   setEditUserForm({
                                     name: u.name ?? "",
                                     phone: u.phone ?? "",
-                                    role: u.role as "user" | "admin",
+                                    role: u.role as "user" | "admin" | "test",
                                     status: u.status as "active" | "suspended",
                                   });
                                   setEditUserModal({ open: true, user: u });

@@ -1665,3 +1665,7 @@
 - [x] Registration: collect name, phone, email + terms checkbox
 - [x] Backend: store email during registration (sendOtp/verifyOtp)
 - [x] Terms checkbox must be checked before sending OTP
+
+## Manus.im Maintenance Bypass (Mar 13, 2026)
+- [x] Bypass maintenance mode for users arriving from manus.im / manus.space / manus.computer
+- [x] Fix 'test' role type in AuthContext.tsx and Admin.tsx

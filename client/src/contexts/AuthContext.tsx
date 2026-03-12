@@ -7,7 +7,7 @@ interface AuthUser {
   name: string | null;
   phone: string | null;
   email: string | null;
-  role: "user" | "admin";
+  role: "user" | "admin" | "test";
   loginMethod: string | null;
 }
 

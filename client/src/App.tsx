@@ -47,6 +47,27 @@ import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
 
 const REFERRAL_KEY = "avodanow_ref";
+const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
+
+/**
+ * Detects if the user arrived from manus.im (referrer or hostname) and stores
+ * a bypass flag in sessionStorage so maintenance mode is skipped for this session.
+ */
+function ManusMaintenanceBypass() {
+  useEffect(() => {
+    const referrer = document.referrer || "";
+    const hostname = window.location.hostname || "";
+    const isManusOrigin =
+      referrer.includes("manus.im") ||
+      hostname.includes("manus.im") ||
+      hostname.endsWith(".manus.space") ||
+      hostname.endsWith(".manus.computer");
+    if (isManusOrigin) {
+      sessionStorage.setItem(MANUS_BYPASS_KEY, "1");
+    }
+  }, []);
+  return null;
+}
 
 /** Captures ?ref=userId from the URL and stores it in localStorage. */
 function ReferralCapture() {
@@ -105,8 +126,10 @@ function Router() {
     staleTime: 30_000,
   });
   const isAdmin = user?.role === "admin";
+  const isTestUser = user?.role === "test";
+  const hasManusSessionBypass = sessionStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
-  if (isMaintenanceActive && !isAdmin) {
+  if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
     return <MaintenancePage />;
   }
 

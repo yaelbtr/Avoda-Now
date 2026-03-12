@@ -1603,3 +1603,6 @@
 
 ## Mobile Profile Icon in Navbar (Mar 12, 2026)
 - [x] Add user/profile icon button in mobile top navbar (next to hamburger menu) — links to /profile for workers, active state highlighted
+
+## Mobile Navbar Reorganization (Mar 12, 2026)
+- [x] Reorganize mobile top navbar: ☰ (right) | 👤 user icon | Logo (center) | 📋 applications | 🔖 saved jobs (left)

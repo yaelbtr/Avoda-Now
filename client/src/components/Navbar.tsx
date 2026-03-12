@@ -155,7 +155,150 @@ export default function Navbar() {
         }}
       >
         <div className="max-w-2xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          {/* ── Mobile header (3-column RTL layout) ── */}
+          <div className="flex md:hidden items-center h-16">
+            {/* Right side: hamburger + user icon */}
+            <div className="flex items-center gap-1">
+              {/* Hamburger */}
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                className="w-9 h-9 flex items-center justify-center rounded-xl"
+                style={{
+                  background: mobileOpen ? ACTIVE_BG : "transparent",
+                  color: "#e8eae5",
+                  border: `1px solid ${mobileOpen ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                }}
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="תפריט"
+              >
+                <AnimatePresence mode="wait">
+                  {mobileOpen ? (
+                    <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                      <X className="h-5 w-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                      <Menu className="h-5 w-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+              {/* User icon — only when authenticated */}
+              {isAuthenticated && (
+                <Link href={userMode === "worker" ? "/profile" : "/my-jobs"}>
+                  <motion.button
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden"
+                    style={{
+                      background: (location === "/profile" || location === "/my-jobs") ? ACTIVE_BG : "transparent",
+                      color: (location === "/profile" || location === "/my-jobs") ? "var(--citrus)" : "#e8eae5",
+                      border: `1px solid ${(location === "/profile" || location === "/my-jobs") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                    }}
+                    aria-label="הפרופיל שלי"
+                  >
+                    {profilePhoto ? (
+                      <img src={profilePhoto} alt="פרופיל" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                  </motion.button>
+                </Link>
+              )}
+            </div>
+
+            {/* Center: Logo */}
+            <Link href="/" className="flex-1 flex items-center justify-center gap-2 group">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.50 0.09 124.9) 0%, oklch(0.36 0.07 124.9) 100%)",
+                  boxShadow: "0 2px 10px oklch(0 0 0 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.15)",
+                }}
+              >
+                <Briefcase className="h-4 w-4" style={{ color: "var(--citrus)" }} />
+              </motion.div>
+              <div className="flex flex-col leading-none">
+                <span className="font-black text-[17px] tracking-tight" style={{ color: "var(--header-fg)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", letterSpacing: "-0.03em" }}>
+                  Avoda<span style={{ color: "var(--citrus)" }}>Now</span>
+                </span>
+                <span className="text-[7px] font-bold tracking-widest uppercase" style={{ color: "oklch(0.9904 0.0107 95.3 / 0.40)", letterSpacing: "0.14em" }}>עבודה עכשיו</span>
+              </div>
+            </Link>
+
+            {/* Left side: applications + saved jobs (worker only) */}
+            <div className="flex items-center gap-1">
+              {isAuthenticated && userMode === "worker" && (
+                <>
+                  {/* My Applications */}
+                  <Link href="/my-applications">
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
+                      className="relative w-9 h-9 flex items-center justify-center rounded-xl"
+                      style={{
+                        background: location.startsWith("/my-applications") && !location.includes("saved") ? ACTIVE_BG : "transparent",
+                        color: location.startsWith("/my-applications") && !location.includes("saved") ? "var(--citrus)" : "#e8eae5",
+                        border: `1px solid ${location.startsWith("/my-applications") && !location.includes("saved") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                      }}
+                      aria-label="המועמדויות שלי"
+                    >
+                      <Briefcase className="h-5 w-5" />
+                      {hasUnread && (
+                        <span className="absolute top-1 left-1 w-2 h-2 rounded-full bg-red-500" />
+                      )}
+                    </motion.button>
+                  </Link>
+                  {/* Saved Jobs */}
+                  <Link href="/my-applications?tab=saved">
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
+                      className="relative w-9 h-9 flex items-center justify-center rounded-xl"
+                      style={{
+                        background: location.includes("saved") ? ACTIVE_BG : "transparent",
+                        color: location.includes("saved") ? "var(--citrus)" : "#e8eae5",
+                        border: `1px solid ${location.includes("saved") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                      }}
+                      aria-label="משרות ששמרתי"
+                    >
+                      <Bookmark className="h-5 w-5" />
+                      {savedJobsCount > 0 && (
+                        <span
+                          className="absolute -top-0.5 -left-0.5 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-0.5"
+                          style={{ background: "var(--citrus)", color: "oklch(0.22 0.03 122.3)" }}
+                        >
+                          {savedJobsCount > 9 ? "9+" : savedJobsCount}
+                        </span>
+                      )}
+                    </motion.button>
+                  </Link>
+                </>
+              )}
+              {/* Guest login button on mobile */}
+              {!isAuthenticated && (
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setLoginOpen(true)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold"
+                  style={{
+                    background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
+                    color: "oklch(0.22 0.03 122.3)",
+                  }}
+                >
+                  כניסה
+                </motion.button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Desktop header ── */}
+          <div className="hidden md:flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
               <motion.div
@@ -410,50 +553,6 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Mobile profile shortcut — visible only on mobile when authenticated */}
-              {isAuthenticated && userMode === "worker" && (
-                <Link href="/profile">
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.92 }}
-                    className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl"
-                    style={{
-                      background: location === "/profile" ? ACTIVE_BG : "transparent",
-                      color: location === "/profile" ? "var(--citrus)" : "#e8eae5",
-                      border: `1px solid ${location === "/profile" ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
-                    }}
-                    aria-label="הפרופיל שלי"
-                  >
-                    <User className="h-5 w-5" />
-                  </motion.button>
-                </Link>
-              )}
-
-              {/* Mobile menu toggle */}
-              <motion.button
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.92 }}
-                className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl"
-                style={{
-                  background: mobileOpen ? ACTIVE_BG : "transparent",
-                  color: "#e8eae5",
-                  border: `1px solid ${mobileOpen ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
-                }}
-                onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="תפריט"
-              >
-                <AnimatePresence mode="wait">
-                  {mobileOpen ? (
-                    <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                      <X className="h-5 w-5" />
-                    </motion.div>
-                  ) : (
-                    <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                      <Menu className="h-5 w-5" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
             </div>
           </div>
         </div>

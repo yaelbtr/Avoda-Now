@@ -1653,3 +1653,9 @@
 - [x] Remove promote-to-admin button from user management table
 - [x] Update role selects in add/edit user modals to include 'test'
 - [x] Update role badge display to show 'טסט' label
+
+## Test User Permissions (Mar 12, 2026)
+- [x] Backend: verifyOtp bypass for test users (last 5 digits of phone as OTP)
+- [x] Backend: maintenance mode bypass for test users
+- [x] Frontend: LoginModal hint for test users about bypass code
+- [x] Frontend: maintenance page bypass for test users

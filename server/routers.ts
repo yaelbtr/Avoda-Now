@@ -172,6 +172,12 @@ const authRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין. הכנס מספר נייד ישראלי." });
       }
 
+      // Test-user bypass: if this phone belongs to a 'test' role user, skip SMS entirely
+      const existingUser = await getUserByPhone(phone);
+      if (existingUser?.role === "test") {
+        return { success: true, phone, testBypass: true };
+      }
+
       // IP-based + phone-based rate limiting
       const ip = ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim()
         ?? ctx.req.socket?.remoteAddress
@@ -190,7 +196,7 @@ const authRouter = router({
       if (!result.success) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות.",
+          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסוו שוב בעוד מספר דקות.",
         });
       }
 
@@ -216,6 +222,29 @@ const authRouter = router({
         phone = normalizeIsraeliPhone(input.phone);
       } catch {
         throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+      }
+
+      // Test-user bypass: check if this phone belongs to a 'test' role user
+      // Test users authenticate with the last 5 digits of their phone number
+      const testUserCheck = await getUserByPhone(phone);
+      if (testUserCheck?.role === "test") {
+        // Extract last 5 digits from the E.164 phone number (e.g. +972501234567 → "34567")
+        const last5 = phone.replace(/\D/g, "").slice(-5);
+        if (input.code !== last5) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "קוד האימות שגוי. הכנס את 5 הספרות האחרונות של הטלפון.",
+          });
+        }
+        // Bypass Twilio — issue session directly
+        await updateUserLastSignedIn(testUserCheck.id);
+        const tokenTest = await sdk.signSession(
+          { openId: testUserCheck.openId, appId: ENV.appId, name: testUserCheck.name ?? testUserCheck.phone ?? "" },
+          { expiresInMs: 30 * 24 * 60 * 60 * 1000 }
+        );
+        const cookieOptionsTest = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, tokenTest, cookieOptionsTest);
+        return { success: true, user: testUserCheck };
       }
 
       // Check verify attempt rate limit
@@ -1987,12 +2016,18 @@ const referralRouter = router({
 // ─── Maintenance Router ────────────────────────────────────────────────────────────────────
 
 const maintenanceRouter = router({
-  /** Public: check if maintenance mode is active + custom message */
-  status: publicProcedure.query(async () => {
+  /** Public: check if maintenance mode is active + custom message.
+   * Test-role users always receive active=false so they can bypass maintenance mode.
+   */
+  status: publicProcedure.query(async ({ ctx }) => {
     const [active, message] = await Promise.all([
       isMaintenanceModeActive(),
       getMaintenanceMessage(),
     ]);
+    // If the requesting user is a test-role user, bypass maintenance
+    if (active && ctx.user?.role === "test") {
+      return { active: false, message };
+    }
     return { active, message };
   }),
 });

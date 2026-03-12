@@ -51,6 +51,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [setupSaving, setSetupSaving] = useState(false);
+  const [isTestBypass, setIsTestBypass] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { refetch } = useAuth();
@@ -115,15 +116,21 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       setNormalizedPhone(data.phone);
       setDigits(Array(OTP_LENGTH).fill(""));
       setStep("otp");
-      startResendTimer();
-      toast.success("קוד אימות נשלח לטלפון שלך 📱");
+      const bypass = (data as any).testBypass === true;
+      setIsTestBypass(bypass);
+      if (bypass) {
+        toast.success("משתמש טסט — הכנס את 5 הספרות האחרונות של הטלפון");
+      } else {
+        startResendTimer();
+        toast.success("קוד אימות נשלח לטלפון שלך 📱");
+      }
     },
     onError: (e) => toast.error(e.message),
   });
 
   const verifyOtp = trpc.auth.verifyOtp.useMutation({
     onSuccess: async (data) => {
-      if (maintenanceMode && data.user?.role !== "admin") {
+      if (maintenanceMode && data.user?.role !== "admin" && data.user?.role !== "test") {
         await refetch();
         toast.error("גישה מוגבלת — המערכת בתחזוקה. רק מנהלים יכולים להיכנס כעת.");
         onClose();
@@ -418,18 +425,20 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <div className="p-6 space-y-5">
                 <div className="text-center space-y-1 pt-2">
                   <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3"
-                    style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
-                    <Phone className="h-6 w-6" style={{ color: "oklch(0.50 0.09 124.9)" }} />
+                    style={{ background: isTestBypass ? "oklch(0.65 0.15 55 / 0.15)" : "oklch(0.50 0.09 124.9 / 0.12)" }}>
+                    <Phone className="h-6 w-6" style={{ color: isTestBypass ? "oklch(0.65 0.15 55)" : "oklch(0.50 0.09 124.9)" }} />
                   </div>
-                  <h2 className="text-xl font-bold">אימות קוד SMS</h2>
+                  <h2 className="text-xl font-bold">{isTestBypass ? "אימות משתמש טסט" : "אימות קוד SMS"}</h2>
                   <p className="text-sm text-muted-foreground">
-                    הכנס את הקוד שנשלח ל-
-                    <span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span>
+                    {isTestBypass
+                      ? <>הכנס את <span className="font-semibold text-foreground">5 הספרות האחרונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
+                      : <>הכנס את הקוד שנשלח ל-<span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span></>
+                    }
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium block text-right">קוד אימות (6 ספרות)</label>
+                  <label className="text-sm font-medium block text-right">{isTestBypass ? "קוד טסט (5 ספרות אחרונות של הטלפון)" : "קוד אימות (6 ספרות)"}</label>
                   <div className="flex gap-2 justify-center" dir="ltr">
                     {Array.from({ length: OTP_LENGTH }, (_, i) => (
                       <input
@@ -455,7 +464,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground text-center">הקוד תקף ל-10 דקות · מקסימום 3 ניסיונות</p>
+                  <p className="text-xs text-muted-foreground text-center">{isTestBypass ? "קוד ביצוע בלבד — ללא SMS" : "הקוד תקף ל-10 דקות · מקסימום 3 ניסיונות"}</p>
                 </div>
 
                 <AppButton

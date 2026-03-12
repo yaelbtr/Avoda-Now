@@ -183,6 +183,7 @@ export default function FindJobs() {
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
+  const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">("default");
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
@@ -337,6 +338,24 @@ export default function FindJobs() {
     });
   }
   jobs = [...jobs].sort((a, b) => {
+    if (sortBy === "salary") {
+      const aSal = (a as { salary?: number | null }).salary ?? 0;
+      const bSal = (b as { salary?: number | null }).salary ?? 0;
+      return bSal - aSal;
+    }
+    if (sortBy === "date") {
+      const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
+      const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
+      const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
+      const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
+      return bDate - aDate;
+    }
+    if (sortBy === "distance" && userLat) {
+      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+      return aDist - bDist;
+    }
+    // default: distance first (if available), then urgent
     if (userLat) {
       const aDist = (a as { distance?: number | null }).distance ?? Infinity;
       const bDist = (b as { distance?: number | null }).distance ?? Infinity;
@@ -936,7 +955,7 @@ export default function FindJobs() {
         </div>
 
         {/* Results header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-black" style={{ color: "oklch(0.22 0.03 122.3)" }}>
               {isLoading ? "מחפש משרות..." : jobs.length === 0 ? "לא נמצאו משרות" : `${jobs.length} משרות`}
@@ -966,6 +985,34 @@ export default function FindJobs() {
             )}
           </div>
         </div>
+
+        {/* Sort chips */}
+        {!isLoading && jobs.length > 1 && (
+          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none" dir="rtl">
+            <span className="text-xs font-bold shrink-0" style={{ color: "oklch(0.55 0.05 122)" }}>מיין:</span>
+            {([
+              { key: "default", label: "ברירת מחדל", icon: "⚡" },
+              { key: "salary",  label: "שכר גבוה",    icon: "💰" },
+              { key: "date",    label: "חדש ביותר",   icon: "🕐" },
+              ...(userLat ? [{ key: "distance", label: "קרוב אלי", icon: "📍" }] : []),
+            ] as { key: "default" | "salary" | "date" | "distance"; label: string; icon: string }[]).map(opt => {
+              const active = sortBy === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setSortBy(opt.key)}
+                  className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                  style={active
+                    ? { background: "oklch(0.32 0.08 122)", color: "oklch(0.96 0.04 80)", border: "1.5px solid oklch(0.32 0.08 122)" }
+                    : { background: "white", color: "oklch(0.42 0.06 122)", border: "1.5px solid oklch(0.87 0.03 122)" }
+                  }
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Job list */}
         {isLoading ? (

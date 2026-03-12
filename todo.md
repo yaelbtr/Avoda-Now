@@ -1352,3 +1352,9 @@
 - [ ] SearchJobCard: show date + hours row
 - [ ] FindJobs: date filter buttons (היום / מחר / השבוע)
 - [ ] Backend: support dateFilter param in jobs.search procedure
+
+## Sort Options in FindJobs (Mar 12, 2026)
+
+- [x] FindJobs: add sort state (salary desc, date desc, distance asc)
+- [x] FindJobs: sort chips row between results header and job list
+- [x] FindJobs: client-side sort logic applied to jobs array (salary, date, distance, default)

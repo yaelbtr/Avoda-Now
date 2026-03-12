@@ -11,6 +11,8 @@ interface SEOOptions {
   canonical?: string;
   /** Prevent search engines from indexing this page */
   noIndex?: boolean;
+  /** Comma-separated keywords for the meta keywords tag */
+  keywords?: string;
 }
 
 function setMeta(name: string, content: string, attr: "name" | "property" = "name") {
@@ -39,6 +41,7 @@ export function useSEO({
   ogImage,
   canonical,
   noIndex = false,
+  keywords,
 }: SEOOptions) {
   useEffect(() => {
     const fullTitle = title
@@ -56,6 +59,7 @@ export function useSEO({
 
     // Standard meta
     setMeta("description", fullDescription);
+    if (keywords) setMeta("keywords", keywords);
 
     // Open Graph
     setMeta("og:title", fullTitle, "property");
@@ -77,5 +81,5 @@ export function useSEO({
 
     // Robots
     setMeta("robots", noIndex ? "noindex,nofollow" : "index,follow");
-  }, [title, description, ogImage, canonical, noIndex]);
+  }, [title, description, ogImage, canonical, noIndex, keywords]);
 }

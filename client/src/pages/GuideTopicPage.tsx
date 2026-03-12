@@ -22,6 +22,7 @@ export default function GuideTopicPage() {
           title: entry.title,
           description: entry.metaDescription,
           canonical: `/guide/${entry.slug}`,
+          keywords: entry.keywords?.join(", "),
         }
       : {
           title: "מדריך לא נמצא | AvodaNow",
@@ -41,27 +42,40 @@ export default function GuideTopicPage() {
       el.type = "application/ld+json";
       document.head.appendChild(el);
     }
-    el.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Article",
-          headline: entry.title,
-          description: entry.metaDescription,
-          url: `${BASE_URL}/guide/${entry.slug}`,
-          publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
-          inLanguage: "he",
-        },
-        {
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "בית", item: BASE_URL },
-            { "@type": "ListItem", position: 2, name: "מדריכים", item: `${BASE_URL}/guide/temporary-jobs` },
-            { "@type": "ListItem", position: 3, name: entry.title, item: `${BASE_URL}/guide/${entry.slug}` },
-          ],
-        },
-      ],
-    });
+    const graph: object[] = [
+      {
+        "@type": "Article",
+        headline: entry.title,
+        description: entry.metaDescription,
+        url: `${BASE_URL}/guide/${entry.slug}`,
+        publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
+        inLanguage: "he",
+        keywords: entry.keywords?.join(", "),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "בית", item: BASE_URL },
+          { "@type": "ListItem", position: 2, name: "מדריכים", item: `${BASE_URL}/guide/temporary-jobs` },
+          { "@type": "ListItem", position: 3, name: entry.title, item: `${BASE_URL}/guide/${entry.slug}` },
+        ],
+      },
+    ];
+    // Add FAQPage JSON-LD if topic has FAQ data
+    if (entry.faq && entry.faq.length > 0) {
+      graph.push({
+        "@type": "FAQPage",
+        mainEntity: entry.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      });
+    }
+    el.textContent = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
     return () => { document.getElementById(id)?.remove(); };
   }, [entry]);
 

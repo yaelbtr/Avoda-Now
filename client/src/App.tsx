@@ -39,6 +39,7 @@ import WorkerLandingPage from "./pages/WorkerLandingPage";
 import AdminRegionsPage from "./pages/AdminRegionsPage";
 import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import MyReferrals from "./pages/MyReferrals";
+import PassoverLandingPage from "./pages/PassoverLandingPage";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -154,6 +155,8 @@ function Router() {
                 <Route path="/jobs/weekend" component={JobsLanding} />
                 <Route path="/jobs/immediate/:city" component={JobsLanding} />
                 <Route path="/jobs/immediate" component={JobsLanding} />
+                <Route path="/jobs/ניקיון-לפסח" component={PassoverLandingPage} />
+                <Route path="/jobs/מנקה-לפסח" component={PassoverLandingPage} />
                 <Route path="/jobs/:category/:city" component={JobsLanding} />
                 <Route path="/jobs/:slug" component={JobsLanding} />
                 <Route path="/guide/temporary-jobs/:category" component={GuidePage} />

@@ -1514,3 +1514,38 @@
 - [x] Applied .city-chip in HomeWorker.tsx (city links section)
 - [x] Applied .city-chip in JobsLanding.tsx (SEO city links)
 - [x] Applied .city-chip in GuidePage.tsx (city-specific links)
+
+## Multi-City Filter UI (Mar 12, 2026)
+- [ ] Replace selectedCity with selectedCities[] in FindJobs state (backend already supports cities[])
+- [ ] Popular city chips: clicking toggles city in/out of selectedCities (multi-select)
+- [ ] CityAutocomplete: selecting a city adds it to selectedCities (not replaces)
+- [ ] Show selected cities as removable .city-chip tags above the city list
+- [ ] Update filter persistence (localStorage) to save selectedCities array
+- [ ] Update SmartEmptyState to handle selectedCities array
+- [ ] Update hasSavedFilters and clearFilters to handle selectedCities
+
+## Profile Shortcut in Top Navbar (Mar 12, 2026)
+- [ ] Add "הפרופיל שלי" link to the user dropdown menu in the top navbar
+- [ ] Link should navigate to /profile page
+
+## Passover/Pesach SEO Keywords (Mar 12, 2026)
+- [ ] Add /jobs/pesach and /jobs/cleaning/pesach SEO landing pages (route + meta)
+- [ ] Add "ניקיון לפסח" and "מנקה לפסח" to SEO_CITIES equivalent (keyword variants)
+- [ ] Add Passover cleaning jobs FAQ structured data (FAQPage JSON-LD)
+- [ ] Add "ניקיון לפסח" as a featured category/banner on homepage near Passover
+- [ ] Update sitemap to include Passover landing pages
+- [ ] Add Passover-specific meta description to cleaning category pages
+
+## SEO Passover Landing Pages (Mar 12, 2026 - Session 2)
+- [x] Created PassoverLandingPage.tsx with dedicated content for /jobs/ניקיון-לפסח and /jobs/מנקה-לפסח
+- [x] Added FAQ JSON-LD (FAQPage schema) with 5 Q&A items about Passover cleaning jobs
+- [x] Added Article JSON-LD with keywords field
+- [x] Added BreadcrumbList JSON-LD via useBreadcrumbSchema hook
+- [x] Added keywords meta tag support to useSEO hook (new `keywords` field in SEOOptions)
+- [x] Added GuideTopicFAQ interface and faq/keywords fields to GuideTopic interface in guideTopics.ts
+- [x] Added FAQ data and keywords array to passover-jobs guide topic
+- [x] Updated GuideTopicPage.tsx to inject FAQPage JSON-LD when topic has faq data
+- [x] Updated GuideTopicPage.tsx to pass keywords to useSEO hook
+- [x] Registered /jobs/ניקיון-לפסח and /jobs/מנקה-לפסח routes in App.tsx (before /jobs/:slug)
+- [x] Passover landing pages show cleaning jobs, Passover info banner, FAQ section, city SEO links
+- [x] 301 tests still passing, 0 TypeScript errors

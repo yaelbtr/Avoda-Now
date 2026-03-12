@@ -631,11 +631,16 @@ export default function FindJobs() {
   };
 
   const handleCitySelect = (city: string, _lat: number, _lng: number) => {
-    // City mode: set selectedCity and clear location mode (mutual exclusion)
-    setSelectedCity(city);
+    // Multi-city mode: toggle city in selectedCities array
+    setSelectedCities(prev => {
+      const already = prev.includes(city);
+      const next = already ? prev.filter(c => c !== city) : [...prev, city];
+      setSelectedCity(next[0] ?? null); // keep legacy selectedCity in sync
+      return next;
+    });
     setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false);
     setShowCityInput(false); setCitySearch("");
-    toast.success(`מציג עבודות ב${city}`);
+    toast.success(`עיר ${selectedCities.includes(city) ? 'הוסרה' : 'נוספה'}: ${city}`);
   };
 
   // Convert selectedDays (string names) to JS day numbers (0=Sun..6=Sat) for backend
@@ -1270,13 +1275,20 @@ export default function FindJobs() {
                         {!userLat && popularCities.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {popularCities.map((city: string) => (
-                              <button key={city} onClick={() => { setSelectedCity(city); setShowCityInput(false); setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); }}
-                                className={`city-chip${selectedCity === city ? " active" : ""}`}>
+                              <button key={city} onClick={() => {
+                                setSelectedCities(prev => {
+                                  const next = prev.includes(city) ? prev.filter(c => c !== city) : [...prev, city];
+                                  setSelectedCity(next[0] ?? null);
+                                  return next;
+                                });
+                                setShowCityInput(false); setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false);
+                              }}
+                                className={`city-chip${selectedCities.includes(city) ? " active" : ""}`}>
                                 {city}
                               </button>
                             ))}
-                            {selectedCity && (
-                              <button onClick={() => setSelectedCity(null)} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs border"
+                            {selectedCities.length > 0 && (
+                              <button onClick={() => { setSelectedCities([]); setSelectedCity(null); }} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs border"
                                 style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}>
                                 <X className="h-3 w-3" /> נקה
                               </button>
@@ -1398,6 +1410,7 @@ export default function FindJobs() {
                       onClick={() => {
                         setCategory("all");
                         setSelectedCity(null);
+                        setSelectedCities([]);
                         setSelectedTimeSlots([]);
                         setSelectedDays([]);
                         setDateFilter(null);
@@ -1476,13 +1489,19 @@ export default function FindJobs() {
                 <X className="h-2.5 w-2.5" />
               </button>
             )}
-            {selectedCity && (
-              <button onClick={() => setSelectedCity(null)}
+            {selectedCities.map(city => (
+              <button key={city} onClick={() => {
+                setSelectedCities(prev => {
+                  const next = prev.filter(c => c !== city);
+                  setSelectedCity(next[0] ?? null);
+                  return next;
+                });
+              }}
                 className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
                 style={{ background: "oklch(0.94 0.03 210)", color: "oklch(0.35 0.12 210)" }}>
-                📍 {selectedCity} <X className="h-2.5 w-2.5" />
+                📍 {city} <X className="h-2.5 w-2.5" />
               </button>
-            )}
+            ))}
           </div>
         </div>
 
@@ -1504,17 +1523,20 @@ export default function FindJobs() {
             searchText={searchText}
             isAuthenticated={isAuthenticated}
             onClearCategory={() => setCategory("all")}
-            onClearCity={() => setSelectedCity(null)}
+            onClearCity={() => { setSelectedCity(null); setSelectedCities([]); }}
             onClearDateFilter={() => setDateFilter(null)}
             onClearTimeSlots={() => setSelectedTimeSlots([])}
             onClearDays={() => setSelectedDays([])}
             onClearUrgent={() => setShowUrgentToday(false)}
             onClearSearch={() => setSearchText("")}
-            onSelectCity={(city) => setSelectedCity(city)}
+            onSelectCity={(city) => {
+              setSelectedCities([city]);
+              setSelectedCity(city);
+            }}
             onShowTomorrow={() => { setDateFilter("tomorrow"); }}
             onShowThisWeek={() => { setDateFilter("this_week"); }}
             onClearAllFilters={() => {
-              setCategory("all"); setSelectedCity(null); setSelectedTimeSlots([]);
+              setCategory("all"); setSelectedCity(null); setSelectedCities([]); setSelectedTimeSlots([]);
               setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
               setSearchText(""); clearSavedFilters();
             }}

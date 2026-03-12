@@ -348,6 +348,14 @@ export default function Navbar() {
                       </DropdownMenuItem>
                     )}
 
+                    {userMode === "worker" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
+                          <User className="h-4 w-4 shrink-0" />
+                          <span>הפרופיל שלי</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/my-referrals" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
                         <Gift className="h-4 w-4 shrink-0" />

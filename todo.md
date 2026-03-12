@@ -1669,3 +1669,14 @@
 ## Manus.im Maintenance Bypass (Mar 13, 2026)
 - [x] Bypass maintenance mode for users arriving from manus.im / manus.space / manus.computer
 - [x] Fix 'test' role type in AuthContext.tsx and Admin.tsx
+
+## Terms Enforcement (Mar 13, 2026)
+- [x] Add termsAcceptedAt column to users table in schema.ts
+- [ ] Save termsAcceptedAt on registration (sendOtp/verifyOtp)
+- [ ] Block login for users without termsAcceptedAt (phone login)
+- [ ] Show "יש להירשם תחילה" message in LoginModal for blocked users
+
+## Duplicate Phone/Email Check (Mar 13, 2026)
+- [x] Check all phone variants (E.164, local) for duplicates in sendOtp on registration
+- [x] Check email uniqueness in verifyOtp on registration
+- [x] Show contact-admin message in LoginModal when duplicate found

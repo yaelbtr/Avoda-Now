@@ -58,6 +58,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isTestBypass, setIsTestBypass] = useState(false);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
   // Post-OTP setup state
   const [selectedRole, setSelectedRole] = useState<"worker" | "employer" | null>(null);
@@ -149,7 +150,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         toast.success("קוד אימות נשלח לטלפון שלך 📱");
       }
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      // CONFLICT = phone or email already registered
+      if (e.data?.code === "CONFLICT") {
+        setDuplicateError(e.message);
+        return;
+      }
+      toast.error(e.message);
+    },
   });
 
   const verifyOtp = trpc.auth.verifyOtp.useMutation({
@@ -176,6 +184,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       }
     },
     onError: (e) => {
+      // FORBIDDEN = existing user without termsAcceptedAt → must register
+      if (e.data?.code === "FORBIDDEN") {
+        setDigits(Array(OTP_LENGTH).fill(""));
+        setActiveTab("register");
+        setStep("phone");
+        toast.error("חשבונך לא הושלם. יש להירשם ולאשר את תנאי השימוש.");
+        return;
+      }
       toast.error(e.message);
       setDigits(Array(OTP_LENGTH).fill(""));
       setTimeout(() => inputRefs.current[0]?.focus(), 60);
@@ -207,6 +223,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       phone: combined,
       isRegistration: activeTab === "register",
       termsAccepted: activeTab === "register" ? termsAccepted : undefined,
+      email: activeTab === "register" && regEmail.trim() ? regEmail.trim() : undefined,
     });
   };
 
@@ -417,7 +434,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         <input
                           type="text"
                           value={regName}
-                          onChange={e => setRegName(e.target.value)}
+                          onChange={e => { setRegName(e.target.value); setDuplicateError(null); }}
                           placeholder="ישראל ישראלי"
                           className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                           dir="rtl"
@@ -433,7 +450,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         <input
                           type="email"
                           value={regEmail}
-                          onChange={e => setRegEmail(e.target.value)}
+                          onChange={e => { setRegEmail(e.target.value); setDuplicateError(null); }}
                           placeholder="example@gmail.com"
                           className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                           dir="ltr"
@@ -472,6 +489,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1" onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
                       </span>
                     </label>
+                  )}
+
+                  {/* Duplicate error banner */}
+                  {duplicateError && (
+                    <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive flex flex-col gap-1.5" dir="rtl">
+                      <p className="font-medium">{duplicateError}</p>
+                      <a
+                        href="mailto:support@avodanow.co.il"
+                        className="underline text-destructive/80 hover:text-destructive text-xs"
+                      >
+                        פנה למנהל המערכת
+                      </a>
+                    </div>
                   )}
 
                   {/* Send OTP button */}

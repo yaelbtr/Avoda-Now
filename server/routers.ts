@@ -25,6 +25,7 @@ import {
   getNearbyWorkers,
   createUserByPhone,
   getUserByPhone,
+  getUserByEmail,
   reportJob,
   resetRateLimit,
   updateJob,
@@ -162,6 +163,7 @@ const authRouter = router({
       phone: z.string().min(9).max(20),
       isRegistration: z.boolean().optional(),
       termsAccepted: z.boolean().optional(),
+      email: z.string().email().max(320).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       // Normalize to E.164
@@ -182,9 +184,25 @@ const authRouter = router({
         return { success: true, phone, testBypass: true };
       }
 
-      // For registration flow: enforce terms acceptance server-side
-      // Only enforce when explicitly registering a new user (not for existing users logging in)
-      if (input.isRegistration && !existingUser) {
+      // For registration flow: check for duplicates and enforce terms
+      if (input.isRegistration) {
+        if (existingUser) {
+          // Phone already registered — block registration
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
+          });
+        }
+        // Email duplicate check (only if email provided)
+        if (input.email) {
+          const emailUser = await getUserByEmail(input.email);
+          if (emailUser) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
+            });
+          }
+        }
         if (!input.termsAccepted) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -289,15 +307,22 @@ const authRouter = router({
       // Find or create user
       let user = await getUserByPhone(phone);
       if (!user) {
-        // Enforce terms acceptance for new users
+        // New user: enforce terms acceptance
         if (!input.termsAccepted) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
-        user = await createUserByPhone(phone, input.name, input.email);
+        user = await createUserByPhone(phone, input.name, input.email, true);
       } else {
+        // Existing user: must have accepted terms at some point
+        if (!user.termsAcceptedAt) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "חשבונך לא הושלם. יש להירשם מחדש ולאשר את תנאי השימוש.",
+          });
+        }
         await updateUserLastSignedIn(user.id);
       }
 

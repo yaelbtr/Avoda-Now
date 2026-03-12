@@ -81,6 +81,8 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
   /** The user ID who referred this user (set at signup via ?ref= link) */
   referredBy: int("referredBy"),
+  /** Timestamp when the user accepted the terms of service (null = never accepted / legacy user) */
+  termsAcceptedAt: timestamp("termsAcceptedAt"),
 });
 
 export type User = typeof users.$inferSelect;

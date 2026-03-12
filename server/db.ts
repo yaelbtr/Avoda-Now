@@ -93,7 +93,14 @@ export async function getUserByPhone(phone: string) {
   return result[0];
 }
 
-export async function createUserByPhone(phone: string, name?: string, email?: string) {
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result[0];
+}
+
+export async function createUserByPhone(phone: string, name?: string, email?: string, termsAccepted?: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const openId = `phone_${phone}_${Date.now()}`;
@@ -104,6 +111,7 @@ export async function createUserByPhone(phone: string, name?: string, email?: st
     email: email ?? null,
     loginMethod: "phone_otp",
     lastSignedIn: new Date(),
+    termsAcceptedAt: termsAccepted ? new Date() : null,
   });
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];

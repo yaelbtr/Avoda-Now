@@ -1331,3 +1331,9 @@
 - [x] Server: uploadJobImage procedure for S3 upload
 - [x] Server: withdrawApplication procedure wired to UI
 - [x] All 262 tests passing
+
+## Incomplete Profile Banner (Mar 12, 2026)
+
+- [x] FindJobs page: animated banner "השלם את הפרופיל שלך" shown only when worker profile is incomplete
+- [x] Banner: animated pulsing border (framer-motion opacity+scale loop), icon, text, and "עדכן עכשיו" button linking to /worker-profile
+- [x] Banner: hidden if profile is complete (has categories + location) or user is not logged in

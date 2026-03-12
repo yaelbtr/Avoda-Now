@@ -825,6 +825,71 @@ export default function FindJobs() {
           )}
         </AnimatePresence>
 
+        {/* ── Incomplete profile banner ── */}
+        <AnimatePresence>
+          {isAuthenticated && !profileQuery.isLoading && (() => {
+            const profile = profileQuery.data;
+            const isProfileComplete = (profile?.preferredCategories && profile.preferredCategories.length > 0) && (!!profile?.preferredCity || !!profile?.workerLatitude);
+            if (isProfileComplete) return null;
+            return (
+              <motion.div
+                key="incomplete-profile-banner"
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="mb-4"
+              >
+                <Link href="/worker-profile">
+                  <div
+                    className="relative flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer overflow-hidden"
+                    style={{
+                      background: "white",
+                      border: "1.5px solid oklch(0.72 0.12 80 / 0.5)",
+                      boxShadow: "0 2px 12px oklch(0.28 0.06 122 / 0.08)",
+                    }}
+                  >
+                    {/* Animated pulsing border overlay */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl pointer-events-none"
+                      style={{ border: "2px solid #b5862a", borderRadius: "1rem" }}
+                      animate={{ opacity: [0.3, 0.9, 0.3], scale: [1, 1.012, 1] }}
+                      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    {/* Icon */}
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                      }}
+                    >
+                      <Briefcase className="h-5 w-5" style={{ color: "oklch(0.92 0.08 80)" }} />
+                    </div>
+                    {/* Text */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black" style={{ color: "oklch(0.22 0.06 122)" }}>השלם את הפרופיל שלך</p>
+                      <p className="text-xs mt-0.5 leading-snug" style={{ color: "oklch(0.42 0.05 122)" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
+                    </div>
+                    {/* CTA button */}
+                    <motion.div
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="shrink-0 px-4 py-2 rounded-xl text-xs font-black"
+                      style={{
+                        background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                        color: "oklch(0.96 0.06 80)",
+                        boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.3)",
+                      }}
+                    >
+                      עדכן עכשיו
+                    </motion.div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
+
         {/* Results header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

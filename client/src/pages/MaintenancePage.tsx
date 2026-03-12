@@ -1,10 +1,17 @@
-import { Wrench } from "lucide-react";
+import { useState } from "react";
+import { Wrench, LogIn } from "lucide-react";
+import LoginModal from "@/components/LoginModal";
+import { AppButton } from "@/components/AppButton";
 
 /**
  * MaintenancePage — shown to all non-admin users when maintenance mode is active.
- * Admins bypass this page entirely and see the full app.
+ * Admins can log in via the login button; after successful OTP the maintenance gate
+ * in App.tsx re-checks and lets them through automatically.
+ * Non-admins who log in are shown an error and returned here.
  */
 export default function MaintenancePage() {
+  const [loginOpen, setLoginOpen] = useState(false);
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
@@ -27,14 +34,14 @@ export default function MaintenancePage() {
       </h1>
 
       {/* Subtitle */}
-      <p className="text-base max-w-xs leading-relaxed" style={{ color: "oklch(0.45 0.05 122)" }}>
+      <p className="text-base max-w-xs leading-relaxed mb-8" style={{ color: "oklch(0.45 0.05 122)" }}>
         אנחנו עובדים על שיפורים ונחזור בקרוב.
         <br />
         תודה על הסבלנות!
       </p>
 
       {/* Decorative dots */}
-      <div className="flex gap-2 mt-8">
+      <div className="flex gap-2 mb-10">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -46,6 +53,27 @@ export default function MaintenancePage() {
           />
         ))}
       </div>
+
+      {/* Admin login button */}
+      <AppButton
+        variant="outline"
+        size="sm"
+        onClick={() => setLoginOpen(true)}
+        className="flex items-center gap-2 text-sm"
+        style={{ color: "oklch(0.45 0.05 122)", borderColor: "oklch(0.75 0.05 122)" }}
+      >
+        <LogIn className="w-4 h-4" />
+        כניסת מנהל
+      </AppButton>
+
+      {/* Login modal — maintenanceMode=true ensures non-admins are bounced back */}
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        maintenanceMode
+        onNonAdminLogin={() => setLoginOpen(false)}
+        message="כניסה מוגבלת למנהלים בלבד בזמן תחזוקה"
+      />
     </div>
   );
 }

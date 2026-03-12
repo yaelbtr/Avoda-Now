@@ -1579,3 +1579,9 @@
 ## Conditional Hero Stats Banner (Mar 12, 2026)
 - [x] Add server-side getHeroStats query: returns activeJobs, closedJobs, registeredWorkers counts
 - [x] Update QuickStats banner: show activeJobs if >50, else closedJobs if >50, else workers if >100, else hide stat
+
+## Maintenance Mode Login Flow (Mar 12, 2026)
+- [x] Show login button on MaintenancePage (open LoginModal)
+- [x] After successful OTP login during maintenance: check if user is admin
+- [x] If not admin → close modal, stay on MaintenancePage (non-admin cannot bypass)
+- [x] If admin → maintenance gate re-checks and lets them through automatically

@@ -16,6 +16,10 @@ interface LoginModalProps {
   open: boolean;
   onClose: () => void;
   message?: string;
+  /** When true, after successful login non-admins are shown a "not an admin" message instead of entering the app */
+  maintenanceMode?: boolean;
+  /** Callback fired after login when user is NOT an admin (only relevant in maintenanceMode) */
+  onNonAdminLogin?: () => void;
 }
 
 /** Normalize Israeli phone for display */
@@ -30,7 +34,7 @@ function formatPhoneDisplay(raw: string): string {
 const RESEND_COOLDOWN_SEC = 30;
 const OTP_LENGTH = 6;
 
-export default function LoginModal({ open, onClose, message }: LoginModalProps) {
+export default function LoginModal({ open, onClose, message, maintenanceMode, onNonAdminLogin }: LoginModalProps) {
   const [step, setStep] = useState<"phone" | "otp" | "success">("phone");
   const [phone, setPhone] = useState("");
   const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
@@ -95,15 +99,21 @@ export default function LoginModal({ open, onClose, message }: LoginModalProps) 
   });
 
   const verifyOtp = trpc.auth.verifyOtp.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       setStep("success");
       setTimeout(async () => {
         // Refresh auth state first so isAuthenticated becomes true
         await refetch();
-        // Invalidate all cached queries so phone numbers and auth-gated data refresh
-        // Do NOT await invalidateQueries — let it run in background so the modal
-        // closes quickly and RoleSelectionScreen can render immediately
         queryClient.invalidateQueries();
+
+        // Maintenance mode: only admins can proceed — non-admins are bounced back
+        if (maintenanceMode && data.user?.role !== "admin") {
+          toast.error("גישה מוגבלת — המערכת בתחזוקה. רק מנהלים יכולים להיכנס כעת.");
+          onClose();
+          onNonAdminLogin?.();
+          return;
+        }
+
         toast.success("התחברת בהצלחה! 🎉");
         onClose();
         // Navigate back to the page the user was on before login

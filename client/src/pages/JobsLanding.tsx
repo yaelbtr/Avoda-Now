@@ -34,6 +34,7 @@ import { Link } from "wouter";
 import { MapPin, Briefcase, Search, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { saveReturnPath } from "@/const";
+import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 
 // ─── Popular cities shown in SEO link section ────────────────────────────────
 const SEO_CITIES = [
@@ -394,6 +395,17 @@ export default function JobsLanding() {
                 isApplyPending={applyMutation.isPending && applyMutation.variables?.jobId === job.id}
               />
             ))}
+          </div>
+        )}
+
+        {/* ── Push Notification Banner ── */}
+        {!jobsQuery.isLoading && jobs.length > 0 && (
+          <div className="mt-4 mb-2">
+            <PushNotificationBanner
+              category={resolvedCategory}
+              city={resolvedCity}
+              compact
+            />
           </div>
         )}
 

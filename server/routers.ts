@@ -102,7 +102,7 @@ import {
   withdrawApplication,
 } from "./db";
 import { sendJobAlerts } from "./sms";
-import { sendPushToUser } from "./webPush";
+import { sendPushToUser, sendJobPushNotifications } from "./webPush";
 import {
   adminApproveJob,
   adminBlockUser,
@@ -452,16 +452,19 @@ const jobsRouter = router({
           }),
         }).catch((err) => console.warn("[MatchAPI] Pre-compute call failed:", err));
       }
-      // Fire-and-forget: notify matching workers via SMS (does not block the response))
+      // Fire-and-forget: notify matching workers via SMS + Web Push (does not block the response)
+      const jobMeta = { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id };
       getWorkersMatchingJob(input.category, city, ctx.user.id)
-        .then((workers) =>
-          sendJobAlerts(
-            workers,
-            { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id }
-          )
-        )
-        .then((sent) => {
-          if (sent > 0) console.log(`[JobAlert] Sent SMS to ${sent} matching workers for job #${job.id}`);
+        .then(async (workers) => {
+          // SMS alerts
+          const smsSent = await sendJobAlerts(workers, jobMeta);
+          if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} matching workers for job #${job.id}`);
+          // Web Push notifications — fan-out to all matching workers who have subscriptions
+          const workerIds = workers.map((w) => w.id);
+          if (workerIds.length > 0) {
+            const pushSent = await sendJobPushNotifications(workerIds, jobMeta);
+            if (pushSent > 0) console.log(`[JobAlert] Sent Push to ${pushSent} matching workers for job #${job.id}`);
+          }
         })
         .catch((err) => console.warn("[JobAlert] Error sending job alerts:", err));
 

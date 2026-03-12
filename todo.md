@@ -1380,3 +1380,15 @@
 - [x] BestJobsPage.tsx: already handled paginated response
 - [x] contactphone.privacy.test.ts: updated mocks and assertions for new paginated response format
 - [x] All 262 tests passing, 0 TypeScript errors
+
+## Push Notifications for Workers (Completed)
+- [x] Audit existing push notification infrastructure (webPush.ts, pushSubscriptions schema, usePushNotifications hook, sw.js)
+- [x] Server: sendJobPushNotifications fan-out called in jobs.create alongside SMS alerts
+- [x] Server: early-exit guard — skip push fan-out when no matching workers exist
+- [x] Client: PushNotificationBanner reusable component (compact + full variants)
+- [x] Client: PushNotificationToggle reusable component for headers/toolbars
+- [x] Client: Banner added to HomeWorker.tsx (compact, after WorkerRegionBanner)
+- [x] Client: Banner added to FindJobs.tsx (compact, after jobs list)
+- [x] Client: Banner added to JobsLanding.tsx (compact, after jobs list)
+- [x] Tests: push.notifications.test.ts — 6 tests covering fan-out, no-match guard, isUrgent flag, subscribe/unsubscribe/vapidKey
+- [x] All 268 tests passing, 0 TypeScript errors

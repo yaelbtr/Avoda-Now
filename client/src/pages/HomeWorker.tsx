@@ -20,6 +20,7 @@ import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
+import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { toast } from "sonner";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
@@ -836,6 +837,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {isAuthenticated && (
         <div className="relative z-10 px-4 mb-4">
           <WorkerRegionBanner />
+        </div>
+      )}
+      {/* ── Push Notification Banner ──────────────────────────────────────────── */}
+      {isAuthenticated && (
+        <div className="relative z-10 px-4 mb-4">
+          <PushNotificationBanner
+            category={profileQuery.data?.preferredCategories?.[0] ?? null}
+            city={profileQuery.data?.preferredCity ?? null}
+            compact
+          />
         </div>
       )}
 

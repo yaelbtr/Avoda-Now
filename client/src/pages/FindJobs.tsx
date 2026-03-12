@@ -24,6 +24,7 @@ import {
   C_BRAND_HEX, C_BORDER, C_TEXT_MUTED, C_SUCCESS_HEX, C_DANGER_HEX,
 } from "@/lib/colors";
 import { reverseGeocode } from "@/lib/reverseGeocode";
+import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
@@ -1146,6 +1147,17 @@ export default function FindJobs() {
               <Navigation className="h-4 w-4 text-green-500 shrink-0" />
             </button>
           </motion.div>
+        )}
+
+        {/* ── Push Notification Banner ──────────────────────────────────────── */}
+        {!isLoading && jobs.length > 0 && (
+          <div className="mt-4">
+            <PushNotificationBanner
+              category={category !== "all" ? category : null}
+              city={selectedCity}
+              compact
+            />
+          </div>
         )}
 
         {/* ══ SEO INTERNAL LINKS ══════════════════════════════════════════════ */}

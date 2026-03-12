@@ -55,6 +55,7 @@ import {
   updateNotificationPrefs,
   markEmployerApplicationsViewed,
   getCities,
+  searchCities,
   getPhonePrefixes,
   isValidPhonePrefix,
   saveJob,
@@ -1040,6 +1041,13 @@ const userRouter = router({
   getCities: publicProcedure.query(async () => {
     return getCities();
   }),
+
+  /** Search cities by name prefix for autocomplete */
+  searchCities: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(50) }))
+    .query(async ({ input }) => {
+      return searchCities(input.query, 10);
+    }),
 
   /** Get a public worker profile by user ID (for employers viewing applicants) */
   getPublicProfile: publicProcedure

@@ -1,29 +1,46 @@
 /**
- * CityAutocomplete — Hebrew city search with Google Places Autocomplete suggestions.
+ * CityAutocomplete — Hebrew city search backed by the platform's cities table.
  *
- * Uses the Google Maps Places library (already loaded by Map.tsx proxy) to provide
- * real-time city suggestions as the user types. Falls back to a plain input if the
- * Maps API is unavailable.
+ * Primary source: `trpc.user.searchCities` (DB lookup, always works).
+ * Enhancement: Google Maps Places Autocomplete (loaded lazily, used when available).
  *
- * Geocoding results are cached in sessionStorage to avoid duplicate API calls.
+ * The component merges both sources, deduplicates by name, and shows up to 8 results.
+ * Geocoding (lat/lng) is resolved from the DB row first; falls back to Google Geocoder.
  */
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, X } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface Suggestion {
+  id: string; // "db-{id}" or "places-{placeId}"
+  nameHe: string;
+  district?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  placeId?: string; // only for Google Places results
+}
+
+interface CityAutocompleteProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSelect: (city: string, lat: number, lng: number) => void;
+  placeholder?: string;
+  className?: string;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+}
 
 // ─── sessionStorage geocoding cache ─────────────────────────────────────────
 
 const GEO_CACHE_PREFIX = "geo_cache_";
 
-interface GeoResult {
-  lat: number;
-  lng: number;
-  city: string;
-}
+interface GeoResult { lat: number; lng: number; city: string; }
 
 function getCachedGeo(placeId: string): GeoResult | null {
   try {
@@ -39,23 +56,6 @@ function setCachedGeo(placeId: string, result: GeoResult) {
   } catch {}
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface Suggestion {
-  placeId: string;
-  description: string;
-  mainText: string;
-}
-
-interface CityAutocompleteProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSelect: (city: string, lat: number, lng: number) => void;
-  placeholder?: string;
-  className?: string;
-  inputRef?: React.RefObject<HTMLInputElement | null>;
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function CityAutocomplete({
@@ -66,11 +66,10 @@ export default function CityAutocomplete({
   className = "",
   inputRef: externalRef,
 }: CityAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [mapsReady, setMapsReady] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [mapsReady, setMapsReady] = useState(false);
+  const [googleSuggestions, setGoogleSuggestions] = useState<Suggestion[]>([]);
 
   const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
   const geocoder = useRef<google.maps.Geocoder | null>(null);
@@ -79,7 +78,42 @@ export default function CityAutocomplete({
   const inputRef = externalRef ?? internalRef;
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load Maps API once
+  // ── DB search (primary) ──────────────────────────────────────────────────
+  const trimmedQuery = value.trim();
+  const { data: dbResults = [], isFetching: dbLoading } = trpc.user.searchCities.useQuery(
+    { query: trimmedQuery },
+    {
+      enabled: trimmedQuery.length >= 1,
+      staleTime: 60_000,
+    }
+  );
+
+  const dbSuggestions: Suggestion[] = useMemo(
+    () =>
+      dbResults.map((c) => ({
+        id: `db-${c.id}`,
+        nameHe: c.nameHe,
+        district: c.district,
+        lat: c.latitude ? parseFloat(String(c.latitude)) : null,
+        lng: c.longitude ? parseFloat(String(c.longitude)) : null,
+      })),
+    [dbResults]
+  );
+
+  // ── Merge DB + Google, deduplicate by nameHe ─────────────────────────────
+  const suggestions: Suggestion[] = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: Suggestion[] = [];
+    for (const s of [...dbSuggestions, ...googleSuggestions]) {
+      if (!seen.has(s.nameHe)) {
+        seen.add(s.nameHe);
+        merged.push(s);
+      }
+    }
+    return merged.slice(0, 8);
+  }, [dbSuggestions, googleSuggestions]);
+
+  // ── Load Google Maps lazily ──────────────────────────────────────────────
   useEffect(() => {
     ensureMapsLoaded()
       .then(() => {
@@ -88,11 +122,54 @@ export default function CityAutocomplete({
         setMapsReady(true);
       })
       .catch(() => {
-        // Maps failed to load — component degrades to plain input
+        // Maps unavailable — DB results are the sole source, which is fine
       });
   }, []);
 
-  // Close dropdown when clicking outside
+  // ── Google Places fetch (enhancement) ────────────────────────────────────
+  const fetchGoogleSuggestions = useCallback(
+    (input: string) => {
+      if (!mapsReady || !autocompleteService.current || input.length < 2) {
+        setGoogleSuggestions([]);
+        return;
+      }
+      autocompleteService.current.getPlacePredictions(
+        {
+          input,
+          componentRestrictions: { country: "il" },
+          types: ["(cities)"],
+          language: "he",
+        },
+        (predictions, status) => {
+          if (
+            status === google.maps.places.PlacesServiceStatus.OK &&
+            predictions
+          ) {
+            setGoogleSuggestions(
+              predictions.map((p) => ({
+                id: `places-${p.place_id}`,
+                nameHe: p.structured_formatting.main_text,
+                placeId: p.place_id,
+              }))
+            );
+          } else {
+            setGoogleSuggestions([]);
+          }
+        }
+      );
+    },
+    [mapsReady]
+  );
+
+  // ── Show dropdown when results arrive ────────────────────────────────────
+  useEffect(() => {
+    if (suggestions.length > 0 && trimmedQuery.length >= 1) {
+      setShowDropdown(true);
+      setActiveSuggestionIndex(-1);
+    }
+  }, [suggestions, trimmedQuery]);
+
+  // ── Close dropdown on outside click ──────────────────────────────────────
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -103,83 +180,56 @@ export default function CityAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchSuggestions = useCallback(
-    (input: string) => {
-      if (!mapsReady || !autocompleteService.current || input.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-      setLoading(true);
-      autocompleteService.current.getPlacePredictions(
-        {
-          input,
-          componentRestrictions: { country: "il" },
-          types: ["(cities)"],
-          language: "he",
-        },
-        (predictions, status) => {
-          setLoading(false);
-          if (
-            status === google.maps.places.PlacesServiceStatus.OK &&
-            predictions
-          ) {
-            setSuggestions(
-              predictions.map((p) => ({
-                placeId: p.place_id,
-                description: p.description,
-                mainText: p.structured_formatting.main_text,
-              }))
-            );
-            setShowDropdown(true);
-            setActiveSuggestionIndex(-1);
-          } else {
-            setSuggestions([]);
-          }
-        }
-      );
-    },
-    [mapsReady]
-  );
-
+  // ── Input change ─────────────────────────────────────────────────────────
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     onChange(v);
+    if (!v.trim()) {
+      setShowDropdown(false);
+      setGoogleSuggestions([]);
+      return;
+    }
+    // Debounce Google Places (DB is handled by tRPC's own debounce via staleTime)
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => fetchSuggestions(v), 250);
+    debounceTimer.current = setTimeout(() => fetchGoogleSuggestions(v), 300);
   };
 
+  // ── Select suggestion ─────────────────────────────────────────────────────
   const handleSelectSuggestion = (suggestion: Suggestion) => {
-    onChange(suggestion.mainText);
-    setSuggestions([]);
+    onChange(suggestion.nameHe);
     setShowDropdown(false);
+    setGoogleSuggestions([]);
 
-    // Check sessionStorage cache first — avoids a round-trip to the Geocoding API
-    const cached = getCachedGeo(suggestion.placeId);
-    if (cached) {
-      onSelect(cached.city, cached.lat, cached.lng);
+    // If we have DB lat/lng, use them immediately
+    if (suggestion.lat != null && suggestion.lng != null) {
+      onSelect(suggestion.nameHe, suggestion.lat, suggestion.lng);
       return;
     }
 
-    // Not cached — call Geocoding API and store result
-    if (geocoder.current) {
-      geocoder.current.geocode(
-        { placeId: suggestion.placeId },
-        (results, status) => {
+    // Google Places result without lat/lng — geocode it
+    if (suggestion.placeId) {
+      const cached = getCachedGeo(suggestion.placeId);
+      if (cached) {
+        onSelect(cached.city, cached.lat, cached.lng);
+        return;
+      }
+      if (geocoder.current) {
+        geocoder.current.geocode({ placeId: suggestion.placeId }, (results, status) => {
           if (status === "OK" && results && results[0]) {
             const loc = results[0].geometry.location;
-            const result: GeoResult = {
-              city: suggestion.mainText,
-              lat: loc.lat(),
-              lng: loc.lng(),
-            };
-            setCachedGeo(suggestion.placeId, result);
+            const result: GeoResult = { city: suggestion.nameHe, lat: loc.lat(), lng: loc.lng() };
+            setCachedGeo(suggestion.placeId!, result);
             onSelect(result.city, result.lat, result.lng);
           }
-        }
-      );
+        });
+      }
+    } else {
+      // No lat/lng available at all — pass 0,0 as fallback
+      onSelect(suggestion.nameHe, 0, 0);
     }
   };
 
+  // ── Keyboard navigation ───────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showDropdown || suggestions.length === 0) return;
     if (e.key === "ArrowDown") {
@@ -200,10 +250,12 @@ export default function CityAutocomplete({
 
   const handleClear = () => {
     onChange("");
-    setSuggestions([]);
     setShowDropdown(false);
+    setGoogleSuggestions([]);
     inputRef.current?.focus();
   };
+
+  const loading = dbLoading;
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -215,14 +267,13 @@ export default function CityAutocomplete({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (suggestions.length > 0) setShowDropdown(true);
+            if (suggestions.length > 0 && trimmedQuery.length >= 1) setShowDropdown(true);
           }}
           placeholder={placeholder}
           className={`pr-10 text-right text-sm ${value ? "pl-8" : ""}`}
           autoComplete="off"
           dir="rtl"
         />
-        {/* Loading spinner or clear button */}
         {loading ? (
           <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         ) : value ? (
@@ -245,10 +296,10 @@ export default function CityAutocomplete({
         >
           {suggestions.map((s, idx) => (
             <button
-              key={s.placeId}
+              key={s.id}
               type="button"
               onMouseDown={(e) => {
-                e.preventDefault(); // Prevent input blur before click
+                e.preventDefault();
                 handleSelectSuggestion(s);
               }}
               className={`w-full text-right px-4 py-2.5 text-sm flex items-center gap-2 transition-colors ${
@@ -258,12 +309,22 @@ export default function CityAutocomplete({
               }`}
             >
               <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <span className="font-medium">{s.mainText}</span>
-              <span className="text-muted-foreground text-xs truncate">
-                {s.description.replace(s.mainText, "").replace(/^,\s*/, "")}
-              </span>
+              <span className="font-medium">{s.nameHe}</span>
+              {s.district && (
+                <span className="text-muted-foreground text-xs truncate">{s.district}</span>
+              )}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* No results hint */}
+      {showDropdown && trimmedQuery.length >= 1 && suggestions.length === 0 && !loading && (
+        <div
+          className="absolute z-50 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-lg px-4 py-3 text-sm text-muted-foreground text-right"
+          dir="rtl"
+        >
+          לא נמצאה עיר בשם &ldquo;{trimmedQuery}&rdquo;
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, lte, ne, or, sql, asc } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, like, lte, ne, or, sql, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertJob,
@@ -347,6 +347,31 @@ export async function getCities() {
     .from(cities)
     .where(eq(cities.isActive, true))
     .orderBy(asc(cities.district), asc(cities.nameHe));
+}
+
+/** Search cities by Hebrew or English name prefix (for autocomplete) */
+export async function searchCities(query: string, limit = 10) {
+  const db = await getDb();
+  if (!db || !query.trim()) return [];
+  const q = `%${query.trim()}%`;
+  return db
+    .select({
+      id: cities.id,
+      nameHe: cities.nameHe,
+      nameEn: cities.nameEn,
+      district: cities.district,
+      latitude: cities.latitude,
+      longitude: cities.longitude,
+    })
+    .from(cities)
+    .where(
+      and(
+        eq(cities.isActive, true),
+        or(like(cities.nameHe, q), like(cities.nameEn, q))
+      )
+    )
+    .orderBy(asc(cities.nameHe))
+    .limit(limit);
 }
 
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────

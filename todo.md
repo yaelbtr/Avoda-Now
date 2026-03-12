@@ -1287,3 +1287,7 @@
 - [ ] Employer: show inline message on PostJob when region is inactive with "הודע לי כשהאזור נפתח" button
 - [ ] Employer: confirmation toast after subscribing to notification
 - [ ] Admin: when region is activated, send push notification to all subscribed employers
+
+## Bug Fixes
+
+- [x] City autocomplete not working — fixed: CityAutocomplete now queries cities table via trpc.user.searchCities (58 cities seeded); Google Places used as enhancement only

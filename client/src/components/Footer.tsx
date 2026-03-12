@@ -1,5 +1,6 @@
 import { Briefcase, Mail, Zap, Users } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
+import { trpc } from "@/lib/trpc";
 
 const FG_PRIMARY  = "oklch(0.9904 0.0107 95.3 / 0.85)";
 const FG_MUTED    = "oklch(0.9904 0.0107 95.3 / 0.45)";
@@ -26,6 +27,17 @@ const SEO_CITIES = [
 
 export default function Footer() {
   const { categories: seoCategories } = useCategories();
+
+  // Dynamic badge: show active jobs if >50, closed if >50, workers if >100, else null
+  const { data: hs } = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const jobsBadge: string | null = (() => {
+    if (!hs) return null;
+    if (hs.activeJobs > 50)         return `${hs.activeJobs}+ משרות פעילות`;
+    if (hs.closedJobs > 50)         return `${hs.closedJobs}+ משרות שנסגרו`;
+    if (hs.registeredWorkers > 100) return `${hs.registeredWorkers}+ עובדים רשומים`;
+    return null;
+  })();
+
   return (
     <footer
       dir="rtl"
@@ -79,10 +91,12 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-5">
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: FG_MUTED }}>
-              <Zap className="h-3 w-3" style={{ color: ACCENT }} />
-              <span>500+ משרות</span>
-            </div>
+            {jobsBadge && (
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: FG_MUTED }}>
+                <Zap className="h-3 w-3" style={{ color: ACCENT }} />
+                <span>{jobsBadge}</span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 text-xs" style={{ color: FG_MUTED }}>
               <Users className="h-3 w-3" style={{ color: ACCENT }} />
               <span>אלפי עובדים</span>

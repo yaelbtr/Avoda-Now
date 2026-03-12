@@ -1591,3 +1591,6 @@
 
 ## Fix QuickStats in FindJobs (Mar 12, 2026 - v2)
 - [x] Fix QuickStats in FindJobs — found in HomeWorker.tsx StatsRow (hardcoded useCountDown), now uses real heroStats data
+
+## Footer Badge Dynamic (Mar 12, 2026)
+- [x] Update Footer.tsx badge from hardcoded "500+ משרות" to real heroStats data (hidden when thresholds not met)

@@ -169,6 +169,7 @@ export default function FindJobs() {
   );
   const [autoNearby] = useState(filterParam === "nearby");
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [bottomSheetJob, setBottomSheetJob] = useState<null | {
@@ -187,7 +188,7 @@ export default function FindJobs() {
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">("default");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
-  const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | null>(null);
+  const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
   const initialCity = params.get("city") ?? null;
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity);
   const [, navigate] = useLocation();
@@ -223,8 +224,8 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
-  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-  const popularCities = (citiesQuery.data ?? []).slice(0, 8).map((c: { nameHe: string }) => c.nameHe);
+  const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const popularCities = activeCitiesQuery.data ?? [];
 
   useEffect(() => {
     const cached = loadCachedLocation();
@@ -343,6 +344,15 @@ export default function FindJobs() {
       });
     });
   }
+  if (selectedDays.length > 0) {
+    const DAY_MAP: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+    jobs = jobs.filter(j => {
+      const jd = (j as { jobDate?: string | null }).jobDate;
+      if (!jd) return true; // no specific date — show for all days
+      const dayOfWeek = new Date(jd).getDay(); // 0=Sun, 6=Sat
+      return selectedDays.some(d => DAY_MAP[d] === dayOfWeek);
+    });
+  }
   jobs = [...jobs].sort((a, b) => {
     if (sortBy === "salary") {
       const aSal = (a as { salary?: number | null }).salary ?? 0;
@@ -380,7 +390,7 @@ export default function FindJobs() {
     else setNoIndexReady(false);
   }, [isLoading, hasActiveFilter, jobs.length]);
   // Reset to page 1 when filters change
-  useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, sortBy, dateFilter, searchText]);
+  useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
   const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
   const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   // Total active filters: panel filters + quick chips (location, urgent, date)
@@ -389,6 +399,7 @@ export default function FindJobs() {
     !!selectedCity || !!userLat,
     showUrgentToday,
     selectedTimeSlots.length > 0,
+    selectedDays.length > 0,
     !!dateFilter,
   ].filter(Boolean).length;
 
@@ -886,37 +897,102 @@ export default function FindJobs() {
                   </div>
                 </div>
 
-                {/* Time of day */}
-                <div className="mb-4">
-                  <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.40 0.03 122.3)" }}>שעות עבודה (אופציונלי)</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { value: "morning", label: "בוקר", sub: "06–12", icon: "🌅" },
-                      { value: "afternoon", label: "צהריים", sub: "12–17", icon: "☀️" },
-                      { value: "evening", label: "ערב", sub: "17–22", icon: "🌆" },
-                      { value: "night", label: "לילה", sub: "22–06", icon: "🌙" },
-                    ].map(slot => {
-                      const isActive = selectedTimeSlots.includes(slot.value);
-                      return (
-                        <button key={slot.value}
-                          onClick={() => setSelectedTimeSlots(prev => prev.includes(slot.value) ? prev.filter(s => s !== slot.value) : [...prev, slot.value])}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border-2"
-                          style={isActive ? activePill : inactivePill}>
-                          <span>{slot.icon}</span>
-                          <span>{slot.label}</span>
-                          <span className="opacity-60 text-[10px]">{slot.sub}</span>
-                        </button>
-                      );
-                    })}
+                {/* Time of day — collapsible */}
+                <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
+                  <button type="button" onClick={() => setOpenFilterSection(s => s === "hours" ? null : "hours")}
+                    className="w-full flex items-center gap-2 py-2 text-right">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+                      <span className="text-xs">⏰</span>
+                    </div>
+                    <span className="font-bold text-sm flex-1" style={{ color: "oklch(0.22 0.03 122.3)" }}>שעות עבודה</span>
                     {selectedTimeSlots.length > 0 && (
-                      <button onClick={() => setSelectedTimeSlots([])} className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs border"
-                        style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}>
-                        <X className="h-3 w-3" /> נקה
-                      </button>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
+                        {selectedTimeSlots.length} נבחרו
+                      </span>
                     )}
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                      style={{ transform: openFilterSection === "hours" ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  </button>
+                  <div style={{ display: "grid", gridTemplateRows: openFilterSection === "hours" ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                    <div className="overflow-hidden">
+                      <div className="pt-3 flex flex-wrap gap-2">
+                        {[
+                          { value: "morning", label: "בוקר", sub: "06–12", icon: "🌅" },
+                          { value: "afternoon", label: "צהריים", sub: "12–17", icon: "☀️" },
+                          { value: "evening", label: "ערב", sub: "17–22", icon: "🌆" },
+                          { value: "night", label: "לילה", sub: "22–06", icon: "🌙" },
+                        ].map(slot => {
+                          const isActive = selectedTimeSlots.includes(slot.value);
+                          return (
+                            <button key={slot.value}
+                              onClick={() => setSelectedTimeSlots(prev => prev.includes(slot.value) ? prev.filter(s => s !== slot.value) : [...prev, slot.value])}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border-2"
+                              style={isActive ? activePill : inactivePill}>
+                              <span>{slot.icon}</span>
+                              <span>{slot.label}</span>
+                              <span className="opacity-60 text-[10px]">{slot.sub}</span>
+                            </button>
+                          );
+                        })}
+                        {selectedTimeSlots.length > 0 && (
+                          <button onClick={() => setSelectedTimeSlots([])} className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs border"
+                            style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}>
+                            <X className="h-3 w-3" /> נקה
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
+                {/* Days of week — collapsible */}
+                <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
+                  <button type="button" onClick={() => setOpenFilterSection(s => s === "days" ? null : "days")}
+                    className="w-full flex items-center gap-2 py-2 text-right">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+                      <span className="text-xs">📅</span>
+                    </div>
+                    <span className="font-bold text-sm flex-1" style={{ color: "oklch(0.22 0.03 122.3)" }}>ימי עבודה</span>
+                    {selectedDays.length > 0 && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
+                        {selectedDays.length} נבחרו
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                      style={{ transform: openFilterSection === "days" ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  </button>
+                  <div style={{ display: "grid", gridTemplateRows: openFilterSection === "days" ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                    <div className="overflow-hidden">
+                      <div className="pt-3 flex flex-wrap gap-2">
+                        {[
+                          { value: "sunday", label: "א׳" },
+                          { value: "monday", label: "ב׳" },
+                          { value: "tuesday", label: "ג׳" },
+                          { value: "wednesday", label: "ד׳" },
+                          { value: "thursday", label: "ה׳" },
+                          { value: "friday", label: "ש׳" },
+                          { value: "saturday", label: "שבת" },
+                        ].map(day => {
+                          const isActive = selectedDays.includes(day.value);
+                          return (
+                            <button key={day.value}
+                              onClick={() => setSelectedDays(prev => prev.includes(day.value) ? prev.filter(d => d !== day.value) : [...prev, day.value])}
+                              className="w-10 h-10 rounded-full text-sm font-bold transition-all border-2 flex items-center justify-center"
+                              style={isActive ? activePill : inactivePill}>
+                              {day.label}
+                            </button>
+                          );
+                        })}
+                        {selectedDays.length > 0 && (
+                          <button onClick={() => setSelectedDays([])} className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs border"
+                            style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}>
+                            <X className="h-3 w-3" /> נקה
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 {/* Action buttons */}
                 <div className="flex flex-col gap-2.5 mt-1">
                   {/* Row 1: Show results + Clear filters */}
@@ -932,6 +1008,7 @@ export default function FindJobs() {
                         setCategory("all");
                         setSelectedCity(null);
                         setSelectedTimeSlots([]);
+                        setSelectedDays([]);
                         setDateFilter(null);
                         setShowUrgentToday(false);
                         setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);

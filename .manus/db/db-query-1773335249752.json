@@ -1,0 +1,70 @@
+{
+  "query": "SELECT name, centerCity, status FROM regions ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT name, centerCity, status FROM regions ORDER BY name;",
+  "rows": [
+    {
+      "name": "אשדוד",
+      "centerCity": "אשדוד",
+      "status": "active"
+    },
+    {
+      "name": "באר שבע",
+      "centerCity": "באר שבע",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "בני ברק",
+      "centerCity": "בני ברק",
+      "status": "active"
+    },
+    {
+      "name": "הרצליה",
+      "centerCity": "הרצליה",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "חולון",
+      "centerCity": "חולון",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "חיפה",
+      "centerCity": "חיפה",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "ירושלים",
+      "centerCity": "ירושלים",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "נתניה",
+      "centerCity": "נתניה",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "פתח תקווה",
+      "centerCity": "פתח תקווה",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "ראשון לציון",
+      "centerCity": "ראשון לציון",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "רמת גן",
+      "centerCity": "רמת גן",
+      "status": "collecting_workers"
+    },
+    {
+      "name": "תל אביב",
+      "centerCity": "תל אביב",
+      "status": "collecting_workers"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tcenterCity\tstatus\nאשדוד\tאשדוד\tactive\nבאר שבע\tבאר שבע\tcollecting_workers\nבני ברק\tבני ברק\tactive\nהרצליה\tהרצליה\tcollecting_workers\nחולון\tחולון\tcollecting_workers\nחיפה\tחיפה\tcollecting_workers\nירושלים\tירושלים\tcollecting_workers\nנתניה\tנתניה\tcollecting_workers\nפתח תקווה\tפתח תקווה\tcollecting_workers\nראשון לציון\tראשון לציון\tcollecting_workers\nרמת גן\tרמת גן\tcollecting_workers\nתל אביב\tתל אביב\tcollecting_workers\n",
+  "stderr": "",
+  "execution_time_ms": 1559
+}

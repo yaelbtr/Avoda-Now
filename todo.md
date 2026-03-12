@@ -1418,3 +1418,15 @@
 ## FindJobs Filter Panel Button Redesign
 - [x] Add "נקה סינון" button next to "הצג תוצאות" in one row (smaller buttons)
 - [x] "שמור כהעדפות שלי" below the two buttons with distinct dashed-border style
+
+## FindJobs Day Filter
+- [ ] Add day-of-week filter chips to "שעות עבודה" section in filter panel (matching profile UI)
+- [ ] Wire day filter to backend query (jobs.list / jobs.search)
+
+## FindJobs Dynamic City Chips
+- [x] Add backend procedure to return active region cities from the regions table
+- [x] Replace hardcoded city chips in filter panel with dynamic cities from active regions
+
+## FindJobs Filter Panel Collapsible Sections
+- [x] Make "שעות עבודה" and "ימי עבודה" sections collapsible like "תחומי עיסוק" and "מיקום"
+- [x] Replace hardcoded city chips with active region cities from backend (regions.getActiveCities)

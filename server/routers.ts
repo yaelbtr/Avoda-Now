@@ -77,6 +77,7 @@ import {
   deleteCategory,
   seedCategoriesIfEmpty,
   getRegions,
+  getActiveRegionCities,
   getRegionBySlug,
   getRegionById,
   findNearestRegion,
@@ -1664,6 +1665,11 @@ const regionsRouter = router({
   /** List all regions (public) */
   list: publicProcedure.query(async () => {
     return getRegions();
+  }),
+
+  /** Return center city names of all active regions (public) */
+  getActiveCities: publicProcedure.query(async () => {
+    return getActiveRegionCities();
   }),
 
   /** Get a single region by slug (public) */

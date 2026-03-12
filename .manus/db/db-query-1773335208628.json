@@ -1,0 +1,130 @@
+{
+  "query": "DESCRIBE regions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute DESCRIBE regions;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "slug",
+      "Type": "varchar(64)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(100)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "centerCity",
+      "Type": "varchar(100)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "centerLat",
+      "Type": "decimal(10,7)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "centerLng",
+      "Type": "decimal(10,7)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "activationRadiusKm",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "15",
+      "Extra": ""
+    },
+    {
+      "Field": "minWorkersRequired",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "50",
+      "Extra": ""
+    },
+    {
+      "Field": "currentWorkers",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "status",
+      "Type": "enum('collecting_workers','active','paused')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "collecting_workers",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "imageUrl",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "radiusMinutes",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "20",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nslug\tvarchar(64)\tNO\tUNI\tNULL\t\nname\tvarchar(100)\tNO\t\tNULL\t\ncenterCity\tvarchar(100)\tNO\t\tNULL\t\ncenterLat\tdecimal(10,7)\tNO\t\tNULL\t\ncenterLng\tdecimal(10,7)\tNO\t\tNULL\t\nactivationRadiusKm\tint\tNO\t\t15\t\nminWorkersRequired\tint\tNO\t\t50\t\ncurrentWorkers\tint\tNO\t\t0\t\nstatus\tenum('collecting_workers','active','paused')\tNO\t\tcollecting_workers\t\ndescription\ttext\tYES\t\tNULL\t\nimageUrl\ttext\tYES\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nradiusMinutes\tint\tNO\t\t20\t\n",
+  "stderr": "",
+  "execution_time_ms": 1508
+}

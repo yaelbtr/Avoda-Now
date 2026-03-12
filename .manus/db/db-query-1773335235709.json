@@ -1,0 +1,82 @@
+{
+  "query": "SELECT id, name, centerCity, status FROM regions ORDER BY name LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, name, centerCity, status FROM regions ORDER BY name LIMIT 20;",
+  "rows": [
+    {
+      "id": "5",
+      "name": "אשדוד",
+      "centerCity": "אשדוד",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "באר שבע",
+      "centerCity": "באר שבע",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "4",
+      "name": "בני ברק",
+      "centerCity": "בני ברק",
+      "status": "active"
+    },
+    {
+      "id": "12",
+      "name": "הרצליה",
+      "centerCity": "הרצליה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "10",
+      "name": "חולון",
+      "centerCity": "חולון",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "3",
+      "name": "חיפה",
+      "centerCity": "חיפה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "2",
+      "name": "ירושלים",
+      "centerCity": "ירושלים",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "7",
+      "name": "נתניה",
+      "centerCity": "נתניה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "9",
+      "name": "פתח תקווה",
+      "centerCity": "פתח תקווה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "8",
+      "name": "ראשון לציון",
+      "centerCity": "ראשון לציון",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "11",
+      "name": "רמת גן",
+      "centerCity": "רמת גן",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "1",
+      "name": "תל אביב",
+      "centerCity": "תל אביב",
+      "status": "collecting_workers"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcenterCity\tstatus\n5\tאשדוד\tאשדוד\tactive\n6\tבאר שבע\tבאר שבע\tcollecting_workers\n4\tבני ברק\tבני ברק\tactive\n12\tהרצליה\tהרצליה\tcollecting_workers\n10\tחולון\tחולון\tcollecting_workers\n3\tחיפה\tחיפה\tcollecting_workers\n2\tירושלים\tירושלים\tcollecting_workers\n7\tנתניה\tנתניה\tcollecting_workers\n9\tפתח תקווה\tפתח תקווה\tcollecting_workers\n8\tראשון לציון\tראשון לציון\tcollecting_workers\n11\tרמת גן\tרמת גן\tcollecting_workers\n1\tתל אביב\tתל אביב\tcollecting_workers\n",
+  "stderr": "",
+  "execution_time_ms": 1541
+}

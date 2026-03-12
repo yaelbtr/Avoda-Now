@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, name, status FROM regions ORDER BY name LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, name, status FROM regions ORDER BY name LIMIT 20;",
+  "rows": [
+    {
+      "id": "5",
+      "name": "אשדוד",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "name": "באר שבע",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "4",
+      "name": "בני ברק",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "12",
+      "name": "הרצליה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "10",
+      "name": "חולון",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "3",
+      "name": "חיפה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "2",
+      "name": "ירושלים",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "7",
+      "name": "נתניה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "9",
+      "name": "פתח תקווה",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "8",
+      "name": "ראשון לציון",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "11",
+      "name": "רמת גן",
+      "status": "collecting_workers"
+    },
+    {
+      "id": "1",
+      "name": "תל אביב",
+      "status": "collecting_workers"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tstatus\n5\tאשדוד\tactive\n6\tבאר שבע\tcollecting_workers\n4\tבני ברק\tcollecting_workers\n12\tהרצליה\tcollecting_workers\n10\tחולון\tcollecting_workers\n3\tחיפה\tcollecting_workers\n2\tירושלים\tcollecting_workers\n7\tנתניה\tcollecting_workers\n9\tפתח תקווה\tcollecting_workers\n8\tראשון לציון\tcollecting_workers\n11\tרמת גן\tcollecting_workers\n1\tתל אביב\tcollecting_workers\n",
+  "stderr": "",
+  "execution_time_ms": 1537
+}

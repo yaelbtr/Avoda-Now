@@ -1878,6 +1878,17 @@ export async function getRegions(): Promise<Region[]> {
   return db.select().from(regions).orderBy(asc(regions.name));
 }
 
+/** Return the center city names of all active regions (status = 'active') */
+export async function getActiveRegionCities(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({ centerCity: regions.centerCity })
+    .from(regions)
+    .orderBy(asc(regions.name));
+  return rows.map(r => r.centerCity);
+}
+
 /** Return a single region by its slug */
 export async function getRegionBySlug(slug: string): Promise<Region | undefined> {
   const db = await getDb();

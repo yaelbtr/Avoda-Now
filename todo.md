@@ -1447,3 +1447,12 @@
 - [x] Restore saved filters on page load (category, city, timeSlots, days, sortBy)
 - [x] Show "מסנן שמור" indicator when using saved filters
 - [x] Clear saved filters when user clicks "נקה סינון"
+
+## Empty State Smart Suggestions (Mar 12, 2026)
+- [x] Show "הרחב לעיר הסמוכה" suggestion when city filter active and no results
+- [x] Show "הצג עבודות מחר / השבוע" suggestion when date filter active and no results
+- [x] Show "הסר פילטר קטגוריה" with category name when category filter active
+- [x] Show nearby cities quick-links based on selected city (NEARBY_CITIES map)
+- [x] Show popular categories chips when category filter is too narrow
+- [x] Add "עבר להגדרות התראות" CTA button for logged-in users (links to /profile)
+- [x] Improve empty state visual design (SmartEmptyState component with dynamic headline/subtitle)

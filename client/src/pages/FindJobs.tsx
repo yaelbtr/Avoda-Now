@@ -69,6 +69,22 @@ const SEO_CITIES = [
   "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
 ];
 
+// Nearby cities map for smart empty-state suggestions
+const NEARBY_CITIES: Record<string, string[]> = {
+  "תל אביב": ["רמת גן", "בני ברק", "חולון", "בת ים", "הרצליה"],
+  "ירושלים": ["בית שמש", "מודיעין", "רמלה", "קריית ענבים"],
+  "חיפה": ["קריית אתא", "נשר", "טירת הכרמל", "אור עקיבא"],
+  "ראשון לציון": ["תל אביב", "חולון", "בת ים", "רחובות"],
+  "פתח תקווה": ["תל אביב", "בני ברק", "רמת גן", "הרצליה"],
+  "אשדוד": ["אשקלון", "קריית גת", "נתיבות"],
+  "נתניה": ["הרצליה", "ראשון לציון", "חדרה", "קדימה"],
+  "באר שבע": ["דימונה", "נתיבות", "עומר"],
+  "בני ברק": ["תל אביב", "רמת גן", "פתח תקווה"],
+  "רמת גן": ["תל אביב", "בני ברק", "גבעתיים"],
+  "חולון": ["תל אביב", "בת ים", "ראשון לציון"],
+  "הרצליה": ["תל אביב", "ראשון לציון", "נתניה", "רמת השרון"],
+};
+
 interface CachedLocation { lat: number; lng: number; cityName?: string; savedAt: number; }
 
 function loadCachedLocation(): { lat: number; lng: number; cityName?: string } | null {
@@ -177,6 +193,303 @@ function QuickStats() {
   );
 }
 
+
+// ── Smart Empty State ───────────────────────────────────────────────────────
+interface SmartEmptyStateProps {
+  category: string;
+  catName: string;
+  catIcon?: string;
+  selectedCity: string | null;
+  dateFilter: "today" | "tomorrow" | "this_week" | null;
+  selectedTimeSlots: string[];
+  selectedDays: string[];
+  showUrgentToday: boolean;
+  searchText: string;
+  isAuthenticated: boolean;
+  onClearCategory: () => void;
+  onClearCity: () => void;
+  onClearDateFilter: () => void;
+  onClearTimeSlots: () => void;
+  onClearDays: () => void;
+  onClearUrgent: () => void;
+  onClearSearch: () => void;
+  onSelectCity: (city: string) => void;
+  onShowTomorrow: () => void;
+  onShowThisWeek: () => void;
+  onClearAllFilters: () => void;
+}
+
+const DATE_FILTER_LABELS: Record<string, string> = {
+  today: "היום",
+  tomorrow: "מחר",
+  this_week: "השבוע",
+};
+
+function SmartEmptyState({
+  category, catName, catIcon, selectedCity, dateFilter,
+  selectedTimeSlots, selectedDays, showUrgentToday, searchText,
+  isAuthenticated, onClearCategory, onClearCity, onClearDateFilter,
+  onClearTimeSlots, onClearDays, onClearUrgent, onClearSearch,
+  onSelectCity, onShowTomorrow, onShowThisWeek, onClearAllFilters,
+}: SmartEmptyStateProps) {
+  const hasAnyFilter = category !== "all" || !!selectedCity || !!dateFilter ||
+    selectedTimeSlots.length > 0 || selectedDays.length > 0 || showUrgentToday || !!searchText;
+
+  // Determine primary reason for no results
+  const primaryReason = searchText ? "search"
+    : dateFilter === "today" ? "today"
+    : showUrgentToday ? "urgent"
+    : selectedTimeSlots.length > 0 ? "timeSlots"
+    : selectedDays.length > 0 ? "days"
+    : selectedCity ? "city"
+    : category !== "all" ? "category"
+    : "general";
+
+  const nearbyCities = selectedCity ? (NEARBY_CITIES[selectedCity] ?? []) : [];
+
+  const headlineMap: Record<string, string> = {
+    search: `לא נמצאו תוצאות לחיפוש “${searchText}”`,
+    today: "אין משרות להיום כרגע",
+    urgent: "אין משרות דחופות כרגע",
+    timeSlots: "אין משרות בשעות הנבחרות",
+    days: "אין משרות בימים הנבחרים",
+    city: `אין משרות ב${selectedCity}`,
+    category: `אין משרות בקטגוריית ${catName}`,
+    general: "לא נמצאו משרות",
+  };
+
+  const subtitleMap: Record<string, string> = {
+    search: "נסה מילים אחרות או בדוק עם פחות פילטרים",
+    today: "משרות חדשות מתפרסמות בכל רגע — בדוק מחר או בשבוע",
+    urgent: "משרות דחופות מתפרסמות לעתים קרובות — נסה להרחיב את החיפוש",
+    timeSlots: "נסה להסיר סינון שעות או לבחור טווח רחב יותר",
+    days: "נסה להסיר סינון ימים או לבחור יותר ימים",
+    city: "נסה עיר קרובה או הרחב את החיפוש",
+    category: "נסה קטגוריה אחרת או בדוק כל המשרות",
+    general: "נסה לשנות את הסינון או לחפש בעיר אחרת",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="py-6 px-2"
+      dir="rtl"
+    >
+      {/* Illustration + headline */}
+      <div className="text-center mb-6">
+        <div
+          className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4"
+          style={{ background: "linear-gradient(135deg, oklch(0.94 0.04 122) 0%, oklch(0.90 0.06 91) 100%)", boxShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)" }}
+        >
+          <span className="text-4xl">
+            {primaryReason === "search" ? "🔍"
+              : primaryReason === "today" || primaryReason === "urgent" ? "⏰"
+              : primaryReason === "city" ? "📍"
+              : primaryReason === "category" ? (catIcon ?? "💼")
+              : "💼"}
+          </span>
+        </div>
+        <h3 className="text-xl font-black mb-2" style={{ color: "oklch(0.22 0.03 122.3)" }}>
+          {headlineMap[primaryReason]}
+        </h3>
+        <p className="text-sm" style={{ color: C_TEXT_MUTED }}>
+          {subtitleMap[primaryReason]}
+        </p>
+      </div>
+
+      {/* Active filter pills — quick remove */}
+      {hasAnyFilter && (
+        <div className="mb-5">
+          <p className="text-xs font-bold mb-2 text-center" style={{ color: C_TEXT_MUTED }}>סינונים פעילים:</p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {searchText && (
+              <button onClick={onClearSearch}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.94 0.02 84)", color: "oklch(0.35 0.06 84)", border: "1px solid oklch(0.86 0.04 84)" }}>
+                🔍 {searchText} <X className="h-3 w-3" />
+              </button>
+            )}
+            {category !== "all" && (
+              <button onClick={onClearCategory}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX, border: "1px solid oklch(0.82 0.06 122)" }}>
+                {catIcon} {catName} <X className="h-3 w-3" />
+              </button>
+            )}
+            {selectedCity && (
+              <button onClick={onClearCity}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.94 0.03 210)", color: "oklch(0.35 0.12 210)", border: "1px solid oklch(0.82 0.08 210)" }}>
+                📍 {selectedCity} <X className="h-3 w-3" />
+              </button>
+            )}
+            {dateFilter && (
+              <button onClick={onClearDateFilter}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.94 0.04 55)", color: "oklch(0.38 0.12 55)", border: "1px solid oklch(0.82 0.08 55)" }}>
+                📅 {DATE_FILTER_LABELS[dateFilter]} <X className="h-3 w-3" />
+              </button>
+            )}
+            {showUrgentToday && (
+              <button onClick={onClearUrgent}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.96 0.04 25)", color: "oklch(0.45 0.18 25)", border: "1px solid oklch(0.82 0.10 25)" }}>
+                🔥 דחוף <X className="h-3 w-3" />
+              </button>
+            )}
+            {selectedTimeSlots.length > 0 && (
+              <button onClick={onClearTimeSlots}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.94 0.03 270)", color: "oklch(0.38 0.12 270)", border: "1px solid oklch(0.82 0.08 270)" }}>
+                ⏰ שעות ({selectedTimeSlots.length}) <X className="h-3 w-3" />
+              </button>
+            )}
+            {selectedDays.length > 0 && (
+              <button onClick={onClearDays}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+                style={{ background: "oklch(0.94 0.03 180)", color: "oklch(0.38 0.12 180)", border: "1px solid oklch(0.82 0.08 180)" }}>
+                📆 ימים ({selectedDays.length}) <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Smart suggestions grid */}
+      <div className="space-y-3 mb-6">
+        {/* Date suggestions */}
+        {(dateFilter === "today" || showUrgentToday) && (
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.88 0.04 91)" }}
+          >
+            <p className="text-xs font-bold mb-3" style={{ color: "oklch(0.40 0.08 91)" }}>📅 נסה תאריך אחר</p>
+            <div className="flex gap-2">
+              <button
+                onClick={onShowTomorrow}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+                style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)" }}
+              >
+                משרות מחר
+              </button>
+              <button
+                onClick={onShowThisWeek}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+                style={{ background: "white", color: "oklch(0.35 0.08 122)", border: "1.5px solid oklch(0.82 0.06 122)" }}
+              >
+                משרות השבוע
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Nearby cities */}
+        {selectedCity && nearbyCities.length > 0 && (
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "oklch(0.97 0.02 210)", border: "1px solid oklch(0.88 0.04 210)" }}
+          >
+            <p className="text-xs font-bold mb-3" style={{ color: "oklch(0.38 0.10 210)" }}>📍 ערים קרובות ל{selectedCity}</p>
+            <div className="flex flex-wrap gap-2">
+              {nearbyCities.map(city => (
+                <button
+                  key={city}
+                  onClick={() => onSelectCity(city)}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+                  style={{ background: "white", color: "oklch(0.35 0.12 210)", border: "1px solid oklch(0.82 0.08 210)" }}
+                >
+                  {city}
+                </button>
+              ))}
+              <button
+                onClick={onClearCity}
+                className="px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+                style={{ background: "oklch(0.35 0.12 210)", color: "white" }}
+              >
+                כל הארץ
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Category suggestion */}
+        {category !== "all" && (
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "oklch(0.97 0.02 122)", border: "1px solid oklch(0.88 0.04 122)" }}
+          >
+            <p className="text-xs font-bold mb-3" style={{ color: C_BRAND_HEX }}>💼 נסה קטגוריה רחבה יותר</p>
+            <button
+              onClick={onClearCategory}
+              className="w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+              style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)" }}
+            >
+              הצג כל הקטגוריות
+            </button>
+          </div>
+        )}
+
+        {/* Alert CTA for logged-in users */}
+        {isAuthenticated && (
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "linear-gradient(135deg, oklch(0.96 0.04 280 / 0.5) 0%, oklch(0.97 0.02 250 / 0.5) 100%)", border: "1px solid oklch(0.85 0.06 280 / 0.4)" }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "oklch(0.55 0.18 280 / 0.15)" }}>
+                <span className="text-xl">🔔</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold mb-0.5" style={{ color: "oklch(0.30 0.12 280)" }}>קבל התראה כשיתפרסמו משרות חדשות</p>
+                <p className="text-xs" style={{ color: "oklch(0.45 0.08 280)" }}>ניתן להפעיל בדף הפרופיל שלך</p>
+              </div>
+            </div>
+            <Link
+              href="/profile"
+              className="mt-3 w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97]"
+              style={{ background: "oklch(0.50 0.18 280)", color: "white", display: "flex" }}
+            >
+              עבר להגדרות התראות ←
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Clear all + popular searches */}
+      {hasAnyFilter && (
+        <div className="text-center mb-6">
+          <button
+            onClick={onClearAllFilters}
+            className="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"
+            style={{ background: "white", color: "oklch(0.45 0.06 122)", border: "1.5px solid oklch(0.88 0.04 122)" }}
+          >
+            <X className="h-3.5 w-3.5 inline ml-1" />
+            נקה כל הסינונים
+          </button>
+        </div>
+      )}
+
+      {/* Popular cities */}
+      <div>
+        <p className="text-xs font-bold mb-3 text-center" style={{ color: C_TEXT_MUTED }}>חיפושים פופולריים:</p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {SEO_CITIES.slice(0, 8).map(city => (
+            <button
+              key={city}
+              onClick={() => onSelectCity(city)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+              style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}
+            >
+              עבודות ב{city}
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function FindJobs() {
@@ -1148,39 +1461,33 @@ export default function FindJobs() {
         {isLoading ? (
           <JobCardSkeletonList count={4} />
         ) : jobs.length === 0 ? (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16 px-4">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Search className="h-8 w-8" style={{ color: C_BRAND_HEX }} />
-            </div>
-            <h3 className="text-lg font-black mb-2" style={{ color: "oklch(0.22 0.03 122.3)" }}>לא נמצאו משרות</h3>
-            <p className="text-sm mb-6" style={{ color: C_TEXT_MUTED }}>נסה לשנות את הסינון או להרחיב את אזור החיפוש</p>
-            <div className="flex flex-col gap-2 max-w-xs mx-auto">
-              {category !== "all" && (
-                <button onClick={() => setCategory("all")} className="py-3 rounded-2xl font-bold text-sm"
-                  style={{ background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)", color: "oklch(0.96 0.04 80)" }}>
-                  הצג כל הקטגוריות
-                </button>
-              )}
-              {selectedCity && (
-                <button onClick={() => setSelectedCity(null)} className="py-3 rounded-2xl font-bold text-sm border"
-                  style={{ borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                  הסר סינון עיר
-                </button>
-              )}
-            </div>
-            <div className="mt-8">
-              <p className="text-xs font-bold mb-3" style={{ color: C_TEXT_MUTED }}>חיפושים פופולריים:</p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {SEO_CITIES.slice(0, 6).map(city => (
-                  <Link key={city} href={`/jobs/${encodeURIComponent(city)}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
-                    style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                    עבודות ב{city}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+          <SmartEmptyState
+            category={category}
+            catName={catName}
+            catIcon={dbCategories.find(c => c.slug === category)?.icon ?? undefined}
+            selectedCity={selectedCity}
+            dateFilter={dateFilter}
+            selectedTimeSlots={selectedTimeSlots}
+            selectedDays={selectedDays}
+            showUrgentToday={showUrgentToday}
+            searchText={searchText}
+            isAuthenticated={isAuthenticated}
+            onClearCategory={() => setCategory("all")}
+            onClearCity={() => setSelectedCity(null)}
+            onClearDateFilter={() => setDateFilter(null)}
+            onClearTimeSlots={() => setSelectedTimeSlots([])}
+            onClearDays={() => setSelectedDays([])}
+            onClearUrgent={() => setShowUrgentToday(false)}
+            onClearSearch={() => setSearchText("")}
+            onSelectCity={(city) => setSelectedCity(city)}
+            onShowTomorrow={() => { setDateFilter("tomorrow"); }}
+            onShowThisWeek={() => { setDateFilter("this_week"); }}
+            onClearAllFilters={() => {
+              setCategory("all"); setSelectedCity(null); setSelectedTimeSlots([]);
+              setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
+              setSearchText(""); clearSavedFilters();
+            }}
+          />
         ) : (
           <motion.div
             initial="hidden" animate="visible"

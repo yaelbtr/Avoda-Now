@@ -1196,6 +1196,7 @@ export default function FindJobs() {
                     <div className="overflow-hidden">
                       <div className="pt-3 space-y-3">
                         <div className="grid grid-cols-2 gap-2">
+                          {/* ── לפי מיקום button ── */}
                           <button type="button"
                             onClick={() => {
                               if (userLat) {
@@ -1204,7 +1205,8 @@ export default function FindJobs() {
                                 clearLocationCache(); setAutoExpandedRadius(false);
                                 toast("מיקום בוטל");
                               } else {
-                                // Directly request geolocation (browser will prompt for permission)
+                                // Switch to location mode: clear city selection first
+                                setSelectedCity(null); setShowCityInput(false); setCitySearch("");
                                 doGetLocation();
                               }
                             }}
@@ -1213,13 +1215,20 @@ export default function FindJobs() {
                             {locating ? <BrandLoader size="sm" /> : <LocateFixed className="h-4 w-4" />}
                             {locating ? "מאתר..." : userLat ? `${radiusKm} ק"מ ממני` : "לפי מיקום"}
                           </button>
+                          {/* ── לפי עיר button ── */}
                           <button type="button"
-                            onClick={() => { if (userLat) { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); } setShowCityInput(true); setTimeout(() => cityInputRef.current?.focus(), 100); }}
+                            onClick={() => {
+                              // Switch to city mode: clear location first
+                              if (userLat) { setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); }
+                              setShowCityInput(true);
+                              setTimeout(() => cityInputRef.current?.focus(), 100);
+                            }}
                             className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${!userLat && (selectedCity || showCityInput) ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/50"}`}>
                             <MapPin className="h-4 w-4" />
                             {selectedCity ?? "לפי עיר"}
                           </button>
                         </div>
+                        {/* ── Location mode: show ONLY km-radius chips ── */}
                         {userLat && (
                           <div className="flex gap-1.5 flex-wrap">
                             {RADIUS_OPTIONS.map(r => (
@@ -1229,14 +1238,15 @@ export default function FindJobs() {
                                 {r.label}
                               </button>
                             ))}
-                            <button onClick={() => { setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
+                            <button onClick={() => { setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false); toast("מיקום בוטל"); }}
                               className="flex items-center gap-1 px-2 py-1 rounded-full text-xs border"
                               style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}>
                               <X className="h-3 w-3" /> בטל
                             </button>
                           </div>
                         )}
-                        {showCityInput && !userLat && (
+                        {/* ── City mode: show ONLY city controls (hidden when location active) ── */}
+                        {!userLat && showCityInput && (
                           <div className="flex items-center gap-2">
                             <div className="flex-1">
                               <CityAutocomplete inputRef={cityInputRef} value={citySearch} onChange={setCitySearch} onSelect={handleCitySelect} placeholder="הזן שם עיר..." />
@@ -1246,7 +1256,7 @@ export default function FindJobs() {
                             </button>
                           </div>
                         )}
-                        {popularCities.length > 0 && (
+                        {!userLat && popularCities.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {popularCities.map((city: string) => (
                               <button key={city} onClick={() => { setSelectedCity(city); setShowCityInput(false); }}

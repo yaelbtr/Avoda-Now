@@ -1479,3 +1479,12 @@
 - [x] Test MySQL DAYOFWEEK conversion (JS+1 = MySQL) (5 tests)
 - [x] Test edge cases: empty array, pagination, combined filters (4 tests)
 - [x] Total: 33 new tests in server/dayOfWeek.test.ts — all passing (301 total)
+
+## Bug: FindJobs Blank Page (Mar 12, 2026 Round 3)
+- [x] Diagnose blank page on /find-jobs — NOT a code bug
+- [x] Root cause: user was viewing the old published version (avodanow.co.il); dev server and published site both work correctly. Need to Publish new checkpoint to update the live site.
+
+## Location Filter Mutual Exclusion (Mar 12, 2026)
+- [x] "לפי מיקום" mode: shows only km-radius chips, city controls hidden, selectedCity reset to null
+- [x] "לפי עיר" mode: shows only city controls (input + popular cities), km chips hidden, userLat/userLng/geoCity reset
+- [x] Switching modes resets the other mode's state (mutual exclusion enforced)

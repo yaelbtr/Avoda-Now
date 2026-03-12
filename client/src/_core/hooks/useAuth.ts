@@ -2,6 +2,10 @@ import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
+import { useLocation } from "wouter";
+
+// Pages that require authentication — redirect to home on logout
+const PROTECTED_PATHS = ["/my-jobs", "/worker-profile", "/my-applications", "/applications", "/employer-profile", "/admin"];
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -12,6 +16,7 @@ export function useAuth(options?: UseAuthOptions) {
   const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
     options ?? {};
   const utils = trpc.useUtils();
+  const [location, navigate] = useLocation();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
@@ -32,14 +37,20 @@ export function useAuth(options?: UseAuthOptions) {
         error instanceof TRPCClientError &&
         error.data?.code === "UNAUTHORIZED"
       ) {
-        return;
+        // already logged out — still clear state and redirect
+      } else {
+        throw error;
       }
-      throw error;
     } finally {
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
+      // If on a protected page, navigate to home so no "login required" screen appears
+      const isProtected = PROTECTED_PATHS.some((p) => location.startsWith(p));
+      if (isProtected) {
+        navigate("/");
+      }
     }
-  }, [logoutMutation, utils]);
+  }, [logoutMutation, utils, location, navigate]);
 
   const state = useMemo(() => {
     localStorage.setItem(

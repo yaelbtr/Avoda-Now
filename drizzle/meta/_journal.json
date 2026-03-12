@@ -225,6 +225,20 @@
       "when": 1773274457192,
       "tag": "0031_glossy_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1773275110501,
+      "tag": "0032_short_malice",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1773275646107,
+      "tag": "0033_smooth_sunfire",
+      "breakpoints": true
     }
   ]
 }

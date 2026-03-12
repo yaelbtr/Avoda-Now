@@ -27,6 +27,8 @@ import {
   InsertRegion,
   workerRegions,
   WorkerRegion,
+  regionNotificationRequests,
+  RegionNotificationRequest,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1985,6 +1987,38 @@ async function _recountAndMaybeActivate(
   if (region && region.status === "collecting_workers" && cnt >= region.minWorkersRequired) {
     await db.update(regions).set({ status: "active" }).where(eq(regions.id, regionId));
     console.log(`[Regions] Region "${region.name}" auto-activated! (${cnt} workers)`);
+    // Fire-and-forget: push notifications to all workers in this region
+    _notifyRegionWorkers(db, region.id, region.name).catch((err) =>
+      console.error(`[Regions] Failed to notify workers for region ${region.id}:`, err)
+    );
+  }
+}
+
+/**
+ * Fire-and-forget: send push notifications to all workers associated with a region.
+ * Called when the region auto-activates.
+ */
+async function _notifyRegionWorkers(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  regionId: number,
+  regionName: string
+): Promise<void> {
+  // Import lazily to avoid circular deps
+  const { sendPushToUser } = await import("./webPush");
+  const workers = await db
+    .select({ workerId: workerRegions.workerId })
+    .from(workerRegions)
+    .where(eq(workerRegions.regionId, regionId));
+  for (const { workerId } of workers) {
+    try {
+      await sendPushToUser(workerId, {
+        title: `🎉 האזור ${regionName} נפתח!`,
+        body: `מעסיקים מחפשים עכשיו באזורך. היכנס לאפליקציה וקבל הצעות עבודה עכשיו.`,
+        url: "/find-jobs",
+      });
+    } catch {
+      // Non-critical — skip failed subscriptions
+    }
   }
 }
 
@@ -2042,7 +2076,7 @@ export async function updateRegion(
 export async function checkRegionActiveForJob(
   lat: number,
   lng: number
-): Promise<{ allowed: boolean; regionName?: string; regionSlug?: string }> {
+): Promise<{ allowed: boolean; regionId?: number; regionName?: string; regionSlug?: string }> {
   const region = await findNearestRegion(lat, lng);
   if (!region) {
     // No region defined for this location → allow posting (open market)
@@ -2051,7 +2085,7 @@ export async function checkRegionActiveForJob(
   if (region.status === "active") {
     return { allowed: true };
   }
-  return { allowed: false, regionName: region.name, regionSlug: region.slug };
+  return { allowed: false, regionId: region.id, regionName: region.name, regionSlug: region.slug };
 }
 
 /** Recount workers per region from the worker_regions table (admin utility) */
@@ -2115,4 +2149,130 @@ export async function getWorkersByRegion(regionId: number): Promise<
     .where(eq(workerRegions.regionId, regionId))
     .orderBy(asc(workerRegions.distanceKm));
   return rows;
+}
+
+// ─── Region Notification Requests ────────────────────────────────────────────
+
+/**
+ * Subscribe a user to receive a notification when a region becomes active.
+ * Silently ignores duplicate requests (unique constraint on user+region).
+ */
+export async function requestRegionNotification(
+  userId: number,
+  regionId: number,
+  type: "worker" | "employer"
+): Promise<{ alreadySubscribed: boolean }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Check if already subscribed
+  const existing = await db
+    .select({ id: regionNotificationRequests.id })
+    .from(regionNotificationRequests)
+    .where(
+      and(
+        eq(regionNotificationRequests.userId, userId),
+        eq(regionNotificationRequests.regionId, regionId)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) return { alreadySubscribed: true };
+
+  await db.insert(regionNotificationRequests).values({ userId, regionId, type });
+  return { alreadySubscribed: false };
+}
+
+/**
+ * Get all notification subscriptions for a user (with region data).
+ */
+export async function getMyRegionNotificationRequests(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: regionNotificationRequests.id,
+      regionId: regionNotificationRequests.regionId,
+      type: regionNotificationRequests.type,
+      createdAt: regionNotificationRequests.createdAt,
+      regionName: regions.name,
+      regionSlug: regions.slug,
+      regionStatus: regions.status,
+    })
+    .from(regionNotificationRequests)
+    .innerJoin(regions, eq(regionNotificationRequests.regionId, regions.id))
+    .where(eq(regionNotificationRequests.userId, userId));
+}
+
+/**
+ * Get all users who subscribed to be notified when a specific region activates.
+ * Used when admin activates a region to send push notifications.
+ */
+export async function getRegionNotificationSubscribers(
+  regionId: number,
+  type?: "worker" | "employer"
+) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(regionNotificationRequests.regionId, regionId)];
+  if (type) conditions.push(eq(regionNotificationRequests.type, type));
+  return db
+    .select({
+      userId: regionNotificationRequests.userId,
+      type: regionNotificationRequests.type,
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(regionNotificationRequests)
+    .innerJoin(users, eq(regionNotificationRequests.userId, users.id))
+    .where(and(...conditions));
+}
+
+/**
+ * Delete a user's notification subscription for a region.
+ */
+export async function cancelRegionNotification(userId: number, regionId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .delete(regionNotificationRequests)
+    .where(
+      and(
+        eq(regionNotificationRequests.userId, userId),
+        eq(regionNotificationRequests.regionId, regionId)
+      )
+    );
+}
+
+/**
+ * Get the activation status of all regions a worker is associated with.
+ * Returns whether at least one region is active.
+ */
+export async function getWorkerRegionStatus(workerId: number): Promise<{
+  hasAnyRegion: boolean;
+  hasActiveRegion: boolean;
+  inactiveRegions: Array<{ id: number; name: string; slug: string; status: string }>;
+}> {
+  const db = await getDb();
+  if (!db) return { hasAnyRegion: false, hasActiveRegion: false, inactiveRegions: [] };
+
+  const rows = await db
+    .select({
+      regionId: workerRegions.regionId,
+      regionName: regions.name,
+      regionSlug: regions.slug,
+      regionStatus: regions.status,
+    })
+    .from(workerRegions)
+    .innerJoin(regions, eq(workerRegions.regionId, regions.id))
+    .where(eq(workerRegions.workerId, workerId));
+
+  if (rows.length === 0) return { hasAnyRegion: false, hasActiveRegion: false, inactiveRegions: [] };
+
+  const hasActiveRegion = rows.some((r) => r.regionStatus === "active");
+  const inactiveRegions = rows
+    .filter((r) => r.regionStatus !== "active")
+    .map((r) => ({ id: r.regionId, name: r.regionName, slug: r.regionSlug, status: r.regionStatus }));
+
+  return { hasAnyRegion: true, hasActiveRegion, inactiveRegions };
 }

@@ -163,8 +163,10 @@ export const jobs = mysqlTable("jobs", {
   jobLocationMode: mysqlEnum("jobLocationMode", ["city", "radius"]).default("radius"),
   /** Job search radius in km (used when jobLocationMode = radius) */
   jobSearchRadiusKm: int("jobSearchRadiusKm").default(5),
-  /** Hourly rate for the job */
+  /** Hourly rate for the job (ILS per hour) */
   hourlyRate: decimal("hourlyRate", { precision: 10, scale: 2 }),
+  /** Estimated number of hours for the job */
+  estimatedHours: decimal("estimatedHours", { precision: 5, scale: 1 }),
   /** Whether the employer's phone number is visible to workers on the job card */
   showPhone: boolean("showPhone").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -453,3 +455,23 @@ export const workerRegions = mysqlTable(
 );
 export type WorkerRegion = typeof workerRegions.$inferSelect;
 export type InsertWorkerRegion = typeof workerRegions.$inferInsert;
+
+/**
+ * region_notification_requests — stores requests from users (workers or employers)
+ * who want to be notified when a region becomes active.
+ * Unique per user + region combination.
+ */
+export const regionNotificationRequests = mysqlTable(
+  "region_notification_requests",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    regionId: int("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
+    /** "worker" = worker waiting for employers | "employer" = employer waiting to post */
+    type: mysqlEnum("type", ["worker", "employer"]).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("uniq_user_region_notif").on(t.userId, t.regionId)]
+);
+export type RegionNotificationRequest = typeof regionNotificationRequests.$inferSelect;
+export type InsertRegionNotificationRequest = typeof regionNotificationRequests.$inferInsert;

@@ -20,7 +20,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2 } from "lucide-react";
+import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, MessageCircle, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
@@ -37,6 +37,8 @@ const schema = z.object({
   address: z.string().min(2, "נדרשת כתובת"),
   salary: z.string().optional(),
   salaryType: z.string(),
+  hourlyRate: z.string().optional(),
+  estimatedHours: z.string().optional(),
   // contactPhone is NOT in the form — taken from logged-in user on the server
   contactName: z.string().min(2, "נדרש שם"),
   businessName: z.string().optional(),
@@ -117,12 +119,62 @@ export default function PostJob() {
   const isVolunteer = watch("isVolunteer");
   const showPhone = watch("showPhone");
 
+  // Region inactive state — set when server rejects with FORBIDDEN + region info
+  const [regionBlocked, setRegionBlocked] = useState<{
+    regionId: number;
+    regionName: string;
+    regionSlug: string;
+  } | null>(null);
+
+  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  const requestNotif = trpc.regions.requestNotification.useMutation({
+    onSuccess: (d) => {
+      utils.regions.myNotifications.invalidate();
+      if (d.alreadySubscribed) {
+        toast.info("כבר נרשמת לקבל התראה עבור אזור זה");
+      } else {
+        toast.success("נרשמת! נשלח לך התראה כשהאזור ייפתח.");
+      }
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const cancelNotif = trpc.regions.cancelNotification.useMutation({
+    onSuccess: () => {
+      utils.regions.myNotifications.invalidate();
+      toast.success("ביטלת את ההתראה");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const utils = trpc.useUtils();
+
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
       setSuccess(true);
       setTimeout(() => navigate(`/job/${job?.id}`), 2000);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      // Check if the error is a region-not-active FORBIDDEN
+      const msg = e.message;
+      if (e.data?.code === "FORBIDDEN" && msg.includes("האזור")) {
+        // errorFormatter passes cause fields into e.data
+        const regionId = (e.data as any)?.regionId as number | undefined;
+        const regionName = (e.data as any)?.regionName as string | undefined;
+        const regionSlug = (e.data as any)?.regionSlug as string | undefined;
+        setRegionBlocked({
+          regionId: regionId ?? 0,
+          regionName: regionName ?? "האזור שלך",
+          regionSlug: regionSlug ?? "",
+        });
+      } else {
+        toast.error(msg);
+      }
+    },
   });
 
   const handleMapReady = (map: google.maps.Map) => {
@@ -209,6 +261,8 @@ export default function PostJob() {
       longitude: lng,
       salary: data.salary ? parseFloat(data.salary) : undefined,
       salaryType: data.salaryType as Parameters<typeof createJob.mutate>[0]["salaryType"],
+      hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
+      estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
       // contactPhone is taken from the logged-in user on the server
       contactName: data.contactName,
       businessName: data.businessName || undefined,
@@ -592,6 +646,43 @@ export default function PostJob() {
             </div>
           </div>
 
+          {/* Hourly rate + estimated hours — key info for workers */}
+          {salaryType !== "volunteer" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="hourlyRate">
+                  מחיר לשעה (₪)
+                </Label>
+                <Input
+                  id="hourlyRate"
+                  type="number"
+                  min="0"
+                  step="5"
+                  placeholder="70"
+                  {...register("hourlyRate")}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪ לשעה</p>
+              </div>
+              <div>
+                <Label htmlFor="estimatedHours">
+                  שעות עבודה משוערות
+                </Label>
+                <Input
+                  id="estimatedHours"
+                  type="number"
+                  min="0.5"
+                  max="24"
+                  step="0.5"
+                  placeholder="4"
+                  {...register("estimatedHours")}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 4 שעות</p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>זמן התחלה</Label>
@@ -789,6 +880,58 @@ export default function PostJob() {
           />
           {captchaError && <p className="text-destructive text-xs mt-1 text-right">תשובה שגויה, נסה שוב</p>}
         </div>
+
+        {/* Region blocked banner */}
+        {regionBlocked && (
+          <div
+            dir="rtl"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-right"
+            role="alert"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex-shrink-0 rounded-full bg-red-100 p-2">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-red-900 text-sm leading-snug">
+                  האזור עדיין בהרצה ונפתח בקרוב למעסיקים.
+                </p>
+                <p className="mt-1 text-xs text-red-700 leading-relaxed">
+                  אנחנו אוספים עובדים באזור ונעדכן אותך כשהאזור ייפתח לפרסום משרות.
+                </p>
+                {regionBlocked.regionId > 0 && (() => {
+                  const subscribed = (myNotifications ?? []).some(
+                    (n) => n.regionId === regionBlocked.regionId
+                  );
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (subscribed) {
+                          cancelNotif.mutate({ regionId: regionBlocked.regionId });
+                        } else {
+                          requestNotif.mutate({ regionId: regionBlocked.regionId, type: "employer" });
+                        }
+                      }}
+                      disabled={requestNotif.isPending || cancelNotif.isPending}
+                      className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        subscribed
+                          ? "border-red-300 bg-red-100 text-red-700 hover:bg-red-50"
+                          : "border-red-300 bg-white text-red-700 hover:bg-red-50"
+                      }`}
+                    >
+                      {subscribed ? (
+                        <><BellOff className="w-3 h-3" /> בטל התראה</>
+                      ) : (
+                        <><Bell className="w-3 h-3" /> הודע לי כשהאזור נפתח</>
+                      )}
+                    </button>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
 
         <AppButton
           type="submit"

@@ -79,7 +79,12 @@ export default function WorkerLandingPage() {
 
   const { data: region, isLoading, error } = trpc.regions.getBySlug.useQuery(
     { slug: slug ?? "" },
-    { enabled: !!slug }
+    {
+      enabled: !!slug,
+      // Poll every 30 seconds to show real-time worker count updates
+      refetchInterval: 30_000,
+      refetchIntervalInBackground: false,
+    }
   );
 
   useSEO({
@@ -191,6 +196,12 @@ export default function WorkerLandingPage() {
             <h2 className="font-bold text-olive-800 text-lg">התקדמות האזור</h2>
           </div>
           <ProgressBar current={region.currentWorkers} required={region.minWorkersRequired} />
+
+          {/* Real-time update indicator */}
+          <div className="flex items-center justify-center gap-1.5 mt-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-[11px] text-olive-400">ספירה בזמן אמת כל 30 שניות</span>
+          </div>
 
           {isActive && (
             <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 text-center font-medium">

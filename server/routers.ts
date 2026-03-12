@@ -89,6 +89,11 @@ import {
   seedRegionsIfEmpty,
   recountRegionWorkers,
   checkRegionActiveForJob,
+  requestRegionNotification,
+  getMyRegionNotificationRequests,
+  getRegionNotificationSubscribers,
+  cancelRegionNotification,
+  getWorkerRegionStatus,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser } from "./webPush";
@@ -283,6 +288,10 @@ const jobInputSchema = z.object({
   jobLocationMode: z.enum(["radius", "city"]).default("radius"),
   /** Search radius in km when jobLocationMode = radius */
   jobSearchRadiusKm: z.number().int().min(1).max(100).default(5),
+  /** Hourly rate in ILS (e.g. 70 for 70₪/hour) */
+  hourlyRate: z.number().min(0).max(10000).optional(),
+  /** Estimated number of hours for the job (e.g. 4) */
+  estimatedHours: z.number().min(0.5).max(24).optional(),
 });
 
 const jobsRouter = router({
@@ -340,7 +349,11 @@ const jobsRouter = router({
           throw new TRPCError({
             code: "FORBIDDEN",
             message: `האזור עדיין בהרצה ונפתח בקרוב למעסיקים.`,
-            cause: { regionName: regionCheck.regionName, regionSlug: regionCheck.regionSlug },
+            cause: {
+              regionId: regionCheck.regionId,
+              regionName: regionCheck.regionName,
+              regionSlug: regionCheck.regionSlug,
+            },
           });
         }
       }
@@ -382,6 +395,8 @@ const jobsRouter = router({
         latitude: input.latitude.toString(),
         longitude: input.longitude.toString(),
         salary: input.salary?.toString(),
+        hourlyRate: input.hourlyRate?.toString(),
+        estimatedHours: input.estimatedHours?.toString(),
         expiresAt,
         isUrgent: input.isUrgent ?? false,
         isLocalBusiness: input.isLocalBusiness ?? false,
@@ -1707,6 +1722,79 @@ const regionsRouter = router({
       const region = await getRegionById(input.id);
       if (!region) throw new TRPCError({ code: "NOT_FOUND", message: "אזור לא נמצא" });
       return region;
+    }),
+
+  /**
+   * Subscribe the current user to be notified when a region becomes active.
+   * Works for both workers and employers.
+   */
+  requestNotification: protectedProcedure
+    .input(z.object({
+      regionId: z.number().int(),
+      type: z.enum(["worker", "employer"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const result = await requestRegionNotification(ctx.user.id, input.regionId, input.type);
+      return result;
+    }),
+
+  /** Cancel a notification subscription */
+  cancelNotification: protectedProcedure
+    .input(z.object({ regionId: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      await cancelRegionNotification(ctx.user.id, input.regionId);
+      return { success: true };
+    }),
+
+  /** Get the current user's notification subscriptions */
+  myNotifications: protectedProcedure
+    .query(async ({ ctx }) => {
+      return getMyRegionNotificationRequests(ctx.user.id);
+    }),
+
+  /**
+   * Get the activation status of all regions the current worker is associated with.
+   * Used to show the "region not yet open" banner on the worker homepage.
+   */
+  workerRegionStatus: protectedProcedure
+    .query(async ({ ctx }) => {
+      return getWorkerRegionStatus(ctx.user.id);
+    }),
+
+  /**
+   * Admin: activate a region and notify all subscribed users.
+   * Wraps updateStatus + fan-out push notifications.
+   */
+  activateAndNotify: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const region = await getRegionById(input.id);
+      if (!region) throw new TRPCError({ code: "NOT_FOUND", message: "אזור לא נמצא" });
+
+      // Activate the region
+      await updateRegionStatus(input.id, "active");
+
+      // Notify all subscribers
+      const subscribers = await getRegionNotificationSubscribers(input.id);
+      let notified = 0;
+      for (const sub of subscribers) {
+        try {
+          const msg = sub.type === "employer"
+            ? `האזור "${region.name}" נפתח! כעת תוכל לפרסם משרות ולמצוא עובדים.`
+            : `האזור "${region.name}" נפתח! מעסיקים מחפשים עכשיו — בדוק הצעות עבודה.`;
+          await sendPushToUser(sub.userId, {
+            title: `🎉 האזור ${region.name} נפתח!`,
+            body: msg,
+            url: sub.type === "employer" ? "/post-job" : "/find-jobs",
+          });
+          notified++;
+        } catch {
+          // Non-critical — continue even if push fails
+        }
+      }
+
+      return { success: true, notified };
     }),
 });
 

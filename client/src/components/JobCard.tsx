@@ -46,6 +46,8 @@ export interface JobCardJob {
   expiresAt?: Date | string | null;
   distance?: number;
   savedAt?: Date | string | null;
+  hourlyRate?: string | null;
+  estimatedHours?: string | null;
 }
 
 export interface JobCardProps {
@@ -637,11 +639,28 @@ export function JobCard({
 
         </div>
 
-        {/* Left: salary */}
-        <div className="shrink-0 text-left">
+        {/* Left: salary + hourly summary */}
+        <div className="shrink-0 text-left flex flex-col items-end gap-0.5">
           <span className="text-sm font-black whitespace-nowrap" style={{ color: isVolunteer ? C_SUCCESS_HEX : C_BRAND_HEX }}>
             {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
           </span>
+          {/* Hourly rate × estimated hours summary */}
+          {!isVolunteer && job.hourlyRate && (
+            <span className="text-[10px] font-semibold whitespace-nowrap" style={{ color: C_BRAND_HEX }}>
+              {parseFloat(job.hourlyRate).toLocaleString("he-IL")} ₪/שעה
+              {job.estimatedHours && (
+                <> · {parseFloat(job.estimatedHours) % 1 === 0
+                  ? parseFloat(job.estimatedHours).toFixed(0)
+                  : parseFloat(job.estimatedHours).toFixed(1)} שעות</>
+              )}
+            </span>
+          )}
+          {/* Total earnings estimate */}
+          {!isVolunteer && job.hourlyRate && job.estimatedHours && (
+            <span className="text-[9px] font-medium whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+              סה"כ {(parseFloat(job.hourlyRate) * parseFloat(job.estimatedHours)).toLocaleString("he-IL")} ₪ לעבודה
+            </span>
+          )}
         </div>
       </div>
 

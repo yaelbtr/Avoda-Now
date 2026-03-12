@@ -1,0 +1,1 @@
+ALTER TABLE `jobs` ADD `estimatedHours` decimal(5,1);

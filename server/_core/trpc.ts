@@ -5,6 +5,17 @@ import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    // Pass cause data (e.g. regionId/regionName) through to the client
+    const causeData = error.cause && typeof error.cause === "object" && !(error.cause instanceof Error) ? error.cause as Record<string, unknown> : {};
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        ...causeData,
+      },
+    };
+  },
 });
 
 export const router = t.router;

@@ -19,6 +19,7 @@ import {
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
+import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { toast } from "sonner";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
@@ -828,6 +829,13 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </div>
         </div>
       )}
+      {/* ── Inactive region banner ─────────────────────────────────────────── */}
+      {isAuthenticated && (
+        <div className="relative z-10 px-4 mb-4">
+          <WorkerRegionBanner />
+        </div>
+      )}
+
       {/* ── Urgent / Today carousel ───────────────────────────────────────────────────────────────────── */}
       {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
         <section className="mb-10 relative z-10">
@@ -1216,6 +1224,48 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <Search size={16} style={{ color: "var(--brand)" }} />
             חיפוש עבודות
           </motion.button>
+        </div>
+      </section>
+
+      {/* ── Region Landing Pages CTA ─────────────────────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10 px-5 py-8"
+        style={{ background: "oklch(0.97 0.012 100)", borderTop: "1px solid oklch(0.92 0.02 100)" }}
+      >
+        <h3 className="text-base font-black mb-1" style={{ color: "var(--brand)" }}>
+          הצטרף לעובדים באזורך
+        </h3>
+        <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
+          האזורים שלהלן נפתחים בקרוב למעסיקים. הצטרף עכשיו ותהיה הראשון לקבל הצעות.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {([
+            { slug: "tel-aviv", name: "תל אביב" },
+            { slug: "jerusalem", name: "ירושלים" },
+            { slug: "haifa", name: "חיפה" },
+            { slug: "bnei-brak", name: "בני ברק" },
+            { slug: "ashdod", name: "אשדוד" },
+            { slug: "beer-sheva", name: "באר שבע" },
+            { slug: "netanya", name: "נתניה" },
+            { slug: "rishon-lezion", name: "ראשון לציון" },
+          ] as const).map(({ slug, name }) => (
+            <a
+              key={slug}
+              href={`/work/${slug}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                background: "white",
+                border: "1.5px solid oklch(0.85 0.06 84.0)",
+                color: "var(--brand)",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.04 91.6)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "white"; }}
+            >
+              📍 {name}
+            </a>
+          ))}
         </div>
       </section>
 

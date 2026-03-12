@@ -1265,3 +1265,25 @@
 - [x] Frontend: /admin/regions standalone page (full table with create/edit/delete/activate/pause)
 - [x] Frontend: /admin/regions/:id detail page — worker list, progress bar, activation controls
 - [x] Frontend: Add route /admin/regions and /admin/regions/:id to App.tsx
+
+## New Features Batch
+
+- [x] Fix TS error in server/_core/trpc.ts errorFormatter
+- [x] PostJob: add hourlyRate (₪/hour) and estimatedHours fields
+- [x] DB: add hourlyRate + estimatedHours columns to jobs table, push migration
+- [x] JobCard/JobDetails: display hourlyRate × estimatedHours summary (rate/hour + hours + total)
+- [x] Homepage: add region landing page CTAs section (/work/tel-aviv etc.) in HomeWorker
+- [x] WorkerLandingPage: real-time worker count polling every 30s with pulsing indicator
+- [x] Push notifications to workers when their region auto-activates (fire-and-forget in _recountAndMaybeActivate)
+
+## Inactive Region Notifications
+
+- [ ] DB: add region_notification_requests table (id, userId, regionId, type: worker|employer, createdAt) — unique per user+region
+- [ ] DB: push migration
+- [ ] Server: regions.requestNotification procedure — subscribe user to region activation alert
+- [ ] Server: regions.getMyNotificationRequests — list regions user subscribed to
+- [ ] Server: regions.getWorkerRegionStatus — returns worker's regions with active/inactive status
+- [ ] Worker: show banner on homepage when ALL associated regions are inactive: "אזור זה טרם נפתח למעסיקים..."
+- [ ] Employer: show inline message on PostJob when region is inactive with "הודע לי כשהאזור נפתח" button
+- [ ] Employer: confirmation toast after subscribing to notification
+- [ ] Admin: when region is activated, send push notification to all subscribed employers

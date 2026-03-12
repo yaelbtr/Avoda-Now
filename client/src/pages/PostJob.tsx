@@ -77,6 +77,7 @@ export default function PostJob() {
   const [jobCity, setJobCity] = useState("");
   // New fields: date, work hours, images
   const [jobDate, setJobDate] = useState("");
+  const [jobDateTouched, setJobDateTouched] = useState(false);
   const [workStartTime, setWorkStartTime] = useState("");
   const [workEndTime, setWorkEndTime] = useState("");
   const [jobImages, setJobImages] = useState<string[]>([]); // S3 URLs
@@ -289,8 +290,13 @@ export default function PostJob() {
       toast.error("קוד אבטחה שגוי, נסה שוב");
       return;
     }
+    // Validate required jobDate
+    if (!jobDate) {
+      setJobDateTouched(true);
+      toast.error("אנא בחר תאריך לעבודה");
+      return;
+    }
     setCaptchaError(false);
-
     createJob.mutate({
       title: data.title,
       description: data.description,
@@ -792,24 +798,6 @@ export default function PostJob() {
             </div>
           </div>
 
-          {/* Local business toggle */}
-          <div
-            onClick={() => setValue("isLocalBusiness", !isLocalBusiness)}
-            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isLocalBusiness ? "border-blue-400 bg-blue-50" : "border-border hover:border-blue-300"}`}
-          >
-            <div>
-              <p className={`font-semibold text-sm ${isLocalBusiness ? "text-blue-700" : "text-foreground"}`}>
-                🏢 עסק מקומי
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                יוצג badge "עסק מקומי" על כרטיס העבודה
-              </p>
-            </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isLocalBusiness ? "border-blue-500 bg-blue-500" : "border-muted-foreground"}`}>
-              {isLocalBusiness && <span className="text-white text-xs">✓</span>}
-            </div>
-          </div>
-
           {/* Urgent toggle */}
           <div
             onClick={() => setValue("isUrgent", !isUrgent)}
@@ -854,36 +842,85 @@ export default function PostJob() {
           </div>
 
           {/* Date + exact work hours */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-3">
+            {/* Required date */}
             <div>
-              <Label htmlFor="jobDate">תאריך העבודה</Label>
+              <Label htmlFor="jobDate">
+                תאריך העבודה <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="jobDate"
                 type="date"
                 value={jobDate}
                 onChange={e => setJobDate(e.target.value)}
-                className="mt-1"
+                className={`mt-1 ${!jobDate && jobDateTouched ? "border-destructive ring-destructive/30" : ""}`}
+                onBlur={() => setJobDateTouched(true)}
+                min={new Date().toISOString().split("T")[0]}
               />
+              {!jobDate && jobDateTouched && (
+                <p className="text-destructive text-xs mt-1">תאריך העבודה הוא שדה חובה</p>
+              )}
             </div>
+
+            {/* Optional time range */}
             <div>
-              <Label htmlFor="workStartTime">שעת התחלה</Label>
-              <Input
-                id="workStartTime"
-                type="time"
-                value={workStartTime}
-                onChange={e => setWorkStartTime(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="workEndTime">שעת סיום</Label>
-              <Input
-                id="workEndTime"
-                type="time"
-                value={workEndTime}
-                onChange={e => setWorkEndTime(e.target.value)}
-                className="mt-1"
-              />
+              <Label>שעות עבודה <span className="text-muted-foreground text-xs font-normal">(אופציונלי)</span></Label>
+              {/* Quick preset buttons */}
+              <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                {[
+                  { label: "☀️ בוקר", start: "06:00", end: "14:00" },
+                  { label: "☀️ צהריים", start: "12:00", end: "20:00" },
+                  { label: "🌆 ערב", start: "16:00", end: "22:00" },
+                  { label: "🌙 לילה", start: "22:00", end: "06:00" },
+                ].map(preset => {
+                  const isActive = workStartTime === preset.start && workEndTime === preset.end;
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
+                        else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); }
+                      }}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
+                      style={isActive ? {
+                        background: "oklch(0.35 0.08 122)",
+                        borderColor: "oklch(0.35 0.08 122)",
+                        color: "white",
+                      } : {
+                        background: "white",
+                        borderColor: "oklch(0.88 0.04 122)",
+                        color: "oklch(0.35 0.08 122)",
+                      }}
+                    >
+                      {preset.label} ({preset.start}–{preset.end})
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Manual time inputs */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="workStartTime" className="text-xs text-muted-foreground">שעת התחלה</Label>
+                  <Input
+                    id="workStartTime"
+                    type="time"
+                    value={workStartTime}
+                    onChange={e => setWorkStartTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="workEndTime" className="text-xs text-muted-foreground">שעת סיום</Label>
+                  <Input
+                    id="workEndTime"
+                    type="time"
+                    value={workEndTime}
+                    onChange={e => setWorkEndTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

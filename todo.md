@@ -1337,3 +1337,10 @@
 - [x] FindJobs page: animated banner "השלם את הפרופיל שלך" shown only when worker profile is incomplete
 - [x] Banner: animated pulsing border (framer-motion opacity+scale loop), icon, text, and "עדכן עכשיו" button linking to /worker-profile
 - [x] Banner: hidden if profile is complete (has categories + location) or user is not logged in
+
+## PostJob Date/Time UX (Mar 12, 2026)
+
+- [ ] Make jobDate field required in PostJob form (validation + UI indicator)
+- [ ] Make workStartTime / workEndTime optional (remove required validation)
+- [ ] Add quick-select time preset buttons: בוקר (06:00-14:00), צהרים (12:00-20:00), ערב (16:00-22:00), לילה (22:00-06:00)
+- [ ] Preset buttons auto-fill both start and end time fields

@@ -1549,3 +1549,29 @@
 - [x] Registered /jobs/ניקיון-לפסח and /jobs/מנקה-לפסח routes in App.tsx (before /jobs/:slug)
 - [x] Passover landing pages show cleaning jobs, Passover info banner, FAQ section, city SEO links
 - [x] 301 tests still passing, 0 TypeScript errors
+
+## Remove Duplicate Active Filter Chips (Mar 12, 2026)
+- [x] Remove active filter chips (category + city X buttons) from the results header — they already appear in a better format below
+
+## Multi-Category Selection in FindJobs (Mar 12, 2026)
+- [x] Replace single `category` string state with `selectedCategories: string[]` array
+- [x] Update category chips in filter panel to toggle (multi-select) instead of replace
+- [x] Update tRPC query params to pass categories[] array
+- [x] Update server db.ts getActiveJobs / getJobsNearLocation to accept categories: string[]
+- [x] Update server routers.ts jobs.list and jobs.search to accept categories array
+- [x] Update filter persistence (localStorage) to save selectedCategories array
+- [x] Update activeFilterCount to count selectedCategories.length
+- [x] Update SmartEmptyState to handle selectedCategories array
+- [ ] Update SEO title/canonical to reflect multi-category selection
+- [x] Update clear-all logic to reset selectedCategories to []
+
+## Maintenance Mode (Mar 12, 2026)
+- [x] Add systemSettings table to drizzle/schema.ts (key TEXT PK, value TEXT)
+- [x] Push DB migration
+- [x] Add getSystemSetting / setSystemSetting helpers to server/db.ts
+- [x] Add admin tRPC procedures: admin.getMaintenanceMode + admin.setMaintenanceMode + public maintenance.status
+- [x] Add MaintenancePage.tsx — shown to non-admin users when maintenance mode is ON
+- [x] Add MaintenanceGate — inline in Router() in App.tsx, polls every 60s, auto-unblocks when admin turns off
+- [x] Add Maintenance Mode toggle card to Admin panel (new תחזוקה tab) with ON/OFF button and status indicator
+- [x] Admins bypass maintenance mode and see the site normally
+- [x] Run tests, verify 0 TypeScript errors, save checkpoint

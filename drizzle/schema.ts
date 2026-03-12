@@ -485,3 +485,14 @@ export const regionNotificationRequests = mysqlTable(
 );
 export type RegionNotificationRequest = typeof regionNotificationRequests.$inferSelect;
 export type InsertRegionNotificationRequest = typeof regionNotificationRequests.$inferInsert;
+
+/**
+ * System settings — key/value store for global configuration flags.
+ * Examples: maintenanceMode = "true" | "false"
+ */
+export const systemSettings = mysqlTable("system_settings", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+export type SystemSetting = typeof systemSettings.$inferSelect;

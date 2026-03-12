@@ -253,6 +253,13 @@
       "when": 1773278952063,
       "tag": "0035_yielding_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1773341565286,
+      "tag": "0036_brief_firebird",
+      "breakpoints": true
     }
   ]
 }

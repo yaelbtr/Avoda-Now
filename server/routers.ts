@@ -101,6 +101,9 @@ import {
   getReferralCount,
   getAllReferrals,
   withdrawApplication,
+  getSystemSetting,
+  setSystemSetting,
+  isMaintenanceModeActive,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -313,6 +316,8 @@ const jobsRouter = router({
   list: publicProcedure
     .input(z.object({
       category: z.string().optional(),
+      /** Multi-category filter — takes precedence over category when provided */
+      categories: z.array(z.string().min(1)).max(20).optional(),
       limit: z.number().int().min(1).max(50).optional(),
       city: z.string().optional(),
       /** Multi-city filter — takes precedence over city when provided */
@@ -325,7 +330,7 @@ const jobsRouter = router({
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities);
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -336,6 +341,8 @@ const jobsRouter = router({
         lng: z.number(),
         radiusKm: z.number().default(10),
         category: z.string().optional(),
+        /** Multi-category filter — takes precedence over category when provided */
+        categories: z.array(z.string().min(1)).max(20).optional(),
         limit: z.number().int().min(1).max(50).optional(),
         city: z.string().optional(),
         /** Multi-city filter — takes precedence over city when provided */
@@ -349,7 +356,7 @@ const jobsRouter = router({
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities);
+      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -1000,6 +1007,20 @@ const adminRouter = router({
     .mutation(async ({ input }) => {
       const deletedCount = await adminClearPhoneChangeLockout(input.userId);
       return { success: true, deletedCount };
+    }),
+
+  /** Get current maintenance mode status */
+  getMaintenanceMode: adminProcedure.query(async () => {
+    const active = await isMaintenanceModeActive();
+    return { active };
+  }),
+
+  /** Toggle maintenance mode on/off */
+  setMaintenanceMode: adminProcedure
+    .input(z.object({ active: z.boolean() }))
+    .mutation(async ({ input }) => {
+      await setSystemSetting("maintenanceMode", input.active ? "true" : "false");
+      return { success: true, active: input.active };
     }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
@@ -1904,10 +1925,21 @@ const referralRouter = router({
   }),
 });
 
-// ─── App Router ─────────────────────────────────────────────────────
+// ─── Maintenance Router ────────────────────────────────────────────────────────────────────
+
+const maintenanceRouter = router({
+  /** Public: check if maintenance mode is active */
+  status: publicProcedure.query(async () => {
+    const active = await isMaintenanceModeActive();
+    return { active };
+  }),
+});
+
+// ─── App Router ────────────────────────────────────────────────────────────────────
 
 export const appRouter = router({
   system: systemRouter,
+  maintenance: maintenanceRouter,
   auth: authRouter,
   jobs: jobsRouter,
   workers: workersRouter,

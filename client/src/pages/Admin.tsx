@@ -41,6 +41,7 @@ import {
   TrendingUp,
   UserCheck,
   Users,
+  Wrench,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -180,6 +181,21 @@ export default function Admin() {
     onError: (e) => toast.error(e.message),
   });
 
+  // Maintenance mode
+  const maintenanceModeQuery = trpc.admin.getMaintenanceMode.useQuery(
+    undefined,
+    { enabled: !!user && user.role === "admin" }
+  );
+  const setMaintenanceMode = trpc.admin.setMaintenanceMode.useMutation({
+    onSuccess: (data) => {
+      utils.admin.getMaintenanceMode.invalidate();
+      // Also invalidate the public maintenance status so the gate updates immediately
+      utils.maintenance.status.invalidate();
+      toast.success(data.active ? "מצב תחזוקה הופעל" : "מצב תחזוקה בוטל");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const confirm = (title: string, description: string, onConfirm: () => void) => {
     setConfirmDialog({ open: true, title, description, onConfirm });
   };
@@ -238,6 +254,7 @@ export default function Admin() {
               { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
               { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
               { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
+              { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -298,6 +315,10 @@ export default function Admin() {
             <TabsTrigger value="regions" className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               אזורים
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="flex items-center gap-2">
+              <Wrench className="w-4 h-4" />
+              תחזוקה
             </TabsTrigger>
           </TabsList>
 
@@ -811,6 +832,80 @@ export default function Admin() {
 
           <TabsContent value="regions">
             <AdminRegionsTab />
+          </TabsContent>
+
+          {/* ─── Maintenance Tab ─── */}
+          <TabsContent value="maintenance">
+            <div className="max-w-lg">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wrench className="w-5 h-5 text-orange-500" />
+                    מצב תחזוקה
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    כשמצב תחזוקה פעיל, משתמשים רגילים יראו דף &quot;המערכת בתחזוקה&quot; במקום האתר.
+                    מנהלים מקבלים גישה מלאה בכל עת.
+                  </p>
+
+                  {/* Current status indicator */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg border" style={{
+                    background: maintenanceModeQuery.data?.active
+                      ? "oklch(0.97 0.04 30)"
+                      : "oklch(0.97 0.02 122)",
+                    borderColor: maintenanceModeQuery.data?.active
+                      ? "oklch(0.85 0.08 30)"
+                      : "oklch(0.88 0.04 122)",
+                  }}>
+                    <div className="w-3 h-3 rounded-full" style={{
+                      background: maintenanceModeQuery.data?.active
+                        ? "oklch(0.65 0.18 30)"
+                        : "oklch(0.55 0.14 142)",
+                    }} />
+                    <span className="text-sm font-medium">
+                      {maintenanceModeQuery.isLoading
+                        ? "טוען..."
+                        : maintenanceModeQuery.data?.active
+                        ? "מצב תחזוקה פעיל — האתר נעול למשתמשים רגילים"
+                        : "האתר פתוח לכלל הציבור"}
+                    </span>
+                  </div>
+
+                  {/* Toggle button */}
+                  <div className="flex gap-3">
+                    {maintenanceModeQuery.data?.active ? (
+                      <AppButton
+                        variant="brand"
+                        onClick={() => setMaintenanceMode.mutate({ active: false })}
+                        disabled={setMaintenanceMode.isPending}
+                      >
+                        {setMaintenanceMode.isPending ? "מעדכן..." : "פתח את האתר לכלל הציבור"}
+                      </AppButton>
+                    ) : (
+                      <AppButton
+                        variant="destructive"
+                        onClick={() =>
+                          confirm(
+                            "הפעלת מצב תחזוקה",
+                            "משתמשים רגילים לא יוכלו להכנס לאתר עד שתבטל את המצב. האם אתה בטוח?",
+                            () => setMaintenanceMode.mutate({ active: true })
+                          )
+                        }
+                        disabled={setMaintenanceMode.isPending}
+                      >
+                        {setMaintenanceMode.isPending ? "מעדכן..." : "נעל את האתר (מצב תחזוקה)"}
+                      </AppButton>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    הגדרה זו נשמרת במסד הנתונים ונכנסת לתוקף מידי.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
         </Tabs>

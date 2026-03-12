@@ -32,8 +32,9 @@ const FILTER_PREFS_KEY = "findJobs_filters";
 
 // ── Filter persistence helpers ────────────────────────────────────────────────
 interface SavedFilters {
-  category: string;
-  selectedCity: string | null;   // legacy — kept for backward-compat
+  category: string;               // legacy — kept for backward-compat (first of selectedCategories)
+  selectedCategories: string[];   // multi-category filter (primary)
+  selectedCity: string | null;    // legacy — kept for backward-compat
   selectedCities: string[];       // multi-city filter (primary)
   selectedTimeSlots: string[];
   selectedDays: string[];
@@ -511,8 +512,13 @@ export default function FindJobs() {
     : (_savedFilters?.selectedCities ?? (_savedFilters?.selectedCity ? [_savedFilters.selectedCity] : []));
   const initialCity = initialCities[0] ?? null; // legacy single-city compat
   const resolvedCategory = initialCategory !== "all" ? initialCategory : (_savedFilters?.category ?? "all");
+  // Multi-category: seed from URL ?category=X or saved filters
+  const initialCategories: string[] = resolvedCategory !== "all"
+    ? [resolvedCategory]
+    : (_savedFilters?.selectedCategories ?? []);
 
-  const [category, setCategory] = useState(resolvedCategory);
+  const [category, setCategory] = useState(resolvedCategory); // legacy — kept for SEO/URL/SmartEmptyState
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories); // multi-category (primary)
   const [radiusKm, setRadiusKm] = useState(10);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -551,7 +557,7 @@ export default function FindJobs() {
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
   // Keep selectedCity in sync with selectedCities[0] for SEO/URL/legacy usage
   // Computed: whether current filters match saved filters (for UI indicator)
-  const hasSavedFilters = (category !== "all" || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
+  const hasSavedFilters = (selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
@@ -649,16 +655,19 @@ export default function FindJobs() {
 
   // Use multi-city array for queries; fall back to single city for backward-compat
   const citiesParam = selectedCities.length > 0 ? selectedCities : undefined;
+  // Use multi-category array for queries; fall back to single category for backward-compat
+  const categoriesParam = selectedCategories.length > 0 ? selectedCategories : undefined;
+  const legacyCategoryParam = selectedCategories.length === 1 ? selectedCategories[0] : (category === "all" ? undefined : category);
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: legacyCategoryParam, categories: categoriesParam, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { category: legacyCategoryParam, categories: categoriesParam, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50 },
+    { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
   const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
@@ -760,17 +769,25 @@ export default function FindJobs() {
   useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
   // Auto-save non-trivial filters to localStorage
   useEffect(() => {
-    const hasFilters = category !== "all" || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
+    const hasFilters = selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
     if (hasFilters) {
-      saveFiltersToStorage({ category, selectedCity: selectedCities[0] ?? null, selectedCities, selectedTimeSlots, selectedDays, sortBy });
+      saveFiltersToStorage({
+        category: selectedCategories[0] ?? "all",
+        selectedCategories,
+        selectedCity: selectedCities[0] ?? null,
+        selectedCities,
+        selectedTimeSlots,
+        selectedDays,
+        sortBy,
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
+  }, [selectedCategories, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
   const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
   const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   // Total active filters: panel filters + quick chips (location, urgent, date)
   const activeFilterCount = [
-    category !== "all",
+    selectedCategories.length > 0,
     !!selectedCity || !!userLat,
     showUrgentToday,
     selectedTimeSlots.length > 0,
@@ -1163,7 +1180,7 @@ export default function FindJobs() {
                   ) : null;
                 })()}
 
-                {/* Categories section */}
+                {/* Categories section — multi-select */}
                 <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
                   <button type="button" onClick={() => setOpenFilterSection(s => s === "categories" ? null : "categories")}
                     className="w-full flex items-center gap-2 py-2 text-right">
@@ -1171,9 +1188,11 @@ export default function FindJobs() {
                       <Briefcase className="h-3 w-3" style={{ color: C_BRAND_HEX }} />
                     </div>
                     <span className="font-bold text-sm flex-1" style={{ color: "oklch(0.22 0.03 122.3)" }}>תחומי עיסוק</span>
-                    {category !== "all" && (
+                    {selectedCategories.length > 0 && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
-                        {dbCategories.find(c => c.slug === category)?.icon} {catName}
+                        {selectedCategories.length === 1
+                          ? `${dbCategories.find(c => c.slug === selectedCategories[0])?.icon ?? ""} ${dbCategories.find(c => c.slug === selectedCategories[0])?.name ?? selectedCategories[0]}`
+                          : `${selectedCategories.length} תחומים`}
                       </span>
                     )}
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200"
@@ -1182,13 +1201,33 @@ export default function FindJobs() {
                   <div style={{ display: "grid", gridTemplateRows: openFilterSection === "categories" ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
                     <div className="overflow-hidden">
                       <div className="pt-3 flex flex-wrap gap-2">
-                        {[{ slug: "all", name: "הכל", icon: "✨" }, ...dbCategories].map(cat => (
-                          <button key={cat.slug} onClick={() => setCategory(cat.slug)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
-                            style={category === cat.slug ? activePill : inactivePill}>
-                            {cat.icon} {cat.name}
-                          </button>
-                        ))}
+                        {/* "הכל" clears all selected categories */}
+                        <button
+                          onClick={() => { setSelectedCategories([]); setCategory("all"); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
+                          style={selectedCategories.length === 0 ? activePill : inactivePill}>
+                          ✨ הכל
+                        </button>
+                        {dbCategories.map(cat => {
+                          const isActive = selectedCategories.includes(cat.slug);
+                          return (
+                            <button key={cat.slug}
+                              onClick={() => {
+                                setSelectedCategories(prev =>
+                                  isActive ? prev.filter(s => s !== cat.slug) : [...prev, cat.slug]
+                                );
+                                // Keep legacy category in sync (first selected, or "all")
+                                setCategory(isActive
+                                  ? (selectedCategories.filter(s => s !== cat.slug)[0] ?? "all")
+                                  : cat.slug
+                                );
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
+                              style={isActive ? activePill : inactivePill}>
+                              {cat.icon} {cat.name}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -1409,6 +1448,7 @@ export default function FindJobs() {
                     <button type="button"
                       onClick={() => {
                         setCategory("all");
+                        setSelectedCategories([]);
                         setSelectedCity(null);
                         setSelectedCities([]);
                         setSelectedTimeSlots([]);
@@ -1417,7 +1457,7 @@ export default function FindJobs() {
                         setShowUrgentToday(false);
                         setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);
                         clearSavedFilters();
-                        toast("סינון נקה");
+                        toast("סינון נקא");
                       }}
                       className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
                       style={{ background: "oklch(0.96 0.02 122)", color: "oklch(0.45 0.06 122)", border: "1.5px solid oklch(0.88 0.04 122)" }}>
@@ -1460,49 +1500,23 @@ export default function FindJobs() {
         {/* ── (profile banner moved above search bar) ── */}
 
         {/* Results header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-black" style={{ color: "oklch(0.22 0.03 122.3)" }}>
-              {isLoading ? "מחפש משרות..." : jobs.length === 0 ? "לא נמצאו משרות" : `${jobs.length} משרות`}
-            </h2>
-            {showUrgentToday && !isLoading && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
-                🔥 דחוף
-              </span>
-            )}
-            {hasSavedFilters && activeFilterCount > 0 && !isLoading && (
-              <span
-                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
-                style={{ background: "oklch(0.94 0.04 210 / 0.6)", color: "oklch(0.38 0.10 210)", border: "1px solid oklch(0.82 0.08 210 / 0.4)" }}
-              >
-                💾 מסנן שמור
-              </span>
-            )}
-          </div>
-          {/* Active filter chips */}
-          <div className="flex items-center gap-1 flex-wrap justify-end">
-            {category !== "all" && (
-              <button onClick={() => setCategory("all")}
-                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-                style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
-                {dbCategories.find(c => c.slug === category)?.icon} {catName}
-                <X className="h-2.5 w-2.5" />
-              </button>
-            )}
-            {selectedCities.map(city => (
-              <button key={city} onClick={() => {
-                setSelectedCities(prev => {
-                  const next = prev.filter(c => c !== city);
-                  setSelectedCity(next[0] ?? null);
-                  return next;
-                });
-              }}
-                className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-                style={{ background: "oklch(0.94 0.03 210)", color: "oklch(0.35 0.12 210)" }}>
-                📍 {city} <X className="h-2.5 w-2.5" />
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-base font-black" style={{ color: "oklch(0.22 0.03 122.3)" }}>
+            {isLoading ? "מחפש משרות..." : jobs.length === 0 ? "לא נמצאו משרות" : `${jobs.length} משרות`}
+          </h2>
+          {showUrgentToday && !isLoading && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
+              🔥 דחוף
+            </span>
+          )}
+          {hasSavedFilters && activeFilterCount > 0 && !isLoading && (
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+              style={{ background: "oklch(0.94 0.04 210 / 0.6)", color: "oklch(0.38 0.10 210)", border: "1px solid oklch(0.82 0.08 210 / 0.4)" }}
+            >
+              💾 מסנן שמור
+            </span>
+          )}
         </div>
 
         {/* Quick chips shown below results header when filter is closed */}
@@ -1536,8 +1550,8 @@ export default function FindJobs() {
             onShowTomorrow={() => { setDateFilter("tomorrow"); }}
             onShowThisWeek={() => { setDateFilter("this_week"); }}
             onClearAllFilters={() => {
-              setCategory("all"); setSelectedCity(null); setSelectedCities([]); setSelectedTimeSlots([]);
-              setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
+              setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
+              setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
               setSearchText(""); clearSavedFilters();
             }}
           />

@@ -30,6 +30,7 @@ import {
   WorkerRegion,
   regionNotificationRequests,
   RegionNotificationRequest,
+  systemSettings,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -492,14 +493,21 @@ export async function getActiveJobs(
   dateFilter?: "today" | "tomorrow" | "this_week",
   offset = 0,
   dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
-  cities?: string[]     // multi-city filter (takes precedence over city when provided)
+  cities?: string[],    // multi-city filter (takes precedence over city when provided)
+  categories?: string[] // multi-category filter (takes precedence over category when provided)
 ): Promise<{ rows: (typeof jobs.$inferSelect)[]; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
   await expireOldJobs();
   const conditions = [or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!];
-  if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as Job["category"]));
+  // Multi-category filter takes precedence over single category
+  const effectiveCategories = categories && categories.length > 0
+    ? categories
+    : (category && category !== "all" ? [category] : []);
+  if (effectiveCategories.length === 1) {
+    conditions.push(eq(jobs.category, effectiveCategories[0] as Job["category"]));
+  } else if (effectiveCategories.length > 1) {
+    conditions.push(inArray(jobs.category, effectiveCategories as Array<Job["category"]>)); // multi-category
   }
   // Multi-city filter takes precedence over single city
   const effectiveCities = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
@@ -552,7 +560,8 @@ export async function getJobsNearLocation(
   dateFilter?: "today" | "tomorrow" | "this_week",
   offset = 0,
   dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
-  cities?: string[]     // multi-city filter (takes precedence over city when provided)
+  cities?: string[],    // multi-city filter (takes precedence over city when provided)
+  categories?: string[] // multi-category filter (takes precedence over category when provided)
 ): Promise<{ rows: Array<Record<string, unknown> & { distance: number }>; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
@@ -570,8 +579,14 @@ export async function getJobsNearLocation(
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
     sql`${distanceExpr} <= ${radiusKm}`,
   ];
-  if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as Job["category"]));
+  // Multi-category filter takes precedence over single category
+  const effectiveCategoriesNear = categories && categories.length > 0
+    ? categories
+    : (category && category !== "all" ? [category] : []);
+  if (effectiveCategoriesNear.length === 1) {
+    conditions.push(eq(jobs.category, effectiveCategoriesNear[0] as Job["category"]));
+  } else if (effectiveCategoriesNear.length > 1) {
+    conditions.push(inArray(jobs.category, effectiveCategoriesNear as Array<Job["category"]>));
   }
   // Multi-city filter takes precedence over single city
   const effectiveCitiesNear = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
@@ -2482,4 +2497,29 @@ export async function withdrawApplication(applicationId: number, workerId: numbe
   if (isExpired) return { success: false, reason: "job_expired" };
   await db.delete(applications).where(eq(applications.id, applicationId));
   return { success: true };
+}
+
+// ── System Settings helpers ───────────────────────────────────────────────────
+
+/** Get a system setting value by key. Returns null if not set. */
+export async function getSystemSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(systemSettings).where(eq(systemSettings.key, key)).limit(1);
+  return rows[0]?.value ?? null;
+}
+
+/** Set (upsert) a system setting value. */
+export async function setSystemSetting(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(systemSettings)
+    .values({ key, value })
+    .onDuplicateKeyUpdate({ set: { value } });
+}
+
+/** Returns true when maintenance mode is active. */
+export async function isMaintenanceModeActive(): Promise<boolean> {
+  const val = await getSystemSetting("maintenanceMode");
+  return val === "true";
 }

@@ -40,6 +40,7 @@ import AdminRegionsPage from "./pages/AdminRegionsPage";
 import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
+import MaintenancePage from "./pages/MaintenancePage";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -95,7 +96,19 @@ function MapsPreloader() {
 function Router() {
   const { needsRoleSelection, setUserMode, userMode } = useUserMode();
   const [location, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  // Maintenance mode gate: show MaintenancePage to all non-admin users
+  const maintenanceQuery = trpc.maintenance.status.useQuery(undefined, {
+    // Poll every 60 seconds so the page auto-unblocks when admin turns off maintenance
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+  const isAdmin = user?.role === "admin";
+  const isMaintenanceActive = maintenanceQuery.data?.active === true;
+  if (isMaintenanceActive && !isAdmin) {
+    return <MaintenancePage />;
+  }
 
   // Show RoleSelectionScreen when:
   // 1. Authenticated user has no role yet (needsRoleSelection), OR

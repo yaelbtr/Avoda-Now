@@ -1575,3 +1575,7 @@
 - [x] Add Maintenance Mode toggle card to Admin panel (new תחזוקה tab) with ON/OFF button and status indicator
 - [x] Admins bypass maintenance mode and see the site normally
 - [x] Run tests, verify 0 TypeScript errors, save checkpoint
+
+## Conditional Hero Stats Banner (Mar 12, 2026)
+- [x] Add server-side getHeroStats query: returns activeJobs, closedJobs, registeredWorkers counts
+- [x] Update QuickStats banner: show activeJobs if >50, else closedJobs if >50, else workers if >100, else hide stat

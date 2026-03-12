@@ -145,21 +145,24 @@ function UpdatePrefsBtn({ category, selectedCity }: { category: string; selected
 function QuickStats() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -20px 0px" });
-  const [jobCount, setJobCount] = useState(500);
-  useEffect(() => {
-    if (!inView) return;
-    let cur = 500;
-    const end = 750;
-    const step = Math.ceil((end - cur) / 20);
-    const t = setInterval(() => {
-      cur = Math.min(cur + step, end);
-      setJobCount(cur);
-      if (cur >= end) clearInterval(t);
-    }, 50);
-    return () => clearInterval(t);
-  }, [inView]);
+
+  // Fetch real counts for conditional display
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // refresh every 5 min
+  });
+  const hs = heroStatsQuery.data;
+
+  // Determine the dynamic stat to show (priority order)
+  const dynamicStat: { display: string; label: string; Icon: typeof Briefcase } | null = (() => {
+    if (!hs) return null;
+    if (hs.activeJobs > 50)      return { display: `+${hs.activeJobs}`, label: "משרות פעילות",  Icon: Briefcase };
+    if (hs.closedJobs > 50)      return { display: `+${hs.closedJobs}`, label: "משרות שנסגרו",  Icon: Briefcase };
+    if (hs.registeredWorkers > 100) return { display: `+${hs.registeredWorkers}`, label: "עובדים רשומים", Icon: UserCheck };
+    return null; // hide the stat entirely
+  })();
+
   const stats = [
-    { display: `+${jobCount}`, label: "משרות פעילות", Icon: Briefcase },
+    ...(dynamicStat ? [dynamicStat] : []),
     { display: "100%", label: "ללא עמלות", Icon: BadgePercent },
     { display: "24/7", label: "זמין תמיד", Icon: Clock },
   ];

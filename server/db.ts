@@ -2523,3 +2523,32 @@ export async function isMaintenanceModeActive(): Promise<boolean> {
   const val = await getSystemSetting("maintenanceMode");
   return val === "true";
 }
+
+/**
+ * Returns counts needed for the hero stats banner on the Home page.
+ * Used for conditional display logic:
+ *  - if activeJobs > 50  → show active jobs count
+ *  - else if closedJobs > 50 → show closed jobs count
+ *  - else if registeredWorkers > 100 → show registered workers count
+ *  - else → hide the stat entirely
+ */
+export async function getHeroStats(): Promise<{
+  activeJobs: number;
+  closedJobs: number;
+  registeredWorkers: number;
+}> {
+  const db = await getDb();
+  if (!db) return { activeJobs: 0, closedJobs: 0, registeredWorkers: 0 };
+
+  const [activeRes, closedRes, workersRes] = await Promise.all([
+    db.select({ cnt: count() }).from(jobs).where(eq(jobs.status, "active")),
+    db.select({ cnt: count() }).from(jobs).where(eq(jobs.status, "closed")),
+    db.select({ cnt: count() }).from(users),
+  ]);
+
+  return {
+    activeJobs: Number(activeRes[0]?.cnt ?? 0),
+    closedJobs: Number(closedRes[0]?.cnt ?? 0),
+    registeredWorkers: Number(workersRes[0]?.cnt ?? 0),
+  };
+}

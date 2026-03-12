@@ -104,6 +104,7 @@ import {
   getSystemSetting,
   setSystemSetting,
   isMaintenanceModeActive,
+  getHeroStats,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1084,6 +1085,11 @@ const liveStatsRouter = router({
   /** Real-time platform stats: available workers, new jobs last hour, urgent jobs */
   stats: publicProcedure.query(async () => {
     return getLiveStats();
+  }),
+
+  /** Counts for the hero banner conditional display (activeJobs, closedJobs, registeredWorkers) */
+  heroStats: publicProcedure.query(async () => {
+    return getHeroStats();
   }),
 
   /** Recent activity feed for the ticker: new jobs + newly available workers */

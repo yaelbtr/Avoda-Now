@@ -317,11 +317,13 @@ const jobsRouter = router({
       city: z.string().optional(),
       dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
       page: z.number().int().min(1).default(1),
+      /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
+      dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
     }))
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset);
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -336,12 +338,14 @@ const jobsRouter = router({
         city: z.string().optional(),
         dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
         page: z.number().int().min(1).default(1),
+        /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
+        dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
       })
     )
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset);
+      const { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 

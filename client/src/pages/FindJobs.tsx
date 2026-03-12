@@ -63,6 +63,9 @@ function clearSavedFilters() {
 }
 const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp";
 
+/** Maps day name strings to JS day numbers (0=Sun, 1=Mon, ..., 6=Sat) */
+const DAY_NAME_TO_NUM: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+
 const SEO_CITIES = [
   "תל אביב", "ירושלים", "חיפה", "ראשון לציון", "פתח תקווה",
   "אשדוד", "נתניה", "באר שבע", "בני ברק", "רמת גן",
@@ -626,12 +629,16 @@ export default function FindJobs() {
     setShowCityInput(false); setAutoExpandedRadius(false); toast.success(`מציג עבודות קרוב ל${city}`);
   };
 
+  // Convert selectedDays (string names) to JS day numbers (0=Sun..6=Sat) for backend
+  // DAY_NAME_TO_NUM is defined as a module-level constant (see top of file)
+  const dayOfWeekParam = selectedDays.length > 0 ? selectedDays.map(d => DAY_NAME_TO_NUM[d]).filter((n): n is number => n !== undefined) : undefined;
+
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined },
+    { category: category === "all" ? undefined : category, limit: 50, city: selectedCity ?? undefined, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
@@ -696,15 +703,7 @@ export default function FindJobs() {
       });
     });
   }
-  if (selectedDays.length > 0) {
-    const DAY_MAP: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
-    jobs = jobs.filter(j => {
-      const jd = (j as { jobDate?: string | null }).jobDate;
-      if (!jd) return true; // no specific date — show for all days
-      const dayOfWeek = new Date(jd).getDay(); // 0=Sun, 6=Sat
-      return selectedDays.some(d => DAY_MAP[d] === dayOfWeek);
-    });
-  }
+  // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
   jobs = [...jobs].sort((a, b) => {
     if (sortBy === "salary") {
       const aSal = (a as { salary?: number | null }).salary ?? 0;
@@ -1197,9 +1196,21 @@ export default function FindJobs() {
                     <div className="overflow-hidden">
                       <div className="pt-3 space-y-3">
                         <div className="grid grid-cols-2 gap-2">
-                          <button type="button" onClick={() => { if (!userLat) handleLocationButtonClick(); }}
+                          <button type="button"
+                            onClick={() => {
+                              if (userLat) {
+                                // Cancel location mode
+                                setUserLat(null); setUserLng(null); setGeoCity(null);
+                                clearLocationCache(); setAutoExpandedRadius(false);
+                                toast("מיקום בוטל");
+                              } else {
+                                // Directly request geolocation (browser will prompt for permission)
+                                doGetLocation();
+                              }
+                            }}
+                            disabled={locating}
                             className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${userLat ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/50"}`}>
-                            <LocateFixed className="h-4 w-4" />
+                            {locating ? <BrandLoader size="sm" /> : <LocateFixed className="h-4 w-4" />}
                             {locating ? "מאתר..." : userLat ? `${radiusKm} ק"מ ממני` : "לפי מיקום"}
                           </button>
                           <button type="button"

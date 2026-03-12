@@ -1456,3 +1456,16 @@
 - [x] Show popular categories chips when category filter is too narrow
 - [x] Add "עבר להגדרות התראות" CTA button for logged-in users (links to /profile)
 - [x] Improve empty state visual design (SmartEmptyState component with dynamic headline/subtitle)
+
+## Day-of-Week Filter Backend Integration (Mar 12, 2026)
+- [x] Add dayOfWeek param to getActiveJobs() and getJobsNearLocation() in server/db.ts (MySQL DAYOFWEEK)
+- [x] Add dayOfWeek param to jobs.list and jobs.search tRPC procedures in server/routers
+- [x] Update FindJobs.tsx to pass selectedDays as dayOfWeek to both queries
+- [x] Remove client-side day filtering (now handled server-side)
+- [x] Move DAY_NAME_TO_NUM to module-level constant (DRY principle)
+- [ ] Add vitest for dayOfWeek filter in jobs router test
+
+## Bug: Location Button Not Working (Mar 12, 2026)
+- [x] Fix "לפי מיקום" button in FindJobs filter panel - button now calls doGetLocation() directly
+- [x] Verify handleLocationButtonClick is wired to the button correctly
+- [x] Added disabled state and BrandLoader spinner while locating

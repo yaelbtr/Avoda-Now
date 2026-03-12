@@ -490,7 +490,8 @@ export async function getActiveJobs(
   category?: string,
   city?: string,
   dateFilter?: "today" | "tomorrow" | "this_week",
-  offset = 0
+  offset = 0,
+  dayOfWeek?: number[] // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
 ): Promise<{ rows: (typeof jobs.$inferSelect)[]; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
@@ -518,6 +519,16 @@ export async function getActiveJobs(
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     }
   }
+  // dayOfWeek filter: JS 0=Sun..6=Sat → MySQL DAYOFWEEK() 1=Sun..7=Sat
+  if (dayOfWeek && dayOfWeek.length > 0) {
+    const mysqlDays = dayOfWeek.map(d => d + 1); // convert JS→MySQL
+    conditions.push(
+      or(
+        isNull(jobs.jobDate),
+        sql`DAYOFWEEK(${jobs.jobDate}) IN (${sql.join(mysqlDays.map(d => sql`${d}`), sql`, `)})`
+      )!
+    );
+  }
   const whereClause = and(...conditions);
   const [rows, countResult] = await Promise.all([
     db.select().from(jobs).where(whereClause).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset),
@@ -534,7 +545,8 @@ export async function getJobsNearLocation(
   limit = 50,
   city?: string,
   dateFilter?: "today" | "tomorrow" | "this_week",
-  offset = 0
+  offset = 0,
+  dayOfWeek?: number[] // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
 ): Promise<{ rows: Array<Record<string, unknown> & { distance: number }>; total: number }> {
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
@@ -573,6 +585,16 @@ export async function getJobsNearLocation(
       weekEnd.setDate(weekEnd.getDate() + 7);
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     }
+  }
+  // dayOfWeek filter: JS 0=Sun..6=Sat → MySQL DAYOFWEEK() 1=Sun..7=Sat
+  if (dayOfWeek && dayOfWeek.length > 0) {
+    const mysqlDays = dayOfWeek.map(d => d + 1);
+    conditions.push(
+      or(
+        isNull(jobs.jobDate),
+        sql`DAYOFWEEK(${jobs.jobDate}) IN (${sql.join(mysqlDays.map(d => sql`${d}`), sql`, `)})`
+      )!
+    );
   }
 
   const selectFields = {

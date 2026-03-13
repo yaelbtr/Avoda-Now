@@ -1704,3 +1704,6 @@
 ## Bug Fix — Login Mode Phone Validation
 - [x] Fix: when user tries to login (not register) with unregistered phone, block OTP send and show error "מספר זה אינו רשום במערכת"
 - [x] Check: use termsAcceptedAt field to determine if user is registered
+
+## Feature — Guest Reset Role in Mobile Drawer
+- [x] Add "איפוס תפקיד" option in mobile drawer menu for unauthenticated users

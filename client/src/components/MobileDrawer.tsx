@@ -239,6 +239,27 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
 
+              {!isAuthenticated && userMode && (
+                <>
+                  <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>מערכת</p>
+                  <button
+                    onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
+                    className={ITEM_BASE}
+                    style={{ color: "#e8eae5" }}
+                  >
+                    <RefreshCw className="h-4 w-4 shrink-0" />
+                    {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
+                  </button>
+                  <button
+                    onClick={() => { resetUserMode(); onClose(); }}
+                    className={ITEM_BASE}
+                    style={{ color: "#e8eae5" }}
+                  >
+                    <RotateCcw className="h-4 w-4 shrink-0" />
+                    אפס בחירת תפקיד
+                  </button>
+                </>
+              )}
               {!isAuthenticated && (
                 <button
                   onClick={() => { onLoginOpen(); onClose(); }}

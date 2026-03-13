@@ -150,13 +150,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </button>
             </div>
 
-            {/* Guest login block — large centered icon at the very top */}
+              {/* Guest login block — large centered icon at the very top */}
             {!isAuthenticated && (
               <button
                 onClick={() => { onLoginOpen(); onClose(); }}
-                className="flex flex-col items-center gap-2 w-full py-5 shrink-0 transition-all hover:opacity-80 active:scale-95"
+                className="flex flex-col items-center gap-2 w-full py-3 shrink-0 transition-all hover:opacity-80 active:scale-95"
                 style={{
-                  borderBottom: "1px solid oklch(0.42 0.07 124.9 / 0.5)",
                   background: "transparent",
                 }}
               >

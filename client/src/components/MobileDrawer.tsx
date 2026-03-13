@@ -138,7 +138,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
           >
             {/* Header — close button only, no title */}
             <div
-              className="flex items-center justify-end px-4 py-3 shrink-0"
+              className="flex items-center justify-end px-4 pt-3 pb-1 shrink-0"
             >
               <button
                 onClick={onClose}
@@ -177,7 +177,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
             {/* Authenticated user card — no border, no background */}
             {isAuthenticated && (
-              <div className="mx-4 mt-1 mb-1 shrink-0 flex flex-col gap-2">
+              <div className="mx-4 mt-0 mb-1 shrink-0 flex flex-col gap-4">
                 {/* Top row: avatar first on right (RTL), name+link to its left */}
                 <div className="flex items-center gap-3" dir="rtl">
                   {/* Avatar — first in RTL = rightmost */}

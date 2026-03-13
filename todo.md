@@ -1727,3 +1727,5 @@
 ## Session Mar 13 2026
 - [x] Add real-time name validation (min 2 chars, Hebrew/Latin letters only) in registration form
 - [x] Send welcome email after successful registration (fire-and-forget via Forge API)
+- [x] Fix maintenance mode bypass — remove auto-bypass for Manus domains, keep only for authenticated admins
+- [x] Fix maintenance bypass: clear stale bypass key on production domains, only allow bypass on manus.computer dev domain

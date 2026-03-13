@@ -1,0 +1,67 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "applications"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "categories"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "cities"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "job_reports"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "jobs"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "notification_batches"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "otp_rate_limit"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "phone_change_logs"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "phone_prefixes"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "push_subscriptions"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "region_notification_requests"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "regions"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "saved_jobs"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "system_settings"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "users"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "worker_availability"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "worker_ratings"
+    },
+    {
+      "Tables_in_REsBLBseSeXTZwj6TLp8WJ": "worker_regions"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_REsBLBseSeXTZwj6TLp8WJ\n__drizzle_migrations\napplications\ncategories\ncities\njob_reports\njobs\nnotification_batches\notp_rate_limit\nphone_change_logs\nphone_prefixes\npush_subscriptions\nregion_notification_requests\nregions\nsaved_jobs\nsystem_settings\nusers\nworker_availability\nworker_ratings\nworker_regions\n",
+  "stderr": "",
+  "execution_time_ms": 1642
+}

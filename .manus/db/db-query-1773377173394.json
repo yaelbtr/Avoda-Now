@@ -1,0 +1,14 @@
+{
+  "query": "SELECT `key`, `value` FROM system_settings;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT `key`, `value` FROM system_settings;",
+  "rows": [
+    {
+      "key": "maintenanceMode",
+      "value": "true"
+    }
+  ],
+  "messages": [],
+  "stdout": "key\tvalue\nmaintenanceMode\ttrue\n",
+  "stderr": "",
+  "execution_time_ms": 1558
+}

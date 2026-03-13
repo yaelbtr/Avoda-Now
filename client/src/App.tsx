@@ -52,21 +52,21 @@ const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
 
 /**
- * Synchronously sets the manus bypass flag in localStorage if the current
- * hostname is a manus domain. This runs at module evaluation time so the
- * flag is available on the very first render before any useEffect fires.
+ * Sets the manus bypass flag ONLY when running on the Manus sandbox/dev
+ * domain (*.manus.computer). On any production domain (avodanow.co.il,
+ * *.manus.space, etc.) the flag is explicitly cleared so that stale values
+ * from previous dev sessions never leak through to real users.
  */
 (function initManusMaintenanceBypass() {
   try {
-    const referrer = document.referrer || "";
     const hostname = window.location.hostname || "";
-    const isManusOrigin =
-      referrer.includes("manus.im") ||
-      hostname.includes("manus.im") ||
-      hostname.endsWith(".manus.space") ||
-      hostname.endsWith(".manus.computer");
-    if (isManusOrigin) {
+    // Only the internal sandbox preview domain gets the bypass
+    const isSandbox = hostname.endsWith(".manus.computer");
+    if (isSandbox) {
       localStorage.setItem(MANUS_BYPASS_KEY, "1");
+    } else {
+      // Explicitly remove any stale bypass key on production
+      localStorage.removeItem(MANUS_BYPASS_KEY);
     }
   } catch (_) { /* localStorage may be unavailable in some environments */ }
 })();

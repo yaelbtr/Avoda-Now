@@ -1710,3 +1710,6 @@
 
 ## UX — Register Link in Login Error
 - [x] Show "עבור להרשמה" link in LoginModal when login fails with NOT_FOUND (unregistered phone)
+
+## UX — Mobile Drawer Login Button Redesign
+- [x] Replace wide yellow "כניסה" button with user icon + "התחברות" label in mobile drawer

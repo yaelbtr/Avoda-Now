@@ -263,14 +263,21 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {!isAuthenticated && (
                 <button
                   onClick={() => { onLoginOpen(); onClose(); }}
-                  className="w-full mt-4 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{
-                    background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
-                    color: "oklch(0.22 0.03 122.3)",
-                    boxShadow: "0 2px 10px oklch(0.82 0.15 80.8 / 0.4)",
-                  }}
+                  className="flex flex-col items-center gap-1.5 w-full mt-4 py-3 rounded-xl transition-all hover:opacity-80 active:scale-95"
+                  style={{ background: "transparent" }}
                 >
-                  כניסה
+                  <div
+                    className="flex items-center justify-center rounded-full"
+                    style={{
+                      width: "3rem",
+                      height: "3rem",
+                      background: "oklch(0.35 0.05 124.9)",
+                      border: "2px solid oklch(0.50 0.09 124.9 / 0.6)",
+                    }}
+                  >
+                    <User className="h-6 w-6" style={{ color: "oklch(0.85 0.08 95)" }} />
+                  </div>
+                  <span className="text-sm font-semibold" style={{ color: "oklch(0.85 0.08 95)" }}>התחברות</span>
                 </button>
               )}
               {/* Legal & Contact footer — inside scroll so it's always reachable */}

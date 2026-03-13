@@ -1697,3 +1697,10 @@
 
 ## UI Cleanup — Mobile Navbar
 - [x] Remove duplicate "כניסה" text button from mobile navbar left side (user icon already handles login for guests)
+
+## Bug Fix — FindJobs Blank Page for Guests
+- [ ] Fix: /find-jobs shows blank page for unauthenticated users — should show job listings to everyone
+
+## Bug Fix — Login Mode Phone Validation
+- [x] Fix: when user tries to login (not register) with unregistered phone, block OTP send and show error "מספר זה אינו רשום במערכת"
+- [x] Check: use termsAcceptedAt field to determine if user is registered

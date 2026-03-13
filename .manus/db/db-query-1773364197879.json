@@ -1,0 +1,37 @@
+{
+  "query": "SHOW COLUMNS FROM system_settings; SELECT * FROM system_settings LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SHOW COLUMNS FROM system_settings; SELECT * FROM system_settings LIMIT 10;",
+  "rows": [
+    {
+      "Field": "key",
+      "Type": "varchar(64)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "value",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "updated_at",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [
+    "key\tvalue\tupdated_at",
+    "maintenanceMode\ttrue\t2026-03-12 21:31:56"
+  ],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nkey\tvarchar(64)\tNO\tPRI\tNULL\t\nvalue\ttext\tNO\t\tNULL\t\nupdated_at\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nkey\tvalue\tupdated_at\nmaintenanceMode\ttrue\t2026-03-12 21:31:56\n",
+  "stderr": "",
+  "execution_time_ms": 1791
+}

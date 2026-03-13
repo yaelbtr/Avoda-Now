@@ -154,7 +154,8 @@ describe("isValidIsraeliPhone", () => {
 describe("auth.sendOtp", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("sends OTP successfully and returns normalized phone", async () => {
+  it("sends OTP successfully for login with registered phone", async () => {
+    vi.mocked(db.getUserByPhone).mockResolvedValue(mockUser); // registered user
     vi.mocked(db.checkAndIncrementSendRate).mockResolvedValue(true);
     vi.mocked(smsProvider.sendOtp).mockResolvedValue({ success: true });
 
@@ -167,7 +168,30 @@ describe("auth.sendOtp", () => {
     expect(smsProvider.sendOtp).toHaveBeenCalledWith("+972501234567");
   });
 
+  it("throws NOT_FOUND when login attempted with unregistered phone", async () => {
+    vi.mocked(db.getUserByPhone).mockResolvedValue(undefined); // not registered
+
+    const ctx = makePublicCtx();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.auth.sendOtp({ phone: "0501234567" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(smsProvider.sendOtp).not.toHaveBeenCalled();
+  });
+
+  it("throws NOT_FOUND when login attempted with phone that has no termsAcceptedAt", async () => {
+    vi.mocked(db.getUserByPhone).mockResolvedValue({ ...mockUser, termsAcceptedAt: null }); // incomplete signup
+
+    const ctx = makePublicCtx();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.auth.sendOtp({ phone: "0501234567" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(smsProvider.sendOtp).not.toHaveBeenCalled();
+  });
+
   it("throws TOO_MANY_REQUESTS when rate limit exceeded", async () => {
+    vi.mocked(db.getUserByPhone).mockResolvedValue(mockUser); // registered user
     vi.mocked(db.checkAndIncrementSendRate).mockResolvedValue(false);
 
     const ctx = makePublicCtx();
@@ -179,6 +203,7 @@ describe("auth.sendOtp", () => {
   });
 
   it("throws INTERNAL_SERVER_ERROR when Twilio fails", async () => {
+    vi.mocked(db.getUserByPhone).mockResolvedValue(mockUser); // registered user
     vi.mocked(db.checkAndIncrementSendRate).mockResolvedValue(true);
     vi.mocked(smsProvider.sendOtp).mockResolvedValue({
       success: false,

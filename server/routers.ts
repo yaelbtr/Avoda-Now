@@ -185,10 +185,20 @@ const authRouter = router({
         return { success: true, phone, testBypass: true };
       }
 
+      // For login flow: block if phone not registered (no termsAcceptedAt means never completed signup)
+      if (!input.isRegistration) {
+        if (!existingUser || !existingUser.termsAcceptedAt) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "מספר זה אינו רשום במערכת. אנא בצע הרשמה תחילה.",
+          });
+        }
+      }
+
       // For registration flow: check for duplicates and enforce terms
       if (input.isRegistration) {
-        if (existingUser) {
-          // Phone already registered — block registration
+        if (existingUser && existingUser.termsAcceptedAt) {
+          // Phone already registered with completed signup — block registration
           throw new TRPCError({
             code: "CONFLICT",
             message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",

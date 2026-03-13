@@ -52,7 +52,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // Registration-only fields
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Email format validator
+  const validateEmail = (val: string): string | null => {
+    if (!val.trim()) return null; // empty handled by disabled button
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(val) ? null : "כתובת מייל לא תקינה";
+  };
 
   // OTP state
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -480,11 +488,23 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                           <input
                             type="email"
                             value={regEmail}
-                            onChange={e => { setRegEmail(e.target.value); setDuplicateError(null); }}
+                            onChange={e => {
+                              setRegEmail(e.target.value);
+                              setDuplicateError(null);
+                              setEmailError(validateEmail(e.target.value));
+                            }}
+                            onBlur={e => setEmailError(validateEmail(e.target.value))}
                             placeholder="example@gmail.com"
-                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            className={`w-full h-9 px-2.5 rounded-lg border bg-background text-sm outline-none focus:ring-2 transition-all ${
+                              emailError
+                                ? "border-red-400 focus:ring-red-200 focus:border-red-500"
+                                : "border-border focus:ring-primary/20 focus:border-primary"
+                            }`}
                             dir="ltr"
                           />
+                          {emailError && (
+                            <p className="text-xs text-red-500 mt-0.5">{emailError}</p>
+                          )}
                         </div>
                       </div>
                     </>
@@ -565,7 +585,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     disabled={
                       sendOtp.isPending ||
                       !isPhoneValid ||
-                      (activeTab === "register" && (!regName.trim() || !regEmail.trim() || !termsAccepted))
+                      (activeTab === "register" && (!regName.trim() || !regEmail.trim() || !!emailError || !termsAccepted))
                     }
                   >
                     {sendOtp.isPending

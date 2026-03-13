@@ -1707,3 +1707,6 @@
 
 ## Feature — Guest Reset Role in Mobile Drawer
 - [x] Add "איפוס תפקיד" option in mobile drawer menu for unauthenticated users
+
+## UX — Register Link in Login Error
+- [x] Show "עבור להרשמה" link in LoginModal when login fails with NOT_FOUND (unregistered phone)

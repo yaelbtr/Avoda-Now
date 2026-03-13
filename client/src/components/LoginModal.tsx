@@ -59,6 +59,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isTestBypass, setIsTestBypass] = useState(false);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
+  const [notFoundError, setNotFoundError] = useState<string | null>(null);
 
   // Post-OTP setup state
   const [selectedRole, setSelectedRole] = useState<"worker" | "employer" | null>(null);
@@ -127,6 +128,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setTermsAccepted(false);
     setDigits(Array(OTP_LENGTH).fill(""));
     setResendCountdown(0);
+    setDuplicateError(null);
+    setNotFoundError(null);
     pendingRegData.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
   };
@@ -154,6 +157,11 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       // CONFLICT = phone or email already registered
       if (e.data?.code === "CONFLICT") {
         setDuplicateError(e.message);
+        return;
+      }
+      // NOT_FOUND = phone not registered — show inline banner with register link
+      if (e.data?.code === "NOT_FOUND") {
+        setNotFoundError(e.message);
         return;
       }
       toast.error(e.message);
@@ -481,7 +489,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   )}
 
                   {/* Phone */}
-                  <IsraeliPhoneInput value={phoneVal} onChange={setPhoneVal} label="מספר טלפון" />
+                  <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
 
                   {/* ── REGISTER: terms checkbox ── */}
                   {activeTab === "register" && (
@@ -512,6 +520,26 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     </label>
                   )}
 
+                  {/* Not-found error banner (login with unregistered phone) */}
+                  {notFoundError && activeTab === "login" && (
+                    <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
+                      style={{
+                        borderColor: "oklch(0.82 0.15 80.8 / 0.4)",
+                        background: "oklch(0.82 0.15 80.8 / 0.08)",
+                        color: "oklch(0.85 0.10 80)",
+                      }}
+                    >
+                      <p className="font-medium">{notFoundError}</p>
+                      <button
+                        type="button"
+                        className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
+                        style={{ color: "var(--citrus)" }}
+                        onClick={() => { setNotFoundError(null); setActiveTab("register"); }}
+                      >
+                        עבור להרשמה ←
+                      </button>
+                    </div>
+                  )}
                   {/* Duplicate error banner */}
                   {duplicateError && (
                     <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive flex flex-col gap-1.5" dir="rtl">

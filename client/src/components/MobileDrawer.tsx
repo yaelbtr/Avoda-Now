@@ -139,7 +139,6 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             {/* Header — close button only, no title */}
             <div
               className="flex items-center justify-end px-4 py-3 shrink-0"
-              style={{ borderBottom: "1px solid oklch(0.42 0.07 124.9)" }}
             >
               <button
                 onClick={onClose}

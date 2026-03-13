@@ -42,6 +42,7 @@ import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
 import MaintenancePage from "./pages/MaintenancePage";
+import SkipToContent from "./components/SkipToContent";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -158,10 +159,11 @@ function Router() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir="rtl">
+      <SkipToContent />
       <Navbar />
       <GuestLoginBanner />
 
-      <main className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }}>
+      <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }}>
         <AnimatePresence mode="wait">
           {showRoleSelection ? (
             <RoleSelectionScreen

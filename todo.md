@@ -1716,3 +1716,7 @@
 
 ## Bug Fix — Mobile Drawer Login Button Appearance
 - [x] Fix login button (user icon + התחברות) appearance in worker/guest mode — visually distinct with proper separator
+
+## UX — Mobile Drawer Header Redesign
+- [x] Remove "תפריט" title from drawer header
+- [x] Move login block (large centered user icon + התחברות) to top of drawer for guests

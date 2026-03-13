@@ -79,19 +79,24 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 fontSize: "0.6rem",
                 fontWeight: 700,
                 borderRadius: "9999px",
-                minWidth: "1.1rem",
-                height: "1.1rem",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "0 0.3rem",
+                padding: "0.1rem 0.4rem",
+                minWidth: "1.2rem",
+                textAlign: "center",
               }}
             >
               {badge}
             </span>
           )}
           {badge === true && (
-            <span className="w-2 h-2 rounded-full" style={{ background: "oklch(0.60 0.22 25)" }} />
+            <span
+              style={{
+                width: "0.5rem",
+                height: "0.5rem",
+                borderRadius: "9999px",
+                background: "oklch(0.55 0.18 145)",
+                flexShrink: 0,
+              }}
+            />
           )}
         </span>
       </Link>
@@ -131,14 +136,11 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               overflowY: "hidden",
             }}
           >
-            {/* Header */}
+            {/* Header — close button only, no title */}
             <div
-              className="flex items-center justify-between px-4 py-3 shrink-0"
+              className="flex items-center justify-end px-4 py-3 shrink-0"
               style={{ borderBottom: "1px solid oklch(0.42 0.07 124.9)" }}
             >
-              <span className="text-sm font-bold" style={{ color: "var(--citrus)" }}>
-                תפריט
-              </span>
               <button
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
@@ -148,10 +150,37 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </button>
             </div>
 
-            {/* User indicator */}
+            {/* Guest login block — large centered icon at the very top */}
+            {!isAuthenticated && (
+              <button
+                onClick={() => { onLoginOpen(); onClose(); }}
+                className="flex flex-col items-center gap-2 w-full py-5 shrink-0 transition-all hover:opacity-80 active:scale-95"
+                style={{
+                  borderBottom: "1px solid oklch(0.42 0.07 124.9 / 0.5)",
+                  background: "transparent",
+                }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-full"
+                  style={{
+                    width: "3.5rem",
+                    height: "3.5rem",
+                    background: "oklch(0.35 0.05 124.9)",
+                    border: "2px solid oklch(0.55 0.10 85 / 0.5)",
+                  }}
+                >
+                  <User className="h-7 w-7" style={{ color: "oklch(0.88 0.10 85)" }} />
+                </div>
+                <span className="text-base font-bold" style={{ color: "oklch(0.88 0.10 85)" }}>
+                  התחברות
+                </span>
+              </button>
+            )}
+
+            {/* Authenticated user indicator */}
             {isAuthenticated && userMode && (
               <div
-                className="mx-3 mt-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2"
+                className="mx-3 mt-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2 shrink-0"
                 style={{
                   background: "oklch(0.42 0.07 124.9)",
                   color: "oklch(0.9904 0.0107 95.3 / 0.7)",
@@ -164,7 +193,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             )}
 
             <nav className="flex-1 px-2 py-3 pb-20 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
-              {/* Section: ניווט */}
+              {/* Section: ניווט — worker */}
               {userMode === "worker" && (
                 <>
                   <p style={SECTION_LABEL_STYLE}>ניווט</p>
@@ -174,6 +203,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
 
+              {/* Section: ניווט — employer */}
               {userMode === "employer" && (
                 <>
                   <p style={SECTION_LABEL_STYLE}>ניווט</p>
@@ -193,7 +223,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
 
-              {/* Section: מערכת */}
+              {/* Section: מערכת — authenticated */}
               {isAuthenticated && (
                 <>
                   <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>מערכת</p>
@@ -239,6 +269,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
 
+              {/* Section: מערכת — guest with userMode */}
               {!isAuthenticated && userMode && (
                 <>
                   <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>מערכת</p>
@@ -260,105 +291,82 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   </button>
                 </>
               )}
-              {!isAuthenticated && (
-                <>
-                  <div style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.4)", marginTop: "0.75rem", marginBottom: "0.25rem" }} />
-                  <button
-                    onClick={() => { onLoginOpen(); onClose(); }}
-                    className={ITEM_BASE + " hover:bg-white/5 active:scale-95"}
-                    style={{ color: "oklch(0.88 0.10 85)", fontWeight: 600 }}
-                  >
-                    <div
-                      className="flex items-center justify-center rounded-full shrink-0"
-                      style={{
-                        width: "2rem",
-                        height: "2rem",
-                        background: "oklch(0.35 0.05 124.9)",
-                        border: "1.5px solid oklch(0.55 0.10 85 / 0.5)",
-                      }}
-                    >
-                      <User className="h-4 w-4" style={{ color: "oklch(0.88 0.10 85)" }} />
-                    </div>
-                    התחברות
-                  </button>
-                </>
-              )}
-              {/* Legal & Contact footer — inside scroll so it's always reachable */}
+
+              {/* Legal & Contact footer */}
               <div
                 className="px-1 pb-4 pt-2 mt-2"
                 style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
               >
-              {/* Legal links */}
-              <p style={SECTION_LABEL_STYLE}>מידע משפטי</p>
-              <div className="flex flex-col gap-0.5 mb-3">
-                <Link href="/terms">
-                  <span
+                <p style={SECTION_LABEL_STYLE}>מידע משפטי</p>
+                <div className="flex flex-col gap-0.5 mb-3">
+                  <Link href="/terms">
+                    <span
+                      className={ITEM_BASE}
+                      style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                      onClick={handleLink}
+                    >
+                      <FileText className="h-3.5 w-3.5 shrink-0" />
+                      <span className="flex-1">תנאי שימוש</span>
+                    </span>
+                  </Link>
+                  <Link href="/privacy">
+                    <span
+                      className={ITEM_BASE}
+                      style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                      onClick={handleLink}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                      <span className="flex-1">מדיניות פרטיות</span>
+                    </span>
+                  </Link>
+                  <div
                     className={ITEM_BASE}
-                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
-                    onClick={handleLink}
+                    style={{ color: "oklch(0.65 0.14 145)", fontSize: "0.8rem", cursor: "default" }}
                   >
-                    <FileText className="h-3.5 w-3.5 shrink-0" />
-                    <span className="flex-1">תנאי שימוש</span>
-                  </span>
-                </Link>
-                <Link href="/privacy">
-                  <span
-                    className={ITEM_BASE}
-                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
-                    onClick={handleLink}
-                  >
-                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                    <span className="flex-1">מדיניות פרטיות</span>
-                  </span>
-                </Link>
-                <div
-                  className={ITEM_BASE}
-                  style={{ color: "oklch(0.65 0.14 145)", fontSize: "0.8rem", cursor: "default" }}
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span className="flex-1">מאובטח ומוגן</span>
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1">מאובטח ומוגן</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Email + Report row */}
-              <div className="flex gap-2">
-                <a
-                  href="mailto:info@avodanow.co.il"
-                  className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all"
-                  style={{
-                    color: "oklch(0.9904 0.0107 95.3 / 0.55)",
-                    background: "oklch(0.42 0.07 124.9 / 0.3)",
-                    border: "1px solid oklch(0.42 0.07 124.9 / 0.4)",
-                    textDecoration: "none",
-                  }}
+                {/* Email + Report row */}
+                <div className="flex gap-2">
+                  <a
+                    href="mailto:info@avodanow.co.il"
+                    className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all"
+                    style={{
+                      color: "oklch(0.9904 0.0107 95.3 / 0.55)",
+                      background: "oklch(0.42 0.07 124.9 / 0.3)",
+                      border: "1px solid oklch(0.42 0.07 124.9 / 0.4)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <Mail className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--citrus)" }} />
+                    <span>info@avodanow.co.il</span>
+                  </a>
+
+                  <a
+                    href={`mailto:info@avodanow.co.il?subject=${encodeURIComponent('דיווח על בעיה ב-AvodaNow')}&body=${encodeURIComponent('שלום,\n\nאני רוצה לדווח על בעיה הבאה:\n\n[תאר את הבעיה כאן]\n\nתודה,')}`}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs transition-all"
+                    style={{
+                      color: "oklch(0.75 0.12 35 / 0.85)",
+                      background: "oklch(0.35 0.06 35 / 0.25)",
+                      border: "1px solid oklch(0.45 0.08 35 / 0.4)",
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    <span>דווח בעיה</span>
+                  </a>
+                </div>
+
+                {/* Copyright */}
+                <p
+                  className="text-center mt-2.5"
+                  style={{ fontSize: "0.65rem", color: "oklch(0.9904 0.0107 95.3 / 0.25)" }}
                 >
-                  <Mail className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--citrus)" }} />
-                  <span>info@avodanow.co.il</span>
-                </a>
-
-                <a
-                  href={`mailto:info@avodanow.co.il?subject=${encodeURIComponent('דיווח על בעיה ב-AvodaNow')}&body=${encodeURIComponent('שלום,\n\nאני רוצה לדווח על בעיה הבאה:\n\n[תאר את הבעיה כאן]\n\nתודה,')}`}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs transition-all"
-                  style={{
-                    color: "oklch(0.75 0.12 35 / 0.85)",
-                    background: "oklch(0.35 0.06 35 / 0.25)",
-                    border: "1px solid oklch(0.45 0.08 35 / 0.4)",
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                  <span>דווח בעיה</span>
-                </a>
-              </div>
-
-              {/* Copyright */}
-              <p
-                className="text-center mt-2.5"
-                style={{ fontSize: "0.65rem", color: "oklch(0.9904 0.0107 95.3 / 0.25)" }}
-              >
-                © AvodaNow 2026 · כל הזכויות שמורות
-              </p>
+                  © AvodaNow 2026 · כל הזכויות שמורות
+                </p>
               </div>
             </nav>
           </motion.div>

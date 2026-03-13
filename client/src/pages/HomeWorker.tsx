@@ -741,36 +741,6 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           }
         </motion.button>
 
-        {/* Quick availability status update */}
-        {isAuthenticated && (
-          <div className="mb-3">
-            <button
-              onClick={() => setQuickAvailOpen(true)}
-              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all text-right"
-              style={{
-                background: "white",
-                border: "1px solid oklch(0.91 0.03 91.6)",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="size-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.93 0.04 84.0)" }}>
-                  <Clock className="h-4 w-4" style={{ color: "oklch(0.55 0.06 84)" }} />
-                </div>
-                <div>
-                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>עדכן זמינות</p>
-                  <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>
-                    {profileQuery.data?.availabilityStatus === "available_now" ? "זמין עכשיו" :
-                     profileQuery.data?.availabilityStatus === "available_today" ? "זמין היום" :
-                     profileQuery.data?.availabilityStatus === "available_hours" ? "זמין בשעות מסוימות" :
-                     "לא זמין"}
-                  </p>
-                </div>
-              </div>
-              <ChevronLeft className="h-4 w-4 rotate-180 flex-shrink-0" style={{ color: "oklch(0.65 0.03 91)" }} />
-            </button>
-          </div>
-        )}
-
         {/* Location + Profile row */}
         <div className="flex gap-2.5">
           <button

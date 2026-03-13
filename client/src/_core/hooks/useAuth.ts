@@ -1,11 +1,8 @@
-import { getLoginUrl } from "@/const";
+import { getLoginUrl, PROTECTED_PATHS } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
-
-// Pages that require authentication — redirect to home on logout
-const PROTECTED_PATHS = ["/my-jobs", "/worker-profile", "/my-applications", "/applications", "/employer-profile", "/admin"];
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;

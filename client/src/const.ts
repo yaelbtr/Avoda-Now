@@ -1,5 +1,18 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+/** Routes that require authentication — redirect to home on logout */
+export const PROTECTED_PATHS = [
+  "/my-jobs",
+  "/worker-profile",
+  "/my-applications",
+  "/applications",
+  "/employer-profile",
+  "/admin",
+  "/matched-workers",
+  "/available-workers",
+  "/my-referrals",
+];
+
 /** Key used to persist the pre-login path in sessionStorage */
 const RETURN_PATH_KEY = "avodanow_return_path";
 

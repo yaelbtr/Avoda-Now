@@ -1689,3 +1689,8 @@
 
 ## Bug Fix — Mobile Navbar User Icon
 - [x] Fix: clicking user icon in mobile navbar when not logged in navigates to /my-jobs instead of opening login modal
+
+## Bug Fix — Logout Redirect
+- [x] Fix: after logout, redirect to home page (/) instead of staying on protected page showing inline login prompt
+- [x] Remove inline "כניסה נדרשת" screens from protected pages (MyJobs, MyApplications, WorkerProfile) — redirect to home on logout instead
+- [x] DRY: centralized PROTECTED_PATHS in client/src/const.ts (single source of truth)

@@ -446,7 +446,7 @@ export default function JobDetails() {
                     onClick={() => setGalleryIndex(i)}
                     className="shrink-0 w-28 h-28 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
                   >
-                    <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" />
+                    <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   </button>
                 ))}
               </div>

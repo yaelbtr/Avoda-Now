@@ -282,7 +282,7 @@ export default function AdminRegionDetailPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {w.profilePhoto ? (
-                              <img src={w.profilePhoto} alt="" className="w-7 h-7 rounded-full object-cover" />
+                              <img src={w.profilePhoto} alt="" className="w-7 h-7 rounded-full object-cover" loading="lazy" decoding="async" />
                             ) : (
                               <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
                                 {w.name?.[0] ?? "?"}

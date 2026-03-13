@@ -918,7 +918,7 @@ export default function PostJob() {
             <div className="flex gap-2 flex-wrap">
               {jobImages.map((url, i) => (
                 <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
-                  <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" />
+                  <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <button
                     type="button"
                     onClick={() => setJobImages(prev => prev.filter((_, idx) => idx !== i))}

@@ -38,6 +38,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     return stored ? new Date(stored) : new Date(0);
   }, []);
 
+  const { data: profileData } = trpc.user.getProfile.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+  const profilePhoto = profileData?.profilePhoto ?? null;
+
   const { data: savedIdsData } = trpc.savedJobs.getSavedIds.useQuery(undefined, {
     enabled: isAuthenticated && userMode === "worker",
     staleTime: 30_000,
@@ -182,7 +188,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 <div className="flex items-center gap-3" dir="rtl">
                   {/* Avatar — first in RTL = rightmost */}
                   <div
-                    className="flex items-center justify-center rounded-full shrink-0 font-bold text-base"
+                    className="flex items-center justify-center rounded-full shrink-0 font-bold text-base overflow-hidden"
                     style={{
                       width: "2.8rem",
                       height: "2.8rem",
@@ -190,7 +196,17 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                       color: "#fff",
                     }}
                   >
-                    {(user?.name || "U").charAt(0).toUpperCase()}
+                    {profilePhoto ? (
+                      <img
+                        src={profilePhoto}
+                        alt="פרופיל"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      (user?.name || "U").charAt(0).toUpperCase()
+                    )}
                   </div>
 
                   {/* Name + אזור אישי — flows to the left */}

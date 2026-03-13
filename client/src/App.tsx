@@ -20,6 +20,7 @@ import PostJob from "./pages/PostJob";
 import MyJobs from "./pages/MyJobs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Accessibility from "./pages/Accessibility";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
@@ -177,6 +178,7 @@ function Router() {
                 <Route path="/my-jobs" component={MyJobs} />
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
+                <Route path="/accessibility" component={Accessibility} />
                 <Route path="/admin" component={Admin} />
                 <Route path="/admin/regions" component={AdminRegionsPage} />
                 <Route path="/admin/regions/:id" component={AdminRegionDetailPage} />

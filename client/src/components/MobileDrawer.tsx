@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Flame, Briefcase, Bookmark, User, PlusCircle, Users,
-  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, AlertTriangle,
+  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, AlertTriangle, Accessibility,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -263,6 +263,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <span className={ITEM} style={{ color: COLOR_DIM, border: "1px solid transparent", borderRadius: "0.75rem", justifyContent: "center" }} onClick={() => setTimeout(onClose, 150)}>
                     <ShieldCheck className="h-3 w-3 shrink-0" />
                     <span>פרטיות</span>
+                  </span>
+                </Link>
+                <Link href="/accessibility" className="flex-1">
+                  <span className={ITEM} style={{ color: COLOR_DIM, border: "1px solid transparent", borderRadius: "0.75rem", justifyContent: "center" }} onClick={() => setTimeout(onClose, 150)}>
+                    <Accessibility className="h-3 w-3 shrink-0" />
+                    <span>נגישות</span>
                   </span>
                 </Link>
               </div>

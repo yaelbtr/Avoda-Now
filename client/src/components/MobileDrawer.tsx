@@ -74,7 +74,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     const Icon = icon;
     const isLink = typeof hrefOrClick === "string";
     const isActive = isLink && location === hrefOrClick;
-    const itemColor = color ?? (isActive ? "var(--citrus)" : secondary ? "oklch(0.75 0.06 124.9)" : "#e8eae5");
+    const itemColor = color ?? (isActive ? "var(--citrus)" : "#e8eae5");
     const itemStyle: React.CSSProperties = {
       background: isActive ? "oklch(0.42 0.07 124.9)" : "transparent",
       color: itemColor,

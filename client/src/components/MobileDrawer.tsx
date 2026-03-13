@@ -26,7 +26,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
 };
 
 const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
-const ITEM_SECONDARY = "flex items-center gap-3 w-full text-right px-3 py-1 rounded-xl text-xs font-normal transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10 opacity-70";
+const ITEM_SECONDARY = "flex items-center gap-3 w-full text-right px-3 py-1 rounded-xl text-xs font-normal transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();

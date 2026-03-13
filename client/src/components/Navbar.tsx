@@ -238,7 +238,7 @@ export default function Navbar() {
                 <span lang="en" className="font-black text-[17px] tracking-tight" style={{ color: "var(--header-fg)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", letterSpacing: "-0.03em" }}>
                   Avoda<span style={{ color: "var(--citrus)" }}>Now</span>
                 </span>
-                <span className="text-[7px] font-bold tracking-widest uppercase" style={{ color: "oklch(0.9904 0.0107 95.3 / 0.40)", letterSpacing: "0.14em" }}>עבודה עכשיו</span>
+                <span className="text-[7px] font-bold tracking-widest uppercase" style={{ color: "oklch(0.9904 0.0107 95.3 / 0.70)", letterSpacing: "0.14em" }}>עבודה עכשיו</span>
               </div>
             </Link>
 

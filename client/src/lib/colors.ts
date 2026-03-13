@@ -89,7 +89,7 @@ export const C_BORDER_LIGHT    = "oklch(0.89 0.05 84.0)";
 // ─── Text ────────────────────────────────────────────────────────────────────
 export const C_TEXT_PRIMARY    = "oklch(0.22 0.03 122.3)";   // dark olive-tinted
 export const C_TEXT_SECONDARY  = "oklch(0.40 0.03 122.3)";
-export const C_TEXT_MUTED      = "oklch(0.58 0.02 100)";
+export const C_TEXT_MUTED      = "oklch(0.50 0.02 100)";   // darkened from 0.58 to pass WCAG 4.5:1 on cream bg
 export const C_TEXT_FAINT      = "oklch(0.65 0.015 100)";
 export const C_TEXT_ON_DARK    = "oklch(0.97 0.02 91.6)";    // Vanilla Linen on dark
 export const C_TEXT_ON_DARK_MID = "oklch(1 0 0 / 55%)";

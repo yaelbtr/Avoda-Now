@@ -203,8 +203,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
             <div style={DIVIDER} />
 
-            {/* ── Nav + account (no longer needs its own scroll) ───────────── */}
-            <div>
+            {/* ── Nav + account — scrollable, pushes footer down ─────────── */}
+            <div className="flex-1 overflow-y-auto">
 
             {/* ── Section 2: Main navigation ────────────────────────────────── */}
             <div className="px-2 py-1 flex flex-col gap-0.5">
@@ -247,9 +247,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </>
             )}
 
-            </div>{/* end nav+account */}
+            </div>{/* end scrollable nav+account */}
 
-            {/* ── Section 4: Footer ─────────────────────────────────────────── */}
+            {/* ── Section 4: Footer — pinned to bottom ──────────────────────── */}
             <div style={DIVIDER} />
             <div className="px-2 py-1.5 shrink-0">
               {/* Legal links — inline row */}

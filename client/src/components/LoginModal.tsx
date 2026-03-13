@@ -430,19 +430,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   ))}
                 </div>
 
-                <div className="p-6 space-y-4">
-                  {/* Header */}
-                  <div className="text-center space-y-1 pt-1">
-                    <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3"
-                      style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
-                      {activeTab === "login"
-                        ? <LogIn className="h-6 w-6" style={{ color: "oklch(0.50 0.09 124.9)" }} />
-                        : <UserPlus className="h-6 w-6" style={{ color: "oklch(0.50 0.09 124.9)" }} />}
-                    </div>
-                    <h2 className="text-xl font-bold">
+                <div className={`px-5 pt-4 pb-5 space-y-3`}>
+                  {/* Header — compact for register tab */}
+                  <div className={`text-center ${activeTab === "register" ? "space-y-0.5" : "space-y-1 pt-1"}`}>
+                    {activeTab === "login" && (
+                      <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3"
+                        style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
+                        <LogIn className="h-6 w-6" style={{ color: "oklch(0.50 0.09 124.9)" }} />
+                      </div>
+                    )}
+                    <h2 className={`font-bold ${activeTab === "register" ? "text-lg" : "text-xl"}`}>
                       {activeTab === "login" ? "ברוך הבא בחזרה" : "הצטרף ל-AvodaNow"}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {message
                         ? message
                         : activeTab === "login"
@@ -454,36 +454,38 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {/* ── REGISTER: extra fields ── */}
                   {activeTab === "register" && (
                     <>
-                      {/* Name */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium flex items-center gap-1.5">
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          שם מלא <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={regName}
-                          onChange={e => { setRegName(e.target.value); setDuplicateError(null); }}
-                          placeholder="ישראל ישראלי"
-                          className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          dir="rtl"
-                        />
-                      </div>
-
-                      {/* Email */}
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium flex items-center gap-1.5">
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                          כתובת מייל <span className="text-xs text-muted-foreground">(אופציונלי)</span>
-                        </label>
-                        <input
-                          type="email"
-                          value={regEmail}
-                          onChange={e => { setRegEmail(e.target.value); setDuplicateError(null); }}
-                          placeholder="example@gmail.com"
-                          className="w-full h-11 px-3 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          dir="ltr"
-                        />
+                      {/* Name + Email side by side on wider screens, stacked on mobile */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Name */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium flex items-center gap-1">
+                            <User className="h-3 w-3 text-muted-foreground" />
+                            שם מלא <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={regName}
+                            onChange={e => { setRegName(e.target.value); setDuplicateError(null); }}
+                            placeholder="ישראל ישראלי"
+                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            dir="rtl"
+                          />
+                        </div>
+                        {/* Email */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium flex items-center gap-1">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            מייל <span className="text-xs text-muted-foreground/70">(אופציונלי)</span>
+                          </label>
+                          <input
+                            type="email"
+                            value={regEmail}
+                            onChange={e => { setRegEmail(e.target.value); setDuplicateError(null); }}
+                            placeholder="example@gmail.com"
+                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            dir="ltr"
+                          />
+                        </div>
                       </div>
                     </>
                   )}
@@ -493,8 +495,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                   {/* ── REGISTER: terms checkbox ── */}
                   {activeTab === "register" && (
-                    <label className="flex items-start gap-2.5 cursor-pointer group">
-                      <div className="relative mt-0.5 flex-shrink-0">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="relative flex-shrink-0">
                         <input
                           type="checkbox"
                           checked={termsAccepted}
@@ -502,20 +504,20 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                           className="sr-only"
                         />
                         <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
                             termsAccepted
                               ? "border-primary bg-primary"
                               : "border-border group-hover:border-primary/50"
                           }`}
                         >
-                          {termsAccepted && <CheckCircle2 className="h-3 w-3 text-white" />}
+                          {termsAccepted && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
                         </div>
                       </div>
-                      <span className="text-sm text-muted-foreground leading-relaxed">
-                        קראתי ואני מסכים/ה ל
-                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1" onClick={e => e.stopPropagation()}>תנאי השימוש</a>
+                      <span className="text-xs text-muted-foreground leading-tight">
+                        קראתי ומסכים/ה ל
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-0.5" onClick={e => e.stopPropagation()}>תנאי השימוש</a>
                         ול
-                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-1" onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-0.5" onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
                       </span>
                     </label>
                   )}
@@ -557,7 +559,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {/* Send OTP button */}
                   <AppButton
                     variant="brand"
-                    size="lg"
+                    size={activeTab === "register" ? "md" : "lg"}
                     className="w-full"
                     onClick={handleSend}
                     disabled={
@@ -571,7 +573,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       : "שלח קוד אימות"}
                   </AppButton>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div className="flex-1 h-px bg-border" />
                     <span className="text-xs text-muted-foreground">או</span>
                     <div className="flex-1 h-px bg-border" />
@@ -588,13 +590,13 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       window.location.href = getGoogleLoginUrl();
                     }}
                     disabled={activeTab === "register" && !termsAccepted}
-                    className={`w-full h-11 flex items-center justify-center gap-3 rounded-lg border border-border transition-colors text-sm font-medium shadow-sm ${
+                    className={`w-full h-10 flex items-center justify-center gap-2.5 rounded-lg border border-border transition-colors text-sm font-medium shadow-sm ${
                       activeTab === "register" && !termsAccepted
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
                         : "bg-white hover:bg-gray-50 text-gray-700"
                     }`}
                   >
-                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                       <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
                       <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>

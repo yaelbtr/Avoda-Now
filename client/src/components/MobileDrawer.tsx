@@ -59,7 +59,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     }
   );
 
-  const handleLink = () => onClose();
+  const handleLink = () => setTimeout(onClose, 150);
 
   const navItem = (
     hrefOrClick: string | (() => void),
@@ -287,14 +287,14 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {isAuthenticated && userMode === "worker" && navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
 
               {/* system — authenticated */}
-              {isAuthenticated && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
-              {isAuthenticated && navItem(() => { resetUserMode(); onClose(); }, RotateCcw, "אפס בחירת תפקיד")}
+              {isAuthenticated && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
+              {isAuthenticated && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
               {isAuthenticated && user?.role === "admin" && navItem("/admin", Shield, "פאנל ניהול", undefined, "var(--citrus)")}
-              {isAuthenticated && navItem(() => { logout(); onClose(); }, LogOut, "התנתק", undefined, undefined, "text-red-400 hover:text-red-300 hover:bg-red-500/10")}
+              {isAuthenticated && navItem(() => { logout(); setTimeout(onClose, 150); }, LogOut, "התנתק", undefined, undefined, "text-red-400 hover:text-red-300 hover:bg-red-500/10")}
 
               {/* system — guest with userMode */}
-              {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
-              {!isAuthenticated && userMode && navItem(() => { resetUserMode(); onClose(); }, RotateCcw, "אפס בחירת תפקיד")}
+              {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
+              {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
             </div>
 
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}

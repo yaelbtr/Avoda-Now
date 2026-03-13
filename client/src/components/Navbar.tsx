@@ -146,6 +146,7 @@ export default function Navbar() {
       <header
         className="sticky top-0 z-50"
         dir="rtl"
+        aria-label="כותרת האתר"
         style={{
           background: "var(--header-bg)",
           borderBottom: `1px solid ${HEADER_DIVIDER}`,
@@ -332,7 +333,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-0.5">
+            <nav className="hidden md:flex items-center gap-0.5" aria-label="ניווט ראשי">
               {navLinks.map((link) => {
                 const isActive = location === link.href;
                 return (

@@ -204,10 +204,10 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             <div style={DIVIDER} />
 
             {/* ── Nav + account — scrollable, pushes footer down ─────────── */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" role="navigation" aria-label="תפריט ניווט נייד">
 
             {/* ── Section 2: Main navigation ────────────────────────────────── */}
-            <div className="px-2 py-1 flex flex-col gap-0.5">
+            <div className="px-2 py-1 flex flex-col gap-0.5" role="list" aria-label="קישורי ניווט ראשיים">
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
               {userMode === "worker" && navItem("/my-applications", Briefcase, "המועמדויות שלי", (unreadCount ?? 0) > 0 ? true : undefined)}
@@ -222,7 +222,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             {(isAuthenticated || userMode) && (
               <>
                 <div style={DIVIDER} />
-                <div className="px-2 py-1 flex flex-col gap-0.5">
+                <div className="px-2 py-1 flex flex-col gap-0.5" role="list" aria-label="פעולות חשבון">
                   {isAuthenticated && (
                     <Link href={userMode === "employer" ? "/my-jobs" : "/worker-profile"} className="block">
                       <span className={ITEM} style={{ color: COLOR, border: "1px solid transparent", borderRadius: "0.75rem" }} onClick={() => setTimeout(onClose, 150)}>

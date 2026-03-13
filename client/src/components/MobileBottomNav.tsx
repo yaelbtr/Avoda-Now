@@ -40,6 +40,7 @@ export default function MobileBottomNav() {
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around"
       dir="rtl"
+      aria-label="ניווט תחתון"
       style={{
         height: 64,
         background: "var(--header-bg)",

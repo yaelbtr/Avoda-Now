@@ -163,7 +163,7 @@ function Router() {
       <Navbar />
       <GuestLoginBanner />
 
-      <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }}>
+      <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
         <AnimatePresence mode="wait">
           {showRoleSelection ? (
             <RoleSelectionScreen

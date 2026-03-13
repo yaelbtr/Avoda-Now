@@ -143,10 +143,14 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
           {/* Drawer panel */}
           <motion.div
             key="drawer"
+            id="mobile-drawer"
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
             className="md:hidden fixed top-0 right-0 z-50 flex flex-col"
             dir="rtl"
+            role="dialog"
+            aria-modal="true"
+            aria-label="תפריט נייד"
             style={{
               bottom: 64,
               width: "min(85vw, 300px)",

@@ -171,7 +171,9 @@ export default function Navbar() {
                   border: `1px solid ${mobileOpen ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                 }}
                 onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="תפריט"
+                aria-label="תפריט נייד"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-drawer"
               >
                 <AnimatePresence mode="wait">
                   {mobileOpen ? (

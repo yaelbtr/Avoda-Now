@@ -276,7 +276,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
             {/* Scrollable area: nav items at top, footer pinned to bottom */}
             <div className="flex-1 flex flex-col" style={{ overflowY: "auto", minHeight: 0 }}>
-            <div className="px-2 py-1 flex flex-col gap-1.5">
+            <div className="px-2 py-1 flex flex-col gap-0.5">
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}

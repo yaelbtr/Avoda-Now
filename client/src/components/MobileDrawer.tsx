@@ -276,7 +276,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
             {/* Scrollable area: nav items at top, footer pinned to bottom */}
             <div className="flex-1 flex flex-col" style={{ overflowY: "auto", minHeight: 0 }}>
-            <div className="px-2 py-1 flex flex-col gap-0.5">
+            <div className="px-2 py-1 flex flex-col gap-1">
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
@@ -301,10 +301,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד", undefined, undefined, undefined, true)}
             </div>
 
-            {/* spacer pushes footer to bottom */}
-            <div className="flex-1" />
-
-            {/* Legal & Contact footer — pinned to bottom */}
+            {/* Legal & Contact footer */}
             <div
               className="shrink-0 px-3 pb-4 pt-2"
             >

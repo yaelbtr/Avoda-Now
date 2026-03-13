@@ -178,9 +178,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             {/* Authenticated user card — no border, no background */}
             {isAuthenticated && (
               <div className="mx-4 mt-1 mb-1 shrink-0 flex flex-col gap-2">
-                {/* Top row: avatar (right) + name/link (left of avatar) */}
-                <div className="flex flex-row-reverse items-center gap-3">
-                  {/* Avatar — rightmost */}
+                {/* Top row: avatar first on right (RTL), name+link to its left */}
+                <div className="flex items-center gap-3" dir="rtl">
+                  {/* Avatar — first in RTL = rightmost */}
                   <div
                     className="flex items-center justify-center rounded-full shrink-0 font-bold text-base"
                     style={{
@@ -193,8 +193,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     {(user?.name || "U").charAt(0).toUpperCase()}
                   </div>
 
-                  {/* Name + אזור אישי — to the left of avatar */}
-                  <div className="flex flex-col gap-0.5 flex-1 min-w-0 text-right">
+                  {/* Name + אזור אישי — flows to the left */}
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                     <span
                       className="font-bold text-base leading-tight truncate"
                       style={{ color: "#e8eae5" }}

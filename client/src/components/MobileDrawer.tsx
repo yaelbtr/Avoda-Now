@@ -275,7 +275,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
               {/* Section: system — authenticated */}
               {isAuthenticated && (
-                <div className="flex flex-col gap-1">
+                <>
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
@@ -311,12 +311,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <LogOut className="h-4 w-4 shrink-0" />
                     התנתק
                   </button>
-                </div>
+                </>
               )}
 
               {/* Section: system — guest with userMode */}
               {!isAuthenticated && userMode && (
-                <div className="flex flex-col gap-1">
+                <>
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
@@ -333,7 +333,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <RotateCcw className="h-4 w-4 shrink-0" />
                     אפס בחירת תפקיד
                   </button>
-                </div>
+                </>
               )}
 
             </nav>

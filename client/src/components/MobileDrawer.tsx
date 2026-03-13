@@ -25,7 +25,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   paddingBlock: "0.4rem 0.2rem",
 };
 
-const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
+const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();
@@ -272,7 +272,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             )}
 
             {/* Unified nav list — all items as direct children of a single flex-col gap-1 container */}
-            <div className="flex-1 px-2 py-2 flex flex-col gap-1" style={{ overflowY: "auto", minHeight: 0 }}>
+            <div className="flex-1 px-2 py-1 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}

@@ -248,97 +248,87 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            <nav className="flex-1 px-2 py-3 flex flex-col gap-1" style={{ overflowY: "auto", minHeight: 0 }}>
-              {/* Section: worker nav */}
-              {userMode === "worker" && (
-                <>
-                  {navItem("/find-jobs", MapPin, "חיפוש עבודה")}
-                  {navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
-                  {navItem("/my-applications", Briefcase, "המועמדויות שלי", (unreadCount ?? 0) > 0 ? true : undefined)}
-                </>
-              )}
+            {/* Unified nav list — all items as direct children of a single flex-col gap-1 container */}
+            <div className="flex-1 px-2 py-3 flex flex-col gap-1" style={{ overflowY: "auto", minHeight: 0 }}>
+              {/* worker nav */}
+              {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
+              {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
+              {userMode === "worker" && navItem("/my-applications", Briefcase, "המועמדויות שלי", (unreadCount ?? 0) > 0 ? true : undefined)}
 
-              {/* Section: employer nav */}
-              {userMode === "employer" && (
-                <>
-                  {navItem("/post-job", PlusCircle, "פרסם משרה")}
-                  {navItem("/my-jobs", Briefcase, "המשרות שלי")}
-                  {navItem("/available-workers", Users, "עובדים זמינים")}
-                </>
-              )}
+              {/* employer nav */}
+              {userMode === "employer" && navItem("/post-job", PlusCircle, "פרסם משרה")}
+              {userMode === "employer" && navItem("/my-jobs", Briefcase, "המשרות שלי")}
+              {userMode === "employer" && navItem("/available-workers", Users, "עובדים זמינים")}
 
-              {/* Section: personal — worker */}
-              {isAuthenticated && userMode === "worker" && (
-                <>
-                  {navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
-                </>
-              )}
+              {/* personal — worker */}
+              {isAuthenticated && userMode === "worker" && navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
 
-              {/* Section: system — authenticated */}
+              {/* system — authenticated */}
               {isAuthenticated && (
-                <>
-                  <button
-                    onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
+                <button
+                  onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
+                  className={ITEM_BASE}
+                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
+                >
+                  <RefreshCw className="h-4 w-4 shrink-0" />
+                  {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
+                </button>
+              )}
+              {isAuthenticated && (
+                <button
+                  onClick={() => { resetUserMode(); onClose(); }}
+                  className={ITEM_BASE}
+                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
+                >
+                  <RotateCcw className="h-4 w-4 shrink-0" />
+                  אפס בחירת תפקיד
+                </button>
+              )}
+              {isAuthenticated && user?.role === "admin" && (
+                <Link href="/admin">
+                  <span
                     className={ITEM_BASE}
-                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
+                    style={{ ...ITEM_STYLE, color: "var(--citrus)" }}
+                    onClick={handleLink}
                   >
-                    <RefreshCw className="h-4 w-4 shrink-0" />
-                    {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
-                  </button>
-                  <button
-                    onClick={() => { resetUserMode(); onClose(); }}
-                    className={ITEM_BASE}
-                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                  >
-                    <RotateCcw className="h-4 w-4 shrink-0" />
-                    אפס בחירת תפקיד
-                  </button>
-                  {user?.role === "admin" && (
-                    <Link href="/admin">
-                      <span
-                        className={ITEM_BASE}
-                        style={{ ...ITEM_STYLE, color: "var(--citrus)" }}
-                        onClick={handleLink}
-                      >
-                        <Shield className="h-4 w-4 shrink-0" />
-                        פאנל ניהול
-                      </span>
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => { logout(); onClose(); }}
-                    className={ITEM_BASE + " text-red-400 hover:text-red-300 hover:bg-red-500/10"}
-                    style={ITEM_STYLE}
-                  >
-                    <LogOut className="h-4 w-4 shrink-0" />
-                    התנתק
-                  </button>
-                </>
+                    <Shield className="h-4 w-4 shrink-0" />
+                    פאנל ניהול
+                  </span>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <button
+                  onClick={() => { logout(); onClose(); }}
+                  className={ITEM_BASE + " text-red-400 hover:text-red-300 hover:bg-red-500/10"}
+                  style={ITEM_STYLE}
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  התנתק
+                </button>
               )}
 
-              {/* Section: system — guest with userMode */}
+              {/* system — guest with userMode */}
               {!isAuthenticated && userMode && (
-                <>
-                  <button
-                    onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
-                    className={ITEM_BASE}
-                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                  >
-                    <RefreshCw className="h-4 w-4 shrink-0" />
-                    {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
-                  </button>
-                  <button
-                    onClick={() => { resetUserMode(); onClose(); }}
-                    className={ITEM_BASE}
-                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                  >
-                    <RotateCcw className="h-4 w-4 shrink-0" />
-                    אפס בחירת תפקיד
-                  </button>
-                </>
+                <button
+                  onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
+                  className={ITEM_BASE}
+                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
+                >
+                  <RefreshCw className="h-4 w-4 shrink-0" />
+                  {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
+                </button>
               )}
-
-            </nav>
+              {!isAuthenticated && userMode && (
+                <button
+                  onClick={() => { resetUserMode(); onClose(); }}
+                  className={ITEM_BASE}
+                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
+                >
+                  <RotateCcw className="h-4 w-4 shrink-0" />
+                  אפס בחירת תפקיד
+                </button>
+              )}
+            </div>
 
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}
             <div

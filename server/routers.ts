@@ -143,6 +143,7 @@ import {
 import { adminProcedure } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { notifyOwner } from "./_core/notification";
+import { sendWelcomeEmail } from "./_core/email";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -329,6 +330,12 @@ const authRouter = router({
           });
         }
         user = await createUserByPhone(phone, input.name, input.email, true);
+        // Send welcome email non-blocking (fire-and-forget)
+        if (user && input.email) {
+          sendWelcomeEmail({ name: input.name ?? "", email: input.email }).catch((err) =>
+            console.warn("[verifyOtp] sendWelcomeEmail error:", err)
+          );
+        }
       } else {
         // Existing user: must have accepted terms at some point
         if (!user.termsAcceptedAt) {

@@ -51,9 +51,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   // Registration-only fields
   const [regName, setRegName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
   const [regEmail, setRegEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  // Name validator: min 2 chars, letters/spaces/hyphens only
+  const validateName = (val: string): string | null => {
+    const trimmed = val.trim();
+    if (!trimmed) return null; // empty handled by disabled button
+    if (trimmed.length < 2) return "שם חייב להכיל לפחות 2 תווים";
+    if (!/^[\u0590-\u05FFa-zA-Z\s\-']+$/.test(trimmed)) return "שם יכול להכיל אותיות ורווחים בלבד";
+    return null;
+  };
 
   // Email format validator
   const validateEmail = (val: string): string | null => {
@@ -473,11 +483,21 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                           <input
                             type="text"
                             value={regName}
-                            onChange={e => { setRegName(e.target.value); setDuplicateError(null); }}
+                            onChange={e => {
+                              setRegName(e.target.value);
+                              setDuplicateError(null);
+                              if (nameError) setNameError(validateName(e.target.value));
+                            }}
+                            onBlur={e => setNameError(validateName(e.target.value))}
                             placeholder="ישראל ישראלי"
-                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
+                            className={`w-full h-9 px-2.5 rounded-lg border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-right ${
+                              nameError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
+                            }`}
                             dir="rtl"
                           />
+                          {nameError && (
+                            <p className="text-xs text-red-500 mt-0.5" role="alert">{nameError}</p>
+                          )}
                         </div>
                         {/* Email */}
                         <div className="space-y-1">
@@ -585,7 +605,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     disabled={
                       sendOtp.isPending ||
                       !isPhoneValid ||
-                      (activeTab === "register" && (!regName.trim() || !regEmail.trim() || !!emailError || !termsAccepted))
+                      (activeTab === "register" && (!regName.trim() || !regEmail.trim() || !!emailError || !!nameError || !termsAccepted))
                     }
                   >
                     {sendOtp.isPending

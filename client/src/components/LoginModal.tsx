@@ -454,28 +454,28 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {/* ── REGISTER: extra fields ── */}
                   {activeTab === "register" && (
                     <>
-                      {/* Name + Email side by side on wider screens, stacked on mobile */}
+                      {/* Name + Email side by side */}
                       <div className="grid grid-cols-2 gap-2">
                         {/* Name */}
                         <div className="space-y-1">
-                          <label className="text-xs font-medium flex items-center gap-1">
+                          <label className="text-xs font-medium flex items-center gap-1 text-foreground/80">
                             <User className="h-3 w-3 text-muted-foreground" />
-                            שם מלא <span className="text-red-500">*</span>
+                            שם מלא <span className="text-red-500 mr-0.5">*</span>
                           </label>
                           <input
                             type="text"
                             value={regName}
                             onChange={e => { setRegName(e.target.value); setDuplicateError(null); }}
                             placeholder="ישראל ישראלי"
-                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            className="w-full h-9 px-2.5 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
                             dir="rtl"
                           />
                         </div>
                         {/* Email */}
                         <div className="space-y-1">
-                          <label className="text-xs font-medium flex items-center gap-1">
+                          <label className="text-xs font-medium flex items-center gap-1 text-foreground/80">
                             <Mail className="h-3 w-3 text-muted-foreground" />
-                            מייל <span className="text-xs text-muted-foreground/70">(אופציונלי)</span>
+                            מייל <span className="text-red-500 mr-0.5">*</span>
                           </label>
                           <input
                             type="email"
@@ -565,7 +565,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     disabled={
                       sendOtp.isPending ||
                       !isPhoneValid ||
-                      (activeTab === "register" && (!regName.trim() || !termsAccepted))
+                      (activeTab === "register" && (!regName.trim() || !regEmail.trim() || !termsAccepted))
                     }
                   >
                     {sendOtp.isPending

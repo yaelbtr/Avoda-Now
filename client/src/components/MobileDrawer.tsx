@@ -25,7 +25,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   paddingBlock: "0.4rem 0.2rem",
 };
 
-const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer";
+const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();
@@ -247,7 +247,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            <nav className="flex-1 px-2 py-3 pb-20 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
+            <nav className="flex-1 px-2 py-3 pb-20 flex flex-col gap-1" style={{ overflowY: "auto", minHeight: 0 }}>
               {/* Section: worker nav */}
               {userMode === "worker" && (
                 <>

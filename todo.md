@@ -1686,3 +1686,6 @@
 - [x] Backend: verifyOtp calls resetTestUserProfile() for test-role users before issuing session, returns testReset=true flag
 - [x] Frontend: LoginModal detects testReset=true and clears relevant localStorage/sessionStorage keys (role, filters, location cache, banner dismissed, etc.)
 - [x] Tests: twilio.otp.test.ts updated — mock includes resetTestUserProfile, mockUser includes termsAcceptedAt, new-user test passes termsAccepted=true
+
+## Bug Fix — Mobile Navbar User Icon
+- [x] Fix: clicking user icon in mobile navbar when not logged in navigates to /my-jobs instead of opening login modal

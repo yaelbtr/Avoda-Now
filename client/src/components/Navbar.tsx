@@ -184,8 +184,8 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
               </motion.button>
-              {/* User icon — only when authenticated */}
-              {isAuthenticated && (
+              {/* User icon — always visible; opens login for guests, navigates for auth users */}
+              {isAuthenticated ? (
                 <Link href={userMode === "worker" ? "/worker-profile" : "/my-jobs"}>
                   <motion.button
                     whileHover={{ scale: 1.08 }}
@@ -201,6 +201,21 @@ export default function Navbar() {
                     <User className="h-5 w-5" />
                   </motion.button>
                 </Link>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => setLoginOpen(true)}
+                  className="w-9 h-9 flex items-center justify-center rounded-xl"
+                  style={{
+                    background: "transparent",
+                    color: "#e8eae5",
+                    border: "1px solid transparent",
+                  }}
+                  aria-label="כניסה"
+                >
+                  <User className="h-5 w-5" />
+                </motion.button>
               )}
             </div>
 

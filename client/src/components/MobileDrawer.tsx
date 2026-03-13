@@ -274,9 +274,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            {/* Scrollable area: nav + footer together, no gap between them */}
+            {/* Scrollable area: nav items at top, footer pinned to bottom */}
             <div className="flex-1 flex flex-col" style={{ overflowY: "auto", minHeight: 0 }}>
-            <div className="px-2 py-1 flex flex-col gap-0.5">
+            <div className="px-2 py-1 flex flex-col gap-1.5">
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
@@ -301,11 +301,14 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד", undefined, undefined, undefined, true)}
             </div>
 
-            {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}
+            {/* spacer pushes footer to bottom */}
+            <div className="flex-1" />
+
+            {/* Legal & Contact footer — pinned to bottom */}
             <div
-              className="shrink-0 px-3 pb-4 pt-0"
+              className="shrink-0 px-3 pb-4 pt-2"
             >
-              <div className="flex flex-col gap-0.5 mb-2">
+              <div className="flex flex-col gap-1 mb-2">
                 <Link href="/terms">
                   <span
                     className={ITEM_BASE}

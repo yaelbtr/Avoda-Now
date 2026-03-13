@@ -272,7 +272,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             )}
 
             {/* Unified nav list — all items as direct children of a single flex-col gap-1 container */}
-            <div className="flex-1 px-2 py-1 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
+            <div className="px-2 py-1 flex flex-col gap-0.5">
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
@@ -296,6 +296,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
               {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
             </div>
+
+            {/* Spacer — pushes footer to bottom */}
+            <div className="flex-1" />
 
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}
             <div

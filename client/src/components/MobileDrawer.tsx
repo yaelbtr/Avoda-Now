@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Flame, Briefcase, Bookmark, User, PlusCircle, Users,
-  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2, AlertTriangle, Gift,
+  RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
@@ -248,40 +248,34 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             )}
 
             <nav className="flex-1 px-2 py-3 pb-20 flex flex-col gap-0.5" style={{ overflowY: "auto", minHeight: 0 }}>
-              {/* Section: ניווט — worker */}
+              {/* Section: worker nav */}
               {userMode === "worker" && (
                 <>
-                  <p style={SECTION_LABEL_STYLE}>ניווט</p>
                   {navItem("/find-jobs", MapPin, "חיפוש עבודה")}
                   {navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
                   {navItem("/my-applications", Briefcase, "המועמדויות שלי", (unreadCount ?? 0) > 0 ? true : undefined)}
                 </>
               )}
 
-              {/* Section: ניווט — employer */}
+              {/* Section: employer nav */}
               {userMode === "employer" && (
                 <>
-                  <p style={SECTION_LABEL_STYLE}>ניווט</p>
                   {navItem("/post-job", PlusCircle, "פרסם משרה")}
                   {navItem("/my-jobs", Briefcase, "המשרות שלי")}
                   {navItem("/available-workers", Users, "עובדים זמינים")}
                 </>
               )}
 
-              {/* Section: האזור האישי */}
+              {/* Section: personal — worker */}
               {isAuthenticated && userMode === "worker" && (
                 <>
-                  <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>האזור האישי</p>
                   {navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
-                  {navItem("/worker-profile", User, "הפרופיל שלי")}
-                  {navItem("/my-referrals", Gift, "הפניות שלי")}
                 </>
               )}
 
-              {/* Section: מערכת — authenticated */}
+              {/* Section: system — authenticated */}
               {isAuthenticated && (
                 <>
-                  <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>מערכת</p>
 
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
@@ -324,10 +318,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
 
-              {/* Section: מערכת — guest with userMode */}
+              {/* Section: system — guest with userMode */}
               {!isAuthenticated && userMode && (
                 <>
-                  <p style={{ ...SECTION_LABEL_STYLE, marginTop: "0.75rem" }}>מערכת</p>
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}

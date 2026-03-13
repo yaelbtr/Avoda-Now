@@ -290,21 +290,7 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
-              {/* Guest login button on mobile */}
-              {!isAuthenticated && (
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setLoginOpen(true)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                  style={{
-                    background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
-                    color: "oklch(0.22 0.03 122.3)",
-                  }}
-                >
-                  כניסה
-                </motion.button>
-              )}
+              {/* Guest login handled by user icon in the right side of the header */}
             </div>
           </div>
 

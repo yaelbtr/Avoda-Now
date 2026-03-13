@@ -1694,3 +1694,6 @@
 - [x] Fix: after logout, redirect to home page (/) instead of staying on protected page showing inline login prompt
 - [x] Remove inline "כניסה נדרשת" screens from protected pages (MyJobs, MyApplications, WorkerProfile) — redirect to home on logout instead
 - [x] DRY: centralized PROTECTED_PATHS in client/src/const.ts (single source of truth)
+
+## UI Cleanup — Mobile Navbar
+- [x] Remove duplicate "כניסה" text button from mobile navbar left side (user icon already handles login for guests)

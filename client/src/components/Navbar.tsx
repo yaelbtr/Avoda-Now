@@ -235,7 +235,7 @@ export default function Navbar() {
                 <Briefcase className="h-4 w-4" style={{ color: "var(--citrus)" }} />
               </motion.div>
               <div className="flex flex-col leading-none">
-                <span className="font-black text-[17px] tracking-tight" style={{ color: "var(--header-fg)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", letterSpacing: "-0.03em" }}>
+                <span lang="en" className="font-black text-[17px] tracking-tight" style={{ color: "var(--header-fg)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", letterSpacing: "-0.03em" }}>
                   Avoda<span style={{ color: "var(--citrus)" }}>Now</span>
                 </span>
                 <span className="text-[7px] font-bold tracking-widest uppercase" style={{ color: "oklch(0.9904 0.0107 95.3 / 0.40)", letterSpacing: "0.14em" }}>עבודה עכשיו</span>
@@ -321,7 +321,7 @@ export default function Navbar() {
                     textShadow: "0 1px 3px oklch(0 0 0 / 0.2)",
                   }}
                 >
-                  Avoda<span style={{ color: "var(--citrus)", textShadow: "0 0 12px oklch(0.82 0.15 80.8 / 0.4)" }}>Now</span>
+                  <span lang="en">Avoda<span style={{ color: "var(--citrus)", textShadow: "0 0 12px oklch(0.82 0.15 80.8 / 0.4)" }}>Now</span></span>
                 </span>
                 <span
                   className="text-[8px] font-bold tracking-widest uppercase"

@@ -111,7 +111,7 @@ export default function Footer() {
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_MUTED)}
             >
               <Mail className="h-3 w-3 shrink-0" />
-              <span>info@avodanow.co.il</span>
+              <span lang="en">info@avodanow.co.il</span>
             </a>
           </div>
         </div>
@@ -356,13 +356,13 @@ export default function Footer() {
           </div>
 
           <p className="text-[11px] whitespace-nowrap font-medium" style={{ color: FG_MUTED }}>
-            © {new Date().getFullYear()} AvodaNow · כל הזכויות שמורות
+            © {new Date().getFullYear()} <span lang="en">AvodaNow</span> · כל הזכויות שמורות
           </p>
         </div>
 
         {/* Disclaimer */}
         <p className="text-[11px] text-center mt-3 leading-relaxed" style={{ color: FG_MUTED }}>
-          AvodaNow אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
+          <span lang="en">AvodaNow</span> אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
         </p>
       </div>
     </footer>

@@ -293,7 +293,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   style={{ color: COLOR_DIM, background: "oklch(0.42 0.07 124.9 / 0.25)", border: "1px solid oklch(0.42 0.07 124.9 / 0.35)", textDecoration: "none" }}
                 >
                   <Mail className="h-3 w-3 shrink-0" style={{ color: "var(--citrus)" }} />
-                  <span className="truncate">info@avodanow.co.il</span>
+                  <span className="truncate" lang="en">info@avodanow.co.il</span>
                 </a>
                 <a
                   href={`mailto:info@avodanow.co.il?subject=${encodeURIComponent('דיווח על בעיה ב-AvodaNow')}&body=${encodeURIComponent('שלום,\n\nאני רוצה לדווח על בעיה הבאה:\n\n[תאר את הבעיה כאן]\n\nתודה,')}`}
@@ -305,8 +305,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </a>
               </div>
 
-              <p className="text-center mt-1.5" style={{ fontSize: "0.6rem", color: COLOR_MUTED }}>
-                © AvodaNow 2026 · כל הזכויות שמורות
+                <p className="text-center mt-1.5" style={{ fontSize: "0.6rem", color: COLOR_MUTED }}>
+                © <span lang="en">AvodaNow</span> 2026 · כל הזכויות שמורות
               </p>
             </div>
 

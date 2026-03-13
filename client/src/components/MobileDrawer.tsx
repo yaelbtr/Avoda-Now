@@ -275,8 +275,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
               {/* Section: system — authenticated */}
               {isAuthenticated && (
-                <>
-
+                <div className="flex flex-col gap-1">
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
@@ -285,7 +284,6 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <RefreshCw className="h-4 w-4 shrink-0" />
                     {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
                   </button>
-
                   <button
                     onClick={() => { resetUserMode(); onClose(); }}
                     className={ITEM_BASE}
@@ -294,7 +292,6 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <RotateCcw className="h-4 w-4 shrink-0" />
                     אפס בחירת תפקיד
                   </button>
-
                   {user?.role === "admin" && (
                     <Link href="/admin">
                       <span
@@ -307,7 +304,6 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                       </span>
                     </Link>
                   )}
-
                   <button
                     onClick={() => { logout(); onClose(); }}
                     className={ITEM_BASE + " text-red-400 hover:text-red-300 hover:bg-red-500/10"}
@@ -315,12 +311,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <LogOut className="h-4 w-4 shrink-0" />
                     התנתק
                   </button>
-                </>
+                </div>
               )}
 
               {/* Section: system — guest with userMode */}
               {!isAuthenticated && userMode && (
-                <>
+                <div className="flex flex-col gap-1">
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
@@ -337,7 +333,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <RotateCcw className="h-4 w-4 shrink-0" />
                     אפס בחירת תפקיד
                   </button>
-                </>
+                </div>
               )}
 
               {/* Legal & Contact footer */}

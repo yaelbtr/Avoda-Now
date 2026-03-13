@@ -190,7 +190,7 @@ const authRouter = router({
         if (!existingUser || !existingUser.termsAcceptedAt) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "מספר זה אינו רשום במערכת. אנא בצע הרשמה תחילה.",
+            message: "מספר זה אינו רשום במערכת.",
           });
         }
       }

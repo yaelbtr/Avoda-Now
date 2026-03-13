@@ -271,7 +271,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
             )}
 
-            {/* Unified nav list — all items as direct children of a single flex-col gap-1 container */}
+            {/* Scrollable area: nav + footer together, no gap between them */}
+            <div className="flex-1 flex flex-col" style={{ overflowY: "auto", minHeight: 0 }}>
             <div className="px-2 py-1 flex flex-col gap-0.5">
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
@@ -297,12 +298,9 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
             </div>
 
-            {/* Spacer — pushes footer to bottom */}
-            <div className="flex-1" />
-
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}
             <div
-              className="shrink-0 px-3 pb-4 pt-2"
+              className="shrink-0 px-3 pb-4 pt-0"
               style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
             >
               <div className="flex flex-col gap-0.5 mb-2">
@@ -362,6 +360,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               >
                 © AvodaNow 2026 · כל הזכויות שמורות
               </p>
+            </div>
             </div>
           </motion.div>
         </>

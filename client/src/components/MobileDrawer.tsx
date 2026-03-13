@@ -25,7 +25,8 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   paddingBlock: "0.4rem 0.2rem",
 };
 
-const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
+const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
+const ITEM_SECONDARY = "flex items-center gap-3 w-full text-right px-3 py-1 rounded-xl text-xs font-normal transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10 opacity-70";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();
@@ -68,20 +69,22 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     badge?: number | boolean,
     color?: string,
     extraClass?: string,
+    secondary?: boolean,
   ) => {
     const Icon = icon;
     const isLink = typeof hrefOrClick === "string";
     const isActive = isLink && location === hrefOrClick;
-    const itemColor = color ?? (isActive ? "var(--citrus)" : "#e8eae5");
+    const itemColor = color ?? (isActive ? "var(--citrus)" : secondary ? "oklch(0.75 0.06 124.9)" : "#e8eae5");
     const itemStyle: React.CSSProperties = {
       background: isActive ? "oklch(0.42 0.07 124.9)" : "transparent",
       color: itemColor,
       border: isActive ? "1px solid oklch(0.50 0.07 124.9)" : "1px solid transparent",
       borderRadius: "0.75rem",
     };
+    const baseClass = secondary ? ITEM_SECONDARY : ITEM_BASE;
     const inner = (
       <>
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className={secondary ? "h-3.5 w-3.5 shrink-0" : "h-4 w-4 shrink-0"} />
         <span className="flex-1">{label}</span>
         {badge && typeof badge === "number" && badge > 0 && (
           <span
@@ -115,7 +118,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     if (isLink) {
       return (
         <Link href={hrefOrClick} key={hrefOrClick} className="block">
-          <span className={`${ITEM_BASE}${extraClass ? " " + extraClass : ""}`} style={itemStyle} onClick={handleLink}>
+          <span className={`${baseClass}${extraClass ? " " + extraClass : ""}`} style={itemStyle} onClick={handleLink}>
             {inner}
           </span>
         </Link>
@@ -125,7 +128,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
       <button
         key={label}
         onClick={() => { (hrefOrClick as () => void)(); }}
-        className={`${ITEM_BASE}${extraClass ? " " + extraClass : ""}`}
+        className={`${baseClass}${extraClass ? " " + extraClass : ""}`}
         style={itemStyle}
       >
         {inner}
@@ -288,26 +291,25 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {isAuthenticated && userMode === "worker" && navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
 
               {/* system — authenticated */}
-              {isAuthenticated && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
-              {isAuthenticated && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
-              {isAuthenticated && user?.role === "admin" && navItem("/admin", Shield, "פאנל ניהול", undefined, "var(--citrus)")}
-              {isAuthenticated && navItem(() => { logout(); setTimeout(onClose, 150); }, LogOut, "התנתק", undefined, undefined, "text-red-400 hover:text-red-300 hover:bg-red-500/10")}
+              {isAuthenticated && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד", undefined, undefined, undefined, true)}
+              {isAuthenticated && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד", undefined, undefined, undefined, true)}
+              {isAuthenticated && user?.role === "admin" && navItem("/admin", Shield, "פאנל ניהול", undefined, "var(--citrus)", undefined, true)}
+              {isAuthenticated && navItem(() => { logout(); setTimeout(onClose, 150); }, LogOut, "התנתק", undefined, undefined, "text-red-400 hover:text-red-300 hover:bg-red-500/10", true)}
 
               {/* system — guest with userMode */}
-              {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
-              {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד")}
+              {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); setTimeout(onClose, 150); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד", undefined, undefined, undefined, true)}
+              {!isAuthenticated && userMode && navItem(() => { resetUserMode(); setTimeout(onClose, 150); }, RotateCcw, "אפס בחירת תפקיד", undefined, undefined, undefined, true)}
             </div>
 
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}
             <div
               className="shrink-0 px-3 pb-4 pt-0"
-              style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.5)" }}
             >
               <div className="flex flex-col gap-0.5 mb-2">
                 <Link href="/terms">
                   <span
                     className={ITEM_BASE}
-                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.5)" }}
                     onClick={handleLink}
                   >
                     <FileText className="h-3.5 w-3.5 shrink-0" />
@@ -317,7 +319,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 <Link href="/privacy">
                   <span
                     className={ITEM_BASE}
-                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.6)", fontSize: "0.8rem" }}
+                    style={{ color: "oklch(0.9904 0.0107 95.3 / 0.5)" }}
                     onClick={handleLink}
                   >
                     <ShieldCheck className="h-3.5 w-3.5 shrink-0" />

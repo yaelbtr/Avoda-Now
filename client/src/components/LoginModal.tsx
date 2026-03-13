@@ -169,6 +169,27 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         onNonAdminLogin?.();
         return;
       }
+      // Test user re-login: profile was reset on server — clear all client-side
+      // profile/onboarding state from localStorage and sessionStorage so the
+      // UI starts fresh (role selection, filter prefs, location cache, etc.).
+      if ((data as any).testReset === true) {
+        const keysToRemove = [
+          "avoda_now_role",
+          "avoda_now_role_user",
+          "avoda_now_guest_role",
+          "findJobs_filters",
+          "findJobs_location",
+          "myApplicationsLastSeen",
+          "pushBannerDismissed",
+          "avodanow_banner_dismissed",
+        ];
+        keysToRemove.forEach((k) => {
+          localStorage.removeItem(k);
+          sessionStorage.removeItem(k);
+        });
+        // Also clear the session-storage guest role key
+        sessionStorage.removeItem("avoda_now_guest_role");
+      }
       await refetch();
       queryClient.invalidateQueries();
       if (data.user?.userMode) {

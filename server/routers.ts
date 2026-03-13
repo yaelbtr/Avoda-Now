@@ -107,6 +107,7 @@ import {
   isMaintenanceModeActive,
   getMaintenanceMessage,
   getHeroStats,
+  resetTestUserProfile,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -271,15 +272,18 @@ const authRouter = router({
             message: "קוד האימות שגוי. הכנס את 6 הספרות הראשונות של הטלפון.",
           });
         }
-        // Bypass Twilio — issue session directly
+        // Bypass Twilio — reset profile and issue session directly
+        await resetTestUserProfile(testUserCheck.id);
         await updateUserLastSignedIn(testUserCheck.id);
+        // Re-fetch user after reset so the returned object reflects cleared state
+        const resetUser = await getUserByPhone(phone);
         const tokenTest = await sdk.signSession(
           { openId: testUserCheck.openId, appId: ENV.appId, name: testUserCheck.name ?? testUserCheck.phone ?? "" },
           { expiresInMs: 30 * 24 * 60 * 60 * 1000 }
         );
         const cookieOptionsTest = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, tokenTest, cookieOptionsTest);
-        return { success: true, user: testUserCheck };
+        return { success: true, user: resetUser ?? testUserCheck, testReset: true };
       }
 
       // Check verify attempt rate limit

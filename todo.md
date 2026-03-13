@@ -1680,3 +1680,9 @@
 - [x] Check all phone variants (E.164, local) for duplicates in sendOtp on registration
 - [x] Check email uniqueness in verifyOtp on registration
 - [x] Show contact-admin message in LoginModal when duplicate found
+
+## Test User Profile Reset on Re-login
+- [x] Backend: resetTestUserProfile() function in db.ts — clears all profile/onboarding fields (userMode, categories, city, bio, photo, signupCompleted, etc.) while keeping name, phone, email, role
+- [x] Backend: verifyOtp calls resetTestUserProfile() for test-role users before issuing session, returns testReset=true flag
+- [x] Frontend: LoginModal detects testReset=true and clears relevant localStorage/sessionStorage keys (role, filters, location cache, banner dismissed, etc.)
+- [x] Tests: twilio.otp.test.ts updated — mock includes resetTestUserProfile, mockUser includes termsAcceptedAt, new-user test passes termsAccepted=true

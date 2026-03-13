@@ -142,6 +142,38 @@ export async function clearUserMode(id: number): Promise<void> {
   await db.update(users).set({ userMode: null }).where(eq(users.id, id));
 }
 
+/**
+ * Resets all profile/onboarding data for a test user while keeping
+ * identity fields: name, phone, email, role, openId, termsAcceptedAt.
+ * Called every time a test user authenticates so each test run starts fresh.
+ */
+export async function resetTestUserProfile(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({
+    userMode: null,
+    workerTags: null,
+    preferredCategories: null,
+    preferredCity: null,
+    preferredCities: null,
+    locationMode: "city",
+    workerLatitude: null,
+    workerLongitude: null,
+    searchRadiusKm: 5,
+    preferenceText: null,
+    preferredDays: null,
+    preferredTimeSlots: null,
+    workerBio: null,
+    profilePhoto: null,
+    expectedHourlyRate: null,
+    availabilityStatus: null,
+    signupCompleted: false,
+    regionId: null,
+    completedJobsCount: 0,
+    workerRating: null,
+  }).where(eq(users.id, id));
+}
+
 export async function getWorkerProfile(id: number) {
   const db = await getDb();
   if (!db) return null;

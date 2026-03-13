@@ -10,6 +10,7 @@ vi.mock("./db", () => ({
   getUserByPhone: vi.fn(),
   createUserByPhone: vi.fn(),
   updateUserLastSignedIn: vi.fn(),
+  resetTestUserProfile: vi.fn(),
   countActiveJobsByUser: vi.fn(),
   createJob: vi.fn(),
   getJobById: vi.fn(),
@@ -70,6 +71,7 @@ const mockUser = {
   role: "user" as const,
   status: "active" as const,
   workerTags: null,
+  termsAcceptedAt: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
   lastSignedIn: new Date(),
@@ -204,22 +206,21 @@ describe("auth.sendOtp", () => {
 describe("auth.verifyOtp", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("creates a new user and sets session cookie on first login", async () => {
+   it("creates a new user and sets session cookie on first login", async () => {
     vi.mocked(db.checkAndIncrementVerifyAttempts).mockResolvedValue(true);
     vi.mocked(smsProvider.verifyOtp).mockResolvedValue({ success: true, approved: true });
     vi.mocked(db.getUserByPhone).mockResolvedValue(undefined);
     vi.mocked(db.createUserByPhone).mockResolvedValue(mockUser);
     vi.mocked(db.resetRateLimit).mockResolvedValue(undefined);
-
     const ctx = makePublicCtx();
     const caller = appRouter.createCaller(ctx);
-    const result = await caller.auth.verifyOtp({ phone: "+972501234567", code: "123456" });
-
+    // New user registration requires termsAccepted=true
+    const result = await caller.auth.verifyOtp({ phone: "+972501234567", code: "123456", termsAccepted: true });
     expect(result.success).toBe(true);
     expect(result.user?.phone).toBe("+972501234567");
-    expect(db.createUserByPhone).toHaveBeenCalledWith("+972501234567", undefined);
+    expect(db.createUserByPhone).toHaveBeenCalledWith("+972501234567", undefined, undefined, true);
     expect((ctx.res as { cookie: ReturnType<typeof vi.fn> }).cookie).toHaveBeenCalledOnce();
-  });
+  });;
 
   it("logs in existing user and updates lastSignedIn", async () => {
     vi.mocked(db.checkAndIncrementVerifyAttempts).mockResolvedValue(true);

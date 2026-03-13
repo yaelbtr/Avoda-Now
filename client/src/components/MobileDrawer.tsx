@@ -26,7 +26,6 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
 };
 
 const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer";
-const ITEM_STYLE: React.CSSProperties = { border: "1px solid transparent", borderRadius: "0.75rem" };
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();
@@ -62,51 +61,75 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
   const handleLink = () => onClose();
 
-  const navItem = (href: string, icon: React.ElementType, label: string, badge?: number | boolean) => {
+  const navItem = (
+    hrefOrClick: string | (() => void),
+    icon: React.ElementType,
+    label: string,
+    badge?: number | boolean,
+    color?: string,
+    extraClass?: string,
+  ) => {
     const Icon = icon;
-    const isActive = location === href;
+    const isLink = typeof hrefOrClick === "string";
+    const isActive = isLink && location === hrefOrClick;
+    const itemColor = color ?? (isActive ? "var(--citrus)" : "#e8eae5");
+    const itemStyle: React.CSSProperties = {
+      background: isActive ? "oklch(0.42 0.07 124.9)" : "transparent",
+      color: itemColor,
+      border: isActive ? "1px solid oklch(0.50 0.07 124.9)" : "1px solid transparent",
+      borderRadius: "0.75rem",
+    };
+    const inner = (
+      <>
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="flex-1">{label}</span>
+        {badge && typeof badge === "number" && badge > 0 && (
+          <span
+            style={{
+              background: "oklch(0.55 0.18 145)",
+              color: "white",
+              fontSize: "0.6rem",
+              fontWeight: 700,
+              borderRadius: "9999px",
+              padding: "0.1rem 0.4rem",
+              minWidth: "1.2rem",
+              textAlign: "center",
+            }}
+          >
+            {badge}
+          </span>
+        )}
+        {badge === true && (
+          <span
+            style={{
+              width: "0.5rem",
+              height: "0.5rem",
+              borderRadius: "9999px",
+              background: "oklch(0.55 0.18 145)",
+              flexShrink: 0,
+            }}
+          />
+        )}
+      </>
+    );
+    if (isLink) {
+      return (
+        <Link href={hrefOrClick} key={hrefOrClick} className="block">
+          <span className={`${ITEM_BASE}${extraClass ? " " + extraClass : ""}`} style={itemStyle} onClick={handleLink}>
+            {inner}
+          </span>
+        </Link>
+      );
+    }
     return (
-      <Link href={href} key={href} className="block">
-        <span
-          className={ITEM_BASE}
-          style={{
-            background: isActive ? "oklch(0.42 0.07 124.9)" : "transparent",
-            color: isActive ? "var(--citrus)" : "#e8eae5",
-            border: isActive ? "1px solid oklch(0.50 0.07 124.9)" : "1px solid transparent",
-          }}
-          onClick={handleLink}
-        >
-          <Icon className="h-4 w-4 shrink-0" />
-          <span className="flex-1">{label}</span>
-          {badge && typeof badge === "number" && badge > 0 && (
-            <span
-              style={{
-                background: "oklch(0.55 0.18 145)",
-                color: "white",
-                fontSize: "0.6rem",
-                fontWeight: 700,
-                borderRadius: "9999px",
-                padding: "0.1rem 0.4rem",
-                minWidth: "1.2rem",
-                textAlign: "center",
-              }}
-            >
-              {badge}
-            </span>
-          )}
-          {badge === true && (
-            <span
-              style={{
-                width: "0.5rem",
-                height: "0.5rem",
-                borderRadius: "9999px",
-                background: "oklch(0.55 0.18 145)",
-                flexShrink: 0,
-              }}
-            />
-          )}
-        </span>
-      </Link>
+      <button
+        key={label}
+        onClick={() => { (hrefOrClick as () => void)(); }}
+        className={`${ITEM_BASE}${extraClass ? " " + extraClass : ""}`}
+        style={itemStyle}
+      >
+        {inner}
+      </button>
     );
   };
 
@@ -264,70 +287,14 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {isAuthenticated && userMode === "worker" && navItem("/my-applications?tab=saved", Bookmark, "משרות ששמרתי", savedJobsCount > 0 ? savedJobsCount : undefined)}
 
               {/* system — authenticated */}
-              {isAuthenticated && (
-                <button
-                  onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
-                  className={ITEM_BASE}
-                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                >
-                  <RefreshCw className="h-4 w-4 shrink-0" />
-                  {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
-                </button>
-              )}
-              {isAuthenticated && (
-                <button
-                  onClick={() => { resetUserMode(); onClose(); }}
-                  className={ITEM_BASE}
-                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                >
-                  <RotateCcw className="h-4 w-4 shrink-0" />
-                  אפס בחירת תפקיד
-                </button>
-              )}
-              {isAuthenticated && user?.role === "admin" && (
-                <Link href="/admin">
-                  <span
-                    className={ITEM_BASE}
-                    style={{ ...ITEM_STYLE, color: "var(--citrus)" }}
-                    onClick={handleLink}
-                  >
-                    <Shield className="h-4 w-4 shrink-0" />
-                    פאנל ניהול
-                  </span>
-                </Link>
-              )}
-              {isAuthenticated && (
-                <button
-                  onClick={() => { logout(); onClose(); }}
-                  className={ITEM_BASE + " text-red-400 hover:text-red-300 hover:bg-red-500/10"}
-                  style={ITEM_STYLE}
-                >
-                  <LogOut className="h-4 w-4 shrink-0" />
-                  התנתק
-                </button>
-              )}
+              {isAuthenticated && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
+              {isAuthenticated && navItem(() => { resetUserMode(); onClose(); }, RotateCcw, "אפס בחירת תפקיד")}
+              {isAuthenticated && user?.role === "admin" && navItem("/admin", Shield, "פאנל ניהול", undefined, "var(--citrus)")}
+              {isAuthenticated && navItem(() => { logout(); onClose(); }, LogOut, "התנתק", undefined, undefined, "text-red-400 hover:text-red-300 hover:bg-red-500/10")}
 
               {/* system — guest with userMode */}
-              {!isAuthenticated && userMode && (
-                <button
-                  onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
-                  className={ITEM_BASE}
-                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                >
-                  <RefreshCw className="h-4 w-4 shrink-0" />
-                  {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
-                </button>
-              )}
-              {!isAuthenticated && userMode && (
-                <button
-                  onClick={() => { resetUserMode(); onClose(); }}
-                  className={ITEM_BASE}
-                  style={{ ...ITEM_STYLE, color: "#e8eae5" }}
-                >
-                  <RotateCcw className="h-4 w-4 shrink-0" />
-                  אפס בחירת תפקיד
-                </button>
-              )}
+              {!isAuthenticated && userMode && navItem(() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }, RefreshCw, userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד")}
+              {!isAuthenticated && userMode && navItem(() => { resetUserMode(); onClose(); }, RotateCcw, "אפס בחירת תפקיד")}
             </div>
 
             {/* Legal & Contact footer — always visible at bottom, never scrolls under nav */}

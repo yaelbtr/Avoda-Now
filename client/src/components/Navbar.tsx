@@ -334,13 +334,16 @@ export default function Navbar() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-0.5" aria-label="ניווט ראשי">
+              <ul className="flex items-center gap-0.5 list-none m-0 p-0">
               {navLinks.map((link) => {
                 const isActive = location === link.href;
                 return (
-                  <Link key={link.href} href={link.href}>
+                  <li key={link.href}>
+                  <Link href={link.href}>
                     <motion.span
                       whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.96 }}
+                      aria-current={isActive ? "page" : undefined}
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer"
                       style={{
                         background: isActive ? ACTIVE_BG : "transparent",
@@ -396,8 +399,10 @@ export default function Navbar() {
                       )}
                     </motion.span>
                   </Link>
+                  </li>
                 );
               })}
+              </ul>
             </nav>
 
             {/* Auth actions */}

@@ -38,7 +38,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50"
       dir="rtl"
       aria-label="ניווט תחתון"
       style={{
@@ -50,6 +50,7 @@ export default function MobileBottomNav() {
         WebkitBackdropFilter: "blur(12px)",
       }}
     >
+      <ul className="flex items-center justify-around h-full list-none m-0 p-0">
       {NAV_ITEMS.map((item) => {
         const isActive =
           item.href === "/find-jobs?filter=today"
@@ -61,8 +62,11 @@ export default function MobileBottomNav() {
         const Icon = item.icon;
 
         return (
-          <Link key={item.href} href={item.href}>
+          <li key={item.href}>
+          <Link href={item.href}>
             <button
+              aria-current={isActive ? "page" : undefined}
+              aria-label={item.label}
               className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all relative"
               style={{
                 minWidth: 60,
@@ -106,8 +110,10 @@ export default function MobileBottomNav() {
               )}
             </button>
           </Link>
+          </li>
         );
       })}
+      </ul>
     </nav>
   );
 }

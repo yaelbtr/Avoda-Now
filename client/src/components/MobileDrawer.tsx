@@ -102,18 +102,27 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     );
     if (isLink) {
       return (
-        <Link href={hrefOrClick} key={hrefOrClick} className="block">
-          <span className={`${ITEM}${extraClass ? " " + extraClass : ""}`} style={itemStyle} onClick={() => setTimeout(onClose, 150)}>
-            {inner}
-          </span>
-        </Link>
+        <li key={hrefOrClick}>
+          <Link href={hrefOrClick} className="block">
+            <span
+              className={`${ITEM}${extraClass ? " " + extraClass : ""}`}
+              style={itemStyle}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => setTimeout(onClose, 150)}
+            >
+              {inner}
+            </span>
+          </Link>
+        </li>
       );
     }
     return (
-      <button key={label} onClick={() => { (hrefOrClick as () => void)(); }}
-        className={`${ITEM}${extraClass ? " " + extraClass : ""}`} style={itemStyle}>
-        {inner}
-      </button>
+      <li key={label}>
+        <button onClick={() => { (hrefOrClick as () => void)(); }}
+          className={`${ITEM}${extraClass ? " " + extraClass : ""}`} style={itemStyle}>
+          {inner}
+        </button>
+      </li>
     );
   };
 
@@ -207,7 +216,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             <div className="flex-1 overflow-y-auto" role="navigation" aria-label="תפריט ניווט נייד">
 
             {/* ── Section 2: Main navigation ────────────────────────────────── */}
-            <div className="px-2 py-1 flex flex-col gap-0.5" role="list" aria-label="קישורי ניווט ראשיים">
+            <ul className="px-2 py-1 flex flex-col gap-0.5 list-none m-0 p-0" aria-label="קישורי ניווט ראשיים">
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}
               {userMode === "worker" && navItem("/my-applications", Briefcase, "המועמדויות שלי", (unreadCount ?? 0) > 0 ? true : undefined)}
@@ -216,20 +225,22 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {userMode === "employer" && navItem("/post-job", PlusCircle, "פרסם משרה")}
               {userMode === "employer" && navItem("/my-jobs", Briefcase, "המשרות שלי")}
               {userMode === "employer" && navItem("/available-workers", Users, "עובדים זמינים")}
-            </div>
+            </ul>
 
             {/* ── Section 3: Account actions (only when relevant) ───────────── */}
             {(isAuthenticated || userMode) && (
               <>
                 <div style={DIVIDER} />
-                <div className="px-2 py-1 flex flex-col gap-0.5" role="list" aria-label="פעולות חשבון">
+                <ul className="px-2 py-1 flex flex-col gap-0.5 list-none m-0 p-0" aria-label="פעולות חשבון">
                   {isAuthenticated && (
+                    <li>
                     <Link href={userMode === "employer" ? "/my-jobs" : "/worker-profile"} className="block">
                       <span className={ITEM} style={{ color: COLOR, border: "1px solid transparent", borderRadius: "0.75rem" }} onClick={() => setTimeout(onClose, 150)}>
                         <User className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1">אזור אישי</span>
                       </span>
                     </Link>
+                    </li>
                   )}
                   {navItem(
                     () => { setUserMode(userMode === "worker" ? "employer" : "worker"); close(); },
@@ -243,7 +254,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     LogOut, "התנתק", undefined, undefined,
                     "text-red-400 hover:text-red-300 hover:bg-red-500/10",
                   )}
-                </div>
+                </ul>
               </>
             )}
 

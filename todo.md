@@ -1713,3 +1713,6 @@
 
 ## UX — Mobile Drawer Login Button Redesign
 - [x] Replace wide yellow "כניסה" button with user icon + "התחברות" label in mobile drawer
+
+## Bug Fix — Mobile Drawer Login Button Appearance
+- [x] Fix login button (user icon + התחברות) appearance in worker/guest mode — visually distinct with proper separator

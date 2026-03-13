@@ -261,24 +261,27 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                 </>
               )}
               {!isAuthenticated && (
-                <button
-                  onClick={() => { onLoginOpen(); onClose(); }}
-                  className="flex flex-col items-center gap-1.5 w-full mt-4 py-3 rounded-xl transition-all hover:opacity-80 active:scale-95"
-                  style={{ background: "transparent" }}
-                >
-                  <div
-                    className="flex items-center justify-center rounded-full"
-                    style={{
-                      width: "3rem",
-                      height: "3rem",
-                      background: "oklch(0.35 0.05 124.9)",
-                      border: "2px solid oklch(0.50 0.09 124.9 / 0.6)",
-                    }}
+                <>
+                  <div style={{ borderTop: "1px solid oklch(0.42 0.07 124.9 / 0.4)", marginTop: "0.75rem", marginBottom: "0.25rem" }} />
+                  <button
+                    onClick={() => { onLoginOpen(); onClose(); }}
+                    className={ITEM_BASE + " hover:bg-white/5 active:scale-95"}
+                    style={{ color: "oklch(0.88 0.10 85)", fontWeight: 600 }}
                   >
-                    <User className="h-6 w-6" style={{ color: "oklch(0.85 0.08 95)" }} />
-                  </div>
-                  <span className="text-sm font-semibold" style={{ color: "oklch(0.85 0.08 95)" }}>התחברות</span>
-                </button>
+                    <div
+                      className="flex items-center justify-center rounded-full shrink-0"
+                      style={{
+                        width: "2rem",
+                        height: "2rem",
+                        background: "oklch(0.35 0.05 124.9)",
+                        border: "1.5px solid oklch(0.55 0.10 85 / 0.5)",
+                      }}
+                    >
+                      <User className="h-4 w-4" style={{ color: "oklch(0.88 0.10 85)" }} />
+                    </div>
+                    התחברות
+                  </button>
+                </>
               )}
               {/* Legal & Contact footer — inside scroll so it's always reachable */}
               <div

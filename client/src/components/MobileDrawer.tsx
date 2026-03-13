@@ -136,9 +136,10 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             key="drawer"
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
-            className="md:hidden fixed top-0 right-0 bottom-0 z-50 flex flex-col"
+            className="md:hidden fixed top-0 right-0 z-50 flex flex-col"
             dir="rtl"
             style={{
+              bottom: 64,
               width: "min(85vw, 300px)",
               background: "var(--header-bg)",
               borderLeft: "1px solid oklch(0.42 0.07 124.9)",

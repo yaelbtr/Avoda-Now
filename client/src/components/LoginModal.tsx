@@ -524,19 +524,20 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {notFoundError && activeTab === "login" && (
                     <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
                       style={{
-                        borderColor: "oklch(0.82 0.15 80.8 / 0.4)",
-                        background: "oklch(0.82 0.15 80.8 / 0.08)",
-                        color: "oklch(0.85 0.10 80)",
+                        borderColor: "oklch(0.72 0.15 80.8 / 0.6)",
+                        background: "oklch(0.82 0.15 80.8 / 0.12)",
+                        /* WCAG AA: text on this bg — use dark amber for ≥4.5:1 ratio */
+                        color: "oklch(0.40 0.12 60)",
                       }}
                     >
                       <p className="font-medium">{notFoundError}</p>
                       <button
                         type="button"
                         className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
-                        style={{ color: "var(--citrus)" }}
+                        style={{ color: "oklch(0.38 0.14 55)" }}
                         onClick={() => { setNotFoundError(null); setActiveTab("register"); }}
                       >
-                        עבור להרשמה ←
+                        אנא בצע הרשמה תחילה ←
                       </button>
                     </div>
                   )}

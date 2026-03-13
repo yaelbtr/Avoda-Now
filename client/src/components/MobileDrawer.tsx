@@ -25,7 +25,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   paddingBlock: "0.4rem 0.2rem",
 };
 
-const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer";
+const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-white/5";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();

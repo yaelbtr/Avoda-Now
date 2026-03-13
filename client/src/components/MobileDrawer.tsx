@@ -26,6 +26,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
 };
 
 const ITEM_BASE = "flex items-center gap-3 w-full text-right px-3 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer";
+const ITEM_STYLE: React.CSSProperties = { border: "1px solid transparent", borderRadius: "0.75rem" };
 
 export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
   const [location] = useLocation();
@@ -279,7 +280,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
-                    style={{ color: "#e8eae5" }}
+                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
                   >
                     <RefreshCw className="h-4 w-4 shrink-0" />
                     {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
@@ -287,7 +288,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <button
                     onClick={() => { resetUserMode(); onClose(); }}
                     className={ITEM_BASE}
-                    style={{ color: "#e8eae5" }}
+                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
                   >
                     <RotateCcw className="h-4 w-4 shrink-0" />
                     אפס בחירת תפקיד
@@ -296,7 +297,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     <Link href="/admin">
                       <span
                         className={ITEM_BASE}
-                        style={{ color: "var(--citrus)" }}
+                        style={{ ...ITEM_STYLE, color: "var(--citrus)" }}
                         onClick={handleLink}
                       >
                         <Shield className="h-4 w-4 shrink-0" />
@@ -307,6 +308,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <button
                     onClick={() => { logout(); onClose(); }}
                     className={ITEM_BASE + " text-red-400 hover:text-red-300 hover:bg-red-500/10"}
+                    style={ITEM_STYLE}
                   >
                     <LogOut className="h-4 w-4 shrink-0" />
                     התנתק
@@ -320,7 +322,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <button
                     onClick={() => { setUserMode(userMode === "worker" ? "employer" : "worker"); onClose(); }}
                     className={ITEM_BASE}
-                    style={{ color: "#e8eae5" }}
+                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
                   >
                     <RefreshCw className="h-4 w-4 shrink-0" />
                     {userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד"}
@@ -328,7 +330,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <button
                     onClick={() => { resetUserMode(); onClose(); }}
                     className={ITEM_BASE}
-                    style={{ color: "#e8eae5" }}
+                    style={{ ...ITEM_STYLE, color: "#e8eae5" }}
                   >
                     <RotateCcw className="h-4 w-4 shrink-0" />
                     אפס בחירת תפקיד

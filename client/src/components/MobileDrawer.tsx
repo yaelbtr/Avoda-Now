@@ -175,18 +175,61 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </button>
             )}
 
-            {/* Authenticated user indicator */}
-            {isAuthenticated && userMode && (
+            {/* Authenticated user card */}
+            {isAuthenticated && (
               <div
-                className="mx-3 mt-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2 shrink-0"
+                className="mx-3 mt-2 px-4 py-3 rounded-2xl shrink-0 flex flex-col gap-2"
                 style={{
-                  background: "oklch(0.42 0.07 124.9)",
-                  color: "oklch(0.9904 0.0107 95.3 / 0.7)",
-                  border: "1px solid oklch(0.50 0.07 124.9)",
+                  background: "oklch(0.42 0.07 124.9 / 0.5)",
+                  border: "1px solid oklch(0.50 0.07 124.9 / 0.5)",
                 }}
               >
-                <span className="text-base">{userMode === "worker" ? "👷" : "💼"}</span>
-                <span>מחובר כ: {userMode === "worker" ? "מחפש עבודה" : "מעסיק"}</span>
+                {/* Name row + avatar */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <span
+                      className="font-bold text-base leading-tight truncate"
+                      style={{ color: "#e8eae5" }}
+                    >
+                      {user?.name || "משתמש"}
+                    </span>
+                    <Link href="/worker-profile" onClick={onClose}>
+                      <span
+                        className="text-xs underline-offset-2 hover:underline cursor-pointer"
+                        style={{ color: "oklch(0.88 0.10 85)" }}
+                      >
+                        אזור אישי
+                      </span>
+                    </Link>
+                  </div>
+                  {/* Avatar circle with initial */}
+                  <div
+                    className="flex items-center justify-center rounded-full shrink-0 font-bold text-sm"
+                    style={{
+                      width: "2.5rem",
+                      height: "2.5rem",
+                      background: "oklch(0.60 0.15 85)",
+                      color: "oklch(0.20 0.05 124.9)",
+                    }}
+                  >
+                    {(user?.name || "U").charAt(0).toUpperCase()}
+                  </div>
+                </div>
+
+                {/* Role badge */}
+                {userMode && (
+                  <div
+                    className="self-start flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: "oklch(0.30 0.06 124.9)",
+                      color: "oklch(0.88 0.10 85)",
+                      border: "1px solid oklch(0.50 0.07 124.9 / 0.6)",
+                    }}
+                  >
+                    <span>{userMode === "worker" ? "👷" : "💼"}</span>
+                    <span>{userMode === "worker" ? "מחפש עבודה" : "מעסיק"}</span>
+                  </div>
+                )}
               </div>
             )}
 

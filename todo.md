@@ -1720,3 +1720,6 @@
 ## UX — Mobile Drawer Header Redesign
 - [x] Remove "תפריט" title from drawer header
 - [x] Move login block (large centered user icon + התחברות) to top of drawer for guests
+
+## UX — Mobile Drawer Authenticated Header Redesign
+- [x] Replace "מחובר כ:" pill with full user card: name + "אזור אישי" + colored avatar + role badge

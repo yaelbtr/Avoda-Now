@@ -537,7 +537,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         style={{ color: "oklch(0.38 0.14 55)" }}
                         onClick={() => { setNotFoundError(null); setActiveTab("register"); }}
                       >
-                        אנא בצע הרשמה תחילה ←
+                        אנא בצע הרשמה תחילה
                       </button>
                     </div>
                   )}

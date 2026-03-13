@@ -143,7 +143,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               background: "var(--header-bg)",
               borderLeft: "1px solid oklch(0.42 0.07 124.9)",
               boxShadow: "-8px 0 32px oklch(0 0 0 / 0.35)",
-              overflowY: "hidden",
+              overflowY: "auto",
             }}
           >
 
@@ -202,8 +202,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
 
             <div style={DIVIDER} />
 
-            {/* ── Scrollable middle: nav + account ─────────────────────────── */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            {/* ── Nav + account (no longer needs its own scroll) ───────────── */}
+            <div>
 
             {/* ── Section 2: Main navigation ────────────────────────────────── */}
             <div className="px-2 py-1 flex flex-col gap-0.5">
@@ -246,7 +246,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </>
             )}
 
-            </div>{/* end scrollable middle */}
+            </div>{/* end nav+account */}
 
             {/* ── Section 4: Footer ─────────────────────────────────────────── */}
             <div style={DIVIDER} />

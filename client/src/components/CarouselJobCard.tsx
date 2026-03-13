@@ -104,6 +104,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
         onMouseEnter={e => (e.currentTarget.style.background = "#ebe5d5")}
         onMouseLeave={e => (e.currentTarget.style.background = open ? "#ebe5d5" : "#F5F0E4")}
         title="שתף"
+        aria-label="שתף משרה"
       >
         <Share2 size={15} />
       </button>

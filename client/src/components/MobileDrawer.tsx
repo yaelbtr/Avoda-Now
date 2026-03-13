@@ -203,6 +203,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               {/* Close button */}
               <button
                 onClick={onClose}
+                aria-label="סגור תפריט"
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all shrink-0"
                 style={{ color: COLOR, background: "oklch(0.42 0.07 124.9 / 0.5)" }}
               >

@@ -203,6 +203,7 @@ export default function JobBottomSheet({
         {/* Close button — must sit above the scrollable content div */}
         <button
           onClick={onClose}
+          aria-label="סגור פרטי משרה"
           style={{
             position: "absolute",
             top: 16,

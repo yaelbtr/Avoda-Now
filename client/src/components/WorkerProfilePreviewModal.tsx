@@ -197,6 +197,7 @@ export function WorkerProfilePreviewModal({
               </div>
               <button
                 onClick={onClose}
+                aria-label="סגור תצוגת פרופיל"
                 style={{
                   width: 32, height: 32, borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",

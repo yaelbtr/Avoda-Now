@@ -172,6 +172,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
         <button
           type="button"
           onClick={onClose}
+          aria-label="סגור חלון"
           className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="h-5 w-5" />

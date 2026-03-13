@@ -66,7 +66,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
     const Icon = icon;
     const isActive = location === href;
     return (
-      <Link href={href} key={href}>
+      <Link href={href} key={href} className="block">
         <span
           className={ITEM_BASE}
           style={{
@@ -249,7 +249,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
             )}
 
             {/* Unified nav list — all items as direct children of a single flex-col gap-1 container */}
-            <div className="flex-1 px-2 py-3 flex flex-col gap-1" style={{ overflowY: "auto", minHeight: 0 }}>
+            <div className="flex-1 px-2 py-3 flex flex-col gap-2" style={{ overflowY: "auto", minHeight: 0 }}>
               {/* worker nav */}
               {userMode === "worker" && navItem("/find-jobs", MapPin, "חיפוש עבודה")}
               {userMode === "worker" && navItem("/find-jobs?filter=today", Flame, "עבודות להיום")}

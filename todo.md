@@ -1842,3 +1842,6 @@
 ## Feature — cta-outline Button Variant (March 2026)
 - [x] Add cta-outline variant to AppButton: white bg, dark olive text, dark olive border (inverse of cta)
 - [x] Document cta-outline in avodanow-design skill
+
+## Feature — cta-outline Hover Effect (March 2026)
+- [x] Add hover: dark olive bg + white text transition to cta-outline variant

@@ -88,7 +88,7 @@ const appButtonVariants = cva(
 );
 
 // ─── Inline style helpers (gradients / shadows) ───────────────────────────────
-function getInlineStyle(variant: string | null | undefined): React.CSSProperties {
+function getInlineStyle(variant: string | null | undefined, hovered = false): React.CSSProperties {
   switch (variant) {
     case "brand":
       return {
@@ -106,8 +106,15 @@ function getInlineStyle(variant: string | null | undefined): React.CSSProperties
       };
     case "cta-outline":
       // Inverse of cta: white background, dark olive text, dark olive border
-      // Background = cta text color (white → inverted to dark olive bg's contrast)
-      // Text = cta background color (#3d4a28), Border = same
+      // On hover: fills with dark olive gradient (same as cta) + white text
+      if (hovered) {
+        return {
+          background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
+          color: "#ffffff",
+          border: `2px solid ${C_BRAND_HEX}`,
+          boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.28)`,
+        };
+      }
       return {
         background: "#ffffff",
         color: C_BRAND_HEX,          // dark olive text
@@ -147,10 +154,14 @@ export interface AppButtonProps
 }
 
 const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
-  ({ className, variant, size, asChild = false, style, styleOverride, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, style, styleOverride, onMouseEnter, onMouseLeave, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    // Track hover state only for variants that need dynamic inline-style hover effects
+    const needsHoverState = variant === "cta-outline";
+    const [hovered, setHovered] = React.useState(false);
+
     const inlineStyle: React.CSSProperties = {
-      ...getInlineStyle(variant),
+      ...getInlineStyle(variant, needsHoverState ? hovered : false),
       ...style,
       ...styleOverride,
     };
@@ -160,6 +171,8 @@ const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
         data-slot="app-button"
         className={cn(appButtonVariants({ variant, size, className }))}
         style={Object.keys(inlineStyle).length > 0 ? inlineStyle : undefined}
+        onMouseEnter={(e) => { if (needsHoverState) setHovered(true); onMouseEnter?.(e); }}
+        onMouseLeave={(e) => { if (needsHoverState) setHovered(false); onMouseLeave?.(e); }}
         {...props}
       />
     );

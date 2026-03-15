@@ -1788,3 +1788,10 @@
 - [x] WorkerProfile: replaced all raw <label> (phone, description, schedule) with AppLabel
 - [x] Admin: replaced raw <label> in maintenance message section with AppLabel
 - [x] RateWorkerModal: replaced raw <label> with AppLabel
+
+## PostJob Label Cleanup — March 2026
+- [ ] Replace all shadcn Label usages in PostJob.tsx with AppLabel
+
+## Login Screen Redesign — March 2026
+- [ ] Redesign login phone step: full-page centered card layout (reference HTML), AvodaNow logo top, decorative blobs background, divider "או התחבר באמצעות", Google button styled per reference
+- [ ] Keep all existing logic (OTP, register tab, validation, terms) intact

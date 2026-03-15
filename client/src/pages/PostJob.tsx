@@ -11,7 +11,7 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AppInput, AppTextarea, AppSelect } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui/AppFormField";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -798,7 +798,7 @@ export default function PostJob() {
 
             {/* Optional time range */}
             <div>
-              <Label>שעות עבודה <span className="text-muted-foreground text-xs font-normal">(אופציונלי)</span></Label>
+              <AppLabel>שעות עבודה <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></AppLabel>
               {/* Quick preset buttons */}
               <div className="flex flex-wrap gap-2 mt-2 mb-2">
                 {[
@@ -915,7 +915,7 @@ export default function PostJob() {
           />
 
           <div>
-            <Label htmlFor="contactPhone">טלפון ליצירת קשר</Label>
+            <AppLabel htmlFor="contactPhone">טלפון ליצירת קשר</AppLabel>
             <div
               id="contactPhone"
               dir="ltr"

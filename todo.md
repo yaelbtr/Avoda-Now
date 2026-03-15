@@ -1737,3 +1737,4 @@
 - [x] Animate drag handle pill to hint swipe-down gesture
 - [x] Replace registration step in LoginModal with new design from mockup
 - [x] Remove 'כניסה נדרשת' screen in MyJobs — open LoginModal directly instead
+- [x] Overhaul IsraeliPhoneInput: single field, country picker, input masking, paste cleanup, E.164

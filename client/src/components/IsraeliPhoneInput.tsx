@@ -229,7 +229,7 @@ export function IsraeliPhoneInput({
             fontSize: 13,
             fontWeight: 600,
             color: "#4F583B",
-            marginBottom: 6,
+            marginBottom: 4,
           }}
         >
           {label}
@@ -256,7 +256,7 @@ export function IsraeliPhoneInput({
             display: "flex",
             alignItems: "center",
             gap: 4,
-            padding: "10px 10px 10px 8px",
+            padding: "8px 10px 8px 8px",
             borderLeft: `1.5px solid ${borderColor}`,
             background: "oklch(0.97 0.02 120)",
             flexShrink: 0,
@@ -298,7 +298,7 @@ export function IsraeliPhoneInput({
           style={{
             flex: 1,
             minWidth: 0,
-            padding: "10px 12px",
+            padding: "8px 12px",
             border: "none",
             outline: "none",
             background: "transparent",

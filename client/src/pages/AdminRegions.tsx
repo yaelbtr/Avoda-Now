@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AppInput } from "@/components/ui/AppFormField";
+import { AppInput, AppSelect } from "@/components/ui/AppFormField";
 import {
   Dialog,
   DialogContent,
@@ -214,21 +214,16 @@ export function AdminRegionsTab() {
 
                 {/* Status change */}
                 <div className="flex gap-2">
-                  <Select
+                  <AppSelect
                     value={status}
-                    onValueChange={(val) =>
-                      updateStatus.mutate({ id: region.id, status: val as RegionStatus })
-                    }
-                  >
-                    <SelectTrigger className="h-8 text-xs flex-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="collecting_workers">בהרצה</SelectItem>
-                      <SelectItem value="active">פעיל</SelectItem>
-                      <SelectItem value="paused">מושהה</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    options={[
+                      { value: "collecting_workers", label: "בהרצה" },
+                      { value: "active", label: "פעיל" },
+                      { value: "paused", label: "מושהה" },
+                    ]}
+                    onChange={(e) => updateStatus.mutate({ id: region.id, status: e.target.value as RegionStatus })}
+                    wrapperClassName="flex-1"
+                  />
 
                   <AppButton
                     variant="secondary"
@@ -313,20 +308,16 @@ export function AdminRegionsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>סטטוס</Label>
-              <Select
+              <AppSelect
+                label="סטטוס"
                 value={editDialog.status}
-                onValueChange={(val) => setEditDialog((p) => ({ ...p, status: val as RegionStatus }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="collecting_workers">בהרצה — אוסף עובדים</SelectItem>
-                  <SelectItem value="active">פעיל — מעסיקים יכולים לפרסם</SelectItem>
-                  <SelectItem value="paused">מושהה</SelectItem>
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "collecting_workers", label: "בהרצה — אוסף עובדים" },
+                  { value: "active", label: "פעיל — מעסיקים יכולים לפרסם" },
+                  { value: "paused", label: "מושהה" },
+                ]}
+                onChange={(e) => setEditDialog((p) => ({ ...p, status: e.target.value as RegionStatus }))}
+              />
             </div>
             <AppInput
               label="תיאור (לעמוד הנחיתה)"

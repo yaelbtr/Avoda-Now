@@ -1767,3 +1767,10 @@
 - [x] Apply AppTextarea to JobDetails (report dialog)
 - [x] Apply AppTextarea to RateWorkerModal (comment field)
 - [x] Apply AppTextarea to Admin (maintenance message)
+
+## UI Compaction & AppSelect — March 2026
+- [ ] Compact LoginModal registration bottom-sheet: reduce spacing/padding/icon size to fit one screen without scroll
+- [ ] Add AppSelect wrapper to PostJob Select fields (salary type, category, duration)
+- [ ] Add AppSelect wrapper to Admin Select fields (status, role)
+- [ ] Add inline error props to LoginModal required fields (name, email)
+- [ ] Build design-language skill file for AvodaNow visual system

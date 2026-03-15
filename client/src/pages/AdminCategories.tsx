@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AppInput } from "@/components/ui/AppFormField";
+import { AppInput, AppSelect } from "@/components/ui/AppFormField";
 import {
   Dialog,
   DialogContent,
@@ -328,22 +328,12 @@ export function AdminCategoriesTab() {
               dir="ltr"
             />
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>קבוצה</Label>
-                <Select
-                  value={form.groupName}
-                  onValueChange={(v) => setForm(f => ({ ...f, groupName: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GROUP_OPTIONS.map(o => (
-                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <AppSelect
+                label="קבוצה"
+                value={form.groupName}
+                options={GROUP_OPTIONS}
+                onChange={(e) => setForm(f => ({ ...f, groupName: e.target.value }))}
+              />
               <AppInput
                 id="cat-order"
                 label="סדר תצוגה"

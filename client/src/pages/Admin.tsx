@@ -13,13 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
@@ -382,18 +375,18 @@ export default function Admin() {
           <TabsContent value="jobs">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <h2 className="text-lg font-semibold">ניהול משרות ({jobsQuery.data?.length ?? 0})</h2>
-              <Select value={jobStatusFilter} onValueChange={setJobStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="סנן לפי סטטוס" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסטטוסים</SelectItem>
-                  <SelectItem value="active">פעיל</SelectItem>
-                  <SelectItem value="under_review">בבדיקה</SelectItem>
-                  <SelectItem value="closed">סגור</SelectItem>
-                  <SelectItem value="expired">פג תוקף</SelectItem>
-                </SelectContent>
-              </Select>
+              <AppSelect
+                value={jobStatusFilter}
+                onChange={(e) => setJobStatusFilter(e.target.value)}
+                options={[
+                  { value: "all", label: "כל הסטטוסים" },
+                  { value: "active", label: "פעיל" },
+                  { value: "under_review", label: "בבדיקה" },
+                  { value: "closed", label: "סגור" },
+                  { value: "expired", label: "פג תוקף" },
+                ]}
+                wrapperClassName="w-44"
+              />
             </div>
 
             {jobsQuery.isLoading ? (

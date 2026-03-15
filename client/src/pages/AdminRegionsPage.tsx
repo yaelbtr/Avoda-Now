@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppSelect } from "@/components/ui/AppFormField";
 import {
   Table,
   TableBody,
@@ -396,17 +396,16 @@ export default function AdminRegionsPage() {
                 wrapperClassName="col-span-2"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label>סטטוס</Label>
-              <Select value={dialog.form.status} onValueChange={(v) => setF({ status: v as RegionStatus })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="collecting_workers">בהרצה — אוסף עובדים</SelectItem>
-                  <SelectItem value="active">פעיל — מעסיקים יכולים לפרסם</SelectItem>
-                  <SelectItem value="paused">מושהה</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <AppSelect
+              label="סטטוס"
+              value={dialog.form.status}
+              options={[
+                { value: "collecting_workers", label: "בהרצה — אוסף עובדים" },
+                { value: "active", label: "פעיל — מעסיקים יכולים לפרסם" },
+                { value: "paused", label: "מושהה" },
+              ]}
+              onChange={(e) => setF({ status: e.target.value as RegionStatus })}
+            />
             <AppTextarea
               label="תיאור (לעמוד הנחיתה)"
               value={dialog.form.description}

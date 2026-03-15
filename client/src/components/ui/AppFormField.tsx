@@ -43,8 +43,8 @@ const TOKENS = {
   /** Font size for input text */
   fontSize: 15,
   /** Padding inside input */
-  paddingY: 11,
-  paddingX: 14,
+  paddingY: 9,
+  paddingX: 12,
   /** Icon area width */
   iconAreaWidth: 44,
 } as const;
@@ -81,7 +81,7 @@ export function AppLabel({ htmlFor, children, required, style }: AppLabelProps) 
         fontSize: 13,
         fontWeight: 600,
         color: TOKENS.labelColor,
-        marginBottom: 6,
+        marginBottom: 4,
         ...style,
       }}
     >

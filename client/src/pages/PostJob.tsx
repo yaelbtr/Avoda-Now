@@ -11,7 +11,7 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppSelect } from "@/components/ui/AppFormField";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -515,22 +515,14 @@ export default function PostJob() {
             error={errors.title?.message}
           />
 
-          <div>
-            <Label htmlFor="category">קטגוריה *</Label>
-            <Select onValueChange={(v) => setValue("category", v)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="בחר קטגוריה" />
-              </SelectTrigger>
-              <SelectContent>
-                {dbCategories.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.slug}>
-                    {cat.icon} {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && <p className="text-destructive text-xs mt-1">{errors.category.message}</p>}
-          </div>
+          <AppSelect
+            label="קטגוריה"
+            required
+            placeholder="בחר קטגוריה"
+            options={dbCategories.map((cat) => ({ value: cat.slug, label: `${cat.icon} ${cat.name}` }))}
+            onChange={(e) => setValue("category", e.target.value)}
+            error={errors.category?.message}
+          />
 
           <AppTextarea
             id="description"
@@ -650,19 +642,12 @@ export default function PostJob() {
           <h2 className="font-semibold text-foreground text-right">שכר ושעות</h2>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>סוג שכר</Label>
-              <Select defaultValue="hourly" onValueChange={(v) => setValue("salaryType", v)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SALARY_TYPES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <AppSelect
+              label="סוג שכר"
+              defaultValue="hourly"
+              options={SALARY_TYPES.map((s) => ({ value: s.value, label: s.label }))}
+              onChange={(e) => setValue("salaryType", e.target.value)}
+            />
             <AppInput
               id="salary"
               label={salaryType === "volunteer" ? "התנדבות" : "סכום (₪)"}
@@ -708,19 +693,12 @@ export default function PostJob() {
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>זמן התחלה</Label>
-              <Select defaultValue="flexible" onValueChange={(v) => setValue("startTime", v)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {START_TIMES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <AppSelect
+              label="זמן התחלה"
+              defaultValue="flexible"
+              options={START_TIMES.map((s) => ({ value: s.value, label: s.label }))}
+              onChange={(e) => setValue("startTime", e.target.value)}
+            />
             <AppInput
               id="workersNeeded"
               label="עובדים דרושים"
@@ -787,19 +765,16 @@ export default function PostJob() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>משך פרסום</Label>
-              <Select defaultValue="1" onValueChange={(v) => setValue("activeDuration", v as "1" | "3" | "7")}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">יום אחד</SelectItem>
-                  <SelectItem value="3">3 ימים</SelectItem>
-                  <SelectItem value="7">שבוע</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <AppSelect
+              label="משך פרסום"
+              defaultValue="1"
+              options={[
+                { value: "1", label: "יום אחד" },
+                { value: "3", label: "3 ימים" },
+                { value: "7", label: "שבוע" },
+              ]}
+              onChange={(e) => setValue("activeDuration", e.target.value as "1" | "3" | "7")}
+            />
             <AppInput
               id="workingHours"
               label="שעות עבודה (טקסט חופשי)"

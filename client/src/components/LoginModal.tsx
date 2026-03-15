@@ -461,11 +461,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 onClose();
               }
             }}
-            className="glass-modal w-full max-w-lg flex flex-col"
+            className="w-full max-w-lg flex flex-col"
             style={{
               borderRadius: "20px 20px 0 0",
-              maxHeight: "92dvh",
-              overflowY: "auto",
+              background: "var(--page-bg-gradient)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
               touchAction: "none",
             }}

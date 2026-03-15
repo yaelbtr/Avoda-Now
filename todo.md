@@ -1915,3 +1915,6 @@
 
 ## Design — Welcome Step Hero Image Removal
 - [x] Remove hero image from welcome step in LoginModal
+
+## Design — Welcome Step Background Fix
+- [x] Apply var(--page-bg-gradient) directly to the welcome step sheet (remove glass-modal white background)

@@ -1889,3 +1889,8 @@
 
 ## Design System — Divider Consistency
 - [x] Align register form divider to match login form divider style (var(--page-bg) span background, same markup)
+
+## Design System — Shared GoogleAuthButton Component
+- [x] Create shared GoogleAuthButton component in client/src/components/ui/
+- [x] Replace login Google button in LoginModal with shared component
+- [x] Replace register Google button in LoginModal with shared component

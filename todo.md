@@ -1918,3 +1918,6 @@
 
 ## Design — Welcome Step Background Fix
 - [x] Apply var(--page-bg-gradient) directly to the welcome step sheet (remove glass-modal white background)
+
+## Design — Register Sheet Redesign
+- [x] Redesign register sheet to match login phone step: unified gradient background, no separate top section, same header pattern (back arrow + centered title + X close), drag handle, no icon block

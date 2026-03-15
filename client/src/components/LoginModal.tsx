@@ -1249,9 +1249,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             onDragEnd={(_e, info) => {
               if (info.offset.y > 80 || info.velocity.y > 500) onClose();
             }}
-            className="glass-modal w-full max-w-lg flex flex-col"
+            className="w-full max-w-lg flex flex-col"
             style={{
               borderRadius: "20px 20px 0 0",
+              background: "var(--page-bg-gradient)",
               maxHeight: "95dvh",
               overflowY: "auto",
               paddingBottom: "env(safe-area-inset-bottom, 16px)",
@@ -1278,12 +1279,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <h2 className="text-base font-bold" style={{ color: "#1a2010" }}>הרשמה</h2>
-              <div className="w-9" />
+              <h2 className="text-base font-bold" style={{ color: "#556b2f" }}>הרשמה</h2>
+              <button
+                onClick={onClose}
+                className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
+                style={{ color: "#666" }}
+                aria-label="סגור"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             {/* Scrollable content */}
-            <div className="px-6 pt-2 pb-4 space-y-3 overflow-y-auto" style={{ background: "var(--page-bg-gradient)" }}>
+            <div className="px-6 pt-2 pb-4 space-y-3 overflow-y-auto">
 
               {/* Already-logged-in guard */}
               {authUser && (
@@ -1318,18 +1326,9 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               {/* Capture authUser before narrowing so TS doesn't infer never inside the block */}
               {((_authUser) => !_authUser && (<>
               {/* authUserEmail: string | null = _authUser?.email ?? null (always null here since !_authUser) */}
-              {/* Icon + title */}
-              <div className="flex flex-col items-center gap-2 pb-0">
-                <div className="rounded-xl p-2.5" style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8" style={{ color: "#4a5d23" }}>
-                    <path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-                    <path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <h1 className="text-xl font-bold" style={{ color: "#1a2010" }}>צור חשבון חדש</h1>
-                  <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>הצטרף ל-AvodaNow ומצא את העבודה הבאה שלך</p>
-                </div>
+              {/* Subtitle */}
+              <div className="text-center pb-1">
+                <p className="text-sm" style={{ color: "#4a5a38" }}>הכנס את פרטיך ליצירת חשבון חדש</p>
               </div>
 
               {/* Full name */}

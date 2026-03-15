@@ -410,17 +410,31 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="w-full max-w-lg flex flex-col overflow-hidden"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_e, info) => {
+              if (info.offset.y > 80 || info.velocity.y > 500) {
+                onClose();
+              }
+            }}
+            className="w-full max-w-lg flex flex-col"
             style={{
               background: "#f8f6f6",
               borderRadius: "20px 20px 0 0",
               maxHeight: "92dvh",
               overflowY: "auto",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              touchAction: "none",
             }}
           >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
+              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(0,0,0,0.18)" }} />
+            </div>
+
             {/* Header */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-1 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
               <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
                 <X className="h-4 w-4" />
               </button>

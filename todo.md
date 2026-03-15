@@ -1733,3 +1733,4 @@
 - [ ] Revert RoleSelectionScreen to original (was wrongly changed)
 - [ ] Replace LoginModal with new mobile-first design from provided HTML mockup
 - [ ] Redesign LoginModal: full-screen mobile-first with hero image + welcome step before phone/OTP flow
+- [x] Add swipe-down gesture to close LoginModal welcome sheet

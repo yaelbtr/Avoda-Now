@@ -298,7 +298,7 @@ export function AdminRegionsTab() {
                 dir="ltr"
               />
               <AppInput
-                label="רדיוס (ק’מ)"
+                label="רדיוס (ק'מ)"
                 type="number"
                 min={1}
                 max={100}

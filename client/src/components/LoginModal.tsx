@@ -60,17 +60,18 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Name validator: min 2 chars, letters/spaces/hyphens only
-  const validateName = (val: string): string | null => {
+  /** Validate name — pass touched=true after first blur to show "required" error */
+  const validateName = (val: string, touched = false): string | null => {
     const trimmed = val.trim();
-    if (!trimmed) return null; // empty handled by disabled button
+    if (!trimmed) return touched ? "שם מלא הוא שדה חובה" : null;
     if (trimmed.length < 2) return "שם חייב להכיל לפחות 2 תווים";
     if (!/^[\u0590-\u05FFa-zA-Z\s\-']+$/.test(trimmed)) return "שם יכול להכיל אותיות ורווחים בלבד";
     return null;
   };
 
-  // Email format validator
-  const validateEmail = (val: string): string | null => {
-    if (!val.trim()) return null; // empty handled by disabled button
+  /** Validate email — pass touched=true after first blur to show "required" error */
+  const validateEmail = (val: string, touched = false): string | null => {
+    if (!val.trim()) return touched ? "אימייל הוא שדה חובה" : null;
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(val) ? null : "כתובת מייל לא תקינה";
   };

@@ -1774,3 +1774,8 @@
 - [ ] Add AppSelect wrapper to Admin Select fields (status, role)
 - [ ] Add inline error props to LoginModal required fields (name, email)
 - [ ] Build design-language skill file for AvodaNow visual system
+
+## Validation & Layout — March 2026
+- [x] Add inline real-time validation (error props) to name and email fields in LoginModal registration (touched=true on blur shows "שדה חובה")
+- [x] Apply col-span-2 to wide fields in PostJob grid layout (startDateTime moved into 2-col grid with col-span-2)
+- [x] Fix curly apostrophe (U+2019) in AdminRegions radius label causing Vite pre-transform error

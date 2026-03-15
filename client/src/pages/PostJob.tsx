@@ -709,19 +709,7 @@ export default function PostJob() {
             />
           </div>
 
-          {/* Exact start date/time for urgent jobs */}
-          <div>
-            <AppInput
-              id="startDateTime"
-              label="🔥 תאריך ושעת התחלה מדויקים (אופציונלי)"
-              type="datetime-local"
-              dir="ltr"
-              {...register("startDateTime")}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              אם תמלא שדה זה, המשרה תסומן כג׳ "עבודה להיום" כאשר ההתחלה בתוך 24 שעות
-            </p>
-          </div>
+          {/* startDateTime moved into the grid above */}
 
           {/* Volunteer mode toggle */}
           <div
@@ -781,6 +769,14 @@ export default function PostJob() {
               placeholder="08:00-16:00"
               dir="ltr"
               {...register("workingHours")}
+            />
+            <AppInput
+              id="startDateTime"
+              label="🔥 תאריך ושעת התחלה מדויקים (אופציונלי)"
+              type="datetime-local"
+              dir="ltr"
+              wrapperClassName="col-span-2"
+              {...register("startDateTime")}
             />
           </div>
 

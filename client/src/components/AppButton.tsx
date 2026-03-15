@@ -13,6 +13,7 @@
  *   success      — ירוק (אישור, WhatsApp)
  *   whatsapp     — ירוק WhatsApp עם גרדיאנט
  *   brand        — גרדיאנט כחול ראשי (hero CTA)
+ *   cta          — כפתור ראשי כהה ("המשך כעובד" style): גרדיאנט זית כהה, טקסט לבן, font-black, צל עמוק
  *   link         — טקסט בלבד כמו קישור
  *
  * Sizes:
@@ -29,8 +30,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import {
   G_BRAND, G_AMBER, G_SUCCESS, G_WHATSAPP,
-  S_BRAND_MD,
-  C_BRAND_HEX, C_AMBER_HEX, C_CITRUS_HEX,
+  S_BRAND_MD, S_BRAND_LG,
+  C_BRAND_HEX, C_BRAND_DARK_HEX, C_AMBER_HEX, C_CITRUS_HEX,
   C_SUCCESS_HEX,
 } from "@/lib/colors";
 
@@ -54,10 +55,12 @@ const appButtonVariants = cva(
         ghost:       "bg-transparent text-foreground/70 hover:bg-secondary/60 rounded-xl",
         destructive: "bg-destructive text-white hover:bg-destructive/90 rounded-xl",
         success:     "bg-green-600 text-white hover:bg-green-700 rounded-xl",
-        // ── Special variants (use inline style for gradients) ───────────────
+        // ── Special variants (use inline style for gradients) ───────────────────────────────────────────────────────
         whatsapp:    "text-white rounded-xl",   // bg via inline style
         brand:       "text-white rounded-xl overflow-hidden relative", // bg via inline style
-        // ── Text-only ──────────────────────────────────────────────────────
+        // כפתור ראשי כהה עם גרדיאנט זית כהה ("המשך כעובד" style)
+        cta:         "text-white rounded-xl font-black", // bg + shadow via inline style
+        // ── Text-only ────────────────────────────────────────────────────────────────────
         link:        "bg-transparent underline-offset-4 hover:underline text-primary rounded-none p-0 h-auto",
         // ── Pill filter (toggle-able category/radius chips) ─────────────────
         "pill-active":   "rounded-full text-white",   // bg via inline style
@@ -88,6 +91,14 @@ function getInlineStyle(variant: string | null | undefined): React.CSSProperties
       return {
         background: G_BRAND,
         boxShadow: S_BRAND_MD,
+        border: "none",
+      };
+    case "cta":
+      // Matches the "המשך כעובד" button in RoleSelectionScreen
+      // linear-gradient(135deg, C_BRAND 0%, C_BRAND_DARK 100%) + deep olive shadow
+      return {
+        background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
+        boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.28)`,
         border: "none",
       };
     case "whatsapp":

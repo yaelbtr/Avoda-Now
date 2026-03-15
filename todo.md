@@ -1835,3 +1835,6 @@
 - [x] Show "already logged in" message when logged-in user opens registration modal
 - [x] Pre-fill email field in register form from Google account (read-only)
 - [x] Add OTP toast with phone number and 5-minute validity after sending code
+
+## Skill Update — Primary CTA Button Design (March 2026)
+- [x] Find "המשך כעובד" button exact CSS, add primary CTA variant to AppButton, document in avodanow-design skill

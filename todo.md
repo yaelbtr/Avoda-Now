@@ -1926,3 +1926,9 @@
 - [x] Create shared AppLogo component matching Navbar logo (AvodaNow + briefcase icon + tagline)
 - [x] Replace "AvodaNow" text in LoginModal headers with AppLogo component
 - [x] Export AppLogo from ui/index.ts barrel
+
+## Refactor — Navbar Logo → AppLogo Component
+- [ ] Replace inline logo markup in Navbar (desktop + mobile) with shared AppLogo component
+
+## Revert — LoginModal AppLogo → Original Text
+- [x] Revert AppLogo in LoginModal welcome step header back to original "AvodaNow" h2 text

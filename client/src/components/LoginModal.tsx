@@ -5,7 +5,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { AppButton, GoogleAuthButton, AppLogo } from "@/components/ui";
+import { AppButton, GoogleAuthButton } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
@@ -493,7 +493,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
                 <X className="h-4 w-4" />
               </button>
-              <AppLogo size="sm" animated={false} />
+              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>AvodaNow</h2>
               <div className="w-8" />
             </div>
 

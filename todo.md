@@ -1932,3 +1932,7 @@
 
 ## Revert — LoginModal AppLogo → Original Text
 - [x] Revert AppLogo in LoginModal welcome step header back to original "AvodaNow" h2 text
+
+## Design — AppLogo Light Variant
+- [x] Add 'variant' prop (dark|light) to AppLogo component — dark for dark nav bg, light for cream/white backgrounds
+- [x] Update avodanow-design SKILL.md to document both logo variants with usage rules

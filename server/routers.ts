@@ -166,6 +166,7 @@ const authRouter = router({
       isRegistration: z.boolean().optional(),
       termsAccepted: z.boolean().optional(),
       email: z.string().email().max(320).optional(),
+      channel: z.enum(["sms", "email"]).optional().default("sms"),
     }))
     .mutation(async ({ input, ctx }) => {
       // Normalize to E.164
@@ -236,12 +237,23 @@ const authRouter = router({
         });
       }
 
-      // Send via Twilio Verify
-      const result = await smsProvider.sendOtp(phone);
+      // Send via chosen channel (SMS or Email)
+      let result: { success: boolean; error?: string };
+      if (input.channel === "email") {
+        // Email channel: use the email provided in registration
+        const targetEmail = input.email;
+        if (!targetEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "כתובת מייל נדרשת לשליחת קוד למייל" });
+        }
+        result = await smsProvider.sendOtpToEmail(targetEmail);
+      } else {
+        result = await smsProvider.sendOtp(phone);
+      }
+
       if (!result.success) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסוו שוב בעוד מספר דקות.",
+          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסה שוב בעוד מספר דקות.",
         });
       }
 

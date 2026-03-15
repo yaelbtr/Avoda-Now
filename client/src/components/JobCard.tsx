@@ -390,7 +390,7 @@ export function JobCard({
       <motion.div
         whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(0,0,0,0.14)" }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="group rounded-2xl overflow-hidden bg-white relative"
+        className="group rounded-2xl overflow-hidden bg-white relative transition-all duration-200 hover:backdrop-blur-[20px] hover:bg-white/85"
         style={{
           width: 210,
           border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
@@ -613,7 +613,7 @@ export function JobCard({
         borderColor: job.isUrgent ? `${C_DANGER_HEX}60` : "oklch(0.80 0.06 84.0)",
       }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="group rounded-2xl p-4 relative overflow-hidden bg-white"
+      className="group rounded-2xl p-4 relative overflow-hidden bg-white transition-all duration-200 hover:backdrop-blur-[20px] hover:bg-white/85"
       style={{
         border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
         boxShadow: job.isUrgent

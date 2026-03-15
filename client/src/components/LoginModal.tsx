@@ -666,7 +666,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="px-3 text-xs" style={{ background: "#f8f5ee", color: "#9ca3af" }}>או התחבר באמצעות</span>
+                  <span className="px-3 text-xs" style={{ background: "var(--page-bg)", color: "#9ca3af" }}>או התחבר באמצעות</span>
                 </div>
               </div>
 
@@ -884,7 +884,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 {/* CTA */}
                 <div className="space-y-3 pt-1">
                   <AppButton
-                    variant="brand"
+                    variant="cta"
                     size="lg"
                     className="w-full"
                     onClick={handleChannelProceed}
@@ -1023,7 +1023,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 </div>
 
                 <AppButton
-                  variant="brand"
+                  variant="cta"
                   size="lg"
                   className="w-full"
                   onClick={() => submitOtp(digits.join(""))}
@@ -1177,7 +1177,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 <div className="flex gap-2 pt-1">
                   <AppButton
-                    variant="brand"
+                    variant="cta"
                     size="lg"
                     className="flex-1"
                     onClick={handleSetupDone}
@@ -1414,7 +1414,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
               {/* Register button */}
               <AppButton
-                variant="brand"
+                variant="cta"
                 size="lg"
                 className="w-full mt-1"
                 onClick={handleSend}
@@ -1439,7 +1439,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white" style={{ color: "#6b7280" }}>או המשך עם</span>
+                  <span className="px-2" style={{ background: "var(--page-bg)", color: "#6b7280" }}>או המשך עם</span>
                 </div>
               </div>
 

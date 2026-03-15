@@ -34,8 +34,16 @@ export default function Navbar() {
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
   const lastScrollY = useRef(0);
+
+  // Glass effect on scroll
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close drawer when user scrolls down ≥ 60px
   useEffect(() => {
@@ -148,11 +156,16 @@ export default function Navbar() {
         dir="rtl"
         aria-label="כותרת האתר"
         style={{
-          background: "var(--header-bg)",
+          background: scrolled
+            ? "oklch(0.3329 0.0694 124.9 / 0.82)"
+            : "var(--header-bg)",
           borderBottom: `1px solid ${HEADER_DIVIDER}`,
-          boxShadow: "0 4px 24px oklch(0 0 0 / 0.28), 0 1px 0 oklch(1 0 0 / 0.06) inset",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
+          boxShadow: scrolled
+            ? "0 4px 24px oklch(0 0 0 / 0.22), 0 1px 0 oklch(1 0 0 / 0.06) inset"
+            : "0 4px 24px oklch(0 0 0 / 0.28), 0 1px 0 oklch(1 0 0 / 0.06) inset",
+          backdropFilter: scrolled ? "blur(20px) saturate(1.6)" : "blur(12px)",
+          WebkitBackdropFilter: scrolled ? "blur(20px) saturate(1.6)" : "blur(12px)",
+          transition: "background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease",
         }}
       >
         <div className="max-w-2xl mx-auto px-4">

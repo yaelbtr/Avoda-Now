@@ -153,6 +153,13 @@
 /* Dark mode */
 .dark {
   --background: oklch(0.18 0.06 125.0);         /* deep rich olive dark */
+  --page-bg: oklch(0.18 0.06 125.0);            /* dark olive flat bg */
+  --page-bg-gradient: linear-gradient(
+    160deg,
+    oklch(0.18 0.06 125.0) 0%,   /* deep olive */
+    oklch(0.15 0.05 125.0) 55%,  /* darker olive */
+    oklch(0.13 0.04 125.0) 100%  /* near-black olive */
+  );
   --foreground: oklch(0.99 0.01 91.6);          /* near-white */
   --card: oklch(0.24 0.06 125.0);
   --card-foreground: oklch(0.99 0.01 91.6);
@@ -580,4 +587,27 @@
   box-shadow:
     0 -4px 32px oklch(0.38 0.07 125.0 / 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.90);
+}
+
+/* ── Dark mode glass overrides ───────────────────────────────────────────────
+   Frosted-glass with dark olive tones for dark theme.
+   Edit only here to change dark-mode glass appearance globally.
+   ─────────────────────────────────────────────────────────────────────────── */
+.dark .glass-card {
+  background: rgba(30, 40, 20, 0.72);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 2px 12px oklch(0 0 0 / 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.dark .glass-modal {
+  background: rgba(30, 40, 20, 0.82);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 -4px 32px oklch(0 0 0 / 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }

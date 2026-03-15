@@ -1868,3 +1868,10 @@
 - [x] Apply to LoginModal bottom sheet panels
 - [x] Apply to key page cards (JobCard, HomeWorker sections, HomeEmployer sections via Card component)
 - [x] Update avodanow-design skill with glass-card documentation
+
+## UI — Design Language Update (March 2026)
+- [x] Apply updated design language (glass, cta buttons, typography) to all login/register screens
+- [x] Glass Navbar: add backdrop-blur on scroll using useScrolled hook
+- [x] Glass JobCard: add hover:backdrop-blur + hover:bg-white/85 transition to job cards
+- [x] Dark mode glass: add .dark .glass-card and .dark .glass-modal to index.css
+- [x] Update avodanow-design skill with Navbar glass and dark mode glass specs

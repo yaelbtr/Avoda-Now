@@ -1736,3 +1736,4 @@
 - [x] Add swipe-down gesture to close LoginModal welcome sheet
 - [x] Animate drag handle pill to hint swipe-down gesture
 - [x] Replace registration step in LoginModal with new design from mockup
+- [x] Remove 'כניסה נדרשת' screen in MyJobs — open LoginModal directly instead

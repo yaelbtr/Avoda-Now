@@ -417,39 +417,19 @@ export default function MyJobs() {
     );
   }
 
-  // ── Not authenticated ─────────────────────────────────────────────────────
+  // ── Not authenticated: open LoginModal automatically ────────────────────────
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      saveReturnPath();
+      setLoginOpen(true);
+    }
+  }, [loading, isAuthenticated]);
+
   if (!isAuthenticated) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center px-4"
-        style={{ background: C_DARK_BG }}
-        dir="rtl"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="text-center max-w-sm w-full"
-          style={{ ...glassCard, padding: "2.5rem 2rem" }}
-        >
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: `${BRAND}1a`, border: `1px solid ${BRAND}33` }}
-          >
-            <Briefcase className="h-8 w-8" style={{ color: C_BRAND_SUBTLE }} />
-          </div>
-          <h2 className="text-xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>כניסה נדרשת</h2>
-          <p className="text-sm mb-6" style={{ color: TEXT_MID }}>התחבר כדי לנהל את המשרות שלך</p>
-          <AppButton
-            variant="brand"
-            className="w-full"
-            onClick={() => { saveReturnPath(); setLoginOpen(true); }}
-          >
-            כניסה / הרשמה
-          </AppButton>
-        </motion.div>
-        <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-      </div>
+      <>
+        <LoginModal open={loginOpen} onClose={() => { setLoginOpen(false); navigate("/"); }} />
+      </>
     );
   }
 

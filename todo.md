@@ -1827,3 +1827,6 @@
 ## Bug Fix — Google User Gets False Email Conflict Error (March 2026)
 - [x] Find which mutation fires "המייל כבר קשור לחשבון Google" for an already-logged-in Google user
 - [x] Fix root cause: duplicateError now shown inline in channel step with Google login button
+
+## UI Fix — Login Phone Step No-Scroll (March 2026)
+- [x] Fix login bottom sheet overflow — all content must fit viewport without scrolling

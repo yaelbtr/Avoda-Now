@@ -606,15 +606,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <div className="w-8" />
             </div>
 
-            <div className="w-full space-y-5 px-5 py-4" dir="rtl">
+            <div className="w-full space-y-3 px-5 py-3" dir="rtl">
               {/* Title */}
-              <div className="text-center space-y-1">
+              <div className="text-center space-y-0.5">
                 <h1 className="text-2xl font-bold" style={{ color: "#1a2010" }}>התחברות</h1>
                 <p className="text-sm" style={{ color: "#6b7280" }}>הכנס את מספר הטלפון שלך לקבלת קוד אימות</p>
               </div>
 
               {/* Phone field */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <IsraeliPhoneInput
                   value={phoneVal}
                   onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }}
@@ -639,7 +639,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   type="button"
                   onClick={handleSend}
                   disabled={sendOtp.isPending || !isPhoneValid}
-                  className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: "oklch(0.50 0.14 85)", boxShadow: "0 4px 14px oklch(0.50 0.14 85 / 0.35)" }}
                 >
                   {sendOtp.isPending
@@ -650,7 +650,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </div>
 
               {/* Divider */}
-              <div className="relative py-1">
+              <div className="relative py-0.5">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
                 </div>
@@ -663,7 +663,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <button
                 type="button"
                 onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-                className="w-full border text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-3 transition-all hover:bg-gray-50"
+                className="w-full border text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-3 transition-all hover:bg-gray-50"
                 style={{ background: "#ffffff", borderColor: "oklch(0.88 0.04 122)", color: "#374151" }}
               >
                 <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -677,7 +677,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </button>
 
               {/* Footer */}
-              <p className="text-center text-sm pb-2" style={{ color: "#6b7280" }}>
+              <p className="text-center text-sm pb-1" style={{ color: "#6b7280" }}>
                 עוד לא רשום?{" "}
                 <button type="button" className="font-bold hover:underline" style={{ color: "oklch(0.50 0.14 85)" }}
                   onClick={() => { setActiveTab("register"); setStep("phone"); }}

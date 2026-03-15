@@ -35,7 +35,7 @@ function formatPhoneDisplay(raw: string): string {
   return raw;
 }
 
-const RESEND_COOLDOWN_SEC = 30;
+const RESEND_COOLDOWN_SEC = 60;
 const OTP_LENGTH = 6;
 
 type Tab = "login" | "register";
@@ -92,6 +92,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   // OTP channel selection (for registration)
   const [otpChannel, setOtpChannel] = useState<OtpChannel>("sms");
+  const [channelEmailError, setChannelEmailError] = useState<string | null>(null);
 
   // Pending registration data to pass to verifyOtp
   const pendingRegData = useRef<{ name: string; email: string } | null>(null);
@@ -136,6 +137,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setSelectedRole(null);
         setSelectedCategories([]);
         setSelectedCity("");
+        setChannelEmailError(null);
         pendingRegData.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
       }, 300);
@@ -156,6 +158,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setResendCountdown(0);
     setDuplicateError(null);
     setNotFoundError(null);
+    setChannelEmailError(null);
     pendingRegData.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
   };
@@ -333,6 +336,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const handleChannelProceed = () => {
     const reg = pendingRegData.current;
+    // Validate email format when email channel is selected
+    if (otpChannel === "email") {
+      const emailVal = reg?.email || "";
+      const emailErr = validateEmail(emailVal, true);
+      if (emailErr) {
+        setChannelEmailError(emailErr);
+        return;
+      }
+    }
+    setChannelEmailError(null);
     sendOtp.mutate({
       phone: phone.trim(),
       isRegistration: true,
@@ -540,127 +553,139 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[60] flex items-center justify-center"
-          style={{ background: "oklch(0 0 0 / 0.65)", backdropFilter: "blur(4px)" }}
+          className="fixed inset-0 z-[60] flex items-end justify-center"
+          style={{ background: "oklch(0 0 0 / 0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
           dir="rtl"
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 16 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 16 }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className="relative w-full max-w-[480px] mx-4 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: "#f8f5ee" }}
+            key="login-phone-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_e, info) => {
+              if (info.offset.y > 80 || info.velocity.y > 500) onClose();
+            }}
+            className="relative w-full max-w-lg flex flex-col overflow-hidden"
+            style={{
+              background: "#f8f5ee",
+              borderRadius: "20px 20px 0 0",
+              maxHeight: "92dvh",
+              overflowY: "auto",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              touchAction: "none",
+            }}
           >
-            {/* Decorative blobs — inside card so they show above the overlay */}
+            {/* Decorative blobs */}
             <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "oklch(0.50 0.14 85)" }} />
+              style={{ background: "oklch(0.50 0.14 85)", animation: "blob-pulse 6s ease-in-out infinite" }} />
             <div className="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
-              style={{ background: "oklch(0.55 0.12 85)" }} />
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-              style={{ background: "oklch(0 0 0 / 0.06)", color: "#6b7280" }}
-              aria-label="סגור"
-            >
-              <X className="h-4 w-4" />
-            </button>
+              style={{ background: "oklch(0.55 0.12 85)", animation: "blob-pulse 8s ease-in-out infinite 2s" }} />
 
-            <div className="w-full max-w-[480px] space-y-6 px-4 py-8" dir="rtl">
-                {/* Logo */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="p-4 rounded-full" style={{ background: "oklch(0.50 0.14 85 / 0.12)" }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12" style={{ color: "oklch(0.50 0.14 85)" }}>
-                      <path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-                      <path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" />
-                    </svg>
-                  </div>
-                  <h1 className="text-3xl font-bold tracking-tight" style={{ color: "#1a2010" }}>AvodaNow</h1>
-                </div>
+            {/* Drag handle */}
+            <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
+              <motion.div
+                className="rounded-full"
+                style={{ background: "rgba(0,0,0,0.22)", width: 40, height: 4 }}
+                animate={{ width: [40, 52, 40], opacity: [0.55, 1, 0.55], y: [0, 3, 0] }}
+                transition={{ duration: 1.6, repeat: 3, repeatDelay: 0.8, ease: "easeInOut", delay: 0.5 }}
+              />
+            </div>
 
-                {/* Card */}
-                <div className="space-y-5">
-                  <h2 className="text-2xl font-bold text-center" style={{ color: "#1a2010" }}>התחברות</h2>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
+                <X className="h-4 w-4" />
+              </button>
+              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>AvodaNow</h2>
+              <div className="w-8" />
+            </div>
 
-                  {/* Phone field */}
-                  <div className="space-y-4">
-                    <IsraeliPhoneInput
-                      value={phoneVal}
-                      onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }}
-                      label="מספר טלפון"
-                    />
-
-                    {/* Not-found error */}
-                    {notFoundError && (
-                      <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
-                        style={{ borderColor: "oklch(0.72 0.15 80.8 / 0.6)", background: "oklch(0.82 0.15 80.8 / 0.12)", color: "oklch(0.40 0.12 60)" }}
-                      >
-                        <p className="font-medium">{notFoundError}</p>
-                        <button type="button" className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
-                          style={{ color: "oklch(0.38 0.14 55)" }}
-                          onClick={() => { setNotFoundError(null); setActiveTab("register"); onClose(); }}
-                        >אנא בצע הרשמה תחילה</button>
-                      </div>
-                    )}
-
-                    {/* Send OTP button */}
-                    <button
-                      type="button"
-                      onClick={handleSend}
-                      disabled={sendOtp.isPending || !isPhoneValid}
-                      className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ background: "oklch(0.50 0.14 85)", boxShadow: "0 4px 14px oklch(0.50 0.14 85 / 0.35)" }}
-                    >
-                      {sendOtp.isPending
-                        ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
-                        : "קבלת קוד"}
-                    </button>
-                    <p className="text-xs text-center px-4" style={{ color: "#6b7280" }}>
-                      הקוד יישלח אליך ב-SMS
-                    </p>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="relative py-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="px-3 text-xs" style={{ background: "#f8f5ee", color: "#9ca3af" }}>או התחבר באמצעות</span>
-                    </div>
-                  </div>
-
-                  {/* Google login */}
-                  <button
-                    type="button"
-                    onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-                    className="w-full border text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-3 transition-all hover:bg-gray-50"
-                    style={{ background: "#ffffff", borderColor: "oklch(0.88 0.04 122)", color: "#374151" }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                      <path fill="none" d="M0 0h48v48H0z"/>
-                    </svg>
-                    כניסה עם Google
-                  </button>
-                </div>
-
-                {/* Footer */}
-                <p className="text-center text-sm" style={{ color: "#6b7280" }}>
-                  עוד לא רשום?{" "}
-                  <button type="button" className="font-bold hover:underline" style={{ color: "oklch(0.50 0.14 85)" }}
-                    onClick={() => { setActiveTab("register"); setStep("phone"); }}
-                  >הרשם כאן</button>
-                </p>
+            <div className="w-full space-y-5 px-5 py-4" dir="rtl">
+              {/* Title */}
+              <div className="text-center space-y-1">
+                <h1 className="text-2xl font-bold" style={{ color: "#1a2010" }}>התחברות</h1>
+                <p className="text-sm" style={{ color: "#6b7280" }}>הכנס את מספר הטלפון שלך לקבלת קוד אימות</p>
               </div>
-            </motion.div>
+
+              {/* Phone field */}
+              <div className="space-y-3">
+                <IsraeliPhoneInput
+                  value={phoneVal}
+                  onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }}
+                  label="מספר טלפון"
+                />
+
+                {/* Not-found error */}
+                {notFoundError && (
+                  <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
+                    style={{ borderColor: "oklch(0.72 0.15 80.8 / 0.6)", background: "oklch(0.82 0.15 80.8 / 0.12)", color: "oklch(0.40 0.12 60)" }}
+                  >
+                    <p className="font-medium">{notFoundError}</p>
+                    <button type="button" className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
+                      style={{ color: "oklch(0.38 0.14 55)" }}
+                      onClick={() => { setNotFoundError(null); setActiveTab("register"); onClose(); }}
+                    >אנא בצע הרשמה תחילה</button>
+                  </div>
+                )}
+
+                {/* Send OTP button */}
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={sendOtp.isPending || !isPhoneValid}
+                  className="w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: "oklch(0.50 0.14 85)", boxShadow: "0 4px 14px oklch(0.50 0.14 85 / 0.35)" }}
+                >
+                  {sendOtp.isPending
+                    ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                    : "קבלת קוד"}
+                </button>
+                <p className="text-xs text-center" style={{ color: "#6b7280" }}>הקוד יישלח אליך ב-SMS</p>
+              </div>
+
+              {/* Divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 text-xs" style={{ background: "#f8f5ee", color: "#9ca3af" }}>או התחבר באמצעות</span>
+                </div>
+              </div>
+
+              {/* Google login */}
+              <button
+                type="button"
+                onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
+                className="w-full border text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-3 transition-all hover:bg-gray-50"
+                style={{ background: "#ffffff", borderColor: "oklch(0.88 0.04 122)", color: "#374151" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                כניסה עם Google
+              </button>
+
+              {/* Footer */}
+              <p className="text-center text-sm pb-2" style={{ color: "#6b7280" }}>
+                עוד לא רשום?{" "}
+                <button type="button" className="font-bold hover:underline" style={{ color: "oklch(0.50 0.14 85)" }}
+                  onClick={() => { setActiveTab("register"); setStep("phone"); }}
+                >הרשם כאן</button>
+              </p>
+            </div>
           </motion.div>
-        )}
+        </motion.div>
+      )}
 
       {/* ── OTP + other steps: centered modal ── */}
       {open && step !== "phone" && step !== "welcome" && (
@@ -718,7 +743,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     return (
                       <label
                         className={`relative block ${hasEmail ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
-                        onClick={() => hasEmail && setOtpChannel("email")}
+                        onClick={() => { if (hasEmail) { setOtpChannel("email"); setChannelEmailError(null); } }}
                         title={!hasEmail ? "הזן כתובת מייל בטופס ההרשמה כדי לאפשר אפשרות זו" : undefined}
                       >
                         <div
@@ -764,7 +789,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {/* SMS option */}
                   <label
                     className="relative block cursor-pointer"
-                    onClick={() => setOtpChannel("sms")}
+                    onClick={() => { setOtpChannel("sms"); setChannelEmailError(null); }}
                   >
                     <div
                       className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
@@ -803,6 +828,22 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     </div>
                   </label>
                 </div>
+
+                {/* Channel email error */}
+                {channelEmailError && (
+                  <div
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm"
+                    style={{ background: "oklch(0.95 0.03 25 / 0.8)", color: "oklch(0.45 0.18 25)", border: "1px solid oklch(0.85 0.08 25 / 0.5)" }}
+                    dir="rtl"
+                  >
+                    <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{channelEmailError}</span>
+                  </div>
+                )}
 
                 {/* CTA */}
                 <div className="space-y-3 pt-1">

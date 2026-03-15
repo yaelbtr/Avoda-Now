@@ -1817,3 +1817,9 @@
 - [x] Add blob background animation to login screen (two blurred olive-green circles inside card)
 - [x] Send welcome email after successful registration (verifyOtp isNewUser=true) — already implemented
 - [x] Disable email channel card in channel picker when no email was entered in registration form
+
+## Login UX Improvements — March 2026
+- [x] Convert login phone step to bottom sheet (like registration bottom sheet)
+- [x] Add blob-pulse @keyframes animation to login and channel screens
+- [x] Add 60-second resend countdown to OTP screen
+- [x] Add email validation in channel picker before sending OTP

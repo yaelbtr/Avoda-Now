@@ -1936,3 +1936,8 @@
 ## Design — AppLogo Light Variant
 - [x] Add 'variant' prop (dark|light) to AppLogo component — dark for dark nav bg, light for cream/white backgrounds
 - [x] Update avodanow-design SKILL.md to document both logo variants with usage rules
+
+## AppLogo Integration
+- [x] Apply AppLogo variant="light" size="sm" to LoginModal welcome step header (replace text "AvodaNow")
+- [x] Add AppLogo variant="light" to 404 page
+- [x] Write Vitest spec for AppLogo variant color tokens

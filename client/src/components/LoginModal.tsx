@@ -527,20 +527,22 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
             {/* Action Buttons */}
             <div className="px-5 pb-3 flex flex-col gap-2.5 flex-shrink-0">
-              <button
+              <AppButton
+                variant="cta"
+                size="lg"
+                className="w-full"
                 onClick={() => { setActiveTab("register"); setStep("phone"); }}
-                className="w-full h-12 rounded-xl text-base font-bold text-white shadow-lg transition-opacity hover:opacity-90"
-                style={{ background: "#556b2f" }}
               >
                 הרשמה
-              </button>
-              <button
+              </AppButton>
+              <AppButton
+                variant="cta-outline"
+                size="lg"
+                className="w-full"
                 onClick={() => { setActiveTab("login"); setStep("phone"); }}
-                className="w-full h-12 rounded-xl text-base font-bold border transition-colors"
-                style={{ background: "rgba(85,107,47,0.10)", color: "#3d5220", borderColor: "rgba(85,107,47,0.25)" }}
               >
                 התחברות
-              </button>
+              </AppButton>
             </div>
 
             {/* Footer terms */}

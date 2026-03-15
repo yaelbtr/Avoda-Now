@@ -1845,3 +1845,6 @@
 
 ## Feature — cta-outline Hover Effect (March 2026)
 - [x] Add hover: dark olive bg + white text transition to cta-outline variant
+
+## UI — Welcome Step CTA Buttons (March 2026)
+- [x] Apply cta variant to "הרשמה" and cta-outline to "התחברות" in LoginModal welcome step

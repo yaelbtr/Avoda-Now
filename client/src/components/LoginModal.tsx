@@ -428,9 +428,24 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               touchAction: "none",
             }}
           >
-            {/* Drag handle */}
+            {/* Drag handle — animated hint */}
             <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
-              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(0,0,0,0.18)" }} />
+              <motion.div
+                className="rounded-full"
+                style={{ background: "rgba(0,0,0,0.22)", width: 40, height: 4 }}
+                animate={{
+                  width: [40, 52, 40],
+                  opacity: [0.55, 1, 0.55],
+                  y: [0, 3, 0],
+                }}
+                transition={{
+                  duration: 1.6,
+                  repeat: 3,
+                  repeatDelay: 0.8,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
+              />
             </div>
 
             {/* Header */}

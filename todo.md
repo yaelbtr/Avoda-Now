@@ -1903,3 +1903,6 @@
 ## Design System — Barrel Import Migration
 - [x] Add AppButton export to ui/index.ts barrel
 - [x] Migrate all direct AppLabel/AppInput/AppTextarea/AppSelect/AppButton/GoogleAuthButton imports to @/components/ui
+
+## Bug Fix — OTP Error for Google-authenticated User
+- [x] Fix "מספר זה אינו רשום במערכת" error triggered for Google-logged-in user with no phone number

@@ -530,22 +530,50 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
             {/* Action Buttons */}
             <div className="px-5 pb-3 flex flex-col gap-2.5 flex-shrink-0">
-              <AppButton
-                variant="cta"
-                size="lg"
-                className="w-full"
-                onClick={() => { setActiveTab("register"); setStep("phone"); }}
-              >
-                הרשמה
-              </AppButton>
-              <AppButton
-                variant="cta-outline"
-                size="lg"
-                className="w-full"
-                onClick={() => { setActiveTab("login"); setStep("phone"); }}
-              >
-                התחברות
-              </AppButton>
+              {authUser ? (
+                /* Already logged in — show profile shortcut instead of auth buttons */
+                <>
+                  <div className="text-center py-2 text-sm" style={{ color: "#4a5d23" }}>
+                    מחובר כ-<strong>{authUser.name || authUser.email}</strong>
+                  </div>
+                  <AppButton
+                    variant="cta"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => { onClose(); navigate("/profile"); }}
+                  >
+                    עבור לפרופיל
+                  </AppButton>
+                  <AppButton
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => { authLogout(); onClose(); }}
+                  >
+                    התנתק
+                  </AppButton>
+                </>
+              ) : (
+                /* Not logged in — normal auth flow */
+                <>
+                  <AppButton
+                    variant="cta"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => { setActiveTab("register"); setStep("phone"); }}
+                  >
+                    הרשמה
+                  </AppButton>
+                  <AppButton
+                    variant="cta-outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => { setActiveTab("login"); setStep("phone"); }}
+                  >
+                    התחברות
+                  </AppButton>
+                </>
+              )}
             </div>
 
             {/* Footer terms */}

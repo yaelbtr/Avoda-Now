@@ -1439,12 +1439,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </AppButton>
 
               {/* Divider */}
-              <div className="relative py-0">
+              <div className="relative py-0.5">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2" style={{ background: "var(--page-bg)", color: "#6b7280" }}>או המשך עם</span>
+                <div className="relative flex justify-center">
+                  <span className="px-3 text-xs" style={{ background: "var(--page-bg)", color: "#9ca3af" }}>או המשך עם</span>
                 </div>
               </div>
 

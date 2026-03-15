@@ -1886,3 +1886,6 @@
 
 ## Design System — Login Modal All Steps Background Fix
 - [x] Apply var(--page-bg-gradient) to all LoginModal bottom-sheet steps (register, login phone, OTP, channel, role, setup)
+
+## Design System — Divider Consistency
+- [x] Align register form divider to match login form divider style (var(--page-bg) span background, same markup)

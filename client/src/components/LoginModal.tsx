@@ -622,7 +622,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <div className="w-8" />
             </div>
 
-            <div className="w-full space-y-3 px-5 py-3" dir="rtl">
+            <div className="w-full space-y-3 px-5 py-3" dir="rtl" style={{ background: "var(--page-bg-gradient)" }}>
               {/* Title */}
               <div className="text-center space-y-0.5">
                 <h1 className="text-2xl font-bold" style={{ color: "#1a2010" }}>התחברות</h1>
@@ -722,7 +722,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className="relative w-full max-w-md mx-4 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: "var(--background)" }}
+            style={{ background: "var(--page-bg-gradient)" }}
             dir="rtl"
           >
             {/* Close button */}
@@ -1273,7 +1273,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             </div>
 
             {/* Scrollable content */}
-            <div className="px-6 pt-2 pb-4 space-y-3 overflow-y-auto">
+            <div className="px-6 pt-2 pb-4 space-y-3 overflow-y-auto" style={{ background: "var(--page-bg-gradient)" }}>
 
               {/* Already-logged-in guard */}
               {authUser && (

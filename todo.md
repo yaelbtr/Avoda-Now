@@ -1883,3 +1883,6 @@
 
 ## Design System — Login Modal Background Fix
 - [x] Apply page background gradient to the welcome step content area (below hero image) in LoginModal
+
+## Design System — Login Modal All Steps Background Fix
+- [x] Apply var(--page-bg-gradient) to all LoginModal bottom-sheet steps (register, login phone, OTP, channel, role, setup)

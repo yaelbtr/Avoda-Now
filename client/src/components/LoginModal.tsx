@@ -460,9 +460,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 onClose();
               }
             }}
-            className="w-full max-w-lg flex flex-col"
+            className="glass-modal w-full max-w-lg flex flex-col"
             style={{
-              background: "#f8f6f6",
               borderRadius: "20px 20px 0 0",
               maxHeight: "92dvh",
               overflowY: "auto",
@@ -584,9 +583,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             onDragEnd={(_e, info) => {
               if (info.offset.y > 80 || info.velocity.y > 500) onClose();
             }}
-            className="relative w-full max-w-lg flex flex-col overflow-hidden"
+            className="glass-modal relative w-full max-w-lg flex flex-col overflow-hidden"
             style={{
-              background: "#f8f5ee",
               borderRadius: "20px 20px 0 0",
               maxHeight: "92dvh",
               overflowY: "auto",
@@ -1236,9 +1234,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             onDragEnd={(_e, info) => {
               if (info.offset.y > 80 || info.velocity.y > 500) onClose();
             }}
-            className="w-full max-w-lg flex flex-col"
+            className="glass-modal w-full max-w-lg flex flex-col"
             style={{
-              background: "#ffffff",
               borderRadius: "20px 20px 0 0",
               maxHeight: "95dvh",
               overflowY: "auto",

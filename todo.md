@@ -1861,3 +1861,10 @@
 - [x] Extract page background gradient into --page-bg-gradient CSS variable in :root
 - [x] Apply variable to body and all page containers
 - [x] Update avodanow-design skill with background token documentation
+
+## UI — Frosted Glass Effect on Cards & Modals (March 2026)
+- [x] Add .glass-card CSS utility class to index.css (backdrop-blur + semi-transparent white bg)
+- [x] Apply to shadcn Card component (card.tsx) as default
+- [x] Apply to LoginModal bottom sheet panels
+- [x] Apply to key page cards (JobCard, HomeWorker sections, HomeEmployer sections via Card component)
+- [x] Update avodanow-design skill with glass-card documentation

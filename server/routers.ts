@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, type LegalConsentType } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
@@ -1759,6 +1759,30 @@ const userRouter = router({
   /** Get all consent records for the current user */
   getMyConsents: protectedProcedure.query(async ({ ctx }) => {
     return getUserConsents(ctx.user.id);
+  }),
+
+  /**
+   * Returns a list of consent types where the user's accepted version
+   * is older than the current LEGAL_DOCUMENT_VERSIONS.
+   * Used by the TermsUpdateBanner to prompt re-consent.
+   */
+  checkOutdatedConsents: protectedProcedure.query(async ({ ctx }) => {
+    const existing = await getUserConsents(ctx.user.id);
+    const existingMap = new Map(
+      existing.map((c) => [c.consentType as LegalConsentType, c.documentVersion])
+    );
+    const outdated: LegalConsentType[] = [];
+    for (const [type, currentVersion] of Object.entries(LEGAL_DOCUMENT_VERSIONS) as [LegalConsentType, string][]) {
+      const acceptedVersion = existingMap.get(type);
+      // Outdated if: never accepted, OR accepted an older version
+      if (!acceptedVersion || acceptedVersion < currentVersion) {
+        // Only flag core documents (terms + privacy) — policy docs are informational
+        if (type === "terms" || type === "privacy") {
+          outdated.push(type);
+        }
+      }
+    }
+    return { outdated, currentVersions: LEGAL_DOCUMENT_VERSIONS };
   }),
 });
 

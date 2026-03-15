@@ -1993,3 +1993,13 @@
 - [x] Add legal notice to RateWorkerModal.tsx before submit button (Reviews Policy + User Content links)
 - [x] Add legal notice to WorkerProfile.tsx before save button (Terms + User Content links)
 - [x] Write 14 Vitest tests for legal integration (server/legal-integration.test.ts)
+
+## Legal Hub Page & Terms Update Banner
+- [x] Create /legal hub page with table of contents and anchor links to all 6 documents
+- [x] Add /legal route to App.tsx and footer link ("כל המסמכים המשפטיים")
+- [x] Add LEGAL_DOCUMENT_VERSIONS, LEGAL_DOCUMENT_LABELS, LEGAL_DOCUMENT_PATHS to shared/const.ts (single source of truth)
+- [x] Verified documentVersion column exists in userConsents table (default "2026-03")
+- [x] Add user.checkOutdatedConsents tRPC procedure (returns outdated core docs for re-consent)
+- [x] Build TermsUpdateBanner component (olive banner with Hebrew text, re-consent CTA, dismiss button)
+- [x] Wire TermsUpdateBanner into App.tsx layout below Navbar (only for authenticated users)
+- [x] Write 14 Vitest tests for version format, labels, paths, and outdated detection logic (server/legal-hub.test.ts)

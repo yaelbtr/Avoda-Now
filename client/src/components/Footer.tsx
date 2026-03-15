@@ -344,6 +344,7 @@ export default function Footer() {
           {/* Legal links row */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {([
+              { href: "/legal", label: "כל המסמכים המשפטיים" },
               { href: "/terms", label: "תנאי שימוש" },
               { href: "/privacy", label: "מדיניות פרטיות" },
               { href: "/job-posting-policy", label: "מדיניות פרסום משרות" },

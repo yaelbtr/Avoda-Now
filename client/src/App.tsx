@@ -24,6 +24,7 @@ import JobPostingPolicy from "./pages/JobPostingPolicy";
 import SafetyPolicy from "./pages/SafetyPolicy";
 import UserContentPolicy from "./pages/UserContentPolicy";
 import ReviewsPolicy from "./pages/ReviewsPolicy";
+import Legal from "./pages/Legal";
 import Accessibility from "./pages/Accessibility";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
@@ -47,6 +48,7 @@ import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import SkipToContent from "./components/SkipToContent";
+import TermsUpdateBanner from "./components/TermsUpdateBanner";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -165,6 +167,7 @@ function Router() {
     <div className="min-h-screen flex flex-col" dir="rtl">
       <SkipToContent />
       <Navbar />
+      <TermsUpdateBanner />
       <GuestLoginBanner />
 
       <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
@@ -188,6 +191,7 @@ function Router() {
                 <Route path="/safety-policy" component={SafetyPolicy} />
                 <Route path="/user-content-policy" component={UserContentPolicy} />
                 <Route path="/reviews-policy" component={ReviewsPolicy} />
+                <Route path="/legal" component={Legal} />
                 <Route path="/accessibility" component={Accessibility} />
                 <Route path="/admin" component={Admin} />
                 <Route path="/admin/regions" component={AdminRegionsPage} />

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AppInput, AppSelect } from "@/components/ui/AppFormField";
+import { AppInput, AppSelect } from "@/components/ui";
 import {
   Dialog,
   DialogContent,

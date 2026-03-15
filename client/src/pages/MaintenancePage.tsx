@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Wrench, LogIn } from "lucide-react";
 import LoginModal from "@/components/LoginModal";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 
 /**
  * MaintenancePage — shown to all non-admin users when maintenance mode is active.

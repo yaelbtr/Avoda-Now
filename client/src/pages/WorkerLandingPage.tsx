@@ -9,7 +9,7 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { useSEO } from "@/hooks/useSEO";
 import { motion } from "framer-motion";
 import { MapPin, Users, CheckCircle2, Clock, ChevronLeft, Star, Zap } from "lucide-react";

@@ -1899,3 +1899,7 @@
 - [x] Export GoogleAuthButton from client/src/components/ui/index.ts
 - [x] Update LoginModal import to use @/components/ui instead of direct path
 - [x] Raise Navbar scroll threshold from > 10 to > 60 (was already at 60)
+
+## Design System — Barrel Import Migration
+- [x] Add AppButton export to ui/index.ts barrel
+- [x] Migrate all direct AppLabel/AppInput/AppTextarea/AppSelect/AppButton/GoogleAuthButton imports to @/components/ui

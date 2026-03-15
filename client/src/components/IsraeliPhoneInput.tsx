@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 
-import { AppLabel } from "@/components/ui/AppFormField";
+import { AppLabel } from "@/components/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

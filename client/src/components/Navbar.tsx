@@ -7,7 +7,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
 import MobileDrawer from "./MobileDrawer";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,

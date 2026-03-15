@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import {
   Dialog,
   DialogContent,

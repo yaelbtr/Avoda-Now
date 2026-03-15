@@ -6,7 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import {
   AlertDialog,
   AlertDialogAction,

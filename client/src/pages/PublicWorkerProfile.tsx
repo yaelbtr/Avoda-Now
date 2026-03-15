@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { User, MapPin, Briefcase, Phone, ArrowRight, Star, Zap, CheckCircle2, MessageSquare } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { useAuth } from "@/contexts/AuthContext";

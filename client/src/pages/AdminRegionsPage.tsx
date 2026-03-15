@@ -6,7 +6,7 @@
  */
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -26,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AppInput, AppTextarea, AppSelect } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppSelect } from "@/components/ui";
 import {
   Table,
   TableBody,

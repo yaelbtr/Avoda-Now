@@ -4,7 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import BrandLoader from "@/components/BrandLoader";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {

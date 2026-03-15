@@ -4,13 +4,13 @@ import { parseJobId, buildJobPath } from "@/lib/jobSlug";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { MapView } from "@/components/Map";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { AppTextarea } from "@/components/ui/AppFormField";
+import { AppTextarea } from "@/components/ui";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
   Briefcase, DollarSign, AlertCircle, Flag, CheckCircle2,

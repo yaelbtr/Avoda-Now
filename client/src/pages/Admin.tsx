@@ -2,8 +2,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { AdminCategoriesTab } from "./AdminCategories";
 import { AdminRegionsTab } from "./AdminRegions";
 import { Badge } from "@/components/ui/badge";
-import { AppButton } from "@/components/AppButton";
-import { AppInput, AppSelect, AppTextarea, AppLabel } from "@/components/ui/AppFormField";
+import { AppButton } from "@/components/ui";
+import { AppInput, AppSelect, AppTextarea, AppLabel } from "@/components/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,

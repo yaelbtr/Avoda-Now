@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";

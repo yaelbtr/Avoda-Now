@@ -7,11 +7,11 @@ import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";

@@ -10,7 +10,7 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
 import {
   User,

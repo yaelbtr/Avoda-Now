@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Home } from "lucide-react";
 import { useLocation } from "wouter";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();

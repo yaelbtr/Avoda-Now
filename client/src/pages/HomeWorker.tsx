@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";

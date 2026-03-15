@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import { Briefcase, HardHat, ArrowLeft } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";

@@ -7,7 +7,7 @@ import HomeEmployer from "./HomeEmployer";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import { useLocation } from "wouter";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Search, Zap } from "lucide-react";
 import { SectionLoader } from "@/components/BrandLoader";
 

@@ -12,7 +12,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import {
   C_BRAND_HEX, C_DANGER_HEX, C_SUCCESS_HEX,
 } from "@/lib/colors";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getCategoryIcon,

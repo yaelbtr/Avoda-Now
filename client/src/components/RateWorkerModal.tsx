@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
-import { AppTextarea, AppLabel } from "@/components/ui/AppFormField";
+import { AppTextarea, AppLabel } from "@/components/ui";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 

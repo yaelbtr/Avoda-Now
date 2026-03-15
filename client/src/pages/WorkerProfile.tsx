@@ -4,11 +4,11 @@ import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
-import { AppButton } from "@/components/AppButton";
+import { AppButton } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AppInput, AppTextarea, AppLabel } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppLabel } from "@/components/ui";
 import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,

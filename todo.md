@@ -1894,3 +1894,8 @@
 - [x] Create shared GoogleAuthButton component in client/src/components/ui/
 - [x] Replace login Google button in LoginModal with shared component
 - [x] Replace register Google button in LoginModal with shared component
+
+## Design System — UI Index Export & Navbar Scroll Threshold
+- [x] Export GoogleAuthButton from client/src/components/ui/index.ts
+- [x] Update LoginModal import to use @/components/ui instead of direct path
+- [x] Raise Navbar scroll threshold from > 10 to > 60 (was already at 60)

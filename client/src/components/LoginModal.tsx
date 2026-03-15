@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
 import { AppButton } from "@/components/AppButton";
-import { GoogleAuthButton } from "@/components/ui/GoogleAuthButton";
+import { GoogleAuthButton } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,

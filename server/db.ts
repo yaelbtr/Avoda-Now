@@ -748,7 +748,7 @@ export async function getMyJobsWithPendingCounts(userId: number) {
     .where(
       and(
         eq(applications.status, "pending"),
-        sql`${applications.jobId} IN (${myJobsList.map((j) => j.id).join(",")})`
+        inArray(applications.jobId, myJobsList.map((j) => j.id))
       )
     )
     .groupBy(applications.jobId);

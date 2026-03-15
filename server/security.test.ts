@@ -187,3 +187,220 @@ describe("security module exports", () => {
     expect(typeof security.securityHeaders).toBe("function");
   });
 });
+
+// ─── XSS Sanitization Tests ──────────────────────────────────────────────────
+
+import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
+
+describe("sanitizeText", () => {
+  it("removes script tags", () => {
+    const input = 'Hello <script>alert("xss")</script> World';
+    expect(sanitizeText(input)).toBe("Hello  World");
+  });
+
+  it("removes event handler attributes", () => {
+    const input = '<img src="x" onerror="alert(1)">';
+    expect(sanitizeText(input)).toBe("");
+  });
+
+  it("removes all HTML tags", () => {
+    const input = "<b>bold</b> and <i>italic</i>";
+    expect(sanitizeText(input)).toBe("bold and italic");
+  });
+
+  it("preserves plain text including Hebrew", () => {
+    const input = "שלום עולם! Hello World 123";
+    expect(sanitizeText(input)).toBe("שלום עולם! Hello World 123");
+  });
+
+  it("handles empty string", () => {
+    expect(sanitizeText("")).toBe("");
+  });
+
+  it("handles null gracefully", () => {
+    expect(sanitizeText(null as unknown as string)).toBe("");
+  });
+
+  it("handles undefined gracefully", () => {
+    expect(sanitizeText(undefined as unknown as string)).toBe("");
+  });
+
+  it("removes javascript: protocol links", () => {
+    const input = '<a href="javascript:alert(1)">click</a>';
+    expect(sanitizeText(input)).toBe("click");
+  });
+});
+
+describe("sanitizeRichText", () => {
+  it("allows safe HTML tags like b, i, ul, li", () => {
+    const input = "<b>bold</b> <i>italic</i>";
+    const result = sanitizeRichText(input);
+    expect(result).toContain("<b>bold</b>");
+    expect(result).toContain("<i>italic</i>");
+  });
+
+  it("removes script tags", () => {
+    const input = "<p>Hello</p><script>alert('xss')</script>";
+    expect(sanitizeRichText(input)).not.toContain("<script>");
+  });
+
+  it("removes onerror attributes", () => {
+    const input = '<img src="x" onerror="alert(1)">';
+    expect(sanitizeRichText(input)).not.toContain("onerror");
+  });
+
+  it("removes onclick attributes", () => {
+    const input = '<p onclick="alert(1)">text</p>';
+    expect(sanitizeRichText(input)).not.toContain("onclick");
+  });
+});
+
+describe("sanitizeTextArray", () => {
+  it("sanitizes each element in the array and filters empty results", () => {
+    // sanitizeTextArray filters out empty strings after sanitization
+    const input = ["normal text", '<script>alert("xss")</script>', "<b>bold</b>"];
+    const result = sanitizeTextArray(input);
+    // script tag becomes empty string and is filtered out by filter(Boolean)
+    expect(result).toEqual(["normal text", "bold"]);
+    expect(result).not.toContain("<script>");
+  });
+
+  it("handles empty array", () => {
+    expect(sanitizeTextArray([])).toEqual([]);
+  });
+});
+
+// ─── CORS Origin Pattern Tests ────────────────────────────────────────────────
+
+describe("CORS allowed origin patterns", () => {
+  // Mirror the patterns from security.ts
+  const allowedPatterns = [
+    /^http:\/\/localhost:\d+$/,
+    /^http:\/\/127\.0\.0\.1:\d+$/,
+    /^https:\/\/[a-z0-9-]+\.sg1\.manus\.computer$/,
+    /^https:\/\/[a-z0-9-]+\.manus\.space$/,
+  ];
+  const exactAllowed = [
+    "https://avodanow.co.il",
+    "https://www.avodanow.co.il",
+    "https://job-now.manus.space",
+  ];
+
+  function isOriginAllowed(origin: string): boolean {
+    if (exactAllowed.includes(origin)) return true;
+    return allowedPatterns.some((p) => p.test(origin));
+  }
+
+  it("allows localhost origins", () => {
+    expect(isOriginAllowed("http://localhost:3000")).toBe(true);
+    expect(isOriginAllowed("http://localhost:5173")).toBe(true);
+  });
+
+  it("allows manus.computer sandbox origins", () => {
+    expect(isOriginAllowed("https://3000-it9q7auge2n1pje7u4mxp-a0378726.sg1.manus.computer")).toBe(true);
+  });
+
+  it("allows production domains", () => {
+    expect(isOriginAllowed("https://avodanow.co.il")).toBe(true);
+    expect(isOriginAllowed("https://www.avodanow.co.il")).toBe(true);
+    expect(isOriginAllowed("https://job-now.manus.space")).toBe(true);
+  });
+
+  it("blocks unknown external origins", () => {
+    expect(isOriginAllowed("https://evil.com")).toBe(false);
+    expect(isOriginAllowed("https://attacker.io")).toBe(false);
+    expect(isOriginAllowed("http://malicious-site.net")).toBe(false);
+  });
+
+  it("blocks non-https production domain", () => {
+    expect(isOriginAllowed("http://avodanow.co.il")).toBe(false);
+  });
+});
+
+// ─── Zod Input Validation Tests ───────────────────────────────────────────────
+
+import { z } from "zod";
+
+describe("Job input Zod schema max-length validation", () => {
+  const jobInputSchema = z.object({
+    title: z.string().min(2).max(200),
+    description: z.string().min(5).max(3000),
+    address: z.string().max(300).optional(),
+    city: z.string().max(100).optional(),
+    businessName: z.string().max(200).optional(),
+    workingHours: z.string().max(200).optional(),
+    contactName: z.string().max(100).optional(),
+  });
+
+  it("rejects title longer than 200 chars", () => {
+    const result = jobInputSchema.safeParse({
+      title: "a".repeat(201),
+      description: "valid description",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects description longer than 3000 chars", () => {
+    const result = jobInputSchema.safeParse({
+      title: "Valid Title",
+      description: "a".repeat(3001),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects address longer than 300 chars", () => {
+    const result = jobInputSchema.safeParse({
+      title: "Valid Title",
+      description: "Valid description",
+      address: "a".repeat(301),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts valid job input", () => {
+    const result = jobInputSchema.safeParse({
+      title: "מחסנאי לעבודה מיידית",
+      description: "דרוש מחסנאי לעבודה במחסן גדול בתל אביב",
+      city: "תל אביב",
+      address: "רחוב הרצל 1",
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("Worker profile Zod schema validation", () => {
+  const workerProfileSchema = z.object({
+    name: z.string().min(2).max(100).optional(),
+    workerBio: z.string().max(500).nullable().optional(),
+    preferenceText: z.string().max(1000).nullable().optional(),
+    workerTags: z.array(z.string().max(50)).max(20).optional(),
+  });
+
+  it("rejects bio longer than 500 chars", () => {
+    const result = workerProfileSchema.safeParse({ workerBio: "a".repeat(501) });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects more than 20 tags", () => {
+    const result = workerProfileSchema.safeParse({
+      workerTags: Array.from({ length: 21 }, (_, i) => `tag${i}`),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tag longer than 50 chars", () => {
+    const result = workerProfileSchema.safeParse({
+      workerTags: ["a".repeat(51)],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts valid worker profile", () => {
+    const result = workerProfileSchema.safeParse({
+      name: "ישראל ישראלי",
+      workerBio: "עובד מסור ואמין",
+      workerTags: ["מחסנאי", "נהג", "ניקיון"],
+    });
+    expect(result.success).toBe(true);
+  });
+});

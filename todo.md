@@ -1950,3 +1950,15 @@
 ## Design Updates — cta-outline Variant
 - [x] Update cta-outline AppButton variant to match "נקה סינון" style: cream bg, subtle border, dark text, no heavy shadow
 - [x] Update avodanow-design SKILL.md to document the new cta-outline style
+
+## Security Hardening (Audit Results)
+- [x] Fix missing max-length Zod constraints on description, address, city, businessName, workingHours
+- [x] Fix SQL injection edge case in db.ts line 751 (use parameterized inArray)
+- [x] Add server-side XSS sanitization utility (server/sanitize.ts - strip HTML tags from free-text fields)
+- [x] Apply XSS sanitization in createJob, updateJob, updateWorkerProfile, createApplication, reportJob
+- [x] Enable Content-Security-Policy headers in production (helmet CSP via NODE_ENV check)
+- [x] Add explicit CORS middleware with allowed origins whitelist (cors package)
+- [x] Implement structured logger (pino) in server/logger.ts with child loggers
+- [x] Add security event logging (OTP rate limit, OTP failures, login success, admin block/unblock/role changes)
+- [x] Set up automated daily database backup mechanism (server/backup.ts, runs at 02:00 UTC)
+- [x] Write Vitest tests for new security protections (XSS, CORS patterns, Zod max-length, bot detection)

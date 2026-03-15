@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import {
   securityHeaders,
+  corsMiddleware,
   globalRateLimit,
   jobsListRateLimit,
   otpRateLimit,
@@ -19,6 +20,7 @@ import {
 import { makeRequest } from "./map";
 import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
 import { sendSms } from "../sms";
+import { scheduleDailyBackup } from "../backup";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -49,7 +51,10 @@ async function startServer() {
   // ── Compression: gzip/brotli for all text responses (JSON, HTML, XML) ──────
   app.use(compression({ threshold: 1024 })); // only compress responses > 1KB
 
-  // ── Security headers (helmet) ─────────────────────────────────────────────
+  // ── CORS: restrict cross-origin requests to allowed origins ─────────────────────
+  app.use(corsMiddleware);
+
+  // ── Security headers (helmet) ─────────────────────────────────────────────────
   app.use(securityHeaders);
 
   // ── Cache-Control: API responses must never be cached by browsers/CDNs ─────
@@ -347,6 +352,8 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
     // Seed regions on first startup
     seedRegionsIfEmpty().catch((err) => console.warn("[Regions] Seed failed:", err));
+    // Schedule daily database backup at 02:00 UTC
+    scheduleDailyBackup();
   });
 }
 

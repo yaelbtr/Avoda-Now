@@ -144,6 +144,8 @@ import { adminProcedure } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { notifyOwner } from "./_core/notification";
 import { sendWelcomeEmail } from "./_core/email";
+import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
+import { authLogger, securityLogger, getClientIp } from "./logger";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -233,6 +235,7 @@ const authRouter = router({
 
       const allowed = await checkAndIncrementSendRate(phone, ip);
       if (!allowed) {
+        securityLogger.warn({ ip, phone: phone.slice(-4), event: "otp_rate_limit_exceeded" }, "OTP rate limit exceeded");
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
@@ -314,6 +317,7 @@ const authRouter = router({
       // Check verify attempt rate limit
       const attemptAllowed = await checkAndIncrementVerifyAttempts(phone);
       if (!attemptAllowed) {
+        securityLogger.warn({ phone: phone.slice(-4), event: "otp_verify_rate_limit" }, "OTP verify rate limit exceeded");
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "מספר הניסיונות המרבי הגיע. בקש קוד חדש.",
@@ -324,6 +328,7 @@ const authRouter = router({
       const result = await smsProvider.verifyOtp(phone, input.code);
 
       if (!result.success || !result.approved) {
+        securityLogger.warn({ phone: phone.slice(-4), event: "otp_verify_failed" }, "OTP verification failed");
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: result.error ?? "קוד האימות שגוי.",
@@ -379,6 +384,7 @@ const authRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
+      authLogger.info({ userId: user.id, event: "login_success", method: "phone_otp" }, "User logged in via OTP");
       return { success: true, user };
     }),
 });
@@ -387,22 +393,22 @@ const authRouter = router({
 
 const jobInputSchema = z.object({
   title: z.string().min(2).max(200),
-  description: z.string().min(5),
+  description: z.string().min(5).max(3000),
   category: z.enum([
     "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
     "security", "construction", "childcare", "eldercare", "retail",
     "events", "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
   ]),
-  address: z.string().min(2),
-  city: z.string().optional(),
+  address: z.string().min(2).max(300),
+  city: z.string().max(100).optional(),
   latitude: z.number(),
   longitude: z.number(),
   salary: z.number().optional(),
   salaryType: z.enum(["hourly", "daily", "monthly", "volunteer"]).default("hourly"),
   contactPhone: z.string().min(9).optional(),
-  contactName: z.string().min(2),
-  businessName: z.string().optional(),
-  workingHours: z.string().optional(),
+  contactName: z.string().min(2).max(100),
+  businessName: z.string().max(200).optional(),
+  workingHours: z.string().max(200).optional(),
   startTime: z.enum(["today", "tomorrow", "this_week", "flexible"]).default("flexible"),
   workersNeeded: z.number().int().min(1).default(1),
   activeDuration: z.enum(["1", "3", "7"]).default("1"),
@@ -546,10 +552,23 @@ const jobsRouter = router({
       };
       const city = input.city ?? extractCityFromAddress(input.address);
 
-      const job = await createJob({
+      // ── XSS sanitization: strip HTML from all free-text fields before DB write ──
+      const sanitizedInput = {
         ...input,
+        title: sanitizeText(input.title),
+        description: sanitizeRichText(input.description),
+        address: sanitizeText(input.address),
+        city: sanitizeText(city),
+        contactName: sanitizeText(input.contactName),
+        businessName: sanitizeText(input.businessName),
+        workingHours: sanitizeText(input.workingHours),
+        jobTags: sanitizeTextArray(input.jobTags ?? [input.category]),
+      };
+
+      const job = await createJob({
+        ...sanitizedInput,
         contactPhone, // always from authenticated user
-        city,
+        city: sanitizedInput.city,
         latitude: input.latitude.toString(),
         longitude: input.longitude.toString(),
         salary: input.salary?.toString(),
@@ -611,7 +630,16 @@ const jobsRouter = router({
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
       if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-      const updateData: Record<string, unknown> = { ...input.data };
+      // ── XSS sanitization on update fields ──
+      const sanitized = { ...input.data };
+      if (sanitized.title !== undefined) sanitized.title = sanitizeText(sanitized.title);
+      if (sanitized.description !== undefined) sanitized.description = sanitizeRichText(sanitized.description);
+      if (sanitized.address !== undefined) sanitized.address = sanitizeText(sanitized.address);
+      if (sanitized.city !== undefined) sanitized.city = sanitizeText(sanitized.city);
+      if (sanitized.contactName !== undefined) sanitized.contactName = sanitizeText(sanitized.contactName);
+      if (sanitized.businessName !== undefined) sanitized.businessName = sanitizeText(sanitized.businessName);
+      if (sanitized.workingHours !== undefined) sanitized.workingHours = sanitizeText(sanitized.workingHours);
+      const updateData: Record<string, unknown> = { ...sanitized };
       if (input.data.latitude !== undefined) updateData.latitude = input.data.latitude.toString();
       if (input.data.longitude !== undefined) updateData.longitude = input.data.longitude.toString();
       if (input.data.salary !== undefined) updateData.salary = input.data.salary?.toString();
@@ -808,7 +836,7 @@ const jobsRouter = router({
         ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0] ??
         ctx.req.socket?.remoteAddress ??
         "unknown";
-      await reportJob({ jobId: input.jobId, reason: input.reason, reporterPhone: input.reporterPhone, reporterIp: ip });
+      await reportJob({ jobId: input.jobId, reason: sanitizeText(input.reason), reporterPhone: input.reporterPhone, reporterIp: ip });
       return { success: true };
     }),
 
@@ -834,8 +862,9 @@ const jobsRouter = router({
         throw new TRPCError({ code: "CONFLICT", message: "כבר הגשת מועמדות למשרה זו" });
       }
 
-      // Record the application
-      await createApplication(ctx.user.id, input.jobId, input.message);
+      // Record the application (sanitize message to prevent XSS)
+      const sanitizedMessage = input.message ? sanitizeText(input.message) : input.message;
+      await createApplication(ctx.user.id, input.jobId, sanitizedMessage);
 
       // Determine employer's notification preferences (only if postedBy is set)
       const employerPrefs = job.postedBy != null
@@ -1065,17 +1094,29 @@ const adminRouter = router({
   /** Block a user */
   blockUser: adminProcedure
     .input(z.object({ userId: z.number() }))
-    .mutation(async ({ input }) => { await adminBlockUser(input.userId); return { success: true }; }),
+    .mutation(async ({ input, ctx }) => {
+      await adminBlockUser(input.userId);
+      securityLogger.warn({ adminId: ctx.user.id, targetUserId: input.userId, event: "admin_block_user" }, "Admin blocked user");
+      return { success: true };
+    }),
 
   /** Unblock a user */
   unblockUser: adminProcedure
     .input(z.object({ userId: z.number() }))
-    .mutation(async ({ input }) => { await adminUnblockUser(input.userId); return { success: true }; }),
+    .mutation(async ({ input, ctx }) => {
+      await adminUnblockUser(input.userId);
+      securityLogger.info({ adminId: ctx.user.id, targetUserId: input.userId, event: "admin_unblock_user" }, "Admin unblocked user");
+      return { success: true };
+    }),
 
   /** Set user role */
   setUserRole: adminProcedure
     .input(z.object({ userId: z.number(), role: z.enum(["user", "admin", "test"]) }))
-    .mutation(async ({ input }) => { await adminSetUserRole(input.userId, input.role); return { success: true }; }),
+    .mutation(async ({ input, ctx }) => {
+      await adminSetUserRole(input.userId, input.role);
+      securityLogger.warn({ adminId: ctx.user.id, targetUserId: input.userId, newRole: input.role, event: "admin_set_role" }, "Admin changed user role");
+      return { success: true };
+    }),
 
   /** Manually create a user */
   createUser: adminProcedure
@@ -1432,19 +1473,19 @@ const userRouter = router({
         } catch { normalizedPhone = undefined; }
       }
       await updateWorkerProfile(ctx.user.id, {
-        name: input.name,
+        name: input.name ? sanitizeText(input.name) : input.name,
         phone: normalizedPhone,
         ...(phonePrefix !== undefined ? { phonePrefix } : {}),
         ...(phoneNumber !== undefined ? { phoneNumber } : {}),
         preferredCategories: input.preferredCategories,
-        preferredCity: input.preferredCity,
-        workerBio: input.workerBio,
+        preferredCity: input.preferredCity ? sanitizeText(input.preferredCity) : input.preferredCity,
+        workerBio: input.workerBio ? sanitizeText(input.workerBio) : input.workerBio,
         locationMode: input.locationMode,
         workerLatitude: input.workerLatitude,
         workerLongitude: input.workerLongitude,
         searchRadiusKm: input.searchRadiusKm ?? undefined,
-        preferenceText: input.preferenceText,
-        workerTags: input.workerTags,
+        preferenceText: input.preferenceText ? sanitizeText(input.preferenceText) : input.preferenceText,
+        workerTags: input.workerTags ? sanitizeTextArray(input.workerTags) : input.workerTags,
         preferredDays: input.preferredDays,
         preferredTimeSlots: input.preferredTimeSlots,
         preferredCities: input.preferredCities,

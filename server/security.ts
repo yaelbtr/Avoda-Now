@@ -1,10 +1,119 @@
 /**
  * Security middleware for Job-Now
- * Protects against: scraping, bot abuse, API enumeration, and data theft.
+ * Protects against: scraping, bot abuse, API enumeration, data theft, XSS, and CORS abuse.
+ *
+ * Exports:
+ *   securityHeaders  — Helmet with CSP (enabled in production)
+ *   corsMiddleware   — CORS restricted to allowed origins
+ *   globalRateLimit  — 60 req/min per IP
+ *   jobsListRateLimit — 20 req/min per IP (anti-scraping)
+ *   otpRateLimit     — 5 req/hour per IP
+ *   botDetection     — block known scraper User-Agents
+ *   antiEnumeration  — detect sequential ID scanning
  */
+import cors from "cors";
 import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+
+// ── Allowed CORS origins ──────────────────────────────────────────────────────
+// Single source of truth for all allowed origins.
+// Add new domains here when deploying to new environments.
+const ALLOWED_ORIGINS = [
+  "https://avodanow.co.il",
+  "https://www.avodanow.co.il",
+  "https://job-now.manus.space",
+  "https://jobboard-resblbse.manus.space",
+  // Dev: allow localhost on any port
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  // Manus sandbox preview domains (dev/staging)
+  /^https:\/\/[a-z0-9-]+\.sg1\.manus\.computer$/,
+  /^https:\/\/[a-z0-9-]+\.manus\.space$/,
+];
+
+/**
+ * CORS middleware — restricts cross-origin requests to the allowed origins list.
+ * Applied globally before tRPC and API routes.
+ */
+export const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. server-to-server, curl in dev)
+    if (!origin) return callback(null, true);
+    const allowed = ALLOWED_ORIGINS.some((o) =>
+      typeof o === "string" ? o === origin : o.test(origin)
+    );
+    if (allowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin not allowed — ${origin}`));
+    }
+  },
+  credentials: true,           // allow cookies (session cookie)
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400,               // preflight cache: 24h
+});
+
+// ── Helmet security headers ──────────────────────────────────────────────────
+// CSP is enabled in production; disabled in development to allow Vite HMR.
+const isProduction = process.env.NODE_ENV === "production";
+
+export const securityHeaders = helmet({
+  contentSecurityPolicy: isProduction
+    ? {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: [
+            "'self'",
+            // Google Maps JS API (loaded via Manus proxy)
+            "https://maps.googleapis.com",
+            "https://maps.gstatic.com",
+            // Google Fonts
+            "https://fonts.googleapis.com",
+            // Inline scripts needed by Vite production build (hashed in prod)
+            "'unsafe-inline'",
+          ],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",  // Tailwind CSS-in-JS and inline styles
+            "https://fonts.googleapis.com",
+          ],
+          fontSrc: [
+            "'self'",
+            "https://fonts.gstatic.com",
+            "data:",
+          ],
+          imgSrc: [
+            "'self'",
+            "data:",
+            "blob:",
+            "https:",  // S3 CDN images, Google Maps tiles
+          ],
+          connectSrc: [
+            "'self'",
+            "https://maps.googleapis.com",
+            "https://api.manus.im",
+            "wss:",  // WebSocket for Vite HMR in dev (noop in prod)
+          ],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          upgradeInsecureRequests: [],
+        },
+      }
+    : false,  // CSP off in development — Vite HMR requires relaxed policy
+  crossOriginEmbedderPolicy: false,  // Required for Google Maps
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xFrameOptions: { action: "deny" },
+  xContentTypeOptions: true,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+});
 
 // ── Known scraper / bot User-Agent patterns ──────────────────────────────────
 const BOT_UA_PATTERNS = [
@@ -77,20 +186,6 @@ export const otpRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "יותר מדי ניסיונות אימות. נסה שוב בעוד שעה." },
-});
-
-// ── Helmet security headers ──────────────────────────────────────────────────
-export const securityHeaders = helmet({
-  contentSecurityPolicy: false, // Vite dev server needs this off; enable in prod via env
-  crossOriginEmbedderPolicy: false, // Required for Google Maps
-  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  xFrameOptions: { action: "deny" },
-  xContentTypeOptions: true,
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true,
-  },
 });
 
 // ── Request body size limit ──────────────────────────────────────────────────

@@ -20,6 +20,10 @@ import PostJob from "./pages/PostJob";
 import MyJobs from "./pages/MyJobs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import JobPostingPolicy from "./pages/JobPostingPolicy";
+import SafetyPolicy from "./pages/SafetyPolicy";
+import UserContentPolicy from "./pages/UserContentPolicy";
+import ReviewsPolicy from "./pages/ReviewsPolicy";
 import Accessibility from "./pages/Accessibility";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
@@ -180,6 +184,10 @@ function Router() {
                 <Route path="/my-jobs" component={MyJobs} />
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
+                <Route path="/job-posting-policy" component={JobPostingPolicy} />
+                <Route path="/safety-policy" component={SafetyPolicy} />
+                <Route path="/user-content-policy" component={UserContentPolicy} />
+                <Route path="/reviews-policy" component={ReviewsPolicy} />
                 <Route path="/accessibility" component={Accessibility} />
                 <Route path="/admin" component={Admin} />
                 <Route path="/admin/regions" component={AdminRegionsPage} />

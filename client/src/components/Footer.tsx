@@ -329,34 +329,43 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* ── Minimal legal footer ── */}
+        {/* ── Legal footer ── */}
         <div
-          className="pt-5 flex flex-col sm:flex-row items-center justify-between gap-3"
+          className="pt-5 flex flex-col gap-3"
           style={{ borderTop: `1px solid ${DIVIDER}` }}
         >
-          <div className="flex items-center gap-4">
-            <a
-              href="/terms"
-              className="text-[12px] transition-colors"
-              style={{ color: ACCENT }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT as string)}
-            >
-              תנאי שימוש
-            </a>
-            <span style={{ color: FG_MUTED }}>·</span>
-            <a
-              href="/privacy"
-              className="text-[12px] transition-colors"
-              style={{ color: ACCENT }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT as string)}
-            >
-              מדיניות פרטיות
-            </a>
+          {/* Legal section header */}
+          <h2
+            className="font-bold text-[11px] uppercase text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            מסמכים משפטיים
+          </h2>
+          {/* Legal links row */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {([
+              { href: "/terms", label: "תנאי שימוש" },
+              { href: "/privacy", label: "מדיניות פרטיות" },
+              { href: "/job-posting-policy", label: "מדיניות פרסום משרות" },
+              { href: "/safety-policy", label: "מדיניות בטיחות" },
+              { href: "/user-content-policy", label: "מדיניות תוכן" },
+              { href: "/reviews-policy", label: "מדיניות ביקורות" },
+            ] as { href: string; label: string }[]).map((link, i, arr) => (
+              <span key={link.href} className="flex items-center gap-4">
+                <a
+                  href={link.href}
+                  className="text-[12px] transition-colors"
+                  style={{ color: ACCENT }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT as string)}
+                >
+                  {link.label}
+                </a>
+                {i < arr.length - 1 && <span style={{ color: FG_MUTED }}>·</span>}
+              </span>
+            ))}
           </div>
-
-          <p className="text-[11px] whitespace-nowrap font-medium" style={{ color: FG_MUTED }}>
+          <p className="text-[11px] font-medium" style={{ color: FG_MUTED }}>
             © {new Date().getFullYear()} <BrandName /> · כל הזכויות שמורות
           </p>
         </div>

@@ -60,6 +60,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [regEmail, setRegEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [age18Accepted, setAge18Accepted] = useState(false);
+
+  // Consent recording — fires after successful registration
+  const recordConsent = trpc.user.recordConsent.useMutation();
 
   // Name validator: min 2 chars, letters/spaces/hyphens only
   /** Validate name — pass touched=true after first blur to show "required" error */
@@ -241,6 +245,11 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       }
       await refetch();
       queryClient.invalidateQueries();
+      // Record consents for new registrations (isNewUser flag from server)
+      if ((data as any).isNewUser && data.user?.id) {
+        const consentTypes = ["terms", "privacy", "age_18"] as const;
+        consentTypes.forEach((ct) => recordConsent.mutate({ consentType: ct }));
+      }
       if (data.user?.userMode) {
         setStep("success");
         setTimeout(() => {
@@ -285,6 +294,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     if (activeTab === "register") {
       if (!regName.trim()) return toast.error("יש להכניס שם מלא");
       if (!termsAccepted) return toast.error("יש לאשר את תנאי השימוש");
+      if (!age18Accepted) return toast.error("יש לאשר כי הנך בן/בת 18 ומעלה");
       // Store registration data to pass to verifyOtp
       pendingRegData.current = { name: regName.trim(), email: regEmail.trim() };
     }
@@ -1393,10 +1403,27 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   />
                 </div>
                 <label htmlFor="reg-terms" className="text-sm leading-6 cursor-pointer" style={{ color: "#374151" }}>
-                  אני מאשר את{" "}
+                  קראתי ואני מסכים/ה ל{" "}
                   <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#4a5d23" }} onClick={e => e.stopPropagation()}>תנאי השימוש</a>
-                  {" "}ו
+                  {" "}ול{" "}
                   <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#4a5d23" }} onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
+                </label>
+              </div>
+
+              {/* Age 18+ checkbox */}
+              <div className="flex items-start gap-3 py-0">
+                <div className="flex h-6 items-center">
+                  <input
+                    type="checkbox"
+                    id="reg-age18"
+                    checked={age18Accepted}
+                    onChange={e => setAge18Accepted(e.target.checked)}
+                    className="h-5 w-5 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: "#4a5d23" }}
+                  />
+                </div>
+                <label htmlFor="reg-age18" className="text-sm leading-6 cursor-pointer" style={{ color: "#374151" }}>
+                  אני מאשר/ת כי אני בן/בת <strong>18 ומעלה</strong>
                 </label>
               </div>
 
@@ -1431,7 +1458,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   !regEmail.trim() ||
                   !!emailError ||
                   !!nameError ||
-                  !termsAccepted
+                  !termsAccepted ||
+                  !age18Accepted
                 }
               >
                 {sendOtp.isPending

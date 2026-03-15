@@ -31,6 +31,9 @@ import {
   regionNotificationRequests,
   RegionNotificationRequest,
   systemSettings,
+  userConsents,
+  UserConsent,
+  InsertUserConsent,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2672,4 +2675,51 @@ export async function getHeroStats(): Promise<{
     closedJobs: Number(closedRes[0]?.cnt ?? 0),
     registeredWorkers: Number(workersRes[0]?.cnt ?? 0),
   };
+}
+
+
+// ─── User Consents ────────────────────────────────────────────────────────────
+
+/**
+ * Records a user consent event. Uses INSERT IGNORE to be idempotent —
+ * re-consenting to the same type is a no-op (the first consent is the record).
+ */
+export async function recordUserConsent(
+  userId: number,
+  consentType: InsertUserConsent["consentType"],
+  opts?: { ipAddress?: string; userAgent?: string; documentVersion?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(userConsents).values({
+    userId,
+    consentType,
+    documentVersion: opts?.documentVersion ?? "2026-03",
+    ipAddress: opts?.ipAddress ?? null,
+    userAgent: opts?.userAgent ?? null,
+  }).onDuplicateKeyUpdate({
+    // Keep the original consent — do not overwrite with newer timestamp
+    set: { documentVersion: opts?.documentVersion ?? "2026-03" },
+  });
+}
+
+/**
+ * Returns all consent records for a user, keyed by consentType.
+ */
+export async function getUserConsents(userId: number): Promise<UserConsent[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userConsents).where(eq(userConsents.userId, userId));
+}
+
+/**
+ * Returns true if the user has consented to all required types.
+ */
+export async function hasRequiredConsents(
+  userId: number,
+  required: InsertUserConsent["consentType"][]
+): Promise<boolean> {
+  const existing = await getUserConsents(userId);
+  const existingTypes = new Set(existing.map((c) => c.consentType));
+  return required.every((t) => existingTypes.has(t));
 }

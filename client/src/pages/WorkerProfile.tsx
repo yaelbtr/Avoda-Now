@@ -1100,6 +1100,15 @@ export default function WorkerProfile() {
             </div>
           </div>
         </div>
+        {/* Legal notice — profile */}
+        <p className="text-xs text-muted-foreground text-center mt-2" dir="rtl">
+          שמירת הפרופיל מסכימה ל{" "}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">תנאי השימוש</a>
+          {" "}ול{" "}
+          <a href="/user-content-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">מדיניות תוכן</a>.
+          {" "}המידע יהיה גלוי למעסיקים שיצורו קשר איתך.
+        </p>
+
         {/* Save button for details tab */}
         <div className="flex gap-2 mt-2">
           <button

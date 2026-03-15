@@ -513,6 +513,16 @@ export default function JobBottomSheet({
             </button>
           )}
 
+          {/* Legal notice — application */}
+          {!applied && (
+            <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: 0, lineHeight: 1.5 }} dir="rtl">
+              בהגשת מועמדות אתה מאשר/ת שפרטייך ישתפו עם המעסיק. קרא/{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>מדיניות הפרטיות</a>
+              {" "}ו{" "}
+              <a href="/safety-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>כללי בטיחות</a>.
+            </p>
+          )}
+
           {/* Call/WhatsApp buttons removed — workers contact via application only */}
         </div>
       </motion.div>

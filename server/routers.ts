@@ -108,6 +108,8 @@ import {
   getMaintenanceMessage,
   getHeroStats,
   resetTestUserProfile,
+  recordUserConsent,
+  getUserConsents,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -399,7 +401,8 @@ const authRouter = router({
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
       authLogger.info({ userId: user.id, event: "login_success", method: "phone_otp" }, "User logged in via OTP");
-      return { success: true, user };
+      const isNewUser = !input.termsAccepted ? false : true;
+      return { success: true, user, isNewUser };
     }),
 });
 
@@ -1724,6 +1727,39 @@ const userRouter = router({
       await updateWorkerProfile(ctx.user.id, { availabilityStatus: input.availabilityStatus });
       return { success: true };
     }),
+
+  /**
+   * Record a user's explicit consent to a legal document.
+   * Idempotent — re-consenting to the same type is a no-op.
+   */
+  recordConsent: protectedProcedure
+    .input(z.object({
+      consentType: z.enum([
+        "terms",
+        "privacy",
+        "age_18",
+        "job_posting_policy",
+        "safety_policy",
+        "user_content_policy",
+        "reviews_policy",
+      ]),
+      documentVersion: z.string().max(32).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ip = getClientIp(ctx.req);
+      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
+      await recordUserConsent(ctx.user.id, input.consentType, {
+        ipAddress: ip,
+        userAgent: ua,
+        documentVersion: input.documentVersion,
+      });
+      return { success: true };
+    }),
+
+  /** Get all consent records for the current user */
+  getMyConsents: protectedProcedure.query(async ({ ctx }) => {
+    return getUserConsents(ctx.user.id);
+  }),
 });
 
 // ─── Push Notifications Router ─────────────────────────────────────────────

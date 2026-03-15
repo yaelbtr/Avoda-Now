@@ -1977,3 +1977,19 @@
 - [x] Apply duplicate check in updateUserPhone before UPDATE (with normalizePhone optional param)
 - [x] adminCreateUser already had duplicate check (adminDb.ts) — verified
 - [x] Write Vitest tests for phone normalization and duplicate prevention (phone-normalization.test.ts, 20 tests)
+
+## Legal Documents Integration
+- [x] Audit existing legal integrations in the codebase
+- [x] Create 4 missing legal pages: /job-posting-policy, /safety-policy, /user-content-policy, /reviews-policy
+- [x] Add all 6 legal links to Footer
+- [x] Add 4 new legal routes to App.tsx
+- [x] Create userConsents table in drizzle/schema.ts and run db:push
+- [x] Add recordUserConsent and getUserConsents helpers to server/db.ts
+- [x] Add user.recordConsent and user.getMyConsents tRPC procedures (in userRouter)
+- [x] Update signup: add age 18+ checkbox alongside terms+privacy checkbox
+- [x] Record terms, privacy, age_18 consents on successful registration (isNewUser flag)
+- [x] Add legal notice to PostJob.tsx before submit button (Job Posting Policy + Terms links)
+- [x] Add legal notice to JobBottomSheet.tsx before apply button (Privacy + Safety Policy links)
+- [x] Add legal notice to RateWorkerModal.tsx before submit button (Reviews Policy + User Content links)
+- [x] Add legal notice to WorkerProfile.tsx before save button (Terms + User Content links)
+- [x] Write 14 Vitest tests for legal integration (server/legal-integration.test.ts)

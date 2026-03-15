@@ -1030,6 +1030,15 @@ export default function PostJob() {
           </div>
         )}
 
+        {/* Legal notice — job posting */}
+        <p className="text-xs text-center" style={{ color: "#6b7280" }} dir="rtl">
+          בלחיצה על “פרסם עבודה” אתה מאשר/ת כי קראת וקיבלת את{" "}
+          <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: "#4a5d23" }}>ניהול משרות</a>
+          {" "}ואת{" "}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
+          {" "}המשרה תפורסם בפומבי הפלטפורמה ותהיה גלויה למועמדים פוטנציאליים.
+        </p>
+
         <AppButton
           type="submit"
           variant="brand"

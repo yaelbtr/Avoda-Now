@@ -498,3 +498,36 @@ export const systemSettings = mysqlTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
 export type SystemSetting = typeof systemSettings.$inferSelect;
+
+/**
+ * user_consents — records explicit user consent to legal documents.
+ * Stores one row per user per consent type with the document version they agreed to.
+ * Used for GDPR/legal compliance audit trail.
+ */
+export const userConsents = mysqlTable(
+  "user_consents",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** The type of consent given */
+    consentType: mysqlEnum("consent_type", [
+      "terms",
+      "privacy",
+      "age_18",
+      "job_posting_policy",
+      "safety_policy",
+      "user_content_policy",
+      "reviews_policy",
+    ]).notNull(),
+    /** Version string of the document consented to, e.g. "2026-03" */
+    documentVersion: varchar("document_version", { length: 32 }).notNull().default("2026-03"),
+    /** IP address at time of consent (optional, for audit) */
+    ipAddress: varchar("ip_address", { length: 45 }),
+    /** User-agent string at time of consent (optional) */
+    userAgent: varchar("user_agent", { length: 512 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("uniq_user_consent_type").on(t.userId, t.consentType)]
+);
+export type UserConsent = typeof userConsents.$inferSelect;
+export type InsertUserConsent = typeof userConsents.$inferInsert;

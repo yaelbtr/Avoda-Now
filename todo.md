@@ -1830,3 +1830,8 @@
 
 ## UI Fix — Login Phone Step No-Scroll (March 2026)
 - [x] Fix login bottom sheet overflow — all content must fit viewport without scrolling
+
+## UX Improvements — Logged-in Guard + Email Pre-fill + OTP Toast (March 2026)
+- [x] Show "already logged in" message when logged-in user opens registration modal
+- [x] Pre-fill email field in register form from Google account (read-only)
+- [x] Add OTP toast with phone number and 5-minute validity after sending code

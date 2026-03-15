@@ -56,6 +56,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // Registration-only fields
   const [regName, setRegName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
+  // Pre-fill email from Google account when available — updated via effect below
   const [regEmail, setRegEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -99,7 +100,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const { refetch } = useAuth();
+  const { refetch, user: authUser, logout: authLogout } = useAuth();
   const { setLocalModeOnly } = useUserMode();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -167,6 +168,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     if (step === "otp") setTimeout(() => inputRefs.current[0]?.focus(), 120);
   }, [step]);
 
+  // Pre-fill email (and name) from Google account when register tab is active
+  useEffect(() => {
+    if (open && activeTab === "register" && authUser) {
+      if (authUser.email && !regEmail) setRegEmail(authUser.email);
+      if (authUser.name && !regName) setRegName(authUser.name);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, activeTab, authUser]);
+
   // ── tRPC mutations ───────────────────────────────────────────────────────────
   const sendOtp = trpc.auth.sendOtp.useMutation({
     onSuccess: (data) => {
@@ -179,7 +189,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         toast.success("משתמש טסט — הכנס את 6 הספרות הראשונות של הטלפון");
       } else {
         startResendTimer();
-        toast.success("קוד אימות נשלח לטלפון שלך 📱");
+        const displayPhone = formatPhoneDisplay(data.phone);
+        toast.success(`קוד נשלח ל-${displayPhone} • תקף ל-5 דקות`, { duration: 5000 });
       }
     },
     onError: (e) => {
@@ -1259,6 +1270,40 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
             {/* Scrollable content */}
             <div className="px-6 pt-2 pb-4 space-y-3 overflow-y-auto">
+
+              {/* Already-logged-in guard */}
+              {authUser && (
+                <div className="rounded-xl border p-5 text-center space-y-4" dir="rtl"
+                  style={{ background: "oklch(0.97 0.02 124.9)", borderColor: "oklch(0.88 0.06 124.9)" }}
+                >
+                  <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center" style={{ background: "oklch(0.50 0.09 124.9 / 0.15)" }}>
+                    <CheckCircle2 className="h-6 w-6" style={{ color: "#4a5d23" }} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-base" style={{ color: "#1a2010" }}>כבר מחובר כ–{authUser.name || "משתמש"}</p>
+                    <p className="text-sm mt-1" style={{ color: "#6b7280" }}>אתה כבר מחובר למערכת. אם ברצונך להתחבר בחשבון אחר, צא תחילה.</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="w-full py-2.5 rounded-xl font-semibold text-sm text-white transition-all"
+                      style={{ background: "oklch(0.50 0.14 85)" }}
+                    >סגור</button>
+                    <button
+                      type="button"
+                      onClick={() => { authLogout(); onClose(); }}
+                      className="w-full py-2.5 rounded-xl font-semibold text-sm border transition-all hover:bg-gray-50"
+                      style={{ color: "#6b7280", borderColor: "#d1d5db" }}
+                    >צא והתחבר בחשבון אחר</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Registration form — hidden when already logged in */}
+              {/* Capture authUser before narrowing so TS doesn't infer never inside the block */}
+              {((_authUser) => !_authUser && (<>
+              {/* authUserEmail: string | null = _authUser?.email ?? null (always null here since !_authUser) */}
               {/* Icon + title */}
               <div className="flex flex-col items-center gap-2 pb-0">
                 <div className="rounded-xl p-2.5" style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
@@ -1294,23 +1339,34 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               {/* Phone */}
               <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
 
-              {/* Email */}
+              {/* Email — read-only when pre-filled from Google account */}
               <AppInput
                 label="אימייל"
                 required
                 type="email"
                 value={regEmail}
+                readOnly={!!(authUser?.email && regEmail === authUser.email)}
                 onChange={e => {
+                  if (authUser?.email && regEmail === authUser.email) return; // guard read-only
                   setRegEmail(e.target.value);
                   setDuplicateError(null);
                   setEmailError(validateEmail(e.target.value));
                 }}
-                onBlur={e => setEmailError(validateEmail(e.target.value))}
+                onBlur={e => {
+                  if (authUser?.email && regEmail === authUser.email) return;
+                  setEmailError(validateEmail(e.target.value));
+                }}
                 placeholder="email@example.com"
                 dir="ltr"
                 error={emailError || undefined}
                 icon={<Mail className="h-4 w-4" />}
               />
+              {authUser?.email && regEmail === authUser.email && (
+                <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "#4a5d23" }} dir="rtl">
+                  <CheckCircle className="h-3 w-3 flex-shrink-0" />
+                  מולא אוטומטית מחשבון Google
+                </p>
+              )}
 
               {/* Terms checkbox */}
               <div className="flex items-start gap-3 py-0">
@@ -1426,6 +1482,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   התחבר כאן
                 </button>
               </p>
+              </>))(authUser)}
             </div>
           </motion.div>
         </motion.div>

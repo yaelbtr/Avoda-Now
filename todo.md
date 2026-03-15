@@ -1735,3 +1735,4 @@
 - [ ] Redesign LoginModal: full-screen mobile-first with hero image + welcome step before phone/OTP flow
 - [x] Add swipe-down gesture to close LoginModal welcome sheet
 - [x] Animate drag handle pill to hint swipe-down gesture
+- [x] Replace registration step in LoginModal with new design from mockup

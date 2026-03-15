@@ -516,7 +516,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       )}
 
       {/* ── All other steps: centered modal ── */}
-      {open && step !== "welcome" && (
+      {open && step !== "welcome" && !(step === "phone" && activeTab === "register") && (
         <motion.div
           key="modal-overlay"
           initial={{ opacity: 0 }}
@@ -1006,6 +1006,239 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </div>
             )}
 
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* ── REGISTER SCREEN: bottom sheet (new design) ── */}
+      {open && step === "phone" && activeTab === "register" && (
+        <motion.div
+          key="register-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[60] flex items-end justify-center"
+          style={{ background: "oklch(0 0 0 / 0.5)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+          dir="rtl"
+        >
+          <motion.div
+            key="register-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_e, info) => {
+              if (info.offset.y > 80 || info.velocity.y > 500) onClose();
+            }}
+            className="w-full max-w-lg flex flex-col"
+            style={{
+              background: "#ffffff",
+              borderRadius: "20px 20px 0 0",
+              maxHeight: "95dvh",
+              overflowY: "auto",
+              paddingBottom: "env(safe-area-inset-bottom, 16px)",
+              touchAction: "none",
+            }}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
+              <motion.div
+                className="rounded-full"
+                style={{ background: "rgba(0,0,0,0.18)", width: 40, height: 4 }}
+                animate={{ width: [40, 52, 40], opacity: [0.55, 1, 0.55], y: [0, 3, 0] }}
+                transition={{ duration: 1.6, repeat: 3, repeatDelay: 0.8, ease: "easeInOut", delay: 0.5 }}
+              />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
+              <button
+                onClick={() => { setActiveTab("login"); setStep("welcome"); }}
+                className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
+                style={{ color: "#4a5d23" }}
+                aria-label="חזור"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <h2 className="text-base font-bold" style={{ color: "#1a2010" }}>הרשמה</h2>
+              <div className="w-9" />
+            </div>
+
+            {/* Scrollable content */}
+            <div className="px-6 pt-4 pb-6 space-y-4 overflow-y-auto">
+              {/* Icon + title */}
+              <div className="flex flex-col items-center gap-3 pb-1">
+                <div className="rounded-2xl p-3.5" style={{ background: "oklch(0.50 0.09 124.9 / 0.12)" }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10" style={{ color: "#4a5d23" }}>
+                    <path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.357-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.09a49.488 49.488 0 0 0-6 0v-.09a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
+                    <path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427a49.19 49.19 0 0 1-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <h1 className="text-2xl font-bold" style={{ color: "#1a2010" }}>צור חשבון חדש</h1>
+                  <p className="text-sm mt-1" style={{ color: "#6b7280" }}>הצטרף ל-AvodaNow ומצא את העבודה הבאה שלך</p>
+                </div>
+              </div>
+
+              {/* Full name */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>שם מלא</label>
+                <div className="relative">
+                  <User className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#9ca3af" }} />
+                  <input
+                    type="text"
+                    value={regName}
+                    onChange={e => {
+                      setRegName(e.target.value);
+                      setDuplicateError(null);
+                      if (nameError) setNameError(validateName(e.target.value));
+                    }}
+                    onBlur={e => setNameError(validateName(e.target.value))}
+                    placeholder="ישראל ישראלי"
+                    dir="rtl"
+                    className={`w-full h-14 pr-11 pl-3 rounded-xl border text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      nameError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                    }`}
+                    style={{ color: "#111827" }}
+                  />
+                </div>
+                {nameError && <p className="text-xs text-red-500" role="alert">{nameError}</p>}
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>מספר טלפון</label>
+                <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>אימייל</label>
+                <div className="relative">
+                  <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#9ca3af" }} />
+                  <input
+                    type="email"
+                    value={regEmail}
+                    onChange={e => {
+                      setRegEmail(e.target.value);
+                      setDuplicateError(null);
+                      setEmailError(validateEmail(e.target.value));
+                    }}
+                    onBlur={e => setEmailError(validateEmail(e.target.value))}
+                    placeholder="email@example.com"
+                    dir="ltr"
+                    className={`w-full h-14 pr-11 pl-3 rounded-xl border text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+                      emailError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                    }`}
+                    style={{ color: "#111827" }}
+                  />
+                </div>
+                {emailError && <p className="text-xs text-red-500">{emailError}</p>}
+              </div>
+
+              {/* Terms checkbox */}
+              <div className="flex items-start gap-3 py-1">
+                <div className="flex h-6 items-center">
+                  <input
+                    type="checkbox"
+                    id="reg-terms"
+                    checked={termsAccepted}
+                    onChange={e => setTermsAccepted(e.target.checked)}
+                    className="h-5 w-5 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: "#4a5d23" }}
+                  />
+                </div>
+                <label htmlFor="reg-terms" className="text-sm leading-6 cursor-pointer" style={{ color: "#374151" }}>
+                  אני מאשר את{" "}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#4a5d23" }} onClick={e => e.stopPropagation()}>תנאי השימוש</a>
+                  {" "}ו
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: "#4a5d23" }} onClick={e => e.stopPropagation()}>מדיניות הפרטיות</a>
+                </label>
+              </div>
+
+              {/* Duplicate error */}
+              {duplicateError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  <p className="font-medium">{duplicateError}</p>
+                  <a href="mailto:support@avodanow.co.il" className="underline text-red-600 text-xs">פנה למנהל המערכת</a>
+                </div>
+              )}
+
+              {/* Register button */}
+              <AppButton
+                variant="brand"
+                size="lg"
+                className="w-full mt-2"
+                onClick={handleSend}
+                disabled={
+                  sendOtp.isPending ||
+                  !isPhoneValid ||
+                  !regName.trim() ||
+                  !regEmail.trim() ||
+                  !!emailError ||
+                  !!nameError ||
+                  !termsAccepted
+                }
+              >
+                {sendOtp.isPending
+                  ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                  : "הרשמה"}
+              </AppButton>
+
+              {/* Divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white" style={{ color: "#6b7280" }}>או המשך עם</span>
+                </div>
+              </div>
+
+              {/* Google register */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!termsAccepted) { toast.error("יש לאשר את תנאי השימוש לפני הרשמה"); return; }
+                  saveReturnPath();
+                  window.location.href = getGoogleLoginUrl();
+                }}
+                disabled={!termsAccepted}
+                className={`w-full flex items-center justify-center gap-3 border rounded-xl py-3 transition-colors text-sm font-semibold ${
+                  !termsAccepted
+                    ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60"
+                    : "bg-white hover:bg-gray-50 border-gray-200"
+                }`}
+                style={{ color: !termsAccepted ? undefined : "#374151" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                הרשמה עם Google
+              </button>
+
+              {/* Login link */}
+              <p className="text-center text-sm pt-2" style={{ color: "#6b7280" }}>
+                כבר יש לך חשבון?{" "}
+                <button
+                  type="button"
+                  className="font-bold hover:underline"
+                  style={{ color: "#4a5d23" }}
+                  onClick={() => handleTabChange("login")}
+                >
+                  התחבר כאן
+                </button>
+              </p>
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -38,11 +38,13 @@ const RESEND_COOLDOWN_SEC = 30;
 const OTP_LENGTH = 6;
 
 type Tab = "login" | "register";
-type Step = "phone" | "otp" | "role" | "setup" | "success";
+type Step = "welcome" | "phone" | "otp" | "role" | "setup" | "success";
+
+const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/login-hero-house_378bbdc3.jpg";
 
 export default function LoginModal({ open, onClose, message, maintenanceMode, onNonAdminLogin }: LoginModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("login");
-  const [step, setStep] = useState<Step>("phone");
+  const [step, setStep] = useState<Step>("welcome");
 
   // Shared phone state
   const [phone, setPhone] = useState("");
@@ -115,7 +117,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   useEffect(() => {
     if (!open) {
       const t = setTimeout(() => {
-        setStep("phone");
+        setStep("welcome");
         setActiveTab("login");
         setPhone("");
         setPhoneVal({ prefix: "", number: "" });
@@ -389,10 +391,97 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   if (!open) return null;
 
   return (
-    <AnimatePresence>
-      {open && (
+    <AnimatePresence mode="wait">
+      {open && step === "welcome" && (
         <motion.div
-          key="login-overlay"
+          key="welcome-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex flex-col"
+          style={{ background: "#f8f6f6" }}
+          dir="rtl"
+        >
+          {/* ── STEP: welcome (full-screen splash) ── */}
+          {(
+            <motion.div
+              key="welcome-screen"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25 }}
+              className="flex flex-col min-h-screen w-full max-w-lg mx-auto"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="w-10" />
+                <h2 className="text-lg font-bold" style={{ color: "oklch(0.50 0.09 124.9)" }}>AvodaNow</h2>
+                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full" style={{ color: "var(--muted-foreground)" }} aria-label="סגור">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Hero Image */}
+              <div className="w-full">
+                <img
+                  src={HERO_IMG}
+                  alt="AvodaNow"
+                  className="w-full object-cover"
+                  style={{ minHeight: 260, maxHeight: 320 }}
+                />
+              </div>
+
+              {/* Welcome text */}
+              <div className="px-6 pt-8 pb-4 text-center">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-3" style={{ color: "#1a2010" }}>
+                  ברוכים הבאים ל-AvodaNow
+                </h1>
+                <p className="text-base leading-relaxed" style={{ color: "#4a5a38" }}>
+                  הדרך הפשוטה והמהירה ביותר למצוא את המשרה הבאה שלך ולנהל את הקריירה בביטחון.
+                </p>
+              </div>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Action Buttons */}
+              <div className="px-6 pb-4 flex flex-col gap-4">
+                <button
+                  onClick={() => { setActiveTab("register"); setStep("phone"); }}
+                  className="w-full h-14 rounded-xl text-lg font-bold text-white shadow-lg transition-opacity hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, oklch(0.50 0.09 124.9) 0%, oklch(0.40 0.09 124.9) 100%)" }}
+                >
+                  הרשמה
+                </button>
+                <button
+                  onClick={() => { setActiveTab("login"); setStep("phone"); }}
+                  className="w-full h-14 rounded-xl text-lg font-bold border transition-colors"
+                  style={{ background: "oklch(0.50 0.09 124.9 / 0.10)", color: "oklch(0.40 0.09 124.9)", borderColor: "oklch(0.50 0.09 124.9 / 0.25)" }}
+                >
+                  התחברות
+                </button>
+              </div>
+
+              {/* Footer terms */}
+              <div className="px-6 pb-8 text-center">
+                <p className="text-xs" style={{ color: "#9a9a8a" }}>
+                  בהמשך התהליך הינך מסכים ל
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "oklch(0.50 0.09 124.9)" }}>תנאי השימוש</a>
+                  ול
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "oklch(0.50 0.09 124.9)" }}>מדיניות הפרטיות</a>
+                  {" "}שלנו.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ── All other steps: centered modal ── */}
+      {open && step !== "welcome" && (
+        <motion.div
+          key="modal-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

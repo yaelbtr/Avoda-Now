@@ -1921,3 +1921,8 @@
 
 ## Design — Register Sheet Redesign
 - [x] Redesign register sheet to match login phone step: unified gradient background, no separate top section, same header pattern (back arrow + centered title + X close), drag handle, no icon block
+
+## Design — Shared AppLogo Component
+- [x] Create shared AppLogo component matching Navbar logo (AvodaNow + briefcase icon + tagline)
+- [x] Replace "AvodaNow" text in LoginModal headers with AppLogo component
+- [x] Export AppLogo from ui/index.ts barrel

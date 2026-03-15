@@ -11,3 +11,4 @@
 export { GoogleAuthButton } from "./GoogleAuthButton";
 export { AppLabel, AppInput, AppTextarea, AppSelect } from "./AppFormField";
 export { AppButton, appButtonVariants } from "../AppButton";
+export { AppLogo } from "../AppLogo";

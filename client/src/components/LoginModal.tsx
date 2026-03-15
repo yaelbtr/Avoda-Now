@@ -5,8 +5,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { AppButton } from "@/components/ui";
-import { GoogleAuthButton } from "@/components/ui";
+import { AppButton, GoogleAuthButton, AppLogo } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
@@ -494,7 +493,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
                 <X className="h-4 w-4" />
               </button>
-              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>AvodaNow</h2>
+              <AppLogo size="sm" animated={false} />
               <div className="w-8" />
             </div>
 
@@ -507,7 +506,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 className="font-bold leading-tight tracking-tight mb-2"
                 style={{ fontSize: "clamp(22px, 6vw, 28px)", color: "#1a2010" }}
               >
-                ברוכים הבאים ל-<br />AvodaNow
+                ברוכים הבאים ל-AvodaNow
               </h1>
               <p className="text-sm leading-relaxed" style={{ color: "#4a5a38" }}>
                 הדרך הפשוטה והמהירה ביותר למצוא את המשרה הבאה שלך ולנהל את הקריירה בביטחון.

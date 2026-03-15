@@ -1811,3 +1811,9 @@
 - [x] Add inline Google login button inside email-conflict error message
 - [x] Handle reverse case: phone-registered user tries Google login with same email — merge accounts via mergeAccountToGoogleOpenId in OAuth callback
 - [x] Add "שנה שיטת קבלה" link on OTP screen returning to step=channel
+
+## UX & Auth Polish — March 2026
+- [x] Fix: all API errors in LoginModal must surface as UI messages (toast/inline), not only console
+- [x] Add blob background animation to login screen (two blurred olive-green circles inside card)
+- [x] Send welcome email after successful registration (verifyOtp isNewUser=true) — already implemented
+- [x] Disable email channel card in channel picker when no email was entered in registration form

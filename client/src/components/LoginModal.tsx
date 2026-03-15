@@ -545,14 +545,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
           dir="rtl"
         >
-          {/* Decorative blobs */}
-          <div className="fixed top-0 left-0 -z-10 opacity-10 blur-3xl pointer-events-none">
-            <div className="w-96 h-96 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
-          </div>
-          <div className="fixed bottom-0 right-0 -z-10 opacity-10 blur-3xl pointer-events-none">
-            <div className="w-64 h-64 rounded-full" style={{ background: "oklch(0.55 0.12 85)" }} />
-          </div>
-
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -561,6 +553,11 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             className="relative w-full max-w-[480px] mx-4 rounded-2xl overflow-hidden shadow-2xl"
             style={{ background: "#f8f5ee" }}
           >
+            {/* Decorative blobs — inside card so they show above the overlay */}
+            <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none"
+              style={{ background: "oklch(0.50 0.14 85)" }} />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
+              style={{ background: "oklch(0.55 0.12 85)" }} />
             {/* Close button */}
             <button
               onClick={onClose}
@@ -715,49 +712,54 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 {/* Channel cards */}
                 <div className="space-y-3">
-                  {/* Email option */}
-                  <label
-                    className="relative block cursor-pointer"
-                    onClick={() => setOtpChannel("email")}
-                  >
-                    <div
-                      className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
-                      style={{
-                        border: `2px solid ${otpChannel === "email" ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
-                        background: otpChannel === "email" ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
-                      }}
-                    >
-                      {/* Radio */}
-                      <div
-                        className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
-                        style={{ borderColor: otpChannel === "email" ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                  {/* Email option — disabled when no email was provided */}
+                  {(() => {
+                    const hasEmail = !!pendingRegData.current?.email;
+                    return (
+                      <label
+                        className={`relative block ${hasEmail ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+                        onClick={() => hasEmail && setOtpChannel("email")}
+                        title={!hasEmail ? "הזן כתובת מייל בטופס ההרשמה כדי לאפשר אפשרות זו" : undefined}
                       >
-                        {otpChannel === "email" && (
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
-                        )}
-                      </div>
-                      {/* Text */}
-                      <div className="flex-1 text-right">
-                        <p className="font-bold text-base" style={{ color: "#1a2010" }}>קבלת סיסמה במייל</p>
-                        <p className="text-sm" style={{ color: "#6b7280" }}>
-                          הקוד יישלח לכתובת{" "}
-                          {pendingRegData.current?.email
-                            ? (() => {
-                                const [local, domain] = (pendingRegData.current.email).split("@");
-                                return `${local.slice(0,2)}***@${domain}`;
-                              })()
-                            : "המייל שהזנת"}
-                        </p>
-                      </div>
-                      {/* Icon */}
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
-                      >
-                        <Mail className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
-                      </div>
-                    </div>
-                  </label>
+                        <div
+                          className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
+                          style={{
+                            border: `2px solid ${!hasEmail ? "oklch(0.88 0.04 122)" : otpChannel === "email" ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
+                            background: !hasEmail ? "oklch(0.96 0.01 100)" : otpChannel === "email" ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
+                          }}
+                        >
+                          {/* Radio */}
+                          <div
+                            className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
+                            style={{ borderColor: hasEmail && otpChannel === "email" ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                          >
+                            {hasEmail && otpChannel === "email" && (
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
+                            )}
+                          </div>
+                          {/* Text */}
+                          <div className="flex-1 text-right">
+                            <p className="font-bold text-base" style={{ color: hasEmail ? "#1a2010" : "#9ca3af" }}>קבלת סיסמה במייל</p>
+                            <p className="text-sm" style={{ color: "#6b7280" }}>
+                              {hasEmail
+                                ? (() => {
+                                    const [local, domain] = (pendingRegData.current!.email!).split("@");
+                                    return <>הקוד יישלח לכתובת {`${local.slice(0,2)}***@${domain}`}</>;
+                                  })()
+                                : "יש להזין מייל בטופס ההרשמה כדי לאפשר אפשרות זו"}
+                            </p>
+                          </div>
+                          {/* Icon */}
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
+                          >
+                            <Mail className="w-5 h-5" style={{ color: hasEmail ? "oklch(0.50 0.14 85)" : "#9ca3af" }} />
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })()}
 
                   {/* SMS option */}
                   <label

@@ -1946,3 +1946,7 @@
 - [x] Add .brand-name CSS utility class to index.css (Avoda dark olive + Now citrus gold)
 - [x] Create BrandName shared component and export from ui/index.ts
 - [x] Replace all plain "AvodaNow" text instances across the app with BrandName component
+
+## Design Updates — cta-outline Variant
+- [x] Update cta-outline AppButton variant to match "נקה סינון" style: cream bg, subtle border, dark text, no heavy shadow
+- [x] Update avodanow-design SKILL.md to document the new cta-outline style

@@ -33,7 +33,7 @@ import {
   G_BRAND, G_AMBER, G_SUCCESS, G_WHATSAPP,
   S_BRAND_MD, S_BRAND_LG,
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_AMBER_HEX, C_CITRUS_HEX,
-  C_SUCCESS_HEX,
+  C_SUCCESS_HEX, C_BORDER,
 } from "@/lib/colors";
 
 // ─── CVA variants (Tailwind-only styles) ─────────────────────────────────────
@@ -61,8 +61,8 @@ const appButtonVariants = cva(
         brand:       "text-white rounded-xl overflow-hidden relative", // bg via inline style
         // כפתור ראשי כהה עם גרדיאנט זית כהה ("המשך כעובד" style)
         cta:         "text-white rounded-xl font-black hover:scale-[1.02] active:scale-[0.97]", // bg + shadow via inline style
-        // כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
-        "cta-outline": "bg-white rounded-xl font-black transition-colors duration-200", // text + border via inline style; transition-colors smooths hover color change
+        // כפתור ניגודי ל-cta: רקע קרם, טקסט זית כהה, מסגרת honey עדינה ("נקה סינון" style)
+        "cta-outline": "rounded-xl font-medium transition-colors duration-200", // bg + text + border via inline style
         // ── Text-only ────────────────────────────────────────────────────────────────────
         link:        "bg-transparent underline-offset-4 hover:underline text-primary rounded-none p-0 h-auto",
         // ── Pill filter (toggle-able category/radius chips) ─────────────────
@@ -105,21 +105,21 @@ function getInlineStyle(variant: string | null | undefined, hovered = false): Re
         border: "none",
       };
     case "cta-outline":
-      // Inverse of cta: white background, dark olive text, dark olive border
-      // On hover: fills with dark olive gradient (same as cta) + white text
+      // "נקה סינון" style: cream bg, warm honey border, dark olive text
+      // On hover: slightly darker cream bg, border darkens a touch
       if (hovered) {
         return {
-          background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
-          color: "#ffffff",
-          border: `2px solid ${C_BRAND_HEX}`,
-          boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.28)`,
+          background: "oklch(0.9700 0.0200 91.0)",  // warm linen — slightly darker on hover
+          color: C_BRAND_HEX,
+          border: `1px solid ${C_BORDER}`,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
         };
       }
       return {
-        background: "#ffffff",
-        color: C_BRAND_HEX,          // dark olive text
-        border: `1.5px solid ${C_BRAND_HEX}`,
-        boxShadow: `0 2px 8px oklch(0.38 0.07 125.0 / 0.10)`,
+        background: "var(--page-bg)",               // #fefcf4 warm cream
+        color: C_BRAND_HEX,                         // dark olive text
+        border: `1px solid ${C_BORDER}`,            // warm honey border
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",   // very subtle shadow
       };
     case "whatsapp":
       return {

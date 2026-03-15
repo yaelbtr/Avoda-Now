@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
+import { BrandName } from "@/components/ui";
 
 interface MobileDrawerProps {
   open: boolean;
@@ -311,7 +312,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
               </div>
 
                 <p className="text-center mt-1.5" style={{ fontSize: "0.6rem", color: COLOR_MUTED }}>
-                © <span lang="en">AvodaNow</span> 2026 · כל הזכויות שמורות
+                © <BrandName /> 2026 · כל הזכויות שמורות
               </p>
             </div>
 

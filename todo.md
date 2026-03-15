@@ -1941,3 +1941,8 @@
 - [x] Apply AppLogo variant="light" size="sm" to LoginModal welcome step header (replace text "AvodaNow")
 - [x] Add AppLogo variant="light" to 404 page
 - [x] Write Vitest spec for AppLogo variant color tokens
+
+## Design — BrandName Styled Component
+- [x] Add .brand-name CSS utility class to index.css (Avoda dark olive + Now citrus gold)
+- [x] Create BrandName shared component and export from ui/index.ts
+- [x] Replace all plain "AvodaNow" text instances across the app with BrandName component

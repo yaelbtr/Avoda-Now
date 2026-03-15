@@ -4,7 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
-import { AppButton } from "@/components/ui";
+import { AppButton, BrandName } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -319,7 +319,7 @@ export default function WorkerProfile() {
           <CheckCircle2 className="h-20 w-20 mx-auto mb-6" style={{ color: "oklch(0.55 0.15 145)" }} />
         </motion.div>
         <h1 className="text-2xl font-black mb-2" style={{ color: "oklch(0.25 0.05 91)" }}>
-          ברוך הבא ל-AvodaNow! 🎉
+          ברוך הבא ל-<BrandName />! 🎉
         </h1>
         <p className="text-muted-foreground mb-8">הפרופיל שלך מוכן. נתחיל לחפש עבודות מתאימות.</p>
         <AppButton variant="brand" size="xl" className="w-full" onClick={() => navigate("/")}>

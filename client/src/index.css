@@ -611,3 +611,26 @@
     0 -4px 32px oklch(0 0 0 / 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
+
+
+/* ── Brand Name Typography ─────────────────────────────────────────────────────
+   Usage: <span className="brand-name">AvodaNow</span>
+   Renders "Avoda" in dark olive and "Now" in citrus gold.
+   Works on both light and dark backgrounds via CSS variables.
+   ─────────────────────────────────────────────────────────────────────────── */
+.brand-name {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.brand-name .brand-avoda {
+  color: var(--brand-avoda-color, #3d4a28);
+}
+.brand-name .brand-now {
+  color: var(--citrus);
+}
+
+/* On dark backgrounds, "Avoda" should be near-white */
+.dark .brand-name .brand-avoda,
+[data-theme="dark"] .brand-name .brand-avoda {
+  color: var(--header-fg, #e8eae5);
+}

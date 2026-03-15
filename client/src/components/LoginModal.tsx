@@ -5,7 +5,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { AppButton, GoogleAuthButton, AppLogo } from "@/components/ui";
+import { AppButton, GoogleAuthButton, AppLogo, BrandName } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
@@ -506,7 +506,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 className="font-bold leading-tight tracking-tight mb-2"
                 style={{ fontSize: "clamp(22px, 6vw, 28px)", color: "#1a2010" }}
               >
-                ברוכים הבאים ל-AvodaNow
+                ברוכים הבאים ל-<BrandName />
               </h1>
               <p className="text-sm leading-relaxed" style={{ color: "#4a5a38" }}>
                 הדרך הפשוטה והמהירה ביותר למצוא את המשרה הבאה שלך ולנהל את הקריירה בביטחון.
@@ -1089,7 +1089,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             {step === "role" && (
               <div className="p-6 space-y-4">
                 <div className="text-center space-y-1 pt-1">
-                  <h2 className="text-xl font-bold">איך תרצה להשתמש ב-AvodaNow?</h2>
+                  <h2 className="text-xl font-bold">איך תרצה להשתמש ב-<BrandName />?</h2>
                   <p className="text-sm text-muted-foreground">ניתן לשנות בכל עת</p>
                 </div>
 

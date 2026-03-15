@@ -1,3 +1,5 @@
+import { BrandName } from "@/components/ui";
+
 export default function Accessibility() {
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
@@ -9,7 +11,7 @@ export default function Accessibility() {
         <section className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold mb-3">מחויבות לנגישות</h2>
           <p className="text-muted-foreground leading-relaxed">
-            AvodaNow מחויבת להנגיש את שירותיה לכלל המשתמשים, לרבות אנשים עם מוגבלויות. אנו פועלים בהתאם להנחיות
+            <BrandName /> מחוייבת להנגיש את שירותיה לכלל המשתמשים,לרבות אנשים עם מוגבלויות. אנו פועלים בהתאם להנחיות
             תקן ישראלי <strong>IS 5568</strong> (המבוסס על WCAG 2.1 ברמה AA) ובהתאם לדרישות
             <strong> חוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998</strong> ותקנות הנגישות לשירות.
           </p>
@@ -45,7 +47,7 @@ export default function Accessibility() {
             נתקלתם בבעיית נגישות? נשמח לשמוע ולתקן. ניתן לפנות לרכז הנגישות שלנו:
           </p>
           <div className="space-y-1 text-sm text-muted-foreground">
-            <p><strong>שם:</strong> צוות AvodaNow</p>
+            <p><strong>שם:</strong> צוות <BrandName /></p>
             <p>
               <strong>דוא"ל:</strong>{" "}
               <a href="mailto:info@avodanow.co.il" className="text-primary underline">

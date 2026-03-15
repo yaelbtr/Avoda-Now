@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useFAQSchema } from "@/hooks/useStructuredData";
+import { BrandName } from "@/components/ui";
 
 const TERMS_FAQS = [
   {
@@ -36,7 +37,7 @@ export default function Terms() {
         <section className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold mb-3">1. כללי</h2>
           <p className="text-muted-foreground leading-relaxed">
-            ברוכים הבאים ל-AvodaNow. השימוש בפלטפורמה מהווה הסכמה לתנאים אלו. הפלטפורמה מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה כלשהם.
+            ברוכים הבאים ל-<BrandName />. השימוש בפלטפורמה מהווה הסכמה לתנאים אלו. הפלטפורמה מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה כלשהם.
           </p>
         </section>
 
@@ -50,7 +51,7 @@ export default function Terms() {
         <section className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-lg font-semibold mb-3">3. אחריות</h2>
           <p className="text-muted-foreground leading-relaxed">
-            AvodaNow אינה אחראית לתנאי העסקה, להסכמים, לתשלומים, או לכל מחלוקת בין עובדים למעסיקים. כל עסקה היא בין הצדדים ישירות.
+            <BrandName /> אינה אחראית לתנאי העסקה, להסכמים, לתשלומים, או לכל מחלוקת בין עובדים למעסיקים. כל עסקה היא בין הצדדים ישירות.
           </p>
         </section>
 

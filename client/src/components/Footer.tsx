@@ -1,6 +1,7 @@
 import { Briefcase, Mail, Zap, Users } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { trpc } from "@/lib/trpc";
+import { BrandName } from "@/components/ui";
 
 const FG_PRIMARY  = "oklch(0.9904 0.0107 95.3 / 0.85)";
 const FG_MUTED    = "oklch(0.9904 0.0107 95.3 / 0.45)";
@@ -356,13 +357,13 @@ export default function Footer() {
           </div>
 
           <p className="text-[11px] whitespace-nowrap font-medium" style={{ color: FG_MUTED }}>
-            © {new Date().getFullYear()} <span lang="en">AvodaNow</span> · כל הזכויות שמורות
+            © {new Date().getFullYear()} <BrandName /> · כל הזכויות שמורות
           </p>
         </div>
 
         {/* Disclaimer */}
         <p className="text-[11px] text-center mt-3 leading-relaxed" style={{ color: FG_MUTED }}>
-          <span lang="en">AvodaNow</span> אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
+          <BrandName /> אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
         </p>
       </div>
     </footer>

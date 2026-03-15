@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { AppButton } from "@/components/ui";
+import { AppButton, BrandName } from "@/components/ui";
 import { User, MapPin, Briefcase, Phone, ArrowRight, Star, Zap, CheckCircle2, MessageSquare } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -469,7 +469,7 @@ export default function PublicWorkerProfile() {
             ליצירת קשר עם העובד
           </p>
           <p style={{ color: "#666", fontSize: 12, lineHeight: 1.5, margin: 0 }}>
-            העובד הגיש מועמדות דרך AvodaNow. ניתן לחזור אליו דרך מספר הטלפון שהשאיר בעת ההרשמה.
+            העובד הגיש מועמדות דרך <BrandName />. ניתן לחזור אליו דרך מספר הטלפון שהשאיר בעת ההרשמה.
             לצפייה במועמדויות שהתקבלו, כנס לניהול המשרות שלך.
           </p>
         </div>

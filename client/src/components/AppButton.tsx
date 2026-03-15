@@ -14,6 +14,7 @@
  *   whatsapp     — ירוק WhatsApp עם גרדיאנט
  *   brand        — גרדיאנט כחול ראשי (hero CTA)
  *   cta          — כפתור ראשי כהה ("המשך כעובד" style): גרדיאנט זית כהה, טקסט לבן, font-black, צל עמוק
+ *   cta-outline  — כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
  *   link         — טקסט בלבד כמו קישור
  *
  * Sizes:
@@ -60,6 +61,8 @@ const appButtonVariants = cva(
         brand:       "text-white rounded-xl overflow-hidden relative", // bg via inline style
         // כפתור ראשי כהה עם גרדיאנט זית כהה ("המשך כעובד" style)
         cta:         "text-white rounded-xl font-black", // bg + shadow via inline style
+        // כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
+        "cta-outline": "bg-white rounded-xl font-black", // text + border via inline style
         // ── Text-only ────────────────────────────────────────────────────────────────────
         link:        "bg-transparent underline-offset-4 hover:underline text-primary rounded-none p-0 h-auto",
         // ── Pill filter (toggle-able category/radius chips) ─────────────────
@@ -100,6 +103,16 @@ function getInlineStyle(variant: string | null | undefined): React.CSSProperties
         background: `linear-gradient(135deg, ${C_BRAND_HEX} 0%, ${C_BRAND_DARK_HEX} 100%)`,
         boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.28)`,
         border: "none",
+      };
+    case "cta-outline":
+      // Inverse of cta: white background, dark olive text, dark olive border
+      // Background = cta text color (white → inverted to dark olive bg's contrast)
+      // Text = cta background color (#3d4a28), Border = same
+      return {
+        background: "#ffffff",
+        color: C_BRAND_HEX,          // dark olive text
+        border: `2px solid ${C_BRAND_HEX}`,
+        boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.14)`,
       };
     case "whatsapp":
       return {

@@ -1838,3 +1838,7 @@
 
 ## Skill Update — Primary CTA Button Design (March 2026)
 - [x] Find "המשך כעובד" button exact CSS, add primary CTA variant to AppButton, document in avodanow-design skill
+
+## Feature — cta-outline Button Variant (March 2026)
+- [x] Add cta-outline variant to AppButton: white bg, dark olive text, dark olive border (inverse of cta)
+- [x] Document cta-outline in avodanow-design skill

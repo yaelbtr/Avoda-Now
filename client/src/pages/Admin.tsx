@@ -3,6 +3,7 @@ import { AdminCategoriesTab } from "./AdminCategories";
 import { AdminRegionsTab } from "./AdminRegions";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/AppButton";
+import { AppInput, AppSelect, AppTextarea } from "@/components/ui/AppFormField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -576,13 +577,12 @@ export default function Admin() {
             <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
               <h2 className="text-lg font-semibold">ניהול משתמשים ({usersQuery.data?.length ?? 0})</h2>
               <div className="flex items-center gap-2">
-                <input
-                  type="text"
+                <AppInput
                   placeholder="חיפוש שם / טלפון..."
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
-                  className="border border-border rounded-lg px-3 py-1.5 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-48"
                   dir="rtl"
+                  wrapperClassName="w-48"
                 />
                 <AppButton
                   size="sm"
@@ -737,40 +737,32 @@ export default function Admin() {
                   <DialogDescription>יצירת משתמש חדש במערכת ללא אימות OTP</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 py-2">
-                  <div>
-                    <label className="text-sm font-medium block mb-1">טלפון *</label>
-                    <input
-                      type="tel"
-                      placeholder="0501234567"
-                      value={addUserForm.phone}
-                      onChange={(e) => setAddUserForm(f => ({ ...f, phone: e.target.value }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      dir="ltr"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">שם (אופציונלי)</label>
-                    <input
-                      type="text"
-                      placeholder="שם מלא"
-                      value={addUserForm.name}
-                      onChange={(e) => setAddUserForm(f => ({ ...f, name: e.target.value }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">תפקיד</label>
-                    <select
-                      value={addUserForm.role}
-                      onChange={(e) => setAddUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    >
-                      <option value="user">משתמש</option>
-                      <option value="admin">מנהל</option>
-                      <option value="test">טסט</option>
-                    </select>
-                  </div>
+                  <AppInput
+                    label="טלפון"
+                    required
+                    type="tel"
+                    placeholder="0501234567"
+                    value={addUserForm.phone}
+                    onChange={(e) => setAddUserForm(f => ({ ...f, phone: e.target.value }))}
+                    dir="ltr"
+                  />
+                  <AppInput
+                    label="שם (אופציונלי)"
+                    type="text"
+                    placeholder="שם מלא"
+                    value={addUserForm.name}
+                    onChange={(e) => setAddUserForm(f => ({ ...f, name: e.target.value }))}
+                    dir="rtl"
+                  />
+                  <AppSelect
+                    label="תפקיד"
+                    value={addUserForm.role}
+                    onChange={(e) => setAddUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
+                  >
+                    <option value="user">משתמש</option>
+                    <option value="admin">מנהל</option>
+                    <option value="test">טסט</option>
+                  </AppSelect>
                 </div>
                 <DialogFooter className="gap-2">
                   <AppButton variant="outline" onClick={() => setAddUserModal(false)}>בטל</AppButton>
@@ -793,49 +785,37 @@ export default function Admin() {
                   <DialogDescription>{editUserModal.user?.phone}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 py-2">
-                  <div>
-                    <label className="text-sm font-medium block mb-1">שם</label>
-                    <input
-                      type="text"
-                      value={editUserForm.name}
-                      onChange={(e) => setEditUserForm(f => ({ ...f, name: e.target.value }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">טלפון</label>
-                    <input
-                      type="tel"
-                      value={editUserForm.phone}
-                      onChange={(e) => setEditUserForm(f => ({ ...f, phone: e.target.value }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      dir="ltr"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">תפקיד</label>
-                    <select
-                      value={editUserForm.role}
-                      onChange={(e) => setEditUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    >
-                  <option value="user">משתמש</option>
+                  <AppInput
+                    label="שם"
+                    type="text"
+                    value={editUserForm.name}
+                    onChange={(e) => setEditUserForm(f => ({ ...f, name: e.target.value }))}
+                    dir="rtl"
+                  />
+                  <AppInput
+                    label="טלפון"
+                    type="tel"
+                    value={editUserForm.phone}
+                    onChange={(e) => setEditUserForm(f => ({ ...f, phone: e.target.value }))}
+                    dir="ltr"
+                  />
+                  <AppSelect
+                    label="תפקיד"
+                    value={editUserForm.role}
+                    onChange={(e) => setEditUserForm(f => ({ ...f, role: e.target.value as "user" | "admin" | "test" }))}
+                  >
+                    <option value="user">משתמש</option>
                     <option value="admin">מנהל</option>
                     <option value="test">טסט</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">סטטוס</label>
-                    <select
-                      value={editUserForm.status}
-                      onChange={(e) => setEditUserForm(f => ({ ...f, status: e.target.value as "active" | "suspended" }))}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    >
-                      <option value="active">פעיל</option>
-                      <option value="suspended">חסום</option>
-                    </select>
-                  </div>
+                  </AppSelect>
+                  <AppSelect
+                    label="סטטוס"
+                    value={editUserForm.status}
+                    onChange={(e) => setEditUserForm(f => ({ ...f, status: e.target.value as "active" | "suspended" }))}
+                  >
+                    <option value="active">פעיל</option>
+                    <option value="suspended">חסום</option>
+                  </AppSelect>
                 </div>
                 <DialogFooter className="gap-2">
                   <AppButton variant="outline" onClick={() => setEditUserModal({ open: false, user: null })}>בטל</AppButton>
@@ -1145,14 +1125,13 @@ export default function Admin() {
                       <p className="text-xs text-muted-foreground mb-2">
                         הטקסט יוצג בדף התחזוקה. לדוגמה: &quot;נחזור בשעה 18:00&quot;. השאר ריק להודעת ברירת מחדל.
                       </p>
-                      <Textarea
+                      <AppTextarea
                         dir="rtl"
                         placeholder="לדוגמה: האתר בתחזוקה מתוכננת. נחזור בשעה 18:00."
                         value={displayMsg}
                         onChange={(e) => setMaintenanceMsg(e.target.value)}
                         maxLength={500}
                         rows={3}
-                        className="resize-none text-sm"
                       />
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-xs text-muted-foreground">{displayMsg.length}/500</span>

@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AppButton } from "@/components/AppButton";
 import { Textarea } from "@/components/ui/textarea";
+import { AppTextarea } from "@/components/ui/AppFormField";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -111,14 +112,13 @@ export function RateWorkerModal({ open, onClose, workerId, workerName, applicati
               <label className="text-sm font-medium text-foreground block mb-1.5">
                 הערה (אופציונלי)
               </label>
-              <Textarea
+              <AppTextarea
                 dir="rtl"
                 placeholder="שתף את חווייתך עם העובד..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 maxLength={500}
                 rows={3}
-                className="resize-none text-sm"
               />
               <p className="text-xs text-muted-foreground text-left mt-1">{comment.length}/500</p>
             </div>

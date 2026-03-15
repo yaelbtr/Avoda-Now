@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppInput } from "@/components/ui/AppFormField";
 import {
   Dialog,
   DialogContent,
@@ -301,38 +302,31 @@ export function AdminCategoriesTab() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="cat-name">שם *</Label>
-                <Input
-                  id="cat-name"
-                  value={form.name}
-                  onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="ניקיון"
-                  dir="rtl"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cat-icon">אייקון</Label>
-                <Input
-                  id="cat-icon"
-                  value={form.icon}
-                  onChange={(e) => setForm(f => ({ ...f, icon: e.target.value }))}
-                  placeholder="🧹"
-                  className="text-xl"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="cat-slug">Slug * (אותיות קטנות, מספרים, קו תחתון)</Label>
-              <Input
-                id="cat-slug"
-                value={form.slug}
-                onChange={(e) => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_") }))}
-                placeholder="cleaning"
-                dir="ltr"
-                className="font-mono"
+              <AppInput
+                id="cat-name"
+                label="שם"
+                required
+                value={form.name}
+                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="ניקיון"
+                dir="rtl"
+              />
+              <AppInput
+                id="cat-icon"
+                label="אייקון"
+                value={form.icon}
+                onChange={(e) => setForm(f => ({ ...f, icon: e.target.value }))}
+                placeholder="🧹"
               />
             </div>
+            <AppInput
+              id="cat-slug"
+              label="Slug * (אותיות קטנות, מספרים, קו תחתון)"
+              value={form.slug}
+              onChange={(e) => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_") }))}
+              placeholder="cleaning"
+              dir="ltr"
+            />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>קבוצה</Label>
@@ -350,27 +344,24 @@ export function AdminCategoriesTab() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cat-order">סדר תצוגה</Label>
-                <Input
-                  id="cat-order"
-                  type="number"
-                  value={form.sortOrder}
-                  onChange={(e) => setForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
-                  min={0}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="cat-image">קישור לתמונה (CDN URL, אופציונלי)</Label>
-              <Input
-                id="cat-image"
-                value={form.imageUrl}
-                onChange={(e) => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                placeholder="https://cdn.example.com/cleaning.jpg"
+              <AppInput
+                id="cat-order"
+                label="סדר תצוגה"
+                type="number"
+                value={form.sortOrder}
+                onChange={(e) => setForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
+                min={0}
                 dir="ltr"
               />
             </div>
+            <AppInput
+              id="cat-image"
+              label="קישור לתמונה (CDN URL, אופציונלי)"
+              value={form.imageUrl}
+              onChange={(e) => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+              placeholder="https://cdn.example.com/cleaning.jpg"
+              dir="ltr"
+            />
             <div className="flex items-center gap-3">
               <Switch
                 checked={form.isActive}

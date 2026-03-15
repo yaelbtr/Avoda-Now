@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppInput } from "@/components/ui/AppFormField";
 import {
   Dialog,
   DialogContent,
@@ -285,34 +286,31 @@ export function AdminRegionsTab() {
             <DialogTitle>עריכת אזור</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>שם האזור</Label>
-              <Input
-                value={editDialog.name}
-                onChange={(e) => setEditDialog((p) => ({ ...p, name: e.target.value }))}
-                placeholder="שם האזור בעברית"
-              />
-            </div>
+            <AppInput
+              label="שם האזור"
+              value={editDialog.name}
+              onChange={(e) => setEditDialog((p) => ({ ...p, name: e.target.value }))}
+              placeholder="שם האזור בעברית"
+              dir="rtl"
+            />
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>מינימום עובדים</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={editDialog.minWorkersRequired}
-                  onChange={(e) => setEditDialog((p) => ({ ...p, minWorkersRequired: parseInt(e.target.value) || 1 }))}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>רדיוס (ק"מ)</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={editDialog.activationRadiusKm}
-                  onChange={(e) => setEditDialog((p) => ({ ...p, activationRadiusKm: parseInt(e.target.value) || 1 }))}
-                />
-              </div>
+              <AppInput
+                label="מינימום עובדים"
+                type="number"
+                min={1}
+                value={editDialog.minWorkersRequired}
+                onChange={(e) => setEditDialog((p) => ({ ...p, minWorkersRequired: parseInt(e.target.value) || 1 }))}
+                dir="ltr"
+              />
+              <AppInput
+                label="רדיוס (ק’מ)"
+                type="number"
+                min={1}
+                max={100}
+                value={editDialog.activationRadiusKm}
+                onChange={(e) => setEditDialog((p) => ({ ...p, activationRadiusKm: parseInt(e.target.value) || 1 }))}
+                dir="ltr"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>סטטוס</Label>
@@ -330,14 +328,13 @@ export function AdminRegionsTab() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>תיאור (לעמוד הנחיתה)</Label>
-              <Input
-                value={editDialog.description}
-                onChange={(e) => setEditDialog((p) => ({ ...p, description: e.target.value }))}
-                placeholder="תיאור קצר של האזור..."
-              />
-            </div>
+            <AppInput
+              label="תיאור (לעמוד הנחיתה)"
+              value={editDialog.description}
+              onChange={(e) => setEditDialog((p) => ({ ...p, description: e.target.value }))}
+              placeholder="תיאור קצר של האזור..."
+              dir="rtl"
+            />
           </div>
           <DialogFooter className="flex-row-reverse gap-2">
             <AppButton

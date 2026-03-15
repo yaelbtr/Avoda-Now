@@ -1741,3 +1741,29 @@
 
 ## UI Bug Fixes — March 2026
 - [x] Fix duplicate "מספר טלפון" label in registration form (LoginModal had its own label + IsraeliPhoneInput rendered its own — removed the outer wrapper label)
+
+## Shared Form Components — Design System
+- [ ] Audit all form controls across the codebase (input, textarea, select, label patterns)
+- [ ] Create AppInput shared component (label, icon, error, RTL, phone-input visual style)
+- [ ] Create AppTextarea shared component (same design language)
+- [ ] Create AppSelect shared component (same design language)
+- [ ] Replace all raw inputs in LoginModal with AppInput
+- [ ] Replace all raw inputs in PostJob with AppInput/AppTextarea/AppSelect
+- [ ] Replace all raw inputs in WorkerProfile with AppInput
+- [ ] Replace all raw inputs in PhoneChangeModal with AppInput
+- [ ] Replace all raw inputs in Admin panel with AppInput/AppSelect
+- [ ] Replace all raw inputs in remaining pages (FindJobs, JobDetails, etc.)
+- [ ] Write Vitest tests for new shared components
+
+## Shared Form Components — March 2026
+- [x] Create AppInput, AppTextarea, AppSelect shared components in client/src/components/ui/AppFormField.tsx
+- [x] Apply AppInput to LoginModal (name, email fields)
+- [x] Apply AppInput/AppTextarea to PostJob (address, workingHours, jobDate, workStartTime, workEndTime)
+- [x] Apply AppInput/AppTextarea to WorkerProfile (name, email, bio)
+- [x] Apply AppInput/AppSelect to Admin (user search, add user, edit user modals)
+- [x] Apply AppInput to AdminCategories (name, icon, slug, sortOrder, imageUrl)
+- [x] Apply AppInput to AdminRegions (name, minWorkers, radius, description)
+- [x] Apply AppInput/AppTextarea to AdminRegionsPage (all region form fields)
+- [x] Apply AppTextarea to JobDetails (report dialog)
+- [x] Apply AppTextarea to RateWorkerModal (comment field)
+- [x] Apply AppTextarea to Admin (maintenance message)

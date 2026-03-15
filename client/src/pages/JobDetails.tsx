@@ -10,6 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { AppTextarea } from "@/components/ui/AppFormField";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
   Briefcase, DollarSign, AlertCircle, Flag, CheckCircle2,
@@ -692,12 +693,12 @@ export default function JobDetails() {
               אם המשרה נראית חשודה, מטעה, או בלתי הולמת — אנא דווח לנו.
             </DialogDescription>
           </DialogHeader>
-          <Textarea
+          <AppTextarea
             placeholder="תאר בקצרה את הבעיה (אופציונלי)"
             value={reportReason}
             onChange={e => setReportReason(e.target.value)}
+            dir="rtl"
             rows={3}
-            className="resize-none"
           />
           <div className="flex gap-2 justify-start" dir="rtl">
             <AppButton variant="ghost" onClick={() => setReportOpen(false)}>ביטול</AppButton>

@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
 import {
   Table,
   TableBody,
@@ -321,50 +322,79 @@ export default function AdminRegionsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-1">
             {dialog.mode === "create" && (
-              <div className="space-y-1.5">
-                <Label>Slug (URL)</Label>
-                <Input
+              <div>
+                <AppInput
+                  label="Slug (URL)"
                   value={dialog.form.slug}
                   onChange={(e) => setF({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
                   placeholder="tel-aviv"
                   dir="ltr"
                 />
-                <p className="text-xs text-muted-foreground">יוצר את הכתובת /work/{dialog.form.slug || "..."}</p>
+                <p className="text-xs text-muted-foreground mt-1">יוצר את הכתובת /work/{dialog.form.slug || "..."}</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5 col-span-2">
-                <Label>שם האזור</Label>
-                <Input value={dialog.form.name} onChange={(e) => setF({ name: e.target.value })} placeholder="תל אביב" />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label>עיר מרכז</Label>
-                <Input value={dialog.form.centerCity} onChange={(e) => setF({ centerCity: e.target.value })} placeholder="תל אביב" />
-              </div>
+              <AppInput
+                label="שם האזור"
+                value={dialog.form.name}
+                onChange={(e) => setF({ name: e.target.value })}
+                placeholder="תל אביב"
+                dir="rtl"
+                wrapperClassName="col-span-2"
+              />
+              <AppInput
+                label="עיר מרכז"
+                value={dialog.form.centerCity}
+                onChange={(e) => setF({ centerCity: e.target.value })}
+                placeholder="תל אביב"
+                dir="rtl"
+                wrapperClassName="col-span-2"
+              />
               {dialog.mode === "create" && (
                 <>
-                  <div className="space-y-1.5">
-                    <Label>קו רוחב (Lat)</Label>
-                    <Input value={dialog.form.centerLat} onChange={(e) => setF({ centerLat: e.target.value })} placeholder="32.0853" dir="ltr" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>קו אורך (Lng)</Label>
-                    <Input value={dialog.form.centerLng} onChange={(e) => setF({ centerLng: e.target.value })} placeholder="34.7818" dir="ltr" />
-                  </div>
+                  <AppInput
+                    label="קו רוחב (Lat)"
+                    value={dialog.form.centerLat}
+                    onChange={(e) => setF({ centerLat: e.target.value })}
+                    placeholder="32.0853"
+                    dir="ltr"
+                  />
+                  <AppInput
+                    label="קו אורך (Lng)"
+                    value={dialog.form.centerLng}
+                    onChange={(e) => setF({ centerLng: e.target.value })}
+                    placeholder="34.7818"
+                    dir="ltr"
+                  />
                 </>
               )}
-              <div className="space-y-1.5">
-                <Label>רדיוס (דקות נסיעה)</Label>
-                <Input type="number" min={1} max={120} value={dialog.form.radiusMinutes} onChange={(e) => setF({ radiusMinutes: parseInt(e.target.value) || 1 })} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>רדיוס (ק"מ)</Label>
-                <Input type="number" min={1} max={200} value={dialog.form.activationRadiusKm} onChange={(e) => setF({ activationRadiusKm: parseInt(e.target.value) || 1 })} />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label>מינימום עובדים לפתיחה</Label>
-                <Input type="number" min={1} value={dialog.form.minWorkersRequired} onChange={(e) => setF({ minWorkersRequired: parseInt(e.target.value) || 1 })} />
-              </div>
+              <AppInput
+                label="רדיוס (דקות נסיעה)"
+                type="number"
+                min={1}
+                max={120}
+                value={dialog.form.radiusMinutes}
+                onChange={(e) => setF({ radiusMinutes: parseInt(e.target.value) || 1 })}
+                dir="ltr"
+              />
+              <AppInput
+                label="רדיוס (ק”מ)"
+                type="number"
+                min={1}
+                max={200}
+                value={dialog.form.activationRadiusKm}
+                onChange={(e) => setF({ activationRadiusKm: parseInt(e.target.value) || 1 })}
+                dir="ltr"
+              />
+              <AppInput
+                label="מינימום עובדים לפתיחה"
+                type="number"
+                min={1}
+                value={dialog.form.minWorkersRequired}
+                onChange={(e) => setF({ minWorkersRequired: parseInt(e.target.value) || 1 })}
+                dir="ltr"
+                wrapperClassName="col-span-2"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>סטטוס</Label>
@@ -377,15 +407,14 @@ export default function AdminRegionsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>תיאור (לעמוד הנחיתה)</Label>
-              <Textarea
-                value={dialog.form.description}
-                onChange={(e) => setF({ description: e.target.value })}
-                placeholder="תיאור קצר של האזור..."
-                rows={2}
-              />
-            </div>
+            <AppTextarea
+              label="תיאור (לעמוד הנחיתה)"
+              value={dialog.form.description}
+              onChange={(e) => setF({ description: e.target.value })}
+              placeholder="תיאור קצר של האזור..."
+              dir="rtl"
+              rows={2}
+            />
           </div>
           <DialogFooter className="flex-row-reverse gap-2">
             <AppButton variant="brand" onClick={handleSave} disabled={createRegion.isPending || updateRegion.isPending}>

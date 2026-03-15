@@ -8,6 +8,7 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
 import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
@@ -409,37 +410,34 @@ export default function WorkerProfile() {
                   </p>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-semibold mb-1.5 block">
-                    שם מלא <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="ישראל ישראלי"
-                    className="text-right"
-                    autoFocus
-                  />
-                </div>
+                <AppInput
+                  label="שם מלא"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="ישראל ישראלי"
+                  dir="rtl"
+                  autoFocus
+                  icon={<User className="h-4 w-4" />}
+                />
 
-                <div>
-                  <Label className="text-sm font-semibold mb-1.5 block">
-                    כתובת מייל
-                    {user?.email && (
-                      <span className="mr-2 text-xs text-green-600 font-normal">נילא מחשבון Google</span>
-                    )}
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="example@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    readOnly={!!user?.email}
-                    className={`text-right ${user?.email ? "bg-muted text-muted-foreground" : ""}`}
-                    dir="ltr"
-                  />
-                </div>
+                <AppInput
+                  id="email"
+                  label={
+                    <>
+                      כתובת מייל
+                      {user?.email && (
+                        <span className="mr-2 text-xs text-green-600 font-normal">נילא מחשבון Google</span>
+                      )}
+                    </>
+                  }
+                  type="email"
+                  placeholder="example@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  readOnly={!!user?.email}
+                  dir="ltr"
+                />
 
                 <div>
                   {/* Phone field in wizard: OTP users have it read-only, OAuth users can enter */}
@@ -769,11 +767,11 @@ export default function WorkerProfile() {
                 <p className="text-xs text-muted-foreground -mt-2">
                   המערכת תשתמש בתיאור כדי להציע לך עבודות מתאימות · לא חובה
                 </p>
-                <Textarea
+                <AppTextarea
                   value={preferenceText}
                   onChange={(e) => setPreferenceText(e.target.value)}
                   placeholder='לדוגמה: "מחפש עבודה עם כלבים או שליחויות"'
-                  className="text-right resize-none"
+                  dir="rtl"
                   rows={4}
                   maxLength={1000}
                   autoFocus
@@ -1035,15 +1033,14 @@ export default function WorkerProfile() {
             <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
           </div>
           <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">שם</label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="השם שלך"
-                className="text-right"
-              />
-            </div>
+            <AppInput
+              label="שם"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="השם שלך"
+              dir="rtl"
+              icon={<User className="h-4 w-4" />}
+            />
             <div>
               {/* Phone field: read-only for OTP users, editable split input for OAuth users */}
               {user?.loginMethod === "phone_otp" ? (
@@ -1068,20 +1065,21 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
-                כתובת מייל
-                {user?.email && (
-                  <span className="text-xs text-green-600 font-normal">נלקח מחשבון Google</span>
-                )}
-              </label>
-              <Input
+              <AppInput
                 id="email"
+                label={
+                  <>
+                    כתובת מייל
+                    {user?.email && (
+                      <span className="mr-2 text-xs text-green-600 font-normal">נלקח מחשבון Google</span>
+                    )}
+                  </>
+                }
                 type="email"
                 placeholder="example@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 readOnly={!!user?.email}
-                className={`text-right ${user?.email ? "bg-muted text-muted-foreground" : ""}`}
                 dir="ltr"
               />
               {!user?.email && (
@@ -1089,12 +1087,12 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">אודות</label>
-              <Textarea
+              <AppTextarea
+                label="אודות"
                 value={workerBio}
                 onChange={(e) => setWorkerBio(e.target.value)}
                 placeholder="ספר קצת על עצמך — ניסיון, כישורים, זמינות..."
-                className="text-right resize-none"
+                dir="rtl"
                 rows={3}
                 maxLength={500}
               />
@@ -1173,11 +1171,11 @@ export default function WorkerProfile() {
                 <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                 תיאור חופשי
               </label>
-              <Textarea
+              <AppTextarea
                 value={preferenceText}
                 onChange={(e) => setPreferenceText(e.target.value)}
                 placeholder='לדוגמא: מחפש עבודה בשעות הבוקר, מוכן לנסוע עד 10 ק"מ, ניסיון בשמירה ובנייה...'
-                className="text-right resize-none"
+                dir="rtl"
                 rows={3}
                 maxLength={1000}
               />

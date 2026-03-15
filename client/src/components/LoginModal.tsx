@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { saveReturnPath, getGoogleLoginUrl } from "@/const";
 import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
+import { AppInput } from "@/components/ui/AppFormField";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCategories } from "@/hooks/useCategories";
 import CityAutocomplete from "@/components/CityAutocomplete";
@@ -600,58 +601,38 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     <>
                       {/* Name + Email side by side */}
                       <div className="grid grid-cols-2 gap-2">
-                        {/* Name */}
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium flex items-center gap-1 text-foreground/80">
-                            <User className="h-3 w-3 text-muted-foreground" />
-                            שם מלא <span className="text-red-500 mr-0.5">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={regName}
-                            onChange={e => {
-                              setRegName(e.target.value);
-                              setDuplicateError(null);
-                              if (nameError) setNameError(validateName(e.target.value));
-                            }}
-                            onBlur={e => setNameError(validateName(e.target.value))}
-                            placeholder="ישראל ישראלי"
-                            className={`w-full h-9 px-2.5 rounded-lg border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-right ${
-                              nameError ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
-                            }`}
-                            dir="rtl"
-                          />
-                          {nameError && (
-                            <p className="text-xs text-red-500 mt-0.5" role="alert">{nameError}</p>
-                          )}
-                        </div>
-                        {/* Email */}
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium flex items-center gap-1 text-foreground/80">
-                            <Mail className="h-3 w-3 text-muted-foreground" />
-                            מייל <span className="text-red-500 mr-0.5">*</span>
-                          </label>
-                          <input
-                            type="email"
-                            value={regEmail}
-                            onChange={e => {
-                              setRegEmail(e.target.value);
-                              setDuplicateError(null);
-                              setEmailError(validateEmail(e.target.value));
-                            }}
-                            onBlur={e => setEmailError(validateEmail(e.target.value))}
-                            placeholder="example@gmail.com"
-                            className={`w-full h-9 px-2.5 rounded-lg border bg-background text-sm outline-none focus:ring-2 transition-all ${
-                              emailError
-                                ? "border-red-400 focus:ring-red-200 focus:border-red-500"
-                                : "border-border focus:ring-primary/20 focus:border-primary"
-                            }`}
-                            dir="ltr"
-                          />
-                          {emailError && (
-                            <p className="text-xs text-red-500 mt-0.5">{emailError}</p>
-                          )}
-                        </div>
+                        <AppInput
+                          label="שם מלא"
+                          required
+                          type="text"
+                          value={regName}
+                          onChange={e => {
+                            setRegName(e.target.value);
+                            setDuplicateError(null);
+                            if (nameError) setNameError(validateName(e.target.value));
+                          }}
+                          onBlur={e => setNameError(validateName(e.target.value))}
+                          placeholder="ישראל ישראלי"
+                          dir="rtl"
+                          error={nameError || undefined}
+                          icon={<User className="h-4 w-4" />}
+                        />
+                        <AppInput
+                          label="מייל"
+                          required
+                          type="email"
+                          value={regEmail}
+                          onChange={e => {
+                            setRegEmail(e.target.value);
+                            setDuplicateError(null);
+                            setEmailError(validateEmail(e.target.value));
+                          }}
+                          onBlur={e => setEmailError(validateEmail(e.target.value))}
+                          placeholder="example@gmail.com"
+                          dir="ltr"
+                          error={emailError || undefined}
+                          icon={<Mail className="h-4 w-4" />}
+                        />
                       </div>
                     </>
                   )}
@@ -1086,57 +1067,43 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </div>
 
               {/* Full name */}
-              <div className="space-y-1.5">
-                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>שם מלא</label>
-                <div className="relative">
-                  <User className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#9ca3af" }} />
-                  <input
-                    type="text"
-                    value={regName}
-                    onChange={e => {
-                      setRegName(e.target.value);
-                      setDuplicateError(null);
-                      if (nameError) setNameError(validateName(e.target.value));
-                    }}
-                    onBlur={e => setNameError(validateName(e.target.value))}
-                    placeholder="ישראל ישראלי"
-                    dir="rtl"
-                    className={`w-full h-14 pr-11 pl-3 rounded-xl border text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                      nameError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-primary"
-                    }`}
-                    style={{ color: "#111827" }}
-                  />
-                </div>
-                {nameError && <p className="text-xs text-red-500" role="alert">{nameError}</p>}
-              </div>
+              <AppInput
+                label="שם מלא"
+                required
+                type="text"
+                value={regName}
+                onChange={e => {
+                  setRegName(e.target.value);
+                  setDuplicateError(null);
+                  if (nameError) setNameError(validateName(e.target.value));
+                }}
+                onBlur={e => setNameError(validateName(e.target.value))}
+                placeholder="ישראל ישראלי"
+                dir="rtl"
+                error={nameError || undefined}
+                icon={<User className="h-4 w-4" />}
+              />
 
               {/* Phone */}
               <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
 
               {/* Email */}
-              <div className="space-y-1.5">
-                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>אימייל</label>
-                <div className="relative">
-                  <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#9ca3af" }} />
-                  <input
-                    type="email"
-                    value={regEmail}
-                    onChange={e => {
-                      setRegEmail(e.target.value);
-                      setDuplicateError(null);
-                      setEmailError(validateEmail(e.target.value));
-                    }}
-                    onBlur={e => setEmailError(validateEmail(e.target.value))}
-                    placeholder="email@example.com"
-                    dir="ltr"
-                    className={`w-full h-14 pr-11 pl-3 rounded-xl border text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
-                      emailError ? "border-red-400 focus:border-red-500" : "border-gray-200 focus:border-primary"
-                    }`}
-                    style={{ color: "#111827" }}
-                  />
-                </div>
-                {emailError && <p className="text-xs text-red-500">{emailError}</p>}
-              </div>
+              <AppInput
+                label="אימייל"
+                required
+                type="email"
+                value={regEmail}
+                onChange={e => {
+                  setRegEmail(e.target.value);
+                  setDuplicateError(null);
+                  setEmailError(validateEmail(e.target.value));
+                }}
+                onBlur={e => setEmailError(validateEmail(e.target.value))}
+                placeholder="email@example.com"
+                dir="ltr"
+                error={emailError || undefined}
+                icon={<Mail className="h-4 w-4" />}
+              />
 
               {/* Terms checkbox */}
               <div className="flex items-start gap-3 py-1">

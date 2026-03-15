@@ -11,6 +11,7 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -504,11 +505,15 @@ export default function PostJob() {
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
           <h2 className="font-semibold text-foreground text-right">פרטי המשרה</h2>
 
-          <div>
-            <Label htmlFor="title">כותרת המשרה *</Label>
-            <Input id="title" placeholder="לדוגמה: שליח/ה דחוף/ת" {...register("title")} className="mt-1" />
-            {errors.title && <p className="text-destructive text-xs mt-1">{errors.title.message}</p>}
-          </div>
+          <AppInput
+            id="title"
+            label="כותרת המשרה"
+            required
+            placeholder="לדוגמה: שליח/ה דחופ/ת"
+            dir="rtl"
+            {...register("title")}
+            error={errors.title?.message}
+          />
 
           <div>
             <Label htmlFor="category">קטגוריה *</Label>
@@ -527,17 +532,16 @@ export default function PostJob() {
             {errors.category && <p className="text-destructive text-xs mt-1">{errors.category.message}</p>}
           </div>
 
-          <div>
-            <Label htmlFor="description">תיאור המשרה *</Label>
-            <Textarea
-              id="description"
-              placeholder="תאר את המשרה, דרישות, שעות עבודה וכל מידע רלוונטי..."
-              rows={4}
-              {...register("description")}
-              className="mt-1 resize-none"
-            />
-            {errors.description && <p className="text-destructive text-xs mt-1">{errors.description.message}</p>}
-          </div>
+          <AppTextarea
+            id="description"
+            label="תיאור המשרה"
+            required
+            placeholder="תאר את המשרה, דרישות, שעות עבודה וכל מידע רלוונט…"
+            rows={4}
+            dir="rtl"
+            {...register("description")}
+            error={errors.description?.message}
+          />
         </div>
 
         {/* Location */}
@@ -630,16 +634,15 @@ export default function PostJob() {
             </p>
           )}
 
-          <div>
-            <Label htmlFor="address">כתובת *</Label>
-            <Input
-              id="address"
-              placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
-              {...register("address")}
-              className="mt-1"
-            />
-            {errors.address && <p className="text-destructive text-xs mt-1">{errors.address.message}</p>}
-          </div>
+          <AppInput
+            id="address"
+            label="כתובת"
+            required
+            placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
+            dir="rtl"
+            {...register("address")}
+            error={errors.address?.message}
+          />
         </div>
 
         {/* Salary & timing */}
@@ -660,52 +663,44 @@ export default function PostJob() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="salary">
-                {salaryType === "volunteer" ? "התנדבות" : "סכום (₪)"}
-              </Label>
-              <Input
-                id="salary"
-                type="number"
-                placeholder={salaryType === "volunteer" ? "—" : "50"}
-                disabled={salaryType === "volunteer"}
-                {...register("salary")}
-                className="mt-1"
-              />
-            </div>
+            <AppInput
+              id="salary"
+              label={salaryType === "volunteer" ? "התנדבות" : "סכום (₪)"}
+              type="number"
+              placeholder={salaryType === "volunteer" ? "—" : "50"}
+              disabled={salaryType === "volunteer"}
+              dir="ltr"
+              {...register("salary")}
+            />
           </div>
 
           {/* Hourly rate + estimated hours — key info for workers */}
           {salaryType !== "volunteer" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="hourlyRate">
-                  מחיר לשעה (₪)
-                </Label>
-                <Input
+                <AppInput
                   id="hourlyRate"
+                  label="מחיר לשעה (₪)"
                   type="number"
                   min="0"
                   step="5"
                   placeholder="70"
+                  dir="ltr"
                   {...register("hourlyRate")}
-                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪ לשעה</p>
               </div>
               <div>
-                <Label htmlFor="estimatedHours">
-                  שעות עבודה משוערות
-                </Label>
-                <Input
+                <AppInput
                   id="estimatedHours"
+                  label="שעות עבודה משוערות"
                   type="number"
                   min="0.5"
                   max="24"
                   step="0.5"
                   placeholder="4"
+                  dir="ltr"
                   {...register("estimatedHours")}
-                  className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 4 שעות</p>
               </div>
@@ -726,28 +721,24 @@ export default function PostJob() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="workersNeeded">עובדים דרושים</Label>
-              <Input
-                id="workersNeeded"
-                type="number"
-                min="1"
-                {...register("workersNeeded")}
-                className="mt-1"
-              />
-            </div>
+            <AppInput
+              id="workersNeeded"
+              label="עובדים דרושים"
+              type="number"
+              min="1"
+              dir="ltr"
+              {...register("workersNeeded")}
+            />
           </div>
 
           {/* Exact start date/time for urgent jobs */}
           <div>
-            <Label htmlFor="startDateTime">
-              🔥 תאריך ושעת התחלה מדויקים (אופציונלי)
-            </Label>
-            <Input
+            <AppInput
               id="startDateTime"
+              label="🔥 תאריך ושעת התחלה מדויקים (אופציונלי)"
               type="datetime-local"
+              dir="ltr"
               {...register("startDateTime")}
-              className="mt-1"
             />
             <p className="text-xs text-muted-foreground mt-1">
               אם תמלא שדה זה, המשרה תסומן כג׳ "עבודה להיום" כאשר ההתחלה בתוך 24 שעות
@@ -809,37 +800,30 @@ export default function PostJob() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="workingHours">שעות עבודה (טקסט חופשי)</Label>
-              <Input
-                id="workingHours"
-                placeholder="08:00-16:00"
-                {...register("workingHours")}
-                className="mt-1"
-              />
-            </div>
+            <AppInput
+              id="workingHours"
+              label="שעות עבודה (טקסט חופשי)"
+              placeholder="08:00-16:00"
+              dir="ltr"
+              {...register("workingHours")}
+            />
           </div>
 
           {/* Date + exact work hours */}
           <div className="space-y-3">
             {/* Required date */}
-            <div>
-              <Label htmlFor="jobDate">
-                תאריך העבודה <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="jobDate"
-                type="date"
-                value={jobDate}
-                onChange={e => setJobDate(e.target.value)}
-                className={`mt-1 ${!jobDate && jobDateTouched ? "border-destructive ring-destructive/30" : ""}`}
-                onBlur={() => setJobDateTouched(true)}
-                min={new Date().toISOString().split("T")[0]}
-              />
-              {!jobDate && jobDateTouched && (
-                <p className="text-destructive text-xs mt-1">תאריך העבודה הוא שדה חובה</p>
-              )}
-            </div>
+            <AppInput
+              id="jobDate"
+              label="תאריך העבודה"
+              required
+              type="date"
+              value={jobDate}
+              onChange={e => setJobDate(e.target.value)}
+              onBlur={() => setJobDateTouched(true)}
+              min={new Date().toISOString().split("T")[0]}
+              dir="ltr"
+              error={!jobDate && jobDateTouched ? "תאריך העבודה הוא שדה חובה" : undefined}
+            />
 
             {/* Optional time range */}
             <div>
@@ -879,26 +863,22 @@ export default function PostJob() {
               </div>
               {/* Manual time inputs */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="workStartTime" className="text-xs text-muted-foreground">שעת התחלה</Label>
-                  <Input
-                    id="workStartTime"
-                    type="time"
-                    value={workStartTime}
-                    onChange={e => setWorkStartTime(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="workEndTime" className="text-xs text-muted-foreground">שעת סיום</Label>
-                  <Input
-                    id="workEndTime"
-                    type="time"
-                    value={workEndTime}
-                    onChange={e => setWorkEndTime(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
+                <AppInput
+                  id="workStartTime"
+                  label="שעת התחלה"
+                  type="time"
+                  value={workStartTime}
+                  onChange={e => setWorkStartTime(e.target.value)}
+                  dir="ltr"
+                />
+                <AppInput
+                  id="workEndTime"
+                  label="שעת סיום"
+                  type="time"
+                  value={workEndTime}
+                  onChange={e => setWorkEndTime(e.target.value)}
+                  dir="ltr"
+                />
               </div>
             </div>
           </div>
@@ -953,11 +933,15 @@ export default function PostJob() {
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
           <h2 className="font-semibold text-foreground text-right">פרטי יצירת קשר</h2>
 
-          <div>
-            <Label htmlFor="contactName">שם איש קשר *</Label>
-            <Input id="contactName" placeholder="ישראל ישראלי" {...register("contactName")} className="mt-1" />
-            {errors.contactName && <p className="text-destructive text-xs mt-1">{errors.contactName.message}</p>}
-          </div>
+          <AppInput
+            id="contactName"
+            label="שם איש קשר"
+            required
+            placeholder="ישראל ישראלי"
+            dir="rtl"
+            {...register("contactName")}
+            error={errors.contactName?.message}
+          />
 
           <div>
             <Label htmlFor="contactPhone">טלפון ליצירת קשר</Label>
@@ -971,10 +955,13 @@ export default function PostJob() {
             <p className="text-xs text-muted-foreground mt-1">הטלפון נלקח אוטומטית מחשבוןך</p>
           </div>
 
-          <div>
-            <Label htmlFor="businessName">שם עסק (אופציונלי)</Label>
-            <Input id="businessName" placeholder="שם החברה / העסק" {...register("businessName")} className="mt-1" />
-          </div>
+          <AppInput
+            id="businessName"
+            label="שם עסק"
+            placeholder="שם החברה / העסק"
+            dir="rtl"
+            {...register("businessName")}
+          />
 
           {/* Show phone toggle */}
           <div
@@ -1009,15 +996,15 @@ export default function PostJob() {
           </h2>
           <p className="text-sm text-muted-foreground mb-3 text-right">
             פתור: <strong className="text-foreground text-base">{captcha.a} + {captcha.b} = ?</strong>
-          </p>
-          <Input
+          </p>          <AppInput
             type="number"
             placeholder="הכנס את התשובה"
             value={captchaInput}
             onChange={(e) => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
-            className={`max-w-32 ${captchaError ? "border-destructive" : ""}`}
+            wrapperClassName="max-w-32"
+            error={captchaError ? "תשובה שגויאה, נסה שוב" : undefined}
+            dir="ltr"
           />
-          {captchaError && <p className="text-destructive text-xs mt-1 text-right">תשובה שגויה, נסה שוב</p>}
         </div>
 
         {/* Region blocked banner */}

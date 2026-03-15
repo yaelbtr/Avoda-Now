@@ -389,6 +389,14 @@ export default function MyJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
+  // ── Auto-open LoginModal when not authenticated (MUST be before any early return) ──
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      saveReturnPath();
+      setLoginOpen(true);
+    }
+  }, [loading, isAuthenticated]);
+
   const updateStatus = trpc.jobs.updateStatus.useMutation({
     onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); toast.success("סטטוס עודכן"); },
     onError: (e) => toast.error(e.message),
@@ -408,7 +416,7 @@ export default function MyJobs() {
     });
   };
 
-  // ── Auth loading ──────────────────────────────────────────────────────────
+  // ── Auth loading ─────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: C_PAGE_BG_HEX }}>
@@ -417,14 +425,7 @@ export default function MyJobs() {
     );
   }
 
-  // ── Not authenticated: open LoginModal automatically ────────────────────────
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      saveReturnPath();
-      setLoginOpen(true);
-    }
-  }, [loading, isAuthenticated]);
-
+  // ── Not authenticated: render empty page + LoginModal (auto-opened by useEffect above) ──
   if (!isAuthenticated) {
     return (
       <>

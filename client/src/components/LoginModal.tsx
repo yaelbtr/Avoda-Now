@@ -399,7 +399,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-end justify-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center"
           style={{ background: "oklch(0 0 0 / 0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
           dir="rtl"
@@ -416,6 +416,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               borderRadius: "20px 20px 0 0",
               maxHeight: "92dvh",
               minHeight: "min(92dvh, 700px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
             {/* Header */}
@@ -493,7 +494,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[60] flex items-center justify-center"
           style={{ background: "oklch(0 0 0 / 0.65)", backdropFilter: "blur(4px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >

@@ -1851,3 +1851,8 @@
 
 ## Feature — Ripple Click Effect on CTA Buttons (March 2026)
 - [x] Add ripple effect to cta and cta-outline variants in AppButton (pure React/CSS, no new deps)
+
+## UI Fix — CTA Button Hover & Border (March 2026)
+- [x] Add scale(1.02) hover effect to cta primary button (currently missing)
+- [x] Thin cta-outline border from 2px to 1.5px
+- [x] Update avodanow-design skill with corrected specs

@@ -60,7 +60,7 @@ const appButtonVariants = cva(
         whatsapp:    "text-white rounded-xl",   // bg via inline style
         brand:       "text-white rounded-xl overflow-hidden relative", // bg via inline style
         // כפתור ראשי כהה עם גרדיאנט זית כהה ("המשך כעובד" style)
-        cta:         "text-white rounded-xl font-black", // bg + shadow via inline style
+        cta:         "text-white rounded-xl font-black hover:scale-[1.02] active:scale-[0.97]", // bg + shadow via inline style
         // כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
         "cta-outline": "bg-white rounded-xl font-black", // text + border via inline style
         // ── Text-only ────────────────────────────────────────────────────────────────────
@@ -118,8 +118,8 @@ function getInlineStyle(variant: string | null | undefined, hovered = false): Re
       return {
         background: "#ffffff",
         color: C_BRAND_HEX,          // dark olive text
-        border: `2px solid ${C_BRAND_HEX}`,
-        boxShadow: `0 4px 14px oklch(0.38 0.07 125.0 / 0.14)`,
+        border: `1.5px solid ${C_BRAND_HEX}`,
+        boxShadow: `0 2px 8px oklch(0.38 0.07 125.0 / 0.10)`,
       };
     case "whatsapp":
       return {

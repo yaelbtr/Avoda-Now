@@ -1800,3 +1800,6 @@
 - [x] Add step="channel" to LoginModal: after registration, show channel selection (Email / SMS) before sending OTP
 - [x] Wire channel choice into sendOtp mutation (email vs phone)
 - [x] Match reference design: selection cards with radio, brand CTA, back link, security badge footer
+
+## OTP Channel Display — March 2026
+- [x] Show selected channel (email/SMS) and masked destination on OTP verification screen

@@ -847,17 +847,68 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             {step === "otp" && (
               <div className="p-6 space-y-5">
                 <div className="text-center space-y-1 pt-2">
+                  {/* Icon — changes based on channel */}
                   <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3"
-                    style={{ background: isTestBypass ? "oklch(0.65 0.15 55 / 0.15)" : "oklch(0.50 0.09 124.9 / 0.12)" }}>
-                    <Phone className="h-6 w-6" style={{ color: isTestBypass ? "oklch(0.65 0.15 55)" : "oklch(0.50 0.09 124.9)" }} />
-                  </div>
-                  <h2 className="text-xl font-bold">{isTestBypass ? "אימות משתמש טסט" : "אימות קוד SMS"}</h2>
-                  <p className="text-sm text-muted-foreground">
+                    style={{ background: isTestBypass
+                      ? "oklch(0.65 0.15 55 / 0.15)"
+                      : otpChannel === "email"
+                        ? "oklch(0.50 0.14 85 / 0.12)"
+                        : "oklch(0.50 0.09 124.9 / 0.12)" }}>
                     {isTestBypass
-                      ? <>הכנס את <span className="font-semibold text-foreground">6 הספרות הראשונות</span> של מספר הטלפון <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span></>
-                      : <>הכנס את הקוד שנשלח ל-<span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span></>
+                      ? <Phone className="h-6 w-6" style={{ color: "oklch(0.65 0.15 55)" }} />
+                      : otpChannel === "email"
+                        ? <Mail className="h-6 w-6" style={{ color: "oklch(0.50 0.14 85)" }} />
+                        : <Phone className="h-6 w-6" style={{ color: "oklch(0.50 0.09 124.9)" }} />
                     }
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="text-xl font-bold">
+                    {isTestBypass
+                      ? "אימות משתמש טסט"
+                      : otpChannel === "email"
+                        ? "אימות קוד מייל"
+                        : "אימות קוד SMS"}
+                  </h2>
+
+                  {/* Subtitle — shows masked destination */}
+                  <p className="text-sm text-muted-foreground">
+                    {isTestBypass ? (
+                      <>הכנס את <span className="font-semibold text-foreground">6 הספרות הראשונות</span> של מספר הטלפון{" "}
+                        <span dir="ltr" className="font-semibold text-foreground">{displayPhone}</span>
+                      </>
+                    ) : otpChannel === "email" ? (
+                      <>קוד אימות נשלח למייל{" "}
+                        <span className="font-semibold text-foreground">
+                          {pendingRegData.current?.email
+                            ? (() => {
+                                const [local, domain] = pendingRegData.current.email.split("@");
+                                return `${local.slice(0, 2)}***@${domain}`;
+                              })()
+                            : "המייל שלך"}
+                        </span>
+                      </>
+                    ) : (
+                      <>קוד אימות נשלח למספר{" "}
+                        <span dir="ltr" className="font-semibold text-foreground mx-1">{displayPhone}</span>
+                      </>
+                    )}
                   </p>
+
+                  {/* Channel badge */}
+                  {!isTestBypass && (
+                    <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        background: otpChannel === "email" ? "oklch(0.50 0.14 85 / 0.10)" : "oklch(0.50 0.09 124.9 / 0.10)",
+                        color: otpChannel === "email" ? "oklch(0.40 0.14 85)" : "oklch(0.40 0.09 124.9)",
+                      }}
+                    >
+                      {otpChannel === "email"
+                        ? <><Mail className="w-3 h-3" /> נשלח למייל</>
+                        : <><Phone className="w-3 h-3" /> נשלח ב-SMS</>
+                      }
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

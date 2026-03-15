@@ -1875,3 +1875,11 @@
 - [x] Glass JobCard: add hover:backdrop-blur + hover:bg-white/85 transition to job cards
 - [x] Dark mode glass: add .dark .glass-card and .dark .glass-modal to index.css
 - [x] Update avodanow-design skill with Navbar glass and dark mode glass specs
+
+## UI — Navbar & Button Polish (March 2026)
+- [ ] Add transition-colors duration-200 to cta-outline CVA for smooth hover color change
+- [ ] Change Navbar glass scroll threshold from > 10 to > 60
+- [ ] Add dark/light mode toggle button (moon/sun) to Navbar
+
+## Design System — Login Modal Background Fix
+- [x] Apply page background gradient to the welcome step content area (below hero image) in LoginModal

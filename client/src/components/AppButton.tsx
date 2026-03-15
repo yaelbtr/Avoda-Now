@@ -62,7 +62,7 @@ const appButtonVariants = cva(
         // כפתור ראשי כהה עם גרדיאנט זית כהה ("המשך כעובד" style)
         cta:         "text-white rounded-xl font-black hover:scale-[1.02] active:scale-[0.97]", // bg + shadow via inline style
         // כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
-        "cta-outline": "bg-white rounded-xl font-black", // text + border via inline style
+        "cta-outline": "bg-white rounded-xl font-black transition-colors duration-200", // text + border via inline style; transition-colors smooths hover color change
         // ── Text-only ────────────────────────────────────────────────────────────────────
         link:        "bg-transparent underline-offset-4 hover:underline text-primary rounded-none p-0 h-auto",
         // ── Pill filter (toggle-able category/radius chips) ─────────────────

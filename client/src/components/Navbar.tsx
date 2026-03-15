@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
@@ -17,6 +18,7 @@ import {
 import {
   Briefcase, User, LogOut, PlusCircle, Menu, X, Shield,
   HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown, Bookmark, Gift,
+  Moon, Sun,
 } from "lucide-react";
 
 import {
@@ -31,6 +33,7 @@ const ACTIVE_BG = "oklch(0.42 0.07 124.9)";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme, switchable } = useTheme();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,7 +43,7 @@ export default function Navbar() {
 
   // Glass effect on scroll
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -422,6 +425,24 @@ export default function Navbar() {
 
             {/* Auth actions */}
             <div className="flex items-center gap-2">
+              {/* Dark/Light mode toggle */}
+              {switchable && toggleTheme && (
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={toggleTheme}
+                  className="w-9 h-9 flex items-center justify-center rounded-xl transition-all"
+                  style={{
+                    background: "oklch(0.42 0.07 124.9)",
+                    border: "1px solid oklch(0.50 0.07 124.9)",
+                    color: "var(--citrus)",
+                  }}
+                  aria-label={theme === "dark" ? "עבור למצב בהיר" : "עבור למצב כהה"}
+                  title={theme === "dark" ? "עבור למצב בהיר" : "עבור למצב כהה"}
+                >
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </motion.button>
+              )}
               {isAuthenticated ? (
                 <div className="hidden md:block">
                 <DropdownMenu>

@@ -508,6 +508,9 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               />
             </div>
 
+            {/* Content area below hero — page gradient background */}
+            <div style={{ background: "var(--page-bg-gradient)" }}>
+
             {/* Welcome text */}
             <div className="px-5 pt-4 pb-2 text-center flex-shrink-0">
               <h1
@@ -554,6 +557,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 {" "}שלנו.
               </p>
             </div>
+
+            </div> {/* end content gradient wrapper */}
           </motion.div>
         </motion.div>
       )}

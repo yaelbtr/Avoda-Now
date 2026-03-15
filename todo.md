@@ -1912,3 +1912,6 @@
 
 ## Design — Login Phone Step Redesign
 - [x] Convert login phone step from scrollable centered modal to compact non-scrollable bottom sheet with page gradient background
+
+## Design — Welcome Step Hero Image Removal
+- [x] Remove hero image from welcome step in LoginModal

@@ -499,18 +499,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               <div className="w-8" />
             </div>
 
-            {/* Hero Image */}
-            <div className="flex-shrink-0 w-full">
-              <img
-                src={HERO_IMG}
-                alt="AvodaNow"
-                className="w-full object-cover"
-                style={{ height: "clamp(160px, 35vh, 240px)" }}
-              />
-            </div>
-
-            {/* Content area below hero — page gradient background */}
-            <div style={{ background: "var(--page-bg-gradient)" }}>
+            {/* Content area */}
+            <div>
 
             {/* Welcome text */}
             <div className="px-5 pt-4 pb-2 text-center flex-shrink-0">

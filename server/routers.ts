@@ -210,10 +210,12 @@ const authRouter = router({
         if (input.email) {
           const emailUser = await getUserByEmail(input.email);
           if (emailUser) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
-            });
+            // Provide a context-aware message based on how the existing account was created
+            const isGoogleAccount = emailUser.loginMethod === "google";
+            const message = isGoogleAccount
+              ? "המייל כבר קשור לחשבון קיים שנפתח באמצעות Google. אנא התחבר עם Google במקום."
+              : "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.";
+            throw new TRPCError({ code: "CONFLICT", message });
           }
         }
         if (!input.termsAccepted) {

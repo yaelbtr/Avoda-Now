@@ -1803,3 +1803,6 @@
 
 ## OTP Channel Display — March 2026
 - [x] Show selected channel (email/SMS) and masked destination on OTP verification screen
+
+## Bug Fix — March 2026
+- [x] Fix: When email is already registered via Google, show a friendly message directing user to log in with Google instead of a generic error

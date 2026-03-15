@@ -1906,3 +1906,6 @@
 
 ## Bug Fix — OTP Error for Google-authenticated User
 - [x] Fix "מספר זה אינו רשום במערכת" error triggered for Google-logged-in user with no phone number
+
+## Auth — Google Login Only (No Google Registration)
+- [x] Remove Google registration button from register step in LoginModal (Google = login only)

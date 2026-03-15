@@ -1449,26 +1449,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   : "הרשמה"}
               </AppButton>
 
-              {/* Divider */}
-              <div className="relative py-0.5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-3 text-xs" style={{ background: "var(--page-bg)", color: "#9ca3af" }}>או המשך עם</span>
-                </div>
-              </div>
 
-              {/* Google register */}
-              <GoogleAuthButton
-                label="הרשמה עם Google"
-                disabled={!termsAccepted}
-                onClick={() => {
-                  if (!termsAccepted) { toast.error("יש לאשר את תנאי השימוש לפני הרשמה"); return; }
-                  saveReturnPath();
-                  window.location.href = getGoogleLoginUrl();
-                }}
-              />
 
               {/* Login link */}
               <p className="text-center text-sm pt-2" style={{ color: "#6b7280" }}>

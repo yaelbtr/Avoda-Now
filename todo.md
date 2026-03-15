@@ -1909,3 +1909,6 @@
 
 ## Auth — Google Login Only (No Google Registration)
 - [x] Remove Google registration button from register step in LoginModal (Google = login only)
+
+## Design — Login Phone Step Redesign
+- [x] Convert login phone step from scrollable centered modal to compact non-scrollable bottom sheet with page gradient background

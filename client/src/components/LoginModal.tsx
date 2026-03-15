@@ -592,7 +592,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         </motion.div>
       )}
 
-      {/* ── LOGIN PHONE STEP: full-page card layout ── */}
+      {/* ── LOGIN PHONE STEP: compact bottom sheet (no scroll) ── */}
       {open && step === "phone" && activeTab === "login" && (
         <motion.div
           key="login-phone-overlay"
@@ -617,21 +617,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             onDragEnd={(_e, info) => {
               if (info.offset.y > 80 || info.velocity.y > 500) onClose();
             }}
-            className="glass-modal relative w-full max-w-lg flex flex-col overflow-hidden"
+            className="w-full max-w-lg flex flex-col"
             style={{
               borderRadius: "20px 20px 0 0",
-              maxHeight: "92dvh",
-              overflowY: "auto",
+              background: "var(--page-bg-gradient)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
               touchAction: "none",
             }}
           >
-            {/* Decorative blobs */}
-            <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "oklch(0.50 0.14 85)", animation: "blob-pulse 6s ease-in-out infinite" }} />
-            <div className="absolute -bottom-12 -right-12 w-48 h-48 rounded-full opacity-15 blur-3xl pointer-events-none"
-              style={{ background: "oklch(0.55 0.12 85)", animation: "blob-pulse 8s ease-in-out infinite 2s" }} />
-
             {/* Drag handle */}
             <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
               <motion.div
@@ -644,55 +637,65 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
-              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
+              <button
+                onClick={() => setStep("welcome")}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ color: "#666" }}
+                aria-label="חזור"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>התחברות</h2>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ color: "#666" }}
+                aria-label="סגור"
+              >
                 <X className="h-4 w-4" />
               </button>
-              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>AvodaNow</h2>
-              <div className="w-8" />
             </div>
 
-            <div className="w-full space-y-3 px-5 py-3" dir="rtl" style={{ background: "var(--page-bg-gradient)" }}>
-              {/* Title */}
-              <div className="text-center space-y-0.5">
-                <h1 className="text-2xl font-bold" style={{ color: "#1a2010" }}>התחברות</h1>
-                <p className="text-sm" style={{ color: "#6b7280" }}>הכנס את מספר הטלפון שלך לקבלת קוד אימות</p>
-              </div>
+            {/* Content */}
+            <div className="w-full space-y-4 px-5 pt-3 pb-5" dir="rtl">
+              {/* Subtitle */}
+              <p className="text-sm text-center" style={{ color: "#6b7280" }}>
+                הכנס את מספר הטלפון שלך לקבלת קוד אימות
+              </p>
 
               {/* Phone field */}
-              <div className="space-y-2">
-                <IsraeliPhoneInput
-                  value={phoneVal}
-                  onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }}
-                  label="מספר טלפון"
-                />
+              <IsraeliPhoneInput
+                value={phoneVal}
+                onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }}
+                label="מספר טלפון"
+              />
 
-                {/* Not-found error */}
-                {notFoundError && (
-                  <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
-                    style={{ borderColor: "oklch(0.72 0.15 80.8 / 0.6)", background: "oklch(0.82 0.15 80.8 / 0.12)", color: "oklch(0.40 0.12 60)" }}
-                  >
-                    <p className="font-medium">{notFoundError}</p>
-                    <button type="button" className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
-                      style={{ color: "oklch(0.38 0.14 55)" }}
-                      onClick={() => { setNotFoundError(null); setActiveTab("register"); onClose(); }}
-                    >אנא בצע הרשמה תחילה</button>
-                  </div>
-                )}
-
-                {/* Send OTP button */}
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  disabled={sendOtp.isPending || !isPhoneValid}
-                  className="w-full text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: "oklch(0.50 0.14 85)", boxShadow: "0 4px 14px oklch(0.50 0.14 85 / 0.35)" }}
+              {/* Not-found error */}
+              {notFoundError && (
+                <div className="rounded-lg border p-3 text-sm flex flex-col gap-2" dir="rtl"
+                  style={{ borderColor: "oklch(0.72 0.15 80.8 / 0.6)", background: "oklch(0.82 0.15 80.8 / 0.12)", color: "oklch(0.40 0.12 60)" }}
                 >
-                  {sendOtp.isPending
-                    ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
-                    : "קבלת קוד"}
-                </button>
-                <p className="text-xs text-center" style={{ color: "#6b7280" }}>הקוד יישלח אליך ב-SMS</p>
-              </div>
+                  <p className="font-medium">{notFoundError}</p>
+                  <button type="button" className="text-xs font-bold text-right hover:opacity-80 transition-opacity underline"
+                    style={{ color: "oklch(0.38 0.14 55)" }}
+                    onClick={() => { setNotFoundError(null); setActiveTab("register"); setStep("phone"); }}
+                  >אנא בצע הרשמה תחילה</button>
+                </div>
+              )}
+
+              {/* Send OTP button */}
+              <AppButton
+                variant="cta"
+                size="lg"
+                className="w-full"
+                onClick={handleSend}
+                disabled={sendOtp.isPending || !isPhoneValid}
+              >
+                {sendOtp.isPending
+                  ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                  : "קבלת קוד"}
+              </AppButton>
+              <p className="text-xs text-center" style={{ color: "#6b7280" }}>הקוד יישלח אליך ב-SMS</p>
 
               {/* Divider */}
               <div className="relative py-0.5">
@@ -711,7 +714,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               />
 
               {/* Footer */}
-              <p className="text-center text-sm pb-1" style={{ color: "#6b7280" }}>
+              <p className="text-center text-sm" style={{ color: "#6b7280" }}>
                 עוד לא רשום?{" "}
                 <button type="button" className="font-bold hover:underline" style={{ color: "oklch(0.50 0.14 85)" }}
                   onClick={() => { setActiveTab("register"); setStep("phone"); }}

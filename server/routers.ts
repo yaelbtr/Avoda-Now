@@ -190,8 +190,10 @@ const authRouter = router({
       }
 
       // For login flow: block if phone not registered (no termsAcceptedAt means never completed signup)
+      // Exception: admin/manager users created directly in DB are allowed to log in without termsAcceptedAt
       if (!input.isRegistration) {
-        if (!existingUser || !existingUser.termsAcceptedAt) {
+        const isPrivilegedUser = existingUser && existingUser.role === "admin";
+        if (!existingUser || (!existingUser.termsAcceptedAt && !isPrivilegedUser)) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "מספר זה אינו רשום במערכת.",

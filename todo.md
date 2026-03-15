@@ -1962,3 +1962,9 @@
 - [x] Add security event logging (OTP rate limit, OTP failures, login success, admin block/unblock/role changes)
 - [x] Set up automated daily database backup mechanism (server/backup.ts, runs at 02:00 UTC)
 - [x] Write Vitest tests for new security protections (XSS, CORS patterns, Zod max-length, bot detection)
+
+## Bug Fix — Login "מספר אינו רשום" for Existing Users
+- [x] Investigate phone normalization mismatch: DB stores 0559258668 but login lookup fails
+- [x] Fix login flow to allow admin users without termsAcceptedAt to log in (created directly in DB)
+- [x] Delete duplicate old-format record (id=28, phone=0559258668) with no linked data
+- [x] Set termsAcceptedAt for admin user id=30004 (+972559258668)

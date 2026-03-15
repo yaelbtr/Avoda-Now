@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, phone, name, role, termsAcceptedAt, loginMethod, createdAt FROM users WHERE phone LIKE '%559258668%' OR phone LIKE '%559258668%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, phone, name, role, termsAcceptedAt, loginMethod, createdAt FROM users WHERE phone LIKE '%559258668%' OR phone LIKE '%559258668%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "28",
+      "phone": "0559258668",
+      "name": "NULL",
+      "role": "admin",
+      "termsAcceptedAt": "NULL",
+      "loginMethod": "phone_otp",
+      "createdAt": "2026-03-04 15:25:57"
+    },
+    {
+      "id": "30004",
+      "phone": "+972559258668",
+      "name": "יעל ביטרן",
+      "role": "admin",
+      "termsAcceptedAt": "NULL",
+      "loginMethod": "phone_otp",
+      "createdAt": "2026-03-04 18:02:55"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tphone\tname\trole\ttermsAcceptedAt\tloginMethod\tcreatedAt\n28\t0559258668\tNULL\tadmin\tNULL\tphone_otp\t2026-03-04 15:25:57\n30004\t+972559258668\tיעל ביטרן\tadmin\tNULL\tphone_otp\t2026-03-04 18:02:55\n",
+  "stderr": "",
+  "execution_time_ms": 1608
+}

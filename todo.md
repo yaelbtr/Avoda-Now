@@ -1856,3 +1856,8 @@
 - [x] Add scale(1.02) hover effect to cta primary button (currently missing)
 - [x] Thin cta-outline border from 2px to 1.5px
 - [x] Update avodanow-design skill with corrected specs
+
+## Design System — Page Background Single Source of Truth (March 2026)
+- [x] Extract page background gradient into --page-bg-gradient CSS variable in :root
+- [x] Apply variable to body and all page containers
+- [x] Update avodanow-design skill with background token documentation

@@ -158,7 +158,7 @@ function Router() {
   const routeKey = location.split("/")[1] || "home";
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" dir="rtl">
+    <div className="min-h-screen flex flex-col" dir="rtl">
       <SkipToContent />
       <Navbar />
       <GuestLoginBanner />

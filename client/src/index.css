@@ -79,8 +79,14 @@
   --honey:           oklch(0.89 0.05 84.0);    /* #EAD7B2 */
   --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
 
-  /* Background — #fefcf4 warm cream */
-  --page-bg:         oklch(0.9904 0.0107 95.3); /* #fefcf4 warm cream */
+  /* Background — #fefcf4 warm cream (single source of truth) */
+  --page-bg:          oklch(0.9904 0.0107 95.3);  /* #fefcf4 warm cream — flat bg */
+  --page-bg-gradient: linear-gradient(
+    160deg,
+    oklch(0.9904 0.0107 95.3) 0%,   /* #fefcf4 warm cream */
+    oklch(0.9700 0.0200 91.0) 55%,  /* #f5f0e6 warm linen */
+    oklch(0.9550 0.0250 88.0) 100%  /* #f0ead8 honey tint */
+  );
 
   /* Success / green */
   --success:         oklch(0.65 0.22 160);
@@ -196,7 +202,10 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply text-foreground font-sans;
+    background: var(--page-bg-gradient);
+    background-attachment: fixed; /* gradient stays fixed while content scrolls */
+    min-height: 100dvh;
     direction: rtl;
     text-align: right;
   }

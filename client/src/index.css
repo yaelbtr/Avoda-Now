@@ -525,3 +525,23 @@
     color: var(--brand);
   }
 }
+
+/* ── Ripple effect for cta / cta-outline buttons ──────────────────────────── */
+@keyframes btn-ripple-expand {
+  0%   { transform: scale(0); opacity: 0.45; }
+  60%  { opacity: 0.20; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+.btn-ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple-container .ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: btn-ripple-expand 550ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  /* color set inline per variant */
+}

@@ -144,7 +144,12 @@ function getInlineStyle(variant: string | null | undefined, hovered = false): Re
   }
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Ripple helpers ───────────────────────────────────────────────────────────────────
+interface RippleItem { id: number; x: number; y: number; size: number; color: string; }
+
+const CTA_RIPPLE_VARIANTS = new Set(["cta", "cta-outline"]);
+
+// ─── Component ────────────────────────────────────────────────────────────────────
 export interface AppButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof appButtonVariants> {
@@ -154,27 +159,72 @@ export interface AppButtonProps
 }
 
 const AppButton = React.forwardRef<HTMLButtonElement, AppButtonProps>(
-  ({ className, variant, size, asChild = false, style, styleOverride, onMouseEnter, onMouseLeave, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, style, styleOverride, onMouseEnter, onMouseLeave, onClick, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    // Track hover state only for variants that need dynamic inline-style hover effects
+
+    // ── Hover state (cta-outline only) ──────────────────────────────────────────────────
     const needsHoverState = variant === "cta-outline";
     const [hovered, setHovered] = React.useState(false);
+
+    // ── Ripple state (cta + cta-outline) ───────────────────────────────────────────────
+    const needsRipple = variant != null && CTA_RIPPLE_VARIANTS.has(variant);
+    const [ripples, setRipples] = React.useState<RippleItem[]>([]);
+
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (needsRipple) {
+          const btn = e.currentTarget;
+          const rect = btn.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height) * 2;
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top  - size / 2;
+          // Ripple color: white for cta (dark bg), dark olive for cta-outline (light bg)
+          const color = variant === "cta" ? "rgba(255,255,255,0.35)" : "rgba(61,74,40,0.18)";
+          const id = Date.now();
+          setRipples(prev => [...prev, { id, x, y, size, color }]);
+          // Auto-remove after animation completes
+          setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 600);
+        }
+        onClick?.(e);
+      },
+      [needsRipple, variant, onClick]
+    );
 
     const inlineStyle: React.CSSProperties = {
       ...getInlineStyle(variant, needsHoverState ? hovered : false),
       ...style,
       ...styleOverride,
     };
+
     return (
       <Comp
         ref={ref}
         data-slot="app-button"
-        className={cn(appButtonVariants({ variant, size, className }))}
+        className={cn(
+          appButtonVariants({ variant, size, className }),
+          needsRipple && "btn-ripple-container"
+        )}
         style={Object.keys(inlineStyle).length > 0 ? inlineStyle : undefined}
         onMouseEnter={(e) => { if (needsHoverState) setHovered(true); onMouseEnter?.(e); }}
         onMouseLeave={(e) => { if (needsHoverState) setHovered(false); onMouseLeave?.(e); }}
+        onClick={handleClick}
         {...props}
-      />
+      >
+        {props.children}
+        {needsRipple && ripples.map(r => (
+          <span
+            key={r.id}
+            className="ripple-wave"
+            style={{
+              left: r.x,
+              top: r.y,
+              width: r.size,
+              height: r.size,
+              background: r.color,
+            }}
+          />
+        ))}
+      </Comp>
     );
   }
 );

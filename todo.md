@@ -1848,3 +1848,6 @@
 
 ## UI — Welcome Step CTA Buttons (March 2026)
 - [x] Apply cta variant to "הרשמה" and cta-outline to "התחברות" in LoginModal welcome step
+
+## Feature — Ripple Click Effect on CTA Buttons (March 2026)
+- [x] Add ripple effect to cta and cta-outline variants in AppButton (pure React/CSS, no new deps)

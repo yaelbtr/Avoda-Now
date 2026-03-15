@@ -28,6 +28,17 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      // Check if a phone-registered account already exists with the same email.
+      // If so, merge: update the existing account's openId to the Google openId
+      // so the user keeps all their data (jobs, ratings, profile) under one account.
+      if (userInfo.email) {
+        const existingByEmail = await db.getUserByEmail(userInfo.email);
+        if (existingByEmail && existingByEmail.openId !== userInfo.openId) {
+          // Merge: adopt the Google openId on the existing account
+          await db.mergeAccountToGoogleOpenId(existingByEmail.openId, userInfo.openId, userInfo.loginMethod ?? "google");
+        }
+      }
+
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,

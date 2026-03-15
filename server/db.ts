@@ -143,6 +143,23 @@ export async function clearUserMode(id: number): Promise<void> {
 }
 
 /**
+ * Merges a phone-registered account into a Google account by updating the
+ * existing row's openId to the Google openId and setting loginMethod to "google".
+ * This preserves all profile data (jobs, ratings, preferences) under one account.
+ */
+export async function mergeAccountToGoogleOpenId(
+  existingOpenId: string,
+  googleOpenId: string,
+  loginMethod: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users)
+    .set({ openId: googleOpenId, loginMethod })
+    .where(eq(users.openId, existingOpenId));
+}
+
+/**
  * Resets all profile/onboarding data for a test user while keeping
  * identity fields: name, phone, email, role, openId, termsAcceptedAt.
  * Called every time a test user authenticates so each test run starts fresh.

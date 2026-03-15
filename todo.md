@@ -1806,3 +1806,8 @@
 
 ## Bug Fix — March 2026
 - [x] Fix: When email is already registered via Google, show a friendly message directing user to log in with Google instead of a generic error
+
+## Auth UX Improvements — March 2026
+- [x] Add inline Google login button inside email-conflict error message
+- [x] Handle reverse case: phone-registered user tries Google login with same email — merge accounts via mergeAccountToGoogleOpenId in OAuth callback
+- [x] Add "שנה שיטת קבלה" link on OTP screen returning to step=channel

@@ -1738,3 +1738,6 @@
 - [x] Replace registration step in LoginModal with new design from mockup
 - [x] Remove 'כניסה נדרשת' screen in MyJobs — open LoginModal directly instead
 - [x] Overhaul IsraeliPhoneInput: single field, country picker, input masking, paste cleanup, E.164
+
+## UI Bug Fixes — March 2026
+- [x] Fix duplicate "מספר טלפון" label in registration form (LoginModal had its own label + IsraeliPhoneInput rendered its own — removed the outer wrapper label)

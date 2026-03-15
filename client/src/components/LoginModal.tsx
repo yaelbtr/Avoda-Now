@@ -1111,10 +1111,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </div>
 
               {/* Phone */}
-              <div className="space-y-1.5">
-                <label className="block text-sm font-semibold" style={{ color: "#374151" }}>מספר טלפון</label>
-                <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} />
-              </div>
+              <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
 
               {/* Email */}
               <div className="space-y-1.5">

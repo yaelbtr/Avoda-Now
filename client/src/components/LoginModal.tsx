@@ -399,82 +399,89 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex flex-col"
-          style={{ background: "#f8f6f6" }}
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: "oklch(0 0 0 / 0.5)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
           dir="rtl"
         >
-          {/* ── STEP: welcome (full-screen splash) ── */}
-          {(
-            <motion.div
-              key="welcome-screen"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.25 }}
-              className="flex flex-col min-h-screen w-full max-w-lg mx-auto"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <div className="w-10" />
-                <h2 className="text-lg font-bold" style={{ color: "oklch(0.50 0.09 124.9)" }}>AvodaNow</h2>
-                <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full" style={{ color: "var(--muted-foreground)" }} aria-label="סגור">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+          <motion.div
+            key="welcome-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="w-full max-w-lg flex flex-col overflow-hidden"
+            style={{
+              background: "#f8f6f6",
+              borderRadius: "20px 20px 0 0",
+              maxHeight: "92dvh",
+              minHeight: "min(92dvh, 700px)",
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0">
+              <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full" style={{ color: "#666" }} aria-label="סגור">
+                <X className="h-5 w-5" />
+              </button>
+              <h2 className="text-xl font-bold" style={{ color: "#556b2f" }}>AvodaNow</h2>
+              <div className="w-9" />
+            </div>
 
-              {/* Hero Image */}
-              <div className="w-full">
-                <img
-                  src={HERO_IMG}
-                  alt="AvodaNow"
-                  className="w-full object-cover"
-                  style={{ minHeight: 260, maxHeight: 320 }}
-                />
-              </div>
+            {/* Hero Image — fills top area */}
+            <div className="flex-shrink-0 w-full">
+              <img
+                src={HERO_IMG}
+                alt="AvodaNow"
+                className="w-full object-cover"
+                style={{ height: "clamp(220px, 38vw, 320px)" }}
+              />
+            </div>
 
-              {/* Welcome text */}
-              <div className="px-6 pt-8 pb-4 text-center">
-                <h1 className="text-3xl font-bold leading-tight tracking-tight mb-3" style={{ color: "#1a2010" }}>
-                  ברוכים הבאים ל-AvodaNow
-                </h1>
-                <p className="text-base leading-relaxed" style={{ color: "#4a5a38" }}>
-                  הדרך הפשוטה והמהירה ביותר למצוא את המשרה הבאה שלך ולנהל את הקריירה בביטחון.
-                </p>
-              </div>
+            {/* Welcome text */}
+            <div className="px-6 pt-6 pb-3 text-center flex-shrink-0">
+              <h1
+                className="font-bold leading-tight tracking-tight mb-3"
+                style={{ fontSize: "clamp(26px, 7vw, 32px)", color: "#1a2010" }}
+              >
+                ברוכים הבאים ל-<br />AvodaNow
+              </h1>
+              <p className="text-base leading-relaxed" style={{ color: "#4a5a38" }}>
+                הדרך הפשוטה והמהירה ביותר למצוא את המשרה הבאה שלך ולנהל את הקריירה בביטחון.
+              </p>
+            </div>
 
-              {/* Spacer */}
-              <div className="flex-1" />
+            {/* Spacer */}
+            <div className="flex-1" />
 
-              {/* Action Buttons */}
-              <div className="px-6 pb-4 flex flex-col gap-4">
-                <button
-                  onClick={() => { setActiveTab("register"); setStep("phone"); }}
-                  className="w-full h-14 rounded-xl text-lg font-bold text-white shadow-lg transition-opacity hover:opacity-90"
-                  style={{ background: "linear-gradient(135deg, oklch(0.50 0.09 124.9) 0%, oklch(0.40 0.09 124.9) 100%)" }}
-                >
-                  הרשמה
-                </button>
-                <button
-                  onClick={() => { setActiveTab("login"); setStep("phone"); }}
-                  className="w-full h-14 rounded-xl text-lg font-bold border transition-colors"
-                  style={{ background: "oklch(0.50 0.09 124.9 / 0.10)", color: "oklch(0.40 0.09 124.9)", borderColor: "oklch(0.50 0.09 124.9 / 0.25)" }}
-                >
-                  התחברות
-                </button>
-              </div>
+            {/* Action Buttons */}
+            <div className="px-6 pb-4 flex flex-col gap-3 flex-shrink-0">
+              <button
+                onClick={() => { setActiveTab("register"); setStep("phone"); }}
+                className="w-full h-14 rounded-xl text-lg font-bold text-white shadow-lg transition-opacity hover:opacity-90"
+                style={{ background: "#556b2f" }}
+              >
+                הרשמה
+              </button>
+              <button
+                onClick={() => { setActiveTab("login"); setStep("phone"); }}
+                className="w-full h-14 rounded-xl text-lg font-bold border transition-colors"
+                style={{ background: "rgba(85,107,47,0.10)", color: "#3d5220", borderColor: "rgba(85,107,47,0.25)" }}
+              >
+                התחברות
+              </button>
+            </div>
 
-              {/* Footer terms */}
-              <div className="px-6 pb-8 text-center">
-                <p className="text-xs" style={{ color: "#9a9a8a" }}>
-                  בהמשך התהליך הינך מסכים ל
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "oklch(0.50 0.09 124.9)" }}>תנאי השימוש</a>
-                  ול
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "oklch(0.50 0.09 124.9)" }}>מדיניות הפרטיות</a>
-                  {" "}שלנו.
-                </p>
-              </div>
-            </motion.div>
-          )}
+            {/* Footer terms */}
+            <div className="px-6 pb-6 text-center flex-shrink-0">
+              <p className="text-xs" style={{ color: "#9a9a8a" }}>
+                בהמשך התהליך הינך מסכים ל
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "#556b2f" }}>תנאי השימוש</a>
+                ול
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline mx-0.5" style={{ color: "#556b2f" }}>מדיניות הפרטיות</a>
+                {" "}שלנו.
+              </p>
+            </div>
+          </motion.div>
         </motion.div>
       )}
 

@@ -243,7 +243,7 @@ describe("auth.verifyOtp", () => {
     const result = await caller.auth.verifyOtp({ phone: "+972501234567", code: "123456", termsAccepted: true });
     expect(result.success).toBe(true);
     expect(result.user?.phone).toBe("+972501234567");
-    expect(db.createUserByPhone).toHaveBeenCalledWith("+972501234567", undefined, undefined, true);
+    expect(db.createUserByPhone).toHaveBeenCalledWith("+972501234567", undefined, undefined, true, expect.any(Function));
     expect((ctx.res as { cookie: ReturnType<typeof vi.fn> }).cookie).toHaveBeenCalledOnce();
   });;
 

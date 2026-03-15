@@ -350,7 +350,19 @@ const authRouter = router({
             message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
-        user = await createUserByPhone(phone, input.name, input.email, true);
+        try {
+          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "";
+          if (msg.startsWith("PHONE_DUPLICATE:")) {
+            // Another account with the same number (different format) already exists
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר.",
+            });
+          }
+          throw err;
+        }
         // Send welcome email non-blocking (fire-and-forget)
         if (user && input.email) {
           sendWelcomeEmail({ name: input.name ?? "", email: input.email }).catch((err) =>
@@ -1685,7 +1697,19 @@ const userRouter = router({
       }
 
       // Success — update phone in DB and log
-      await updateUserPhone(ctx.user.id, normalized, input.phonePrefix ?? null, input.phoneNumber ?? null);
+      try {
+        await updateUserPhone(ctx.user.id, normalized, input.phonePrefix ?? null, input.phoneNumber ?? null, normalizeIsraeliPhone);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "";
+        if (msg.startsWith("PHONE_DUPLICATE:")) {
+          await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "failed" });
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "מספר הטלפון כבר שייך למשתמש אחר במערכת.",
+          });
+        }
+        throw err;
+      }
       await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "success" });
 
       return { success: true };

@@ -93,6 +93,36 @@ export async function getUserByPhone(phone: string) {
   return result[0];
 }
 
+/**
+ * Look up a user by phone, checking BOTH the raw value AND its E.164-normalized
+ * equivalent. This prevents duplicate accounts when the same number is stored
+ * in different formats (e.g. "0559258668" vs "+972559258668").
+ *
+ * Returns the first match found, preferring the normalized format.
+ */
+export async function getUserByNormalizedPhone(
+  phone: string,
+  normalizePhone: (p: string) => string
+) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  // Try exact match first (most common path — phone is already E.164)
+  const exact = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+  if (exact[0]) return exact[0];
+
+  // Try normalized form (handles legacy 05x format stored in DB)
+  let normalized: string;
+  try {
+    normalized = normalizePhone(phone);
+  } catch {
+    return undefined;
+  }
+  if (normalized === phone) return undefined; // already tried above
+  const byNormalized = await db.select().from(users).where(eq(users.phone, normalized)).limit(1);
+  return byNormalized[0];
+}
+
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) return undefined;
@@ -100,9 +130,25 @@ export async function getUserByEmail(email: string) {
   return result[0];
 }
 
-export async function createUserByPhone(phone: string, name?: string, email?: string, termsAccepted?: boolean) {
+export async function createUserByPhone(
+  phone: string,
+  name?: string,
+  email?: string,
+  termsAccepted?: boolean,
+  /** Pass normalizeIsraeliPhone to enable cross-format duplicate detection */
+  normalizePhone?: (p: string) => string
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Cross-format duplicate check: detect both "0559258668" and "+972559258668"
+  if (normalizePhone) {
+    const duplicate = await getUserByNormalizedPhone(phone, normalizePhone);
+    if (duplicate) {
+      throw new Error(`PHONE_DUPLICATE:${duplicate.id}`);
+    }
+  }
+
   const openId = `phone_${phone}_${Date.now()}`;
   await db.insert(users).values({
     openId,
@@ -285,10 +331,22 @@ export async function updateUserPhone(
   userId: number,
   phone: string,
   phonePrefix: string | null,
-  phoneNumber: string | null
+  phoneNumber: string | null,
+  /** Pass normalizeIsraeliPhone to enable cross-format duplicate detection */
+  normalizePhone?: (p: string) => string
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Cross-format duplicate check: reject if another user has the same number
+  // in a different format (e.g. "0559258668" vs "+972559258668")
+  if (normalizePhone) {
+    const duplicate = await getUserByNormalizedPhone(phone, normalizePhone);
+    if (duplicate && duplicate.id !== userId) {
+      throw new Error(`PHONE_DUPLICATE:${duplicate.id}`);
+    }
+  }
+
   await db
     .update(users)
     .set({ phone, phonePrefix, phoneNumber })

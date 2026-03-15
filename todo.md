@@ -1968,3 +1968,12 @@
 - [x] Fix login flow to allow admin users without termsAcceptedAt to log in (created directly in DB)
 - [x] Delete duplicate old-format record (id=28, phone=0559258668) with no linked data
 - [x] Set termsAcceptedAt for admin user id=30004 (+972559258668)
+
+## Phone Normalization & Duplicate Prevention
+- [x] Write one-time migration script (scripts/normalize-phones.mjs) to convert all 05x phone numbers to +972x format in DB
+- [x] Run migration — all 3 users already in E.164, 0 collisions
+- [x] Add getUserByNormalizedPhone helper in db.ts (checks exact + normalized format)
+- [x] Apply duplicate check in createUserByPhone before INSERT (with normalizePhone optional param)
+- [x] Apply duplicate check in updateUserPhone before UPDATE (with normalizePhone optional param)
+- [x] adminCreateUser already had duplicate check (adminDb.ts) — verified
+- [x] Write Vitest tests for phone normalization and duplicate prevention (phone-normalization.test.ts, 20 tests)

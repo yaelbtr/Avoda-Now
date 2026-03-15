@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AppButton } from "@/components/AppButton";
 import { Textarea } from "@/components/ui/textarea";
-import { AppTextarea } from "@/components/ui/AppFormField";
+import { AppTextarea, AppLabel } from "@/components/ui/AppFormField";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -109,9 +109,7 @@ export function RateWorkerModal({ open, onClose, workerId, workerName, applicati
 
             {/* Comment */}
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">
-                הערה (אופציונלי)
-              </label>
+              <AppLabel>הערה (אופציונלי)</AppLabel>
               <AppTextarea
                 dir="rtl"
                 placeholder="שתף את חווייתך עם העובד..."

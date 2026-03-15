@@ -3,7 +3,7 @@ import { AdminCategoriesTab } from "./AdminCategories";
 import { AdminRegionsTab } from "./AdminRegions";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/AppButton";
-import { AppInput, AppSelect, AppTextarea } from "@/components/ui/AppFormField";
+import { AppInput, AppSelect, AppTextarea, AppLabel } from "@/components/ui/AppFormField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -1112,9 +1112,7 @@ export default function Admin() {
                   {/* Custom message */}
                   <div className="border-t pt-4 space-y-3">
                     <div>
-                      <label className="text-sm font-medium block mb-1">
-                        הודעה מותאמת למשתמשים (אופציונלי)
-                      </label>
+                      <AppLabel>הודעה מותאמת למשתמשים (אופציונלי)</AppLabel>
                       <p className="text-xs text-muted-foreground mb-2">
                         הטקסט יוצג בדף התחזוקה. לדוגמה: &quot;נחזור בשעה 18:00&quot;. השאר ריק להודעת ברירת מחדל.
                       </p>

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { saveReturnPath, getGoogleLoginUrl } from "@/const";
 import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
-import { AppInput } from "@/components/ui/AppFormField";
+import { AppInput, AppLabel } from "@/components/ui/AppFormField";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCategories } from "@/hooks/useCategories";
 import CityAutocomplete from "@/components/CityAutocomplete";
@@ -785,9 +785,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium block text-right">
-                    {isTestBypass ? "קוד טסט (6 ספרות ראשונות של הטלפון)" : "קוד אימות (6 ספרות)"}
-                  </label>
+                  <AppLabel>{isTestBypass ? "קוד טסט (6 ספרות ראשונות של הטלפון)" : "קוד אימות (6 ספרות)"}</AppLabel>
                   <div className="flex gap-2 justify-center" dir="ltr">
                     {Array.from({ length: OTP_LENGTH }, (_, i) => (
                       <input
@@ -922,7 +920,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 {selectedRole === "worker" && dbCategories.length > 0 && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium block">קטגוריות עבודה (אופציונלי)</label>
+                    <AppLabel>קטגוריות עבודה (אופציונלי)</AppLabel>
                     <div className="flex flex-wrap gap-2">
                       {dbCategories.map((cat) => {
                         const active = selectedCategories.includes(cat.slug);
@@ -949,7 +947,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium block">עיר / אזור (אופציונלי)</label>
+                  <AppLabel>עיר / אזור (אופציונלי)</AppLabel>
                   <CityAutocomplete
                     value={selectedCity}
                     onChange={setSelectedCity}

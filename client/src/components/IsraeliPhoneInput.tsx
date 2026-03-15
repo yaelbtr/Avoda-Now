@@ -1,5 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 
+import { AppLabel } from "@/components/ui/AppFormField";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PhoneValue {
@@ -223,17 +225,9 @@ export function IsraeliPhoneInput({
   return (
     <div dir="rtl" style={{ width: "100%" }}>
       {showLabel && (
-        <label
-          style={{
-            display: "block",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#4F583B",
-            marginBottom: 4,
-          }}
-        >
+        <AppLabel>
           {label}
-        </label>
+        </AppLabel>
       )}
 
       {/* Single-field row: country picker + input */}

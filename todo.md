@@ -1779,3 +1779,12 @@
 - [x] Add inline real-time validation (error props) to name and email fields in LoginModal registration (touched=true on blur shows "שדה חובה")
 - [x] Apply col-span-2 to wide fields in PostJob grid layout (startDateTime moved into 2-col grid with col-span-2)
 - [x] Fix curly apostrophe (U+2019) in AdminRegions radius label causing Vite pre-transform error
+
+## Design Skill Implementation — March 2026
+- [x] AppButton focus ring changed from ring-blue-500 to ring-primary/60 (olive green)
+- [x] AppSelect placeholder color uses TOKENS.placeholderColor when no value selected
+- [x] IsraeliPhoneInput label replaced with AppLabel (single source of truth)
+- [x] LoginModal: replaced all raw <label> in OTP, categories, regions sections with AppLabel
+- [x] WorkerProfile: replaced all raw <label> (phone, description, schedule) with AppLabel
+- [x] Admin: replaced raw <label> in maintenance message section with AppLabel
+- [x] RateWorkerModal: replaced raw <label> with AppLabel

@@ -335,6 +335,8 @@ export const AppSelect = forwardRef<HTMLSelectElement, AppSelectProps>(
     ref
   ) => {
     const [focused, setFocused] = useState(false);
+    // Determine if the current value is the empty placeholder
+    const isEmpty = rest.value === "" || rest.value === undefined || rest.defaultValue === "";
     const borderColor = getBorderColor(focused, error);
     const boxShadow = getBoxShadow(focused, error);
 
@@ -367,7 +369,7 @@ export const AppSelect = forwardRef<HTMLSelectElement, AppSelectProps>(
               border: `1.5px solid ${borderColor}`,
               boxShadow,
               background: disabled ? TOKENS.bgDisabled : TOKENS.bgNormal,
-              color: TOKENS.textColor,
+              color: isEmpty ? TOKENS.placeholderColor : TOKENS.textColor,
               fontSize: TOKENS.fontSize,
               fontWeight: 400,
               outline: "none",

@@ -8,7 +8,7 @@ import { AppButton } from "@/components/AppButton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AppInput, AppTextarea } from "@/components/ui/AppFormField";
+import { AppInput, AppTextarea, AppLabel } from "@/components/ui/AppFormField";
 import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
@@ -1045,7 +1045,7 @@ export default function WorkerProfile() {
               {/* Phone field: read-only for OTP users, editable split input for OAuth users */}
               {user?.loginMethod === "phone_otp" ? (
                 <>
-                  <label className="text-sm font-medium text-foreground mb-1 block">טלפון</label>
+                  <AppLabel>טלפון</AppLabel>
                   <IsraeliPhoneInput
                     value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(profileQuery.data?.phone)}
                     onChange={() => {}}
@@ -1167,10 +1167,7 @@ export default function WorkerProfile() {
           <div className="px-5 pb-5 space-y-4 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
             {/* Preference text */}
             <div className="pt-4">
-              <label className="text-sm font-medium text-foreground mb-1 block flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                תיאור חופשי
-              </label>
+              <AppLabel style={{ display: "flex", alignItems: "center", gap: 6 }}><FileText className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />תיאור חופשי</AppLabel>
               <AppTextarea
                 value={preferenceText}
                 onChange={(e) => setPreferenceText(e.target.value)}
@@ -1430,9 +1427,7 @@ export default function WorkerProfile() {
 
           {/* Preferred Schedule */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              זמני עבודה מועדפים
-            </label>
+            <AppLabel>זמני עבודה מועדפים</AppLabel>
             <p className="text-xs text-muted-foreground mb-3">
               בחר את הימים ושעות שאתה מוכן לעבוד בהם
             </p>

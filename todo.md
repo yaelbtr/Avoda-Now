@@ -2021,3 +2021,11 @@
 - [x] Step 7: Add messaging notice to ApplicationView.tsx (contact reveal legal notice + safety policy link)
 - [x] Step 9: Add account deletion section to WorkerProfile.tsx settings tab (legal notice + mailto link)
 - [x] Step 10: Capture ip_address and user_agent in UserConsents table and consent storage (getClientIp + user-agent header)
+
+## Re-Consent Modal — Blocking Version
+- [x] Remove TermsUpdateBanner component from App.tsx layout (never wired; ReConsentModal replaces it)
+- [x] Build ReConsentModal component: blocking overlay, checkboxes per outdated doc, accept CTA, error handling
+- [x] Wire ReConsentModal into App.tsx (shown after login when checkOutdatedConsents returns non-empty)
+- [x] On accept: call recordConsent for each outdated doc, close modal
+- [x] Prevent app navigation while modal is open (Escape key suppressed, body scroll locked, no dismiss on overlay click)
+- [x] Write Vitest tests for re-consent modal logic (server/re-consent.test.ts — 16 tests)

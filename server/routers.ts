@@ -1764,7 +1764,7 @@ const userRouter = router({
   /**
    * Returns a list of consent types where the user's accepted version
    * is older than the current LEGAL_DOCUMENT_VERSIONS.
-   * Used by the TermsUpdateBanner to prompt re-consent.
+   * Used by the ReConsentModal to prompt re-consent (blocking modal).
    */
   checkOutdatedConsents: protectedProcedure.query(async ({ ctx }) => {
     const existing = await getUserConsents(ctx.user.id);

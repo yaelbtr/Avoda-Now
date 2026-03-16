@@ -22,6 +22,7 @@ import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { toast } from "sonner";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
 function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
@@ -425,29 +426,48 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 />
               ))}
             </motion.button>
-            <motion.button
-              onClick={handleAvailabilityToggle}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
-              style={{
-                background: "white",
-                border: "1px solid oklch(0.89 0.05 84.0)",
-                color: "oklch(0.35 0.08 122)",
-                boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-              }}
-              animate={{
-                boxShadow: [
-                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                  "0 0 0 3px oklch(0.78 0.13 84 / 0.22), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                ],
-              }}
-              transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Zap size={14} />
-              הגדר זמינות עכשיו
-            </motion.button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={handleAvailabilityToggle}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
+                  style={{
+                    background: "white",
+                    border: "1px solid oklch(0.89 0.05 84.0)",
+                    color: "oklch(0.35 0.08 122)",
+                    boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                  }}
+                  animate={{
+                    boxShadow: [
+                      "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                      "0 0 0 3px oklch(0.78 0.13 84 / 0.22), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                      "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                    ],
+                  }}
+                  transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Zap size={14} />
+                  הגדר זמינות עכשיו
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                sideOffset={10}
+                className="max-w-[220px] text-center leading-relaxed px-4 py-2.5 rounded-xl text-[13px]"
+                style={{
+                  background: "oklch(0.22 0.05 122)",
+                  color: "oklch(0.97 0.02 84)",
+                  border: "1px solid oklch(0.35 0.07 122 / 0.6)",
+                  boxShadow: "0 4px 16px oklch(0.10 0.04 122 / 0.35)",
+                }}
+              >
+                מעסיקים רואים רק עובדים זמינים —
+                <br />
+                <span style={{ color: "oklch(0.85 0.13 84)" }}>הגדר עכשיו וקבל פניות היום</span>
+              </TooltipContent>
+            </Tooltip>
           </motion.div>
         </div>
       </section>

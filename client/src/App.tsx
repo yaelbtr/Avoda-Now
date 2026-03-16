@@ -207,9 +207,11 @@ function Router() {
   // Show RoleSelectionScreen when:
   // 1. Authenticated user has no role yet (needsRoleSelection), OR
   // 2. Guest is on the root path AND has no saved session role
+  // Exception: admins and test users navigating to /admin routes bypass role selection
   const isRootPath = location === "/" || location === "";
   const hasRole = userMode !== null;
-  const showRoleSelection = needsRoleSelection || (isRootPath && !hasRole);
+  const isAdminRoute = location.startsWith("/admin");
+  const showRoleSelection = !isAdminRoute && (needsRoleSelection || (isRootPath && !hasRole));
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
     setUserMode(mode);

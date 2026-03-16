@@ -80,7 +80,7 @@ function RoleCard({
       }}
     >
       {/* Top image strip */}
-      <div className="relative overflow-hidden" style={{ height: "140px" }}>
+      <div className="relative overflow-hidden" style={{ height: "180px" }}>
         <motion.div
           className="absolute inset-0 bg-cover bg-top"
           style={{ backgroundImage: `url('${image}')` }}

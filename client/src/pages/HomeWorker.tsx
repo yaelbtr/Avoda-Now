@@ -437,7 +437,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               animate={{
                 boxShadow: [
                   "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                  "0 0 0 3px oklch(0.45 0.09 122 / 0.10), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                  "0 0 0 3px oklch(0.78 0.13 84 / 0.22), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
                   "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
                 ],
               }}

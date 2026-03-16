@@ -299,46 +299,42 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 
-      {/* ── MOBILE Hero (< md): matches HomeEmployer design — dark overlay, white text ── */}
+      {/* ── MOBILE Hero (< md): in-flow image, text overlaid at bottom ── */}
       <section className="relative overflow-hidden md:hidden">
-        {/* Background image */}
-        <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
-          alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
-          width={800}
-          height={480}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "60% 25%" }}
-        />
-        {/* Gradient overlay — dark like HomeEmployer */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(to bottom, oklch(0.12 0.06 122 / 0.35) 0%, oklch(0.12 0.06 122 / 0.65) 55%, oklch(0.95 0.03 91.6) 100%)",
-          }}
-        />
-
-        {/* Content — text at bottom of image, face visible above */}
-        <div className="relative z-10 flex flex-col justify-end items-center text-center px-5 pt-40 pb-5">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-[32px] leading-[1.15] font-black mb-2"
-            style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
-          >
-            מחפש עבודה זמנית?<br />
-            <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מצא אחת תוך דקות</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-[13px] font-semibold leading-relaxed"
-            style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
-          >
-            ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
-          </motion.p>
+        {/* In-flow image — always visible, sets section height */}
+        <div className="relative w-full" style={{ height: 340 }}>
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
+            alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "50% 20%" }}
+          />
+          {/* Bottom fade into page */}
+          <div
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
+            style={{ height: "50%", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
+          />
+          {/* Text overlaid at bottom */}
+          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-4">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="text-[30px] leading-[1.15] font-black mb-1"
+              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.80)" }}
+            >
+              מחפש עבודה זמנית?<br />
+              <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מצא אחת תוך דקות</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-[12px] font-semibold leading-relaxed"
+              style={{ color: "oklch(0.22 0.06 122)", maxWidth: "280px" }}
+            >
+              ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
+            </motion.p>
+          </div>
         </div>
       </section>
 

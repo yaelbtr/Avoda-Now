@@ -302,35 +302,52 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── MOBILE Hero (< md): in-flow image, text overlaid at bottom ── */}
       <section className="relative overflow-hidden md:hidden">
         {/* In-flow image — always visible, sets section height */}
-        <div className="relative w-full" style={{ height: 340 }}>
+        <div className="relative w-full" style={{ height: 380 }}>
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-warehouse-v2_eac87cc8.jpg"
             alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
             loading="eager"
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "50% 20%" }}
+            style={{ objectPosition: "50% 50%" }}
           />
           {/* Bottom fade into page */}
           <div
             className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "50%", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
+            style={{ height: "45%", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
           />
+          {/* Badge above head — positioned in upper area */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+            style={{
+              transform: "translateX(-50%)",
+              background: "oklch(0.32 0.07 122 / 0.85)",
+              border: "1px solid oklch(0.55 0.10 122 / 0.60)",
+              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+            <span className="text-[11px] font-bold" style={{ color: "oklch(0.95 0.04 80)" }}>
+              מצא עבודה תוך דקות
+            </span>
+          </motion.div>
           {/* Text overlaid at bottom */}
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-4">
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="text-[30px] leading-[1.15] font-black mb-1"
-              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.80)" }}
+              style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
             >
               מחפש עבודה זמנית?<br />
-              <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מצא אחת תוך דקות</span>
+              <span style={{ color: "oklch(0.55 0.14 70)" }}>מצא אחת תוך דקות</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
               className="text-[12px] font-semibold leading-relaxed"
-              style={{ color: "oklch(0.22 0.06 122)", maxWidth: "280px" }}
+              style={{ color: "oklch(0.30 0.06 122)", maxWidth: "280px" }}
             >
               ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
             </motion.p>

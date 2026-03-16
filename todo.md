@@ -2066,3 +2066,9 @@
 - [x] Add PostGoogleRegistration invisible component to App.tsx (fires once after OAuth callback)
 - [x] Add termsAcceptedAt to AuthUser interface in AuthContext
 - [x] 471 tests passing, 0 TypeScript errors
+
+## Google Button Validation Gate
+- [x] Disable "המשך עם Google" button until all registration fields are valid (name, phone, email, both checkboxes) — same gate as SMS button
+- [x] Show inline hint text "יש למלא את כל פרטי ההרשמה לפני המשך עם Google" when button is disabled
+- [x] Pass email to completeGoogleRegistration payload (sessionStorage + server procedure + db function)
+- [x] 471 tests passing, 0 TypeScript errors

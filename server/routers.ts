@@ -1797,6 +1797,7 @@ const userRouter = router({
     .input(z.object({
       phone: z.string().min(9).max(20),
       name: z.string().min(2).max(100).optional(),
+      email: z.string().email().max(320).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       // Only applicable for Google OAuth users
@@ -1811,10 +1812,11 @@ const userRouter = router({
       } catch {
         throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
       }
-      // Save phone + termsAcceptedAt (idempotent — only updates if termsAcceptedAt IS NULL)
+      // Save phone + termsAcceptedAt + optional email (idempotent — only updates if termsAcceptedAt IS NULL)
       await completeGoogleRegistration(ctx.user.id, {
         phone: normalizedPhone,
         name: input.name,
+        email: input.email,
       });
       // Record consents (terms, privacy, age_18)
       const ip = getClientIp(ctx.req);

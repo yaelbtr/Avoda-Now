@@ -2787,6 +2787,7 @@ export async function completeGoogleRegistration(
   opts: {
     phone: string;
     name?: string | null;
+    email?: string | null;
   }
 ): Promise<void> {
   const db = await getDb();
@@ -2796,6 +2797,9 @@ export async function completeGoogleRegistration(
   };
   if (opts.phone) updateSet.phone = opts.phone;
   if (opts.name) updateSet.name = opts.name;
+  // Only update email if the user doesn't already have one (Google provides it, but
+  // the registration form email takes precedence for the user's own explicit choice)
+  if (opts.email) updateSet.email = opts.email;
   await db.update(users)
     .set(updateSet)
     .where(and(eq(users.id, userId), isNull(users.termsAcceptedAt)));

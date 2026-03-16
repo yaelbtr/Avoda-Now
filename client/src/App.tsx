@@ -158,7 +158,7 @@ function PostGoogleRegistration() {
     const raw = sessionStorage.getItem(PENDING_GOOGLE_REG_KEY);
     if (!raw) return;
 
-    let payload: { name?: string; phone?: string; termsAccepted?: boolean; age18Accepted?: boolean };
+    let payload: { name?: string; phone?: string; email?: string; termsAccepted?: boolean; age18Accepted?: boolean };
     try {
       payload = JSON.parse(raw);
     } catch {
@@ -178,6 +178,7 @@ function PostGoogleRegistration() {
     completeReg.mutate({
       phone: payload.phone,
       name: payload.name || undefined,
+      email: payload.email || undefined,
     });
   }, [isAuthenticated, user]); // eslint-disable-line react-hooks/exhaustive-deps
 

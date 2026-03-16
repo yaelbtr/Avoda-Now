@@ -397,7 +397,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     transition={{ delay: 0.1, duration: 0.4 }}
                   >
                     <Zap className="h-3.5 w-3.5" style={{ color: "var(--amber)" }} />
-                    פלטפורמת הגיוס המהירה בישראל
+                    הפלטפורמה לעבודות זמניות בישראל
                   </motion.div>
 
                   <h1

@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users, Star, Shield, Sparkles } from "lucide-react";
+import { BrandName } from "@/components/ui/BrandName";
 import {
   C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT, C_HONEY,
   C_TEXT_PRIMARY, C_TEXT_SECONDARY, C_TEXT_MUTED,
@@ -132,7 +133,7 @@ function RoleCard({
         >
           {title}
         </h2>
-        <p className="text-[13px] leading-relaxed mb-4" style={{ color: C_TEXT_SECONDARY }}>
+        <p className="text-[13px] leading-relaxed mb-4" style={{ color: C_TEXT_SECONDARY, whiteSpace: "pre-line" }}>
           {description}
         </p>
 
@@ -408,8 +409,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
                     }}
                   >
-                    ברוכים הבאים ל-
-                    <span style={{ color: C_TEXT_PRIMARY }}>Avoda</span><span style={{ color: C_BRAND }}>Now</span>
+                    ברוכים הבאים ל-<BrandName />
                   </h1>
                   <p className="text-[14px] font-medium" style={{ color: C_TEXT_MUTED }}>
                     בחרו את הדרך שלכם להתחיל
@@ -422,13 +422,13 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="worker"
                     image={WORKER_IMG}
                     icon={<HardHat className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title="אני מחפש עבודה"
+                    title="מחפש עבודה?"
                     subtitle="לעובדים"
-                    description="מצא עבודה מזדמנת בקרבתך תוך דקות. קשר ישיר עם מעסיקים ללא עמלות."
+                    description="מצא עבודות זמניות בקרבתך תוך דקות.\nקשר ישיר עם עסקים — ללא עמלות."
                     features={[
-                      "אלפי משרות פעילות בכל ישראל",
+                      "אלפי משרות פעילות ברחבי הארץ",
                       "קשר ישיר עם המעסיק",
-                      "ללא עמלות ודמי תיווך",
+                      "ללא עמלות וללא דמי תיווך",
                     ]}
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}

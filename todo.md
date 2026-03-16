@@ -2171,3 +2171,4 @@
 - [x] צור רכיב AppFooter גלובלי עם הערת לשון זכר + קישורים לתנאי שימוש ומדיניות פרטיות
 - [x] שנה טקסט badge בעמוד הבית מג"פלטפורמת הגיוס המהירה בישראל"ל"הפלטפורמה לעבודות זמניות בישראל"
 - [x] עדכן meta description ו-og:description בכל הקבצים לשקף "הפלטפורמה לעבודות זמניות בישראל"
+- [x] Update worker role card: title → 'מחפש עבודה?', description → two-line copy, bullets → three updated items

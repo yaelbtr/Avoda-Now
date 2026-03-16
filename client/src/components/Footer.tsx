@@ -375,6 +375,10 @@ export default function Footer() {
         <p className="text-[11px] text-center mt-3 leading-relaxed" style={{ color: FG_MUTED }}>
           <BrandName /> אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
         </p>
+        {/* Gender disclaimer */}
+        <p className="text-[11px] text-center mt-1 leading-relaxed" style={{ color: FG_MUTED }}>
+          לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+        </p>
       </div>
     </footer>
   );

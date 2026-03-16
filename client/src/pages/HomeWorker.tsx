@@ -300,7 +300,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 
       {/* ── MOBILE Hero (< md): matches HomeEmployer design — dark overlay, white text ── */}
-      <section className="relative overflow-hidden md:hidden" style={{ minHeight: "480px" }}>
+      <section className="relative overflow-hidden md:hidden">
         {/* Background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
@@ -322,7 +322,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         />
 
         {/* Content — centered, white text */}
-        <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-20 pb-4">
+        <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-16 pb-4">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}

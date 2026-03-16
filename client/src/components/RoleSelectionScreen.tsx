@@ -422,17 +422,17 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="worker"
                     image={WORKER_IMG}
                     icon={<HardHat className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title="מחפש עבודה?"
+                    title="מחפש עבודה זמנית?"
                     subtitle="לעובדים"
-                    description="מצא עבודות זמניות בקרבתך תוך דקות.\nקשר ישיר עם עסקים — ללא עמלות."
+                    description="מצא עבודות בקרבתך תוך דקות.\nבלי עמלות ועם קשר ישיר למעסיקים."
                     features={[
-                      "אלפי משרות פעילות ברחבי הארץ",
-                      "קשר ישיר עם המעסיק",
+                      "עבודות פעילות בכל הארץ",
+                      "יצירת קשר ישיר עם המעסיק",
                       "ללא עמלות וללא דמי תיווך",
                     ]}
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
-                    buttonLabel="המשך כעובד"
+                    buttonLabel="מצא עבודה עכשיו"
                     loading={loading === "worker"}
                     disabled={!!loading}
                     onSelect={() => handleSelect("worker")}

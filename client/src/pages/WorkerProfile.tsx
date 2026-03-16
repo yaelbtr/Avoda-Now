@@ -1110,30 +1110,26 @@ export default function WorkerProfile() {
         </p>
 
         {/* Save button for details tab */}
-        <div className="flex gap-2 mt-2">
+        <div className="flex flex-col gap-2 mt-2">
+          <AppButton
+            variant="cta"
+            size="lg"
+            className="w-full"
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור
+          </AppButton>
           <button
             onClick={() => navigate(-1 as any)}
             disabled={updateMutation.isPending}
-            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
             type="button"
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+            style={{ color: "oklch(0.35 0.08 122)" }}
           >
-            <X className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
             יציאה ללא שמירה
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{
-              background: updateMutation.isPending
-                ? "oklch(0.55 0.08 122)"
-                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-              color: "white",
-            }}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור פרטים
           </button>
         </div>
         </div>
@@ -1394,30 +1390,26 @@ export default function WorkerProfile() {
           </div>
         </div>
         {/* Save button for work tab */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
+          <AppButton
+            variant="cta"
+            size="lg"
+            className="w-full"
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור
+          </AppButton>
           <button
             onClick={() => navigate(-1 as any)}
             disabled={updateMutation.isPending}
-            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
             type="button"
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+            style={{ color: "oklch(0.35 0.08 122)" }}
           >
-            <X className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
             יציאה ללא שמירה
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{
-              background: updateMutation.isPending
-                ? "oklch(0.55 0.08 122)"
-                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-              color: "white",
-            }}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור העדפות
           </button>
         </div>
         </div>
@@ -1501,30 +1493,26 @@ export default function WorkerProfile() {
           </div>
         </div>
         {/* Save button for schedule tab */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
+          <AppButton
+            variant="cta"
+            size="lg"
+            className="w-full"
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+            שמור
+          </AppButton>
           <button
             onClick={() => navigate(-1 as any)}
             disabled={updateMutation.isPending}
-            className="flex-1 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border-2 transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{ borderColor: "oklch(0.75 0.05 122)", color: "oklch(0.35 0.08 122)", background: "transparent" }}
             type="button"
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+            style={{ color: "oklch(0.35 0.08 122)" }}
           >
-            <X className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
             יציאה ללא שמירה
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-            className="flex-[2] py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{
-              background: updateMutation.isPending
-                ? "oklch(0.55 0.08 122)"
-                : "linear-gradient(135deg, #4F583B 0%, oklch(0.40 0.10 122) 100%)",
-              color: "white",
-            }}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור זמינות
           </button>
         </div>
         </div>

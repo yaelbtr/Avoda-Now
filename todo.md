@@ -2078,3 +2078,7 @@
 - [x] Add `getUserByEmail` db helper (reuse if exists, else create)
 - [x] Call checkEmailAvailable in handleGoogleContinue before redirect — show error toast if taken
 - [x] Write 32 Vitest tests (server/check-email.test.ts) — 503 total passing, 0 TypeScript errors
+
+## הסרת Google Login ממסך התחברות
+- [x] שוחזר כפתור "כניסה עם Google" במסך Login (step=phone, activeTab=login) — הוסר בטעות
+- [x] Google OAuth זמין גם ב-Login (לחשבונות קיימים) וגם בהרשמה (channel step)

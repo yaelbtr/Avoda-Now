@@ -259,7 +259,13 @@ export default function HomeEmployer() {
           >
             <Zap size={15} />
             פרסם צורך עכשיו
-            <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+            <motion.span
+              animate={{ x: [0, -5, 0] }}
+              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+              style={{ display: "inline-flex", alignItems: "center" }}
+            >
+              <ChevronLeft size={16} style={{ opacity: 0.9 }} />
+            </motion.span>
           </motion.button>
           <motion.button
             onClick={() => navigate("/available-workers")}
@@ -366,7 +372,13 @@ export default function HomeEmployer() {
             >
               <Zap size={15} />
               פרסם צורך עכשיו
-              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+              <motion.span
+                animate={{ x: [0, -5, 0] }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+                style={{ display: "inline-flex", alignItems: "center" }}
+              >
+                <ChevronLeft size={16} style={{ opacity: 0.9 }} />
+              </motion.span>
             </motion.button>
             <motion.button
               onClick={() => navigate("/available-workers")}

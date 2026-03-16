@@ -152,6 +152,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  const handlePrimaryCtaClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now();
+    setRipples(prev => [...prev, { id, x, y }]);
+    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
+    navigate("/find-jobs");
+  };
   useSEO({
     title: "דף הבית",
     description: "הפלטפורמה לעבודות זמניות בישראל. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
@@ -374,7 +385,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="w-full flex flex-col gap-3 mt-3"
           >
             <motion.button
-              onClick={() => navigate("/find-jobs")}
+              onClick={handlePrimaryCtaClick}
               className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
               style={{
                 background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
@@ -394,6 +405,25 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               >
                 <ChevronLeft size={16} style={{ opacity: 0.9 }} />
               </motion.span>
+              {ripples.map(r => (
+                <motion.span
+                  key={r.id}
+                  initial={{ scale: 0, opacity: 0.5 }}
+                  animate={{ scale: 4, opacity: 0 }}
+                  transition={{ duration: 0.65, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    left: r.x,
+                    top: r.y,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background: "oklch(1 0 0 / 0.3)",
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: "none",
+                  }}
+                />
+              ))}
             </motion.button>
             <motion.button
               onClick={handleAvailabilityToggle}
@@ -404,9 +434,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 color: "oklch(0.35 0.08 122)",
                 boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
               }}
+              animate={{
+                boxShadow: [
+                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                  "0 0 0 4px oklch(0.55 0.12 122 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                ],
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
               <Zap size={14} />
               הגדר זמינות עכשיו

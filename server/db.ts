@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, inArray, isNull, like, lte, ne, or, sql, asc } from "drizzle-orm";
-import { alias as aliasedTable } from "drizzle-orm/mysql-core";
-import { drizzle } from "drizzle-orm/mysql2";
+import { alias as aliasedTable } from "drizzle-orm/pg-core";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import {
   InsertJob,
   InsertJobReport,
@@ -37,18 +38,38 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
-let _db: ReturnType<typeof drizzle> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _db: ReturnType<typeof drizzle<any>> | null = null;
+let _pool: Pool | null = null;
 
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  // Prefer POSTGRES_URL (PostgreSQL), fall back to DATABASE_URL
+  const connStr = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  if (!_db && connStr) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _pool = new Pool({
+        connectionString: connStr,
+        ssl: connStr.includes("neon.tech") || connStr.includes("sslmode=require")
+          ? { rejectUnauthorized: false }
+          : false,
+        max: 10,
+      });
+      _db = drizzle(_pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
     }
   }
   return _db;
+}
+
+/** Gracefully close the connection pool (for tests / graceful shutdown). */
+export async function closeDb() {
+  if (_pool) {
+    await _pool.end();
+    _pool = null;
+    _db = null;
+  }
 }
 
 // ─── Users ───────────────────────────────────────────────────────────────────
@@ -79,7 +100,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (!values.lastSignedIn) values.lastSignedIn = new Date();
   if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  await db.insert(users).values(values)
+    .onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -592,8 +614,8 @@ export async function countActiveJobsByUser(userId: number): Promise<number> {
 export async function createJob(data: InsertJob) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(jobs).values(data);
-  const insertId = (result as unknown as [{ insertId: number }])[0]?.insertId ?? 0;
+  const result = await db.insert(jobs).values(data).returning({ id: jobs.id });
+  const insertId = result[0]?.id ?? 0;
   const created = await db.select().from(jobs).where(eq(jobs.id, insertId)).limit(1);
   return created[0];
 }
@@ -1603,7 +1625,8 @@ export async function savePushSubscription(data: InsertPushSubscription): Promis
   await db
     .insert(pushSubscriptions)
     .values(data)
-    .onDuplicateKeyUpdate({
+    .onConflictDoUpdate({
+      target: pushSubscriptions.endpoint,
       set: {
         p256dh: data.p256dh,
         auth: data.auth,
@@ -2200,7 +2223,10 @@ export async function syncWorkerRegions(
       regionId: entry.regionId,
       distanceKm: entry.distanceKm != null ? String(entry.distanceKm) : null,
       matchType: entry.matchType,
-    }).onDuplicateKeyUpdate({ set: { matchType: entry.matchType, distanceKm: entry.distanceKm != null ? String(entry.distanceKm) : null } });
+    }).onConflictDoUpdate({
+      target: [workerRegions.workerId, workerRegions.regionId],
+      set: { matchType: entry.matchType, distanceKm: entry.distanceKm != null ? String(entry.distanceKm) : null },
+    });
   }
 
   // Also keep users.regionId pointing to the nearest GPS region (for backward compat)
@@ -2352,8 +2378,8 @@ export async function recountRegionWorkers(regionId: number): Promise<number> {
 export async function createRegion(data: InsertRegion): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.insert(regions).values(data);
-  return (result[0] as { insertId: number }).insertId;
+  const result = await db.insert(regions).values(data).returning({ id: regions.id });
+  return result[0]?.id ?? 0;
 }
 
 /** Admin: delete a region and all its worker_regions entries */
@@ -2634,7 +2660,7 @@ export async function setSystemSetting(key: string, value: string): Promise<void
   if (!db) return;
   await db.insert(systemSettings)
     .values({ key, value })
-    .onDuplicateKeyUpdate({ set: { value } });
+    .onConflictDoUpdate({ target: systemSettings.key, set: { value } });
 }
 
 /** Returns true when maintenance mode is active. */
@@ -2697,8 +2723,9 @@ export async function recordUserConsent(
     documentVersion: opts?.documentVersion ?? "2026-03",
     ipAddress: opts?.ipAddress ?? null,
     userAgent: opts?.userAgent ?? null,
-  }).onDuplicateKeyUpdate({
-    // Keep the original consent — do not overwrite with newer timestamp
+  }).onConflictDoUpdate({
+    target: [userConsents.userId, userConsents.consentType],
+    // Update documentVersion so re-consent to a newer version is recorded
     set: { documentVersion: opts?.documentVersion ?? "2026-03" },
   });
 }

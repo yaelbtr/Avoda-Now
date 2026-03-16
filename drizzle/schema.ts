@@ -1,16 +1,117 @@
 import {
   boolean,
-  decimal,
-  int,
+  numeric,
+  integer,
   json,
-  mysqlEnum,
-  mysqlTable,
+  pgEnum,
+  pgTable,
   primaryKey,
   text,
   timestamp,
   uniqueIndex,
   varchar,
-} from "drizzle-orm/mysql-core";
+  serial,
+  index,
+} from "drizzle-orm/pg-core";
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+export const userStatusEnum = pgEnum("user_status", ["active", "suspended"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "admin", "test"]);
+export const userModeEnum = pgEnum("user_mode", ["worker", "employer"]);
+export const locationModeEnum = pgEnum("location_mode", ["city", "radius"]);
+export const availabilityStatusEnum = pgEnum("availability_status", [
+  "available_now",
+  "available_today",
+  "available_hours",
+  "not_available",
+]);
+export const notificationPrefsEnum = pgEnum("notification_prefs", [
+  "both",
+  "push_only",
+  "sms_only",
+  "none",
+]);
+export const jobCategoryEnum = pgEnum("job_category", [
+  "delivery",
+  "warehouse",
+  "agriculture",
+  "kitchen",
+  "cleaning",
+  "security",
+  "construction",
+  "childcare",
+  "eldercare",
+  "retail",
+  "events",
+  "volunteer",
+  "emergency_support",
+  "passover_jobs",
+  "reserve_families",
+  "other",
+]);
+export const salaryTypeEnum = pgEnum("salary_type", [
+  "hourly",
+  "daily",
+  "monthly",
+  "volunteer",
+]);
+export const startTimeEnum = pgEnum("start_time", [
+  "today",
+  "tomorrow",
+  "this_week",
+  "flexible",
+]);
+export const activeDurationEnum = pgEnum("active_duration", ["1", "3", "7"]);
+export const jobStatusEnum = pgEnum("job_status", [
+  "active",
+  "closed",
+  "expired",
+  "under_review",
+]);
+export const closedReasonEnum = pgEnum("closed_reason", [
+  "found_worker",
+  "expired",
+  "manual",
+]);
+export const jobLocationModeEnum = pgEnum("job_location_mode", [
+  "city",
+  "radius",
+]);
+export const applicationStatusEnum = pgEnum("application_status", [
+  "pending",
+  "viewed",
+  "accepted",
+  "rejected",
+]);
+export const phoneChangeResultEnum = pgEnum("phone_change_result", [
+  "success",
+  "failed",
+  "locked",
+]);
+export const regionStatusEnum = pgEnum("region_status", [
+  "collecting_workers",
+  "active",
+  "paused",
+]);
+export const workerRegionMatchTypeEnum = pgEnum("worker_region_match_type", [
+  "gps_radius",
+  "preferred_city",
+]);
+export const regionNotifTypeEnum = pgEnum("region_notif_type", [
+  "worker",
+  "employer",
+]);
+export const consentTypeEnum = pgEnum("consent_type", [
+  "terms",
+  "privacy",
+  "age_18",
+  "job_posting_policy",
+  "safety_policy",
+  "user_content_policy",
+  "reviews_policy",
+]);
+
+// ─── Tables ───────────────────────────────────────────────────────────────────
 
 /**
  * Users authenticated via Twilio SMS OTP.
@@ -18,8 +119,8 @@ import {
  * openId is kept for backward-compat with the OAuth context layer but is
  * set to the phone number for phone-auth users.
  */
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   /** Manus OAuth openId OR phone number (for phone-auth users). Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   /** E.164 phone number, e.g. +972501234567. Unique per user. */
@@ -32,10 +133,10 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   /** active | suspended */
-  status: mysqlEnum("status", ["active", "suspended"]).default("active").notNull(),
-  role: mysqlEnum("role", ["user", "admin", "test"]).default("user").notNull(),
+  status: userStatusEnum("status").default("active").notNull(),
+  role: userRoleEnum("role").default("user").notNull(),
   /** User's chosen mode: worker (job seeker) or employer (job poster). Null = not yet chosen. */
-  userMode: mysqlEnum("userMode", ["worker", "employer"]),
+  userMode: userModeEnum("userMode"),
   /** JSON array of normalized skill/interest tags for future AI matching */
   workerTags: json("workerTags").$type<string[]>(),
   /** Worker's preferred job categories (JSON array of category values) */
@@ -45,13 +146,13 @@ export const users = mysqlTable("users", {
   /** Worker's preferred cities (JSON array of city IDs from the cities table) */
   preferredCities: json("preferredCities").$type<number[]>(),
   /** Worker's location mode for matching: city or radius */
-  locationMode: mysqlEnum("locationMode", ["city", "radius"]).default("city"),
+  locationMode: locationModeEnum("locationMode").default("city"),
   /** Worker's GPS latitude for radius-based matching */
-  workerLatitude: decimal("workerLatitude", { precision: 10, scale: 7 }),
+  workerLatitude: numeric("workerLatitude", { precision: 10, scale: 7 }),
   /** Worker's GPS longitude for radius-based matching */
-  workerLongitude: decimal("workerLongitude", { precision: 10, scale: 7 }),
+  workerLongitude: numeric("workerLongitude", { precision: 10, scale: 7 }),
   /** Worker's preferred search radius in km */
-  searchRadiusKm: int("searchRadiusKm").default(5),
+  searchRadiusKm: integer("searchRadiusKm").default(5),
   /** Free text describing work preferences for AI matching */
   preferenceText: text("preferenceText"),
   /** Preferred work days: e.g. ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"] */
@@ -63,26 +164,26 @@ export const users = mysqlTable("users", {
   /** Worker's profile photo URL (stored in S3) */
   profilePhoto: text("profilePhoto"),
   /** Worker's expected hourly rate in ILS */
-  expectedHourlyRate: decimal("expectedHourlyRate", { precision: 8, scale: 2 }),
+  expectedHourlyRate: numeric("expectedHourlyRate", { precision: 8, scale: 2 }),
   /** Worker's current availability status */
-  availabilityStatus: mysqlEnum("availabilityStatus", ["available_now", "available_today", "available_hours", "not_available"]),
+  availabilityStatus: availabilityStatusEnum("availabilityStatus"),
   /** Worker's average rating (1.0 - 5.0), set by employers after job completion */
-  workerRating: decimal("workerRating", { precision: 3, scale: 2 }),
+  workerRating: numeric("workerRating", { precision: 3, scale: 2 }),
   /** Total number of jobs completed by this worker */
-  completedJobsCount: int("completedJobsCount").default(0).notNull(),
+  completedJobsCount: integer("completedJobsCount").default(0).notNull(),
   /** Whether the worker has completed the onboarding signup flow */
   signupCompleted: boolean("signupCompleted").default(false).notNull(),
   /** The region this worker is associated with (set automatically on profile save) */
-  regionId: int("regionId"),
+  regionId: integer("regionId"),
   /** Which channels to use for new-applicant alerts: both | push_only | sms_only | none */
-  notificationPrefs: mysqlEnum("notificationPrefs", ["both", "push_only", "sms_only", "none"]).default("both").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  notificationPrefs: notificationPrefsEnum("notificationPrefs").default("both").notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  lastSignedIn: timestamp("lastSignedIn", { withTimezone: true }).defaultNow().notNull(),
   /** The user ID who referred this user (set at signup via ?ref= link) */
-  referredBy: int("referredBy"),
+  referredBy: integer("referredBy"),
   /** Timestamp when the user accepted the terms of service (null = never accepted / legacy user) */
-  termsAcceptedAt: timestamp("termsAcceptedAt"),
+  termsAcceptedAt: timestamp("termsAcceptedAt", { withTimezone: true }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -93,84 +194,67 @@ export type InsertUser = typeof users.$inferInsert;
  * Tracks how many times a phone (or IP) has requested an OTP in the last hour.
  * Twilio handles the actual OTP code storage and verification.
  */
-export const otpRateLimit = mysqlTable("otp_rate_limit", {
-  id: int("id").autoincrement().primaryKey(),
+export const otpRateLimit = pgTable("otp_rate_limit", {
+  id: serial("id").primaryKey(),
   /** E.164 phone number being rate-limited */
   phone: varchar("phone", { length: 20 }).notNull(),
   /** IP address of the requester */
   ip: varchar("ip", { length: 45 }),
   /** Number of OTP send attempts in the current window */
-  sendCount: int("sendCount").default(1).notNull(),
+  sendCount: integer("sendCount").default(1).notNull(),
   /** Number of verification attempts (wrong code) */
-  verifyAttempts: int("verifyAttempts").default(0).notNull(),
+  verifyAttempts: integer("verifyAttempts").default(0).notNull(),
   /** Window start — reset after 1 hour */
-  windowStart: timestamp("windowStart").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  windowStart: timestamp("windowStart", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type OtpRateLimit = typeof otpRateLimit.$inferSelect;
 
-export const jobs = mysqlTable("jobs", {
-  id: int("id").autoincrement().primaryKey(),
+export const jobs = pgTable("jobs", {
+  id: serial("id").primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull(),
-  category: mysqlEnum("category", [
-    "delivery",
-    "warehouse",
-    "agriculture",
-    "kitchen",
-    "cleaning",
-    "security",
-    "construction",
-    "childcare",
-    "eldercare",
-    "retail",
-    "events",
-    "volunteer",
-    "emergency_support",
-    "passover_jobs",
-    "reserve_families",
-    "other",
-  ]).notNull(),
+  category: jobCategoryEnum("category").notNull(),
   address: varchar("address", { length: 300 }).notNull(),
   city: varchar("city", { length: 100 }),
-  latitude: decimal("latitude", { precision: 10, scale: 7 }).notNull(),
-  longitude: decimal("longitude", { precision: 10, scale: 7 }).notNull(),
-  salary: decimal("salary", { precision: 10, scale: 2 }),
-  salaryType: mysqlEnum("salaryType", ["hourly", "daily", "monthly", "volunteer"]).default("hourly").notNull(),
+  latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
+  longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
+  salary: numeric("salary", { precision: 10, scale: 2 }),
+  salaryType: salaryTypeEnum("salaryType").default("hourly").notNull(),
   contactPhone: varchar("contactPhone", { length: 20 }).notNull(),
   contactName: varchar("contactName", { length: 100 }).notNull(),
   businessName: varchar("businessName", { length: 200 }),
   workingHours: varchar("workingHours", { length: 100 }),
-  startTime: mysqlEnum("startTime", ["today", "tomorrow", "this_week", "flexible"]).default("flexible").notNull(),
+  startTime: startTimeEnum("startTime").default("flexible").notNull(),
   /** Exact date/time when the job starts. If within 24h from now → badge "עבודה להיום" */
-  startDateTime: timestamp("startDateTime"),
+  startDateTime: timestamp("startDateTime", { withTimezone: true }),
   /** Urgent flag: employer needs a worker immediately → shown at top of listings */
   isUrgent: boolean("isUrgent").default(false).notNull(),
   /** Local business badge: shown on job card as "עסק מקומי" */
   isLocalBusiness: boolean("isLocalBusiness").default(false).notNull(),
   /** When the 6-hour reminder was sent to the employer */
-  reminderSentAt: timestamp("reminderSentAt"),
+  reminderSentAt: timestamp("reminderSentAt", { withTimezone: true }),
   /** Why the job was closed */
-  closedReason: mysqlEnum("closedReason", ["found_worker", "expired", "manual"]),
-  workersNeeded: int("workersNeeded").default(1).notNull(),
-  postedBy: int("postedBy").references(() => users.id),
+  closedReason: closedReasonEnum("closedReason"),
+  workersNeeded: integer("workersNeeded").default(1).notNull(),
+  postedBy: integer("postedBy").references(() => users.id),
   /** Duration in days: 1, 3, or 7. Default is 1 (24 hours) for instant jobs */
-  activeDuration: mysqlEnum("activeDuration", ["1", "3", "7"]).default("1").notNull(),
+  activeDuration: activeDurationEnum("activeDuration").default("1").notNull(),
   /** Computed expiry timestamp = createdAt + activeDuration days */
-  expiresAt: timestamp("expiresAt"),
-  status: mysqlEnum("status", ["active", "closed", "expired", "under_review"]).default("active").notNull(),
-  reportCount: int("reportCount").default(0).notNull(),
+  expiresAt: timestamp("expiresAt", { withTimezone: true }),
+  status: jobStatusEnum("status").default("active").notNull(),
+  reportCount: integer("reportCount").default(0).notNull(),
   /** JSON array of normalized tags for future AI matching */
   jobTags: json("jobTags").$type<string[]>(),
   /** Job location mode for matching: city or radius */
-  jobLocationMode: mysqlEnum("jobLocationMode", ["city", "radius"]).default("radius"),
+  jobLocationMode: jobLocationModeEnum("jobLocationMode").default("radius"),
   /** Job search radius in km (used when jobLocationMode = radius) */
-  jobSearchRadiusKm: int("jobSearchRadiusKm").default(5),
+  jobSearchRadiusKm: integer("jobSearchRadiusKm").default(5),
   /** Hourly rate for the job (ILS per hour) */
-  hourlyRate: decimal("hourlyRate", { precision: 10, scale: 2 }),
+  hourlyRate: numeric("hourlyRate", { precision: 10, scale: 2 }),
   /** Estimated number of hours for the job */
-  estimatedHours: decimal("estimatedHours", { precision: 5, scale: 1 }),
+  estimatedHours: numeric("estimatedHours", { precision: 5, scale: 1 }),
   /** Whether the employer's phone number is visible to workers on the job card */
   showPhone: boolean("showPhone").default(false).notNull(),
   /** Specific date for the job in YYYY-MM-DD format (e.g. "2026-03-15") */
@@ -181,8 +265,8 @@ export const jobs = mysqlTable("jobs", {
   workEndTime: varchar("workEndTime", { length: 5 }),
   /** JSON array of up to 5 S3 image URLs uploaded by the employer */
   imageUrls: json("imageUrls").$type<string[]>(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Job = typeof jobs.$inferSelect;
@@ -192,31 +276,31 @@ export type InsertJob = typeof jobs.$inferInsert;
  * Job applications — tracks when a worker applies to a job.
  * Prevents duplicate applications and provides employer with applicant details.
  */
-export const applications = mysqlTable("applications", {
-  id: int("id").autoincrement().primaryKey(),
-  jobId: int("jobId").notNull().references(() => jobs.id),
-  workerId: int("workerId").notNull().references(() => users.id),
+export const applications = pgTable("applications", {
+  id: serial("id").primaryKey(),
+  jobId: integer("jobId").notNull().references(() => jobs.id),
+  workerId: integer("workerId").notNull().references(() => users.id),
   /** Status of the application */
-  status: mysqlEnum("status", ["pending", "viewed", "accepted", "rejected"]).default("pending").notNull(),
+  status: applicationStatusEnum("status").default("pending").notNull(),
   /** Optional message from the worker */
   message: text("message"),
   /** Whether the employer has revealed the worker's contact details */
   contactRevealed: boolean("contactRevealed").default(false).notNull(),
   /** Timestamp when the employer first revealed contact details */
-  revealedAt: timestamp("revealedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  revealedAt: timestamp("revealedAt", { withTimezone: true }),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = typeof applications.$inferInsert;
 
-export const jobReports = mysqlTable("job_reports", {
-  id: int("id").autoincrement().primaryKey(),
-  jobId: int("jobId").notNull().references(() => jobs.id),
+export const jobReports = pgTable("job_reports", {
+  id: serial("id").primaryKey(),
+  jobId: integer("jobId").notNull().references(() => jobs.id),
   reporterPhone: varchar("reporterPhone", { length: 20 }),
   reporterIp: varchar("reporterIp", { length: 45 }),
   reason: varchar("reason", { length: 200 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type JobReport = typeof jobReports.$inferSelect;
@@ -227,23 +311,23 @@ export type InsertJobReport = typeof jobReports.$inferInsert;
  * Availability expires automatically after availableUntil timestamp.
  * Workers can set a note (e.g. "available in Tel Aviv area").
  */
-export const workerAvailability = mysqlTable("worker_availability", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
+export const workerAvailability = pgTable("worker_availability", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
   /** Worker's current latitude */
-  latitude: decimal("latitude", { precision: 10, scale: 7 }).notNull(),
+  latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
   /** Worker's current longitude */
-  longitude: decimal("longitude", { precision: 10, scale: 7 }).notNull(),
+  longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
   /** City name for display */
   city: varchar("city", { length: 100 }),
   /** Optional note from worker */
   note: varchar("note", { length: 200 }),
   /** Availability expires at this time (default: 4 hours from now) */
-  availableUntil: timestamp("availableUntil").notNull(),
+  availableUntil: timestamp("availableUntil", { withTimezone: true }).notNull(),
   /** Timestamp when the 30-min expiry reminder SMS was sent */
-  reminderSentAt: timestamp("reminderSentAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  reminderSentAt: timestamp("reminderSentAt", { withTimezone: true }),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type WorkerAvailability = typeof workerAvailability.$inferSelect;
@@ -257,21 +341,21 @@ export type InsertWorkerAvailability = typeof workerAvailability.$inferInsert;
  *  pending  → batch is collecting; a flush is scheduled for scheduledAt
  *  sent     → SMS was dispatched
  */
-export const notificationBatches = mysqlTable("notification_batches", {
-  id: int("id").autoincrement().primaryKey(),
-  jobId: int("jobId").notNull().references(() => jobs.id),
+export const notificationBatches = pgTable("notification_batches", {
+  id: serial("id").primaryKey(),
+  jobId: integer("jobId").notNull().references(() => jobs.id),
   /** Phone number of the employer who posted the job */
   employerPhone: varchar("employerPhone", { length: 20 }).notNull(),
   /** How many new applications have been collected in this batch */
-  pendingCount: int("pendingCount").notNull().default(0),
+  pendingCount: integer("pendingCount").notNull().default(0),
   /** When the delayed flush is scheduled to fire (now + 10 min) */
-  scheduledAt: timestamp("scheduledAt").notNull(),
+  scheduledAt: timestamp("scheduledAt", { withTimezone: true }).notNull(),
   /** When the SMS was actually sent (null = not yet sent) */
-  sentAt: timestamp("sentAt"),
+  sentAt: timestamp("sentAt", { withTimezone: true }),
   /** pending | sent */
   status: varchar("status", { length: 20 }).notNull().default("pending"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 export type NotificationBatch = typeof notificationBatches.$inferSelect;
 export type InsertNotificationBatch = typeof notificationBatches.$inferInsert;
@@ -280,16 +364,16 @@ export type InsertNotificationBatch = typeof notificationBatches.$inferInsert;
  * Stores Web Push subscriptions for workers.
  * Each row represents one browser/device subscription.
  */
-export const pushSubscriptions = mysqlTable("push_subscriptions", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
   endpoint: varchar("endpoint", { length: 2048 }).notNull(),
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (t) => ({
-  endpointIdx: uniqueIndex("push_endpoint_idx").on(t.endpoint),
-}));
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("push_endpoint_idx").on(t.endpoint),
+]);
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
 
@@ -297,14 +381,14 @@ export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
  * Israeli cities reference table.
  * Populated once from a seed script; read-only at runtime.
  */
-export const cities = mysqlTable("cities", {
-  id: int("id").autoincrement().primaryKey(),
-  cityCode: int("city_code"),
+export const cities = pgTable("cities", {
+  id: serial("id").primaryKey(),
+  cityCode: integer("city_code"),
   nameHe: text("name_he").notNull(),
   nameEn: text("name_en"),
   district: varchar("district", { length: 100 }),
-  latitude: decimal("latitude", { precision: 10, scale: 7 }),
-  longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  latitude: numeric("latitude", { precision: 10, scale: 7 }),
+  longitude: numeric("longitude", { precision: 10, scale: 7 }),
   isActive: boolean("is_active").default(true).notNull(),
 });
 export type City = typeof cities.$inferSelect;
@@ -314,8 +398,8 @@ export type InsertCity = typeof cities.$inferInsert;
  * Israeli phone number prefixes lookup table.
  * Seeded once; read-only at runtime.
  */
-export const phonePrefixes = mysqlTable("phone_prefixes", {
-  id: int("id").autoincrement().primaryKey(),
+export const phonePrefixes = pgTable("phone_prefixes", {
+  id: serial("id").primaryKey(),
   /** The 3-digit prefix, e.g. "050", "052" */
   prefix: varchar("prefix", { length: 5 }).notNull().unique(),
   /** Hebrew description, e.g. "פלאפון" */
@@ -329,9 +413,9 @@ export type InsertPhonePrefix = typeof phonePrefixes.$inferInsert;
  * Audit log for phone number changes.
  * Records every phone change attempt (successful or locked-out).
  */
-export const phoneChangeLogs = mysqlTable("phone_change_logs", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
+export const phoneChangeLogs = pgTable("phone_change_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
   /** Phone number before the change (E.164) */
   oldPhone: varchar("oldPhone", { length: 20 }),
   /** Phone number after the change (E.164) */
@@ -339,20 +423,20 @@ export const phoneChangeLogs = mysqlTable("phone_change_logs", {
   /** IP address of the request */
   ipAddress: varchar("ipAddress", { length: 45 }),
   /** success | failed | locked */
-  result: mysqlEnum("result", ["success", "failed", "locked"]).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  result: phoneChangeResultEnum("result").notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
 });
 export type PhoneChangeLog = typeof phoneChangeLogs.$inferSelect;
 export type InsertPhoneChangeLog = typeof phoneChangeLogs.$inferInsert;
 
-export const savedJobs = mysqlTable("saved_jobs", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
-  jobId: int("jobId").notNull(),
-  savedAt: timestamp("savedAt").defaultNow().notNull(),
-}, (t) => ({
-  userJobIdx: uniqueIndex("saved_jobs_user_job_idx").on(t.userId, t.jobId),
-}));
+export const savedJobs = pgTable("saved_jobs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  jobId: integer("jobId").notNull(),
+  savedAt: timestamp("savedAt", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("saved_jobs_user_job_idx").on(t.userId, t.jobId),
+]);
 export type SavedJob = typeof savedJobs.$inferSelect;
 export type InsertSavedJob = typeof savedJobs.$inferInsert;
 
@@ -361,22 +445,22 @@ export type InsertSavedJob = typeof savedJobs.$inferInsert;
  * One rating per employer per worker (unique constraint).
  * workerRating on users table is auto-updated to the rolling average.
  */
-export const workerRatings = mysqlTable("worker_ratings", {
-  id: int("id").autoincrement().primaryKey(),
+export const workerRatings = pgTable("worker_ratings", {
+  id: serial("id").primaryKey(),
   /** The worker being rated */
-  workerId: int("workerId").notNull().references(() => users.id),
+  workerId: integer("workerId").notNull().references(() => users.id),
   /** The employer submitting the rating */
-  employerId: int("employerId").notNull().references(() => users.id),
+  employerId: integer("employerId").notNull().references(() => users.id),
   /** Optional: the job application this rating is tied to */
-  applicationId: int("applicationId"),
+  applicationId: integer("applicationId"),
   /** 1–5 stars */
-  rating: int("rating").notNull(),
+  rating: integer("rating").notNull(),
   /** Optional text review */
   comment: text("comment"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (t) => ({
-  employerWorkerIdx: uniqueIndex("worker_ratings_employer_worker_idx").on(t.employerId, t.workerId),
-}));
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("worker_ratings_employer_worker_idx").on(t.employerId, t.workerId),
+]);
 export type WorkerRating = typeof workerRatings.$inferSelect;
 export type InsertWorkerRating = typeof workerRatings.$inferInsert;
 
@@ -385,8 +469,8 @@ export type InsertWorkerRating = typeof workerRatings.$inferInsert;
  * Replaces the hardcoded JOB_CATEGORIES and SPECIAL_CATEGORIES arrays.
  * All screens fetch categories dynamically from this table.
  */
-export const categories = mysqlTable("categories", {
-  id: int("id").autoincrement().primaryKey(),
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
   /** URL-safe slug used as the category value in jobs, filters, and SEO routes */
   slug: varchar("slug", { length: 64 }).notNull().unique(),
   /** Hebrew display name */
@@ -400,9 +484,9 @@ export const categories = mysqlTable("categories", {
   /** Whether the category is visible to users and included in filters */
   isActive: boolean("isActive").default(true).notNull(),
   /** Display order (lower = shown first) */
-  sortOrder: int("sortOrder").default(0).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  sortOrder: integer("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;
@@ -414,8 +498,8 @@ export type InsertCategory = typeof categories.$inferInsert;
  * When currentWorkers >= minWorkersRequired the region becomes active
  * and employers in that region can start posting jobs.
  */
-export const regions = mysqlTable("regions", {
-  id: int("id").autoincrement().primaryKey(),
+export const regions = pgTable("regions", {
+  id: serial("id").primaryKey(),
   /** URL-safe slug, e.g. "tel-aviv", "bnei-brak" */
   slug: varchar("slug", { length: 64 }).notNull().unique(),
   /** Hebrew display name, e.g. "תל אביב" */
@@ -423,25 +507,25 @@ export const regions = mysqlTable("regions", {
   /** Name of the center city in Hebrew */
   centerCity: varchar("centerCity", { length: 100 }).notNull(),
   /** GPS latitude of the region center */
-  centerLat: decimal("centerLat", { precision: 10, scale: 7 }).notNull(),
+  centerLat: numeric("centerLat", { precision: 10, scale: 7 }).notNull(),
   /** GPS longitude of the region center */
-  centerLng: decimal("centerLng", { precision: 10, scale: 7 }).notNull(),
+  centerLng: numeric("centerLng", { precision: 10, scale: 7 }).notNull(),
   /** Radius in km within which workers are counted for this region */
-  activationRadiusKm: int("activationRadiusKm").default(15).notNull(),
+  activationRadiusKm: integer("activationRadiusKm").default(15).notNull(),
   /** Radius expressed in travel-time minutes (display only, informational) */
-  radiusMinutes: int("radiusMinutes").default(20).notNull(),
+  radiusMinutes: integer("radiusMinutes").default(20).notNull(),
   /** Minimum workers required to transition status → active */
-  minWorkersRequired: int("minWorkersRequired").default(50).notNull(),
+  minWorkersRequired: integer("minWorkersRequired").default(50).notNull(),
   /** Current number of workers associated with this region */
-  currentWorkers: int("currentWorkers").default(0).notNull(),
+  currentWorkers: integer("currentWorkers").default(0).notNull(),
   /** collecting_workers → active → paused */
-  status: mysqlEnum("status", ["collecting_workers", "active", "paused"]).default("collecting_workers").notNull(),
+  status: regionStatusEnum("status").default("collecting_workers").notNull(),
   /** Optional short description shown on the worker landing page */
   description: text("description"),
   /** Optional hero image URL for the worker landing page */
   imageUrl: text("imageUrl"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
 export type Region = typeof regions.$inferSelect;
 export type InsertRegion = typeof regions.$inferInsert;
@@ -452,16 +536,16 @@ export type InsertRegion = typeof regions.$inferInsert;
  *   1. Any region whose center is within the worker's GPS radius.
  *   2. Any region whose centerCity matches one of the worker's preferredCities.
  */
-export const workerRegions = mysqlTable(
+export const workerRegions = pgTable(
   "worker_regions",
   {
-    workerId: int("worker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    regionId: int("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
+    workerId: integer("worker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    regionId: integer("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
     /** Distance in km between worker location and region center (null for city-based matches) */
-    distanceKm: decimal("distance_km", { precision: 8, scale: 3 }),
+    distanceKm: numeric("distance_km", { precision: 8, scale: 3 }),
     /** How the association was created: gps_radius | preferred_city */
-    matchType: mysqlEnum("match_type", ["gps_radius", "preferred_city"]).default("gps_radius").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    matchType: workerRegionMatchTypeEnum("match_type").default("gps_radius").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [primaryKey({ columns: [t.workerId, t.regionId] })]
 );
@@ -473,15 +557,15 @@ export type InsertWorkerRegion = typeof workerRegions.$inferInsert;
  * who want to be notified when a region becomes active.
  * Unique per user + region combination.
  */
-export const regionNotificationRequests = mysqlTable(
+export const regionNotificationRequests = pgTable(
   "region_notification_requests",
   {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    regionId: int("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    regionId: integer("region_id").notNull().references(() => regions.id, { onDelete: "cascade" }),
     /** "worker" = worker waiting for employers | "employer" = employer waiting to post */
-    type: mysqlEnum("type", ["worker", "employer"]).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    type: regionNotifTypeEnum("type").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex("uniq_user_region_notif").on(t.userId, t.regionId)]
 );
@@ -492,10 +576,10 @@ export type InsertRegionNotificationRequest = typeof regionNotificationRequests.
  * System settings — key/value store for global configuration flags.
  * Examples: maintenanceMode = "true" | "false"
  */
-export const systemSettings = mysqlTable("system_settings", {
+export const systemSettings = pgTable("system_settings", {
   key: varchar("key", { length: 64 }).primaryKey(),
   value: text("value").notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 export type SystemSetting = typeof systemSettings.$inferSelect;
 
@@ -504,28 +588,20 @@ export type SystemSetting = typeof systemSettings.$inferSelect;
  * Stores one row per user per consent type with the document version they agreed to.
  * Used for GDPR/legal compliance audit trail.
  */
-export const userConsents = mysqlTable(
+export const userConsents = pgTable(
   "user_consents",
   {
-    id: int("id").autoincrement().primaryKey(),
-    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     /** The type of consent given */
-    consentType: mysqlEnum("consent_type", [
-      "terms",
-      "privacy",
-      "age_18",
-      "job_posting_policy",
-      "safety_policy",
-      "user_content_policy",
-      "reviews_policy",
-    ]).notNull(),
+    consentType: consentTypeEnum("consent_type").notNull(),
     /** Version string of the document consented to, e.g. "2026-03" */
     documentVersion: varchar("document_version", { length: 32 }).notNull().default("2026-03"),
     /** IP address at time of consent (optional, for audit) */
     ipAddress: varchar("ip_address", { length: 45 }),
     /** User-agent string at time of consent (optional) */
     userAgent: varchar("user_agent", { length: 512 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex("uniq_user_consent_type").on(t.userId, t.consentType)]
 );

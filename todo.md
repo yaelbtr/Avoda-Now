@@ -2029,3 +2029,16 @@
 - [x] On accept: call recordConsent for each outdated doc, close modal
 - [x] Prevent app navigation while modal is open (Escape key suppressed, body scroll locked, no dismiss on overlay click)
 - [x] Write Vitest tests for re-consent modal logic (server/re-consent.test.ts — 16 tests)
+
+## PostgreSQL Migration
+- [x] Install pg and @types/pg packages
+- [x] Request POSTGRES_URL secret from user (Neon PostgreSQL 17.8)
+- [x] Convert drizzle/schema.ts from mysql-core to pg-core (20 tables)
+- [x] Update server/db.ts to use drizzle-orm/node-postgres with Pool
+- [x] Update drizzle.config.ts dialect from mysql to postgresql
+- [x] Run drizzle-kit generate + migrate to create all tables in PostgreSQL (19 tables)
+- [x] Write and run data migration script (MySQL → PostgreSQL, preserving IDs, all rows migrated)
+- [x] Add 19 performance indexes: jobs(category/city/status/expiry), users(phone/rating/role), applications(jobId/workerId/status)
+- [x] Enable PostGIS extension for future geolocation queries
+- [x] Move mysql2 to devDependencies (kept for migration scripts only), all production code uses pg
+- [x] Run full test suite: 453 tests passing, 0 TypeScript errors

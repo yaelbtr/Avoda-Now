@@ -123,14 +123,14 @@ export async function adminCreateUser(data: { phone: string; name?: string; role
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.phone, normalizedPhone)).limit(1);
   if (existing.length > 0) throw new Error("מספר טלפון כבר קיים במערכת");
   const openId = `manual_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  const [inserted] = await db.insert(users).values({
+  const inserted = await db.insert(users).values({
     phone: normalizedPhone,
     name: data.name ?? null,
     role: data.role ?? "user",
     openId,
     status: "active",
-  });
-  return { id: (inserted as any).insertId as number };
+  }).returning({ id: users.id });
+  return { id: inserted[0].id };
 }
 
 export async function adminUpdateUser(userId: number, data: { name?: string; phone?: string; role?: "user" | "admin" | "test"; status?: "active" | "suspended" }) {
@@ -371,5 +371,6 @@ export async function adminClearPhoneChangeLockout(userId: number): Promise<numb
         gte(phoneChangeLogs.createdAt, since)
       )
     );
-  return (result as unknown as { affectedRows?: number })?.affectedRows ?? 0;
+  // PostgreSQL DELETE returns the deleted rows; count them
+  return Array.isArray(result) ? result.length : 0;
 }

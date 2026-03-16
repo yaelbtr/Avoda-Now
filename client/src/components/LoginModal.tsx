@@ -8,7 +8,7 @@ import { popReturnPath } from "@/const";
 import { AppButton, AppLogo, BrandName } from "@/components/ui";
 import { toast } from "sonner";
 import {
-  Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
+  Phone, PhoneCall, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
   User, Mail,
 } from "lucide-react";
@@ -683,19 +683,31 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 </div>
               )}
 
-              {/* Send OTP button */}
-              <AppButton
-                variant="cta"
-                size="lg"
-                className="w-full"
-                onClick={handleSend}
-                disabled={sendOtp.isPending || !isPhoneValid}
-              >
-                {sendOtp.isPending
-                  ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
-                  : "קבלת קוד"}
-              </AppButton>
-              <p className="text-xs text-center" style={{ color: "#6b7280" }}>הקוד יישלח אליך ב-SMS</p>
+              {/* Send OTP buttons — SMS or Call */}
+              <div className="flex flex-col gap-2">
+                <AppButton
+                  variant="cta"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => { setOtpChannel("sms"); handleSend(); }}
+                  disabled={sendOtp.isPending || !isPhoneValid}
+                >
+                  {sendOtp.isPending && otpChannel === "sms"
+                    ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                    : <><Phone className="h-4 w-4 ml-2" />קבל קוד ב-SMS</>}
+                </AppButton>
+                <AppButton
+                  variant="outline"
+                  size="lg"
+                  className="w-full bg-transparent"
+                  onClick={() => { setOtpChannel("call"); handleSend(); }}
+                  disabled={sendOtp.isPending || !isPhoneValid}
+                >
+                  {sendOtp.isPending && otpChannel === "call"
+                    ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />מחייג...</>
+                    : <><PhoneCall className="h-4 w-4 ml-2" />קבל קוד בשיחת טלפון</>}
+                </AppButton>
+              </div>
 
               {/* Footer */}
               <p className="text-center text-sm" style={{ color: "#6b7280" }}>
@@ -1017,28 +1029,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                   {/* Right side: change channel or change number */}
                   <div className="flex items-center gap-3">
-                    {/* Login: offer voice call as alternative if currently SMS */}
-                    {activeTab === "login" && otpChannel === "sms" && !isTestBypass && (
-                      <button
-                        onClick={() => { setOtpChannel("call"); handleResend("call"); }}
-                        disabled={resendCountdown > 0 || sendOtp.isPending}
-                        className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        קבל שיחה במקום
-                      </button>
-                    )}
-                    {/* Login: offer SMS if currently on call */}
-                    {activeTab === "login" && otpChannel === "call" && !isTestBypass && (
-                      <button
-                        onClick={() => { setOtpChannel("sms"); handleResend("sms"); }}
-                        disabled={resendCountdown > 0 || sendOtp.isPending}
-                        className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        קבל SMS במקום
-                      </button>
-                    )}
+                    {/* Channel already chosen in phone step — no toggle needed here */}
                     {activeTab === "register" && (
                       <button
                         onClick={() => { setStep("channel"); setDigits(Array(OTP_LENGTH).fill(""));}}

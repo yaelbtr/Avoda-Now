@@ -25,6 +25,7 @@ import {
   getNearbyWorkers,
   createUserByPhone,
   getUserByPhone,
+  getUserByNormalizedPhone,
   getUserByEmail,
   reportJob,
   resetRateLimit,
@@ -1524,6 +1525,16 @@ const userRouter = router({
           normalizedPhone = normalizeIsraeliPhone(combined);
           if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
         } catch { normalizedPhone = undefined; }
+      }
+      // Duplicate phone check before updating profile
+      if (normalizedPhone) {
+        const existingWithPhone = await getUserByNormalizedPhone(normalizedPhone, normalizeIsraeliPhone);
+        if (existingWithPhone && existingWithPhone.id !== ctx.user.id) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "מספר הטלפון כבר משויך לחשבון אחר במערכת.",
+          });
+        }
       }
       await updateWorkerProfile(ctx.user.id, {
         name: input.name ? sanitizeText(input.name) : input.name,

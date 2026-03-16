@@ -241,13 +241,18 @@ const authRouter = router({
         ?? ctx.req.socket?.remoteAddress
         ?? "unknown";
 
-      const allowed = await checkAndIncrementSendRate(phone, ip);
-      if (!allowed) {
-        securityLogger.warn({ ip, phone: phone.slice(-4), event: "otp_rate_limit_exceeded" }, "OTP rate limit exceeded");
-        throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
-        });
+      // Admin users are exempt from OTP rate limits
+      // (test-role users already returned early above, so we only need to check admin here)
+      const isPrivilegedSender = existingUser && existingUser.role === "admin";
+      if (!isPrivilegedSender) {
+        const allowed = await checkAndIncrementSendRate(phone, ip);
+        if (!allowed) {
+          securityLogger.warn({ ip, phone: phone.slice(-4), event: "otp_rate_limit_exceeded" }, "OTP rate limit exceeded");
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
+          });
+        }
       }
 
       // Send via chosen channel (SMS, Email, or Voice Call)

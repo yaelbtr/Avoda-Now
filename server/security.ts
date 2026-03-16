@@ -180,9 +180,12 @@ export const jobsListRateLimit = rateLimit({
 });
 
 // ── OTP rate limiter — 5 req/hour per IP (already in smsProvider, extra layer) ─
+// Express-level OTP guard: high ceiling (50/hour) to catch only extreme abuse.
+// Fine-grained per-phone limits (5/hour for regular users, unlimited for admins)
+// are enforced inside the tRPC sendOtp procedure via checkAndIncrementSendRate.
 export const otpRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "יותר מדי ניסיונות אימות. נסה שוב בעוד שעה." },

@@ -623,9 +623,6 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 {step}
               </div>
               <div className="flex-1 text-right">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mb-1.5" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)", color: "var(--amber-dark)" }}>
-                  {idx + 1}
-                </div>
                 <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
                 <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
               </div>

@@ -426,7 +426,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 />
               ))}
             </motion.button>
-            <Tooltip>
+            <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
                 <motion.button
                   onClick={handleAvailabilityToggle}

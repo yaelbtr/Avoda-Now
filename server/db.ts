@@ -2773,3 +2773,30 @@ export async function hasRequiredConsents(
   const existingTypes = new Set(existing.map((c) => c.consentType));
   return required.every((t) => existingTypes.has(t));
 }
+
+/**
+ * Complete a Google OAuth registration by setting termsAcceptedAt, phone,
+ * and name on the user record. Called once after the OAuth callback when
+ * the user chose "Continue with Google" from the channel-selection screen.
+ *
+ * Uses WHERE termsAcceptedAt IS NULL to be idempotent — safe to call multiple
+ * times; only updates the record if it hasn't been completed yet.
+ */
+export async function completeGoogleRegistration(
+  userId: number,
+  opts: {
+    phone: string;
+    name?: string | null;
+  }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateSet: Record<string, unknown> = {
+    termsAcceptedAt: new Date(),
+  };
+  if (opts.phone) updateSet.phone = opts.phone;
+  if (opts.name) updateSet.name = opts.name;
+  await db.update(users)
+    .set(updateSet)
+    .where(and(eq(users.id, userId), isNull(users.termsAcceptedAt)));
+}

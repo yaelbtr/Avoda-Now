@@ -1,5 +1,11 @@
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
+/**
+ * sessionStorage key used to persist pending Google registration data
+ * (name, phone, termsAccepted, age18Accepted) across the OAuth redirect.
+ * Consumed once by PostGoogleRegistration after the OAuth callback.
+ */
+export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
 export const AXIOS_TIMEOUT_MS = 30_000;
 export const UNAUTHED_ERR_MSG = 'Please login (10001)';
 export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';

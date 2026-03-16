@@ -11,6 +11,7 @@ interface AuthUser {
   email: string | null;
   role: "user" | "admin" | "test";
   loginMethod: string | null;
+  termsAcceptedAt: Date | null | undefined;
 }
 
 interface AuthContextValue {

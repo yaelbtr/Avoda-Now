@@ -110,6 +110,8 @@ import {
   resetTestUserProfile,
   recordUserConsent,
   getUserConsents,
+  completeGoogleRegistration,
+  hasRequiredConsents,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1784,6 +1786,51 @@ const userRouter = router({
     }
     return { outdated, currentVersions: LEGAL_DOCUMENT_VERSIONS };
   }),
+
+  /**
+   * Complete a Google OAuth registration by saving phone, name, and
+   * recording termsAcceptedAt + consents. Called once after the OAuth
+   * callback when the user chose "Continue with Google" on the
+   * channel-selection screen. Idempotent — safe to call multiple times.
+   */
+  completeGoogleRegistration: protectedProcedure
+    .input(z.object({
+      phone: z.string().min(9).max(20),
+      name: z.string().min(2).max(100).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Only applicable for Google OAuth users
+      if (ctx.user.loginMethod !== "google_oauth") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Only applicable for Google sign-in" });
+      }
+      // Validate and normalize phone (normalizeIsraeliPhone/isValidIsraeliPhone imported at top)
+      let normalizedPhone: string;
+      try {
+        normalizedPhone = normalizeIsraeliPhone(input.phone);
+        if (!isValidIsraeliPhone(normalizedPhone)) throw new Error("invalid");
+      } catch {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+      }
+      // Save phone + termsAcceptedAt (idempotent — only updates if termsAcceptedAt IS NULL)
+      await completeGoogleRegistration(ctx.user.id, {
+        phone: normalizedPhone,
+        name: input.name,
+      });
+      // Record consents (terms, privacy, age_18)
+      const ip = getClientIp(ctx.req);
+      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
+      const consentTypes = ["terms", "privacy", "age_18"] as const;
+      await Promise.all(
+        consentTypes.map((ct) =>
+          recordUserConsent(ctx.user.id, ct, {
+            ipAddress: ip,
+            userAgent: ua,
+            documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
+          })
+        )
+      );
+      return { success: true };
+    }),
 });
 
 // ─── Push Notifications Router ─────────────────────────────────────────────

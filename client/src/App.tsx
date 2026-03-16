@@ -53,6 +53,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
+import { PENDING_GOOGLE_REG_KEY } from "@shared/const";
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
@@ -122,6 +123,64 @@ function MapsPreloader() {
     if (!isAuthenticated) return;
     ensureMapsLoaded().catch(() => {});
   }, [isAuthenticated]);
+  return null;
+}
+
+/**
+ * Invisible component that completes a Google OAuth registration when the
+ * user chose "Continue with Google" on the channel-selection screen.
+ *
+ * Flow:
+ *  1. User fills in name/phone/terms on the registration screen.
+ *  2. On the channel step they click "Continue with Google".
+ *  3. LoginModal saves {name, phone, termsAccepted, age18Accepted} to
+ *     sessionStorage under PENDING_GOOGLE_REG_KEY before the redirect.
+ *  4. After OAuth callback the user is authenticated; this component fires
+ *     user.completeGoogleRegistration once to persist the data server-side.
+ *  5. sessionStorage entry is removed so the mutation never fires again.
+ */
+function PostGoogleRegistration() {
+  const { isAuthenticated, user } = useAuth();
+  const fired = useRef(false);
+  const utils = trpc.useUtils();
+  const completeReg = trpc.user.completeGoogleRegistration.useMutation({
+    onSuccess: () => {
+      // Refresh auth.me so the UI reflects the updated profile
+      utils.auth.me.invalidate();
+    },
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated || !user || fired.current) return;
+    // Only applicable for Google OAuth users who haven't completed registration
+    if (user.loginMethod !== "google_oauth" || user.termsAcceptedAt) return;
+
+    const raw = sessionStorage.getItem(PENDING_GOOGLE_REG_KEY);
+    if (!raw) return;
+
+    let payload: { name?: string; phone?: string; termsAccepted?: boolean; age18Accepted?: boolean };
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+      return;
+    }
+
+    // Only proceed if the user actually accepted terms and provided a phone
+    if (!payload.termsAccepted || !payload.phone) {
+      sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+      return;
+    }
+
+    fired.current = true;
+    sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+
+    completeReg.mutate({
+      phone: payload.phone,
+      name: payload.name || undefined,
+    });
+  }, [isAuthenticated, user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return null;
 }
 
@@ -252,6 +311,7 @@ function App() {
               <Toaster position="top-center" dir="rtl" />
               <MapsPreloader />
               <ReferralCapture />
+              <PostGoogleRegistration />
               <Router />
             </UserModeProvider>
           </AuthProvider>

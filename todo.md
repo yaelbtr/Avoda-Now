@@ -2055,3 +2055,14 @@
 - [x] Frontend FindJobs already sends GPS coords + radius to backend (no changes needed)
 - [x] Haversine fallback retained for rows where location IS NULL (backward-compat)
 - [x] Write 18 Vitest tests for PostGIS radius search (server/postgis-radius.test.ts) — 471 total passing
+
+## Google Sign-in on Verification Screen
+- [x] Remove "קבלת סיסמא במייל" option from OTP channel selection screen
+- [x] Add "המשך הרשמה עם Google" button with divider to OTP channel selection screen
+- [x] Google button saves {name, phone, termsAccepted, age18Accepted} to sessionStorage (PENDING_GOOGLE_REG_KEY) before redirect
+- [x] Add PENDING_GOOGLE_REG_KEY constant to shared/const.ts (Single Source of Truth)
+- [x] Add completeGoogleRegistration db function (idempotent: only updates if termsAcceptedAt IS NULL)
+- [x] Add user.completeGoogleRegistration tRPC procedure with phone validation and consent recording
+- [x] Add PostGoogleRegistration invisible component to App.tsx (fires once after OAuth callback)
+- [x] Add termsAcceptedAt to AuthUser interface in AuthContext
+- [x] 471 tests passing, 0 TypeScript errors

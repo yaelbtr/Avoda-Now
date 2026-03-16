@@ -1329,6 +1329,24 @@ const liveStatsRouter = router({
 // ─── User Mode Router ───────────────────────────────────────────────
 
 const userRouter = router({
+  /**
+   * Check whether an email address is available for registration.
+   * Returns { available: true } if the email is not yet registered,
+   * or { available: false, loginMethod } so the frontend can guide
+   * the user to the correct sign-in method.
+   * Public — no auth required (called before Google OAuth redirect).
+   */
+  checkEmailAvailable: publicProcedure
+    .input(z.object({ email: z.string().email().max(320) }))
+    .query(async ({ input }) => {
+      const existing = await getUserByEmail(input.email.toLowerCase().trim());
+      if (!existing) return { available: true, loginMethod: null };
+      return {
+        available: false,
+        loginMethod: existing.loginMethod ?? "phone",
+      };
+    }),
+
   getMode: protectedProcedure.query(async ({ ctx }) => {
     const mode = await getUserMode(ctx.user.id);
     return { mode };

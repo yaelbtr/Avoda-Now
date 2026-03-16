@@ -2072,3 +2072,9 @@
 - [x] Show inline hint text "יש למלא את כל פרטי ההרשמה לפני המשך עם Google" when button is disabled
 - [x] Pass email to completeGoogleRegistration payload (sessionStorage + server procedure + db function)
 - [x] 471 tests passing, 0 TypeScript errors
+
+## Email Duplication Check Before Google Redirect
+- [x] Add `user.checkEmailAvailable` public tRPC procedure (returns {available: boolean, loginMethod?: string})
+- [x] Add `getUserByEmail` db helper (reuse if exists, else create)
+- [x] Call checkEmailAvailable in handleGoogleContinue before redirect — show error toast if taken
+- [x] Write 32 Vitest tests (server/check-email.test.ts) — 503 total passing, 0 TypeScript errors

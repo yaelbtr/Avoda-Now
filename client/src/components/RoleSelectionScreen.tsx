@@ -16,9 +16,9 @@ interface RoleSelectionScreenProps {
 }
 
 const WORKER_IMG =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker_3978d496.jpg";
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker_2fd2b6a6.jpg";
 const EMPLOYER_IMG =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_41da06bf.jpg";
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_f5973684.jpg";
 
 // Duration (ms) the greeting is shown before fading out
 const GREETING_DISPLAY_MS = 1800;

@@ -2172,3 +2172,5 @@
 - [x] שנה טקסט badge בעמוד הבית מג"פלטפורמת הגיוס המהירה בישראל"ל"הפלטפורמה לעבודות זמניות בישראל"
 - [x] עדכן meta description ו-og:description בכל הקבצים לשקף "הפלטפורמה לעבודות זמניות בישראל"
 - [x] Update worker role card: title → 'מחפש עבודה?', description → two-line copy, bullets → three updated items
+- [ ] Replace worker card image: practical male worker (warehouse/delivery/kitchen/event)
+- [x] Replace employer card image: male business owner/manager in real workplace

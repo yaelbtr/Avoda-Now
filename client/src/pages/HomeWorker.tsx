@@ -339,16 +339,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-3">
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[30px] leading-[1.15] font-black mb-1"
-              style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+              className="text-[32px] leading-[1.15] font-black mb-2"
+              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
             >
               מחפש עבודה זמנית?<br />
-              <span style={{ color: "oklch(0.55 0.14 70)" }}>מצא אחת תוך דקות</span>
+              <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מצא אחת תוך דקות</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[12px] font-semibold leading-relaxed"
-              style={{ color: "oklch(0.30 0.06 122)", maxWidth: "280px" }}
+              className="text-[13px] font-semibold leading-relaxed"
+              style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
             >
               ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
             </motion.p>

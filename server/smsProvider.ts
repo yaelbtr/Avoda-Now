@@ -103,7 +103,9 @@ class TwilioVerifyProvider implements SmsProvider {
           "Content-Type": "application/x-www-form-urlencoded",
           Authorization: this.authHeader,
         },
-        body: new URLSearchParams({ To: phone, Channel: "call", Locale: "he" }).toString(),
+        // Note: Locale="he" is NOT supported for voice TTS (Twilio error 60331).
+        // Omitting Locale lets Twilio use its default (en-US) for the spoken OTP.
+        body: new URLSearchParams({ To: phone, Channel: "call" }).toString(),
       });
       const body = await res.json() as { status?: string; message?: string; code?: number };
       if (!res.ok) {

@@ -2157,3 +2157,4 @@
 ## באג — כפתור שיחה שולח SMS
 - [x] תקן handleSend לקבל channel כפרמטר כדי למנוע stale state
 - [x] פטור מנהלים מ-rate limit ב-sendOtp (DB + Express middleware)
+- [x] תקן שגיאת Twilio 60331 — הסר Locale=he משיחת קול (לא נתמך ב-TTS)

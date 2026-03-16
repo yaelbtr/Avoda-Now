@@ -85,12 +85,23 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   const textFields = ["name", "email", "loginMethod", "phone"] as const;
   type TextField = (typeof textFields)[number];
 
+  // Fields that should NOT overwrite existing non-null values on conflict.
+  // name/phone/email are set explicitly by the user during registration;
+  // the Google OAuth profile values are only used as initial defaults.
+  const preserveIfSet = new Set<TextField>(["name", "phone", "email"]);
+
   const assignNullable = (field: TextField) => {
     const value = user[field];
     if (value === undefined) return;
     const normalized = value ?? null;
     values[field] = normalized;
-    updateSet[field] = normalized;
+    // For preserved fields: use COALESCE so existing non-null DB values are kept
+    if (preserveIfSet.has(field)) {
+      // sql`COALESCE(excluded.field, users.field)` keeps the existing value if already set
+      updateSet[field] = sql`COALESCE(${users[field]}, ${normalized})`;
+    } else {
+      updateSet[field] = normalized;
+    }
   };
   textFields.forEach(assignNullable);
 

@@ -2105,3 +2105,8 @@
 - [x] Frontend: ReportProblemModal עם html2canvas, preview, form fields
 - [x] Frontend: כפתור "דווח על בעיה" ב-Navbar ו-MobileDrawer
 - [x] Vitest tests לפרוצדורה
+
+## באג — נתוני הרשמה לא נשמרים לאחר redirect של Google
+- [x] בדוק מה נשמר ב-sessionStorage לפני ה-redirect ומה נקרא אחריו
+- [x] תקן שמירת phone/name/email/consents לפני ה-redirect
+- [x] תקן קריאה ושחזור הנתונים ב-PostGoogleRegistration

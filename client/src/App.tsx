@@ -134,10 +134,10 @@ function MapsPreloader() {
  *  1. User fills in name/phone/terms on the registration screen.
  *  2. On the channel step they click "Continue with Google".
  *  3. LoginModal saves {name, phone, termsAccepted, age18Accepted} to
- *     sessionStorage under PENDING_GOOGLE_REG_KEY before the redirect.
+ *     localStorage under PENDING_GOOGLE_REG_KEY before the redirect (localStorage survives OAuth redirects; sessionStorage does not).
  *  4. After OAuth callback the user is authenticated; this component fires
  *     user.completeGoogleRegistration once to persist the data server-side.
- *  5. sessionStorage entry is removed so the mutation never fires again.
+ *  5. localStorage entry is removed so the mutation never fires again.
  */
 function PostGoogleRegistration() {
   const { isAuthenticated, user } = useAuth();
@@ -155,25 +155,25 @@ function PostGoogleRegistration() {
     // Only applicable for Google OAuth users who haven't completed registration
     if (user.loginMethod !== "google_oauth" || user.termsAcceptedAt) return;
 
-    const raw = sessionStorage.getItem(PENDING_GOOGLE_REG_KEY);
+    const raw = localStorage.getItem(PENDING_GOOGLE_REG_KEY);
     if (!raw) return;
 
     let payload: { name?: string; phone?: string; email?: string; termsAccepted?: boolean; age18Accepted?: boolean };
     try {
       payload = JSON.parse(raw);
     } catch {
-      sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+      localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
       return;
     }
 
     // Only proceed if the user actually accepted terms and provided a phone
     if (!payload.termsAccepted || !payload.phone) {
-      sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+      localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
       return;
     }
 
     fired.current = true;
-    sessionStorage.removeItem(PENDING_GOOGLE_REG_KEY);
+    localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
 
     completeReg.mutate({
       phone: payload.phone,

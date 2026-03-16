@@ -937,7 +937,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                                 termsAccepted,
                                 age18Accepted,
                               };
-                              sessionStorage.setItem(PENDING_GOOGLE_REG_KEY, JSON.stringify(payload));
+                              // Use localStorage (not sessionStorage) so data survives the OAuth page redirect
+                              localStorage.setItem(PENDING_GOOGLE_REG_KEY, JSON.stringify(payload));
                               saveReturnPath();
                               window.location.href = getGoogleLoginUrl();
                             } catch {

@@ -161,7 +161,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
   useSEO({
     title: "דף הבית",
-    description: "AvodaNow — הפלטפורמה שמספקת עובדים תוך דקות. הגדר זמינות, קבל עבודה, התחל לעבוד.",
+    description: "הפלטפורמה לעבודות זמניות בישראל. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
     canonical: "/",
   });
 

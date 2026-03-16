@@ -48,7 +48,7 @@ export function useSEO({
       ? `${title} | AvodaNow`
       : "AvodaNow | מצא עבודה או עובדים עכשיו";
     const fullDescription =
-      description ?? "לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך.";
+      description ?? "הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך ללא עמלות.";
     const fullOgImage = ogImage ?? DEFAULT_OG_IMAGE;
     const canonicalUrl = canonical
       ? `${BASE_URL}${canonical}`

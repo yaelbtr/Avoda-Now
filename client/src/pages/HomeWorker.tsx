@@ -335,8 +335,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               מצא עבודה תוך דקות
             </span>
           </motion.div>
-          {/* Headline + subtitle at bottom of image */}
-          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-3">
+          {/* Headline + subtitle — center of image, just below the face */}
+          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "52%" }}>
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="text-[32px] leading-[1.15] font-black mb-2"

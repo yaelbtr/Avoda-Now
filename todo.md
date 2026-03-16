@@ -2126,3 +2126,6 @@
 - [x] הסר כפתור Google מ-channel step (הרשמה)
 - [x] נקה קוד PENDING_GOOGLE_REG_KEY ו-PostGoogleRegistration שאינם נחוצים יותר
 - [x] הסר checkEmailAvailable call מ-handleGoogleContinue (לא רלוונטי להתחברות)
+
+## באג — כיוון מספר טלפון ב-channel step
+- [x] תקן כיוון מספר טלפון ל-LTR בתצוגת SMS ב-channel step

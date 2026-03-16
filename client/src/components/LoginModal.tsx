@@ -802,10 +802,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         <p className="font-bold text-base" style={{ color: "#1a2010" }}>קבלת סיסמה ב-SMS</p>
                         <p className="text-sm" style={{ color: "#6b7280" }}>
                           הקוד יישלח למספר{" "}
-                          {phone ? (() => {
-                            const d = phone.replace(/\D/g, "");
-                            return d.length >= 7 ? `${d.slice(0,3)}-****${d.slice(-3)}` : phone;
-                          })() : "הטלפון שהזנת"}
+                          {phone ? (
+                            <span dir="ltr" style={{ unicodeBidi: "embed" }}>
+                              {(() => {
+                                const d = phone.replace(/\D/g, "");
+                                return d.length >= 7 ? `${d.slice(0,3)}-****${d.slice(-3)}` : phone;
+                              })()}
+                            </span>
+                          ) : "הטלפון שהזנת"}
                         </p>
                       </div>
                       {/* Icon */}

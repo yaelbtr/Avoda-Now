@@ -322,7 +322,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         />
 
         {/* Content — centered, white text */}
-        <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-20 pb-8" style={{ minHeight: "480px" }}>
+        <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-20 pb-4">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -360,7 +360,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       </section>
 
       {/* Mobile Stats + CTA */}
-      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
+      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
         <StatsRow />
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}

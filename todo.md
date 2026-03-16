@@ -2090,3 +2090,6 @@
 - [x] חסום PostJob, MyJobs, RoleSelectionScreen, Navbar, MobileDrawer כשהנעילה פעילה
 - [x] הוסף טאב "נעילת מעסיקים" בפאנל הניהול עם toggle ואינדיקטור סטטוס
 - [x] 19 Vitest tests (server/employer-lock.test.ts) — 522 total passing
+
+## חסימת אפשרות מעסיק בהרשמה ראשונית
+- [x] חסום אפשרות "מעסיק" ב-role step של LoginModal כשהנעילה פעילה (greyed out + "בקרוב" badge)

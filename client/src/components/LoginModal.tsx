@@ -18,6 +18,7 @@ import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/I
 import { AppInput, AppLabel } from "@/components/ui";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCategories } from "@/hooks/useCategories";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import CityAutocomplete from "@/components/CityAutocomplete";
 
 interface LoginModalProps {
@@ -110,6 +111,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const utils = trpc.useUtils();
   const { refetch, user: authUser, logout: authLogout } = useAuth();
   const { setLocalModeOnly } = useUserMode();
+  const { employerLock } = usePlatformSettings();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
 
@@ -1163,21 +1165,33 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     </div>
                   </motion.button>
 
-                  {/* Employer card */}
+                  {/* Employer card — disabled when employer lock is active */}
                   <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleRoleSelect("employer")}
-                    className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all text-center"
-                    style={{ borderColor: "oklch(0.88 0.04 84.0)", background: "oklch(0.98 0.01 122.3)" }}
-                    whileHover={{ borderColor: "oklch(0.50 0.09 124.9)", scale: 1.02 }}
+                    whileTap={employerLock ? {} : { scale: 0.97 }}
+                    onClick={() => { if (!employerLock) handleRoleSelect("employer"); }}
+                    disabled={employerLock}
+                    className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all text-center relative"
+                    style={{
+                      borderColor: employerLock ? "oklch(0.88 0.04 84.0 / 0.4)" : "oklch(0.88 0.04 84.0)",
+                      background: employerLock ? "oklch(0.96 0.01 122.3)" : "oklch(0.98 0.01 122.3)",
+                      opacity: employerLock ? 0.55 : 1,
+                      cursor: employerLock ? "not-allowed" : "pointer",
+                    }}
+                    whileHover={employerLock ? {} : { borderColor: "oklch(0.50 0.09 124.9)", scale: 1.02 }}
                   >
+                    {employerLock && (
+                      <span className="absolute top-2 left-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                        style={{ background: "oklch(0.88 0.04 84.0)", color: "oklch(0.45 0.05 84.0)" }}>
+                        בקרוב
+                      </span>
+                    )}
                     <div className="w-14 h-14 rounded-full flex items-center justify-center"
                       style={{ background: "oklch(0.75 0.12 76.7 / 0.12)" }}>
-                      <Briefcase className="h-7 w-7" style={{ color: "oklch(0.55 0.12 76.7)" }} />
+                      <Briefcase className="h-7 w-7" style={{ color: employerLock ? "oklch(0.70 0.06 76.7)" : "oklch(0.55 0.12 76.7)" }} />
                     </div>
                     <div>
-                      <p className="font-bold text-sm">אני מחפש עובדים</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">מעסיק / עסק</p>
+                      <p className="font-bold text-sm">{employerLock ? "פרסום משרה" : "אני מחפש עובדים"}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{employerLock ? "זמין בקרוב" : "מעסיק / עסק"}</p>
                     </div>
                   </motion.button>
                 </div>

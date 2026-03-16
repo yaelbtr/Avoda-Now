@@ -37,7 +37,7 @@
 - [ ] Footer with terms, privacy, contact info
 - [ ] WhatsApp share on all job cards
 - [ ] Mobile-first responsive review
-- [ ] Vitest tests for backend procedures
+- [x] Vitest tests for backend procedures
 - [ ] Final checkpoint and delivery
 
 ## Extended Requirements
@@ -824,7 +824,7 @@
 - [ ] tRPC procedure: verifyPhoneChangeOtp — verifies code and updates phone in DB
 - [ ] PhoneChangeModal component with OTP flow
 - [ ] Wire into WorkerProfile — intercept phone save, open modal instead
-- [ ] Vitest tests for OTP phone change flow
+- [x] Vitest tests for OTP phone change flow
 
 ## Phone OTP Security Enhancements
 - [ ] Email fallback when SMS fails
@@ -2110,3 +2110,9 @@
 - [x] בדוק מה נשמר ב-sessionStorage לפני ה-redirect ומה נקרא אחריו
 - [x] תקן שמירת phone/name/email/consents לפני ה-redirect
 - [x] תקן קריאה ושחזור הנתונים ב-PostGoogleRegistration
+
+## מסך השלמת פרופיל למשתמשי Google ללא טלפון
+- [x] בנה CompleteProfileModal עם שדה טלפון, ולידציה, ו-submit
+- [x] הצג אוטומטית כשמשתמש Google מחובר ואין לו טלפון
+- [x] Backend: הרחב completeGoogleRegistration לתמוך ב-skip (ללא טלפון)
+- [x] Vitest tests

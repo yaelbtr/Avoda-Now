@@ -22,6 +22,7 @@ import {
   Moon, Sun, AlertTriangle,
 } from "lucide-react";
 import ReportProblemModal from "./ReportProblemModal";
+import CompleteProfileModal from "./CompleteProfileModal";
 
 import {
   C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
@@ -41,6 +42,24 @@ export default function Navbar() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Auto-show profile completion for Google users with no phone
+  // Use a session flag so it only prompts once per browser session (not on every render)
+  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
+  const completeProfileShown = useRef(false);
+
+  useEffect(() => {
+    if (
+      !completeProfileShown.current &&
+      isAuthenticated &&
+      user?.loginMethod === "google_oauth" &&
+      !user?.phone
+    ) {
+      completeProfileShown.current = true;
+      // Small delay so the page finishes loading before the modal appears
+      const t = setTimeout(() => setCompleteProfileOpen(true), 800);
+      return () => clearTimeout(t);
+    }
+  }, [isAuthenticated, user?.loginMethod, user?.phone]);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
   const lastScrollY = useRef(0);
@@ -623,6 +642,10 @@ export default function Navbar() {
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
       <ReportProblemModal open={reportOpen} onClose={() => setReportOpen(false)} />
+      <CompleteProfileModal
+        open={completeProfileOpen}
+        onClose={() => setCompleteProfileOpen(false)}
+      />
     </>
   );
 }

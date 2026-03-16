@@ -111,21 +111,21 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "הגדר זמינות",
-    desc: "לחץ 'זמין עכשיו' — מעסיקים יראו אותך מיד ויפנו אליך ישירות.",
+    desc: "לחץ על \"זמין עכשיו\" כדי שמעסיקים באזור שלך יוכלו לראות שאתה זמין לעבודה.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBamn2qup2cLZLS0F7g_ak0WLTInI6W80vxhpKaOVS5LvEDl1LbNhdRUjazjOJujODYDKCCm0wVmr68y6wo4HiA7bPMUmFZ4hEQMndLqGlbGLjfLqtiqyD2AMY9TidSzS_hPgu5Ur5Z2MBpFBvusjARNnk7FNagj5vM5F9-d-Okq_vbnvzcmYLSObdJ9OJMzZZWzrsgw3HIN_x9coQBlKMfGlWR0eNLV0mX2VSSizcok2morIGRV6Ge2fGy_kA6s1H6jaOUll8DcA",
     reverse: false,
   },
   {
     step: "02",
-    title: "קבל פנייה תוך דקות",
-    desc: "מעסיקים שצריכים עובד עכשיו יפנו אליך ישירות — ללא תיווך, ללא המתנה.",
+    title: "קבל פניות ממעסיקים",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך יכולים לראות שאתה זמין וליצור איתך קשר ישירות.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAStrMaRfZDifQeV-VACZz7ZypB1K8qO0mfWH-7GKp9zP5N0IFSgQpYT8gGJfOxyxssudU0ma8TE9HYWViNqn1eNoc7_qkfar8L0c38K28sRu-_lwd2DFueAtvndwsNLlxCicO5asK-g-NFLhaSWhOxM5Lx7tQalZGYbZlc-cGOJHfX0VMMQvGKi69yA7_YyxYFmg51eaSrjgIb2kEHbOcTexFsWld1x3UCbPcBhX92Us5OHKPCI2Wbzy1VcqYfh8U6aCD_3lOdng",
     reverse: true,
   },
   {
     step: "03",
     title: "עבוד וקבל תשלום",
-    desc: "הגע, עבוד, קבל תשלום — פשוט כמו שזה נשמע.",
+    desc: "סגור פרטים עם המעסיק, בצע את העבודה וקבל תשלום ישירות ממנו.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmsOM6ool_591rxa3QrTQJ_siNP3M919Xa5n12iJHU9-myKDCxxkIXJLVpXND4AON1Q8eRBnMPtrBeggN_C4S0lJ5lumxRI4XROt9rXnjP5Krt1MAn8P4EnpBkn24bwAgR163Pw2pImLomXOGNpz-MCOZ8aI6DDwDbqiFoOBi2D-UsT1OV5mTJyv3BKGljWdOH2cGAdggVOjFgQ0oQ8lCPYfY4Fgpq2UzIf2KqNukQ6Z4NgQAXUPUyrHbEzkXWFccR4AfTBcUzbw",
     reverse: false,
   },
@@ -586,7 +586,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
             <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
           </div>
-          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד?</h3>
+          <div>
+            <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
+            <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>מצא עבודה זמנית בשלושה צעדים פשוטים</p>
+          </div>
         </div>
 
         <div className="space-y-3 mb-8">
@@ -621,7 +624,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
               <div className="flex-1 text-right">
                 <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mb-1.5" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)", color: "var(--amber-dark)" }}>
-                  שלב {idx + 1}
+                  {idx + 1}
                 </div>
                 <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
                 <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
@@ -629,6 +632,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </motion.div>
           ))}
         </div>
+
+        <p className="text-center text-[12px] font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
+          התשלום מתבצע ישירות בינך לבין המעסיק.
+        </p>
 
         <motion.button
           onClick={() => navigate("/find-jobs")}

@@ -29,10 +29,11 @@ interface PreviewProps {
 const TagRow = ({ children }: { children: React.ReactNode }) => (
   <div style={{
     display: "flex",
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
+    direction: "rtl",
   }}>
     {children}
   </div>
@@ -42,10 +43,11 @@ const TagRow = ({ children }: { children: React.ReactNode }) => (
 const SectionHeader = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
   <div style={{
     display: "flex",
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginBottom: 8,
+    direction: "rtl",
   }}>
     {icon}
     <span style={{ fontSize: 12, fontWeight: 700, color: "#4F583B" }}>{label}</span>
@@ -325,7 +327,7 @@ export function WorkerProfilePreviewModal({
 
                 {/* Bio */}
                 {(bio || true) && (
-                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
+                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)", direction: "rtl", textAlign: "right" }}>
                     {bio ? (
                       <p style={{ fontSize: 13, lineHeight: 1.6, color: "oklch(0.30 0.05 122)", margin: 0 }}>
                         {bio}
@@ -396,7 +398,7 @@ export function WorkerProfilePreviewModal({
                     label="אזור עבודה"
                   />
                   {locationMode === "radius" ? (
-                    <p style={{ fontSize: 13, color: "oklch(0.40 0.06 122)", margin: 0 }}>
+                    <p style={{ fontSize: 13, color: "oklch(0.40 0.06 122)", margin: 0, textAlign: "right" }}>
                       עד {searchRadiusKm} ק"מ מהמיקום שלי
                     </p>
                   ) : cityNames.length > 0 ? (
@@ -436,7 +438,7 @@ export function WorkerProfilePreviewModal({
                     {completionPct}%
                   </span>
                 </div>
-                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, direction: "rtl" }}>
+                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, direction: "rtl", display: "flex", justifyContent: "flex-end" }}>
                   <div style={{
                     height: 8, borderRadius: 9999,
                     width: `${completionPct}%`,
@@ -446,11 +448,11 @@ export function WorkerProfilePreviewModal({
                     transition: "width 0.5s ease",
                   }} />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px", direction: "rtl" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{
                       display: "flex",
-                      flexDirection: "row-reverse",
+                      flexDirection: "row",
                       alignItems: "center",
                       gap: 6,
                     }}>
@@ -465,7 +467,7 @@ export function WorkerProfilePreviewModal({
                   ))}
                 </div>
                 {completionPct < 100 && (
-                  <p style={{ fontSize: 12, marginTop: 12, color: "oklch(0.68 0.14 80.8)" }}>
+                  <p style={{ fontSize: 12, marginTop: 12, color: "oklch(0.68 0.14 80.8)", textAlign: "right", direction: "rtl" }}>
                     💡 פרופיל מלא מגדיל את הסיכוי לקבל פניות ממעסיקים
                   </p>
                 )}

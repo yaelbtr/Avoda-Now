@@ -2158,3 +2158,5 @@
 - [x] תקן handleSend לקבל channel כפרמטר כדי למנוע stale state
 - [x] פטור מנהלים מ-rate limit ב-sendOtp (DB + Express middleware)
 - [x] תקן שגיאת Twilio 60331 — הסר Locale=he משיחת קול (לא נתמך ב-TTS)
+- [ ] הוסף שיחת קול בעברית עם Twilio Programmable Voice + Google TTS (he-IL-Wavenet-A)
+- [x] תקן יישור RTL בתצוגה מקדימה של פרופיל עובד

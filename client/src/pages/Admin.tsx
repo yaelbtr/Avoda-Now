@@ -26,6 +26,7 @@ import {
   Clock,
   Eye,
   Flag,
+  Lock,
   LockOpen,
   MapPin,
   Phone,
@@ -198,6 +199,21 @@ export default function Admin() {
     onError: (e) => toast.error(e.message),
   });
 
+  // Employer lock
+  const employerLockQuery = trpc.admin.getEmployerLock.useQuery(
+    undefined,
+    { enabled: !!user && user.role === "admin" }
+  );
+  const setEmployerLock = trpc.admin.setEmployerLock.useMutation({
+    onSuccess: (data) => {
+      utils.admin.getEmployerLock.invalidate();
+      // Also invalidate the public platform settings so the gate updates immediately
+      utils.platform.settings.invalidate();
+      toast.success(data.active ? "נעילת מעסיקים הופעלה" : "נעילת מעסיקים בוטלה");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   // Maintenance mode
   const maintenanceModeQuery = trpc.admin.getMaintenanceMode.useQuery(
     undefined,
@@ -284,6 +300,7 @@ export default function Admin() {
               { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
               { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
               { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
+              { value: "employer-lock", icon: <Lock className="w-4 h-4" />, label: "נעילת מעסיקים" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -348,6 +365,10 @@ export default function Admin() {
             <TabsTrigger value="maintenance" className="flex items-center gap-2">
               <Wrench className="w-4 h-4" />
               תחזוקה
+            </TabsTrigger>
+            <TabsTrigger value="employer-lock" className="flex items-center gap-2">
+              <Lock className="w-4 h-4" />
+              נעילת מעסיקים
             </TabsTrigger>
           </TabsList>
 
@@ -1137,6 +1158,80 @@ export default function Admin() {
                       </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="employer-lock">
+            <div className="max-w-lg">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-amber-500" />
+                    נעילת גישת מעסיקים
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    כשהנעילה פעילה, אזורי המעסיקים (פרסום משרה, המשרות שלי, מצב מעסיק) יחסמו לכלל המשתמשים.
+                    מנהלים ומשתמשי טסט מקבלים גישה מלאה בכל עת.
+                  </p>
+
+                  {/* Current status indicator */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg border" style={{
+                    background: employerLockQuery.data?.active
+                      ? "oklch(0.97 0.04 60)"
+                      : "oklch(0.97 0.02 122)",
+                    borderColor: employerLockQuery.data?.active
+                      ? "oklch(0.85 0.08 60)"
+                      : "oklch(0.88 0.04 122)",
+                  }}>
+                    <div className="w-3 h-3 rounded-full" style={{
+                      background: employerLockQuery.data?.active
+                        ? "oklch(0.65 0.18 60)"
+                        : "oklch(0.55 0.14 142)",
+                    }} />
+                    <span className="text-sm font-medium">
+                      {employerLockQuery.isLoading
+                        ? "טוען..."
+                        : employerLockQuery.data?.active
+                        ? "נעילת מעסיקים פעילה — הפלטפורמה פתוחה לעובדים בלבד"
+                        : "הפלטפורמה פתוחה לכלל המשתמשים (עובדים ומעסיקים)"}
+                    </span>
+                  </div>
+
+                  {/* Toggle button */}
+                  <div className="flex gap-3">
+                    {employerLockQuery.data?.active ? (
+                      <AppButton
+                        variant="brand"
+                        onClick={() => setEmployerLock.mutate({ active: false })}
+                        disabled={setEmployerLock.isPending}
+                      >
+                        {setEmployerLock.isPending ? "מעדכן..." : "פתח את הפלטפורמה למעסיקים"}
+                      </AppButton>
+                    ) : (
+                      <AppButton
+                        variant="destructive"
+                        onClick={() =>
+                          confirm(
+                            "הפעלת נעילת מעסיקים",
+                            "משתמשים רגילים לא יוכלו לפרסם משרות עד שתבטל את הנעילה. האם אתה בטוח?",
+                            () => setEmployerLock.mutate({ active: true })
+                          )
+                        }
+                        disabled={setEmployerLock.isPending}
+                      >
+                        {setEmployerLock.isPending ? "מעדכן..." : "נעל את הפלטפורמה למעסיקים"}
+                      </AppButton>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    הגדרה זו נשמרת במסד הנתונים ונכנסת לתוקף מידית.
+                    מנהלים ומשתמשי טסט יכולים לגשת לכל האזורים בכל עת.
+                  </p>
                 </CardContent>
               </Card>
             </div>

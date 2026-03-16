@@ -21,6 +21,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -68,6 +69,7 @@ export default function PostJob() {
   const { categories: dbCategories } = useCategories();
   const { isAuthenticated, user } = useAuth();
   const { userMode, setUserMode } = useUserMode();
+  const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
@@ -362,6 +364,26 @@ export default function PostJob() {
           onClose={() => setLoginOpen(false)}
           message="כדי לפרסם משרה יש להתחבר למערכת"
         />
+      </div>
+    );
+  }
+
+  // Employer lock guard — platform is in workers-only mode
+  if (employerLock) {
+    return (
+      <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <Briefcase className="h-8 w-8 text-amber-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — בקרוב</h2>
+        <p className="text-muted-foreground mb-4">
+          בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.
+          <br />
+          אפשרות פרסום משרות למעסיקים תיפתח בקרוב.
+        </p>
+        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>
+          חפש עבודה
+        </AppButton>
       </div>
     );
   }

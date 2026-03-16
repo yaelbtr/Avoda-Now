@@ -2082,3 +2082,11 @@
 ## הסרת Google Login ממסך התחברות
 - [x] שוחזר כפתור "כניסה עם Google" במסך Login (step=phone, activeTab=login) — הוסר בטעות
 - [x] Google OAuth זמין גם ב-Login (לחשבונות קיימים) וגם בהרשמה (channel step)
+
+## נעילת גישת מעסיקים (Employer Lock)
+- [x] שימוש בטבלת system_settings הקיימת עם מפתח employerLock (DRY)
+- [x] הוסף admin.getEmployerLock / admin.setEmployerLock procedures
+- [x] הוסף platform.settings publicProcedure (bypass לאדמין/טסט)
+- [x] חסום PostJob, MyJobs, RoleSelectionScreen, Navbar, MobileDrawer כשהנעילה פעילה
+- [x] הוסף טאב "נעילת מעסיקים" בפאנל הניהול עם toggle ואינדיקטור סטטוס
+- [x] 19 Vitest tests (server/employer-lock.test.ts) — 522 total passing

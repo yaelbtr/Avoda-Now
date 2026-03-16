@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users, Star, Shield, Sparkles } from "lucide-react";
 import {
   C_BRAND, C_BRAND_DARK, C_BRAND_LIGHT, C_HONEY,
@@ -280,6 +281,7 @@ function WelcomeBackOverlay({ name, onDone }: { name: string; onDone: () => void
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
   const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { employerLock } = usePlatformSettings();
 
   // Show greeting only once per mount for authenticated users with a name
   const shouldGreet = isAuthenticated && !!user?.name;
@@ -317,6 +319,8 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const handleSelect = (mode: "worker" | "employer") => {
     if (loading) return;
+    // Block employer selection when employer lock is active
+    if (mode === "employer" && employerLock) return;
     if (!isAuthenticated) {
       // Guest: notify parent immediately — parent AnimatePresence handles exit.
       onSelected(mode);
@@ -439,19 +443,19 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="employer"
                     image={EMPLOYER_IMG}
                     icon={<Briefcase className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title="אני מחפש עובדים"
+                    title={employerLock ? "פרסום משרה — בקרוב" : "אני מחפש עובדים"}
                     subtitle="למעסיקים"
-                    description="פרסם משרה תוך דקות ומצא עובדים מתאימים בסביבתך במהירות."
-                    features={[
-                      "פרסום מהיר וקל",
-                      "גישה לעובדים זמינים באזורך",
-                      "ניהול מלא של המשרות שלך",
-                    ]}
-                    badge="עובדים זמינים"
+                    description={employerLock
+                      ? "בשלב זה הפלטפורמה פתוחה לעובדים בלבד. אפשרות פרסום משרות תיפתח בקרוב."
+                      : "פרסם משרה תוך דקות ומצא עובדים מתאימים בסביבתך במהירות."}
+                    features={employerLock
+                      ? ["פרסום מהיר וקל", "גישה לעובדים זמינים באזורך", "ניהול מלא של המשרות שלך"]
+                      : ["פרסום מהיר וקל", "גישה לעובדים זמינים באזורך", "ניהול מלא של המשרות שלך"]}
+                    badge={employerLock ? "בקרוב" : "עובדים זמינים"}
                     badgeIcon={<Users className="h-3 w-3" />}
-                    buttonLabel="המשך כמעסיק"
+                    buttonLabel={employerLock ? "בקרוב..." : "המשך כמעסיק"}
                     loading={loading === "employer"}
-                    disabled={!!loading}
+                    disabled={!!loading || employerLock}
                     onSelect={() => handleSelect("employer")}
                     delay={0.25}
                   />

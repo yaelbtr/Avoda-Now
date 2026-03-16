@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
 import MobileDrawer from "./MobileDrawer";
@@ -35,6 +36,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme, switchable } = useTheme();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
+  const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -503,6 +505,8 @@ export default function Navbar() {
 
                     <DropdownMenuSeparator style={{ background: "oklch(0.87 0.04 84.0)" }} />
 
+                    {/* Hide mode switch to employer when employer lock is active */}
+                    {!(employerLock && userMode === "worker") && (
                     <DropdownMenuItem
                       onClick={() => setUserMode(userMode === "worker" ? "employer" : "worker")}
                       className="flex items-center gap-2"
@@ -511,6 +515,7 @@ export default function Navbar() {
                       <RefreshCw className="h-4 w-4 shrink-0" />
                       <span>{userMode === "worker" ? "עבור למצב מעסיק" : "עבור למצב עובד"}</span>
                     </DropdownMenuItem>
+                    )}
 
                     <DropdownMenuItem
                       onClick={resetUserMode}

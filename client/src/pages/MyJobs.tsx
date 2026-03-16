@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { AppButton } from "@/components/ui";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -358,6 +359,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
 export default function MyJobs() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
@@ -421,6 +423,26 @@ export default function MyJobs() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: C_PAGE_BG_HEX }}>
         <BrandLoader size="lg" label="טוען..." />
+      </div>
+    );
+  }
+
+  // ── Employer lock: platform is in workers-only mode ──
+  if (employerLock) {
+    return (
+      <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <Briefcase className="h-8 w-8 text-amber-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">ניהול משרות — בקרוב</h2>
+        <p className="text-muted-foreground mb-4">
+          בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.
+          <br />
+          אפשרות ניהול משרות למעסיקים תיפתח בקרוב.
+        </p>
+        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>
+          חפש עבודה
+        </AppButton>
       </div>
     );
   }

@@ -106,6 +106,7 @@ import {
   setSystemSetting,
   isMaintenanceModeActive,
   getMaintenanceMessage,
+  isEmployerLockActive,
   getHeroStats,
   resetTestUserProfile,
   recordUserConsent,
@@ -1249,6 +1250,18 @@ const adminRouter = router({
       await setSystemSetting("maintenanceMessage", input.message);
       return { success: true };
     }),
+  /** Get current employer-lock status */
+  getEmployerLock: adminProcedure.query(async () => {
+    const active = await isEmployerLockActive();
+    return { active };
+  }),
+  /** Toggle employer-lock on/off */
+  setEmployerLock: adminProcedure
+    .input(z.object({ active: z.boolean() }))
+    .mutation(async ({ input }) => {
+      await setSystemSetting("employerLock", input.active ? "true" : "false");
+      return { success: true, active: input.active };
+    }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
 
@@ -2310,11 +2323,25 @@ const maintenanceRouter = router({
   }),
 });
 
+// ─── Platform Router (public settings readable by frontend) ─────────────────────
+const platformRouter = router({
+  /** Public: check employer-lock status.
+   * Admins and test users always receive locked=false so they can access all areas.
+   */
+  settings: publicProcedure.query(async ({ ctx }) => {
+    const employerLock = await isEmployerLockActive();
+    // Admins and test users bypass the lock
+    const bypassLock = ctx.user?.role === "admin" || ctx.user?.role === "test";
+    return {
+      employerLock: bypassLock ? false : employerLock,
+    };
+  }),
+});
 // ─── App Router ────────────────────────────────────────────────────────────────────
-
 export const appRouter = router({
   system: systemRouter,
   maintenance: maintenanceRouter,
+  platform: platformRouter,
   auth: authRouter,
   jobs: jobsRouter,
   workers: workersRouter,

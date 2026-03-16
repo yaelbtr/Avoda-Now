@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
 import { BrandName } from "@/components/ui";
@@ -33,6 +34,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
+  const { employerLock } = usePlatformSettings();
 
   const lastSeenAt = useMemo(() => {
     if (typeof window === "undefined") return new Date(0);
@@ -248,7 +250,8 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                     </Link>
                     </li>
                   )}
-                  {navItem(
+                  {/* Hide switch-to-employer when employer lock is active */}
+                  {!(employerLock && userMode === "worker") && navItem(
                     () => { setUserMode(userMode === "worker" ? "employer" : "worker"); close(); },
                     RefreshCw,
                     userMode === "worker" ? "מעבר למצב מעסיק" : "מעבר למצב עובד",

@@ -2698,6 +2698,16 @@ export async function getMaintenanceMessage(): Promise<string> {
 }
 
 /**
+ * Returns true when the employer-lock flag is enabled.
+ * When active, all employer-facing routes/actions are blocked on the frontend.
+ * Admins and test users are always exempt.
+ */
+export async function isEmployerLockActive(): Promise<boolean> {
+  const val = await getSystemSetting("employerLock");
+  return val === "true";
+}
+
+/**
  * Returns counts needed for the hero stats banner on the Home page.
  * Used for conditional display logic:
  *  - if activeJobs > 50  → show active jobs count

@@ -16,7 +16,7 @@ interface RoleSelectionScreenProps {
 }
 
 const WORKER_IMG =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker_2fd2b6a6.jpg";
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker-v2_eb503874.jpg";
 const EMPLOYER_IMG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_f5973684.jpg";
 

@@ -451,7 +451,8 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     icon={<HardHat className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
                     title="מחפש עבודה זמנית?"
                     subtitle="לעובדים"
-                    description="מצא עבודות בקרבתך תוך דקות.\nבלי עמלות ועם קשר ישיר למעסיקים."
+                    description={`מצא עבודות בקרבתך תוך דקות.
+בלי עמלות ועם קשר ישיר למעסיקים.`}
                     features={[
                       "עבודות פעילות בכל הארץ",
                       "יצירת קשר ישיר עם המעסיק",

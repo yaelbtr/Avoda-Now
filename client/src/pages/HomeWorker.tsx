@@ -311,7 +311,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Full image with text at top + woman visible in center */}
         <div className="relative w-full" style={{ height: "480px" }}>
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
             alt=""
             aria-hidden="true"
             loading="eager"
@@ -407,7 +407,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       >
         {/* Full-bleed background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
           alt=""
           aria-hidden="true"
           loading="eager"

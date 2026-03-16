@@ -2174,3 +2174,4 @@
 - [x] Update worker role card: title → 'מחפש עבודה?', description → two-line copy, bullets → three updated items
 - [ ] Replace worker card image: practical male worker (warehouse/delivery/kitchen/event)
 - [x] Replace employer card image: male business owner/manager in real workplace
+- [x] Replace homepage hero image with diverse temporary jobs image

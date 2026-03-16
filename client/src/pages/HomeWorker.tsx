@@ -299,30 +299,32 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 
-      {/* ── MOBILE Hero (< md): in-flow image, text overlaid at bottom ── */}
+      {/* ── MOBILE Hero (< md): unified section — image + stats + CTA all on one glass surface ── */}
       <section className="relative overflow-hidden md:hidden">
-        {/* In-flow image — always visible, sets section height */}
-        <div className="relative w-full" style={{ height: 380 }}>
-          <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-warehouse-v2_eac87cc8.jpg"
-            alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "50% 50%" }}
-          />
-          {/* Bottom fade into page */}
-          <div
-            className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "45%", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
-          />
-          {/* Badge above head — positioned in upper area */}
+        {/* Full-bleed background image */}
+        <img
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-warehouse-v2_eac87cc8.jpg"
+          alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "50% 40%" }}
+        />
+        {/* Gradient: transparent at top, fades to page-bg at bottom ~70% */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, transparent 0%, transparent 30%, oklch(0.95 0.03 91.6 / 0.70) 55%, oklch(0.95 0.03 91.6) 75%)" }}
+        />
+
+        {/* All content stacked in flow — sets section height */}
+        <div className="relative z-10 flex flex-col items-center text-center px-5 pt-5 pb-6">
+
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-48"
             style={{
-              transform: "translateX(-50%)",
               background: "oklch(0.32 0.07 122 / 0.85)",
               border: "1px solid oklch(0.55 0.10 122 / 0.60)",
               boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
@@ -334,68 +336,70 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               מצא עבודה תוך דקות
             </span>
           </motion.div>
-          {/* Text overlaid at bottom */}
-          <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center text-center px-5 pb-4">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[30px] leading-[1.15] font-black mb-1"
-              style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-[30px] leading-[1.15] font-black mb-1"
+            style={{ color: "oklch(0.15 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif" }}
+          >
+            מחפש עבודה זמנית?<br />
+            <span style={{ color: "oklch(0.55 0.14 70)" }}>מצא אחת תוך דקות</span>
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[12px] font-semibold leading-relaxed mb-4"
+            style={{ color: "oklch(0.30 0.06 122)", maxWidth: "280px" }}
+          >
+            ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
+          </motion.p>
+
+          {/* Stats */}
+          <StatsRow />
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="w-full flex flex-col gap-3 mt-3"
+          >
+            <motion.button
+              onClick={() => navigate("/find-jobs")}
+              className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)",
+                boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45)",
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
-              מחפש עבודה זמנית?<br />
-              <span style={{ color: "oklch(0.55 0.14 70)" }}>מצא אחת תוך דקות</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[12px] font-semibold leading-relaxed"
-              style={{ color: "oklch(0.30 0.06 122)", maxWidth: "280px" }}
+              <Search size={15} />
+              מצא עבודה עכשיו
+              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+            </motion.button>
+            <motion.button
+              onClick={handleAvailabilityToggle}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
+              style={{
+                background: "oklch(0.97 0.02 91.6 / 0.80)",
+                border: "1px solid oklch(0.89 0.05 84.0)",
+                color: "oklch(0.35 0.08 122)",
+                boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                backdropFilter: "blur(6px)",
+              }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
-              ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
-            </motion.p>
-          </div>
+              <Zap size={14} />
+              הגדר זמינות עכשיו
+            </motion.button>
+          </motion.div>
         </div>
       </section>
-
-      {/* Mobile Stats + CTA */}
-      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-2 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
-        <StatsRow />
-        <motion.div
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
-          className="w-full flex flex-col gap-3 mt-3"
-        >
-          <motion.button
-            onClick={() => navigate("/find-jobs")}
-            className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-              color: "oklch(0.96 0.04 80)",
-              boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45)",
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Search size={15} />
-            מצא עבודה עכשיו
-            <ChevronLeft size={15} style={{ opacity: 0.65 }} />
-          </motion.button>
-          <motion.button
-            onClick={handleAvailabilityToggle}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
-            style={{
-              background: "white",
-              border: "1px solid oklch(0.89 0.05 84.0)",
-              color: "oklch(0.35 0.08 122)",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Zap size={14} />
-            הגדר זמינות עכשיו
-          </motion.button>
-        </motion.div>
-      </div>
 
       {/* ── DESKTOP Hero (≥ md): full-bleed image with text overlay ── */}
       <section

@@ -53,6 +53,10 @@ function HomeGuest() {
       </section>
       <ActivityTicker />
       <LiveStats />
+      {/* Gender disclaimer */}
+      <p className="text-center text-xs text-muted-foreground pb-4 px-4" dir="rtl">
+        לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+      </p>
     </div>
   );
 }

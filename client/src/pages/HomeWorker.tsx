@@ -1408,8 +1408,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setQuickAvailOpen(false)}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
-
-      {/* ── Job Bottom Sheet ─────────────────────────────────────────────── */}
+      {/* ── Job Bottom Sheet ───────────────────────────────────────────────────── */}
       <JobBottomSheet
         job={bottomSheetJob}
         open={bottomSheetOpen}
@@ -1418,6 +1417,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         isAuthenticated={isAuthenticated}
         layoutId={bottomSheetJob ? `carousel-card-${bottomSheetJob.id}` : undefined}
       />
+      {/* Gender disclaimer */}
+      <p className="text-center text-xs text-muted-foreground pb-4 px-4 mt-2" dir="rtl">
+        לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+      </p>
     </div>
   );
 }

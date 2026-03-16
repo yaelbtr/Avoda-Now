@@ -885,6 +885,10 @@ export default function HomeEmployer() {
       </section>
 
             <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+      {/* Gender disclaimer */}
+      <p className="text-center text-xs text-muted-foreground pb-4 px-4 mt-2" dir="rtl">
+        לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+      </p>
     </div>
   );
 }

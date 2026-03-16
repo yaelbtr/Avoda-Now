@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
@@ -95,6 +95,13 @@ export default function WorkerProfile() {
   const updateMutation = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
       toast.success("הפרופיל עודכן בהצלחה");
+      // Reset dirty snapshot to current values so indicator clears
+      savedSnapshot.current = {
+        name, email, workerBio, selectedCategories, preferenceText,
+        locationMode, preferredCity, searchRadiusKm,
+        preferredDays, preferredTimeSlots, preferredCities,
+        workerLatitude, workerLongitude, phoneVal,
+      };
       profileQuery.refetch();
     },
     onError: () => toast.error("שגיאה בשמירת הפרופיל"),
@@ -138,6 +145,42 @@ export default function WorkerProfile() {
   // Track original phone to detect changes
   const [originalPhoneVal, setOriginalPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
 
+  // ── Dirty-state tracking ─────────────────────────────────────────────────────
+  // Snapshot of last-saved values (initialised from server data, reset on save)
+  const savedSnapshot = useRef<{
+    name: string; email: string; workerBio: string;
+    selectedCategories: string[]; preferenceText: string;
+    locationMode: string; preferredCity: string; searchRadiusKm: number;
+    preferredDays: string[]; preferredTimeSlots: string[];
+    preferredCities: number[];
+    workerLatitude: string | null; workerLongitude: string | null;
+    phoneVal: PhoneValue;
+  } | null>(null);
+
+  const isDirty = useMemo(() => {
+    if (!savedSnapshot.current) return false;
+    const s = savedSnapshot.current;
+    return (
+      name !== s.name ||
+      email !== s.email ||
+      workerBio !== s.workerBio ||
+      preferenceText !== s.preferenceText ||
+      locationMode !== s.locationMode ||
+      preferredCity !== s.preferredCity ||
+      searchRadiusKm !== s.searchRadiusKm ||
+      workerLatitude !== s.workerLatitude ||
+      workerLongitude !== s.workerLongitude ||
+      phoneVal.prefix !== s.phoneVal.prefix ||
+      phoneVal.number !== s.phoneVal.number ||
+      JSON.stringify(selectedCategories.slice().sort()) !== JSON.stringify(s.selectedCategories.slice().sort()) ||
+      JSON.stringify(preferredDays.slice().sort()) !== JSON.stringify(s.preferredDays.slice().sort()) ||
+      JSON.stringify(preferredTimeSlots.slice().sort()) !== JSON.stringify(s.preferredTimeSlots.slice().sort()) ||
+      JSON.stringify(preferredCities.slice().sort()) !== JSON.stringify(s.preferredCities.slice().sort())
+    );
+  }, [name, email, workerBio, preferenceText, locationMode, preferredCity, searchRadiusKm,
+      workerLatitude, workerLongitude, phoneVal, selectedCategories,
+      preferredDays, preferredTimeSlots, preferredCities]);
+
   const uploadPhoto = async (base64: string, mimeType: string) => {
     const res = await fetch("/api/upload-photo", {
       method: "POST",
@@ -163,30 +206,55 @@ export default function WorkerProfile() {
   useEffect(() => {
     if (profileQuery.data) {
       const d = profileQuery.data;
-      setName(d.name ?? "");
+      const newName = d.name ?? "";
+      const newBio = d.workerBio ?? "";
+      const newCats = d.preferredCategories ?? [];
+      const newPrefText = d.preferenceText ?? "";
+      const newLocMode = (d.locationMode as "city" | "radius") ?? "city";
+      const newCity = d.preferredCity ?? "";
+      const newRadius = d.searchRadiusKm ?? 5;
+      const newDays = (d.preferredDays as string[]) ?? [];
+      const newSlots = (d.preferredTimeSlots as string[]) ?? [];
+      const newCities = (d.preferredCities as number[]) ?? [];
+      const newLat = (d as any).workerLatitude ?? null;
+      const newLng = (d as any).workerLongitude ?? null;
+      const newEmail = user?.email ?? "";
+
+      setName(newName);
       setPhone(d.phone ?? "");
       // Populate split phone fields from DB or parse from combined phone
+      let pv: PhoneValue = { prefix: "", number: "" };
       if ((d as any).phonePrefix && (d as any).phoneNumber) {
-        const pv = { prefix: (d as any).phonePrefix, number: (d as any).phoneNumber };
-        setPhoneVal(pv);
-        setOriginalPhoneVal(pv);
+        pv = { prefix: (d as any).phonePrefix, number: (d as any).phoneNumber };
       } else if (d.phone) {
-        const pv = parseIsraeliPhone(d.phone);
-        setPhoneVal(pv);
-        setOriginalPhoneVal(pv);
+        pv = parseIsraeliPhone(d.phone);
       }
-      setWorkerBio(d.workerBio ?? "");
-      setSelectedCategories(d.preferredCategories ?? []);
-      setPreferenceText(d.preferenceText ?? "");
-      setLocationMode((d.locationMode as "city" | "radius") ?? "city");
-      setPreferredCity(d.preferredCity ?? "");
-      setSearchRadiusKm(d.searchRadiusKm ?? 5);
-      setPreferredDays((d.preferredDays as string[]) ?? []);
-      setPreferredTimeSlots((d.preferredTimeSlots as string[]) ?? []);
-      setPreferredCities((d.preferredCities as number[]) ?? []);
-      setWorkerLatitude((d as any).workerLatitude ?? null);
-      setWorkerLongitude((d as any).workerLongitude ?? null);
+      setPhoneVal(pv);
+      setOriginalPhoneVal(pv);
+      setWorkerBio(newBio);
+      setSelectedCategories(newCats);
+      setPreferenceText(newPrefText);
+      setLocationMode(newLocMode);
+      setPreferredCity(newCity);
+      setSearchRadiusKm(newRadius);
+      setPreferredDays(newDays);
+      setPreferredTimeSlots(newSlots);
+      setPreferredCities(newCities);
+      setWorkerLatitude(newLat);
+      setWorkerLongitude(newLng);
       setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
+
+      // Initialise snapshot (only once — first load)
+      if (!savedSnapshot.current) {
+        savedSnapshot.current = {
+          name: newName, email: newEmail, workerBio: newBio,
+          selectedCategories: newCats, preferenceText: newPrefText,
+          locationMode: newLocMode, preferredCity: newCity,
+          searchRadiusKm: newRadius, preferredDays: newDays,
+          preferredTimeSlots: newSlots, preferredCities: newCities,
+          workerLatitude: newLat, workerLongitude: newLng, phoneVal: pv,
+        };
+      }
     }
     if (user?.email) setEmail(user.email);
   }, [profileQuery.data, user]);
@@ -1111,16 +1179,25 @@ export default function WorkerProfile() {
 
         {/* Save button for details tab */}
         <div className="flex flex-col gap-2 mt-2">
-          <AppButton
-            variant="cta"
-            size="lg"
-            className="w-full"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור
-          </AppButton>
+          <div className="relative">
+            <AppButton
+              variant="cta"
+              size="lg"
+              className="w-full"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+              שמור
+            </AppButton>
+            {isDirty && !updateMutation.isPending && (
+              <span
+                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
+                style={{ background: "oklch(0.72 0.18 50)" }}
+                title="יש שינויים שלא נשמרו"
+              />
+            )}
+          </div>
           <button
             onClick={() => window.history.back()}
             disabled={updateMutation.isPending}
@@ -1391,16 +1468,25 @@ export default function WorkerProfile() {
         </div>
         {/* Save button for work tab */}
         <div className="flex flex-col gap-2">
-          <AppButton
-            variant="cta"
-            size="lg"
-            className="w-full"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור
-          </AppButton>
+          <div className="relative">
+            <AppButton
+              variant="cta"
+              size="lg"
+              className="w-full"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+              שמור
+            </AppButton>
+            {isDirty && !updateMutation.isPending && (
+              <span
+                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
+                style={{ background: "oklch(0.72 0.18 50)" }}
+                title="יש שינויים שלא נשמרו"
+              />
+            )}
+          </div>
           <button
             onClick={() => window.history.back()}
             disabled={updateMutation.isPending}
@@ -1494,16 +1580,25 @@ export default function WorkerProfile() {
         </div>
         {/* Save button for schedule tab */}
         <div className="flex flex-col gap-2">
-          <AppButton
-            variant="cta"
-            size="lg"
-            className="w-full"
-            onClick={handleSave}
-            disabled={updateMutation.isPending}
-          >
-            {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-            שמור
-          </AppButton>
+          <div className="relative">
+            <AppButton
+              variant="cta"
+              size="lg"
+              className="w-full"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+              שמור
+            </AppButton>
+            {isDirty && !updateMutation.isPending && (
+              <span
+                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
+                style={{ background: "oklch(0.72 0.18 50)" }}
+                title="יש שינויים שלא נשמרו"
+              />
+            )}
+          </div>
           <button
             onClick={() => window.history.back()}
             disabled={updateMutation.isPending}

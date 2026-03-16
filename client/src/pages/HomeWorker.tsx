@@ -436,12 +436,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               }}
               animate={{
                 boxShadow: [
-                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-                  "0 0 0 4px oklch(0.55 0.12 122 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                  "0 0 0 3px oklch(0.45 0.09 122 / 0.10), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                  "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
                 ],
               }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
+              transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
             >

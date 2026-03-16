@@ -2042,3 +2042,16 @@
 - [x] Enable PostGIS extension for future geolocation queries
 - [x] Move mysql2 to devDependencies (kept for migration scripts only), all production code uses pg
 - [x] Run full test suite: 453 tests passing, 0 TypeScript errors
+
+## PostGIS Radius Search
+- [x] Add `location` geometry(Point, 4326) column to jobs and worker_availability tables (customType in schema.ts)
+- [x] Populate `location` from existing latitude/longitude columns (one-time SQL UPDATE on 8/8 jobs)
+- [x] Add GIST spatial index: idx_jobs_location + idx_worker_availability_location
+- [x] Update db.ts getJobsNearLocation to use ST_DWithin + ST_Distance (PostGIS geography)
+- [x] Update db.ts getNearbyWorkers to use ST_DWithin + ST_Distance (PostGIS geography)
+- [x] Update db.ts getApplicationsForJobWithDistance to use ST_Distance (PostGIS geography)
+- [x] Replace DAYOFWEEK (MySQL) with EXTRACT(DOW) (PostgreSQL) in both job search functions
+- [x] Add radiusKm min(1)/max(200) validation to routers.ts jobs.search procedure
+- [x] Frontend FindJobs already sends GPS coords + radius to backend (no changes needed)
+- [x] Haversine fallback retained for rows where location IS NULL (backward-compat)
+- [x] Write 18 Vitest tests for PostGIS radius search (server/postgis-radius.test.ts) — 471 total passing

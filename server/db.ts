@@ -673,13 +673,12 @@ export async function getActiveJobs(
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     }
   }
-  // dayOfWeek filter: JS 0=Sun..6=Sat → MySQL DAYOFWEEK() 1=Sun..7=Sat
+  // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat
   if (dayOfWeek && dayOfWeek.length > 0) {
-    const mysqlDays = dayOfWeek.map(d => d + 1); // convert JS→MySQL
     conditions.push(
       or(
         isNull(jobs.jobDate),
-        sql`DAYOFWEEK(${jobs.jobDate}) IN (${sql.join(mysqlDays.map(d => sql`${d}`), sql`, `)})`
+        sql`EXTRACT(DOW FROM ${jobs.jobDate}::date) IN (${sql.join(dayOfWeek.map(d => sql`${d}`), sql`, `)})`
       )!
     );
   }
@@ -708,17 +707,33 @@ export async function getJobsNearLocation(
   if (!db) return { rows: [], total: 0 };
   await expireOldJobs();
 
+  // PostGIS geography-based distance in km.
+  // ST_DWithin on geography uses metres; GIST index on jobs.location is used automatically.
+  const radiusMeters = radiusKm * 1000;
+  const userPoint = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
   const distanceExpr = sql<number>`
-    (6371 * acos(
-      cos(radians(${lat})) * cos(radians(CAST(${jobs.latitude} AS DECIMAL(10,7))))
-      * cos(radians(CAST(${jobs.longitude} AS DECIMAL(10,7))) - radians(${lng}))
-      + sin(radians(${lat})) * sin(radians(CAST(${jobs.latitude} AS DECIMAL(10,7))))
-    ))
+    ROUND(
+      (ST_Distance(
+        ${jobs.location}::geography,
+        ${userPoint}
+      ) / 1000.0)::numeric,
+      2
+    )
   `;
-
   const conditions = [
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-    sql`${distanceExpr} <= ${radiusKm}`,
+    // Use ST_DWithin for index-accelerated radius filter; fall back for NULL location rows
+    sql`(
+      (${jobs.location} IS NOT NULL AND ST_DWithin(${jobs.location}::geography, ${userPoint}, ${radiusMeters}))
+      OR
+      (${jobs.location} IS NULL AND (
+        6371 * acos(
+          cos(radians(${lat})) * cos(radians(${jobs.latitude}::float8))
+          * cos(${jobs.longitude}::float8 * pi()/180 - radians(${lng}))
+          + sin(radians(${lat})) * sin(radians(${jobs.latitude}::float8))
+        )
+      ) <= ${radiusKm})
+    )`,
   ];
   // Multi-category filter takes precedence over single category
   const effectiveCategoriesNear = categories && categories.length > 0
@@ -752,13 +767,12 @@ export async function getJobsNearLocation(
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     }
   }
-  // dayOfWeek filter: JS 0=Sun..6=Sat → MySQL DAYOFWEEK() 1=Sun..7=Sat
+  // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat
   if (dayOfWeek && dayOfWeek.length > 0) {
-    const mysqlDays = dayOfWeek.map(d => d + 1);
     conditions.push(
       or(
         isNull(jobs.jobDate),
-        sql`DAYOFWEEK(${jobs.jobDate}) IN (${sql.join(mysqlDays.map(d => sql`${d}`), sql`, `)})`
+        sql`EXTRACT(DOW FROM ${jobs.jobDate}::date) IN (${sql.join(dayOfWeek.map(d => sql`${d}`), sql`, `)})`
       )!
     );
   }
@@ -990,12 +1004,17 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
   if (!db) return [];
   const now = new Date();
 
+  // PostGIS geography-based distance; GIST index on worker_availability.location used automatically.
+  const radiusMeters = radiusKm * 1000;
+  const userPoint = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
   const distanceExpr = sql<number>`
-    (6371 * acos(
-      cos(radians(${lat})) * cos(radians(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
-      * cos(radians(CAST(${workerAvailability.longitude} AS DECIMAL(10,7))) - radians(${lng}))
-      + sin(radians(${lat})) * sin(radians(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
-    ))
+    ROUND(
+      (ST_Distance(
+        ${workerAvailability.location}::geography,
+        ${userPoint}
+      ) / 1000.0)::numeric,
+      2
+    )
   `;
 
   return db
@@ -1017,7 +1036,7 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
     .where(
       and(
         gte(workerAvailability.availableUntil, now),
-        sql`${distanceExpr} <= ${radiusKm}`
+        sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`
       )
     )
     .orderBy(distanceExpr)
@@ -1434,12 +1453,16 @@ export async function getApplicationsForJobWithDistance(
   const db = await getDb();
   if (!db) return [];
 
+  // PostGIS geography-based distance in km between worker location and job location.
+  const jobPoint = sql`ST_SetSRID(ST_MakePoint(${jobLng}::float8, ${jobLat}::float8), 4326)::geography`;
   const distanceExpr = sql<number>`
-    6371 * 2 * ASIN(SQRT(
-      POWER(SIN((RADIANS(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))) - RADIANS(${jobLat})) / 2), 2)
-      + COS(RADIANS(${jobLat})) * COS(RADIANS(CAST(${workerAvailability.latitude} AS DECIMAL(10,7))))
-      * POWER(SIN((RADIANS(CAST(${workerAvailability.longitude} AS DECIMAL(10,7))) - RADIANS(${jobLng})) / 2), 2)
-    ))
+    ROUND(
+      (ST_Distance(
+        ${workerAvailability.location}::geography,
+        ${jobPoint}
+      ) / 1000.0)::numeric,
+      2
+    )
   `;
 
   const now = new Date();

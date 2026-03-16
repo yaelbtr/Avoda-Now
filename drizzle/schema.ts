@@ -12,7 +12,20 @@ import {
   varchar,
   serial,
   index,
+  customType,
 } from "drizzle-orm/pg-core";
+
+/**
+ * PostGIS geometry(Point, 4326) column type.
+ * Stored as WKB in PostgreSQL; Drizzle treats it as an opaque string.
+ * Use ST_SetSRID(ST_MakePoint(lng, lat), 4326) to write,
+ * and ST_Distance() / ST_DWithin() to query.
+ */
+export const geometry = customType<{ data: string; driverData: string }>({
+  dataType() {
+    return "geometry(Point, 4326)";
+  },
+});
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const userStatusEnum = pgEnum("user_status", ["active", "suspended"]);
@@ -267,6 +280,8 @@ export const jobs = pgTable("jobs", {
   imageUrls: json("imageUrls").$type<string[]>(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  /** PostGIS Point geometry (SRID 4326) — populated from latitude/longitude for spatial queries */
+  location: geometry("location"),
 });
 
 export type Job = typeof jobs.$inferSelect;
@@ -328,6 +343,8 @@ export const workerAvailability = pgTable("worker_availability", {
   reminderSentAt: timestamp("reminderSentAt", { withTimezone: true }),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  /** PostGIS Point geometry (SRID 4326) — populated from latitude/longitude for spatial queries */
+  location: geometry("location"),
 });
 
 export type WorkerAvailability = typeof workerAvailability.$inferSelect;

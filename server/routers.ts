@@ -480,7 +480,7 @@ const jobsRouter = router({
       z.object({
         lat: z.number(),
         lng: z.number(),
-        radiusKm: z.number().default(10),
+        radiusKm: z.number().min(1).max(200).default(10),
         category: z.string().optional(),
         /** Multi-category filter — takes precedence over category when provided */
         categories: z.array(z.string().min(1)).max(20).optional(),

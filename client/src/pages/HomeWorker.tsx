@@ -313,10 +313,21 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute inset-0 w-full h-full object-cover"
             style={{ objectPosition: "50% 40%" }}
           />
-          {/* Fade: transparent → page-bg at very bottom of image */}
+          {/* Gradient: dark band in middle for text readability, fades to page-bg at bottom */}
           <div
-            className="absolute bottom-0 left-0 right-0 pointer-events-none"
-            style={{ height: "40%", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: [
+                "linear-gradient(to bottom,",
+                "  transparent 0%,",
+                "  oklch(0.10 0.06 122 / 0.00) 35%,",
+                "  oklch(0.10 0.06 122 / 0.45) 50%,",
+                "  oklch(0.10 0.06 122 / 0.55) 62%,",
+                "  oklch(0.10 0.06 122 / 0.20) 72%,",
+                "  oklch(0.95 0.03 91.6 / 0.80) 88%,",
+                "  oklch(0.95 0.03 91.6) 100%)",
+              ].join(" "),
+            }}
           />
           {/* Badge — top center, above head */}
           <motion.div

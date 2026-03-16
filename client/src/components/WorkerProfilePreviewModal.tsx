@@ -206,7 +206,7 @@ export function WorkerProfilePreviewModal({
               </button>
             </div>
 
-            <div style={{ padding: "0 16px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ padding: "0 16px 80px", display: "flex", flexDirection: "column", gap: 12 }}>
               {/* ── Employer Card ── */}
               <div style={{
                 borderRadius: 16,
@@ -446,22 +446,23 @@ export function WorkerProfilePreviewModal({
                   }} />
                 </div>
 
-                {/* Completion items grid — each item: icon + text tight together, right-aligned */}
+                {/* Completion items grid — RTL: icon on right, text to its left, pair is right-aligned */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "flex-end",
+                      flexDirection: "row",   /* RTL context: first child = rightmost */
                       gap: 5,
                     }}>
-                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}>
-                        {item.label}
-                      </span>
+                      {/* Icon first = rightmost in RTL */}
                       <CheckCircle2
                         size={14}
                         style={{ color: item.done ? "oklch(0.55 0.15 145)" : "oklch(0.75 0.03 122)", flexShrink: 0 }}
                       />
+                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}>
+                        {item.label}
+                      </span>
                     </div>
                   ))}
                 </div>

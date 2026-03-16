@@ -31,6 +31,9 @@ export interface SmsProvider {
    */
   verifyOtp(phone: string, code: string): Promise<OtpVerifyResult>;
 
+  /** Send OTP via voice call (Twilio Verify call channel) */
+  sendOtpVoice(phone: string): Promise<OtpSendResult>;
+
   /** Send OTP via email channel (fallback when SMS fails) */
   sendOtpToEmail(email: string): Promise<OtpSendResult>;
 
@@ -85,6 +88,33 @@ class TwilioVerifyProvider implements SmsProvider {
     } catch (err) {
       console.error("[TwilioVerify] sendOtp network error:", err);
       return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
+    }
+  }
+
+  /** Send OTP via voice call */
+  async sendOtpVoice(phone: string): Promise<OtpSendResult> {
+    if (!this.accountSid || !this.authToken || !this.serviceSid) {
+      return { success: false, error: "SMS service not configured" };
+    }
+    try {
+      const res = await fetch(`${this.baseUrl}/Verifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: this.authHeader,
+        },
+        body: new URLSearchParams({ To: phone, Channel: "call", Locale: "he" }).toString(),
+      });
+      const body = await res.json() as { status?: string; message?: string; code?: number };
+      if (!res.ok) {
+        console.error("[TwilioVerify] sendOtpVoice failed:", body);
+        if (body.code === 60200) return { success: false, error: "מספר הטלפון אינו תקין" };
+        return { success: false, error: "לא ניתן לבצע שיחה כרגע. נסו שוב בעוד מספר דקות." };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[TwilioVerify] sendOtpVoice network error:", err);
+      return { success: false, error: "לא ניתן לבצע שיחה כרגע. נסו שוב בעוד מספר דקות." };
     }
   }
 

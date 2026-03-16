@@ -2136,3 +2136,9 @@
 
 ## הסרת Google מהתחברות
 - [x] הסר כפתור Google ומפריד ממסך ההתחברות (Login phone step)
+
+## קבלת קוד OTP בשיחת טלפון (Twilio Voice)
+- [ ] הוסף channel "call" ל-sendOtp procedure (Twilio voice)
+- [ ] הוסף כפתור "קבל קוד בשיחה" ב-OTP step (התחברות)
+- [ ] הוסף אפשרות "שיחת טלפון" ב-channel step (הרשמה)
+- [ ] הוסף כפתור "שלח שוב בשיחה" ב-resend area

@@ -40,7 +40,7 @@ const OTP_LENGTH = 6;
 
 type Tab = "login" | "register";
 type Step = "welcome" | "phone" | "channel" | "otp" | "role" | "setup" | "success";
-type OtpChannel = "sms" | "email";
+type OtpChannel = "sms" | "email" | "call";
 
 const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/login-hero-house_378bbdc3.jpg";
 
@@ -379,10 +379,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     });
   };
 
-  const handleResend = () => {
+  const handleResend = (channel?: OtpChannel) => {
     if (resendCountdown > 0) return;
     setDigits(Array(OTP_LENGTH).fill(""));
-    sendOtp.mutate({ phone: phone.trim() });
+    sendOtp.mutate({ phone: phone.trim(), channel: channel ?? otpChannel });
   };
 
   const handleRoleSelect = (role: "worker" | "employer") => {
@@ -760,50 +760,69 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 {/* Channel cards */}
                 <div className="space-y-3">
                   {/* SMS option */}
-                  <label
-                    className="relative block cursor-pointer"
-                    onClick={() => { setOtpChannel("sms"); setChannelEmailError(null); }}
-                  >
-                    <div
-                      className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
-                      style={{
-                        border: `2px solid ${otpChannel === "sms" ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
-                        background: otpChannel === "sms" ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
-                      }}
+                  {(["sms", "call"] as OtpChannel[]).map((ch) => (
+                    <label
+                      key={ch}
+                      className="relative block cursor-pointer"
+                      onClick={() => { setOtpChannel(ch); setChannelEmailError(null); }}
                     >
-                      {/* Radio */}
                       <div
-                        className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
-                        style={{ borderColor: otpChannel === "sms" ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                        className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
+                        style={{
+                          border: `2px solid ${otpChannel === ch ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
+                          background: otpChannel === ch ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
+                        }}
                       >
-                        {otpChannel === "sms" && (
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
-                        )}
+                        {/* Radio */}
+                        <div
+                          className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
+                          style={{ borderColor: otpChannel === ch ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                        >
+                          {otpChannel === ch && (
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
+                          )}
+                        </div>
+                        {/* Text */}
+                        <div className="flex-1 text-right">
+                          <p className="font-bold text-base" style={{ color: "#1a2010" }}>
+                            {ch === "sms" ? "קבלת סיסמה ב-SMS" : "קבלת סיסמה בשיחת טלפון"}
+                          </p>
+                          <p className="text-sm" style={{ color: "#6b7280" }}>
+                            {ch === "sms" ? (
+                              <>הקוד יישלח למספר{" "}
+                                {phone ? (
+                                  <span dir="ltr" style={{ unicodeBidi: "embed" }}>
+                                    {(() => {
+                                      const d = phone.replace(/\D/g, "");
+                                      return d.length >= 7 ? `${d.slice(0,3)}-****${d.slice(-3)}` : phone;
+                                    })()}
+                                  </span>
+                                ) : "הטלפון שהזנת"}
+                              </>
+                            ) : (
+                              <>תקבל שיחה אוטומטית עם הקוד למספר{" "}
+                                {phone ? (
+                                  <span dir="ltr" style={{ unicodeBidi: "embed" }}>
+                                    {(() => {
+                                      const d = phone.replace(/\D/g, "");
+                                      return d.length >= 7 ? `${d.slice(0,3)}-****${d.slice(-3)}` : phone;
+                                    })()}
+                                  </span>
+                                ) : "הטלפון שהזנת"}
+                              </>
+                            )}
+                          </p>
+                        </div>
+                        {/* Icon */}
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
+                        >
+                          <Phone className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
+                        </div>
                       </div>
-                      {/* Text */}
-                      <div className="flex-1 text-right">
-                        <p className="font-bold text-base" style={{ color: "#1a2010" }}>קבלת סיסמה ב-SMS</p>
-                        <p className="text-sm" style={{ color: "#6b7280" }}>
-                          הקוד יישלח למספר{" "}
-                          {phone ? (
-                            <span dir="ltr" style={{ unicodeBidi: "embed" }}>
-                              {(() => {
-                                const d = phone.replace(/\D/g, "");
-                                return d.length >= 7 ? `${d.slice(0,3)}-****${d.slice(-3)}` : phone;
-                              })()}
-                            </span>
-                          ) : "הטלפון שהזנת"}
-                        </p>
-                      </div>
-                      {/* Icon */}
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
-                      >
-                        <Phone className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
-                      </div>
-                    </div>
-                  </label>
+                    </label>
+                  ))}
                 </div>
 
                 {/* Channel email format error */}
@@ -924,12 +943,14 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   {!isTestBypass && (
                     <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-medium"
                       style={{
-                        background: otpChannel === "email" ? "oklch(0.50 0.14 85 / 0.10)" : "oklch(0.50 0.09 124.9 / 0.10)",
-                        color: otpChannel === "email" ? "oklch(0.40 0.14 85)" : "oklch(0.40 0.09 124.9)",
+                        background: "oklch(0.50 0.09 124.9 / 0.10)",
+                        color: "oklch(0.40 0.09 124.9)",
                       }}
                     >
                       {otpChannel === "email"
                         ? <><Mail className="w-3 h-3" /> נשלח למייל</>
+                        : otpChannel === "call"
+                        ? <><Phone className="w-3 h-3" /> נשלח בשיחה</>
                         : <><Phone className="w-3 h-3" /> נשלח ב-SMS</>
                       }
                     </div>
@@ -982,7 +1003,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 <div className="flex items-center justify-between text-sm" dir="rtl">
                   <button
-                    onClick={handleResend}
+                    onClick={() => handleResend()}
                     disabled={resendCountdown > 0 || sendOtp.isPending}
                     className={`flex items-center gap-1.5 transition-colors ${
                       resendCountdown > 0 ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:text-primary/80"
@@ -994,11 +1015,33 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       : "שלח קוד מחדש"}
                   </button>
 
-                  {/* Right side: change channel (registration only) or change number (login) */}
+                  {/* Right side: change channel or change number */}
                   <div className="flex items-center gap-3">
+                    {/* Login: offer voice call as alternative if currently SMS */}
+                    {activeTab === "login" && otpChannel === "sms" && !isTestBypass && (
+                      <button
+                        onClick={() => { setOtpChannel("call"); handleResend("call"); }}
+                        disabled={resendCountdown > 0 || sendOtp.isPending}
+                        className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        קבל שיחה במקום
+                      </button>
+                    )}
+                    {/* Login: offer SMS if currently on call */}
+                    {activeTab === "login" && otpChannel === "call" && !isTestBypass && (
+                      <button
+                        onClick={() => { setOtpChannel("sms"); handleResend("sms"); }}
+                        disabled={resendCountdown > 0 || sendOtp.isPending}
+                        className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        קבל SMS במקום
+                      </button>
+                    )}
                     {activeTab === "register" && (
                       <button
-                        onClick={() => { setStep("channel"); setDigits(Array(OTP_LENGTH).fill("")); }}
+                        onClick={() => { setStep("channel"); setDigits(Array(OTP_LENGTH).fill(""));}}
                         className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                       >
                         <ArrowLeft className="h-3.5 w-3.5" />
@@ -1006,7 +1049,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       </button>
                     )}
                     <button
-                      onClick={() => { setStep("phone"); setDigits(Array(OTP_LENGTH).fill("")); }}
+                      onClick={() => { setStep("phone"); setDigits(Array(OTP_LENGTH).fill(""));}}
                       className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />

@@ -173,7 +173,7 @@ const authRouter = router({
       isRegistration: z.boolean().optional(),
       termsAccepted: z.boolean().optional(),
       email: z.string().email().max(320).optional(),
-      channel: z.enum(["sms", "email"]).optional().default("sms"),
+      channel: z.enum(["sms", "email", "call"]).optional().default("sms"),
     }))
     .mutation(async ({ input, ctx }) => {
       // Normalize to E.164
@@ -249,7 +249,7 @@ const authRouter = router({
         });
       }
 
-      // Send via chosen channel (SMS or Email)
+      // Send via chosen channel (SMS, Email, or Voice Call)
       let result: { success: boolean; error?: string };
       if (input.channel === "email") {
         // Email channel: use the email provided in registration
@@ -258,6 +258,9 @@ const authRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: "כתובת מייל נדרשת לשליחת קוד למייל" });
         }
         result = await smsProvider.sendOtpToEmail(targetEmail);
+      } else if (input.channel === "call") {
+        // Voice call channel
+        result = await smsProvider.sendOtpVoice(phone);
       } else {
         result = await smsProvider.sendOtp(phone);
       }

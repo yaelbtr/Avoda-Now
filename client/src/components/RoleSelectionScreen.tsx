@@ -82,7 +82,7 @@ function RoleCard({
       {/* Top image strip */}
       <div className="relative overflow-hidden" style={{ height: "140px" }}>
         <motion.div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-top"
           style={{ backgroundImage: `url('${image}')` }}
           animate={{ scale: hovered ? 1.06 : 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}

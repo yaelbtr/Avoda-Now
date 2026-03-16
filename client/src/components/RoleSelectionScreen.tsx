@@ -82,6 +82,23 @@ function RoleCard({
     >
       {/* Top image strip */}
       <div className="relative overflow-hidden" style={{ height: "180px" }}>
+        {/* Skeleton placeholder — visible until image loads */}
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: "oklch(0.93 0.01 84.0)" }}
+          animate={{ opacity: imageLoaded ? 0 : 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          {/* Shimmer sweep */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, oklch(0.97 0.005 84.0 / 0.7) 50%, transparent 100%)",
+              animation: "skeleton-shimmer 1.6s infinite",
+            }}
+          />
+        </motion.div>
         {/* Preload image to trigger fade-in once loaded */}
         <img
           src={image}

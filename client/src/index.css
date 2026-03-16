@@ -634,3 +634,9 @@
 [data-theme="dark"] .brand-name .brand-avoda {
   color: var(--header-fg, #e8eae5);
 }
+
+/* Skeleton shimmer animation for image placeholders */
+@keyframes skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

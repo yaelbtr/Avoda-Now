@@ -2160,3 +2160,4 @@
 - [x] תקן שגיאת Twilio 60331 — הסר Locale=he משיחת קול (לא נתמך ב-TTS)
 - [ ] הוסף שיחת קול בעברית עם Twilio Programmable Voice + Google TTS (he-IL-Wavenet-A)
 - [x] תקן יישור RTL בתצוגה מקדימה של פרופיל עובד
+- [x] תקן RTL מלא ב-WorkerProfilePreviewModal: תמונה ימין, תגיות/מעגלים מימין, השלמת פרופיל RTL

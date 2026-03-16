@@ -25,29 +25,25 @@ interface PreviewProps {
   distanceKm?: number | null;
 }
 
-// RTL-aware tag row: items flow right-to-left and wrap downward
+// RTL tag row — tags start from the right edge and wrap downward
 const TagRow = ({ children }: { children: React.ReactNode }) => (
   <div style={{
     display: "flex",
-    flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    justifyContent: "flex-end",
-    direction: "rtl",
+    justifyContent: "flex-start",   // flex-start = right edge in RTL context
   }}>
     {children}
   </div>
 );
 
-// RTL section header: icon on right, label to its left
+// Section header: icon on the right, label to its left (inherits dir="rtl" from parent)
 const SectionHeader = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
   <div style={{
     display: "flex",
-    flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginBottom: 8,
-    direction: "rtl",
   }}>
     {icon}
     <span style={{ fontSize: 12, fontWeight: 700, color: "#4F583B" }}>{label}</span>
@@ -161,7 +157,7 @@ export function WorkerProfilePreviewModal({
             onClick={onClose}
           />
 
-          {/* Bottom Sheet */}
+          {/* Bottom Sheet — dir="rtl" on the root so every child inherits RTL */}
           <motion.div
             dir="rtl"
             className="relative w-full"
@@ -181,10 +177,9 @@ export function WorkerProfilePreviewModal({
               <div style={{ width: 40, height: 4, borderRadius: 9999, background: "oklch(0.82 0.02 100)" }} />
             </div>
 
-            {/* Header */}
+            {/* Header: title on right, X button on left */}
             <div style={{
               display: "flex",
-              flexDirection: "row-reverse",
               alignItems: "flex-start",
               justifyContent: "space-between",
               padding: "4px 16px 12px",
@@ -221,16 +216,15 @@ export function WorkerProfilePreviewModal({
                 border: "1px solid oklch(0.92 0.02 100)",
                 boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
               }}>
-                {/* Avatar + name row */}
+                {/* Avatar on right, text block on left — natural RTL row */}
                 <div style={{
                   display: "flex",
-                  flexDirection: "row-reverse",
                   alignItems: "flex-start",
                   gap: 12,
                   padding: 16,
                   borderBottom: "1px solid oklch(0.95 0.02 100)",
                 }}>
-                  {/* Avatar */}
+                  {/* Avatar — first child in RTL = rightmost */}
                   {photo ? (
                     <img
                       src={photo}
@@ -255,7 +249,7 @@ export function WorkerProfilePreviewModal({
                     </div>
                   )}
 
-                  {/* Text block */}
+                  {/* Text block — inherits RTL, text aligns right automatically */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontSize: 18, fontWeight: 900, color: "#4F583B", margin: 0, lineHeight: 1.2 }}>
                       {name || "שם לא הוזן"}
@@ -271,10 +265,9 @@ export function WorkerProfilePreviewModal({
                       </p>
                     )}
 
-                    {/* Stats row: rating · jobs · distance */}
+                    {/* Stats row — flex row in RTL = starts from right */}
                     <div style={{
                       display: "flex",
-                      flexDirection: "row-reverse",
                       flexWrap: "wrap",
                       gap: "4px 12px",
                       marginTop: 8,
@@ -327,7 +320,7 @@ export function WorkerProfilePreviewModal({
 
                 {/* Bio */}
                 {(bio || true) && (
-                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)", direction: "rtl", textAlign: "right" }}>
+                  <div style={{ padding: "12px 16px", borderBottom: "1px solid oklch(0.95 0.02 100)" }}>
                     {bio ? (
                       <p style={{ fontSize: 13, lineHeight: 1.6, color: "oklch(0.30 0.05 122)", margin: 0 }}>
                         {bio}
@@ -398,7 +391,7 @@ export function WorkerProfilePreviewModal({
                     label="אזור עבודה"
                   />
                   {locationMode === "radius" ? (
-                    <p style={{ fontSize: 13, color: "oklch(0.40 0.06 122)", margin: 0, textAlign: "right" }}>
+                    <p style={{ fontSize: 13, color: "oklch(0.40 0.06 122)", margin: 0 }}>
                       עד {searchRadiusKm} ק"מ מהמיקום שלי
                     </p>
                   ) : cityNames.length > 0 ? (
@@ -421,9 +414,9 @@ export function WorkerProfilePreviewModal({
                 background: "white",
                 border: "1px solid oklch(0.92 0.02 100)",
               }}>
+                {/* Title on right, percentage on left — natural RTL */}
                 <div style={{
                   display: "flex",
-                  flexDirection: "row-reverse",
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: 8,
@@ -438,36 +431,43 @@ export function WorkerProfilePreviewModal({
                     {completionPct}%
                   </span>
                 </div>
-                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, direction: "rtl", display: "flex", justifyContent: "flex-end" }}>
+
+                {/* Progress bar — fills from right in RTL */}
+                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, overflow: "hidden" }}>
                   <div style={{
                     height: 8, borderRadius: 9999,
                     width: `${completionPct}%`,
+                    marginRight: 0,
+                    marginLeft: "auto",
                     background: completionPct === 100
                       ? "oklch(0.55 0.15 145)"
-                      : "linear-gradient(270deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)",
+                      : "linear-gradient(90deg, oklch(0.68 0.14 80.8) 0%, #4F583B 100%)",
                     transition: "width 0.5s ease",
                   }} />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px", direction: "rtl" }}>
+
+                {/* Completion items grid — each row: label on right, icon on left */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{
                       display: "flex",
-                      flexDirection: "row",
                       alignItems: "center",
+                      justifyContent: "space-between",
                       gap: 6,
                     }}>
-                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}>
-                        {item.label}
-                      </span>
                       <CheckCircle2
                         size={14}
                         style={{ color: item.done ? "oklch(0.55 0.15 145)" : "oklch(0.75 0.03 122)", flexShrink: 0 }}
                       />
+                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)", textAlign: "right" }}>
+                        {item.label}
+                      </span>
                     </div>
                   ))}
                 </div>
+
                 {completionPct < 100 && (
-                  <p style={{ fontSize: 12, marginTop: 12, color: "oklch(0.68 0.14 80.8)", textAlign: "right", direction: "rtl" }}>
+                  <p style={{ fontSize: 12, marginTop: 12, color: "oklch(0.68 0.14 80.8)" }}>
                     💡 פרופיל מלא מגדיל את הסיכוי לקבל פניות ממעסיקים
                   </p>
                 )}

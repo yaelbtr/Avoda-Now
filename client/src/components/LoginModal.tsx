@@ -5,14 +5,13 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { AppButton, GoogleAuthButton, AppLogo, BrandName } from "@/components/ui";
+import { AppButton, AppLogo, BrandName } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
   User, Mail,
 } from "lucide-react";
-import { saveReturnPath, getGoogleLoginUrl } from "@/const";
 import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { AppInput, AppLabel } from "@/components/ui";
 import { AnimatePresence, motion } from "framer-motion";
@@ -698,22 +697,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               </AppButton>
               <p className="text-xs text-center" style={{ color: "#6b7280" }}>הקוד יישלח אליך ב-SMS</p>
 
-              {/* Divider */}
-              <div className="relative py-0.5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" style={{ borderColor: "oklch(0.88 0.04 122)" }} />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-3 text-xs" style={{ background: "var(--page-bg)", color: "#9ca3af" }}>או התחבר באמצעות</span>
-                </div>
-              </div>
-
-              {/* Google login */}
-              <GoogleAuthButton
-                label="כניסה עם Google"
-                onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-              />
-
               {/* Footer */}
               <p className="text-center text-sm" style={{ color: "#6b7280" }}>
                 עוד לא רשום?{" "}
@@ -1382,17 +1365,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
               {duplicateError && (
                 <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 space-y-2">
                   <p className="font-medium">{duplicateError}</p>
-                  {duplicateError.includes("Google") ? (
-                    // Google-account conflict — offer direct Google login
-                    <GoogleAuthButton
-                      label="התחבר עם Google"
-                      size="sm"
-                      className="mt-1"
-                      onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-                    />
-                  ) : (
-                    <a href="mailto:support@avodanow.co.il" className="underline text-red-600 text-xs">פנה למנהל המערכת</a>
-                  )}
+                  <a href="mailto:support@avodanow.co.il" className="underline text-red-600 text-xs">פנה למנהל המערכת</a>
                 </div>
               )}
 

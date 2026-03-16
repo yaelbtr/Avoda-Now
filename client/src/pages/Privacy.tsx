@@ -3,23 +3,91 @@ import { useFAQSchema } from "@/hooks/useStructuredData";
 const PRIVACY_FAQS = [
   {
     question: "איזה מידע AvodaNow אוספת עליי?",
-    answer: "אנו אוספים מספר טלפון לצורך אימות זהות, פרטי משרות שפורסמו, ומיקום גיאוגרפי רק כאשר ניתנת הרשאה מפורשת.",
+    answer: "אנו אוספים שם, מספר טלפון, עיר פעילות, מידע מקצועי, ומידע טכני כגון כתובת IP וסוג מכשיר.",
   },
   {
     question: "האם AvodaNow מוכרת מידע לגורמים שלישיים?",
-    answer: "לא. אנו לא מוכרים או משתפים מידע אישי עם צדדים שלישיים.",
+    answer: "לא. הפלטפורמה אינה מוכרת מידע אישי של משתמשים.",
   },
   {
     question: "כיצד המידע שלי מוגן?",
-    answer: "אנו נוקטים באמצעי אבטחה סבירים כולל הצפנת תקשורת HTTPS ואחסון מאובטח.",
+    answer: "הפלטפורמה נוקטת באמצעים סבירים להגנה על מידע אישי, לרבות הגבלת גישה, אמצעי אבטחה טכנולוגיים וניטור פעילות חריגה.",
   },
   {
     question: "האם אפשר למחוק את החשבון שלי?",
-    answer: "כן. ניתן לפנות אלינו בכתובת info@avodanow.co.il ונמחק את החשבון ואת כל המידע הקשור אליו.",
+    answer: "כן. ניתן לבקש מחיקת מידע אישי בהתאם למדיניות הפרטיות. שים לב כי מידע מסוים עשוי להישמר לצרכים משפטיים.",
   },
   {
     question: "האם AvodaNow משתמשת בעוגיות?",
-    answer: "כן, אנו משתמשים בעוגיות ההפעלה בלבד לשמירת סשן התחברות. אין שימוש בעוגיות פרסום.",
+    answer: "כן, הפלטפורמה עשויה להשתמש בקבצי Cookies לצורך תפעול האתר, שמירת העדפות משתמש וניתוח פעילות.",
+  },
+];
+
+const SECTIONS = [
+  {
+    id: "data-types",
+    title: "1. סוגי מידע הנאספים",
+    content: `מידע שנמסר על ידי המשתמש:\n• שם\n• מספר טלפון\n• כתובת דוא"ל\n• עיר או אזור פעילות\n• מידע מקצועי\n• תיאור ניסיון מקצועי\n• תמונת פרופיל\n• פרטי משרות או שירותים\n\nמידע טכני הנאסף אוטומטית:\n• כתובת IP\n• סוג מכשיר ודפדפן\n• זמני התחברות\n• פעולות שבוצעו במערכת\n• נתוני שימוש וסטטיסטיקה`,
+  },
+  {
+    id: "purposes",
+    title: "2. מטרות השימוש במידע",
+    content: `המידע שנאסף משמש בין היתר למטרות הבאות:\n• הפעלת הפלטפורמה ומתן השירות\n• יצירת חיבור בין משתמשים\n• הצגת משרות או נותני שירות רלוונטיים\n• הפעלת מנגנוני התאמה והמלצה\n• שיפור השירות וחוויית המשתמש\n• אבטחת המערכת ומניעת שימוש לרעה\n• טיפול בפניות משתמשים`,
+  },
+  {
+    id: "algorithms",
+    title: "3. שימוש באלגוריתמים ומערכות התאמה",
+    content: `הפלטפורמה עשויה להשתמש במערכות חישוב, אלגוריתמים או מערכות ניתוח נתונים לצורך:\n• התאמת משרות למשתמשים\n• התאמת נותני שירות למעסיקים\n• שיפור תוצאות החיפוש במערכת\n\nמערכות אלו פועלות באופן אוטומטי ואינן מהוות התחייבות להתאמה.`,
+  },
+  {
+    id: "third-party",
+    title: "4. שיתוף מידע עם צדדים שלישיים",
+    content: `הפלטפורמה אינה מוכרת מידע אישי של משתמשים. עם זאת, מידע עשוי להיות משותף במקרים הבאים:\n• לצורך יצירת קשר בין משתמשים\n• כאשר הדבר נדרש לצורך הפעלת השירות\n• כאשר הדבר נדרש על פי חוק\n• בהתאם לצו של בית משפט\n• בהתאם לדרישה של רשות מוסמכת`,
+  },
+  {
+    id: "authorities",
+    title: "5. מסירת מידע לרשויות",
+    content: `הפלטפורמה רשאית למסור מידע לרשויות מוסמכות במקרים בהם הדבר נדרש על פי דין, לרבות:\n• צו בית משפט\n• דרישת רשות מוסמכת\n• חקירה פלילית\n• מניעת פעילות בלתי חוקית`,
+  },
+  {
+    id: "retention",
+    title: "6. שמירת מידע",
+    content: "המידע האישי נשמר כל עוד הדבר נדרש לצורך הפעלת השירות או לצרכים משפטיים, רגולטוריים ותפעוליים. הפלטפורמה רשאית לשמור מידע גם לאחר סגירת חשבון משתמש במקרים בהם הדבר נדרש על פי חוק או לצורך הגנה משפטית.",
+  },
+  {
+    id: "security",
+    title: "7. אבטחת מידע",
+    content: `הפלטפורמה נוקטת באמצעים סבירים להגנה על מידע אישי, לרבות:\n• הגבלת גישה למידע\n• שימוש באמצעי אבטחה טכנולוגיים\n• ניטור פעילות חריגה במערכת\n\nעם זאת, אין אפשרות להבטיח אבטחה מוחלטת של מידע המועבר דרך האינטרנט.`,
+  },
+  {
+    id: "cookies",
+    title: "8. שימוש בעוגיות (Cookies)",
+    content: `הפלטפורמה עשויה להשתמש בקבצי Cookies או בטכנולוגיות דומות לצורך:\n• תפעול האתר\n• שמירת העדפות משתמש\n• ניתוח פעילות משתמשים\n• שיפור חוויית המשתמש\n\nמשתמשים יכולים לשלוט בהגדרות העוגיות דרך הדפדפן שלהם.`,
+  },
+  {
+    id: "user-rights",
+    title: "9. זכויות המשתמש",
+    content: `משתמשים רשאים:\n• לעיין במידע האישי שנשמר עליהם\n• לבקש תיקון מידע שאינו מדויק\n• לבקש מחיקת מידע אישי בכפוף לדין\n\nבקשות בנושא פרטיות ניתן להפנות לכתובת המפורטת בסוף מסמך זה.`,
+  },
+  {
+    id: "external-links",
+    title: "10. קישורים לאתרים חיצוניים",
+    content: "הפלטפורמה עשויה לכלול קישורים לאתרים או שירותים חיצוניים. הפלטפורמה אינה אחראית למדיניות הפרטיות של שירותים אלו.",
+  },
+  {
+    id: "minors",
+    title: "11. קטינים",
+    content: "השימוש בפלטפורמה מיועד למשתמשים מעל גיל 18 בלבד. הפלטפורמה אינה אוספת מידע ביודעין מקטינים.",
+  },
+  {
+    id: "policy-updates",
+    title: "12. שינויים במדיניות הפרטיות",
+    content: "הפלטפורמה רשאית לעדכן מדיניות פרטיות זו מעת לעת. המשך שימוש בפלטפורמה לאחר עדכון המדיניות מהווה הסכמה למדיניות המעודכנת.",
+  },
+  {
+    id: "contact",
+    title: "13. יצירת קשר",
+    content: "לשאלות בנוגע למדיניות פרטיות ניתן לפנות אל: info@avodanow.co.il",
   },
 ];
 
@@ -29,44 +97,18 @@ export default function Privacy() {
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות פרטיות</h1>
-      <p className="text-sm text-muted-foreground mb-8">עדכון אחרון: מרץ 2026</p>
+      <p className="text-sm text-muted-foreground mb-2">עדכון אחרון: מרץ 2026</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        מדיניות פרטיות זו מתארת כיצד הפלטפורמה אוספת, משתמשת, שומרת ומגנה על מידע אישי של משתמשים. השימוש בפלטפורמה מהווה הסכמה למדיניות פרטיות זו.
+      </p>
 
-      <div className="space-y-4 text-foreground">
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">מידע שאנו אוספים</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            אנו אוספים מספר טלפון לצורך אימות זהות, פרטי משרות שפורסמו, ומיקום גיאוגרפי (רק כאשר ניתנת הרשאה מפורשת).
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">שימוש במידע</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            המידע משמש אך ורק לצורך הפעלת הפלטפורמה: אימות משתמשים, הצגת משרות, וחיבור בין עובדים למעסיקים. אנו לא מוכרים מידע לצדדים שלישיים.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">אבטחת מידע</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            אנו נוקטים באמצעי אבטחה סבירים להגנה על המידע שלך, כולל הצפנת תקשורת (HTTPS) ואחסון מאובטח.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">עוגיות (Cookies)</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            אנו משתמשים בעוגיות לניהול הפגישה (session) בלבד. אין שימוש בעוגיות מעקב של צדדים שלישיים.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">זכויותיך</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            יש לך הזכות לבקש מחיקת המידע שלך בכל עת. לפנייה:{" "}
-            <a href="mailto:info@job-now.co.il" className="text-primary hover:underline">info@job-now.co.il</a>
-          </p>
-        </section>
+      <div className="prose prose-sm max-w-none space-y-4 text-foreground">
+        {SECTIONS.map((section) => (
+          <section key={section.id} id={section.id} className="bg-card rounded-xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-2">{section.title}</h2>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{section.content}</p>
+          </section>
+        ))}
       </div>
     </div>
   );

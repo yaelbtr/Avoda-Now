@@ -1,49 +1,84 @@
 import { Link } from "wouter";
-import { BrandName } from "@/components/ui";
+
+const SECTIONS = [
+  {
+    id: "purpose",
+    title: "1. מטרת מערכת הדירוגים",
+    content: `מערכת הדירוגים נועדה:\n• לשתף חוויות בין משתמשים\n• לסייע בקבלת החלטות\n• לשפר את איכות השירות בפלטפורמה`,
+  },
+  {
+    id: "who-can-review",
+    title: "2. מי רשאי לפרסם ביקורת",
+    content: `רק משתמשים שהייתה להם אינטראקציה עם משתמש אחר דרך הפלטפורמה רשאים לפרסם ביקורת עליו.`,
+  },
+  {
+    id: "content",
+    title: "3. תוכן הביקורת",
+    content: `ביקורות חייבות להיות:\n• אמיתיות\n• מבוססות על חוויה אישית\n• מנוסחות באופן מכבד`,
+  },
+  {
+    id: "prohibited",
+    title: "4. תוכן אסור בביקורות",
+    content: `חל איסור לפרסם ביקורות הכוללות:\n• לשון הרע\n• קללות או תוכן פוגעני\n• מידע אישי של אדם אחר\n• טענות כוזבות\n• איומים או הטרדה`,
+  },
+  {
+    id: "fake",
+    title: "5. ביקורות מזויפות",
+    content: `אסור לפרסם ביקורות מזויפות, לרבות:\n• ביקורות שנכתבו על ידי המשתמש על עצמו\n• ביקורות שנכתבו בתמורה לתשלום\n• ביקורות שנועדו לפגוע במשתמש אחר ללא בסיס`,
+  },
+  {
+    id: "removal",
+    title: "6. הסרת ביקורות",
+    content: `הפלטפורמה רשאית להסיר ביקורות במקרים כגון:\n• הפרת מדיניות זו\n• חשד לביקורת מזויפת\n• תוכן פוגעני או משמיץ\n\nהחלטות הפלטפורמה בנושא זה נתונות לשיקול דעתה.`,
+  },
+  {
+    id: "response",
+    title: "7. תגובה לביקורות",
+    content: `הפלטפורמה רשאית לאפשר למשתמשים להגיב לביקורות שנכתבו עליהם.`,
+  },
+  {
+    id: "liability",
+    title: "8. הגבלת אחריות",
+    content: `הפלטפורמה אינה אחראית לתוכן הביקורות המתפרסמות על ידי משתמשים.\n\nהאחריות לתוכן הביקורת חלה על המשתמש שפרסם אותה.`,
+  },
+  {
+    id: "updates",
+    title: "9. עדכון המדיניות",
+    content: `הפלטפורמה רשאית לעדכן מדיניות זו מעת לעת.`,
+  },
+  {
+    id: "contact",
+    title: "10. יצירת קשר",
+    content: "לשאלות בנושא דירוגים וביקורות ניתן לפנות אל: info@avodanow.co.il",
+  },
+];
 
 export default function ReviewsPolicy() {
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות ביקורות</h1>
-      <p className="text-sm text-muted-foreground mb-8">עדכון אחרון: מרץ 2026</p>
-      <div className="prose prose-sm max-w-none space-y-6 text-foreground">
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">1. ביקורות אמיתיות בלבד</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            ביקורות חייבות לשקף חוויה אמיתית ואישית עם העובד. אסור לפרסם ביקורות מזויפות, ביקורות בתמורה לתשלום, או ביקורות שנועדו לפגוע שלא כדין.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">2. תוכן הביקורת</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            ביקורת חייבת להיות ענינית ומכבדת. אסור לכלול: מידע אישי מזהה, האשמות ללא בסיס, שפה פוגענית, או תוכן שאינו קשור לחוויית העבודה.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">3. הסרת ביקורות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <BrandName /> שומרת לעצמה את הזכות להסיר ביקורות שאינן עומדות במדיניות זו. עובד שמאמין שביקורת עליו אינה הוגנת יכול לפנות אלינו לבדיקה.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">4. אחריות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <BrandName /> אינה אחראית לתוכן הביקורות. הביקורות מייצגות את דעת הכותב בלבד. מי שמפרסם ביקורת שקרית עלול לשאת באחריות משפטית.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">5. יצירת קשר</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            לדיווח על ביקורת בעייתית:{" "}
-            <a href="mailto:info@avodanow.co.il" className="text-primary hover:underline">info@avodanow.co.il</a>
-          </p>
-        </section>
-        <div className="text-sm text-muted-foreground pt-2">
-          ראה גם:{" "}
-          <Link href="/terms" className="text-primary hover:underline">תנאי שימוש</Link>
-          {" · "}
-          <Link href="/user-content-policy" className="text-primary hover:underline">מדיניות תוכן משתמשים</Link>
-        </div>
+      <Link href="/legal" className="text-sm text-muted-foreground hover:text-foreground mb-6 inline-block">
+        ← חזרה לכל המסמכים המשפטיים
+      </Link>
+      <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות דירוגים וביקורות</h1>
+      <p className="text-sm text-muted-foreground mb-2">עדכון אחרון: מרץ 2026</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        הפלטפורמה מאפשרת למשתמשים לפרסם דירוגים וביקורות על משתמשים אחרים לאחר אינטראקציה ביניהם. מדיניות זו מגדירה את הכללים לפרסום ביקורות ודירוגים.
+      </p>
+
+      <div className="prose prose-sm max-w-none space-y-4 text-foreground">
+        {SECTIONS.map((section) => (
+          <section key={section.id} id={section.id} className="bg-card rounded-xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-2">{section.title}</h2>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{section.content}</p>
+          </section>
+        ))}
+      </div>
+
+      <div className="text-sm text-muted-foreground pt-6">
+        ראה גם:{" "}
+        <Link href="/terms" className="text-primary hover:underline">תנאי שימוש</Link>
+        {" · "}
+        <Link href="/user-content-policy" className="text-primary hover:underline">מדיניות תוכן משתמשים</Link>
       </div>
     </div>
   );

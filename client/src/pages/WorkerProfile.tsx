@@ -18,7 +18,7 @@ import {
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
 import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
-import { Eye } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
@@ -1577,6 +1577,31 @@ export default function WorkerProfile() {
               💡 ודא שהתראות דפדפן מופעלות בדף "מועמדויות שלי"
             </p>
           )}
+        </div>
+        {/* ── Account Deletion Section (Step 9) ────────────────────────── */}
+        <div className="rounded-2xl p-5" style={{ background: "#fff8f8", border: "1px solid #fecaca" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fee2e2" }}>
+              <Trash2 className="h-3.5 w-3.5" style={{ color: "#dc2626" }} />
+            </div>
+            <div>
+              <h2 className="font-bold text-sm" style={{ color: "#dc2626" }}>מחיקת חשבון</h2>
+              <p className="text-xs text-muted-foreground">פעולה בלתי הפיכה</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3" dir="rtl">
+            מחיקת החשבון תמחק את כל הנתונים האישיים שלך בהתאם ל{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות הפרטיות</a>.
+            {" "}הנתונים שנדרשים לפעילות הפלטפורמה (כמו דירוגים) עשויים להישמר בהתאם לדרישות החוק.
+          </p>
+          <a
+            href="mailto:info@avodanow.co.il?subject=בקשה למחיקת חשבון"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl border transition-all hover:opacity-80"
+            style={{ color: "#dc2626", borderColor: "#fecaca", background: "white" }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            בקשה למחיקת חשבון
+          </a>
         </div>
         </div>
         )}

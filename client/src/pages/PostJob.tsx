@@ -97,6 +97,11 @@ export default function PostJob() {
   const [captcha, setCaptcha] = useState(generateCaptcha);
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaError, setCaptchaError] = useState(false);
+  // Legal checkboxes (Step 5 — Job Posting Policy)
+  const [legalLawsConfirmed, setLegalLawsConfirmed] = useState(false);
+  const [legalLicensesConfirmed, setLegalLicensesConfirmed] = useState(false);
+  const [legalPolicyAccepted, setLegalPolicyAccepted] = useState(false);
+  const [legalCheckboxError, setLegalCheckboxError] = useState(false);
 
   // Read URL params for duplicate-job pre-fill
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -297,6 +302,13 @@ export default function PostJob() {
       toast.error("אנא בחר תאריך לעבודה");
       return;
     }
+    // Validate legal checkboxes
+    if (!legalLawsConfirmed || !legalLicensesConfirmed || !legalPolicyAccepted) {
+      setLegalCheckboxError(true);
+      toast.error("יש לאשר את כל האישורים הנדרשים");
+      return;
+    }
+    setLegalCheckboxError(false);
     setCaptchaError(false);
     createJob.mutate({
       title: data.title,
@@ -1030,14 +1042,61 @@ export default function PostJob() {
           </div>
         )}
 
-        {/* Legal notice — job posting */}
-        <p className="text-xs text-center" style={{ color: "#6b7280" }} dir="rtl">
-          בלחיצה על “פרסם עבודה” אתה מאשר/ת כי קראת וקיבלת את{" "}
-          <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: "#4a5d23" }}>ניהול משרות</a>
-          {" "}ואת{" "}
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
-          {" "}המשרה תפורסם בפומבי הפלטפורמה ותהיה גלויה למועמדים פוטנציאליים.
-        </p>
+        {/* Legal checkboxes — Step 5 (Job Posting Policy) */}
+        <div dir="rtl" className="space-y-3 rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
+          <p className="text-xs font-semibold" style={{ color: "#4a5d23" }}>אישורים נדרשים לפרסום משרה</p>
+
+          {/* Checkbox 1 */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={legalLawsConfirmed}
+              onChange={e => { setLegalLawsConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-olive-600 cursor-pointer"
+            />
+            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
+              אני מאשר/ת כי פרסום המשרה עומד בדרישות החוק הישראלי ואינו כולל אפליה, הטרדה או פרסום בלתי חוקי.
+            </span>
+          </label>
+
+          {/* Checkbox 2 */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={legalLicensesConfirmed}
+              onChange={e => { setLegalLicensesConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
+              אני מאשר/ת כי בדיקת רישיונות והסמכות של נותן השירות היא באחריותי בלבד.
+            </span>
+          </label>
+
+          {/* Checkbox 3 */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={legalPolicyAccepted}
+              onChange={e => { setLegalPolicyAccepted(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
+              אני קראתי ומסכים/ת ל{" "}
+              <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות פרסום משרות</a>
+              {" ול "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
+            </span>
+          </label>
+
+          {/* Platform disclaimer */}
+          <p className="text-xs" style={{ color: "#6b7280" }}>
+            הפלטפורמה אינה אחראית לתוכן המשרה או לתנאי העבודה.
+          </p>
+
+          {legalCheckboxError && (
+            <p className="text-xs font-medium" style={{ color: "#dc2626" }}>יש לאשר את כל האישורים לפני פרסום המשרה</p>
+          )}
+        </div>
 
         <AppButton
           type="submit"

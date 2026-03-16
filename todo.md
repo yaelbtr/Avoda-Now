@@ -2003,3 +2003,21 @@
 - [x] Build TermsUpdateBanner component (olive banner with Hebrew text, re-consent CTA, dismiss button)
 - [x] Wire TermsUpdateBanner into App.tsx layout below Navbar (only for authenticated users)
 - [x] Write 14 Vitest tests for version format, labels, paths, and outdated detection logic (server/legal-hub.test.ts)
+
+## Re-Consent Modal (Replace Banner)
+- [ ] Remove TermsUpdateBanner from App.tsx layout
+- [ ] Build ReConsentModal — blocking modal with checkboxes for outdated consents
+- [ ] Wire ReConsentModal into App.tsx (shown after login when checkOutdatedConsents returns non-empty)
+- [ ] Write Vitest tests for re-consent modal logic
+
+## Legal Documents — Content Replacement & Missing Steps
+- [x] Replace Terms.tsx content with terms_of_use.md from skill (39 sections, info@avodanow.co.il, מרץ 2026)
+- [x] Replace Privacy.tsx content with privacy_policy.md from skill (13 sections)
+- [x] Replace JobPostingPolicy.tsx content with job_posting_policy.md from skill
+- [x] Replace SafetyPolicy.tsx content with safety_policy.md from skill
+- [x] Replace UserContentPolicy.tsx content with user_content_policy.md from skill
+- [x] Replace ReviewsPolicy.tsx content with reviews_policy.md from skill
+- [x] Step 5: Add 3 checkboxes to PostJob screen (law compliance, license verification, job posting policy agreement)
+- [x] Step 7: Add messaging notice to ApplicationView.tsx (contact reveal legal notice + safety policy link)
+- [x] Step 9: Add account deletion section to WorkerProfile.tsx settings tab (legal notice + mailto link)
+- [x] Step 10: Capture ip_address and user_agent in UserConsents table and consent storage (getClientIp + user-agent header)

@@ -25,57 +25,74 @@ const TERMS_FAQS = [
   },
 ];
 
+const SECTIONS = [
+  { id: "definitions", title: "1. הגדרות", content: `לצורך תנאים אלו:\n• הפלטפורמה – אתר ו/או אפליקציה המאפשרים פרסום הזדמנויות עבודה וחיבור בין משתמשים.\n• משתמש – כל אדם המשתמש בפלטפורמה, בין אם כעובד, נותן שירות, מעסיק או מבקר.\n• מעסיק / מבקש שירות – משתמש המפרסם הזדמנות עבודה או מחפש נותן שירות.\n• עובד / נותן שירות – משתמש המציע שירותים או מגיש מועמדות להזדמנויות עבודה.\n• תוכן משתמש – כל מידע, טקסט, תמונה או נתון שמועלה לפלטפורמה על ידי משתמש.` },
+  { id: "service", title: "2. מהות השירות", content: `הפלטפורמה מספקת שירות טכנולוגי המאפשר למשתמשים:\n• לפרסם הזדמנויות עבודה\n• להציג פרופילים מקצועיים\n• ליצור קשר עם משתמשים אחרים\n• לקבל המלצות והתאמות אפשריות\n\nהפלטפורמה פועלת כזירת חיבור בלבד בין משתמשים. הפלטפורמה אינה מעסיקה עובדים, חברת כוח אדם, צד להסכמי עבודה בין משתמשים, או אחראית לתשלום שכר או תנאי העסקה. כל התקשרות בין משתמשים נעשית באחריותם הבלעדית.` },
+  { id: "no-employment", title: "3. היעדר יחסי עובד-מעביד עם הפלטפורמה", content: "השימוש בפלטפורמה אינו יוצר יחסי עובד-מעביד, יחסי קבלן-מזמין או כל קשר תעסוקתי אחר בין הפלטפורמה לבין מי מהמשתמשים. הפלטפורמה אינה מעסיקה עובדים ואינה מספקת כוח אדם. כל התקשרות מקצועית נוצרת ישירות בין המשתמשים בלבד." },
+  { id: "age", title: "4. גיל מינימלי לשימוש בפלטפורמה", content: "השימוש בפלטפורמה מותר אך ורק למשתמשים בני 18 שנים ומעלה. בעת יצירת חשבון משתמש, המשתמש מצהיר כי הוא בן 18 לפחות ובעל כשירות משפטית להתקשר בהסכמים מחייבים." },
+  { id: "registration", title: "5. הרשמה למערכת", content: "חלק מהפעולות בפלטפורמה מחייבות יצירת חשבון משתמש. המשתמש מתחייב:\n• למסור מידע נכון ומדויק\n• לשמור על סודיות פרטי ההתחברות\n• לעדכן מידע במידת הצורך\nהמשתמש אחראי לכל פעילות המתבצעת בחשבונו." },
+  { id: "profile", title: "6. פרופיל משתמש", content: "משתמשים רשאים ליצור פרופיל הכולל מידע מקצועי. המשתמש אחראי לכך שהמידע מדויק, אמיתי ואינו מטעה. הפלטפורמה אינה מתחייבת לאמת מידע זה." },
+  { id: "job-posting", title: "7. פרסום משרות", content: "המעסיק מתחייב כי המשרה חוקית, תנאי העבודה עומדים בדרישות החוק, והמידע במודעה נכון. חל איסור לפרסם משרות הכוללות אפליה בלתי חוקית. הפלטפורמה רשאית להסיר מודעות שאינן עומדות בתנאים." },
+  { id: "application", title: "8. הגשת מועמדות", content: "הפלטפורמה מאפשרת העברת מידע בלבד בין הצדדים. האחריות לבדיקת תנאי העבודה והתאמת המשרה מוטלת על המשתמשים בלבד." },
+  { id: "verification", title: "9. אחריות המשתמש לבדיקת הצד השני", content: "המשתמשים אחראים לבצע את כל הבדיקות הנדרשות לפני התקשרות. הפלטפורמה אינה מבצעת בדיקות רקע למשתמשים." },
+  { id: "algorithm", title: "10. מנוע התאמה ואלגוריתמים", content: "הפלטפורמה עשויה להשתמש במערכות חישוב או אלגוריתמים לצורך הצגת התאמות. התוצאות הן לצורכי מידע בלבד ואינן מהוות המלצה מחייבת או הבטחה להתאמה." },
+  { id: "safety", title: "11. בטיחות ותנאי עבודה", content: "האחריות לבטיחות מקום העבודה מוטלת על המשתמשים בלבד. המעסיק אחראי לתנאי העבודה. נותן השירות אחראי לבדוק את סביבת העבודה לפני תחילת העבודה." },
+  { id: "licenses", title: "12. רישיונות, הסמכות וביטוחים", content: "המשתמשים אחראים לוודא כי קיימים רישיונות מקצועיים, תעודות הסמכה וביטוחים נדרשים. הפלטפורמה אינה מאמתת מידע זה." },
+  { id: "provider-declaration", title: "13. הצהרת נותן השירות", content: "נותן השירות מצהיר כי ברשותו כל הרישיונות וההסמכות הנדרשים לביצוע השירות." },
+  { id: "liability", title: "14. אחריות לנזקים ולפגיעות", content: "המשתמשים נושאים באחריות מלאה לכל נזק או פגיעה הנובעים מהתקשרות ביניהם. הפלטפורמה לא תישא באחריות לנזקים אלו." },
+  { id: "risks", title: "15. סיכונים והתקשרות מרצון", content: "המשתמשים מודעים לכך כי עבודה עשויה להיות כרוכה בסיכונים. כל משתמש מקבל על עצמו אחריות מלאה להתקשרות." },
+  { id: "insurance", title: "16. ביטוח", content: "המשתמשים אחראים לוודא קיומו של ביטוח מתאים. הפלטפורמה אינה מספקת ביטוח." },
+  { id: "waiver", title: "17. ויתור על תביעות", content: "המשתמש מוותר על תביעות כלפי הפלטפורמה הנוגעות להתקשרויות בין משתמשים." },
+  { id: "fraud", title: "18. הונאות והתנהלות משתמשים", content: "הפלטפורמה אינה אחראית להתנהלות המשתמשים." },
+  { id: "user-content", title: "19. תוכן משתמשים", content: "המשתמש אחראי לכל תוכן שהוא מפרסם. הפלטפורמה אינה אחראית לתוכן משתמשים." },
+  { id: "messaging", title: "20. תקשורת בין משתמשים", content: "הפלטפורמה אינה אחראית לתוכן הודעות או תקשורת בין משתמשים." },
+  { id: "prohibited", title: "21. שימוש אסור בפלטפורמה", content: "חל איסור להשתמש בפלטפורמה לצורך:\n• פרסום עבודה בלתי חוקית\n• פרסום מידע כוזב\n• התחזות\n• הטרדה\n• שליחת ספאם\n• איסוף נתוני משתמשים ללא הרשאה\n• העתקת מאגר משתמשים\n• שימוש במידע למטרות מסחריות חיצוניות" },
+  { id: "reporting", title: "22. דיווח על משתמשים", content: "הפלטפורמה מאפשרת למשתמשים לדווח על פעילות בלתי תקינה. הפלטפורמה רשאית לבדוק דיווחים ולנקוט צעדים מתאימים." },
+  { id: "availability", title: "23. זמינות השירות", content: "השירות עשוי להיות מושפע מתחזוקה, עדכונים או תקלות טכניות." },
+  { id: "force-majeure", title: "24. כוח עליון", content: "הפלטפורמה לא תהיה אחראית לאי-יכולת לספק שירות עקב אירועים שאינם בשליטתה, לרבות מלחמה, מתקפת סייבר או אסונות טבע." },
+  { id: "liability-limit", title: "25. הגבלת אחריות", content: "האחריות הכוללת של הפלטפורמה לא תעלה על הסכום ששולם לפלטפורמה במהלך 12 החודשים האחרונים." },
+  { id: "indemnity", title: "26. שיפוי", content: "המשתמש מתחייב לשפות את מפעילי הפלטפורמה בגין כל תביעה הנובעת משימוש בלתי חוקי בפלטפורמה." },
+  { id: "monitoring", title: "27. ניטור פעילות", content: "הפלטפורמה רשאית לנטר פעילות לצורך אבטחה ואכיפת תנאים." },
+  { id: "data-use", title: "28. שימוש בנתונים", content: "הפלטפורמה רשאית להשתמש במידע אנונימי או סטטיסטי לצורך שיפור השירות." },
+  { id: "privacy-db", title: "29. מאגר מידע ופרטיות", content: `המידע שנאסף נשמר במאגר מידע ומנוהל בהתאם לחוק הגנת הפרטיות. השימוש במידע מוסדר ב` },
+  { id: "data-deletion", title: "30. שמירת ומחיקת מידע", content: "הפלטפורמה רשאית לשמור מידע לצרכים תפעוליים או משפטיים. משתמש רשאי לבקש מחיקת מידע בהתאם למדיניות הפרטיות." },
+  { id: "suspension", title: "31. השעיית חשבון", content: "הפלטפורמה רשאית להשעות או לסגור חשבון במקרה של הפרת תנאים." },
+  { id: "ip", title: "32. קניין רוחני", content: "כל הזכויות בפלטפורמה שייכות למפעילי הפלטפורמה." },
+  { id: "transfer", title: "33. העברת זכויות", content: "הפלטפורמה רשאית להעביר את פעילותה במסגרת מיזוג או מכירה." },
+  { id: "severability", title: "34. הפרדת סעיפים", content: "אם סעיף מתנאים אלו אינו תקף, יתר הסעיפים יישארו בתוקף." },
+  { id: "no-waiver", title: "35. ויתור", content: "אי אכיפה של סעיף אינה מהווה ויתור עליו." },
+  { id: "entire-agreement", title: "36. ההסכם המלא", content: "תנאים אלו מהווים את ההסכם המלא בין המשתמש לבין הפלטפורמה." },
+  { id: "updates", title: "37. שינוי תנאי שימוש", content: "הפלטפורמה רשאית לעדכן תנאים אלו מעת לעת." },
+  { id: "jurisdiction", title: "38. סמכות שיפוט", content: "תנאים אלו כפופים לדיני מדינת ישראל." },
+  { id: "contact", title: "39. יצירת קשר", content: "לשאלות ניתן לפנות אל: info@avodanow.co.il" },
+];
+
 export default function Terms() {
   useFAQSchema(TERMS_FAQS);
 
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-foreground mb-2">תנאי שימוש</h1>
-      <p className="text-sm text-muted-foreground mb-8">עדכון אחרון: מרץ 2026</p>
+      <h1 className="text-3xl font-bold text-foreground mb-2">תנאי שימוש בפלטפורמה</h1>
+      <p className="text-sm text-muted-foreground mb-2">עדכון אחרון: מרץ 2026</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        ברוכים הבאים ל-<BrandName />. תנאי שימוש אלו מסדירים את השימוש באתר ו/או באפליקציה. שימוש בפלטפורמה מהווה הסכמה מלאה לתנאים אלו. אם אינך מסכים לתנאים – אין להשתמש בפלטפורמה.
+      </p>
 
-      <div className="prose prose-sm max-w-none space-y-6 text-foreground">
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">1. כללי</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            ברוכים הבאים ל-<BrandName />. השימוש בפלטפורמה מהווה הסכמה לתנאים אלו. הפלטפורמה מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה כלשהם.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">2. שימוש מותר</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            מותר להשתמש בפלטפורמה לפרסום משרות לגיטימיות, חיפוש עבודה, ויצירת קשר בין עובדים למעסיקים. אסור לפרסם תוכן מטעה, פוגעני, או בלתי חוקי.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">3. אחריות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <BrandName /> אינה אחראית לתנאי העסקה, להסכמים, לתשלומים, או לכל מחלוקת בין עובדים למעסיקים. כל עסקה היא בין הצדדים ישירות.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">4. פרסום משרות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            מפרסמי משרות אחראים לדיוק המידע. מגבלת 3 משרות פעילות בו-זמנית. משרות שיקבלו 3 דיווחים או יותר יועברו לבדיקה.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">5. פרטיות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            אנו מכבדים את פרטיותך. לפרטים נוספים ראה{" "}
-            <Link href="/privacy" className="text-primary hover:underline">מדיניות הפרטיות</Link>.
-          </p>
-        </section>
-
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">6. יצירת קשר</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            לשאלות ופניות: <a href="mailto:info@job-now.co.il" className="text-primary hover:underline">info@job-now.co.il</a>
-          </p>
-        </section>
+      <div className="prose prose-sm max-w-none space-y-4 text-foreground">
+        {SECTIONS.map((section) => (
+          <section key={section.id} id={section.id} className="bg-card rounded-xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-2">{section.title}</h2>
+            {section.id === "privacy-db" ? (
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                המידע שנאסף נשמר במאגר מידע ומנוהל בהתאם לחוק הגנת הפרטיות. השימוש במידע מוסדר{" "}
+                <Link href="/privacy" className="text-primary hover:underline">במדיניות הפרטיות</Link>{" "}
+                הנפרדת של הפלטפורמה.
+              </p>
+            ) : (
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{section.content}</p>
+            )}
+          </section>
+        ))}
       </div>
     </div>
   );

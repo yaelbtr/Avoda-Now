@@ -48,7 +48,7 @@ import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import SkipToContent from "./components/SkipToContent";
-import TermsUpdateBanner from "./components/TermsUpdateBanner";
+import ReConsentModal from "./components/ReConsentModal";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
@@ -167,8 +167,8 @@ function Router() {
     <div className="min-h-screen flex flex-col" dir="rtl">
       <SkipToContent />
       <Navbar />
-      <TermsUpdateBanner />
       <GuestLoginBanner />
+      <ReConsentModal />
 
       <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
         <AnimatePresence mode="wait">

@@ -1,50 +1,99 @@
 import { Link } from "wouter";
-import { BrandName } from "@/components/ui";
+
+const SECTIONS = [
+  {
+    id: "purpose",
+    title: "1. מטרת המדיניות",
+    content: `מדיניות זו נועדה:\n• להעלות מודעות לבטיחות בשימוש בפלטפורמה\n• להציע כללי זהירות בעת התקשרות בין משתמשים\n• להבהיר את אחריות המשתמשים בעת ביצוע עבודה או קבלת שירות\n\nמדיניות זו אינה מחליפה בדיקות עצמאיות שעל המשתמשים לבצע.`,
+  },
+  {
+    id: "identity",
+    title: "2. בדיקת זהות משתמשים",
+    content: `לפני יצירת קשר או התקשרות עם משתמש אחר מומלץ:\n• לוודא את זהות הצד השני\n• לבדוק פרטי התקשרות\n• לבקש מסמכים מזהים במידת הצורך\n\nהפלטפורמה אינה מבצעת בדיקות זהות למשתמשים ואינה אחראית לאמיתות הפרטים המופיעים בפרופילים.`,
+  },
+  {
+    id: "experience",
+    title: "3. בדיקת ניסיון מקצועי",
+    content: `בעת התקשרות עם נותן שירות מומלץ:\n• לבקש מידע על ניסיון מקצועי\n• לבקש המלצות\n• לבחון עבודות קודמות או תיק עבודות\n\nהאחריות לבדיקת הניסיון המקצועי של נותן השירות חלה על מבקש השירות בלבד.`,
+  },
+  {
+    id: "licenses",
+    title: "4. בדיקת רישיונות והסמכות",
+    content: `במקרים בהם העבודה מחייבת רישיון מקצועי או הסמכה מיוחדת, מומלץ לוודא כי נותן השירות מחזיק בכל האישורים הנדרשים.\n\nהאחריות לבדוק רישיונות והסמכות חלה על המשתמשים בלבד.\n\nהפלטפורמה אינה מאמתת רישיונות או הסמכות מקצועיות.`,
+  },
+  {
+    id: "insurance",
+    title: "5. בדיקת ביטוחים",
+    content: `במקרים בהם העבודה כוללת פעילות מקצועית או סיכון מסוים, מומלץ לוודא קיומו של ביטוח מתאים.\n\nהאחריות לבדיקת קיומם של ביטוחים חלה על המשתמשים בלבד.\n\nהפלטפורמה אינה מספקת ביטוח ואינה אחראית לקיומו.`,
+  },
+  {
+    id: "work-safety",
+    title: "6. בטיחות בעבודה",
+    content: `מבקש השירות אחראי לוודא כי סביבת העבודה עומדת בדרישות הבטיחות.\n\nנותן השירות אחראי לבדוק את תנאי העבודה ואת סביבת העבודה לפני תחילת העבודה.\n\nהפלטפורמה אינה אחראית לבטיחות העבודה או לתנאי הבטיחות במקום העבודה.`,
+  },
+  {
+    id: "meetings",
+    title: "7. מפגשים בין משתמשים",
+    content: `כאשר העבודה מחייבת מפגש פיזי בין המשתמשים, מומלץ לנקוט באמצעי זהירות מתאימים.\n\nהאחריות לבטיחות במהלך מפגשים אלו חלה על המשתמשים בלבד.`,
+  },
+  {
+    id: "fraud",
+    title: "8. הימנעות מהונאות",
+    content: `בעת התקשרות עם משתמשים אחרים מומלץ:\n• להימנע מהעברת כספים מראש ללא בדיקה\n• לוודא פרטי התקשרות אמינים\n• להיזהר מבקשות חריגות או חשודות\n\nהפלטפורמה אינה אחראית להונאות בין משתמשים.`,
+  },
+  {
+    id: "personal-info",
+    title: "9. שמירה על מידע אישי",
+    content: `משתמשים מתבקשים להימנע ממסירת מידע אישי רגיש למשתמשים אחרים, לרבות:\n• פרטי חשבון בנק\n• מספרי זהות\n• סיסמאות\n\nהאחריות לשמירה על מידע אישי חלה על המשתמשים בלבד.`,
+  },
+  {
+    id: "reporting",
+    title: "10. דיווח על פעילות חשודה",
+    content: `אם משתמש נתקל בהתנהגות בלתי תקינה או בפעילות חשודה, ניתן לדווח על כך לפלטפורמה באמצעות מנגנון הדיווח במערכת.\n\nהפלטפורמה רשאית לבדוק דיווחים אלו ולנקוט צעדים בהתאם לשיקול דעתה.`,
+  },
+  {
+    id: "liability",
+    title: "11. הגבלת אחריות",
+    content: `הפלטפורמה אינה אחראית לנזקים, הפסדים, פגיעות או תביעות הנובעים מהתקשרות בין משתמשים או מביצוע עבודה שנקבעה באמצעות הפלטפורמה.\n\nכל התקשרות בין משתמשים נעשית על אחריותם הבלעדית.`,
+  },
+  {
+    id: "updates",
+    title: "12. עדכון המדיניות",
+    content: `הפלטפורמה רשאית לעדכן מדיניות זו מעת לעת.\n\nהמשך שימוש בפלטפורמה לאחר עדכון המדיניות מהווה הסכמה למדיניות המעודכנת.`,
+  },
+  {
+    id: "contact",
+    title: "13. יצירת קשר",
+    content: "לשאלות או פניות בנושא בטיחות ניתן לפנות אל: info@avodanow.co.il",
+  },
+];
 
 export default function SafetyPolicy() {
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות בטיחות</h1>
-      <p className="text-sm text-muted-foreground mb-8">עדכון אחרון: מרץ 2026</p>
-      <div className="prose prose-sm max-w-none space-y-6 text-foreground">
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">1. אחריות נותן השירות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            נותן השירות (העובד) אחראי לבדוק את תנאי העבודה לפני קבלת משרה. יש לוודא שתנאי העבודה בטוחים, חוקיים, ותואמים את הסכמת הצדדים.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">2. בטיחות בעבודה</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            יש לעבוד בסביבה בטוחה בלבד. אם תנאי העבודה נראים מסוכנים, יש לסרב לעבודה ולדווח לנו. <BrandName /> אינה אחראית לתאונות עבודה או לנזקים שנגרמו במהלך העבודה.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">3. פגישה ראשונה</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            בפגישה ראשונה עם מעסיק חדש, מומלץ לפגוש במקום ציבורי ולהודיע לאדם קרוב על מיקומך. אל תיסע לכתובת לא מוכרת ללא אימות מוקדם.
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">4. דיווח על תקריות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            במקרה של תקרית בטיחות, הטרדה, או התנהגות בלתי הולמת, יש לדווח מיד ל-<BrandName /> בכתובת{" "}
-            <a href="mailto:info@avodanow.co.il" className="text-primary hover:underline">info@avodanow.co.il</a>.
-            במקרה חירום — חייגו 100 (משטרה) או 101 (מד"א).
-          </p>
-        </section>
-        <section className="bg-card rounded-xl border border-border p-5">
-          <h2 className="text-lg font-semibold mb-3">5. הגבלת אחריות</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <BrandName /> היא פלטפורמה לחיבור בין עובדים למעסיקים ואינה צד ביחסי העבודה. האחריות על תנאי העבודה, הבטיחות, והתשלום חלה על הצדדים הישירים בלבד.
-          </p>
-        </section>
-        <div className="text-sm text-muted-foreground pt-2">
-          ראה גם:{" "}
-          <Link href="/terms" className="text-primary hover:underline">תנאי שימוש</Link>
-          {" · "}
-          <Link href="/job-posting-policy" className="text-primary hover:underline">מדיניות פרסום משרות</Link>
-        </div>
+      <Link href="/legal" className="text-sm text-muted-foreground hover:text-foreground mb-6 inline-block">
+        ← חזרה לכל המסמכים המשפטיים
+      </Link>
+      <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות בטיחות משתמשים</h1>
+      <p className="text-sm text-muted-foreground mb-2">עדכון אחרון: מרץ 2026</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        מסמך זה נועד להציג למשתמשי הפלטפורמה עקרונות והמלצות לשימוש בטוח בשירות. הפלטפורמה משמשת כזירת חיבור בין משתמשים בלבד ואינה אחראית להתנהלות, לפעולות או להסכמים הנעשים בין המשתמשים. השימוש בפלטפורמה נעשה באחריות המשתמשים בלבד.
+      </p>
+
+      <div className="prose prose-sm max-w-none space-y-4 text-foreground">
+        {SECTIONS.map((section) => (
+          <section key={section.id} id={section.id} className="bg-card rounded-xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-2">{section.title}</h2>
+            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{section.content}</p>
+          </section>
+        ))}
+      </div>
+
+      <div className="text-sm text-muted-foreground pt-6">
+        ראה גם:{" "}
+        <Link href="/terms" className="text-primary hover:underline">תנאי שימוש</Link>
+        {" · "}
+        <Link href="/job-posting-policy" className="text-primary hover:underline">תנאי פרסום משרות</Link>
       </div>
     </div>
   );

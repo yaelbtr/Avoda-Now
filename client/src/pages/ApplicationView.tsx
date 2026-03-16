@@ -487,9 +487,15 @@ export default function ApplicationView() {
               </div>
             </div>
 
-            <p style={{ color: "#888", fontSize: 12, lineHeight: 1.5, marginBottom: 14 }}>
+            <p style={{ color: "#888", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>
               לחץ על הכפתור כדי לחשוף את מספר הטלפון של המועמד ולאפשר יצירת קשר ישיר.
               פעולה זו תירשם במערכת.
+            </p>
+            {/* Step 7 — Messaging legal notice */}
+            <p style={{ color: "#aaa", fontSize: 11, lineHeight: 1.5, marginBottom: 14, direction: "rtl" }}>
+              יצירת קשר עם מועמדים כפופה למדיניות הפרטיות שלנו ול{" "}
+              <a href="/safety-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#7a8c3a", textDecoration: "underline" }}>מדיניות בטיחות</a>.
+              {" "}אנא השתמש בשירות באחריות ודווח על כל התנהגות חשודה או בלתי הוגנת.
             </p>
 
             <button

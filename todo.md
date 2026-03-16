@@ -2161,3 +2161,4 @@
 - [ ] הוסף שיחת קול בעברית עם Twilio Programmable Voice + Google TTS (he-IL-Wavenet-A)
 - [x] תקן יישור RTL בתצוגה מקדימה של פרופיל עובד
 - [x] תקן RTL מלא ב-WorkerProfilePreviewModal: תמונה ימין, תגיות/מעגלים מימין, השלמת פרופיל RTL
+- [x] תקן השלמת פרופיל: טקסט צמוד לאייקון מימין, סרגל לא מכסה תוכן

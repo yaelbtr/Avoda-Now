@@ -432,36 +432,36 @@ export function WorkerProfilePreviewModal({
                   </span>
                 </div>
 
-                {/* Progress bar — fills from right in RTL */}
-                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, overflow: "hidden" }}>
+                {/* Progress bar — fills from right in RTL, clipped to container */}
+                <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, position: "relative", overflow: "hidden" }}>
                   <div style={{
+                    position: "absolute",
+                    top: 0, right: 0,
                     height: 8, borderRadius: 9999,
                     width: `${completionPct}%`,
-                    marginRight: 0,
-                    marginLeft: "auto",
                     background: completionPct === 100
                       ? "oklch(0.55 0.15 145)"
-                      : "linear-gradient(90deg, oklch(0.68 0.14 80.8) 0%, #4F583B 100%)",
+                      : "linear-gradient(270deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)",
                     transition: "width 0.5s ease",
                   }} />
                 </div>
 
-                {/* Completion items grid — each row: label on right, icon on left */}
+                {/* Completion items grid — each item: icon + text tight together, right-aligned */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 6,
+                      justifyContent: "flex-end",
+                      gap: 5,
                     }}>
+                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)" }}>
+                        {item.label}
+                      </span>
                       <CheckCircle2
                         size={14}
                         style={{ color: item.done ? "oklch(0.55 0.15 145)" : "oklch(0.75 0.03 122)", flexShrink: 0 }}
                       />
-                      <span style={{ fontSize: 12, color: item.done ? "oklch(0.35 0.06 122)" : "oklch(0.65 0.04 122)", textAlign: "right" }}>
-                        {item.label}
-                      </span>
                     </div>
                   ))}
                 </div>

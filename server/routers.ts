@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, type LegalConsentType } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
@@ -2337,6 +2337,68 @@ const platformRouter = router({
     };
   }),
 });
+// ─── Support Router ──────────────────────────────────────────────────────────────────
+/** In-memory rate-limit store: key=ip|userId → { count, windowStart } */
+const supportRateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+const supportRouter = router({
+  /**
+   * Public: submit a support report with optional screenshot.
+   * Rate-limited to SUPPORT_REPORT_RATE_LIMIT per IP/user per hour.
+   */
+  reportProblem: publicProcedure
+    .input(
+      z.object({
+        message: z.string().min(1).max(5000),
+        subject: z.string().max(200).optional(),
+        phone: z.string().max(20).optional(),
+        pageUrl: z.string().max(500),
+        userAgent: z.string().max(500),
+        screenResolution: z.string().max(50).optional(),
+        timestamp: z.string(),
+        screenshotBase64: z.string().max(5_000_000).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { sendSupportReport } = await import("./supportEmail");
+
+      const ip =
+        ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0]?.trim() ??
+        ctx.req.socket?.remoteAddress ??
+        "unknown";
+      const rlKey = ctx.user ? `user:${ctx.user.id}` : `ip:${ip}`;
+
+      const now = Date.now();
+      const ONE_HOUR_MS = 60 * 60 * 1000;
+      const entry = supportRateLimitStore.get(rlKey);
+      if (entry && now - entry.windowStart < ONE_HOUR_MS) {
+        if (entry.count >= SUPPORT_REPORT_RATE_LIMIT) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "הגעת למגבלת הדיוחים לשעה. נסה שוב מאוחר יותר.",
+          });
+        }
+        entry.count++;
+      } else {
+        supportRateLimitStore.set(rlKey, { count: 1, windowStart: now });
+      }
+
+      await sendSupportReport({
+        userId: ctx.user?.id != null ? String(ctx.user.id) : null,
+        phone: input.phone ?? ctx.user?.phone ?? null,
+        subject: input.subject ?? null,
+        message: input.message,
+        pageUrl: input.pageUrl,
+        userAgent: input.userAgent,
+        screenResolution: input.screenResolution ?? null,
+        timestamp: input.timestamp,
+        screenshotBase64: input.screenshotBase64 ?? null,
+      });
+
+      return { success: true };
+    }),
+});
+
 // ─── App Router ────────────────────────────────────────────────────────────────────
 export const appRouter = router({
   system: systemRouter,
@@ -2355,5 +2417,6 @@ export const appRouter = router({
   categories: categoriesRouter,
   regions: regionsRouter,
   referral: referralRouter,
+  support: supportRouter,
 });
 export type AppRouter = typeof appRouter;

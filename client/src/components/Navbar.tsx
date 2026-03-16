@@ -19,8 +19,9 @@ import {
 import {
   Briefcase, User, LogOut, PlusCircle, Menu, X, Shield,
   HardHat, MapPin, Flame, Users, RefreshCw, RotateCcw, ChevronDown, Bookmark, Gift,
-  Moon, Sun,
+  Moon, Sun, AlertTriangle,
 } from "lucide-react";
+import ReportProblemModal from "./ReportProblemModal";
 
 import {
   C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
@@ -38,6 +39,7 @@ export default function Navbar() {
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
@@ -549,6 +551,14 @@ export default function Navbar() {
                         <span>הפניות שלי</span>
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setReportOpen(true)}
+                      className="flex items-center gap-2"
+                      style={{ color: TEXT_MUTED }}
+                    >
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>דווח על בעיה</span>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator style={{ background: "oklch(0.87 0.04 84.0)" }} />
                     <DropdownMenuItem
                       onClick={logout}
@@ -608,9 +618,11 @@ export default function Navbar() {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         onLoginOpen={() => setLoginOpen(true)}
+        onReportOpen={() => setReportOpen(true)}
       />
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <ReportProblemModal open={reportOpen} onClose={() => setReportOpen(false)} />
     </>
   );
 }

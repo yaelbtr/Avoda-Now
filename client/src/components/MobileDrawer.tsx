@@ -15,6 +15,7 @@ interface MobileDrawerProps {
   open: boolean;
   onClose: () => void;
   onLoginOpen: () => void;
+  onReportOpen?: () => void;
 }
 
 // ─── Shared style constants ───────────────────────────────────────────────────
@@ -30,7 +31,7 @@ const DIVIDER: React.CSSProperties = {
 // Single nav item style — py-1.5 keeps items compact but tappable
 const ITEM = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
 
-export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawerProps) {
+export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen }: MobileDrawerProps) {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
@@ -304,14 +305,14 @@ export default function MobileDrawer({ open, onClose, onLoginOpen }: MobileDrawe
                   <Mail className="h-3 w-3 shrink-0" style={{ color: "var(--citrus)" }} />
                   <span className="truncate" lang="en">info@avodanow.co.il</span>
                 </a>
-                <a
-                  href={`mailto:info@avodanow.co.il?subject=${encodeURIComponent('דיווח על בעיה ב-AvodaNow')}&body=${encodeURIComponent('שלום,\n\nאני רוצה לדווח על בעיה הבאה:\n\n[תאר את הבעיה כאן]\n\nתודה,')}`}
+                <button
+                  onClick={() => { onReportOpen?.(); onClose(); }}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs transition-all"
-                  style={{ color: "oklch(0.75 0.12 35 / 0.85)", background: "oklch(0.35 0.06 35 / 0.25)", border: "1px solid oklch(0.45 0.08 35 / 0.4)", textDecoration: "none", whiteSpace: "nowrap" }}
+                  style={{ color: "oklch(0.75 0.12 35 / 0.85)", background: "oklch(0.35 0.06 35 / 0.25)", border: "1px solid oklch(0.45 0.08 35 / 0.4)", whiteSpace: "nowrap" }}
                 >
                   <AlertTriangle className="h-3 w-3 shrink-0" />
                   <span>דווח בעיה</span>
-                </a>
+                </button>
               </div>
 
                 <p className="text-center mt-1.5" style={{ fontSize: "0.6rem", color: COLOR_MUTED }}>

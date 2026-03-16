@@ -2096,3 +2096,12 @@
 
 ## באג — פאנל ניהול נחסם לפני בחירת תפקיד
 - [x] עקוף את gate בחירת התפקיד עבור מנהלים שמנווטים ל-/admin (isAdminRoute bypass)
+
+## דיווח על בעיה עם צילום מסך
+- [x] התקן html2canvas ו-nodemailer
+- [x] הוסף SMTP secrets (SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS)
+- [x] Backend: tRPC procedure support.reportProblem עם rate-limit (5/שעה)
+- [x] Backend: שליחת מייל עם nodemailer + צילום מסך מצורף
+- [x] Frontend: ReportProblemModal עם html2canvas, preview, form fields
+- [x] Frontend: כפתור "דווח על בעיה" ב-Navbar ו-MobileDrawer
+- [x] Vitest tests לפרוצדורה

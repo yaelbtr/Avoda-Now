@@ -321,25 +321,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           }}
         />
 
-        {/* Content — centered, white text */}
-        <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-16 pb-4">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-            style={{
-              background: "oklch(0.32 0.07 122 / 0.85)",
-              border: "1px solid oklch(0.55 0.10 122 / 0.60)",
-              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
-            <span className="text-[11px] font-bold" style={{ color: "oklch(0.95 0.04 80)" }}>
-              מצא עבודה תוך דקות
-            </span>
-          </motion.div>
-
+        {/* Content — text at bottom of image, face visible above */}
+        <div className="relative z-10 flex flex-col justify-end items-center text-center px-5 pt-40 pb-5">
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="text-[32px] leading-[1.15] font-black mb-2"
@@ -351,7 +334,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-[13px] font-semibold leading-relaxed mb-5"
+            className="text-[13px] font-semibold leading-relaxed"
             style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
           >
             ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות

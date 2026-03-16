@@ -5,7 +5,6 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { popReturnPath } from "@/const";
-import { PENDING_GOOGLE_REG_KEY } from "@shared/const";
 import { AppButton, GoogleAuthButton, AppLogo, BrandName } from "@/components/ui";
 import { toast } from "sonner";
 import {
@@ -100,8 +99,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // OTP channel selection (for registration)
   const [otpChannel, setOtpChannel] = useState<OtpChannel>("sms");
   const [channelEmailError, setChannelEmailError] = useState<string | null>(null);
-  // Google email-duplication check — loading state while the server query is in-flight
-  const [googleCheckLoading, setGoogleCheckLoading] = useState(false);
 
   // Pending registration data to pass to verifyOtp
   const pendingRegData = useRef<{ name: string; email: string } | null>(null);
@@ -838,29 +835,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   </div>
                 )}
 
-                {/* Channel conflict error (email/phone already registered) */}
-                {duplicateError && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 space-y-2" dir="rtl">
-                    <p className="font-medium">{duplicateError}</p>
-                    {duplicateError.includes("Google") ? (
-                      <button
-                        type="button"
-                        onClick={() => { saveReturnPath(); window.location.href = getGoogleLoginUrl(); }}
-                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors mt-1"
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 24 24">
-                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        התחבר עם Google
-                      </button>
-                    ) : (
-                      <a href="mailto:support@avodanow.co.il" className="underline text-red-600 text-xs">פנה למנהל המערכת</a>
-                    )}
-                  </div>
-                )}
+
 
                 {/* CTA */}
                 <div className="space-y-3 pt-1">
@@ -878,91 +853,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     )}
                   </AppButton>
 
-                  {/* Divider */}
-                  <div className="flex items-center gap-3" dir="rtl">
-                    <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
-                    <span className="text-xs" style={{ color: "#9ca3af" }}>או</span>
-                    <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
-                  </div>
 
-                  {/* Google sign-in — checks email availability BEFORE redirect to prevent conflicts */}
-                  {/* Disabled until ALL registration fields are valid (same gate as the SMS הרשמה button) */}
-                  {(() => {
-                    const googleDisabled =
-                      !isPhoneValid ||
-                      !regName.trim() ||
-                      !regEmail.trim() ||
-                      !!emailError ||
-                      !!nameError ||
-                      !termsAccepted ||
-                      !age18Accepted ||
-                      googleCheckLoading;
-                    return (
-                      <>
-                        {!googleCheckLoading && googleDisabled && (
-                          <p className="text-center text-xs" style={{ color: "#9ca3af" }}>
-                            יש למלא את כל פרטי ההרשמה לפני המשך עם Google
-                          </p>
-                        )}
-                        <button
-                          type="button"
-                          disabled={googleDisabled}
-                          className="w-full flex items-center justify-center gap-3 rounded-xl border-2 bg-white px-4 py-3 text-sm font-semibold shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:active:scale-100"
-                          style={{ borderColor: "oklch(0.88 0.04 122)", color: "#1a2010" }}
-                          onClick={async () => {
-                            // Step 1: Server-side email duplication check before any redirect
-                            setGoogleCheckLoading(true);
-                            setDuplicateError(null);
-                            try {
-                              const result = await utils.user.checkEmailAvailable.fetch({
-                                email: regEmail.trim(),
-                              });
-                              if (!result.available) {
-                                // Email is already registered — show a contextual error
-                                const method = result.loginMethod;
-                                const methodLabel =
-                                  method === "google_oauth" ? "Google" :
-                                  method === "phone" ? "SMS" :
-                                  "מספר טלפון";
-                                setDuplicateError(
-                                  `כתובת המייל ${regEmail.trim()} כבר רשומה במערכת${method ? ` עם ${methodLabel}` : ""}. נסה להתחבר במקום להירשם.`
-                                );
-                                return;
-                              }
-                              // Step 2: Email is free — persist reg data and redirect
-                              const payload = {
-                                name: regName.trim(),
-                                phone,
-                                email: regEmail.trim(),
-                                termsAccepted,
-                                age18Accepted,
-                              };
-                              // Use localStorage (not sessionStorage) so data survives the OAuth page redirect
-                              localStorage.setItem(PENDING_GOOGLE_REG_KEY, JSON.stringify(payload));
-                              saveReturnPath();
-                              window.location.href = getGoogleLoginUrl();
-                            } catch {
-                              toast.error("שגיאה בבדיקת הזמינות. נסה שוב.");
-                            } finally {
-                              setGoogleCheckLoading(false);
-                            }
-                          }}
-                        >
-                          {googleCheckLoading ? (
-                            <Loader2 className="h-5 w-5 animate-spin flex-shrink-0" />
-                          ) : (
-                            <svg className="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24">
-                              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                            </svg>
-                          )}
-                          {googleCheckLoading ? "בודק זמינות..." : "המשך הרשמה עם Google"}
-                        </button>
-                      </>
-                    );
-                  })()}
 
                   <button
                     type="button"

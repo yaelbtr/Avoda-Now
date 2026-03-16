@@ -464,7 +464,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             הגדר זמינות —<br />
             <span style={{ color: "oklch(0.68 0.14 80.8)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.3)" }}>
-              קבל עבודה תוך דקות
+              קבל פניות ממעסיקים
             </span>
           </motion.h1>
 

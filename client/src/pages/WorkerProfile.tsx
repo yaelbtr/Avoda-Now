@@ -1122,7 +1122,7 @@ export default function WorkerProfile() {
             שמור
           </AppButton>
           <button
-            onClick={() => navigate(-1 as any)}
+            onClick={() => window.history.back()}
             disabled={updateMutation.isPending}
             type="button"
             className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
@@ -1402,7 +1402,7 @@ export default function WorkerProfile() {
             שמור
           </AppButton>
           <button
-            onClick={() => navigate(-1 as any)}
+            onClick={() => window.history.back()}
             disabled={updateMutation.isPending}
             type="button"
             className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
@@ -1505,7 +1505,7 @@ export default function WorkerProfile() {
             שמור
           </AppButton>
           <button
-            onClick={() => navigate(-1 as any)}
+            onClick={() => window.history.back()}
             disabled={updateMutation.isPending}
             type="button"
             className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"

@@ -290,7 +290,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const isPhoneValid = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
 
-  const handleSend = () => {
+  const handleSend = (explicitChannel?: OtpChannel) => {
     const combined = isPhoneValid ? combinePhone(phoneVal) : phone.trim();
     if (!combined || combined.length < 9) return toast.error("הכנס מספר טלפון תקין");
     if (activeTab === "register") {
@@ -300,12 +300,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       // Store registration data to pass to verifyOtp
       pendingRegData.current = { name: regName.trim(), email: regEmail.trim() };
     }
+    // Use explicit channel if provided (avoids React stale state on same-tick calls)
+    const channelToUse = explicitChannel ?? otpChannel;
+    if (explicitChannel) setOtpChannel(explicitChannel);
     setPhone(combined);
     if (activeTab === "register") {
       // For registration: go to channel selection first
       setStep("channel");
     } else {
-      sendOtp.mutate({ phone: combined });
+      sendOtp.mutate({ phone: combined, channel: channelToUse });
     }
   };
 
@@ -689,7 +692,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   variant="cta"
                   size="lg"
                   className="w-full"
-                  onClick={() => { setOtpChannel("sms"); handleSend(); }}
+                  onClick={() => handleSend("sms")}
                   disabled={sendOtp.isPending || !isPhoneValid}
                 >
                   {sendOtp.isPending && otpChannel === "sms"
@@ -700,7 +703,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   variant="outline"
                   size="lg"
                   className="w-full bg-transparent"
-                  onClick={() => { setOtpChannel("call"); handleSend(); }}
+                  onClick={() => handleSend("call")}
                   disabled={sendOtp.isPending || !isPhoneValid}
                 >
                   {sendOtp.isPending && otpChannel === "call"
@@ -1408,7 +1411,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 variant="cta"
                 size="lg"
                 className="w-full mt-1"
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={
                   sendOtp.isPending ||
                   !isPhoneValid ||

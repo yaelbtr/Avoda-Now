@@ -59,6 +59,7 @@ function RoleCard({
   delay,
 }: RoleCardProps) {
   const [hovered, setHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <motion.div
@@ -81,11 +82,20 @@ function RoleCard({
     >
       {/* Top image strip */}
       <div className="relative overflow-hidden" style={{ height: "180px" }}>
+        {/* Preload image to trigger fade-in once loaded */}
+        <img
+          src={image}
+          alt=""
+          aria-hidden="true"
+          className="hidden"
+          onLoad={() => setImageLoaded(true)}
+        />
         <motion.div
           className="absolute inset-0 bg-cover bg-top"
           style={{ backgroundImage: `url('${image}')` }}
-          animate={{ scale: hovered ? 1.06 : 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: imageLoaded ? 1 : 0, scale: hovered ? 1.06 : 1 }}
+          transition={{ opacity: { duration: 0.6, ease: "easeOut" }, scale: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
         />
         {/* Gradient overlay */}
         <div

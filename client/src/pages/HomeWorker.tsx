@@ -455,17 +455,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <TooltipContent
                 side="top"
                 sideOffset={10}
-                className="max-w-[220px] text-center leading-relaxed px-4 py-2.5 rounded-xl text-[13px]"
+                className="max-w-[220px] text-center leading-relaxed px-4 py-2.5 rounded-xl text-[13px] backdrop-blur-md"
                 style={{
-                  background: "oklch(0.22 0.05 122)",
-                  color: "oklch(0.97 0.02 84)",
-                  border: "1px solid oklch(0.35 0.07 122 / 0.6)",
-                  boxShadow: "0 4px 16px oklch(0.10 0.04 122 / 0.35)",
+                  background: "oklch(0.92 0.12 84 / 0.18)",
+                  color: "oklch(0.30 0.06 84)",
+                  border: "1px solid oklch(0.88 0.16 84 / 0.55)",
+                  boxShadow: "0 8px 32px oklch(0.75 0.18 84 / 0.22), inset 0 1px 0 oklch(1 0 0 / 0.45)",
                 }}
               >
                 מעסיקים רואים רק עובדים זמינים —
                 <br />
-                <span style={{ color: "oklch(0.85 0.13 84)" }}>הגדר עכשיו וקבל פניות היום</span>
+                <span style={{ color: "oklch(0.42 0.10 84)", fontWeight: 600 }}>הגדר עכשיו וקבל פניות היום</span>
               </TooltipContent>
             </Tooltip>
           </motion.div>

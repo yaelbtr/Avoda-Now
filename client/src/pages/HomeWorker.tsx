@@ -321,8 +321,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 "linear-gradient(to bottom,",
                 "  transparent 0%,",
                 "  oklch(0.10 0.06 122 / 0.00) 35%,",
-                "  oklch(0.10 0.06 122 / 0.45) 50%,",
-                "  oklch(0.10 0.06 122 / 0.55) 62%,",
+                "  oklch(0.10 0.06 122 / 0.55) 50%,",
+                "  oklch(0.10 0.06 122 / 0.65) 62%,",
                 "  oklch(0.10 0.06 122 / 0.20) 72%,",
                 "  oklch(0.95 0.03 91.6 / 0.80) 88%,",
                 "  oklch(0.95 0.03 91.6) 100%)",
@@ -335,14 +335,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
             style={{
               transform: "translateX(-50%)",
-              background: "oklch(0.32 0.07 122 / 0.85)",
-              border: "1px solid oklch(0.55 0.10 122 / 0.60)",
-              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
-              backdropFilter: "blur(8px)",
+              background: "oklch(1 0 0 / 0.14)",
+              border: "1px solid oklch(1 0 0 / 0.30)",
+              boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
+              backdropFilter: "blur(10px)",
             }}
           >
-            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
-            <span className="text-[11px] font-bold" style={{ color: "oklch(0.95 0.04 80)" }}>
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+            <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
               מצא עבודה תוך דקות
             </span>
           </motion.div>
@@ -354,7 +354,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
             >
               מחפש עבודה זמנית?<br />
-              <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>מצא אחת תוך דקות</span>
+              <span style={{ color: "oklch(0.88 0.13 70)", textShadow: "0 0 16px oklch(0.68 0.10 80.8 / 0.30)" }}>מצא אחת תוך דקות</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}

@@ -2806,7 +2806,7 @@ export async function hasRequiredConsents(
 export async function completeGoogleRegistration(
   userId: number,
   opts: {
-    phone: string;
+    phone?: string | null;
     name?: string | null;
     email?: string | null;
   }

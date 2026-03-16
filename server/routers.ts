@@ -1826,7 +1826,8 @@ const userRouter = router({
    */
   completeGoogleRegistration: protectedProcedure
     .input(z.object({
-      phone: z.string().min(9).max(20),
+      // phone is optional — CompleteProfileModal will prompt for it if missing
+      phone: z.string().min(9).max(20).optional(),
       name: z.string().min(2).max(100).optional(),
       email: z.string().email().max(320).optional(),
     }))
@@ -1835,15 +1836,18 @@ const userRouter = router({
       if (ctx.user.loginMethod !== "google_oauth") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Only applicable for Google sign-in" });
       }
-      // Validate and normalize phone (normalizeIsraeliPhone/isValidIsraeliPhone imported at top)
-      let normalizedPhone: string;
-      try {
-        normalizedPhone = normalizeIsraeliPhone(input.phone);
-        if (!isValidIsraeliPhone(normalizedPhone)) throw new Error("invalid");
-      } catch {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+      // Validate and normalize phone if provided
+      let normalizedPhone: string | undefined = undefined;
+      if (input.phone) {
+        try {
+          normalizedPhone = normalizeIsraeliPhone(input.phone);
+          if (!isValidIsraeliPhone(normalizedPhone)) throw new Error("invalid");
+        } catch {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+        }
       }
-      // Save phone + termsAcceptedAt + optional email (idempotent — only updates if termsAcceptedAt IS NULL)
+      // Save phone (if provided) + termsAcceptedAt + optional email
+      // (idempotent — only updates if termsAcceptedAt IS NULL)
       await completeGoogleRegistration(ctx.user.id, {
         phone: normalizedPhone,
         name: input.name,

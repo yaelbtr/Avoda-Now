@@ -2116,3 +2116,8 @@
 - [x] הצג אוטומטית כשמשתמש Google מחובר ואין לו טלפון
 - [x] Backend: הרחב completeGoogleRegistration לתמוך ב-skip (ללא טלפון)
 - [x] Vitest tests
+
+## מילוי אוטומטי של מייל וטלפון מגוגל בהרשמה
+- [x] הוסף email ו-phone לפייליוד PENDING_GOOGLE_REG_KEY לפני redirect
+- [x] ב-PostGoogleRegistration: שמור email ו-phone מ-Google כ-fallback אם שדות ריקים
+- [x] ב-completeGoogleRegistration: קבל גם phone מ-Google (אם קיים)

@@ -166,8 +166,9 @@ function PostGoogleRegistration() {
       return;
     }
 
-    // Only proceed if the user actually accepted terms and provided a phone
-    if (!payload.termsAccepted || !payload.phone) {
+    // Only proceed if the user actually accepted terms
+    // Phone is optional here — CompleteProfileModal will prompt for it if missing
+    if (!payload.termsAccepted) {
       localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
       return;
     }
@@ -175,10 +176,13 @@ function PostGoogleRegistration() {
     fired.current = true;
     localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
 
+    // Use Google-provided email as fallback if user left the field blank
+    const emailToSave = payload.email || user.email || undefined;
+
     completeReg.mutate({
-      phone: payload.phone,
+      phone: payload.phone || undefined,
       name: payload.name || undefined,
-      email: payload.email || undefined,
+      email: emailToSave,
     });
   }, [isAuthenticated, user]); // eslint-disable-line react-hooks/exhaustive-deps
 

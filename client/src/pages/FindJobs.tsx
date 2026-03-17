@@ -1006,105 +1006,154 @@ export default function FindJobs() {
           </div>
         </motion.div>
 
-        {/* ── Compact toolbar: scrollable chips + pinned filter button ── */}
+        {/* ── NEW TOOLBAR: Quick pills row + Dropdown chips row ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
           className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-2"
-          style={{ background: "oklch(0.97 0.01 84 / 0.95)", backdropFilter: "blur(8px)", borderBottom: "1px solid oklch(0.90 0.03 84 / 0.6)" }}
+          style={{ background: "oklch(0.97 0.01 84 / 0.97)", backdropFilter: "blur(10px)", borderBottom: "1px solid oklch(0.90 0.03 84 / 0.6)" }}
         >
-          {/* Row 1: מיון label + sort pills + location chip — all scrollable */}
-          <div className="flex items-center gap-2 pb-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            <span className="text-xs shrink-0 font-semibold" style={{ color: "var(--text-muted)" }}>מיון:</span>
-            {([
-              { key: "date",    label: "תאריך" },
-              { key: "salary",  label: "שכר" },
-              ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
-            ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
-              const active = sortBy === key;
-              return (
-                <button key={key}
-                  onClick={() => setSortBy(prev => prev === key ? "default" : key)}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
-                  style={active
-                    ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
-                    : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }}
-                >{label}</button>
-              );
-            })}
-            <button onClick={handleLocationButtonClick} disabled={locating}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+          {/* Row 1: Quick filter pills — קרוב אלי, דחוף, היום, מחר + clear-all */}
+          <div className="flex items-center gap-2 pb-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* קרוב אלי */}
+            <button
+              onClick={handleLocationButtonClick}
+              disabled={locating}
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={userLat
-                ? { background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)", color: "white" }
-                : { background: "white", color: "oklch(0.40 0.08 122)", border: `1px solid oklch(0.87 0.04 84.0)` }}
+                ? { background: "oklch(0.38 0.07 125.0)", color: "white", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
+                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
             >
-              {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
+              {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3.5 w-3.5" />}
               <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
-              {userLat && <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />}
+              {userLat && (
+                <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
+              )}
             </button>
-          </div>
 
-          {/* Divider */}
-          <div className="-mx-4 border-t" style={{ borderColor: "oklch(0.90 0.03 84 / 0.5)" }} />
-
-          {/* Row 2: urgent + date chips — scrollable */}
-          <div className="flex items-center gap-2 pt-1.5 pb-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            <span className="text-xs shrink-0 font-semibold" style={{ color: "var(--text-muted)" }}>סינון:</span>
-            <button onClick={() => setShowUrgentToday(v => !v)}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+            {/* דחוף */}
+            <button
+              onClick={() => setShowUrgentToday(v => !v)}
+              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={showUrgentToday
                 ? { background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", color: "white" }
-                : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }}
+                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
             >
-              <Flame className="h-3.5 w-3.5" /><span>דחוף</span>
+              <Flame className="h-3.5 w-3.5" style={showUrgentToday ? {} : { color: "#ef4444" }} />
+              <span>דחוף</span>
             </button>
-            {(["היום", "מחר", "השבוע"] as const).map((label, i) => {
-              const val = (["today", "tomorrow", "this_week"] as const)[i];
+
+            {/* היום / מחר */}
+            {(["היום", "מחר"] as const).map((label, i) => {
+              const val = (["today", "tomorrow"] as const)[i];
               const active = dateFilter === val;
               return (
-                <button key={val} onClick={() => setDateFilter(active ? null : val)}
-                  className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+                <button key={val}
+                  onClick={() => setDateFilter(active ? null : val)}
+                  className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
                   style={active
                     ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                    : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }}
+                    : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
                 >{label}</button>
               );
             })}
+
+            {/* השבוע */}
+            <button
+              onClick={() => setDateFilter(dateFilter === "this_week" ? null : "this_week")}
+              className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+              style={dateFilter === "this_week"
+                ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
+                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
+            >השבוע</button>
+
+            {/* Clear all — only when any quick filter is active */}
+            {(showUrgentToday || !!dateFilter || !!userLat) && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.18 }}
+                onClick={() => { setShowUrgentToday(false); setDateFilter(null); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }}
+                className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm font-semibold transition-all"
+                style={{ background: "oklch(0.96 0.02 30)", color: "oklch(0.45 0.12 25)", border: "1.5px solid oklch(0.85 0.05 25)" }}
+              ><X className="h-3.5 w-3.5" /></motion.button>
+            )}
           </div>
 
           {/* Divider */}
           <div className="-mx-4 border-t" style={{ borderColor: "oklch(0.90 0.03 84 / 0.5)" }} />
 
-          {/* Row 3: shift chips + clear-all + סנן pinned at end */}
-          <div className="flex items-center gap-2 pt-1.5 pb-2">
-            <div className="flex items-center gap-2 overflow-x-auto flex-1" style={{ scrollbarWidth: "none" }}>
-              <span className="text-xs shrink-0 font-semibold" style={{ color: "var(--text-muted)" }}>משמרת:</span>
-              {([{ value: "morning", label: "בוקר", icon: "🌅" }, { value: "evening", label: "ערב", icon: "🌆" }, { value: "night", label: "לילה", icon: "🌙" }] as const).map(({ value, label, icon }) => {
-                const active = selectedTimeSlots.includes(value);
+          {/* Row 2: Dropdown chips — קטגוריה, מיקום, שעות, ימים + sort + filter */}
+          <div className="flex items-center gap-2 pt-2 pb-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* קטגוריה chip */}
+            <button
+              onClick={() => { setOpenFilterSection(s => s === "categories" ? null : "categories"); setFilterOpen(true); }}
+              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={selectedCategories.length > 0
+                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
+                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+            >
+              <span>קטגוריה{selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ""}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            {/* מיקום chip */}
+            <button
+              onClick={() => { setOpenFilterSection(s => s === "location" ? null : "location"); setFilterOpen(true); }}
+              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={(!!selectedCity || !!userLat)
+                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
+                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+            >
+              <span>{selectedCity ? selectedCity : userLat ? (geoCity ?? "קרוב אלי") : "מיקום"}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            {/* שעות chip */}
+            <button
+              onClick={() => { setOpenFilterSection(s => s === "hours" ? null : "hours"); setFilterOpen(true); }}
+              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={selectedTimeSlots.length > 0
+                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
+                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+            >
+              <span>שעות{selectedTimeSlots.length > 0 ? ` (${selectedTimeSlots.length})` : ""}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            {/* ימים chip */}
+            <button
+              onClick={() => { setOpenFilterSection(s => s === "days" ? null : "days"); setFilterOpen(true); }}
+              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={selectedDays.length > 0
+                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
+                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+            >
+              <span>ימים{selectedDays.length > 0 ? ` (${selectedDays.length})` : ""}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+
+            {/* Sort pills — compact */}
+            <div className="flex items-center gap-1 mr-auto shrink-0">
+              {([
+                { key: "date",     label: "תאריך" },
+                { key: "salary",   label: "שכר" },
+                ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
+              ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
+                const active = sortBy === key;
                 return (
-                  <button key={value}
-                    onClick={() => setSelectedTimeSlots(prev =>
-                      prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
-                    )}
-                    className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+                  <button key={key}
+                    onClick={() => setSortBy(prev => prev === key ? "default" : key)}
+                    className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
                     style={active
-                      ? { background: "oklch(0.38 0.07 250)", color: "white", border: "1.5px solid oklch(0.38 0.07 250)", boxShadow: "0 2px 8px oklch(0.28 0.06 250 / 0.25)" }
-                      : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }}
-                  ><span>{icon}</span><span>{label}</span></button>
+                      ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)" }
+                      : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+                  >{label}</button>
                 );
               })}
-              {(showUrgentToday || dateFilter !== null || (sortBy !== "default" && sortBy !== "date") || !!userLat || selectedTimeSlots.length > 0) && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.18 }}
-                  onClick={() => { setShowUrgentToday(false); setDateFilter(null); setSortBy("date"); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); setSelectedTimeSlots([]); }}
-                  className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
-                  style={{ background: "oklch(0.96 0.02 30)", color: "oklch(0.45 0.12 25)", border: "1.5px solid oklch(0.85 0.05 25)" }}
-                ><X className="h-3 w-3" /><span>נקה הכל</span></motion.button>
-              )}
             </div>
-            {/* סנן — always visible, outside scroll */}
+
+            {/* סנן button — always visible */}
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={() => setFilterOpen(v => !v)}
-              className="relative shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all"
+              className="relative shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all"
               style={filterOpen
                 ? { background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)", color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)" }
                 : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
@@ -1116,7 +1165,7 @@ export default function FindJobs() {
                   style={{ background: C_DANGER_HEX, color: "white" }}>{activeFilterCount}</span>
               )}
             </motion.button>
-          </div>{/* end Row 3 */}
+          </div>
         </motion.div>
 
         {/* Progress bar — shown during refetch */}

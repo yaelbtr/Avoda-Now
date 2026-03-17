@@ -2175,3 +2175,9 @@
 - [ ] Replace worker card image: practical male worker (warehouse/delivery/kitchen/event)
 - [x] Replace employer card image: male business owner/manager in real workplace
 - [x] Replace homepage hero image with diverse temporary jobs image
+
+## FindJobs Filter Redesign (2026-03-17)
+- [x] Redesign sticky toolbar: Row 1 = quick pills (קרוב אלי, דחוף, היום, מחר, השבוע) + Row 2 = dropdown chips (קטגוריה, מיקום, שעות, ימים) + sort pills + סנן button
+- [x] Dropdown chips open the filter panel to the matching section when clicked
+- [x] Active state on chips shows count badge (e.g. "קטגוריה (2)")
+- [x] Clear-all X button appears in quick pills row when any quick filter is active

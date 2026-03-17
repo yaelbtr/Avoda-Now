@@ -850,8 +850,8 @@ export function JobCard({
         {/* Apply / Applied / צפה במשרה */}
         {!isExpired && onApply && (
           isApplied ? (
-            <span className="flex items-center gap-1 text-[11px] px-3 py-2 rounded-xl font-bold shrink-0" style={{ background: "oklch(0.65 0.22 160 / 0.10)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}>
-              <CheckCircle className="h-3.5 w-3.5" />הגשת
+            <span className="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-bold shrink-0" style={{ background: "oklch(0.93 0.06 150 / 0.15)", color: "var(--brand)", border: "1px solid var(--brand)" }}>
+              <CheckCircle className="h-3 w-3" />הגשת
             </span>
           ) : (
             <motion.button

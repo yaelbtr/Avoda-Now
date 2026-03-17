@@ -71,8 +71,9 @@
   --amber-light:     oklch(0.75 0.12 76.7 / 0.15); /* tinted bg */
 
   /* Highlight — Sun-Kissed Citrus #F4B840 */
-  --citrus:          oklch(0.82 0.15 80.8);    /* #F4B840 */
+  --citrus:          oklch(0.82 0.15 80.8);    /* #F4B840 — use on dark backgrounds */
   --citrus-dark:     oklch(0.72 0.15 80.8);    /* darker citrus */
+  --citrus-on-light: oklch(0.68 0.15 80.8);    /* WCAG AA on light bg — contrast ≥3:1 */
   --citrus-light:    oklch(0.82 0.15 80.8 / 0.15);
 
   /* Neutral warm — Honey Wheat #EAD7B2 */
@@ -626,13 +627,18 @@
   color: var(--brand-avoda-color, #3d4a28);
 }
 .brand-name .brand-now {
-  color: var(--citrus);
+  /* Use darker citrus on light backgrounds for WCAG AA contrast (≥3:1) */
+  color: var(--citrus-on-light);
 }
 
-/* On dark backgrounds, "Avoda" should be near-white */
+/* On dark backgrounds, restore bright citrus and near-white Avoda */
 .dark .brand-name .brand-avoda,
 [data-theme="dark"] .brand-name .brand-avoda {
   color: var(--header-fg, #e8eae5);
+}
+.dark .brand-name .brand-now,
+[data-theme="dark"] .brand-name .brand-now {
+  color: var(--citrus);
 }
 
 /* Skeleton shimmer animation for image placeholders */

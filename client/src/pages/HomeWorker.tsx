@@ -457,15 +457,15 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 sideOffset={10}
                 className="max-w-[220px] text-center leading-relaxed px-4 py-2.5 rounded-xl text-[13px] backdrop-blur-md"
                 style={{
-                  background: "oklch(0.92 0.12 84 / 0.18)",
-                  color: "oklch(0.30 0.06 84)",
-                  border: "1px solid oklch(0.88 0.16 84 / 0.55)",
-                  boxShadow: "0 8px 32px oklch(0.75 0.18 84 / 0.22), inset 0 1px 0 oklch(1 0 0 / 0.45)",
+                  background: "oklch(0.96 0.10 84 / 0.92)",
+                  color: "oklch(0.28 0.05 84)",
+                  border: "1px solid oklch(0.82 0.14 84 / 0.60)",
+                  boxShadow: "0 8px 32px oklch(0.75 0.18 84 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.60)",
                 }}
               >
-                מעסיקים רואים רק עובדים זמינים —
+                <span style={{ color: "oklch(0.32 0.06 84)" }}>מעסיקים רואים רק עובדים זמינים —</span>
                 <br />
-                <span style={{ color: "oklch(0.42 0.10 84)", fontWeight: 600 }}>הגדר עכשיו וקבל פניות היום</span>
+                <span style={{ color: "oklch(0.38 0.12 60)", fontWeight: 700 }}>הגדר עכשיו וקבל פניות היום</span>
               </TooltipContent>
             </Tooltip>
           </motion.div>

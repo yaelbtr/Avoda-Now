@@ -15,7 +15,7 @@ import { useCategories } from "@/hooks/useCategories";
 import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
   Navigation, AlertCircle, SlidersHorizontal, UserCheck, ChevronDown,
-  Clock, Zap, BadgePercent, ChevronLeft,
+  Clock, Zap, BadgePercent, ChevronLeft, ArrowUp,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { useLocation } from "wouter";
@@ -553,6 +553,12 @@ export default function FindJobs() {
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 320);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
@@ -1070,6 +1076,21 @@ export default function FindJobs() {
             )}
           </motion.button>
         </motion.div>
+
+        {/* Progress bar — shown during refetch */}
+        <AnimatePresence>
+          {isFetching && !isLoading && (
+            <motion.div
+              key="progress-bar"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ scaleX: 1, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="-mx-4 mb-2 h-0.5 origin-right"
+              style={{ background: "linear-gradient(to left, oklch(0.82 0.13 84), oklch(0.50 0.18 160))" }}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Location dialog */}
         <AnimatePresence>
@@ -1722,6 +1743,30 @@ export default function FindJobs() {
           </div>
         </div>
       </div>
+
+      {/* Floating scroll-to-top button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-top"
+            initial={{ opacity: 0, scale: 0.7, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.7, y: 12 }}
+            transition={{ duration: 0.22 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-24 left-4 z-50 w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.38 0.07 125.0) 0%, oklch(0.28 0.06 122) 100%)",
+              boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.40)",
+            }}
+            aria-label="חזרה לראש הדף"
+          >
+            <ArrowUp className="h-5 w-5" style={{ color: "oklch(0.97 0.02 91)" }} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
       <JobBottomSheet

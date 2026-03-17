@@ -2187,3 +2187,7 @@
 - [x] Row 2: dropdown chips (קטגוריה, מיקום, שעות, ימים) with chevron, gray bg
 - [x] Row 3: "X משרות נמצאו" right + "סנן לפי" left — as a separate bar below toolbar
 - [x] Remove sort pills from toolbar (move sort to סנן לפי dropdown in results bar)
+
+## FindJobs Toolbar — Remove Chips Row (2026-03-17)
+- [x] Remove 4 dropdown chips (קטגוריה, מיקום, שעות, ימים) from Row 2
+- [x] Replace with single icon-only filter button (SlidersHorizontal) that opens filter panel

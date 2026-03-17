@@ -1071,55 +1071,24 @@ export default function FindJobs() {
           {/* Divider */}
           <div className="-mx-4 border-t" style={{ borderColor: "oklch(0.90 0.03 84 / 0.5)" }} />
 
-          {/* Row 2: Dropdown chips — קטגוריה, מיקום, שעות, ימים (no sort pills) */}
-          <div className="flex items-center gap-2 pt-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {/* קטגוריה chip */}
-            <button
-              onClick={() => { setOpenFilterSection(s => s === "categories" ? null : "categories"); setFilterOpen(true); }}
-              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={selectedCategories.length > 0
-                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
-                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
+          {/* Row 2: Single icon-only filter button */}
+          <div className="flex items-center justify-start pb-3 pt-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setFilterOpen(v => !v)}
+              className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all"
+              style={filterOpen || activeFilterCount > 0
+                ? { background: "#3a5c2e", color: "white", boxShadow: "0 2px 8px rgba(58,92,46,0.30)" }
+                : { background: "white", color: "#444", border: "1.5px solid #d0d0d0" }}
             >
-              <span>קטגוריה{selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ""}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-
-            {/* מיקום chip */}
-            <button
-              onClick={() => { setOpenFilterSection(s => s === "location" ? null : "location"); setFilterOpen(true); }}
-              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={(!!selectedCity || !!userLat)
-                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
-                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
-            >
-              <span>{selectedCity ? selectedCity : userLat ? (geoCity ?? "קרוב אלי") : "מיקום"}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-
-            {/* שעות chip */}
-            <button
-              onClick={() => { setOpenFilterSection(s => s === "hours" ? null : "hours"); setFilterOpen(true); }}
-              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={selectedTimeSlots.length > 0
-                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
-                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
-            >
-              <span>שעות{selectedTimeSlots.length > 0 ? ` (${selectedTimeSlots.length})` : ""}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-
-            {/* ימים chip */}
-            <button
-              onClick={() => { setOpenFilterSection(s => s === "days" ? null : "days"); setFilterOpen(true); }}
-              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={selectedDays.length > 0
-                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
-                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
-            >
-              <span>ימים{selectedDays.length > 0 ? ` (${selectedDays.length})` : ""}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
+              <SlidersHorizontal className="h-4 w-4" />
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+                  style={{ background: C_DANGER_HEX, color: "white" }}
+                >{activeFilterCount}</span>
+              )}
+            </motion.button>
           </div>
         </motion.div>
 

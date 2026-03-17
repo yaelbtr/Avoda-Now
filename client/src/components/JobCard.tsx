@@ -862,15 +862,13 @@ export function JobCard({
                 if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
                 setShowApplyPanel(v => !v);
               }}
-              className="flex items-center gap-1 text-[11px] px-3 py-2 rounded-xl font-bold shrink-0"
-              style={{
-                background: showApplyPanel
-                  ? "oklch(0.93 0.03 91.6)"
-                  : "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-                color: showApplyPanel ? "var(--text-muted)" : "oklch(0.97 0.02 91)",
-              }}
+              className="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-bold shrink-0 transition-all"
+              style={showApplyPanel
+                ? { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
+                : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+              }
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <ChevronLeft className="h-3 w-3" />
               הגש
             </motion.button>
           )

@@ -1132,18 +1132,17 @@ export default function FindJobs() {
             )}
           </div>
 
-          {/* Divider */}
-          <div className="-mx-4 border-t" style={{ borderColor: "oklch(0.90 0.03 84 / 0.5)" }} />
+          {/* Divider removed per design */}
 
           {/* Row 2: Single icon-only filter button */}
           <div className="flex items-center justify-start pb-3 pt-2">
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={() => setFilterOpen(v => !v)}
-              className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full transition-all"
               style={filterOpen || activeFilterCount > 0
-                ? { background: "#3a5c2e", color: "white", boxShadow: "0 2px 8px rgba(58,92,46,0.30)" }
-                : { background: "white", color: "#444", border: "1.5px solid #d0d0d0" }}
+                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
             >
               <SlidersHorizontal className="h-4 w-4" />
               {activeFilterCount > 0 && (
@@ -1702,7 +1701,7 @@ export default function FindJobs() {
             {isLoading ? (
               <span className="text-sm text-gray-400">מחפש...</span>
             ) : (
-              <span className="text-sm font-bold" style={{ color: "#222" }}>
+              <span className="text-sm font-bold" style={{ color: "var(--brand)" }}>
                 {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
               </span>
             )}

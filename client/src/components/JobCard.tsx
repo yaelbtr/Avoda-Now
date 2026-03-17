@@ -511,23 +511,39 @@ export function JobCard({
             )}
           </div>
 
-          {/* Date + work hours row */}
+          {/* Date + work hours badge row */}
           {(job.jobDate || (job.workStartTime && job.workEndTime)) ? (
-            <div className="flex items-center gap-1 text-[11px] mb-3 font-medium" style={{ color: "oklch(0.38 0.10 122)" }}>
-              {job.jobDate && (
-                <>
-                  <Calendar className="h-3 w-3 shrink-0" />
-                  <span>{new Date(job.jobDate + 'T00:00:00').toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</span>
-                </>
-              )}
-              {job.jobDate && job.workStartTime && job.workEndTime && (
-                <span className="mx-0.5 opacity-40">·</span>
-              )}
+            <div className="flex flex-wrap items-center gap-1.5 mb-3">
+              {job.jobDate && (() => {
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+                const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+                const isDateToday = job.jobDate === todayStr;
+                const isDateTomorrow = job.jobDate === tomorrowStr;
+                const label = isDateToday ? 'היום' : isDateTomorrow ? 'מחר' : new Date(job.jobDate + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+                return (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                    style={{
+                      background: isDateToday ? 'oklch(0.45 0.18 145)' : 'oklch(0.94 0.05 122)',
+                      color: isDateToday ? '#fff' : 'oklch(0.32 0.12 122)',
+                      border: isDateToday ? 'none' : '1px solid oklch(0.82 0.08 122 / 0.6)',
+                    }}
+                  >
+                    <Calendar className="h-3 w-3 shrink-0" />
+                    {label}
+                  </span>
+                );
+              })()}
               {job.workStartTime && job.workEndTime && (
-                <>
+                <span
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  style={{ background: 'oklch(0.96 0.03 91)', color: 'oklch(0.38 0.07 125)', border: '1px solid oklch(0.88 0.04 91 / 0.7)' }}
+                >
                   <Clock className="h-3 w-3 shrink-0" />
-                  <span>{job.workStartTime}–{job.workEndTime}</span>
-                </>
+                  {job.workStartTime}–{job.workEndTime}
+                </span>
               )}
             </div>
           ) : <div className="mb-3" />}
@@ -749,7 +765,39 @@ export function JobCard({
           <Clock className="h-3 w-3 shrink-0" />
           {getStartTimeLabel(job.startTime)}
         </span>
-
+        {/* Date badge */}
+        {job.jobDate && (() => {
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+          const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+          const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+          const isDateToday = job.jobDate === todayStr;
+          const isDateTomorrow = job.jobDate === tomorrowStr;
+          const label = isDateToday ? 'היום' : isDateTomorrow ? 'מחר' : new Date(job.jobDate + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+          return (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+              style={{
+                background: isDateToday ? 'oklch(0.45 0.18 145)' : 'oklch(0.94 0.05 122)',
+                color: isDateToday ? '#fff' : 'oklch(0.32 0.12 122)',
+                border: isDateToday ? 'none' : '1px solid oklch(0.82 0.08 122 / 0.6)',
+              }}
+            >
+              <Calendar className="h-2.5 w-2.5 shrink-0" />
+              {label}
+            </span>
+          );
+        })()}
+        {/* Work hours badge */}
+        {job.workStartTime && job.workEndTime && (
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+            style={{ background: 'oklch(0.96 0.03 91)', color: 'oklch(0.38 0.07 125)', border: '1px solid oklch(0.88 0.04 91 / 0.7)' }}
+          >
+            <Clock className="h-2.5 w-2.5 shrink-0" />
+            {job.workStartTime}–{job.workEndTime}
+          </span>
+        )}
       </div>
 
       {/* ── Time row ── */}

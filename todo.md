@@ -2225,3 +2225,6 @@
 
 ## Calendar Swipe-to-Close on Mobile (2026-03-17)
 - [x] Convert date calendar to bottom sheet on mobile with swipe-to-close gesture
+
+## JobCard Date/Day Badge (2026-03-17)
+- [x] Add prominent date/work-day badge to JobCard in AvodaNow design scale style

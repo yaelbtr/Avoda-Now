@@ -2219,3 +2219,6 @@
 
 ## Filter Bottom Sheet Swipe-to-Close (2026-03-17)
 - [x] Add swipe-to-close gesture to filter bottom sheet (drag down > 80px closes it)
+
+## Calendar Redesign — AvodaNow Design Scale (2026-03-17)
+- [x] Redesign date filter calendar popover: mobile-friendly, glass-modal style, brand colors, AppButton variants, RTL

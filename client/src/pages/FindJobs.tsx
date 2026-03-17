@@ -21,6 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { DateRange } from "react-day-picker";
 import BrandLoader from "@/components/BrandLoader";
+import { AppButton } from "@/components/AppButton";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -1098,9 +1099,17 @@ export default function FindJobs() {
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start" style={{ zIndex: 50 }}>
-                <div dir="ltr" className="p-3">
-                  <div className="flex gap-1.5 mb-3 flex-wrap">
+              <PopoverContent
+                className="p-0 rounded-2xl shadow-xl border-0"
+                align="start"
+                sideOffset={8}
+                style={{ zIndex: 50, width: "min(340px, 92vw)", background: "var(--page-bg)" }}
+              >
+                <div dir="rtl" className="p-4">
+                  {/* Title */}
+                  <p className="text-sm font-bold mb-3" style={{ color: "#4F583B" }}>בחר תאריך או טווח</p>
+                  {/* Quick presets */}
+                  <div className="flex gap-2 mb-4 flex-wrap">
                     {[
                       { key: "today", label: "היום" },
                       { key: "tomorrow", label: "מחר" },
@@ -1108,37 +1117,45 @@ export default function FindJobs() {
                     ].map(({ key, label }) => (
                       <button key={key}
                         onClick={() => { setDateFilter(dateFilter === key ? null : key); setCalendarRange(undefined); setCalendarOpen(false); }}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border"
+                        className="px-3 py-1 rounded-full text-xs font-bold transition-all"
                         style={dateFilter === key
-                          ? { background: "#3a5c2e", color: "white", borderColor: "#3a5c2e" }
-                          : { background: "white", color: "#333", borderColor: "#d0d0d0" }}
+                          ? { background: "oklch(0.50 0.14 85)", color: "white", border: "1px solid oklch(0.50 0.14 85)" }
+                          : { background: "white", color: "#4F583B", border: "1px solid oklch(0.88 0.04 122)" }}
                       >{label}</button>
                     ))}
                   </div>
-                  <Calendar
-                    mode="range"
-                    selected={calendarRange}
-                    onSelect={(range) => {
-                      setCalendarRange(range);
-                      if (range?.from && range?.to) {
-                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                        setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
-                        setCalendarOpen(false);
-                      } else if (range?.from && !range?.to) {
-                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                        setDateFilter(fmt(range.from));
-                      }
-                    }}
-                    disabled={{ before: new Date() }}
-                    locale={undefined}
-                    numberOfMonths={1}
-                  />
+                  {/* Calendar */}
+                  <div dir="ltr" className="rounded-xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.88 0.04 122)" }}>
+                    <Calendar
+                      mode="range"
+                      selected={calendarRange}
+                      onSelect={(range) => {
+                        setCalendarRange(range);
+                        if (range?.from && range?.to) {
+                          const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                          setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                          setCalendarOpen(false);
+                        } else if (range?.from && !range?.to) {
+                          const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                          setDateFilter(fmt(range.from));
+                        }
+                      }}
+                      disabled={{ before: new Date() }}
+                      numberOfMonths={1}
+                    />
+                  </div>
+                  {/* Clear button */}
                   {(dateFilter || calendarRange) && (
-                    <button
-                      onClick={() => { setDateFilter(null); setCalendarRange(undefined); setCalendarOpen(false); }}
-                      className="w-full mt-2 py-1.5 rounded-lg text-xs font-semibold border transition-all"
-                      style={{ borderColor: "#d0d0d0", color: "#888" }}
-                    >נקה תאריך</button>
+                    <div className="mt-3">
+                      <AppButton
+                        variant="cta-outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => { setDateFilter(null); setCalendarRange(undefined); setCalendarOpen(false); }}
+                      >
+                        <X className="h-3.5 w-3.5" /> נקה תאריך
+                      </AppButton>
+                    </div>
                   )}
                 </div>
               </PopoverContent>
@@ -1515,7 +1532,7 @@ export default function FindJobs() {
                           ))}
                         </div>
                         {/* Inline calendar for specific date / range */}
-                        <div dir="ltr">
+                        <div dir="ltr" className="rounded-xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.88 0.04 122)" }}>
                           <Calendar
                             mode="range"
                             selected={calendarRange}
@@ -1536,11 +1553,14 @@ export default function FindJobs() {
                           />
                         </div>
                         {(dateFilter || calendarRange) && (
-                          <button
+                          <AppButton
+                            variant="cta-outline"
+                            size="sm"
+                            className="w-full"
                             onClick={() => { setDateFilter(null); setCalendarRange(undefined); }}
-                            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs border"
-                            style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}
-                          ><X className="h-3 w-3" /> נקה</button>
+                          >
+                            <X className="h-3.5 w-3.5" /> נקה תאריך
+                          </AppButton>
                         )}
                       </div>
                     </div>

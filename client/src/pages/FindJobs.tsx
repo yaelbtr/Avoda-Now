@@ -566,6 +566,29 @@ export default function FindJobs() {
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
+  const filterSheetRef = useRef<HTMLDivElement>(null);
+  const filterSwipeStartY = useRef<number | null>(null);
+  const filterSwipeDy = useRef<number>(0);
+  const handleFilterTouchStart = (e: React.TouchEvent) => {
+    filterSwipeStartY.current = e.touches[0].clientY;
+  };
+  const handleFilterTouchMove = (e: React.TouchEvent) => {
+    if (filterSwipeStartY.current === null) return;
+    const dy = e.touches[0].clientY - filterSwipeStartY.current;
+    filterSwipeDy.current = dy;
+    if (dy > 0 && filterSheetRef.current) {
+      filterSheetRef.current.style.transform = `translateY(${dy}px)`;
+    }
+  };
+  const handleFilterTouchEnd = () => {
+    if (filterSwipeDy.current > 80) {
+      setFilterOpen(false);
+    } else if (filterSheetRef.current) {
+      filterSheetRef.current.style.transform = "translateY(0)";
+    }
+    filterSwipeStartY.current = null;
+    filterSwipeDy.current = 0;
+  };
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(undefined);
@@ -1250,6 +1273,10 @@ export default function FindJobs() {
               <motion.div
                 key="filter-sheet"
                 dir="rtl"
+                ref={filterSheetRef}
+                onTouchStart={handleFilterTouchStart}
+                onTouchMove={handleFilterTouchMove}
+                onTouchEnd={handleFilterTouchEnd}
                 initial={{ y: "100%", opacity: 0.6 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: "100%", opacity: 0 }}

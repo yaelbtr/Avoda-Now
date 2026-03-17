@@ -2216,3 +2216,6 @@
 
 ## FindJobs Toolbar Pill Style Update (2026-03-17)
 - [x] Match pill style to HomeWorker "חדש בסביבה" chips: active=dark green bg+white text, inactive=white+gray border, rounded-full, text-xs font-bold, px-3 py-1
+
+## Filter Bottom Sheet Swipe-to-Close (2026-03-17)
+- [x] Add swipe-to-close gesture to filter bottom sheet (drag down > 80px closes it)

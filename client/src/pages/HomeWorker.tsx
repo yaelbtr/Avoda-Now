@@ -430,6 +430,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <TooltipTrigger asChild>
                 <motion.button
                   onClick={handleAvailabilityToggle}
+                  aria-label="הגדר זמינות עכשיו — מעסיקים רואים רק עובדים זמינים, הגדר עכשיו וקבל פניות היום"
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
                   style={{
                     background: "white",

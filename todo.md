@@ -2191,3 +2191,11 @@
 ## FindJobs Toolbar — Remove Chips Row (2026-03-17)
 - [x] Remove 4 dropdown chips (קטגוריה, מיקום, שעות, ימים) from Row 2
 - [x] Replace with single icon-only filter button (SlidersHorizontal) that opens filter panel
+
+## FindJobs Filter Bottom Sheet Modal (2026-03-17)
+- [x] Convert filter panel from top-slide-down to bottom sheet modal (slide up from bottom)
+- [x] 4 collapsible rows: תחומי עיסוק, מיקום, שעות עבודה, ימי עבודה
+- [x] Bottom action bar: הצג תוצאות (dark green) + נקה סינון (light green)
+- [x] שמור כהעדפות link row at very bottom
+- [x] Backdrop overlay (semi-transparent) closes modal on click
+- [x] Drag handle pill at top of sheet

@@ -1174,12 +1174,39 @@ export default function FindJobs() {
         {/* Filter panel */}
         <AnimatePresence>
           {filterOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="overflow-hidden mb-4"
-            >
-              <div className="rounded-2xl p-4" style={{ background: "white", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.10)" }}>
+            <>
+              {/* Backdrop */}
+              <motion.div
+                key="filter-backdrop"
+                onClick={() => setFilterOpen(false)}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.40)", zIndex: 60 }}
+              />
+              {/* Bottom sheet */}
+              <motion.div
+                key="filter-sheet"
+                dir="rtl"
+                initial={{ y: "100%", opacity: 0.6 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "100%", opacity: 0 }}
+                transition={{ type: "spring", stiffness: 320, damping: 32, mass: 0.9 }}
+                style={{
+                  position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61,
+                  background: "#ffffff",
+                  borderRadius: "24px 24px 0 0",
+                  boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
+                  maxHeight: "88vh",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {/* Drag handle */}
+                <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4, flexShrink: 0 }}>
+                  <div style={{ width: 40, height: 4, borderRadius: 99, background: "#d1cdc4" }} />
+                </div>
+                {/* Scrollable content */}
+                <div className="overflow-y-auto flex-1 px-4 pb-2">
 
                 {/* Profile recommendation */}
                 {isAuthenticated && !profileQuery.isLoading && (() => {
@@ -1458,14 +1485,15 @@ export default function FindJobs() {
                     </div>
                   </div>
                 </div>
-                {/* Action buttons */}
-                <div className="flex flex-col gap-2.5 mt-1">
-                  {/* Row 1: Show results + Clear filters */}
-                  <div className="flex gap-2">
+                </div>{/* end scrollable content */}
+
+                {/* Sticky action bar at bottom of sheet */}
+                <div className="px-4 pt-3 pb-6 border-t" style={{ borderColor: "#f0ede8", flexShrink: 0, background: "white" }}>
+                  <div className="flex gap-2 mb-3">
                     <button type="button" onClick={() => { setFilterOpen(false); toast.success("מציג תוצאות מסוננות"); }}
-                      className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
-                      style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)", boxShadow: "0 3px 12px oklch(0.28 0.06 122 / 0.30)" }}>
-                      <Search className="h-3.5 w-3.5" />
+                      className="flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                      style={{ background: "#3a5c2e", color: "white", boxShadow: "0 3px 12px rgba(58,92,46,0.30)" }}>
+                      <Search className="h-4 w-4" />
                       הצג תוצאות
                     </button>
                     <button type="button"
@@ -1482,17 +1510,16 @@ export default function FindJobs() {
                         clearSavedFilters();
                         toast("סינון נקא");
                       }}
-                      className="flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
-                      style={{ background: "oklch(0.96 0.02 122)", color: "oklch(0.45 0.06 122)", border: "1.5px solid oklch(0.88 0.04 122)" }}>
-                      <X className="h-3.5 w-3.5" />
+                      className="flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                      style={{ background: "#eef5e8", color: "#3a5c2e", border: "1.5px solid #c5dba8" }}>
+                      <X className="h-4 w-4" />
                       נקה סינון
                     </button>
                   </div>
-                  {/* Row 2: Save preferences — distinct dashed/outlined style */}
                   <UpdatePrefsBtn category={category} selectedCity={selectedCity} />
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>{/* end sheet */}
+            </>
           )}
         </AnimatePresence>
 

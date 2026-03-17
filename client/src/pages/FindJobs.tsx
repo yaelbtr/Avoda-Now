@@ -1196,9 +1196,11 @@ export default function FindJobs() {
                   background: "#ffffff",
                   borderRadius: "24px 24px 0 0",
                   boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
-                  maxHeight: "88vh",
+                  maxHeight: "92vh",
+                  height: "auto",
                   display: "flex",
                   flexDirection: "column",
+                  overflow: "hidden",
                 }}
               >
                 {/* Drag handle */}
@@ -1488,7 +1490,7 @@ export default function FindJobs() {
                 </div>{/* end scrollable content */}
 
                 {/* Sticky action bar at bottom of sheet */}
-                <div className="px-4 pt-3 pb-6 border-t" style={{ borderColor: "#f0ede8", flexShrink: 0, background: "white" }}>
+                <div className="px-4 pt-3 border-t" style={{ borderColor: "#f0ede8", flexShrink: 0, background: "white", paddingBottom: "max(24px, env(safe-area-inset-bottom, 24px))" }}>
                   <div className="flex gap-2 mb-3">
                     <button type="button" onClick={() => { setFilterOpen(false); toast.success("מציג תוצאות מסוננות"); }}
                       className="flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"

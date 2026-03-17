@@ -615,8 +615,13 @@ export default function FindJobs() {
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(undefined);
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [toolbarScrolled, setToolbarScrolled] = useState(false);
   useEffect(() => {
-    const handleScroll = () => setShowScrollTop(window.scrollY > 320);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setShowScrollTop(y > 320);
+      setToolbarScrolled(y > 10);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -1047,7 +1052,14 @@ export default function FindJobs() {
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
           className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
-          style={{ background: "transparent", borderBottom: "none" }}
+          style={{
+            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
+            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
+            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
+            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}
         >
           {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
           <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>

@@ -2233,3 +2233,8 @@
 - [x] Update JobCardSkeleton to match current card variant layout (header, meta chips, date badge, action row)
 - [x] Verify JobCardSkeletonList is used in FindJobs showSkeleton branch
 - [x] Ensure shimmer animation uses AvodaNow design tokens
+
+## Scroll-Based Toolbar Backdrop (FindJobs)
+- [x] Add useEffect scroll listener to track scrollY > threshold
+- [x] Apply backdrop-blur + semi-transparent white bg + box-shadow to sticky toolbar when scrolled
+- [x] Smooth CSS transition between transparent and frosted-glass states

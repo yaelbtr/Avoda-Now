@@ -971,59 +971,87 @@ export default function FindJobs() {
         {/* ── Compact toolbar: scrollable chips + pinned filter button ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
-          className="flex items-center gap-2 mb-3 sticky top-0 z-30 py-2 -mx-4 px-4"
+          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-2"
           style={{ background: "oklch(0.97 0.01 84 / 0.95)", backdropFilter: "blur(8px)", borderBottom: "1px solid oklch(0.90 0.03 84 / 0.6)" }}
         >
-          {/* Scrollable chips strip */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
-            {/* Sort label */}
-            <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>מיון:</span>
+          {/* Row 1: sort pills + location chip + filter button */}
+          <div className="flex items-center gap-2 pb-1.5">
+            {/* Scrollable chips strip */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
+              {/* Sort label */}
+              <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>מיון:</span>
 
-            {/* Sort pills — matching MyApplications design */}
-            {([
-              { key: "date",    label: "תאריך" },
-              { key: "salary",  label: "שכר" },
-              ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
-            ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
-              const active = sortBy === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setSortBy(prev => prev === key ? "default" : key)}
-                  className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
-                  style={active
-                    ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
-                    : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
-                  }
-                >
-                  {label}
-                </button>
-              );
-            })}
+              {/* Sort pills — matching MyApplications design */}
+              {([
+                { key: "date",    label: "תאריך" },
+                { key: "salary",  label: "שכר" },
+                ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
+              ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
+                const active = sortBy === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSortBy(prev => prev === key ? "default" : key)}
+                    className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
+                    style={active
+                      ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
+                      : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
+                    }
+                  >
+                    {label}
+                  </button>
+                );
+              })}
 
-            {/* Location chip */}
-            <button
-              onClick={handleLocationButtonClick}
-              disabled={locating}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
-              style={userLat ? {
-                background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
-                color: "white",
-              } : {
-                background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
-              }}
+              {/* Location chip */}
+              <button
+                onClick={handleLocationButtonClick}
+                disabled={locating}
+                className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+                style={userLat ? {
+                  background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
+                  color: "white",
+                } : {
+                  background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
+                }}
+              >
+                {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
+                <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
+                {userLat && (
+                  <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
+                )}
+              </button>
+            </div>
+
+            {/* Filter button — always visible, outside the scroll container */}
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={() => setFilterOpen(v => !v)}
+              className="relative shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs transition-all"
+              style={filterOpen ? {
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
+              } : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
             >
-              {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
-              <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
-              {userLat && (
-                <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span>סנן</span>
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+                  style={{ background: C_DANGER_HEX, color: "white" }}
+                >
+                  {activeFilterCount}
+                </span>
               )}
-            </button>
+            </motion.button>
+          </div>
 
+          {/* Row 2: urgent chip + date chips */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {/* Urgent chip */}
             <button
               onClick={() => setShowUrgentToday(v => !v)}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
               style={showUrgentToday ? {
                 background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", color: "white",
               } : {
@@ -1042,7 +1070,7 @@ export default function FindJobs() {
                 <button
                   key={val}
                   onClick={() => setDateFilter(active ? null : val)}
-                  className="shrink-0 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+                  className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
                   style={active
                     ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
                     : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }
@@ -1053,28 +1081,6 @@ export default function FindJobs() {
               );
             })}
           </div>
-
-          {/* Filter button — always visible, outside the scroll container */}
-          <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            onClick={() => setFilterOpen(v => !v)}
-            className="relative shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs transition-all"
-            style={filterOpen ? {
-              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
-              color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)",
-            } : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            <span>סנן</span>
-            {activeFilterCount > 0 && (
-              <span
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-                style={{ background: C_DANGER_HEX, color: "white" }}
-              >
-                {activeFilterCount}
-              </span>
-            )}
-          </motion.button>
         </motion.div>
 
         {/* Progress bar — shown during refetch */}

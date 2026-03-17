@@ -552,7 +552,7 @@ export default function FindJobs() {
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
   const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
-  const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "default");
+  const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
@@ -965,7 +965,8 @@ export default function FindJobs() {
         {/* ── Compact toolbar: scrollable chips + pinned filter button ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
-          className="flex items-center gap-2 mb-3"
+          className="flex items-center gap-2 mb-3 sticky top-0 z-30 py-2 -mx-4 px-4"
+          style={{ background: "oklch(0.97 0.01 84 / 0.95)", backdropFilter: "blur(8px)", borderBottom: "1px solid oklch(0.90 0.03 84 / 0.6)" }}
         >
           {/* Scrollable chips strip */}
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
@@ -982,7 +983,7 @@ export default function FindJobs() {
               return (
                 <button
                   key={key}
-                  onClick={() => setSortBy(key)}
+                  onClick={() => setSortBy(prev => prev === key ? "default" : key)}
                   className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
                   style={active
                     ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }

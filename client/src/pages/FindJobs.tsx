@@ -699,6 +699,10 @@ export default function FindJobs() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let jobs: AnyJob[] = userLat ? (((searchQuery.data as any)?.jobs ?? []) as AnyJob[]) : (((listQuery.data as any)?.jobs ?? []) as AnyJob[]);
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
+  const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
+  // Show full skeleton on first load; show overlay shimmer on subsequent refetches
+  const showSkeleton = isLoading;
+  const showRefetchOverlay = !isLoading && isFetching;
 
   if (searchText.trim()) {
     const q = searchText.toLowerCase();
@@ -1498,9 +1502,21 @@ export default function FindJobs() {
 
         {/* Quick chips shown below results header when filter is closed */}
 
-        {/* Job list */}
-        {isLoading ? (
-          <JobCardSkeletonList count={4} />
+        {/* Job list — wrapped for refetch overlay */}
+        <div className="relative">
+          {/* Refetch overlay: subtle opacity fade when filter changes but data exists */}
+          {showRefetchOverlay && (
+            <div
+              className="absolute inset-0 z-10 rounded-2xl pointer-events-none"
+              style={{
+                background: "oklch(0.97 0.01 122 / 0.55)",
+                backdropFilter: "blur(1px)",
+                animation: "pulse 1.2s ease-in-out infinite",
+              }}
+            />
+          )}
+        {showSkeleton ? (
+          <JobCardSkeletonList count={5} />
         ) : jobs.length === 0 ? (
           <SmartEmptyState
             category={category}
@@ -1555,6 +1571,7 @@ export default function FindJobs() {
             })}
           </motion.div>
         )}
+        </div>{/* end job list wrapper */}
 
         {/* ── Pagination ─────────────────────────────────────────────────────── */}
         {!isLoading && totalPages > 1 && (

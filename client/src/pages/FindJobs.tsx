@@ -962,87 +962,88 @@ export default function FindJobs() {
           </div>
         </motion.div>
 
-        {/* ── Compact toolbar: sort + quick chips + filter button ── */}
+        {/* ── Compact toolbar: scrollable chips + pinned filter button ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
-          className="flex items-center gap-2 mb-3 overflow-x-auto pb-0.5"
-          style={{ scrollbarWidth: "none" }}
+          className="flex items-center gap-2 mb-3"
         >
-          {/* Sort select */}
-          <div className="relative shrink-0">
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              className="appearance-none py-2 pr-3 pl-7 rounded-xl font-bold text-xs cursor-pointer outline-none transition-all"
-              style={{
-                background: "white",
-                border: `1.5px solid ${C_BORDER}`,
-                color: "oklch(0.30 0.05 122)",
-                boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.07)",
+          {/* Scrollable chips strip */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
+            {/* Sort select */}
+            <div className="relative shrink-0">
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                className="appearance-none py-2 pr-3 pl-7 rounded-xl font-bold text-xs cursor-pointer outline-none transition-all"
+                style={{
+                  background: "white",
+                  border: `1.5px solid ${C_BORDER}`,
+                  color: "oklch(0.30 0.05 122)",
+                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.07)",
+                }}
+              >
+                <option value="default">⚡ ברירת מחדל</option>
+                <option value="salary">💰 שכר גבוה</option>
+                <option value="date">🕐 חדש ביותר</option>
+                {userLat && <option value="distance">📍 קרוב אלי</option>}
+              </select>
+              <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none" style={{ color: "oklch(0.50 0.05 122)" }} />
+            </div>
+
+            {/* Location chip */}
+            <button
+              onClick={handleLocationButtonClick}
+              disabled={locating}
+              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+              style={userLat ? {
+                background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
+                color: "white",
+              } : {
+                background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
               }}
             >
-              <option value="default">⚡ ברירת מחדל</option>
-              <option value="salary">💰 שכר גבוה</option>
-              <option value="date">🕐 חדש ביותר</option>
-              {userLat && <option value="distance">📍 קרוב אלי</option>}
-            </select>
-            <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none" style={{ color: "oklch(0.50 0.05 122)" }} />
+              {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
+              <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
+              {userLat && (
+                <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
+              )}
+            </button>
+
+            {/* Urgent chip */}
+            <button
+              onClick={() => setShowUrgentToday(v => !v)}
+              className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+              style={showUrgentToday ? {
+                background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", color: "white",
+              } : {
+                background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
+              }}
+            >
+              <Flame className="h-3.5 w-3.5" />
+              <span>דחוף</span>
+            </button>
+
+            {/* Date chips */}
+            {(["היום", "מחר", "השבוע"] as const).map((label, i) => {
+              const val = (["today", "tomorrow", "this_week"] as const)[i];
+              const active = dateFilter === val;
+              return (
+                <button
+                  key={val}
+                  onClick={() => setDateFilter(active ? null : val)}
+                  className="shrink-0 text-xs font-bold px-3 py-2 rounded-xl transition-all"
+                  style={active
+                    ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
+                    : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Quick chips inline */}
-          <button
-            onClick={handleLocationButtonClick}
-            disabled={locating}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
-            style={userLat ? {
-              background: "linear-gradient(135deg, oklch(0.50 0.18 160) 0%, oklch(0.42 0.18 155) 100%)",
-              color: "white",
-            } : {
-              background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
-            }}
-          >
-            {locating ? <BrandLoader size="sm" /> : <MapPin className="h-3.5 w-3.5" />}
-            <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
-            {userLat && (
-              <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
-            )}
-          </button>
-
-          <button
-            onClick={() => setShowUrgentToday(v => !v)}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all"
-            style={showUrgentToday ? {
-              background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", color: "white",
-            } : {
-              background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}`,
-            }}
-          >
-            <Flame className="h-3.5 w-3.5" />
-            <span>דחוף</span>
-          </button>
-
-          {(["היום", "מחר", "השבוע"] as const).map((label, i) => {
-            const val = (["today", "tomorrow", "this_week"] as const)[i];
-            const active = dateFilter === val;
-            return (
-              <button
-                key={val}
-                onClick={() => setDateFilter(active ? null : val)}
-                className="shrink-0 text-xs font-bold px-3 py-2 rounded-xl transition-all"
-                style={active
-                  ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                  : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }
-                }
-              >
-                {label}
-              </button>
-            );
-          })}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Filter button */}
+          {/* Filter button — always visible, outside the scroll container */}
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={() => setFilterOpen(v => !v)}

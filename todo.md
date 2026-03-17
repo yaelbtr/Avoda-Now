@@ -2253,3 +2253,6 @@
 
 ## Urgent Mode Geo Card
 - [x] When showUrgentToday is active, replace green geo card with single amber card (no two-section split)
+
+## Separate Geo Card and No-Results Card
+- [x] Split merged two-section card into two fully independent cards (green geo card + separate amber no-results card)

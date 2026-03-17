@@ -475,7 +475,7 @@ const jobsRouter = router({
       city: z.string().optional(),
       /** Multi-city filter — takes precedence over city when provided */
       cities: z.array(z.string().min(1)).max(20).optional(),
-      dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
+      dateFilter: z.string().optional(), // "today"|"tomorrow"|"this_week"|"YYYY-MM-DD"|"YYYY-MM-DD:YYYY-MM-DD"
       page: z.number().int().min(1).default(1),
       /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
       dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
@@ -500,12 +500,12 @@ const jobsRouter = router({
         city: z.string().optional(),
         /** Multi-city filter — takes precedence over city when provided */
         cities: z.array(z.string().min(1)).max(20).optional(),
-        dateFilter: z.enum(["today", "tomorrow", "this_week"]).optional(),
-        page: z.number().int().min(1).default(1),
-        /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
-        dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
-      })
-    )
+      dateFilter: z.string().optional(), // "today"|"tomorrow"|"this_week"|"YYYY-MM-DD"|"YYYY-MM-DD:YYYY-MM-DD"
+      page: z.number().int().min(1).default(1),
+      /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
+      dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+    })
+  )
     .query(async ({ input }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;

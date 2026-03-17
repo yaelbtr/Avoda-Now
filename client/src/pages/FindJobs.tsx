@@ -15,8 +15,11 @@ import { useCategories } from "@/hooks/useCategories";
 import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
   Navigation, AlertCircle, SlidersHorizontal, UserCheck, ChevronDown,
-  Clock, Zap, BadgePercent, ChevronLeft, ArrowUp,
+  Clock, Zap, BadgePercent, ChevronLeft, ArrowUp, CalendarDays,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { DateRange } from "react-day-picker";
 import BrandLoader from "@/components/BrandLoader";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -208,7 +211,7 @@ interface SmartEmptyStateProps {
   catName: string;
   catIcon?: string;
   selectedCity: string | null;
-  dateFilter: "today" | "tomorrow" | "this_week" | null;
+  dateFilter: string | null;
   selectedTimeSlots: string[];
   selectedDays: string[];
   showUrgentToday: boolean;
@@ -232,6 +235,18 @@ const DATE_FILTER_LABELS: Record<string, string> = {
   tomorrow: "מחר",
   this_week: "השבוע",
 };
+
+/** Format a dateFilter string for display: handles preset keys, ISO dates, and date ranges */
+function formatDateFilterLabel(df: string | null): string {
+  if (!df) return "";
+  if (DATE_FILTER_LABELS[df]) return DATE_FILTER_LABELS[df];
+  if (df.includes(":")) {
+    const [from, to] = df.split(":");
+    const fmt = (s: string) => new Date(s).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" });
+    return `${fmt(from)} – ${fmt(to)}`;
+  }
+  return new Date(df).toLocaleDateString("he-IL", { day: "numeric", month: "numeric", year: "numeric" });
+}
 
 function SmartEmptyState({
   category, catName, catIcon, selectedCity, dateFilter,
@@ -337,7 +352,7 @@ function SmartEmptyState({
               <button onClick={onClearDateFilter}
                 className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
                 style={{ background: "oklch(0.94 0.04 55)", color: "oklch(0.38 0.12 55)", border: "1px solid oklch(0.82 0.08 55)" }}>
-                📅 {DATE_FILTER_LABELS[dateFilter]} <X className="h-3 w-3" />
+                📅 {formatDateFilterLabel(dateFilter)} <X className="h-3 w-3" />
               </button>
             )}
             {showUrgentToday && (
@@ -551,7 +566,9 @@ export default function FindJobs() {
   const [autoExpandedRadius, setAutoExpandedRadius] = useState(false);
   const [geoCity, setGeoCity] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState<boolean>(false);
-  const [dateFilter, setDateFilter] = useState<"today" | "tomorrow" | "this_week" | null>(null);
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(undefined);
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
   const [showScrollTop, setShowScrollTop] = useState(false);
   useEffect(() => {
@@ -567,7 +584,7 @@ export default function FindJobs() {
   // Accumulated jobs across pages for infinite scroll
   const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
+  const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | "date" | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
   // Keep selectedCity in sync with selectedCities[0] for SEO/URL/legacy usage
@@ -1042,26 +1059,73 @@ export default function FindJobs() {
               <span>דחוף</span>
             </button>
 
-            {/* היום / מחר */}
-            {(["היום", "מחר"] as const).map((label, i) => {
-              const val = (["today", "tomorrow"] as const)[i];
-              const active = dateFilter === val;
-              return (
-                <button key={val}
-                  onClick={() => setDateFilter(active ? null : val)}
-                  className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                  style={active
+            {/* Date picker button */}
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                  style={dateFilter
                     ? { background: "#3a5c2e", color: "white" }
                     : { background: "white", color: "#222", border: "1.5px solid #d0d0d0" }}
-                >{label}</button>
-              );
-            })}
+                >
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  <span>{dateFilter ? formatDateFilterLabel(dateFilter) : "תאריך"}</span>
+                  {dateFilter && (
+                    <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setDateFilter(null); setCalendarRange(undefined); }} />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start" style={{ zIndex: 50 }}>
+                <div dir="ltr" className="p-3">
+                  <div className="flex gap-1.5 mb-3 flex-wrap">
+                    {[
+                      { key: "today", label: "היום" },
+                      { key: "tomorrow", label: "מחר" },
+                      { key: "this_week", label: "השבוע" },
+                    ].map(({ key, label }) => (
+                      <button key={key}
+                        onClick={() => { setDateFilter(dateFilter === key ? null : key); setCalendarRange(undefined); setCalendarOpen(false); }}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border"
+                        style={dateFilter === key
+                          ? { background: "#3a5c2e", color: "white", borderColor: "#3a5c2e" }
+                          : { background: "white", color: "#333", borderColor: "#d0d0d0" }}
+                      >{label}</button>
+                    ))}
+                  </div>
+                  <Calendar
+                    mode="range"
+                    selected={calendarRange}
+                    onSelect={(range) => {
+                      setCalendarRange(range);
+                      if (range?.from && range?.to) {
+                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                        setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                        setCalendarOpen(false);
+                      } else if (range?.from && !range?.to) {
+                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                        setDateFilter(fmt(range.from));
+                      }
+                    }}
+                    disabled={{ before: new Date() }}
+                    locale={undefined}
+                    numberOfMonths={1}
+                  />
+                  {(dateFilter || calendarRange) && (
+                    <button
+                      onClick={() => { setDateFilter(null); setCalendarRange(undefined); setCalendarOpen(false); }}
+                      className="w-full mt-2 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                      style={{ borderColor: "#d0d0d0", color: "#888" }}
+                    >נקה תאריך</button>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
 
             {/* Clear all — only when any quick filter is active (except קרוב אלי which is always green) */}
-            {(showUrgentToday || !!dateFilter) && (
+            {(showUrgentToday) && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.18 }}
-                onClick={() => { setShowUrgentToday(false); setDateFilter(null); }}
+                onClick={() => { setShowUrgentToday(false); }}
                 className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm font-semibold transition-all"
                 style={{ background: "#fff", color: "#888", border: "1.5px solid #d0d0d0" }}
               ><X className="h-3.5 w-3.5" /></motion.button>
@@ -1385,6 +1449,72 @@ export default function FindJobs() {
                               </button>
                             )}
                           </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date filter — collapsible */}
+                <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
+                  <button type="button" onClick={() => setOpenFilterSection(s => s === "date" ? null : "date")}
+                    className="w-full flex items-center gap-2 py-2 text-right">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
+                      <CalendarDays className="h-3 w-3" style={{ color: C_BRAND_HEX }} />
+                    </div>
+                    <span className="font-bold text-sm flex-1" style={{ color: "oklch(0.22 0.03 122.3)" }}>תאריך</span>
+                    {dateFilter && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: C_BRAND_HEX }}>
+                        {formatDateFilterLabel(dateFilter)}
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200"
+                      style={{ transform: openFilterSection === "date" ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  </button>
+                  <div style={{ display: "grid", gridTemplateRows: openFilterSection === "date" ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+                    <div className="overflow-hidden">
+                      <div className="pt-3 space-y-3">
+                        {/* Quick presets */}
+                        <div className="flex gap-2 flex-wrap">
+                          {[
+                            { key: "today", label: "היום" },
+                            { key: "tomorrow", label: "מחר" },
+                            { key: "this_week", label: "השבוע" },
+                          ].map(({ key, label }) => (
+                            <button key={key}
+                              onClick={() => { setDateFilter(dateFilter === key ? null : key); setCalendarRange(undefined); }}
+                              className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2"
+                              style={dateFilter === key ? activePill : inactivePill}
+                            >{label}</button>
+                          ))}
+                        </div>
+                        {/* Inline calendar for specific date / range */}
+                        <div dir="ltr">
+                          <Calendar
+                            mode="range"
+                            selected={calendarRange}
+                            onSelect={(range) => {
+                              setCalendarRange(range);
+                              if (range?.from && range?.to) {
+                                const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                                setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                              } else if (range?.from && !range?.to) {
+                                const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                                setDateFilter(fmt(range.from));
+                              } else {
+                                setDateFilter(null);
+                              }
+                            }}
+                            disabled={{ before: new Date() }}
+                            numberOfMonths={1}
+                          />
+                        </div>
+                        {(dateFilter || calendarRange) && (
+                          <button
+                            onClick={() => { setDateFilter(null); setCalendarRange(undefined); }}
+                            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs border"
+                            style={{ borderColor: C_BORDER, color: C_TEXT_MUTED }}
+                          ><X className="h-3 w-3" /> נקה</button>
                         )}
                       </div>
                     </div>

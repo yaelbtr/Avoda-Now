@@ -642,7 +642,7 @@ export async function getActiveJobs(
   limit = 50,
   category?: string,
   city?: string,
-  dateFilter?: "today" | "tomorrow" | "this_week",
+  dateFilter?: "today" | "tomorrow" | "this_week" | string, // also accepts "YYYY-MM-DD" or "YYYY-MM-DD:YYYY-MM-DD"
   offset = 0,
   dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
   cities?: string[],    // multi-city filter (takes precedence over city when provided)
@@ -682,6 +682,13 @@ export async function getActiveJobs(
       const weekEnd = new Date(today);
       weekEnd.setDate(weekEnd.getDate() + 7);
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
+    } else if (dateFilter.includes(":")) {
+      // Date range: "YYYY-MM-DD:YYYY-MM-DD"
+      const [from, to] = dateFilter.split(":");
+      conditions.push(sql`${jobs.jobDate} >= ${from} AND ${jobs.jobDate} <= ${to}`);
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) {
+      // Specific date: "YYYY-MM-DD"
+      conditions.push(eq(jobs.jobDate, dateFilter));
     }
   }
   // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat
@@ -708,7 +715,7 @@ export async function getJobsNearLocation(
   category?: string,
   limit = 50,
   city?: string,
-  dateFilter?: "today" | "tomorrow" | "this_week",
+  dateFilter?: "today" | "tomorrow" | "this_week" | string, // also accepts "YYYY-MM-DD" or "YYYY-MM-DD:YYYY-MM-DD"
   offset = 0,
   dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
   cities?: string[],    // multi-city filter (takes precedence over city when provided)
@@ -776,6 +783,11 @@ export async function getJobsNearLocation(
       const weekEnd = new Date(today);
       weekEnd.setDate(weekEnd.getDate() + 7);
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
+    } else if (dateFilter.includes(":")) {
+      const [from, to] = dateFilter.split(":");
+      conditions.push(sql`${jobs.jobDate} >= ${from} AND ${jobs.jobDate} <= ${to}`);
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) {
+      conditions.push(eq(jobs.jobDate, dateFilter));
     }
   }
   // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat

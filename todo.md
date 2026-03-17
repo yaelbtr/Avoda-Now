@@ -2199,3 +2199,17 @@
 - [x] שמור כהעדפות link row at very bottom
 - [x] Backdrop overlay (semi-transparent) closes modal on click
 - [x] Drag handle pill at top of sheet
+
+## FindJobs Date Filter Button (2026-03-17)
+- [ ] Replace היום/מחר/השבוע pills with single date button
+- [ ] Calendar picker opens on click (single date or range)
+- [ ] Active date shown on button label
+- [ ] Clear date button (X) when date is selected
+- [ ] Wire date filter to job query
+
+## Date Filter Button (Completed 2026-03-17)
+- [x] Replace היום/מחר/השבוע quick pills with single תאריך button
+- [x] Popover calendar with preset pills (היום, מחר, השבוע) + date range picker
+- [x] Extend dateFilter type to support ISO date strings and ranges (YYYY-MM-DD:YYYY-MM-DD)
+- [x] Update backend db.ts and routers.ts to handle specific date / range filters
+- [x] Add date section (collapsible) to filter bottom sheet

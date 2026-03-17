@@ -974,7 +974,6 @@ export default function FindJobs() {
 
             {/* Sort pills — matching MyApplications design */}
             {([
-              { key: "default", label: "ברירת מחדל" },
               { key: "date",    label: "תאריך" },
               { key: "salary",  label: "שכר" },
               ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),

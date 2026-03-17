@@ -1018,40 +1018,22 @@ export default function FindJobs() {
         </AnimatePresence>
 
         {/* Search bar */}
+        {/* ── TOOLBAR: sticky wrapper with frosted-glass on scroll ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}
-          className="mb-4"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
+          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
+          style={{
+            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
+            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
+            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
+            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}
         >
-          <div
-            className="flex items-center gap-2"
-          >
-            {/* Search input — flex-1 so it shrinks to give room for filter button */}
-            <div
-              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
-              style={{
-                background: "white",
-                border: `1.5px solid ${C_BORDER}`,
-                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)",
-              }}
-            >
-              <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />
-              <input
-                type="search"
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                placeholder="חפש לפי תפקיד, עיר, מילת מפתח..."
-                className="flex-1 min-w-0 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400"
-                style={{ color: "oklch(0.22 0.03 122.3)" }}
-                dir="rtl"
-              />
-              {searchText && (
-                <button onClick={() => setSearchText("")} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Filter button — inline with search box */}
+          {/* Row 1: Search box + filter button — same border, same height */}
+          <div className="flex items-center gap-2 pb-3">
+            {/* Filter button — same border/shadow/height as search box */}
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={() => setFilterOpen(v => !v)}
@@ -1068,23 +1050,35 @@ export default function FindJobs() {
                 >{activeFilterCount}</span>
               )}
             </motion.button>
-          </div>
-        </motion.div>
 
-        {/* ── TOOLBAR: Exact mockup layout ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
-          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
-          style={{
-            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
-            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
-            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
-            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
-          }}
-        >
-          {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
+            {/* Search input — flex-1 */}
+            <div
+              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
+              style={{
+                background: "white",
+                border: `1.5px solid ${C_BORDER}`,
+                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)",
+              }}
+            >
+              <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />
+              <input
+                type="search"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                placeholder="חפש תפקיד, עיר..."
+                className="flex-1 min-w-0 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400"
+                style={{ color: "oklch(0.22 0.03 122.3)" }}
+                dir="rtl"
+              />
+              {searchText && (
+                <button onClick={() => setSearchText("")} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Row 2: Quick filter chip pills — aligned to same left edge as search row */}
           <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {/* קרוב אלי */}
             <button

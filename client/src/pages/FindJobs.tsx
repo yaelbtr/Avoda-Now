@@ -969,26 +969,31 @@ export default function FindJobs() {
         >
           {/* Scrollable chips strip */}
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
-            {/* Sort select */}
-            <div className="relative shrink-0">
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as typeof sortBy)}
-                className="appearance-none py-2 pr-3 pl-7 rounded-xl font-bold text-xs cursor-pointer outline-none transition-all"
-                style={{
-                  background: "white",
-                  border: `1.5px solid ${C_BORDER}`,
-                  color: "oklch(0.30 0.05 122)",
-                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.07)",
-                }}
-              >
-                <option value="default">⚡ ברירת מחדל</option>
-                <option value="salary">💰 שכר גבוה</option>
-                <option value="date">🕐 חדש ביותר</option>
-                {userLat && <option value="distance">📍 קרוב אלי</option>}
-              </select>
-              <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none" style={{ color: "oklch(0.50 0.05 122)" }} />
-            </div>
+            {/* Sort label */}
+            <span className="text-xs shrink-0 font-medium" style={{ color: "var(--text-muted)" }}>מיון:</span>
+
+            {/* Sort pills — matching MyApplications design */}
+            {([
+              { key: "default", label: "ברירת מחדל" },
+              { key: "date",    label: "תאריך" },
+              { key: "salary",  label: "שכר" },
+              ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
+            ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
+              const active = sortBy === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSortBy(key)}
+                  className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all font-semibold"
+                  style={active
+                    ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.20)" }
+                    : { background: "white", color: "var(--text-secondary)", border: "1px solid oklch(0.87 0.04 84.0)" }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
 
             {/* Location chip */}
             <button

@@ -561,6 +561,12 @@ export default function FindJobs() {
   }, []);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
+  // AnyJob type — defined here so it can be used in state declarations below
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
+  // Accumulated jobs across pages for infinite scroll
+  const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
@@ -701,11 +707,21 @@ export default function FindJobs() {
 
   // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const activeQueryData = userLat ? (searchQuery.data as any) : (listQuery.data as any);
-  let jobs: AnyJob[] = (activeQueryData?.jobs ?? []) as AnyJob[];
+  const currentPageJobs: AnyJob[] = (activeQueryData?.jobs ?? []) as AnyJob[];
   const serverTotal: number = activeQueryData?.total ?? 0;
+  // Append new page results to accumulated list (avoid duplicates by id)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (currentPageJobs.length === 0) return;
+    setAccumulatedJobs(prev => {
+      const existingIds = new Set(prev.map(j => j.id));
+      const newJobs = currentPageJobs.filter(j => !existingIds.has(j.id));
+      return newJobs.length > 0 ? [...prev, ...newJobs] : prev;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeQueryData]);
+  let jobs: AnyJob[] = accumulatedJobs;
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
   const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
   // Show full skeleton on first load; show overlay shimmer on subsequent refetches
@@ -780,8 +796,11 @@ export default function FindJobs() {
     if (!isLoading && hasActiveFilter && jobs.length === 0) setNoIndexReady(true);
     else setNoIndexReady(false);
   }, [isLoading, hasActiveFilter, jobs.length]);
-  // Reset to page 1 when filters change
-  useEffect(() => { setCurrentPage(1); }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
+  // Reset accumulated jobs + page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setAccumulatedJobs([]);
+  }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
   // Auto-save non-trivial filters to localStorage
   useEffect(() => {
     const hasFilters = selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
@@ -798,10 +817,24 @@ export default function FindJobs() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategories, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
-  // Client-side filters applied on top of server-paginated results
-  // totalPages is derived from server total for accurate pagination
+  // Infinite scroll: load next page when sentinel enters viewport
+  const hasMore = accumulatedJobs.length < serverTotal;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetching && !isLoading) {
+          setCurrentPage(p => p + 1);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isFetching, isLoading]);
   const totalPages = Math.ceil(serverTotal / PAGE_SIZE);
-  // No local slice needed — server already returns the correct page
   const pagedJobs = jobs;
   // Total active filters: panel filters + quick chips (location, urgent, date)
   const activeFilterCount = [
@@ -1609,51 +1642,25 @@ export default function FindJobs() {
         )}
         </div>{/* end job list wrapper */}
 
-        {/* ── Pagination ─────────────────────────────────────────────────────── */}
-        {!isLoading && totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-6 mb-2" dir="rtl">
-            <button
-              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              disabled={currentPage === 1}
-              className="px-3 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-30"
-              style={{ background: currentPage === 1 ? 'oklch(0.94 0.02 122)' : 'oklch(0.35 0.08 122)', color: currentPage === 1 ? 'oklch(0.50 0.05 122)' : 'oklch(0.96 0.04 80)' }}
-            >
-              הקודם
-            </button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              // Show pages around current page
-              let pageNum: number;
-              if (totalPages <= 5) pageNum = i + 1;
-              else if (currentPage <= 3) pageNum = i + 1;
-              else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
-              else pageNum = currentPage - 2 + i;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="w-9 h-9 rounded-xl text-sm font-bold transition-all"
-                  style={currentPage === pageNum
-                    ? { background: 'oklch(0.35 0.08 122)', color: 'oklch(0.96 0.04 80)', boxShadow: '0 2px 8px oklch(0.28 0.06 122 / 0.3)' }
-                    : { background: 'white', color: 'oklch(0.30 0.05 122)', border: '1px solid oklch(0.88 0.02 122)' }
-                  }
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-            <button
-              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-30"
-              style={{ background: currentPage === totalPages ? 'oklch(0.94 0.02 122)' : 'oklch(0.35 0.08 122)', color: currentPage === totalPages ? 'oklch(0.50 0.05 122)' : 'oklch(0.96 0.04 80)' }}
-            >
-              הבא
-            </button>
+        {/* ── Infinite Scroll Sentinel ──────────────────────────────────────── */}
+        {/* Sentinel div: IntersectionObserver watches this to trigger next page load */}
+        <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+        {/* Loading indicator while fetching next page */}
+        {isFetching && !isLoading && (
+          <div className="flex items-center justify-center gap-2 py-4" aria-label="טוען משרות נוספות">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-2 h-2 rounded-full animate-bounce"
+                  style={{ background: 'oklch(0.45 0.10 122)', animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </div>
+            <span className="text-xs" style={{ color: 'oklch(0.55 0.04 122)' }}>טוען משרות נוספות...</span>
           </div>
         )}
-        {!isLoading && totalPages > 1 && (
-          <p className="text-center text-xs mt-1 mb-4" style={{ color: 'oklch(0.55 0.04 122)' }}>
-            עמוד {currentPage} מתוך {totalPages} ({jobs.length} משרות)
+        {/* End of results indicator */}
+        {!hasMore && !isLoading && jobs.length > 0 && (
+          <p className="text-center text-xs py-4" style={{ color: 'oklch(0.65 0.04 122)' }}>
+            הוצגו כל {serverTotal} המשרות
           </p>
         )}
 

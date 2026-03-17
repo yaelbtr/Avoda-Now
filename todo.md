@@ -2222,3 +2222,6 @@
 
 ## Calendar Redesign — AvodaNow Design Scale (2026-03-17)
 - [x] Redesign date filter calendar popover: mobile-friendly, glass-modal style, brand colors, AppButton variants, RTL
+
+## Calendar Swipe-to-Close on Mobile (2026-03-17)
+- [x] Convert date calendar to bottom sheet on mobile with swipe-to-close gesture

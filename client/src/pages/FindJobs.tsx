@@ -590,6 +590,26 @@ export default function FindJobs() {
     filterSwipeStartY.current = null;
     filterSwipeDy.current = 0;
   };
+  // Calendar bottom-sheet swipe (mobile)
+  const calSheetRef = useRef<HTMLDivElement>(null);
+  const calSwipeStartY = useRef<number | null>(null);
+  const calSwipeDy = useRef<number>(0);
+  const handleCalTouchStart = (e: React.TouchEvent) => { calSwipeStartY.current = e.touches[0].clientY; };
+  const handleCalTouchMove = (e: React.TouchEvent) => {
+    if (calSwipeStartY.current === null) return;
+    const dy = e.touches[0].clientY - calSwipeStartY.current;
+    calSwipeDy.current = dy;
+    if (dy > 0 && calSheetRef.current) calSheetRef.current.style.transform = `translateY(${dy}px)`;
+  };
+  const handleCalTouchEnd = () => {
+    if (calSwipeDy.current > 80) {
+      setCalendarOpen(false);
+    } else if (calSheetRef.current) {
+      calSheetRef.current.style.transform = "translateY(0)";
+    }
+    calSwipeStartY.current = null;
+    calSwipeDy.current = 0;
+  };
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(undefined);
@@ -1083,83 +1103,20 @@ export default function FindJobs() {
               <span>דחוף</span>
             </button>
 
-            {/* Date picker button */}
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
-                  style={dateFilter
-                    ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-                    : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
-                >
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  <span>{dateFilter ? formatDateFilterLabel(dateFilter) : "תאריך"}</span>
-                  {dateFilter && (
-                    <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setDateFilter(null); setCalendarRange(undefined); }} />
-                  )}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="p-0 rounded-2xl shadow-xl border-0"
-                align="start"
-                sideOffset={8}
-                style={{ zIndex: 50, width: "min(340px, 92vw)", background: "var(--page-bg)" }}
-              >
-                <div dir="rtl" className="p-4">
-                  {/* Title */}
-                  <p className="text-sm font-bold mb-3" style={{ color: "#4F583B" }}>בחר תאריך או טווח</p>
-                  {/* Quick presets */}
-                  <div className="flex gap-2 mb-4 flex-wrap">
-                    {[
-                      { key: "today", label: "היום" },
-                      { key: "tomorrow", label: "מחר" },
-                      { key: "this_week", label: "השבוע" },
-                    ].map(({ key, label }) => (
-                      <button key={key}
-                        onClick={() => { setDateFilter(dateFilter === key ? null : key); setCalendarRange(undefined); setCalendarOpen(false); }}
-                        className="px-3 py-1 rounded-full text-xs font-bold transition-all"
-                        style={dateFilter === key
-                          ? { background: "oklch(0.50 0.14 85)", color: "white", border: "1px solid oklch(0.50 0.14 85)" }
-                          : { background: "white", color: "#4F583B", border: "1px solid oklch(0.88 0.04 122)" }}
-                      >{label}</button>
-                    ))}
-                  </div>
-                  {/* Calendar */}
-                  <div dir="ltr" className="rounded-xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.88 0.04 122)" }}>
-                    <Calendar
-                      mode="range"
-                      selected={calendarRange}
-                      onSelect={(range) => {
-                        setCalendarRange(range);
-                        if (range?.from && range?.to) {
-                          const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                          setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
-                          setCalendarOpen(false);
-                        } else if (range?.from && !range?.to) {
-                          const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                          setDateFilter(fmt(range.from));
-                        }
-                      }}
-                      disabled={{ before: new Date() }}
-                      numberOfMonths={1}
-                    />
-                  </div>
-                  {/* Clear button */}
-                  {(dateFilter || calendarRange) && (
-                    <div className="mt-3">
-                      <AppButton
-                        variant="cta-outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => { setDateFilter(null); setCalendarRange(undefined); setCalendarOpen(false); }}
-                      >
-                        <X className="h-3.5 w-3.5" /> נקה תאריך
-                      </AppButton>
-                    </div>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
+            {/* Date picker button — opens bottom sheet on mobile, Popover on desktop */}
+            <button
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
+              style={dateFilter
+                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+              onClick={() => setCalendarOpen(true)}
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>{dateFilter ? formatDateFilterLabel(dateFilter) : "תאריך"}</span>
+              {dateFilter && (
+                <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setDateFilter(null); setCalendarRange(undefined); }} />
+              )}
+            </button>
 
             {/* Clear all — only when any quick filter is active (except קרוב אלי which is always green) */}
             {(showUrgentToday) && (
@@ -1981,6 +1938,97 @@ export default function FindJobs() {
         onLoginRequired={requireLogin}
         isAuthenticated={isAuthenticated}
       />
+
+      {/* ── Calendar Bottom Sheet (mobile & desktop) ─────────────────────── */}
+      <AnimatePresence>
+        {calendarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="cal-backdrop"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60]"
+              style={{ background: "rgba(0,0,0,0.45)" }}
+              onClick={() => setCalendarOpen(false)}
+            />
+            {/* Sheet */}
+            <motion.div
+              key="cal-sheet"
+              ref={calSheetRef}
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 320 }}
+              className="fixed bottom-0 left-0 right-0 z-[61] rounded-t-3xl overflow-hidden"
+              style={{ background: "var(--page-bg)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}
+              onTouchStart={handleCalTouchStart}
+              onTouchMove={handleCalTouchMove}
+              onTouchEnd={handleCalTouchEnd}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1 cursor-grab">
+                <div className="w-10 h-1 rounded-full" style={{ background: "oklch(0.80 0.03 122)" }} />
+              </div>
+              {/* Scrollable content */}
+              <div className="overflow-y-auto flex-1 px-5 pb-6" dir="rtl">
+                {/* Title row */}
+                <div className="flex items-center justify-between mb-4 pt-2">
+                  <p className="text-base font-bold" style={{ color: "#4F583B" }}>בחר תאריך או טווח</p>
+                  <button onClick={() => setCalendarOpen(false)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                    style={{ background: "oklch(0.92 0.04 122 / 0.5)" }}>
+                    <X className="h-4 w-4" style={{ color: "#4F583B" }} />
+                  </button>
+                </div>
+                {/* Quick presets */}
+                <div className="flex gap-2 mb-5 flex-wrap">
+                  {[
+                    { key: "today", label: "היום" },
+                    { key: "tomorrow", label: "מחר" },
+                    { key: "this_week", label: "השבוע" },
+                  ].map(({ key, label }) => (
+                    <button key={key}
+                      onClick={() => { setDateFilter(dateFilter === key ? null : key); setCalendarRange(undefined); setCalendarOpen(false); }}
+                      className="px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+                      style={dateFilter === key
+                        ? { background: "oklch(0.50 0.14 85)", color: "white", border: "1px solid oklch(0.50 0.14 85)" }
+                        : { background: "white", color: "#4F583B", border: "1px solid oklch(0.88 0.04 122)" }}
+                    >{label}</button>
+                  ))}
+                </div>
+                {/* Calendar */}
+                <div dir="ltr" className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid oklch(0.88 0.04 122)" }}>
+                  <Calendar
+                    mode="range"
+                    selected={calendarRange}
+                    onSelect={(range) => {
+                      setCalendarRange(range);
+                      if (range?.from && range?.to) {
+                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                        setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                        setCalendarOpen(false);
+                      } else if (range?.from && !range?.to) {
+                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                        setDateFilter(fmt(range.from));
+                      }
+                    }}
+                    disabled={{ before: new Date() }}
+                    numberOfMonths={1}
+                  />
+                </div>
+                {/* Clear button */}
+                {(dateFilter || calendarRange) && (
+                  <button
+                    className="mt-4 w-full py-3 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2"
+                    style={{ background: "#eef5e8", color: "#3a5c2e", border: "1.5px solid #c5dba8" }}
+                    onClick={() => { setDateFilter(null); setCalendarRange(undefined); setCalendarOpen(false); }}
+                  >
+                    <X className="h-4 w-4" /> נקה תאריך
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

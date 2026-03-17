@@ -166,41 +166,58 @@ function CalendarDayButton({
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);
 
+  // Determine if this cell is today and not selected (selected state has its own bg)
+  const isToday = modifiers.today;
+  const isSelected = modifiers.selected || modifiers.range_start || modifiers.range_end || modifiers.range_middle;
+
   return (
-    <Button
-      ref={ref}
-      variant="ghost"
-      size="icon"
-      data-day={day.date.toLocaleDateString()}
-      data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end &&
-        !modifiers.range_middle
-      }
-      data-range-start={modifiers.range_start}
-      data-range-end={modifiers.range_end}
-      data-range-middle={modifiers.range_middle}
-      className={cn(
-        // Base
-        "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full text-sm transition-all",
-        // Hover
-        "hover:bg-[oklch(0.92_0.04_122)] hover:text-[#1a2010]",
-        // Single selected
-        "data-[selected-single=true]:bg-[oklch(0.50_0.14_85)] data-[selected-single=true]:text-white data-[selected-single=true]:rounded-full data-[selected-single=true]:font-bold data-[selected-single=true]:shadow-sm",
-        // Range start / end
-        "data-[range-start=true]:bg-[oklch(0.50_0.14_85)] data-[range-start=true]:text-white data-[range-start=true]:rounded-r-full data-[range-start=true]:rounded-l-none data-[range-start=true]:font-bold",
-        "data-[range-end=true]:bg-[oklch(0.50_0.14_85)] data-[range-end=true]:text-white data-[range-end=true]:rounded-l-full data-[range-end=true]:rounded-r-none data-[range-end=true]:font-bold",
-        // Range middle
-        "data-[range-middle=true]:bg-[oklch(0.92_0.04_122)] data-[range-middle=true]:text-[#1a2010] data-[range-middle=true]:rounded-none",
-        // Focus ring
-        "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-[oklch(0.55_0.12_140/0.18)] group-data-[focused=true]/day:border-[oklch(0.55_0.12_140)]",
-        "[&>span]:text-xs [&>span]:opacity-70",
-        defaultClassNames.day,
-        className
+    <div className="relative flex items-center justify-center w-full aspect-square">
+      {/* Dashed circle for today — only when not selected */}
+      {isToday && !isSelected && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-full"
+          style={{
+            border: `1.5px dashed oklch(0.50 0.14 85)`,
+            borderRadius: "50%",
+          }}
+        />
       )}
-      {...props}
-    />
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon"
+        data-day={day.date.toLocaleDateString()}
+        data-selected-single={
+          modifiers.selected &&
+          !modifiers.range_start &&
+          !modifiers.range_end &&
+          !modifiers.range_middle
+        }
+        data-range-start={modifiers.range_start}
+        data-range-end={modifiers.range_end}
+        data-range-middle={modifiers.range_middle}
+        className={cn(
+          // Base
+          "flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal rounded-full text-sm transition-all",
+          // Hover
+          "hover:bg-[oklch(0.92_0.04_122)] hover:text-[#1a2010]",
+          // Single selected
+          "data-[selected-single=true]:bg-[oklch(0.50_0.14_85)] data-[selected-single=true]:text-white data-[selected-single=true]:rounded-full data-[selected-single=true]:font-bold data-[selected-single=true]:shadow-sm",
+          // Range start / end
+          "data-[range-start=true]:bg-[oklch(0.50_0.14_85)] data-[range-start=true]:text-white data-[range-start=true]:rounded-r-full data-[range-start=true]:rounded-l-none data-[range-start=true]:font-bold",
+          "data-[range-end=true]:bg-[oklch(0.50_0.14_85)] data-[range-end=true]:text-white data-[range-end=true]:rounded-l-full data-[range-end=true]:rounded-r-none data-[range-end=true]:font-bold",
+          // Range middle
+          "data-[range-middle=true]:bg-[oklch(0.92_0.04_122)] data-[range-middle=true]:text-[#1a2010] data-[range-middle=true]:rounded-none",
+          // Focus ring
+          "group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-[oklch(0.55_0.12_140/0.18)] group-data-[focused=true]/day:border-[oklch(0.55_0.12_140)]",
+          "[&>span]:text-xs [&>span]:opacity-70",
+          defaultClassNames.day,
+          className
+        )}
+        {...props}
+      />
+    </div>
   );
 }
 

@@ -2259,3 +2259,6 @@
 
 ## Single Geo Card Display
 - [x] Show only one card at a time: amber no-results card when no results, green geo card otherwise (mutual exclusion)
+
+## Calendar Today Indicator
+- [x] Mark today's date in the calendar bottom sheet with a dashed circle (iOS Calendar style)

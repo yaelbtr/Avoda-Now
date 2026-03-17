@@ -375,6 +375,21 @@ export default function WorkerProfile() {
     );
   }
 
+  // ── Error state (transient server error — show retry instead of broken page) ──
+  if (profileQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center px-4" dir="rtl">
+        <p className="text-muted-foreground text-sm">שגיאה בטעינת הפרופיל. אנא נסה שוב.</p>
+        <button
+          onClick={() => profileQuery.refetch()}
+          className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          נסה שוב
+        </button>
+      </div>
+    );
+  }
+
   // ── Wizard done screen ───────────────────────────────────────────────────────
   if (wizardDone) {
     return (

@@ -1187,56 +1187,95 @@ export default function FindJobs() {
         </AnimatePresence>
 
         {/* Active geo bar */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {userLat && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="mb-4 rounded-2xl overflow-hidden"
-              style={{ border: "1px solid oklch(0.50 0.18 160 / 0.25)" }}
-            >
-              {/* Top row: location label + radius chips */}
-              <div className="flex items-center justify-between gap-3 px-4 py-3"
-                style={{ background: "oklch(0.50 0.18 160 / 0.08)" }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-green-100 border border-green-300 flex items-center justify-center shrink-0">
-                    <MapPin className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-green-800">{geoCity ? `מציג עבודות ליד ${geoCity}` : "מציג עבודות קרוב אליך"}</p>
-                    <p className="text-xs text-green-600">בטווח {radiusKm} ק"מ</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {RADIUS_OPTIONS.map(r => (
-                    <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                      className="px-2 py-1 rounded-full text-xs font-medium transition-all"
-                      style={radiusKm === r.value ? { background: C_SUCCESS_HEX, color: "white" } : { background: "white", color: "#15803d", border: "1px solid #bbf7d0" }}>
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Bottom row: no-results expand suggestion — only when relevant */}
-              {autoExpandedRadius && jobs.length === 0 && !isLoading && (
-                <div className="flex items-start gap-3 px-4 py-3"
-                  style={{ background: "oklch(0.78 0.17 65 / 0.06)", borderTop: "1px solid oklch(0.78 0.17 65 / 0.20)" }}>
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
-                  <div className="flex-1">
-                    <p className="text-xs font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
-                    <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
-                        <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                          className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
-                          style={{ background: "white", borderColor: "oklch(0.78 0.17 65 / 0.4)", color: "oklch(0.40 0.12 65)" }}>
-                          {r.label}
-                        </button>
-                      ))}
+            showUrgentToday ? (
+              /* כשדחוף פעיל — כרטיס ענבר יחיד (ללא שני חלקים) */
+              <motion.div
+                key="urgent-geo"
+                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                className="mb-4 rounded-2xl overflow-hidden"
+                style={{ border: "1px solid oklch(0.78 0.17 65 / 0.35)" }}
+              >
+                <div className="flex items-center justify-between gap-3 px-4 py-3"
+                  style={{ background: "oklch(0.78 0.17 65 / 0.09)" }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "oklch(0.78 0.17 65 / 0.18)", border: "1px solid oklch(0.78 0.17 65 / 0.35)" }}>
+                      <MapPin className="h-4 w-4" style={{ color: "oklch(0.50 0.14 65)" }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.12 65)" }}>
+                        {geoCity ? `מציג עבודות ליד ${geoCity}` : "מציג עבודות קרוב אליך"}
+                      </p>
+                      <p className="text-xs" style={{ color: "oklch(0.55 0.10 65)" }}>בטווח {radiusKm} ק"מ</p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {RADIUS_OPTIONS.map(r => (
+                      <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
+                        className="px-2 py-1 rounded-full text-xs font-medium transition-all"
+                        style={radiusKm === r.value
+                          ? { background: "oklch(0.60 0.14 65)", color: "white" }
+                          : { background: "white", color: "oklch(0.45 0.12 65)", border: "1px solid oklch(0.78 0.17 65 / 0.40)" }}>
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </motion.div>
+              </motion.div>
+            ) : (
+              /* מצב רגיל — כרטיס ירוק עם חלק תחתון אופציונלי */
+              <motion.div
+                key="normal-geo"
+                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                className="mb-4 rounded-2xl overflow-hidden"
+                style={{ border: "1px solid oklch(0.50 0.18 160 / 0.25)" }}
+              >
+                {/* Top row: location label + radius chips */}
+                <div className="flex items-center justify-between gap-3 px-4 py-3"
+                  style={{ background: "oklch(0.50 0.18 160 / 0.08)" }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-green-100 border border-green-300 flex items-center justify-center shrink-0">
+                      <MapPin className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-green-800">{geoCity ? `מציג עבודות ליד ${geoCity}` : "מציג עבודות קרוב אליך"}</p>
+                      <p className="text-xs text-green-600">בטווח {radiusKm} ק"מ</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {RADIUS_OPTIONS.map(r => (
+                      <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
+                        className="px-2 py-1 rounded-full text-xs font-medium transition-all"
+                        style={radiusKm === r.value ? { background: C_SUCCESS_HEX, color: "white" } : { background: "white", color: "#15803d", border: "1px solid #bbf7d0" }}>
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Bottom row: no-results expand suggestion — only when relevant */}
+                {autoExpandedRadius && jobs.length === 0 && !isLoading && (
+                  <div className="flex items-start gap-3 px-4 py-3"
+                    style={{ background: "oklch(0.78 0.17 65 / 0.06)", borderTop: "1px solid oklch(0.78 0.17 65 / 0.20)" }}>
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
+                      <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
+                          <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
+                            className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
+                            style={{ background: "white", borderColor: "oklch(0.78 0.17 65 / 0.4)", color: "oklch(0.40 0.12 65)" }}>
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )
           )}
         </AnimatePresence>
 

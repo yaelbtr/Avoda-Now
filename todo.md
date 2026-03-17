@@ -2250,3 +2250,6 @@
 ## Merge Radius + Empty-State Messages
 - [x] Merge the two separate cards (radius selector + no-results) into a single combined card
 - [x] Update C_BORDER to #d4c799 (user-adjusted warm honey border)
+
+## Urgent Mode Geo Card
+- [x] When showUrgentToday is active, replace green geo card with single amber card (no two-section split)

@@ -1023,28 +1023,51 @@ export default function FindJobs() {
           className="mb-4"
         >
           <div
-            className="flex items-center gap-3 px-4 py-3.5 rounded-2xl"
-            style={{
-              background: "white",
-              border: `1.5px solid ${C_BORDER}`,
-              boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)",
-            }}
+            className="flex items-center gap-2"
           >
-            <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />
-            <input
-              type="search"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              placeholder="חפש לפי תפקיד, עיר, מילת מפתח..."
-              className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400"
-              style={{ color: "oklch(0.22 0.03 122.3)" }}
-              dir="rtl"
-            />
-            {searchText && (
-              <button onClick={() => setSearchText("")} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-            )}
+            {/* Search input — flex-1 so it shrinks to give room for filter button */}
+            <div
+              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
+              style={{
+                background: "white",
+                border: `1.5px solid ${C_BORDER}`,
+                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)",
+              }}
+            >
+              <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />
+              <input
+                type="search"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                placeholder="חפש לפי תפקיד, עיר, מילת מפתח..."
+                className="flex-1 min-w-0 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400"
+                style={{ color: "oklch(0.22 0.03 122.3)" }}
+                dir="rtl"
+              />
+              {searchText && (
+                <button onClick={() => setSearchText("")} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter button — inline with search box */}
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setFilterOpen(v => !v)}
+              className="relative flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 transition-all"
+              style={filterOpen || activeFilterCount > 0
+                ? { background: "white", color: "var(--brand)", border: `1.5px solid var(--brand)`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }
+                : { background: "white", color: "var(--muted-foreground)", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }}
+            >
+              <SlidersHorizontal className="h-5 w-5" />
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+                  style={{ background: C_DANGER_HEX, color: "white" }}
+                >{activeFilterCount}</span>
+              )}
+            </motion.button>
           </div>
         </motion.div>
 
@@ -1117,27 +1140,7 @@ export default function FindJobs() {
             )}
           </div>
 
-          {/* Divider removed per design */}
 
-          {/* Row 2: Single icon-only filter button */}
-          <div className="flex items-center justify-start pb-3 pt-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setFilterOpen(v => !v)}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full transition-all"
-              style={filterOpen || activeFilterCount > 0
-                ? { background: "transparent", color: "var(--brand)", border: "none" }
-                : { background: "transparent", color: "var(--muted-foreground)", border: "none" }}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              {activeFilterCount > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-                  style={{ background: C_DANGER_HEX, color: "white" }}
-                >{activeFilterCount}</span>
-              )}
-            </motion.button>
-          </div>
         </motion.div>
 
         {/* Progress bar — shown during refetch */}

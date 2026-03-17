@@ -2238,3 +2238,8 @@
 - [x] Add useEffect scroll listener to track scrollY > threshold
 - [x] Apply backdrop-blur + semi-transparent white bg + box-shadow to sticky toolbar when scrolled
 - [x] Smooth CSS transition between transparent and frosted-glass states
+
+## Toolbar Layout — Search + Filter in One Row
+- [x] Shorten search input (flex-1 instead of full width)
+- [x] Move SlidersHorizontal filter button into the search row (right side)
+- [x] Remove the standalone Row 2 filter button section

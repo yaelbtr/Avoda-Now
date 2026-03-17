@@ -2246,3 +2246,7 @@
 - [x] Filter button border matches search box exactly (same C_BORDER, same shadow)
 - [x] Chip pills row aligned to same left edge as search row (both inside sticky toolbar wrapper)
 - [x] Placeholder shortened to avoid truncation on small screens
+
+## Merge Radius + Empty-State Messages
+- [x] Merge the two separate cards (radius selector + no-results) into a single combined card
+- [x] Update C_BORDER to #d4c799 (user-adjusted warm honey border)

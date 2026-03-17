@@ -82,7 +82,7 @@ export const C_DARK_CARD       = "oklch(1 0 0 / 5%)";
 export const C_DARK_CARD_BORDER = "oklch(1 0 0 / 10%)";
 
 // ─── Border / divider ────────────────────────────────────────────────────────
-export const C_BORDER          = "#d6c99a";                   // warm honey border
+export const C_BORDER          = "#d4c799";                   // warm honey border (user-adjusted)
 export const C_BORDER_OKLCH    = "oklch(0.87 0.04 84.0)";
 export const C_BORDER_LIGHT    = "oklch(0.89 0.05 84.0)";
 

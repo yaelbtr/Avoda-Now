@@ -668,11 +668,11 @@ export default function FindJobs() {
   const categoriesParam = selectedCategories.length > 0 ? selectedCategories : undefined;
   const legacyCategoryParam = selectedCategories.length === 1 ? selectedCategories[0] : (category === "all" ? undefined : category);
   const searchQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: legacyCategoryParam, categories: categoriesParam, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: legacyCategoryParam, categories: categoriesParam, limit: PAGE_SIZE, page: currentPage, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: true }
   );
   const listQuery = trpc.jobs.list.useQuery(
-    { category: legacyCategoryParam, categories: categoriesParam, limit: 50, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
+    { category: legacyCategoryParam, categories: categoriesParam, limit: PAGE_SIZE, page: currentPage, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
     { enabled: !userLat }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
@@ -703,7 +703,9 @@ export default function FindJobs() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let jobs: AnyJob[] = userLat ? (((searchQuery.data as any)?.jobs ?? []) as AnyJob[]) : (((listQuery.data as any)?.jobs ?? []) as AnyJob[]);
+  const activeQueryData = userLat ? (searchQuery.data as any) : (listQuery.data as any);
+  let jobs: AnyJob[] = (activeQueryData?.jobs ?? []) as AnyJob[];
+  const serverTotal: number = activeQueryData?.total ?? 0;
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
   const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
   // Show full skeleton on first load; show overlay shimmer on subsequent refetches
@@ -796,8 +798,11 @@ export default function FindJobs() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategories, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
-  const totalPages = Math.ceil(jobs.length / PAGE_SIZE);
-  const pagedJobs = jobs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  // Client-side filters applied on top of server-paginated results
+  // totalPages is derived from server total for accurate pagination
+  const totalPages = Math.ceil(serverTotal / PAGE_SIZE);
+  // No local slice needed — server already returns the correct page
+  const pagedJobs = jobs;
   // Total active filters: panel filters + quick chips (location, urgent, date)
   const activeFilterCount = [
     selectedCategories.length > 0,

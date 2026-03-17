@@ -1031,27 +1031,9 @@ export default function FindJobs() {
             transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
           }}
         >
-          {/* Row 1: Search box + filter button — same border, same height */}
+          {/* Row 1: Search input first (RTL: right), then filter button (left) */}
           <div className="flex items-center gap-2 pb-3">
-            {/* Filter button — same border/shadow/height as search box */}
-            <motion.button
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setFilterOpen(v => !v)}
-              className="relative flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 transition-all"
-              style={filterOpen || activeFilterCount > 0
-                ? { background: "white", color: "var(--brand)", border: `1.5px solid var(--brand)`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }
-                : { background: "white", color: "var(--muted-foreground)", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }}
-            >
-              <SlidersHorizontal className="h-5 w-5" />
-              {activeFilterCount > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-                  style={{ background: C_DANGER_HEX, color: "white" }}
-                >{activeFilterCount}</span>
-              )}
-            </motion.button>
-
-            {/* Search input — flex-1 */}
+            {/* Search input — flex-1, placed first in DOM = rightmost in RTL */}
             <div
               className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
               style={{
@@ -1076,10 +1058,28 @@ export default function FindJobs() {
                 </button>
               )}
             </div>
+
+            {/* Filter button — identical border/shadow/height to search box, placed second = leftmost in RTL */}
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setFilterOpen(v => !v)}
+              className="relative flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 transition-all"
+              style={filterOpen || activeFilterCount > 0
+                ? { background: "white", color: "var(--brand)", border: `1.5px solid var(--brand)`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }
+                : { background: "white", color: "var(--muted-foreground)", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }}
+            >
+              <SlidersHorizontal className="h-5 w-5" />
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+                  style={{ background: C_DANGER_HEX, color: "white" }}
+                >{activeFilterCount}</span>
+              )}
+            </motion.button>
           </div>
 
-          {/* Row 2: Quick filter chip pills — aligned to same left edge as search row */}
-          <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          {/* Row 2: Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
+          <div className="flex items-center gap-2 pb-3 overflow-x-auto -mx-4 px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {/* קרוב אלי */}
             <button
               onClick={handleLocationButtonClick}

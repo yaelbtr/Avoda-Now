@@ -1,5 +1,9 @@
 import { motion } from "framer-motion";
-import { C_BORDER, C_SURFACE_HEX, S_CARD } from "@/lib/colors";
+
+// ── Design tokens (mirrors JobCard) ──────────────────────────────────────────
+const C_BORDER = "oklch(0.87 0.04 84.0)";
+const C_SURFACE = "#ffffff";
+const S_CARD = "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)";
 
 // ── Shimmer block ─────────────────────────────────────────────────────────────
 // Each block has its own shimmer sweep so they all animate in sync.
@@ -9,12 +13,14 @@ function Shimmer({
   rounded = "0.5rem",
   className = "",
   delay = 0,
+  style = {},
 }: {
   width?: string | number;
   height?: number;
   rounded?: string;
   className?: string;
   delay?: number;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
@@ -27,6 +33,7 @@ function Shimmer({
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
+        ...style,
       }}
     >
       <motion.div
@@ -44,7 +51,7 @@ function Shimmer({
   );
 }
 
-// ── Full JobCard skeleton ─────────────────────────────────────────────────────
+// ── Full JobCard skeleton — mirrors the "default" card variant ────────────────
 export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
     <motion.div
@@ -52,55 +59,62 @@ export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.28, ease: "easeOut", delay }}
+      className="rounded-2xl p-4 relative overflow-hidden"
       style={{
-        background: C_SURFACE_HEX,
+        background: C_SURFACE,
         border: `1px solid ${C_BORDER}`,
-        borderRadius: "1rem",
-        padding: "1rem",
         boxShadow: S_CARD,
       }}
       dir="rtl"
     >
-      {/* Top row: icon + title + badge */}
-      <div className="flex items-start gap-3 mb-3">
+      {/* ── Header: category icon + title/badges + salary ── */}
+      <div className="flex items-start justify-between gap-3 mb-2">
         {/* Category icon placeholder */}
         <Shimmer width={44} height={44} rounded="0.75rem" delay={delay} />
 
-        <div className="flex-1 space-y-2">
-          {/* Title */}
-          <Shimmer width="62%" height={16} delay={delay} />
-          {/* Business name */}
-          <Shimmer width="38%" height={12} delay={delay} />
+        {/* Title + badge row */}
+        <div className="flex-1 min-w-0 space-y-2">
+          <Shimmer width="62%" height={15} delay={delay} />
           {/* Badges row */}
-          <div className="flex gap-2 pt-1">
-            <Shimmer width={64} height={20} rounded="9999px" delay={delay} />
-            <Shimmer width={52} height={20} rounded="9999px" delay={delay} />
+          <div className="flex gap-1.5">
+            <Shimmer width={52} height={18} rounded="9999px" delay={delay} />
+            <Shimmer width={64} height={18} rounded="9999px" delay={delay} />
           </div>
         </div>
 
-        {/* Urgent badge placeholder */}
-        <Shimmer width={56} height={22} rounded="9999px" delay={delay} />
+        {/* Salary placeholder */}
+        <div className="shrink-0 flex flex-col items-end gap-1">
+          <Shimmer width={70} height={16} delay={delay} />
+          <Shimmer width={50} height={11} delay={delay} />
+        </div>
       </div>
 
-      {/* Info chips grid: location, time, salary, workers */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <Shimmer height={38} rounded="0.75rem" delay={delay} />
-        <Shimmer height={38} rounded="0.75rem" delay={delay} />
-        <Shimmer height={38} rounded="0.75rem" delay={delay} />
-        <Shimmer height={38} rounded="0.75rem" delay={delay} />
+      {/* ── Meta chips row (location · category · time · date) ── */}
+      <div
+        className="flex flex-wrap gap-x-3 gap-y-1.5 py-2 mb-2"
+        style={{
+          borderTop: "1px solid oklch(0.93 0.03 91.6)",
+          borderBottom: "1px solid oklch(0.93 0.03 91.6)",
+        }}
+      >
+        <Shimmer width={90} height={14} delay={delay} />
+        <Shimmer width={60} height={18} rounded="9999px" delay={delay} />
+        <Shimmer width={70} height={14} delay={delay} />
+        <Shimmer width={56} height={18} rounded="9999px" delay={delay} />
       </div>
 
-      {/* Description lines */}
-      <div className="space-y-2 mb-4">
-        <Shimmer width="100%" height={11} delay={delay} />
-        <Shimmer width="75%" height={11} delay={delay} />
+      {/* ── Time row ── */}
+      <div className="flex items-center justify-between mb-3">
+        <Shimmer width={80} height={11} delay={delay} />
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-2">
-        <Shimmer width="50%" height={38} rounded="0.75rem" delay={delay} />
-        <Shimmer width="25%" height={38} rounded="0.75rem" delay={delay} />
-        <Shimmer width="25%" height={38} rounded="0.75rem" delay={delay} />
+      {/* ── Action buttons row ── */}
+      <div className="flex items-center gap-2 w-full">
+        <Shimmer width={80} height={34} rounded="9999px" delay={delay} />
+        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
+        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
+        <div className="flex-1" />
+        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
       </div>
     </motion.div>
   );

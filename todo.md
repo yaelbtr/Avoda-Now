@@ -2228,3 +2228,8 @@
 
 ## JobCard Date/Day Badge (2026-03-17)
 - [x] Add prominent date/work-day badge to JobCard in AvodaNow design scale style
+
+## Skeleton Loading State (FindJobs)
+- [x] Update JobCardSkeleton to match current card variant layout (header, meta chips, date badge, action row)
+- [x] Verify JobCardSkeletonList is used in FindJobs showSkeleton branch
+- [x] Ensure shimmer animation uses AvodaNow design tokens

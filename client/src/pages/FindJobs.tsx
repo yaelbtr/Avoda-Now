@@ -1027,7 +1027,7 @@ export default function FindJobs() {
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
           className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
-          style={{ background: "#f5f5f5", backdropFilter: "blur(10px)", borderBottom: "1px solid #e0e0e0" }}
+          style={{ background: "transparent", borderBottom: "1px solid #e0e0e0" }}
         >
           {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
           <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>

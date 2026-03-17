@@ -1081,8 +1081,29 @@ export default function FindJobs() {
               );
             })}
 
+            {/* Shift chips: בוקר / ערב / לילה */}
+            {([{ value: "morning", label: "בוקר", icon: "🌅" }, { value: "evening", label: "ערב", icon: "🌆" }, { value: "night", label: "לילה", icon: "🌙" }] as const).map(({ value, label, icon }) => {
+              const active = selectedTimeSlots.includes(value);
+              return (
+                <button
+                  key={value}
+                  onClick={() => setSelectedTimeSlots(prev =>
+                    prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
+                  )}
+                  className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+                  style={active
+                    ? { background: "oklch(0.38 0.07 250)", color: "white", border: "1.5px solid oklch(0.38 0.07 250)", boxShadow: "0 2px 8px oklch(0.28 0.06 250 / 0.25)" }
+                    : { background: "white", color: "oklch(0.40 0.08 122)", border: `1.5px solid ${C_BORDER}` }
+                  }
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+
             {/* Clear-all chip — visible only when any filter is active */}
-            {(showUrgentToday || dateFilter !== null || (sortBy !== "default" && sortBy !== "date") || !!userLat) && (
+            {(showUrgentToday || dateFilter !== null || (sortBy !== "default" && sortBy !== "date") || !!userLat || selectedTimeSlots.length > 0) && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1096,6 +1117,7 @@ export default function FindJobs() {
                   setUserLng(null);
                   clearLocationCache();
                   setAutoExpandedRadius(false);
+                  setSelectedTimeSlots([]);
                 }}
                 className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
                 style={{ background: "oklch(0.96 0.02 30)", color: "oklch(0.45 0.12 25)", border: "1.5px solid oklch(0.85 0.05 25)" }}

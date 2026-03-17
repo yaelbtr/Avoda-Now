@@ -1031,31 +1031,31 @@ export default function FindJobs() {
         >
           {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
           <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {/* קרוב אלי — always solid dark-green (matches mockup) */}
+            {/* קרוב אלי */}
             <button
               onClick={handleLocationButtonClick}
               disabled={locating}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
               style={userLat
-                ? { background: "#3a5c2e", color: "white" }
-                : { background: "#3a5c2e", color: "white" }}
+                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }}
             >
-              {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3.5 w-3.5" />}
+              {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
               <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
               {userLat && (
                 <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
               )}
             </button>
 
-            {/* דחוף — white pill with bolt icon */}
+            {/* דחוף */}
             <button
               onClick={() => setShowUrgentToday(v => !v)}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
               style={showUrgentToday
-                ? { background: "#3a5c2e", color: "white" }
-                : { background: "white", color: "#222", border: "1.5px solid #d0d0d0" }}
+                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
             >
-              <Zap className="h-3.5 w-3.5" style={showUrgentToday ? {} : { color: "#f59e0b" }} />
+              <Zap className="h-3 w-3" style={showUrgentToday ? {} : { color: "#f59e0b" }} />
               <span>דחוף</span>
             </button>
 
@@ -1063,10 +1063,10 @@ export default function FindJobs() {
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <button
-                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
                   style={dateFilter
-                    ? { background: "#3a5c2e", color: "white" }
-                    : { background: "white", color: "#222", border: "1.5px solid #d0d0d0" }}
+                    ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                    : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
                 >
                   <CalendarDays className="h-3.5 w-3.5" />
                   <span>{dateFilter ? formatDateFilterLabel(dateFilter) : "תאריך"}</span>
@@ -1126,9 +1126,9 @@ export default function FindJobs() {
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.18 }}
                 onClick={() => { setShowUrgentToday(false); }}
-                className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm font-semibold transition-all"
-                style={{ background: "#fff", color: "#888", border: "1.5px solid #d0d0d0" }}
-              ><X className="h-3.5 w-3.5" /></motion.button>
+                className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold transition-all"
+                style={{ background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+              ><X className="h-3 w-3" /></motion.button>
             )}
           </div>
 

@@ -2213,3 +2213,6 @@
 - [x] Extend dateFilter type to support ISO date strings and ranges (YYYY-MM-DD:YYYY-MM-DD)
 - [x] Update backend db.ts and routers.ts to handle specific date / range filters
 - [x] Add date section (collapsible) to filter bottom sheet
+
+## FindJobs Toolbar Pill Style Update (2026-03-17)
+- [x] Match pill style to HomeWorker "חדש בסביבה" chips: active=dark green bg+white text, inactive=white+gray border, rounded-full, text-xs font-bold, px-3 py-1

@@ -2256,3 +2256,6 @@
 
 ## Separate Geo Card and No-Results Card
 - [x] Split merged two-section card into two fully independent cards (green geo card + separate amber no-results card)
+
+## Single Geo Card Display
+- [x] Show only one card at a time: amber no-results card when no results, green geo card otherwise (mutual exclusion)

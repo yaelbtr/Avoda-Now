@@ -1186,10 +1186,33 @@ export default function FindJobs() {
           )}
         </AnimatePresence>
 
-        {/* Active geo bar */}
-        {/* Card 1: Geo location bar — always shown when userLat is set */}
-        <AnimatePresence>
-          {userLat && (
+        {/* Single geo card — mutual exclusion: no-results card OR geo card, never both */}
+        <AnimatePresence mode="wait">
+          {userLat && autoExpandedRadius && jobs.length === 0 && !isLoading ? (
+            /* No-results card: shown when geo is active but no jobs found */
+            <motion.div
+              key="expand-card"
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+              className="flex items-start gap-3 rounded-2xl px-4 py-3 mb-3"
+              style={{ background: "oklch(0.78 0.17 65 / 0.07)", border: "1px solid oklch(0.78 0.17 65 / 0.28)" }}
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
+              <div className="flex-1">
+                <p className="text-xs font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
+                <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
+                    <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
+                      className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
+                      style={{ background: "white", borderColor: "oklch(0.78 0.17 65 / 0.4)", color: "oklch(0.40 0.12 65)" }}>
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ) : userLat ? (
+            /* Geo card: shown when geo is active and there are results (or still loading) */
             <motion.div
               key="geo-card"
               initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
@@ -1232,34 +1255,7 @@ export default function FindJobs() {
                 </div>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Card 2: No-results expand suggestion — independent card, shown only when relevant */}
-        <AnimatePresence>
-          {autoExpandedRadius && userLat && jobs.length === 0 && !isLoading && (
-            <motion.div
-              key="expand-card"
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className="flex items-start gap-3 rounded-2xl px-4 py-3 mb-3"
-              style={{ background: "oklch(0.78 0.17 65 / 0.07)", border: "1px solid oklch(0.78 0.17 65 / 0.28)" }}
-            >
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
-              <div className="flex-1">
-                <p className="text-xs font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
-                <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
-                    <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                      className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
-                      style={{ background: "white", borderColor: "oklch(0.78 0.17 65 / 0.4)", color: "oklch(0.40 0.12 65)" }}>
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
 
         {/* Filter panel */}

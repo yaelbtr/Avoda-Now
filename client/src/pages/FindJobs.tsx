@@ -950,23 +950,7 @@ export default function FindJobs() {
               ].join(" "),
             }}
           />
-          {/* Badge — top center */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-            style={{
-              transform: "translateX(-50%)",
-              background: "oklch(1 0 0 / 0.14)",
-              border: "1px solid oklch(1 0 0 / 0.30)",
-              boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <Zap className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
-            <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
-              {selectedCity ? `עבודות ב${selectedCity} — תוך דקות` : category !== "all" ? `עבודות ${catName} — תוך דקות` : "עבודות בית ואירועים — תוך דקות"}
-            </span>
-          </motion.div>
+          {/* Badge removed per design */}
           {/* Headline — centered, single line */}
           <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "50%", transform: "translateY(-50%)" }}>
             <motion.h1
@@ -1005,31 +989,23 @@ export default function FindJobs() {
                 className="mb-4"
               >
                 <Link href="/worker-profile">
-                  <motion.div
-                    animate={{ boxShadow: ["0 0 0px 0px rgba(181,134,42,0)", "0 0 12px 4px rgba(181,134,42,0.35)", "0 0 0px 0px rgba(181,134,42,0)"] }}
-                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                    className="rounded-2xl"
-                    style={{ padding: "2px", background: "linear-gradient(135deg, #b5862a 0%, #e8c96a 50%, #b5862a 100%)" }}
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.99]"
+                    style={{
+                      background: "oklch(0.96 0.04 122)",
+                      border: "1.5px solid oklch(0.88 0.08 122)",
+                      boxShadow: "0 2px 12px oklch(0.50 0.14 85 / 0.10)",
+                    }}
                   >
-                    <div className="relative flex items-center gap-3 px-4 py-3 rounded-[14px] cursor-pointer overflow-hidden" style={{ background: "#fffdf7" }}>
-                      <motion.div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{ background: "linear-gradient(105deg, transparent 30%, rgba(255,220,100,0.25) 50%, transparent 70%)", backgroundSize: "200% 100%" }}
-                        animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
-                        transition={{ duration: 2.8, repeat: Infinity, ease: "linear", repeatDelay: 1.2 }}
-                      />
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #3a5c2a 0%, #2c4820 100%)" }}>
-                        <Briefcase className="h-5 w-5" style={{ color: "#d4a843" }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black" style={{ color: "#1e3318" }}>השלם את הפרופיל שלך</p>
-                        <p className="text-xs mt-0.5 leading-snug" style={{ color: "#4a6b3a" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
-                      </div>
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }} className="shrink-0 px-4 py-2 rounded-xl text-xs font-black" style={{ background: "linear-gradient(135deg, #3a5c2a 0%, #2c4820 100%)", color: "#d4a843", boxShadow: "0 2px 8px rgba(44,72,32,0.3)" }}>
-                        עדכן עכשיו
-                      </motion.div>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "oklch(0.50 0.14 85)", color: "white" }}>
+                      <Briefcase className="h-4 w-4" />
                     </div>
-                  </motion.div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold" style={{ color: "oklch(0.28 0.06 122)" }}>השלם את הפרופיל שלך</p>
+                      <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.06 122)" }}>הוסף קטגוריות ומיקום להתאמות טובות יותר</p>
+                    </div>
+                    <span className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: "oklch(0.50 0.14 85)", color: "white" }}>עדכן</span>
+                  </div>
                 </Link>
               </motion.div>
             );
@@ -1071,7 +1047,7 @@ export default function FindJobs() {
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
           className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
-          style={{ background: "transparent", borderBottom: "1px solid #e0e0e0" }}
+          style={{ background: "transparent", borderBottom: "none" }}
         >
           {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
           <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
@@ -1138,8 +1114,8 @@ export default function FindJobs() {
               onClick={() => setFilterOpen(v => !v)}
               className="relative flex items-center justify-center w-9 h-9 rounded-full transition-all"
               style={filterOpen || activeFilterCount > 0
-                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-                : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+                ? { background: "transparent", color: "var(--brand)", border: "none" }
+                : { background: "transparent", color: "var(--muted-foreground)", border: "none" }}
             >
               <SlidersHorizontal className="h-4 w-4" />
               {activeFilterCount > 0 && (
@@ -1666,7 +1642,7 @@ export default function FindJobs() {
               style={{ background: "oklch(0.78 0.17 65 / 0.08)", border: "1px solid oklch(0.78 0.17 65 / 0.25)" }}>
               <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
               <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
+                <p className="text-sm font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות דחופות בטווח {radiusKm} ק"מ</p>
                 <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (

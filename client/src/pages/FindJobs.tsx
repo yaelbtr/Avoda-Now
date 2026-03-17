@@ -1006,22 +1006,22 @@ export default function FindJobs() {
           </div>
         </motion.div>
 
-        {/* ── NEW TOOLBAR: Quick pills row + Dropdown chips row ── */}
+        {/* ── TOOLBAR: Exact mockup layout ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.2 }}
-          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-2"
-          style={{ background: "oklch(0.97 0.01 84 / 0.97)", backdropFilter: "blur(10px)", borderBottom: "1px solid oklch(0.90 0.03 84 / 0.6)" }}
+          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
+          style={{ background: "#f5f5f5", backdropFilter: "blur(10px)", borderBottom: "1px solid #e0e0e0" }}
         >
-          {/* Row 1: Quick filter pills — קרוב אלי, דחוף, היום, מחר + clear-all */}
-          <div className="flex items-center gap-2 pb-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {/* קרוב אלי */}
+          {/* Row 1: Quick filter pills — RTL order: קרוב אלי (green, first-right), דחוף, היום, מחר */}
+          <div className="flex items-center gap-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* קרוב אלי — always solid dark-green (matches mockup) */}
             <button
               onClick={handleLocationButtonClick}
               disabled={locating}
               className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={userLat
-                ? { background: "oklch(0.38 0.07 125.0)", color: "white", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
+                ? { background: "#3a5c2e", color: "white" }
+                : { background: "#3a5c2e", color: "white" }}
             >
               {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3.5 w-3.5" />}
               <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
@@ -1030,15 +1030,15 @@ export default function FindJobs() {
               )}
             </button>
 
-            {/* דחוף */}
+            {/* דחוף — white pill with bolt icon */}
             <button
               onClick={() => setShowUrgentToday(v => !v)}
               className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={showUrgentToday
-                ? { background: "linear-gradient(135deg, #ef4444 0%, #f97316 100%)", color: "white" }
-                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
+                ? { background: "#3a5c2e", color: "white" }
+                : { background: "white", color: "#222", border: "1.5px solid #d0d0d0" }}
             >
-              <Flame className="h-3.5 w-3.5" style={showUrgentToday ? {} : { color: "#ef4444" }} />
+              <Zap className="h-3.5 w-3.5" style={showUrgentToday ? {} : { color: "#f59e0b" }} />
               <span>דחוף</span>
             </button>
 
@@ -1051,28 +1051,19 @@ export default function FindJobs() {
                   onClick={() => setDateFilter(active ? null : val)}
                   className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
                   style={active
-                    ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                    : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
+                    ? { background: "#3a5c2e", color: "white" }
+                    : { background: "white", color: "#222", border: "1.5px solid #d0d0d0" }}
                 >{label}</button>
               );
             })}
 
-            {/* השבוע */}
-            <button
-              onClick={() => setDateFilter(dateFilter === "this_week" ? null : "this_week")}
-              className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
-              style={dateFilter === "this_week"
-                ? { background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.06 80)", boxShadow: "0 2px 8px oklch(0.28 0.06 122 / 0.25)" }
-                : { background: "white", color: "oklch(0.30 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
-            >השבוע</button>
-
-            {/* Clear all — only when any quick filter is active */}
-            {(showUrgentToday || !!dateFilter || !!userLat) && (
+            {/* Clear all — only when any quick filter is active (except קרוב אלי which is always green) */}
+            {(showUrgentToday || !!dateFilter) && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.18 }}
-                onClick={() => { setShowUrgentToday(false); setDateFilter(null); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }}
+                onClick={() => { setShowUrgentToday(false); setDateFilter(null); }}
                 className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-full text-sm font-semibold transition-all"
-                style={{ background: "oklch(0.96 0.02 30)", color: "oklch(0.45 0.12 25)", border: "1.5px solid oklch(0.85 0.05 25)" }}
+                style={{ background: "#fff", color: "#888", border: "1.5px solid #d0d0d0" }}
               ><X className="h-3.5 w-3.5" /></motion.button>
             )}
           </div>
@@ -1080,15 +1071,15 @@ export default function FindJobs() {
           {/* Divider */}
           <div className="-mx-4 border-t" style={{ borderColor: "oklch(0.90 0.03 84 / 0.5)" }} />
 
-          {/* Row 2: Dropdown chips — קטגוריה, מיקום, שעות, ימים + sort + filter */}
-          <div className="flex items-center gap-2 pt-2 pb-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          {/* Row 2: Dropdown chips — קטגוריה, מיקום, שעות, ימים (no sort pills) */}
+          <div className="flex items-center gap-2 pt-2 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {/* קטגוריה chip */}
             <button
               onClick={() => { setOpenFilterSection(s => s === "categories" ? null : "categories"); setFilterOpen(true); }}
               className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={selectedCategories.length > 0
-                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
-                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
+                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
             >
               <span>קטגוריה{selectedCategories.length > 0 ? ` (${selectedCategories.length})` : ""}</span>
               <ChevronDown className="h-3 w-3" />
@@ -1099,8 +1090,8 @@ export default function FindJobs() {
               onClick={() => { setOpenFilterSection(s => s === "location" ? null : "location"); setFilterOpen(true); }}
               className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={(!!selectedCity || !!userLat)
-                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
-                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
+                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
             >
               <span>{selectedCity ? selectedCity : userLat ? (geoCity ?? "קרוב אלי") : "מיקום"}</span>
               <ChevronDown className="h-3 w-3" />
@@ -1111,8 +1102,8 @@ export default function FindJobs() {
               onClick={() => { setOpenFilterSection(s => s === "hours" ? null : "hours"); setFilterOpen(true); }}
               className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={selectedTimeSlots.length > 0
-                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
-                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
+                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
             >
               <span>שעות{selectedTimeSlots.length > 0 ? ` (${selectedTimeSlots.length})` : ""}</span>
               <ChevronDown className="h-3 w-3" />
@@ -1123,48 +1114,12 @@ export default function FindJobs() {
               onClick={() => { setOpenFilterSection(s => s === "days" ? null : "days"); setFilterOpen(true); }}
               className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
               style={selectedDays.length > 0
-                ? { background: "oklch(0.92 0.04 122)", color: "oklch(0.28 0.06 122)", border: "1.5px solid oklch(0.75 0.08 122)" }
-                : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
+                ? { background: "#d4e8c2", color: "#2d5016", border: "1.5px solid #8fbc5a" }
+                : { background: "white", color: "#444", border: "1px solid #d0d0d0" }}
             >
               <span>ימים{selectedDays.length > 0 ? ` (${selectedDays.length})` : ""}</span>
               <ChevronDown className="h-3 w-3" />
             </button>
-
-            {/* Sort pills — compact */}
-            <div className="flex items-center gap-1 mr-auto shrink-0">
-              {([
-                { key: "date",     label: "תאריך" },
-                { key: "salary",   label: "שכר" },
-                ...(userLat ? [{ key: "distance", label: "מרחק" }] : []),
-              ] as { key: typeof sortBy; label: string }[]).map(({ key, label }) => {
-                const active = sortBy === key;
-                return (
-                  <button key={key}
-                    onClick={() => setSortBy(prev => prev === key ? "default" : key)}
-                    className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                    style={active
-                      ? { background: "oklch(0.38 0.07 125.0)", color: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.38 0.07 125.0)" }
-                      : { background: "oklch(0.95 0.01 84)", color: "oklch(0.40 0.04 122)", border: `1px solid ${C_BORDER}` }}
-                  >{label}</button>
-                );
-              })}
-            </div>
-
-            {/* סנן button — always visible */}
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              onClick={() => setFilterOpen(v => !v)}
-              className="relative shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all"
-              style={filterOpen
-                ? { background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)", color: "oklch(0.96 0.04 80)", boxShadow: "0 4px 16px oklch(0.28 0.06 122 / 0.35)" }
-                : { background: "white", border: `1.5px solid ${C_BORDER}`, color: "oklch(0.30 0.05 122)" }}
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span>סנן</span>
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
-                  style={{ background: C_DANGER_HEX, color: "white" }}>{activeFilterCount}</span>
-              )}
-            </motion.button>
           </div>
         </motion.div>
 
@@ -1598,24 +1553,35 @@ export default function FindJobs() {
 
         {/* ── (profile banner moved above search bar) ── */}
 
-        {/* Results header */}
-        <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-base font-black" style={{ color: "oklch(0.22 0.03 122.3)" }}>
-            {isLoading ? "מחפש משרות..." : jobs.length === 0 ? "לא נמצאו משרות" : `${jobs.length} משרות`}
-          </h2>
-          {showUrgentToday && !isLoading && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
-              🔥 דחוף
-            </span>
-          )}
-          {hasSavedFilters && activeFilterCount > 0 && !isLoading && (
-            <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
-              style={{ background: "oklch(0.94 0.04 210 / 0.6)", color: "oklch(0.38 0.10 210)", border: "1px solid oklch(0.82 0.08 210 / 0.4)" }}
+        {/* Results header — matches mockup: count right, סנן לפי sort left */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {/* Sort selector — left side */}
+            <span className="text-xs text-gray-400 font-medium">סנן לפי</span>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="text-xs font-semibold border-0 bg-transparent outline-none cursor-pointer"
+              style={{ color: "#3a5c2e" }}
             >
-              💾 מסנן שמור
-            </span>
-          )}
+              <option value="date">תאריך</option>
+              <option value="salary">שכר</option>
+              {userLat && <option value="distance">מרחק</option>}
+            </select>
+          </div>
+          {/* Results count — right side */}
+          <div className="flex items-center gap-1.5">
+            {isLoading ? (
+              <span className="text-sm text-gray-400">מחפש...</span>
+            ) : (
+              <span className="text-sm font-bold" style={{ color: "#222" }}>
+                {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
+              </span>
+            )}
+            {showUrgentToday && !isLoading && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>דחוף</span>
+            )}
+          </div>
         </div>
 
         {/* Quick chips shown below results header when filter is closed */}

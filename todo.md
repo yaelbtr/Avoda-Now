@@ -2181,3 +2181,9 @@
 - [x] Dropdown chips open the filter panel to the matching section when clicked
 - [x] Active state on chips shows count badge (e.g. "קטגוריה (2)")
 - [x] Clear-all X button appears in quick pills row when any quick filter is active
+
+## FindJobs Toolbar Pixel-Perfect Fix (2026-03-17)
+- [x] Row 1: קרוב אלי (solid green, first), דחוף (bolt icon), היום, מחר — white pills with border, no sort pills
+- [x] Row 2: dropdown chips (קטגוריה, מיקום, שעות, ימים) with chevron, gray bg
+- [x] Row 3: "X משרות נמצאו" right + "סנן לפי" left — as a separate bar below toolbar
+- [x] Remove sort pills from toolbar (move sort to סנן לפי dropdown in results bar)

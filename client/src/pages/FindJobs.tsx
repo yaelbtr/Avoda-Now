@@ -1046,7 +1046,7 @@ export default function FindJobs() {
             </motion.button>
           </div>
 
-          {/* Row 2: urgent chip + date chips */}
+          {/* Row 2: urgent chip + date chips + clear-all */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {/* Urgent chip */}
             <button
@@ -1080,6 +1080,30 @@ export default function FindJobs() {
                 </button>
               );
             })}
+
+            {/* Clear-all chip — visible only when any filter is active */}
+            {(showUrgentToday || dateFilter !== null || (sortBy !== "default" && sortBy !== "date") || !!userLat) && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.18 }}
+                onClick={() => {
+                  setShowUrgentToday(false);
+                  setDateFilter(null);
+                  setSortBy("date");
+                  setUserLat(null);
+                  setUserLng(null);
+                  clearLocationCache();
+                  setAutoExpandedRadius(false);
+                }}
+                className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+                style={{ background: "oklch(0.96 0.02 30)", color: "oklch(0.45 0.12 25)", border: "1.5px solid oklch(0.85 0.05 25)" }}
+              >
+                <X className="h-3 w-3" />
+                <span>נקה הכל</span>
+              </motion.button>
+            )}
           </div>
         </motion.div>
 

@@ -657,9 +657,9 @@ export async function getActiveJobs(
     ? categories
     : (category && category !== "all" ? [category] : []);
   if (effectiveCategories.length === 1) {
-    conditions.push(eq(jobs.category, effectiveCategories[0] as Job["category"]));
+    conditions.push(eq(jobs.category, effectiveCategories[0] as string));
   } else if (effectiveCategories.length > 1) {
-    conditions.push(inArray(jobs.category, effectiveCategories as Array<Job["category"]>)); // multi-category
+    conditions.push(inArray(jobs.category, effectiveCategories as string[])); // multi-category
   }
   // Multi-city filter takes precedence over single city
   const effectiveCities = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
@@ -758,9 +758,9 @@ export async function getJobsNearLocation(
     ? categories
     : (category && category !== "all" ? [category] : []);
   if (effectiveCategoriesNear.length === 1) {
-    conditions.push(eq(jobs.category, effectiveCategoriesNear[0] as Job["category"]));
+    conditions.push(eq(jobs.category, effectiveCategoriesNear[0] as string));
   } else if (effectiveCategoriesNear.length > 1) {
-    conditions.push(inArray(jobs.category, effectiveCategoriesNear as Array<Job["category"]>));
+    conditions.push(inArray(jobs.category, effectiveCategoriesNear as string[]));
   }
   // Multi-city filter takes precedence over single city
   const effectiveCitiesNear = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
@@ -945,7 +945,7 @@ export async function getUrgentJobs(limit = 20, category?: string) {
     eq(jobs.isUrgent, true),
   ];
   if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as Job["category"]));
+    conditions.push(eq(jobs.category, category as string));
   }
   return db
     .select()
@@ -1084,7 +1084,7 @@ export async function getTodayJobs(limit = 50, category?: string) {
     )!,
   ];
   if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as Job["category"]));
+    conditions.push(eq(jobs.category, category as string));
   }
   return db
     .select()

@@ -44,7 +44,9 @@ export const notificationPrefsEnum = pgEnum("notification_prefs", [
   "sms_only",
   "none",
 ]);
-export const jobCategoryEnum = pgEnum("job_category", [
+// NOTE: category is stored as a free-form varchar that matches the `categories.slug` column.
+// Do NOT use a pgEnum here — the categories table is the single source of truth for valid slugs.
+export const JOB_CATEGORY_SLUGS = [
   "delivery",
   "warehouse",
   "agriculture",
@@ -60,8 +62,14 @@ export const jobCategoryEnum = pgEnum("job_category", [
   "emergency_support",
   "passover_jobs",
   "reserve_families",
+  "gardening",
+  "serving",
+  "electricity",
+  "plumbing",
+  "moving",
   "other",
-]);
+] as const;
+export type JobCategory = typeof JOB_CATEGORY_SLUGS[number];
 export const salaryTypeEnum = pgEnum("salary_type", [
   "hourly",
   "daily",
@@ -228,7 +236,8 @@ export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull(),
-  category: jobCategoryEnum("category").notNull(),
+  /** Category slug — matches categories.slug (free-form varchar, not enum) */
+  category: varchar("category", { length: 64 }).notNull(),
   address: varchar("address", { length: 300 }).notNull(),
   city: varchar("city", { length: 100 }),
   latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),

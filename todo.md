@@ -2262,3 +2262,9 @@
 
 ## Calendar Today Indicator
 - [x] Mark today's date in the calendar bottom sheet with a dashed circle (iOS Calendar style)
+
+## SQL Query Fixes
+- [x] Fix today-filter query error (startDateTime range + category filter)
+- [x] Fix category-only query error (category IN filter)
+- [x] Fix geo-distance query error (ST_Distance / ST_DWithin)
+- [x] Convert jobs.category from job_category enum to varchar(64) to support dynamic categories table

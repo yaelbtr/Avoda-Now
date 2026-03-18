@@ -871,7 +871,7 @@ export default function FindJobs() {
             <div className="flex-1">
               <motion.h1
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-                className="text-xl font-black leading-tight"
+                className="text-xl font-black leading-tight text-center"
                 style={{ color: "white", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}
               >
                 {selectedCity ? (
@@ -879,7 +879,7 @@ export default function FindJobs() {
                 ) : category !== "all" ? (
                   <>עבודות <span style={{ color: "oklch(0.88 0.13 70)" }}>{catName}</span></>
                 ) : (
-                  <>מצא <span style={{ color: "oklch(0.88 0.13 70)" }}>עבודה זמנית</span> באזורך</>
+                  <>מצא עבודה זמנית באזורך</>
                 )}
               </motion.h1>
 

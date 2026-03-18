@@ -2288,3 +2288,8 @@
 ## Carousel Swipe Gesture
 - [x] Add drag/swipe gesture to EmptyStateCarousel using framer-motion (left/right swipe changes slide)
 - [x] Pause auto-rotate on drag, resume after release
+
+## Chip Row Fade-Out Edge Effect
+- [x] Wrap chip scroll row in a relative container with CSS mask-image fade on the left edge
+- [x] Dynamically show/hide fade based on whether there is overflow content to the left (scroll position)
+- [x] Ensure RTL-correct fade direction (fade on the left = end of scroll direction in RTL)

@@ -502,6 +502,25 @@ export default function FindJobs() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Chip row: track whether there is hidden content to the left (RTL end side)
+  useEffect(() => {
+    const el = chipRowRef.current;
+    if (!el) return;
+    const check = () => {
+      // In RTL, scrollLeft can be negative (Firefox) or positive (Chrome) depending on browser
+      // scrollLeft === 0 means scrolled to the rightmost position (start in RTL)
+      // Any non-zero value means there is content hidden to the left
+      const hasLeft = Math.abs(el.scrollLeft) > 4;
+      setChipRowCanScrollLeft(hasLeft);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    // Also re-check when chips change (resize observer)
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
+  }, []);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
   // AnyJob type — defined here so it can be used in state declarations below
@@ -510,6 +529,8 @@ export default function FindJobs() {
   // Accumulated jobs across pages for infinite scroll
   const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const chipRowRef = useRef<HTMLDivElement | null>(null);
+  const [chipRowCanScrollLeft, setChipRowCanScrollLeft] = useState(false);
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | "date" | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
@@ -956,7 +977,19 @@ export default function FindJobs() {
           </div>
 
           {/* Row 2: Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
-          <div className="flex items-center gap-2 pb-3 overflow-x-auto -mx-4 px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+          {/* Outer wrapper: relative + mask-image fade on left edge when scrolled */}
+          <div
+            className="relative -mx-4"
+            style={{
+              maskImage: chipRowCanScrollLeft
+                ? "linear-gradient(to right, transparent 0px, black 48px)"
+                : undefined,
+              WebkitMaskImage: chipRowCanScrollLeft
+                ? "linear-gradient(to right, transparent 0px, black 48px)"
+                : undefined,
+            }}
+          >
+          <div ref={chipRowRef} className="flex items-center gap-2 pb-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {/* קרוב אלי */}
             <button
               onClick={handleLocationButtonClick}
@@ -1010,6 +1043,7 @@ export default function FindJobs() {
               ><X className="h-3 w-3" /></motion.button>
             )}
           </div>
+          </div>{/* end chip row outer wrapper */}
 
 
         </motion.div>

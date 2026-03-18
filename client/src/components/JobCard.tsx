@@ -645,7 +645,7 @@ export function JobCard({
     <motion.div
       whileHover={{ y: -2, boxShadow: job.isUrgent ? `0 10px 30px ${C_DANGER_HEX}20` : "0 8px 28px oklch(0.38 0.07 125.0 / 0.12)" }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl bg-white relative overflow-hidden"
+      className="rounded-2xl bg-white relative"
       style={{
         border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0 / 0.5)"}`,
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -654,10 +654,10 @@ export function JobCard({
       dir="rtl"
       onClick={onCardClick ? handleCardClick : undefined}
     >
-      {/* Urgent right border accent */}
+      {/* Urgent right border accent — uses border-radius to match card corners without needing overflow-hidden */}
       {job.isUrgent && (
-        <div className="absolute top-0 right-0 w-[3px] h-full rounded-r-2xl"
-          style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)` }} />
+        <div className="absolute top-0 right-0 w-[3px] h-full"
+          style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)`, borderRadius: "0 16px 16px 0" }} />
       )}
 
       <div className="p-5 flex flex-col gap-4">

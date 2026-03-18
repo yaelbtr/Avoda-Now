@@ -1204,13 +1204,13 @@ export default function FindJobs() {
                   }
                 }}
                 disabled={locating}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0"
                 style={userLat
-                  ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-                  : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+                  ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)", fontWeight: 700 }
+                  : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)", fontWeight: 700 }}
               >
                 {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
-                <span>{userLat ? `${geoCity ?? "קרוב אלי"} · ${radiusKm} ק"מ` : "קרוב אלי"}</span>
+                <span className="max-w-[80px] truncate">{userLat ? `${geoCity ?? "קרוב אלי"} · ${radiusKm} ק"מ` : "קרוב אלי"}</span>
                 {userLat && (
                   <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false); }} />
                 )}

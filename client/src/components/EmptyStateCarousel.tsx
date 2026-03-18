@@ -363,13 +363,8 @@ export default function EmptyStateCarousel({
             className="p-5 flex flex-col items-center text-center cursor-grab active:cursor-grabbing"
             style={{ touchAction: "pan-y" }}
           >
-            {/* Illustration bubble */}
-            <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4 mt-1"
-              style={{ background: slide.bubbleBg, boxShadow: slide.bubbleShadow }}
-            >
-              <span className="text-4xl leading-none select-none">{slide.emoji}</span>
-            </div>
+            {/* Illustration emoji */}
+            <span className="text-5xl leading-none select-none mb-4 mt-1">{slide.emoji}</span>
 
             {/* Text */}
             <h3

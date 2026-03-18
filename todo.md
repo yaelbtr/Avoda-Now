@@ -2370,3 +2370,4 @@
 - [x] Fix: "נקה סינון" does not clear URL query params (e.g. ?filter=today stays in URL after clearing)
 - [x] Fix: "נקה סינון" does not clear the "קרוב אלי" radius/location filter chip
 - [x] Bug: after applying filters, results are empty until sort chip (שכר/תאריך) is clicked — fixed: replaced eager setAccumulatedJobs([]) with pendingResetRef to avoid stale-data race condition
+- [x] Bug: profile completion sparkling icon missing from FindJobs search screen — fixed: isProfileComplete was using a simplified 2-field check; now uses calcProfileScore < 100%

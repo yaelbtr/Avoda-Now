@@ -992,11 +992,11 @@ export default function FindJobs() {
         />
         {/* Content */}
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
-          {/* Profile completion icon — top-left of hero, only when profile is incomplete */}
+          {/* Profile completion icon — top-left of hero, only when profile score < 100% */}
           {isAuthenticated && !profileQuery.isLoading && (() => {
             const profile = profileQuery.data;
-            const isProfileComplete = (profile?.preferredCategories && profile.preferredCategories.length > 0) && (!!profile?.preferredCity || !!profile?.workerLatitude);
-            if (isProfileComplete) return null;
+            const score = calcProfileScore(profile as Parameters<typeof calcProfileScore>[0]);
+            if (score >= 100) return null;
             return (
               <ProfileIconWithTooltip onOpen={() => setProfilePanelOpen(true)} />
             );

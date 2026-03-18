@@ -194,7 +194,9 @@ export default function EmptyStateCarousel({
       bubbleShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)",
       headline: "לא נמצאו משרות",
       subtitle: "נסה לשנות את הסינון או לחפש בעיר אחרת",
-      actions: [],
+      actions: hasAnyFilter
+        ? [{ id: "clear", label: "נקה סינון", onClick: onClearAllFilters, variant: "primary" }]
+        : [],
     });
   }
 

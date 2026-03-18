@@ -1764,7 +1764,6 @@ export default function FindJobs() {
 
         {/* Sort chips row */}
         <div className="flex items-center gap-2 mb-3 overflow-x-auto" dir="rtl" style={{ scrollbarWidth: "none" }}>
-          <span className="text-xs text-gray-400 font-medium shrink-0">מיון:</span>
           {([
             { value: "date",     label: "תאריך עבודה" },
             { value: "salary",  label: "שכר" },

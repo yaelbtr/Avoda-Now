@@ -2375,3 +2375,4 @@
 - [x] Bug: FindJobs screen is blank when navigating from worker home via bottom nav bar — fixed: added mount-time effect to seed accumulatedJobs from tRPC cache when activeQueryData is already available on first render
 - [x] Bug: search bar and filter button appear above the filter panel bottom sheet — fixed: raised filter panel backdrop/sheet z-index from 60/61 to 200/201 to overcome framer-motion stacking contexts; same fix applied to calendar sheet
 - [x] Bug: date filter (תאריך) does not filter job results — fixed: toISOString() was returning UTC date (one day behind for Israel UTC+3); replaced with local date formatting using getFullYear/getMonth/getDate in both calendar panels
+- [x] Feature: replace shared job card component with new design from כרטיסעבודהרגיל.zip (worker home + FindJobs) — new design: large bold title, inline badges, 2x2 details grid, rounded bookmark/share icons, full-width "הגישו אותי" button

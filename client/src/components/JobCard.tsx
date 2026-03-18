@@ -617,327 +617,272 @@ export function JobCard({
     );
   }
 
+
+  // ── Helpers for date display ──────────────────────────────────────────────────
+  const formatJobDate = (jobDate: string): string => {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+    if (jobDate === todayStr) return 'היום';
+    if (jobDate === tomorrowStr) return 'מחר';
+    const d = new Date(jobDate + 'T00:00:00');
+    return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  };
+
+  const salaryDisplay = isVolunteer
+    ? '💚 התנדבות'
+    : formatSalary(job.salary ?? null, job.salaryType);
+
   return (
-    <Tooltip delayDuration={300}>
-      <TooltipTrigger asChild>
     <motion.div
-      whileHover={{
-        y: -2,
-        boxShadow: job.isUrgent
-          ? `0 10px 30px ${C_DANGER_HEX}20, 0 2px 8px ${C_DANGER_HEX}10`
-          : "0 8px 28px oklch(0.38 0.07 125.0 / 0.10), 0 2px 6px oklch(0.38 0.07 125.0 / 0.05)",
-        borderColor: job.isUrgent ? `${C_DANGER_HEX}60` : "oklch(0.80 0.06 84.0)",
-      }}
+      whileHover={{ y: -2, boxShadow: job.isUrgent ? `0 10px 30px ${C_DANGER_HEX}20` : "0 8px 28px oklch(0.38 0.07 125.0 / 0.12)" }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="group rounded-2xl p-5 relative overflow-hidden bg-white transition-all duration-200 hover:backdrop-blur-[20px] hover:bg-white/85"
+      className="rounded-2xl bg-white relative overflow-hidden"
       style={{
-        border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
-        boxShadow: job.isUrgent
-          ? `0 2px 12px ${C_DANGER_HEX}12`
-          : "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
-        cursor: "pointer",
+        border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0 / 0.5)"}`,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        cursor: onCardClick ? "pointer" : "default",
       }}
       dir="rtl"
       onClick={onCardClick ? handleCardClick : undefined}
     >
       {/* Urgent right border accent */}
       {job.isUrgent && (
-        <div
-          className="absolute top-0 right-0 w-[3px] h-full rounded-r-2xl"
-          style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)` }}
-        />
+        <div className="absolute top-0 right-0 w-[3px] h-full rounded-r-2xl"
+          style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)` }} />
       )}
 
-      {/* Status badge — top-left corner (like MyApplications) */}
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
-        {job.isUrgent && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: C_DANGER_HEX, color: "#fff" }}>
-            <Zap className="h-2.5 w-2.5" />דחוף
-          </span>
-        )}
-        {isJobDateToday && !job.isUrgent && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
-            <Calendar className="h-2.5 w-2.5" />היום
-          </span>
-        )}
-        {isToday && !isJobDateToday && !job.isUrgent && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500 text-white">
-            <Flame className="h-2.5 w-2.5" />להיום
-          </span>
-        )}
-        {isWartime && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
-        )}
-        {isSeasonal && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
-        )}
-        {isHighMatch && (
-          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
-            <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
-          </span>
-        )}
-        {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
-          <span className="inline-flex items-center gap-1" style={{ width: 10, height: 10 }}>
-            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full opacity-75" style={{ background: "#22c55e" }} />
-            <span className="relative inline-flex rounded-full" style={{ width: 8, height: 8, background: "#16a34a" }} />
-          </span>
-        )}
-      </div>
+      <div className="p-5 flex flex-col gap-4">
 
-      {/* ── Header: title + category icon + salary ── */}
-      {/* Top padding compensates for the absolute badge row */}
-      <div className="flex items-start justify-between gap-3 mb-2 pt-5" dir="rtl">
-        {/* Right: category icon */}
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
-          style={{
-            background: job.isUrgent
-              ? `linear-gradient(135deg, ${C_DANGER_HEX}18 0%, ${C_DANGER_HEX}0e 100%)`
-              : "linear-gradient(135deg, oklch(0.96 0.02 122.3) 0%, oklch(0.93 0.03 91.6) 100%)",
-            border: job.isUrgent
-              ? `1px solid ${C_DANGER_HEX}30`
-              : "1px solid oklch(0.89 0.05 84.0)",
-          }}
-        >
-          {getCategoryIcon(job.category)}
+        {/* ── Row 1: Header — title + badges + action icons ── */}
+        <div className="flex items-start justify-between gap-3">
+
+          {/* Right: title block */}
+          <div className="flex-1 min-w-0 text-right">
+            {/* Badge row — inline with title */}
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h3 className="font-extrabold text-[18px] leading-tight" style={{ color: "#1b1c1a" }}>
+                {job.title}
+              </h3>
+              {/* Status badges */}
+              {job.isUrgent && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                  style={{ background: "#FFF4F2", color: "#E53935" }}>
+                  דחוף
+                </span>
+              )}
+              {isJobDateToday && !job.isUrgent && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                  style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
+                  <Calendar className="h-2.5 w-2.5" />היום
+                </span>
+              )}
+              {isToday && !isJobDateToday && !job.isUrgent && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-orange-500 text-white">
+                  <Flame className="h-2.5 w-2.5" />להיום
+                </span>
+              )}
+              {isHighMatch && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                  style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
+                  <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
+                </span>
+              )}
+              {isWartime && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
+              )}
+              {isSeasonal && (
+                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
+              )}
+              {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
+                <span className="relative inline-flex items-center gap-1">
+                  <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full opacity-75" style={{ background: "#22c55e" }} />
+                  <span className="relative inline-flex rounded-full" style={{ width: 8, height: 8, background: "#16a34a" }} />
+                </span>
+              )}
+            </div>
+            {/* Business name */}
+            {job.businessName && (
+              <p className="text-[13px] font-medium" style={{ color: "#46483d" }}>
+                {job.businessName}
+              </p>
+            )}
+          </div>
+
+          {/* Left: action icon buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Bookmark / Unsave */}
+            {onUnsave ? (
+              <motion.button
+                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+                onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }}
+                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
+                style={{ border: "1px solid oklch(0.87 0.04 84.0 / 0.5)", color: "oklch(0.60 0.22 25)" }}
+                title="הסר מהשמורים"
+              >
+                <BookmarkX className="h-4 w-4" />
+              </motion.button>
+            ) : onSaveToggle ? (
+              <motion.button
+                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+                onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
+                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
+                style={{
+                  border: `1px solid ${isSaved ? "oklch(0.42 0.12 88 / 0.30)" : "oklch(0.87 0.04 84.0 / 0.5)"}`,
+                  color: isSaved ? "oklch(0.42 0.12 88)" : "#46483d99",
+                  background: isSaved ? "oklch(0.42 0.12 88 / 0.08)" : "transparent",
+                }}
+                title={isSaved ? "בטל שמירה" : "שמור עבודה"}
+              >
+                {isSaved
+                  ? <BookmarkCheck className="h-4 w-4" style={{ fill: "oklch(0.42 0.12 88)" }} />
+                  : <Bookmark className="h-4 w-4" />}
+              </motion.button>
+            ) : null}
+            {/* Share */}
+            <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
+          </div>
         </div>
 
-        {/* Center: title + employer name */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[15px] leading-tight text-right mb-0.5" style={{ color: "var(--text-primary)" }}>
-            {job.title}
-          </h3>
-          {/* Employer name row — like MyApplications */}
-          {job.businessName && (
-            <p className="flex items-center gap-1 text-[12px] font-medium text-right" style={{ color: "var(--text-secondary)" }}>
-              <Users className="h-3 w-3 shrink-0" style={{ color: C_BRAND_HEX }} />
-              {job.businessName}
-            </p>
-          )}
-        </div>
-
-        {/* Left: salary + hourly summary */}
-        <div className="shrink-0 text-left flex flex-col items-end gap-0.5">
-          <span className="text-sm font-black whitespace-nowrap" style={{ color: isVolunteer ? C_SUCCESS_HEX : C_BRAND_HEX }}>
-            {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
-          </span>
-          {/* Hourly rate × estimated hours summary */}
-          {!isVolunteer && job.hourlyRate && (
-            <span className="text-[10px] font-semibold whitespace-nowrap" style={{ color: C_BRAND_HEX }}>
-              {parseFloat(job.hourlyRate).toLocaleString("he-IL")} ₪/שעה
-              {job.estimatedHours && (
-                <> · {parseFloat(job.estimatedHours) % 1 === 0
-                  ? parseFloat(job.estimatedHours).toFixed(0)
-                  : parseFloat(job.estimatedHours).toFixed(1)} שעות</>
+        {/* ── Row 2: Details grid 2×2 ── */}
+        <div className="grid grid-cols-2 gap-y-2.5 gap-x-3">
+          {/* Location */}
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-4 w-4 shrink-0" style={{ color: "#46483d99" }} />
+            <span className="text-[13px] font-medium" style={{ color: "#46483d" }}>
+              {job.city ?? job.address}
+              {showDistance && job.distance !== undefined && (
+                <span className="text-[11px] font-bold mr-1" style={{ color: C_BRAND_HEX }}>
+                  · {formatDistance(job.distance)} ממך
+                </span>
               )}
             </span>
-          )}
-          {/* Total earnings estimate */}
-          {!isVolunteer && job.hourlyRate && job.estimatedHours && (
-            <span className="text-[9px] font-medium whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-              סה"כ {(parseFloat(job.hourlyRate) * parseFloat(job.estimatedHours)).toLocaleString("he-IL")} ₪ לעבודה
+          </div>
+          {/* Salary */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[16px] shrink-0" style={{ color: "#46483d99" }}>💰</span>
+            <span className="text-[13px] font-medium" style={{ color: isVolunteer ? "oklch(0.42 0.18 150)" : "#46483d" }}>
+              {salaryDisplay}
+              {!isVolunteer && job.hourlyRate && (
+                <span className="text-[11px] font-bold mr-1" style={{ color: C_BRAND_HEX }}>
+                  ({parseFloat(job.hourlyRate).toLocaleString("he-IL")} ₪/שעה)
+                </span>
+              )}
             </span>
-          )}
+          </div>
+          {/* Date */}
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4 shrink-0" style={{ color: "#46483d99" }} />
+            <span className="text-[13px] font-medium" style={{ color: "#46483d" }}>
+              {job.jobDate ? formatJobDate(job.jobDate) : relativeTime(job.createdAt)}
+            </span>
+          </div>
+          {/* Time slot / shift */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[16px] shrink-0" style={{ color: "#46483d99" }}>💼</span>
+            <span className="text-[13px] font-medium" style={{ color: "#46483d" }}>
+              {job.workStartTime && job.workEndTime
+                ? `${job.workStartTime}–${job.workEndTime}`
+                : getStartTimeLabel(job.startTime)}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* ── Meta chips row ── */}
-      <div
-        className="flex flex-wrap gap-x-3 gap-y-1 text-xs py-2 mb-2"
-        style={{ borderTop: "1px solid oklch(0.93 0.03 91.6)", borderBottom: "1px solid oklch(0.93 0.03 91.6)" }}
-      >
-        <span className="flex items-center gap-1 font-semibold" style={{ color: "var(--text-secondary)" }}>
-          <MapPin className="h-3 w-3 shrink-0" style={{ color: C_BRAND_HEX }} />
-          {cityDisplay}
-          {showDistance && job.distance !== undefined && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold mr-0.5" style={{ background: `${C_BRAND_HEX}12`, color: C_BRAND_HEX, border: `1px solid ${C_BRAND_HEX}25` }}>
-              📍 {formatDistance(job.distance)} ממך
-            </span>
-          )}
-        </span>
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "oklch(0.93 0.03 91.6)", color: "var(--text-secondary)" }}>
-          {getCategoryLabel(job.category)}
-        </span>
-        <span className="flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-          <Clock className="h-3 w-3 shrink-0" />
-          {getStartTimeLabel(job.startTime)}
-        </span>
-        {/* Date badge */}
-        {job.jobDate && (() => {
-          const today = new Date();
-          const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-          const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
-          const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
-          const isDateToday = job.jobDate === todayStr;
-          const isDateTomorrow = job.jobDate === tomorrowStr;
-          const label = isDateToday ? 'היום' : isDateTomorrow ? 'מחר' : new Date(job.jobDate + 'T00:00:00').toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short' });
-          return (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-              style={{
-                background: isDateToday ? 'oklch(0.45 0.18 145)' : 'oklch(0.94 0.05 122)',
-                color: isDateToday ? '#fff' : 'oklch(0.32 0.12 122)',
-                border: isDateToday ? 'none' : '1px solid oklch(0.82 0.08 122 / 0.6)',
-              }}
-            >
-              <Calendar className="h-2.5 w-2.5 shrink-0" />
-              {label}
-            </span>
-          );
-        })()}
-        {/* Work hours badge */}
-        {job.workStartTime && job.workEndTime && (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-            style={{ background: 'oklch(0.96 0.03 91)', color: 'oklch(0.38 0.07 125)', border: '1px solid oklch(0.88 0.04 91 / 0.7)' }}
-          >
-            <Clock className="h-2.5 w-2.5 shrink-0" />
-            {job.workStartTime}–{job.workEndTime}
-          </span>
-        )}
-      </div>
-
-      {/* ── Time row ── */}
-      <div className="flex items-center justify-between text-[11px] mb-3" style={{ color: "var(--text-faint)" }}>
-        <span>{relativeTime(job.createdAt)}</span>
+        {/* ── Countdown / expiry ── */}
         {countdown && (
-          <span className="flex items-center gap-1 font-semibold px-2 py-0.5 rounded-full" style={{ color: countdown === "פג תוקף" ? C_DANGER_HEX : "#f97316", background: countdown === "פג תוקף" ? `${C_DANGER_HEX}12` : "oklch(0.78 0.17 65 / 0.10)" }}>
-            <Timer className="h-2.5 w-2.5 shrink-0" />
+          <div className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: countdown === "פג תוקף" ? C_DANGER_HEX : "#f97316" }}>
+            <Timer className="h-3 w-3 shrink-0" />
             {countdown}
-          </span>
+          </div>
         )}
-      </div>
 
-      {/* ── Inline apply panel ── */}
-      <AnimatePresence>
-        {showApplyPanel && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.02 100)", border: "1px solid oklch(0.87 0.04 84.0)" }}>
-              <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.38 0.07 125.0)" }}>הוסף הודעה קצרה (אופציונלי)</p>
-              <textarea
-                value={applyMessage}
-                onChange={(e) => setApplyMessage(e.target.value)}
-                placeholder="לדוגמא: יש לי ניסיון רלוונטי ואני זמין/ה להתחיל מחר..."
-                maxLength={500}
-                rows={2}
-                dir="rtl"
-                className="w-full text-xs rounded-lg p-2 resize-none outline-none"
-                style={{ border: "1px solid oklch(0.87 0.04 84.0)", background: "white", color: "var(--text-primary)", fontFamily: "inherit" }}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowApplyPanel(false); setApplyMessage(""); }}
-                  className="flex-none px-3 py-1.5 rounded-lg text-xs font-semibold"
-                  style={{ background: "white", color: "var(--text-muted)", border: "1px solid oklch(0.87 0.04 84.0)" }}
-                >
-                  ביטול
-                </button>
-                <motion.button
-                  onClick={handleApplySubmit}
-                  disabled={isApplyPending}
-                  whileTap={{ scale: 0.97 }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold"
-                  style={{ background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)", color: "oklch(0.97 0.02 91)", opacity: isApplyPending ? 0.7 : 1 }}
-                >
-                  {isApplyPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                  שלח מועמדות
-                </motion.button>
+        {/* ── Inline apply panel ── */}
+        <AnimatePresence>
+          {showApplyPanel && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="p-3 rounded-xl" style={{ background: "oklch(0.97 0.02 100)", border: "1px solid oklch(0.87 0.04 84.0)" }}>
+                <p className="text-xs font-bold mb-2" style={{ color: "oklch(0.38 0.07 125.0)" }}>הוסף הודעה קצרה (אופציונלי)</p>
+                <textarea
+                  value={applyMessage}
+                  onChange={(e) => setApplyMessage(e.target.value)}
+                  placeholder="לדוגמא: יש לי ניסיון רלוונטי ואני זמין/ה להתחיל מחר..."
+                  maxLength={500}
+                  rows={2}
+                  dir="rtl"
+                  className="w-full text-xs rounded-lg p-2 resize-none outline-none"
+                  style={{ border: "1px solid oklch(0.87 0.04 84.0)", background: "white", color: "var(--text-primary)", fontFamily: "inherit" }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowApplyPanel(false); setApplyMessage(""); }}
+                    className="flex-none px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    style={{ background: "white", color: "var(--text-muted)", border: "1px solid oklch(0.87 0.04 84.0)" }}
+                  >
+                    ביטול
+                  </button>
+                  <motion.button
+                    onClick={handleApplySubmit}
+                    disabled={isApplyPending}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold"
+                    style={{ background: "linear-gradient(135deg, #3d4a28 0%, #2e3a1c 100%)", color: "white", opacity: isApplyPending ? 0.7 : 1 }}
+                  >
+                    {isApplyPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                    שלח מועמדות
+                  </motion.button>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* ── Action buttons row ── */}
-      <div className="flex items-center gap-2 w-full" dir="rtl">
-
-        {/* Save / Unsave */}
-        {onUnsave ? (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }}
-            className="p-2 rounded-xl shrink-0"
-            title="הסר מהשמורים"
-            style={{ background: "oklch(0.65 0.22 25 / 0.06)", border: "1px solid oklch(0.65 0.22 25 / 0.15)", color: "oklch(0.60 0.22 25)" }}
-          >
-            <BookmarkX className="h-4 w-4" />
-          </motion.button>
-        ) : onSaveToggle ? (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => { e.stopPropagation(); onSaveToggle(job.id, !isSaved); }}
-            className="p-2 rounded-xl shrink-0"
-            title={isSaved ? "בטל שמירה" : "שמור עבודה"}
-            style={{
-              background: isSaved ? "oklch(0.42 0.12 88 / 0.10)" : "oklch(0.95 0.02 84)",
-              border: `1px solid ${isSaved ? "oklch(0.42 0.12 88 / 0.30)" : "oklch(0.87 0.04 84.0)"}`,
-              color: isSaved ? "oklch(0.42 0.12 88)" : "var(--text-muted)",
-            }}
-          >
-            {isSaved
-              ? <BookmarkCheck className="h-4 w-4" style={{ fill: "oklch(0.42 0.12 88)" }} />
-              : <Bookmark className="h-4 w-4" />}
-          </motion.button>
-        ) : null}
-
-        {/* Share */}
-        <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
-
-        {/* Apply / Applied / צפה במשרה */}
+        {/* ── Footer: apply button ── */}
         {!isExpired && onApply && (
           isApplied ? (
-            <span className="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-bold shrink-0" style={{ background: "oklch(0.93 0.06 150 / 0.15)", color: "var(--brand)", border: "1px solid var(--brand)" }}>
-              <CheckCircle className="h-3 w-3" />הגשת
-            </span>
+            <div
+              className="flex items-center justify-center gap-2 h-12 rounded-xl text-[14px] font-bold"
+              style={{ background: "oklch(0.93 0.06 150 / 0.15)", color: "oklch(0.42 0.18 150)", border: "1px solid oklch(0.65 0.22 160 / 0.25)" }}
+            >
+              <CheckCircle className="h-4 w-4" />
+              הגשת מועמדות ✓
+            </div>
           ) : (
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.01, filter: "brightness(1.08)" }}
+              whileTap={{ scale: 0.98 }}
               onClick={(e) => {
                 e.stopPropagation();
                 if (!isAuthenticated) { handleRestrictedAction("כדי להגיש מועמדות יש להתחבר"); return; }
                 setShowApplyPanel(v => !v);
               }}
-              className="flex items-center gap-1 text-xs px-3 py-1 rounded-full font-bold shrink-0 transition-all"
-              style={showApplyPanel
-                ? { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
-                : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-              }
+              className="w-full h-12 rounded-xl text-[15px] font-bold flex items-center justify-center gap-2 transition-all"
+              style={{
+                background: showApplyPanel
+                  ? "white"
+                  : "linear-gradient(135deg, #48522A 0%, #3d4a28 100%)",
+                color: showApplyPanel ? "#48522A" : "white",
+                border: showApplyPanel ? "1px solid #48522A" : "none",
+                boxShadow: showApplyPanel ? "none" : "0 4px 14px rgba(72,82,42,0.3)",
+              }}
             >
-              <ChevronLeft className="h-3 w-3" />
-              הגש
+              {isApplyPending
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : showApplyPanel
+                  ? <><ChevronLeft className="h-4 w-4" />סגור</>
+                  : <>הגישו אותי</>}
             </motion.button>
           )
         )}
 
       </div>
     </motion.div>
-      </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        align="center"
-        sideOffset={-80}
-        hideArrow
-        className="text-[11px] font-semibold px-3 py-1.5 rounded-full z-50 pointer-events-none"
-        style={{
-          background: "rgba(255,240,100,0.55)",
-          color: "rgba(60,45,0,0.9)",
-          border: "none",
-          boxShadow: "none",
-          backdropFilter: "blur(4px)",
-        }}
-      >
-        לחץ לפרטים
-      </TooltipContent>
-    </Tooltip>
   );
 }

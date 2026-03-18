@@ -1078,8 +1078,9 @@ export default function FindJobs() {
                     onClick={() => setProfilePanelOpen(false)}
                     className="w-full flex items-center justify-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all active:scale-[0.97]"
                     style={{
-                      background: "#7a5200",
-                      color: "white",
+                      background: "transparent",
+                      color: "#7a5200",
+                      border: "none",
                     }}
                   >
                     השלם לחשיפה מוגדלת

@@ -1749,19 +1749,9 @@ export default function FindJobs() {
 
         {/* ── (profile banner moved above search bar) ── */}
 
-        {/* Results count + sort chips — single row, RTL: count right, chips left */}
-        <div className="flex items-center justify-between gap-2 mb-3" dir="rtl">
-          {/* Count — right side */}
-          <div className="shrink-0">
-            {isLoading ? (
-              <span className="text-sm text-gray-400">מחפש...</span>
-            ) : (
-              <span className="text-sm font-bold" style={{ color: "var(--brand)" }}>
-                {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
-              </span>
-            )}
-          </div>
-          {/* Sort chips — left side */}
+        {/* Results count + sort chips — single row: chips right, count left (LTR order) */}
+        <div className="flex items-center gap-2 mb-3">
+          {/* Sort chips — right side (first in DOM = right in LTR) */}
           <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {([
               { value: "date",    label: "תאריך עבודה" },
@@ -1785,6 +1775,16 @@ export default function FindJobs() {
                 {opt.label}{sortBy === opt.value ? " ↓" : ""}
               </button>
             ))}
+          </div>
+          {/* Count — left side, pushed to end */}
+          <div className="shrink-0 mr-auto">
+            {isLoading ? (
+              <span className="text-sm text-gray-400">מחפש...</span>
+            ) : (
+              <span className="text-sm font-bold" style={{ color: "var(--brand)" }}>
+                {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
+              </span>
+            )}
           </div>
         </div>
 

@@ -1749,23 +1749,8 @@ export default function FindJobs() {
 
         {/* ── (profile banner moved above search bar) ── */}
 
-        {/* Results header — matches mockup: count right, סנן לפי sort left */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            {/* Sort selector — left side */}
-            <span className="text-xs text-gray-400 font-medium">סנן לפי</span>
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as typeof sortBy)}
-              className="text-xs font-semibold border-0 bg-transparent outline-none cursor-pointer"
-              style={{ color: "#3a5c2e" }}
-            >
-              <option value="date">תאריך</option>
-              <option value="salary">שכר</option>
-              {userLat && <option value="distance">מרחק</option>}
-            </select>
-          </div>
-          {/* Results count — right side */}
+        {/* Results header — count only */}
+        <div className="flex items-center justify-end mb-3">
           <div className="flex items-center gap-1.5">
             {isLoading ? (
               <span className="text-sm text-gray-400">מחפש...</span>
@@ -1773,9 +1758,6 @@ export default function FindJobs() {
               <span className="text-sm font-bold" style={{ color: "var(--brand)" }}>
                 {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
               </span>
-            )}
-            {showUrgentToday && !isLoading && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>דחוף</span>
             )}
           </div>
         </div>

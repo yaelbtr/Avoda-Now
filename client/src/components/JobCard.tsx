@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   getCategoryIcon,
   getCategoryLabel,
+  getCategoryColor,
   formatSalary,
   formatDistance,
   getStartTimeLabel,
@@ -70,6 +71,8 @@ export interface JobCardProps {
   onCardClick?: (job: JobCardJob) => void;
   /** compact: minimal card for carousel — shows only WhatsApp + "צפה במשרה" */
   variant?: "default" | "compact";
+  /** Called when the category pill is clicked — lets FindJobs add the category to active filters */
+  onCategoryClick?: (category: string) => void;
 }
 
 const SITE_URL = "https://avodanow.co.il";
@@ -305,6 +308,7 @@ export function JobCard({
   onLoginRequired,
   onCardClick,
   variant = "default",
+  onCategoryClick,
 }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
@@ -669,18 +673,29 @@ export function JobCard({
                 {job.businessName}
               </p>
             )}
-            {/* Category badge */}
-            <span
-              className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
-              style={{
-                background: "oklch(0.93 0.03 84)",
-                color: "oklch(0.38 0.06 84)",
-                border: "1px solid oklch(0.87 0.04 84.0)",
-              }}
-            >
-              <span>{getCategoryIcon(job.category)}</span>
-              <span>{getCategoryLabel(job.category)}</span>
-            </span>
+            {/* Category badge — per-category color, clickable to filter */}
+            {(() => {
+              const catColor = getCategoryColor(job.category);
+              return (
+                <span
+                  role={onCategoryClick ? "button" : undefined}
+                  tabIndex={onCategoryClick ? 0 : undefined}
+                  aria-label={onCategoryClick ? `סנן לפי קטגוריה: ${getCategoryLabel(job.category)}` : undefined}
+                  className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-opacity"
+                  style={{
+                    background: catColor.bg,
+                    color: catColor.text,
+                    border: `1px solid ${catColor.border}`,
+                    cursor: onCategoryClick ? "pointer" : "default",
+                  }}
+                  onClick={onCategoryClick ? (e) => { e.stopPropagation(); onCategoryClick(job.category); } : undefined}
+                  onKeyDown={onCategoryClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onCategoryClick(job.category); } } : undefined}
+                >
+                  <span>{getCategoryIcon(job.category)}</span>
+                  <span>{getCategoryLabel(job.category)}</span>
+                </span>
+              );
+            })()}
           </div>
 
           {/* Left: action icon buttons */}

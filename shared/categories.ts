@@ -50,6 +50,26 @@ export const RADIUS_OPTIONS = [
   { value: 50, label: "50 ק\"מ" },
 ] as const;
 
+// Per-category color tokens: { bg, text, border } in OKLCH
+export const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  delivery:     { bg: "oklch(0.92 0.06 230)",  text: "oklch(0.28 0.10 230)",  border: "oklch(0.80 0.08 230)" },
+  warehouse:    { bg: "oklch(0.93 0.04 60)",   text: "oklch(0.33 0.08 60)",   border: "oklch(0.82 0.06 60)" },
+  agriculture:  { bg: "oklch(0.92 0.08 145)",  text: "oklch(0.28 0.12 145)",  border: "oklch(0.78 0.10 145)" },
+  kitchen:      { bg: "oklch(0.93 0.07 50)",   text: "oklch(0.33 0.12 50)",   border: "oklch(0.80 0.10 50)" },
+  cleaning:     { bg: "oklch(0.93 0.05 200)",  text: "oklch(0.30 0.09 200)",  border: "oklch(0.80 0.07 200)" },
+  security:     { bg: "oklch(0.91 0.04 280)",  text: "oklch(0.28 0.08 280)",  border: "oklch(0.78 0.06 280)" },
+  construction: { bg: "oklch(0.92 0.06 40)",   text: "oklch(0.31 0.10 40)",   border: "oklch(0.80 0.08 40)" },
+  childcare:    { bg: "oklch(0.93 0.07 340)",  text: "oklch(0.31 0.12 340)",  border: "oklch(0.80 0.10 340)" },
+  eldercare:    { bg: "oklch(0.92 0.04 260)",  text: "oklch(0.30 0.08 260)",  border: "oklch(0.79 0.06 260)" },
+  retail:       { bg: "oklch(0.93 0.07 160)",  text: "oklch(0.30 0.11 160)",  border: "oklch(0.79 0.09 160)" },
+  events:       { bg: "oklch(0.93 0.07 300)",  text: "oklch(0.31 0.12 300)",  border: "oklch(0.80 0.10 300)" },
+  other:        { bg: "oklch(0.93 0.03 84)",   text: "oklch(0.38 0.06 84)",   border: "oklch(0.87 0.04 84)" },
+};
+
+export function getCategoryColor(value: string): { bg: string; text: string; border: string } {
+  return CATEGORY_COLORS[value] ?? CATEGORY_COLORS["other"];
+}
+
 export function getCategoryLabel(value: string): string {
   return JOB_CATEGORIES.find((c) => c.value === value)?.label ?? value;
 }

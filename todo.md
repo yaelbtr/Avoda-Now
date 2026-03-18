@@ -2381,3 +2381,6 @@
 - [x] Bug: status badges (היום/דחוף) not visible on job card — confirmed not a bug: badges only show when conditions are met (isJobDateToday, isUrgent, isNew, etc.)
 - [x] Fix: hide businessName in JobCard when it is an empty string
 - [x] UI: add Hebrew category badge below job title/business name in JobCard default variant
+- [x] UI: add skeleton pill row (20px height, 80px width) for category badge in JobCardSkeleton
+- [x] UI: per-category color map for category badge in JobCard (getCategoryColor helper in shared/categories)
+- [x] Feature: click on category badge in JobCard filters FindJobs by that category (onCategoryClick prop)

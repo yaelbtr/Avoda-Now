@@ -81,6 +81,8 @@ export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
             </div>
             {/* Business name */}
             <Shimmer width="38%" height={13} rounded="0.35rem" delay={delay} />
+            {/* Category pill */}
+            <Shimmer width={80} height={20} rounded="9999px" delay={delay} />
           </div>
 
           {/* Left: bookmark + share icon buttons */}

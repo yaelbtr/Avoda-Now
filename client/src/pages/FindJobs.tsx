@@ -785,6 +785,18 @@ export default function FindJobs() {
     if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
   };
 
+  /** Add a category to the active filter when the user clicks a category pill on a job card.
+   *  If the category is already active, this is a no-op (idempotent). */
+  const handleCategoryFromCard = (categorySlug: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(categorySlug)) return prev; // already active — no-op
+      const next = [...prev, categorySlug];
+      // Keep legacy single-category field in sync
+      setCategory(next.length === 1 ? categorySlug : "all");
+      return next;
+    });
+  };
+
   // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const activeQueryData = userLat ? (searchQuery.data as any) : (listQuery.data as any);
@@ -1926,6 +1938,7 @@ export default function FindJobs() {
                     onSaveToggle={handleSaveToggle}
                     onApply={handleApplyFj}
                     onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                    onCategoryClick={handleCategoryFromCard}
                   />
                 </motion.div>
               );

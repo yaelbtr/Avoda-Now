@@ -2293,3 +2293,10 @@
 - [x] Wrap chip scroll row in a relative container with CSS mask-image fade on the left edge
 - [x] Dynamically show/hide fade based on whether there is overflow content to the left (scroll position)
 - [x] Ensure RTL-correct fade direction (fade on the left = end of scroll direction in RTL)
+
+## Clear All Filters Chip Button Redesign
+- [x] Replace small X-only clear button with a full chip styled like other filter chips
+- [x] Show "נקה סינונים" label + X icon, styled as inactive chip (white bg, C_BORDER border)
+- [x] Move to end of chip row (after all other chips)
+- [x] Show when activeFilterCount > 0 (any filter active, not just urgent)
+- [x] Clicking it resets all filters (categories, cities, urgent, date, time slots, days, location)

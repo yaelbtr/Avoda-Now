@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { Home, Lock } from "lucide-react";
+import { Home, Lock, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Translucent "coming soon" overlay for FindJobs.
@@ -8,9 +9,17 @@ import { Home, Lock } from "lucide-react";
  * all page content without being trapped by stacking contexts.
  *
  * Visibility is controlled by the FIND_JOBS_OPEN flag in shared/const.ts.
+ *
+ * Admin bypass: users with role === 'admin' are never shown the overlay,
+ * allowing them to access and test the page while it is still closed.
  */
 export default function FindJobsComingSoonOverlay() {
   const [, navigate] = useLocation();
+  const { user, isAuthenticated } = useAuth();
+
+  // Admins bypass the overlay entirely — they can see and use the page
+  const isAdmin = isAuthenticated && user?.role === "admin";
+  if (isAdmin) return null;
 
   return (
     <motion.div
@@ -132,6 +141,24 @@ export default function FindJobsComingSoonOverlay() {
           <Home size={17} />
           חזרה לדף הבית
         </button>
+
+        {/* Admin hint — shown only when logged in but not admin */}
+        {isAuthenticated && !isAdmin && (
+          <p
+            style={{
+              marginTop: 18,
+              fontSize: 12,
+              color: "#aaa",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            <ShieldCheck size={13} />
+            גישת מנהל? התחבר עם חשבון אדמין לעקיפת המסך
+          </p>
+        )}
       </motion.div>
     </motion.div>
   );

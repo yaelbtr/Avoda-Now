@@ -230,6 +230,10 @@ interface SmartEmptyStateProps {
   onShowTomorrow: () => void;
   onShowThisWeek: () => void;
   onClearAllFilters: () => void;
+  showGeoNoResults?: boolean;
+  radiusKm?: number;
+  expandRadiusOptions?: { value: number; label: string }[];
+  onExpandRadius?: (km: number) => void;
 }
 
 const DATE_FILTER_LABELS: Record<string, string> = {
@@ -256,6 +260,7 @@ function SmartEmptyState({
   isAuthenticated, onClearCategory, onClearCity, onClearDateFilter,
   onClearTimeSlots, onClearDays, onClearUrgent, onClearSearch,
   onSelectCity, onShowTomorrow, onShowThisWeek, onClearAllFilters,
+  showGeoNoResults, radiusKm, expandRadiusOptions, onExpandRadius,
 }: SmartEmptyStateProps) {
   const hasAnyFilter = category !== "all" || !!selectedCity || !!dateFilter ||
     selectedTimeSlots.length > 0 || selectedDays.length > 0 || showUrgentToday || !!searchText;
@@ -288,6 +293,10 @@ function SmartEmptyState({
         onClearCategory={onClearCategory}
         onSelectCity={onSelectCity}
         onClearAllFilters={onClearAllFilters}
+        showGeoNoResults={showGeoNoResults}
+        radiusKm={radiusKm}
+        expandRadiusOptions={expandRadiusOptions}
+        onExpandRadius={onExpandRadius}
       />
 
       {/* Active filter pills — quick remove */}
@@ -1054,32 +1063,9 @@ export default function FindJobs() {
           )}
         </AnimatePresence>
 
-        {/* Single geo card — mutual exclusion: no-results card OR geo card, never both */}
+        {/* Geo card — shown when geo is active (no-results case is handled inside EmptyStateCarousel) */}
         <AnimatePresence mode="wait">
-          {userLat && autoExpandedRadius && jobs.length === 0 && !isLoading ? (
-            /* No-results card: shown when geo is active but no jobs found */
-            <motion.div
-              key="expand-card"
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className="flex items-start gap-3 rounded-2xl px-4 py-3 mb-3"
-              style={{ background: "oklch(0.78 0.17 65 / 0.07)", border: "1px solid oklch(0.78 0.17 65 / 0.28)" }}
-            >
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.65 0.17 65)" }} />
-              <div className="flex-1">
-                <p className="text-xs font-bold" style={{ color: "oklch(0.40 0.12 65)" }}>לא נמצאו עבודות בטווח {radiusKm} ק"מ</p>
-                <p className="text-xs mt-0.5" style={{ color: C_TEXT_MUTED }}>הרחב את החיפוש?</p>
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {RADIUS_OPTIONS.filter(r => r.value > radiusKm).map(r => (
-                    <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                      className="px-3 py-1 rounded-xl text-xs font-bold border transition-all"
-                      style={{ background: "white", borderColor: "oklch(0.78 0.17 65 / 0.4)", color: "oklch(0.40 0.12 65)" }}>
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ) : userLat ? (
+          {userLat ? (
             /* Geo card: shown when geo is active and there are results (or still loading) */
             <motion.div
               key="geo-card"
@@ -1635,6 +1621,10 @@ export default function FindJobs() {
               setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
               setSearchText(""); clearSavedFilters();
             }}
+            showGeoNoResults={userLat !== null && autoExpandedRadius && jobs.length === 0 && !isLoading}
+            radiusKm={radiusKm}
+            expandRadiusOptions={RADIUS_OPTIONS.filter(r => r.value > radiusKm) as { value: number; label: string }[]}
+            onExpandRadius={(km) => { setRadiusKm(km); setAutoExpandedRadius(false); }}
           />
         ) : (
           <motion.div

@@ -53,6 +53,11 @@ export interface EmptyStateCarouselProps {
   onClearCategory: () => void;
   onSelectCity: (city: string) => void;
   onClearAllFilters: () => void;
+  /** Geo-radius no-results slide */
+  showGeoNoResults?: boolean;
+  radiusKm?: number;
+  expandRadiusOptions?: { value: number; label: string }[];
+  onExpandRadius?: (km: number) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,6 +87,10 @@ export default function EmptyStateCarousel({
   onClearCategory,
   onSelectCity,
   onClearAllFilters,
+  showGeoNoResults = false,
+  radiusKm = 10,
+  expandRadiusOptions = [],
+  onExpandRadius,
 }: EmptyStateCarouselProps) {
   // ── Build slide list based on active context ────────────────────────────
 
@@ -217,6 +226,24 @@ export default function EmptyStateCarousel({
       actions: [
         { id: "allCats", label: "הצג כל הקטגוריות", onClick: onClearCategory, variant: "primary" },
       ],
+    });
+  }
+
+  // Slide: geo no-results (when geo is active but no jobs found in current radius)
+  if (showGeoNoResults && expandRadiusOptions.length > 0) {
+    slides.push({
+      id: "geo-no-results",
+      emoji: "📍",
+      bubbleBg: "linear-gradient(135deg, oklch(0.96 0.06 65 / 0.7) 0%, oklch(0.92 0.10 55 / 0.7) 100%)",
+      bubbleShadow: "0 4px 16px oklch(0.55 0.14 65 / 0.18)",
+      headline: `לא נמצאו עבודות בטווח ${radiusKm} ק"מ`,
+      subtitle: "הרחב את החיפוש לטווח גדול יותר",
+      actions: expandRadiusOptions.map((r) => ({
+        id: `radius-${r.value}`,
+        label: r.label,
+        onClick: () => onExpandRadius?.(r.value),
+        variant: "secondary" as const,
+      })),
     });
   }
 

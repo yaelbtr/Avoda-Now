@@ -2280,3 +2280,7 @@
 - [x] Dot indicators for manual navigation
 - [x] Slides: no-urgent, try-tomorrow, try-this-week, try-category, try-city, notifications
 - [x] Uniform card size and button layout across all slides
+
+## Geo-Radius Slide in Carousel
+- [x] Add "לא נמצאו עבודות בטווח X ק"מ" as a slide in EmptyStateCarousel (with expand radius buttons 20/50 ק"מ)
+- [x] Remove the standalone geo no-results card from FindJobs

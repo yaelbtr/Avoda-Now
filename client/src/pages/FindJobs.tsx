@@ -728,11 +728,11 @@ export default function FindJobs() {
   const legacyCategoryParam = selectedCategories.length === 1 ? selectedCategories[0] : (category === "all" ? undefined : category);
   const searchQuery = trpc.jobs.search.useQuery(
     { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, category: legacyCategoryParam, categories: categoriesParam, limit: PAGE_SIZE, page: currentPage, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
-    { enabled: true }
+    { enabled: true, retry: false }
   );
   const listQuery = trpc.jobs.list.useQuery(
     { category: legacyCategoryParam, categories: categoriesParam, limit: PAGE_SIZE, page: currentPage, cities: citiesParam, dateFilter: dateFilter ?? undefined, dayOfWeek: dayOfWeekParam },
-    { enabled: !userLat }
+    { enabled: !userLat, retry: false }
   );
   const todayQuery = trpc.jobs.listToday.useQuery(
     { category: legacyCategoryParam, limit: 50 },
@@ -777,6 +777,7 @@ export default function FindJobs() {
   let jobs: AnyJob[] = accumulatedJobs;
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
   const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
+  const isQueryError = userLat ? searchQuery.isError : listQuery.isError;
   // Show full skeleton on first load; show overlay shimmer on subsequent refetches
   const showSkeleton = isLoading;
   const showRefetchOverlay = !isLoading && isFetching;
@@ -872,14 +873,14 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategories, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
   // Infinite scroll: load next page when sentinel enters viewport
-  const hasMore = accumulatedJobs.length < serverTotal;
+  const hasMore = accumulatedJobs.length < serverTotal && !isQueryError;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetching && !isLoading) {
+        if (entries[0].isIntersecting && hasMore && !isFetching && !isLoading && !isQueryError) {
           setCurrentPage(p => p + 1);
         }
       },
@@ -887,7 +888,7 @@ export default function FindJobs() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, isFetching, isLoading]);
+  }, [hasMore, isFetching, isLoading, isQueryError]);
   const totalPages = Math.ceil(serverTotal / PAGE_SIZE);
   const pagedJobs = jobs;
   // Total active filters: panel filters + quick chips (location, urgent, date)

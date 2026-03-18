@@ -167,10 +167,19 @@ export const globalRateLimit = rateLimit({
 // ── Jobs list rate limiter — 20 req/min per IP (anti-scraping) ───────────────
 export const jobsListRateLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  // 60 req/min: generous enough for infinite-scroll pagination (10 items/page × up to 6 pages)
+  // while still blocking scrapers that hit hundreds of requests per minute.
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "יותר מדי בקשות לרשימת משרות. נסה שוב בעוד דקה." },
+  // Skip authenticated users: they are already rate-limited by the global 60 req/min limiter
+  // and infinite scroll is a legitimate use-case for logged-in workers browsing jobs.
+  skip: (req) => {
+    // tRPC sets a session cookie; if it is present the user is authenticated
+    const cookies = req.headers.cookie ?? "";
+    return cookies.includes("app_session_id=");
+  },
   keyGenerator: (req) => {
     // Use forwarded IP if behind proxy, fall back to socket IP
     const forwarded = req.headers["x-forwarded-for"];

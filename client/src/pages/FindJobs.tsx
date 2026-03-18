@@ -391,7 +391,7 @@ function SmartEmptyState({
 // ── Profile icon with tooltip (hover + long-press) ─────────────────────────
 function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
   return (
-    <div className="absolute top-0 left-0 mt-4 ml-4" style={{ zIndex: 20 }}>
+    <div className="fixed left-0 ml-4" style={{ zIndex: 50, top: "calc(64px + 12px)" }}>
       <motion.button
         onClick={onOpen}
         className="flex items-center justify-center rounded-full cursor-pointer"

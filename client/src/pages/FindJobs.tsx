@@ -1762,7 +1762,32 @@ export default function FindJobs() {
           </div>
         </div>
 
-        {/* Quick chips shown below results header when filter is closed */}
+        {/* Sort chips row */}
+        <div className="flex items-center gap-2 mb-3 overflow-x-auto" dir="rtl" style={{ scrollbarWidth: "none" }}>
+          <span className="text-xs text-gray-400 font-medium shrink-0">מיון:</span>
+          {([
+            { value: "date",     label: "תאריך עבודה" },
+            { value: "salary",  label: "שכר" },
+            ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
+          ] as { value: typeof sortBy; label: string }[]).map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setSortBy(opt.value)}
+              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
+              style={sortBy === opt.value ? {
+                background: "oklch(0.28 0.07 122)",
+                color: "white",
+                border: "1.5px solid transparent",
+              } : {
+                background: "white",
+                color: "oklch(0.35 0.07 122)",
+                border: "1.5px solid oklch(0.86 0.04 122)",
+              }}
+            >
+              {opt.label}{sortBy === opt.value ? " ↓" : ""}
+            </button>
+          ))}
+        </div>
 
         {/* Job list — wrapped for refetch overlay */}
         <div className="relative">

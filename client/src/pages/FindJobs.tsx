@@ -1074,9 +1074,12 @@ export default function FindJobs() {
                   {missingItems.length > 0 ? (
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>חסר:</span>
-                      {missingItems.map(item => (
-                        <span
+                      {missingItems.map((item, i) => (
+                        <motion.span
                           key={item}
+                          initial={{ opacity: 0, scale: 0.75, y: 4 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ duration: 0.22, delay: 0.08 + i * 0.07, ease: "backOut" }}
                           className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{
                             background: score >= 70 ? "oklch(0.92 0.06 85)" : "oklch(0.92 0.07 80)",
@@ -1085,7 +1088,7 @@ export default function FindJobs() {
                           }}
                         >
                           {item}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   ) : <div />}

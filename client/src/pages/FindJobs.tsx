@@ -1758,7 +1758,7 @@ export default function FindJobs() {
             {([
               { value: "date",    label: "תאריך" },
               { value: "salary", label: "שכר" },
-              ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
+              ...(userLat ? [{ value: "distance", label: "קרוב אלי" }] : []),
             ] as { value: typeof sortBy; label: string }[]).map(opt => {
               const isActive = sortBy === opt.value;
               return (

@@ -1780,9 +1780,9 @@ export default function FindJobs() {
                   }}
                   className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all active:scale-[0.97]"
                   style={isActive ? {
-                    background: "oklch(0.88 0.10 140)",
-                    color: "oklch(0.22 0.10 140)",
-                    border: "1px solid oklch(0.68 0.14 140)",
+                    background: "var(--brand)",
+                    color: "white",
+                    border: "1px solid var(--brand)",
                   } : {
                     background: "oklch(0.97 0.02 122)",
                     color: "var(--muted-foreground)",
@@ -1791,7 +1791,7 @@ export default function FindJobs() {
                 >
                   {opt.label}
                   {isActive ? (
-                    <span className="text-[10px] leading-none">{sortDir === "desc" ? "↓" : "↑"}</span>
+                    <span className="text-[10px] leading-none" style={{ color: "white" }}>{sortDir === "desc" ? "↓" : "↑"}</span>
                   ) : (
                     <span className="text-[10px] leading-none opacity-40">↕</span>
                   )}

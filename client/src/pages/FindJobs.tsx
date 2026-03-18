@@ -928,7 +928,7 @@ export default function FindJobs() {
         </div>
       </section>
 
-      {/* ══ PROFILE COMPLETION PANEL (bottom-sheet) ══════════════════════════════ */}
+      {/* ══ PROFILE COMPLETION CARD (inline, below hero) ═══════════════════════════ */}
       <AnimatePresence>
         {profilePanelOpen && (() => {
           const profile = profileQuery.data;
@@ -936,122 +936,108 @@ export default function FindJobs() {
           const city = profile?.preferredCity ?? null;
           const hasCategories = cats.length > 0;
           const hasLocation = !!city || !!profile?.workerLatitude;
+          const hasBio = !!(profile as { workerBio?: string | null } | null)?.workerBio?.trim();
+          const hasName = !!(profile as { name?: string | null } | null)?.name?.trim();
+          const checks = [hasName, hasCategories, hasLocation, hasBio];
+          const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+          const missingItems = [
+            !hasCategories && "קטגוריות עבודה",
+            !hasLocation && "אזור מועדף",
+            !hasBio && "ביו קצר",
+            !hasName && "שם מלא",
+          ].filter(Boolean) as string[];
           return (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                key="profile-panel-backdrop"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                className="fixed inset-0 z-40"
-                style={{ background: "rgba(0,0,0,0.45)" }}
-                onClick={() => setProfilePanelOpen(false)}
-              />
-              {/* Panel */}
-              <motion.div
-                key="profile-panel"
-                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-                transition={{ type: "spring", stiffness: 340, damping: 32 }}
-                className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
-                style={{ background: "white", maxHeight: "80vh", overflowY: "auto" }}
-                dir="rtl"
+            <motion.div
+              key="profile-progress-card"
+              initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
+              animate={{ opacity: 1, y: 0, scaleY: 1 }}
+              exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className="max-w-2xl mx-auto px-4 pt-3"
+              dir="rtl"
+            >
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  background: score >= 70 ? "oklch(0.97 0.04 122 / 0.95)" : "oklch(0.97 0.06 80 / 0.95)",
+                  border: score >= 70 ? "1px solid oklch(0.85 0.08 122)" : "1px solid oklch(0.85 0.10 80)",
+                  boxShadow: "0 2px 12px oklch(0.28 0.06 122 / 0.10)",
+                }}
               >
-                {/* Handle */}
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="w-10 h-1 rounded-full" style={{ background: "oklch(0.88 0.03 122)" }} />
-                </div>
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 pt-2 pb-4">
+                {/* Header row */}
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, background: "oklch(0.94 0.06 90)" }}>
-                      <UserCircle2 className="h-5 w-5" style={{ color: "oklch(0.45 0.12 90)" }} />
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm" style={{ color: "oklch(0.22 0.05 122)" }}>השלם את הפרופיל שלך</p>
-                      <p className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>קבל התאמות טובות יותר</p>
-                    </div>
+                    {score >= 70
+                      ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.50 0.09 124.9)" }} />
+                      : <UserCircle2 className="h-4 w-4" style={{ color: "oklch(0.55 0.12 76.7)" }} />
+                    }
+                    <span className="text-sm font-bold" style={{ color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)" }}>
+                      פרופיל {score}% מושלם
+                    </span>
                   </div>
-                  <button onClick={() => setProfilePanelOpen(false)} className="p-1 rounded-full" style={{ color: "oklch(0.55 0.05 122)" }}>
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {/* Progress items */}
-                <div className="px-5 pb-4 flex flex-col gap-3">
-                  {/* Categories */}
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{
-                      background: hasCategories ? "oklch(0.96 0.06 122)" : "oklch(0.97 0.02 90)",
-                      border: `1px solid ${hasCategories ? "oklch(0.82 0.10 122)" : "oklch(0.90 0.03 90)"}`
-                    }}
-                  >
-                    <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 34, height: 34, background: hasCategories ? "oklch(0.88 0.12 122)" : "oklch(0.92 0.04 90)" }}>
-                      {hasCategories
-                        ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.40 0.14 122)" }} />
-                        : <Briefcase className="h-4 w-4" style={{ color: "oklch(0.55 0.08 90)" }} />
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: "oklch(0.22 0.05 122)" }}>קטגוריות עבודה</p>
-                      {hasCategories ? (
-                        <p className="text-xs" style={{ color: "oklch(0.45 0.08 122)" }}>
-                          {cats.slice(0, 3).map(slug => dbCategories.find(c => c.slug === slug)?.name ?? slug).join(" · ")}
-                          {cats.length > 3 ? ` +${cats.length - 3}` : ""}
-                        </p>
-                      ) : (
-                        <p className="text-xs" style={{ color: "oklch(0.55 0.06 90)" }}>לא הוגדרו קטגוריות</p>
-                      )}
-                    </div>
-                    {!hasCategories && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "oklch(0.88 0.13 70)", color: "oklch(0.28 0.06 70)" }}>חסר</span>}
-                  </div>
-
-                  {/* Location */}
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{
-                      background: hasLocation ? "oklch(0.96 0.06 122)" : "oklch(0.97 0.02 90)",
-                      border: `1px solid ${hasLocation ? "oklch(0.82 0.10 122)" : "oklch(0.90 0.03 90)"}`
-                    }}
-                  >
-                    <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 34, height: 34, background: hasLocation ? "oklch(0.88 0.12 122)" : "oklch(0.92 0.04 90)" }}>
-                      {hasLocation
-                        ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.40 0.14 122)" }} />
-                        : <MapPin className="h-4 w-4" style={{ color: "oklch(0.55 0.08 90)" }} />
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: "oklch(0.22 0.05 122)" }}>מיקום מועדף</p>
-                      {hasLocation ? (
-                        <p className="text-xs" style={{ color: "oklch(0.45 0.08 122)" }}>{city ?? "מיקום GPS"}</p>
-                      ) : (
-                        <p className="text-xs" style={{ color: "oklch(0.55 0.06 90)" }}>לא הוגדר מיקום</p>
-                      )}
-                    </div>
-                    {!hasLocation && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "oklch(0.88 0.13 70)", color: "oklch(0.28 0.06 70)" }}>חסר</span>}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>
+                      {score >= 70 ? "כמעט שם!" : "השלם להגדל חשיפות"}
+                    </span>
+                    <button
+                      onClick={() => setProfilePanelOpen(false)}
+                      className="p-0.5 rounded-full"
+                      style={{ color: "oklch(0.60 0.05 122)" }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* CTA */}
-                <div className="px-5 pb-6">
+                {/* Progress bar */}
+                <div className="w-full h-2 rounded-full mb-3" style={{ background: "oklch(0.90 0.03 100)" }}>
+                  <motion.div
+                    className="h-2 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+                    style={{
+                      background: score >= 70
+                        ? "linear-gradient(90deg, oklch(0.50 0.09 124.9), oklch(0.60 0.12 88))"
+                        : "linear-gradient(90deg, oklch(0.55 0.12 76.7), oklch(0.68 0.14 80.8))",
+                    }}
+                  />
+                </div>
+
+                {/* Missing items + CTA */}
+                <div className="flex items-center justify-between gap-2">
+                  {missingItems.length > 0 ? (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>חסר:</span>
+                      {missingItems.map(item => (
+                        <span
+                          key={item}
+                          className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            background: score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
+                            color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                          }}
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : <div />}
                   <Link href="/worker-profile">
                     <button
                       onClick={() => setProfilePanelOpen(false)}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                      className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
                       style={{
-                        background: "linear-gradient(135deg, oklch(0.40 0.12 122) 0%, oklch(0.32 0.08 122) 100%)",
+                        background: score >= 70 ? "oklch(0.50 0.09 124.9)" : "oklch(0.55 0.12 76.7)",
                         color: "white",
-                        boxShadow: "0 4px 14px oklch(0.32 0.08 122 / 0.35)",
                       }}
                     >
-                      <span>עבור לדף הפרופיל</span>
-                      <ChevronLeft className="h-4 w-4" />
+                      ביו קצר
                     </button>
                   </Link>
                 </div>
-              </motion.div>
-            </>
+              </div>
+            </motion.div>
           );
         })()}
       </AnimatePresence>

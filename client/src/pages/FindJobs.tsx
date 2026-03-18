@@ -794,6 +794,22 @@ export default function FindJobs() {
   const isFallback: boolean = userLat ? (activeQueryData?.isFallback ?? false) : false;
   // Append new page results to accumulated list (avoid duplicates by id).
   // When pendingResetRef is true we REPLACE the list instead of appending, then clear the flag.
+  //
+  // IMPORTANT: On component mount (e.g. navigating back from worker home), activeQueryData may
+  // already be populated from the tRPC cache. In that case the effect below would NOT fire because
+  // activeQueryData hasn’t “changed” — it was already set when the component first rendered.
+  // We handle this with a separate mount-time effect that seeds the list from the cached data.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    // Seed on mount: if cached data is already available, populate immediately.
+    if (currentPageJobs.length > 0) {
+      pendingResetRef.current = false;
+      setAccumulatedJobs(currentPageJobs as AnyJob[]);
+    }
+  // Run only once on mount — intentionally empty deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (currentPageJobs.length === 0) return;

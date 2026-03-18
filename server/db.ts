@@ -592,16 +592,24 @@ export async function expireOldJobs() {
   const db = await getDb();
   if (!db) return;
   const now = new Date();
-  // Expire jobs past their expiresAt
+  // Expire jobs past their expiresAt.
+  // NOTE: Drizzle ORM 0.44.x omits ::enum_type casts in prepared statements,
+  // causing "invalid input value for enum" errors. Use sql`` with explicit casts.
   await db
     .update(jobs)
-    .set({ status: "expired", closedReason: "expired" })
+    .set({
+      status: sql`'expired'::job_status`,
+      closedReason: sql`'expired'::closed_reason`,
+    })
     .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, now)));
-  // Auto-hide jobs with no reminder response: created > 9h ago, no reminderSentAt update within 3h
+  // Auto-hide jobs with no reminder response: created > 9h ago, reminderSentAt set
   const nineHoursAgo = new Date(now.getTime() - 9 * 60 * 60 * 1000);
   await db
     .update(jobs)
-    .set({ status: "expired", closedReason: "expired" })
+    .set({
+      status: sql`'expired'::job_status`,
+      closedReason: sql`'expired'::closed_reason`,
+    })
     .where(
       and(
         eq(jobs.status, "active"),
@@ -961,7 +969,10 @@ export async function markJobFilled(jobId: number, userId: number) {
   if (!db) throw new Error("Database not available");
   await db
     .update(jobs)
-    .set({ status: "closed", closedReason: "found_worker" })
+    .set({
+      status: sql`'closed'::job_status`,
+      closedReason: sql`'found_worker'::closed_reason`,
+    })
     .where(and(eq(jobs.id, jobId), eq(jobs.postedBy, userId)));
 }
 

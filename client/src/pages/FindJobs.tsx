@@ -1101,7 +1101,7 @@ export default function FindJobs() {
                         color: "white",
                       }}
                     >
-                      ביו קצר
+                      השלם
                       <ChevronLeft className="h-3 w-3" />
                     </button>
                   </Link>

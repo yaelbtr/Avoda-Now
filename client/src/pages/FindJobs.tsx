@@ -946,9 +946,9 @@ export default function FindJobs() {
             <div
               className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
               style={{
-                background: "white",
+                background: "transparent",
                 border: `1.5px solid ${C_BORDER}`,
-                boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)",
+                boxShadow: "none",
               }}
             >
               <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />

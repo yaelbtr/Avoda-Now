@@ -397,33 +397,30 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
         onClick={onOpen}
         className="flex items-center justify-center rounded-full cursor-pointer"
         style={{
-          width: 42, height: 42,
-          background: "oklch(0.88 0.13 70 / 0.18)",
-          border: "2px solid oklch(0.88 0.13 70 / 0.7)",
+          width: 32, height: 32,
+          background: "oklch(0.88 0.13 70 / 0.12)",
+          border: "1.5px solid oklch(0.88 0.13 70 / 0.45)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
         }}
         animate={{
-          scale: [1, 1.12, 1, 1.08, 1],
+          scale: [1, 1.07, 1],
           boxShadow: [
             "0 0 0px oklch(0.88 0.13 70 / 0.0)",
-            "0 0 14px oklch(0.88 0.13 70 / 0.7)",
-            "0 0 0px oklch(0.88 0.13 70 / 0.0)",
-            "0 0 10px oklch(0.88 0.13 70 / 0.5)",
+            "0 0 8px oklch(0.88 0.13 70 / 0.45)",
             "0 0 0px oklch(0.88 0.13 70 / 0.0)",
           ],
         }}
-        transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.8, ease: "easeInOut" }}
+        transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
         aria-label="השלם פרופיל"
       >
-        <UserCircle2 className="h-5 w-5" style={{ color: "oklch(0.95 0.12 75)" }} />
+        <UserCircle2 className="h-4 w-4" style={{ color: "oklch(0.95 0.12 75)" }} />
         {/* Notification dot */}
         <span
           className="absolute top-0 right-0 rounded-full"
-          style={{ width: 10, height: 10, background: "oklch(0.65 0.22 25)", border: "2px solid white" }}
+          style={{ width: 7, height: 7, background: "oklch(0.65 0.22 25)", border: "1.5px solid white" }}
         />
       </motion.button>
-
     </div>
   );
 }

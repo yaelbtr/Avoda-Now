@@ -680,11 +680,28 @@ export default function FindJobs() {
 
   // Invalidate profile data when returning from the profile page so the
   // completion icon disappears immediately if the profile was updated.
+  // Also show a success toast if the profile just reached 100%.
   const prevPathRef = useRef<string | null>(null);
   const [currentPath] = useLocation();
   useEffect(() => {
     if (prevPathRef.current === "/worker-profile" && currentPath !== "/worker-profile") {
-      utilsFj.user.getProfile.invalidate();
+      utilsFj.user.getProfile.invalidate().then(() => {
+        const freshProfile = utilsFj.user.getProfile.getData();
+        if (!freshProfile) return;
+        const checks = [
+          !!(freshProfile as { name?: string | null }).name?.trim(),
+          !!(freshProfile as { profilePhoto?: string | null }).profilePhoto,
+          ((freshProfile.preferredCategories ?? []).length > 0),
+          !!(freshProfile.preferredCity || freshProfile.workerLatitude),
+          !!(freshProfile as { workerBio?: string | null }).workerBio?.trim(),
+          !!(freshProfile as { preferenceText?: string | null }).preferenceText?.trim(),
+          ((freshProfile as { preferredDays?: string[] }).preferredDays ?? []).length > 0,
+        ];
+        const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+        if (score >= 100) {
+          toast.success("פרופיל הושלם! עכשיו תקבל התאמות טובות יותר", { duration: 4000 });
+        }
+      });
     }
     prevPathRef.current = currentPath;
   // utilsFj is stable — intentionally omitted from deps

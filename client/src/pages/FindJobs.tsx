@@ -406,7 +406,7 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
   };
 
   return (
-    <div className="absolute top-0 left-0" style={{ zIndex: 20 }}>
+    <div className="absolute top-0 left-0 mt-2 ml-2" style={{ zIndex: 20 }}>
       <motion.button
         onClick={onOpen}
         onMouseEnter={showTooltip}
@@ -1032,9 +1032,11 @@ export default function FindJobs() {
               <div
                 className="rounded-2xl p-4"
                 style={{
-                  background: score >= 70 ? "oklch(0.97 0.04 122 / 0.95)" : "oklch(0.97 0.06 80 / 0.95)",
-                  border: score >= 70 ? "1px solid oklch(0.85 0.08 122)" : "1px solid oklch(0.85 0.10 80)",
-                  boxShadow: "0 2px 12px oklch(0.28 0.06 122 / 0.10)",
+                  background: "rgba(255, 255, 255, 0.72)",
+                  backdropFilter: "blur(18px) saturate(1.8)",
+                  WebkitBackdropFilter: "blur(18px) saturate(1.8)",
+                  border: "1px solid rgba(255, 255, 255, 0.55)",
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
                 }}
               >
                 {/* Header row */}
@@ -1099,13 +1101,14 @@ export default function FindJobs() {
                   <Link href="/worker-profile">
                     <button
                       onClick={() => setProfilePanelOpen(false)}
-                      className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
+                      className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
                       style={{
                         background: score >= 70 ? "oklch(0.50 0.09 124.9)" : "oklch(0.55 0.12 76.7)",
                         color: "white",
                       }}
                     >
                       ביו קצר
+                      <ChevronLeft className="h-3 w-3" />
                     </button>
                   </Link>
                 </div>

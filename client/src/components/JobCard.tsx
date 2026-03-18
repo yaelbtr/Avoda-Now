@@ -669,6 +669,18 @@ export function JobCard({
                 {job.businessName}
               </p>
             )}
+            {/* Category badge */}
+            <span
+              className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+              style={{
+                background: "oklch(0.93 0.03 84)",
+                color: "oklch(0.38 0.06 84)",
+                border: "1px solid oklch(0.87 0.04 84.0)",
+              }}
+            >
+              <span>{getCategoryIcon(job.category)}</span>
+              <span>{getCategoryLabel(job.category)}</span>
+            </span>
           </div>
 
           {/* Left: action icon buttons */}

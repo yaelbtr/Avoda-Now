@@ -2380,3 +2380,4 @@
 - [x] UI: move "היום"/"דחוף" status badges to appear below the bookmark/share buttons row in JobCard
 - [x] Bug: status badges (היום/דחוף) not visible on job card — confirmed not a bug: badges only show when conditions are met (isJobDateToday, isUrgent, isNew, etc.)
 - [x] Fix: hide businessName in JobCard when it is an empty string
+- [x] UI: add Hebrew category badge below job title/business name in JobCard default variant

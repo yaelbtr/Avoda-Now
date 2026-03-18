@@ -2359,3 +2359,5 @@
 - [x] EmptyStateCarousel: add "נקה סינון" button to general empty state slide when hasAnyFilter is true
 - [x] Vitest unit tests for calcProfileScore and calcProfileMissingItems (empty, full, partial, edge cases)
 - [x] Fix tRPC "Unable to transform response from server" error on /find-jobs page
+- [x] Fix blank /find-jobs page — was transient 502 on sandbox wake-up; resolved by auto-retry logic
+- [x] Add smart auto-retry to tRPC client: retry on 502/503 (server down) but not on 4xx (client errors)

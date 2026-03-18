@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import { shouldRetry, retryDelay } from "@/lib/queryRetry";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -11,17 +12,8 @@ import "./index.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Retry transient server errors (5xx) up to 3 times with exponential backoff.
-      // Do NOT retry on 4xx (auth/not-found) — those are deterministic failures.
-      retry: (failureCount, error) => {
-        if (error instanceof TRPCClientError) {
-          const httpStatus = (error.data as { httpStatus?: number } | undefined)?.httpStatus;
-          // Never retry 4xx client errors
-          if (httpStatus && httpStatus >= 400 && httpStatus < 500) return false;
-        }
-        return failureCount < 3;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10_000),
+      retry: shouldRetry,
+      retryDelay,
       staleTime: 30_000,
     },
     mutations: {

@@ -2357,3 +2357,4 @@
 - [x] Add sort chips row below filter chips: מיון label + תאריך עבודה / שכר / עיר buttons
 - [x] Sort chips: add asc/desc toggle — click1=select↓, click2=reverse↑, click3=deselect
 - [x] EmptyStateCarousel: add "נקה סינון" button to general empty state slide when hasAnyFilter is true
+- [x] Vitest unit tests for calcProfileScore and calcProfileMissingItems (empty, full, partial, edge cases)

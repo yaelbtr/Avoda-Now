@@ -951,8 +951,7 @@ export default function FindJobs() {
                 border: `1.5px solid ${searchFocused ? "oklch(0.55 0.12 140)" : "oklch(0.88 0.04 122)"}`,
                 borderRadius: 10,
                 boxShadow: searchFocused ? "0 0 0 3px oklch(0.55 0.12 140 / 0.15)" : "none",
-                paddingTop: 9,
-                paddingBottom: 9,
+                height: 40,
                 paddingLeft: 12,
                 paddingRight: 12,
                 transition: "border-color 0.18s ease, box-shadow 0.18s ease",
@@ -983,8 +982,8 @@ export default function FindJobs() {
               onClick={() => setFilterOpen(v => !v)}
               className="relative flex items-center justify-center shrink-0"
               style={{
-                width: 37,
-                height: 37,
+                width: 40,
+                height: 40,
                 borderRadius: 10,
                 background: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140 / 0.08)" : "#ffffff",
                 color: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140)" : "oklch(0.45 0.06 122)",

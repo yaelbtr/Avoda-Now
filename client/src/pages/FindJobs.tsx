@@ -974,8 +974,8 @@ export default function FindJobs() {
               onClick={() => setFilterOpen(v => !v)}
               className="relative flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 transition-all"
               style={filterOpen || activeFilterCount > 0
-                ? { background: "white", color: "var(--brand)", border: `1.5px solid var(--brand)`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }
-                : { background: "white", color: "var(--muted-foreground)", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }}
+                ? { background: "transparent", color: "var(--brand)", border: `1.5px solid var(--brand)`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }
+                : { background: "transparent", color: "var(--muted-foreground)", border: `1.5px solid ${C_BORDER}`, boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.12)" }}
             >
               <SlidersHorizontal className="h-5 w-5" />
               {activeFilterCount > 0 && (

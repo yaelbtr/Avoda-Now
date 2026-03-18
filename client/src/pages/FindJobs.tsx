@@ -683,6 +683,25 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Load location from user profile when no cache exists ─────────────────────
+  // Ensures that navigating via the menu (no URL params, no cache) still shows
+  // location-based results using the user’s saved coordinates from their profile.
+  useEffect(() => {
+    if (profileQuery.isLoading) return;
+    if (userLat !== null) return; // already have a location — cache or GPS took priority
+    const profile = profileQuery.data;
+    if (!profile) return;
+    const lat = profile.workerLatitude ? Number(profile.workerLatitude) : null;
+    const lng = profile.workerLongitude ? Number(profile.workerLongitude) : null;
+    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+      setUserLat(lat);
+      setUserLng(lng);
+      saveLocationCache(lat, lng, profile.preferredCity ?? undefined);
+      if (profile.preferredCity) setGeoCity(profile.preferredCity);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileQuery.isLoading, profileQuery.data]);
+
   const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
   const doGetLocation = () => {

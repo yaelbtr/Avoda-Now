@@ -1049,43 +1049,43 @@ export default function FindJobs() {
                   />
                 </div>
 
-                {/* Missing items + CTA */}
-                <div className="flex items-center justify-between gap-2">
-                  {missingItems.length > 0 ? (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>חסר:</span>
-                      {missingItems.map((item, i) => (
-                        <motion.span
-                          key={item}
-                          initial={{ opacity: 0, scale: 0.75, y: 4 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ duration: 0.22, delay: 0.08 + i * 0.07, ease: "backOut" }}
-                          className="text-xs px-2 py-0.5 rounded-full font-medium"
-                          style={{
-                            background: "#986600",
-                            color: "#f4efe4",
-                            border: "1px solid rgba(255,255,255,0.18)",
-                          }}
-                        >
-                          {item}
-                        </motion.span>
-                      ))}
-                    </div>
-                  ) : <div />}
-                  <Link href="/worker-profile">
-                    <button
-                      onClick={() => setProfilePanelOpen(false)}
-                      className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
-                      style={{
-                        background: "#7a5200",
-                        color: "white",
-                      }}
-                    >
-                      השלם
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                  </Link>
-                </div>
+                {/* Missing items row */}
+                {missingItems.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>חסר:</span>
+                    {missingItems.map((item, i) => (
+                      <motion.span
+                        key={item}
+                        initial={{ opacity: 0, scale: 0.75, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.22, delay: 0.08 + i * 0.07, ease: "backOut" }}
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          background: "#986600",
+                          color: "#f4efe4",
+                          border: "1px solid rgba(255,255,255,0.18)",
+                        }}
+                      >
+                        {item}
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
+
+                {/* CTA button — full row below chips */}
+                <Link href="/worker-profile" className="block w-full mt-1">
+                  <button
+                    onClick={() => setProfilePanelOpen(false)}
+                    className="w-full flex items-center justify-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all active:scale-[0.97]"
+                    style={{
+                      background: "#7a5200",
+                      color: "white",
+                    }}
+                  >
+                    השלם לחשיפה מוגדלת
+                    <ChevronLeft className="h-3 w-3" />
+                  </button>
+                </Link>
               </div>
             </motion.div>
           );

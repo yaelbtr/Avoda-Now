@@ -2351,3 +2351,4 @@
 - [x] Unified profile completion score: extracted shared/profileScore.ts (7 fields)
 - [x] FindJobs uses calcProfileScore from shared/profileScore.ts
 - [x] WorkerProfile uses calcProfileScore from shared/profileScore.ts (replaced inline IIFE)
+- [x] Profile card: move CTA button to its own row below chips row, label → "השלם לחשיפה מוגדלת"

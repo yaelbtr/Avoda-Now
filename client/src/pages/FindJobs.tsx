@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence, useInView } from "framer-motion";
@@ -983,6 +984,7 @@ export default function FindJobs() {
   const inactivePill = { background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" } as React.CSSProperties;
 
   return (
+    <>
     <div dir="rtl" className="min-h-screen" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
@@ -1376,10 +1378,305 @@ export default function FindJobs() {
           )}
         </AnimatePresence>
 
-        {/* Geo card removed — radius now inline in chip row */}
 
-        {/* Filter panel */}
-        <AnimatePresence>
+        {/* —— (profile banner moved above search bar) —— */}
+
+        {/* Results count + sort chips — single row: chips right, count left (LTR order) */}
+        <div className="flex items-center gap-2 mb-3">
+          {/* Sort chips — right side (first in DOM = right in LTR) */}
+          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {([
+              { value: "date",    label: "תאריך" },
+              { value: "salary", label: "שכר" },
+              ...(userLat ? [{ value: "distance", label: "קרוב אלי" }] : []),
+            ] as { value: typeof sortBy; label: string }[]).map(opt => {
+              const isActive = sortBy === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    if (!isActive) {
+                      // First click: select with desc
+                      setSortBy(opt.value);
+                      setSortDir("desc");
+                    } else if (sortDir === "desc") {
+                      // Second click: flip to asc
+                      setSortDir("asc");
+                    } else {
+                      // Third click: deselect (back to default)
+                      setSortBy("default");
+                      setSortDir("desc");
+                    }
+                  }}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all active:scale-[0.97]"
+                  style={isActive ? {
+                    background: "var(--brand)",
+                    color: "white",
+                    border: "1px solid var(--brand)",
+                  } : {
+                    background: "oklch(0.97 0.02 122)",
+                    color: "var(--muted-foreground)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  {opt.label}
+                  {isActive ? (
+                    <span className="text-[10px] leading-none" style={{ color: "white" }}>{sortDir === "desc" ? "↓" : "↑"}</span>
+                  ) : (
+                    <span className="text-[10px] leading-none opacity-40">↕</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+        </div>
+
+        {/* Job list — wrapped for refetch overlay */}
+        <div className="relative">
+          {/* Refetch overlay: subtle opacity fade when filter changes but data exists */}
+          {showRefetchOverlay && (
+            <div
+              className="absolute inset-0 z-10 rounded-2xl pointer-events-none"
+              style={{
+                background: "oklch(0.97 0.01 122 / 0.55)",
+                backdropFilter: "blur(1px)",
+                animation: "pulse 1.2s ease-in-out infinite",
+              }}
+            />
+          )}
+        {showSkeleton ? (
+          <JobCardSkeletonList count={5} />
+        ) : jobs.length === 0 ? (
+          <SmartEmptyState
+            category={category}
+            catName={catName}
+            catIcon={dbCategories.find(c => c.slug === category)?.icon ?? undefined}
+            selectedCity={selectedCity}
+            dateFilter={dateFilter}
+            selectedTimeSlots={selectedTimeSlots}
+            selectedDays={selectedDays}
+            showUrgentToday={showUrgentToday}
+            searchText={searchText}
+            isAuthenticated={isAuthenticated}
+            onClearCategory={() => setCategory("all")}
+            onClearCity={() => { setSelectedCity(null); setSelectedCities([]); }}
+            onClearDateFilter={() => setDateFilter(null)}
+            onClearTimeSlots={() => setSelectedTimeSlots([])}
+            onClearDays={() => setSelectedDays([])}
+            onClearUrgent={() => setShowUrgentToday(false)}
+            onClearSearch={() => { setSearchText(""); setDebouncedSearchText(""); }}
+            onSelectCity={(city) => {
+              setSelectedCities([city]);
+              setSelectedCity(city);
+            }}
+            onShowTomorrow={() => { setDateFilter("tomorrow"); }}
+            onShowThisWeek={() => { setDateFilter("this_week"); }}
+            onClearAllFilters={() => {
+              setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
+              setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
+              setSearchText(""); setDebouncedSearchText(""); clearSavedFilters();
+              // Clear location / radius filter (קרוב אלי chip)
+              setUserLat(null); setUserLng(null); setGeoCity(null);
+              clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false);
+              // Also clear URL query params (e.g. ?filter=today) so the page
+              // re-queries without any URL-driven filter still active.
+              navigate("/find-jobs", { replace: true });
+            }}
+            showGeoNoResults={userLat !== null && autoExpandedRadius && jobs.length === 0 && !isLoading}
+            radiusKm={radiusKm}
+            expandRadiusOptions={RADIUS_OPTIONS.filter(r => r.value > radiusKm) as { value: number; label: string }[]}
+            onExpandRadius={(km) => { setRadiusKm(km); setAutoExpandedRadius(false); }}
+            hasGeoFilter={userLat !== null}
+          />
+        ) : (
+          <>
+          {isFallback && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-2" dir="rtl">
+              <span className="mt-0.5 shrink-0 text-base">📍</span>
+              <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
+            </div>
+          )}
+          <motion.div
+            initial="hidden" animate="visible"
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+            className="space-y-4"
+          >
+            {pagedJobs.map(job => {
+              const j = job as unknown as JobCardJob & { distance?: number };
+              return (
+                <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
+                  <JobCard
+                    job={j}
+                    isSaved={savedIds.has(j.id)}
+                    isApplied={appliedJobIdsFj.has(j.id)}
+                    onSaveToggle={handleSaveToggle}
+                    onApply={handleApplyFj}
+                    onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                    onCategoryClick={handleCategoryFromCard}
+                  />
+                </motion.div>
+              );
+            })}
+          </motion.div>
+          </>
+        )}
+        </div>{/* end job list wrapper */}
+
+        {/* ── Infinite Scroll Sentinel ──────────────────────────────────────── */}
+        {/* Sentinel div: IntersectionObserver watches this to trigger next page load */}
+        <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+        {/* Loading indicator while fetching next page */}
+        {isFetching && !isLoading && (
+          <div className="flex items-center justify-center gap-2 py-4" aria-label="טוען משרות נוספות">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-2 h-2 rounded-full animate-bounce"
+                  style={{ background: 'oklch(0.45 0.10 122)', animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </div>
+            <span className="text-xs" style={{ color: 'oklch(0.55 0.04 122)' }}>טוען משרות נוספות...</span>
+          </div>
+        )}
+        {/* End of results indicator */}
+        {!hasMore && !isLoading && jobs.length > 0 && (
+          <p className="text-center text-xs py-4" style={{ color: 'oklch(0.65 0.04 122)' }}>
+            הוצגו כל {serverTotal} המשרות
+          </p>
+        )}
+
+        {/* Location prompt when no geo */}
+        {!userLat && !selectedCity && !isLoading && jobs.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-6">
+            <button onClick={handleLocationButtonClick} disabled={locating}
+              className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-right transition-all hover:opacity-90"
+              style={{ background: "oklch(0.50 0.18 160 / 0.06)", border: "1.5px dashed oklch(0.50 0.18 160 / 0.4)" }}>
+              <div className="w-10 h-10 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
+                <LocateFixed className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-green-800">עבודות קרוב אלי</p>
+                <p className="text-xs text-green-600">אפשר גישה למיקום להצגת משרות בסביבתך</p>
+              </div>
+              <Navigation className="h-4 w-4 text-green-500 shrink-0" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* ── Push Notification Banner ──────────────────────────────────────── */}
+        {!isLoading && jobs.length > 0 && (
+          <div className="mt-4">
+            <PushNotificationBanner
+              category={category !== "all" ? category : null}
+              city={selectedCity}
+              compact
+            />
+          </div>
+        )}
+
+        {/* ══ SEO INTERNAL LINKS ══════════════════════════════════════════════ */}
+        <div className="mt-12 space-y-8">
+          {selectedCity && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Briefcase className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
+                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עוד משרות ב{selectedCity}</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {dbCategories.map(cat => (
+                  <Link key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
+                    style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
+                    {cat.icon} עבודות {cat.name} ב{selectedCity}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {category !== "all" && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
+                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עבודות {catName} לפי עיר</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {SEO_CITIES.map(city => (
+                  <Link key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`}
+                    className="city-chip">
+                    עבודות {catName} ב{city}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
+              <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי עיר</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {SEO_CITIES.filter(c => c !== selectedCity).map(city => (
+                <Link key={city} href={`/jobs/${encodeURIComponent(city)}`}
+                  className="city-chip">
+                  עבודות ב{city}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Briefcase className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
+              <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי קטגוריה</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {dbCategories.filter(c => c.slug !== category).map(cat => (
+                <Link key={cat.slug} href={`/jobs/${cat.slug}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
+                  style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
+                  {cat.icon} עבודות {cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating scroll-to-top button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-top"
+            initial={{ opacity: 0, scale: 0.7, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.7, y: 12 }}
+            transition={{ duration: 0.22 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-24 left-4 z-50 w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.38 0.07 125.0) 0%, oklch(0.28 0.06 122) 100%)",
+              boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.40)",
+            }}
+            aria-label="חזרה לראש הדף"
+          >
+            <ArrowUp className="h-5 w-5" style={{ color: "oklch(0.97 0.02 91)" }} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+      <JobBottomSheet
+        job={bottomSheetJob}
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
+        onLoginRequired={requireLogin}
+        isAuthenticated={isAuthenticated}
+      />
+
+
+    </div>
+    {createPortal(<AnimatePresence>
           {filterOpen && (
             <>
               {/* Backdrop */}
@@ -1807,307 +2104,9 @@ export default function FindJobs() {
               </motion.div>{/* end sheet */}
             </>
           )}
-        </AnimatePresence>
-
-
-
-        {/* ── (profile banner moved above search bar) ── */}
-
-        {/* Results count + sort chips — single row: chips right, count left (LTR order) */}
-        <div className="flex items-center gap-2 mb-3">
-          {/* Sort chips — right side (first in DOM = right in LTR) */}
-          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {([
-              { value: "date",    label: "תאריך" },
-              { value: "salary", label: "שכר" },
-              ...(userLat ? [{ value: "distance", label: "קרוב אלי" }] : []),
-            ] as { value: typeof sortBy; label: string }[]).map(opt => {
-              const isActive = sortBy === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    if (!isActive) {
-                      // First click: select with desc
-                      setSortBy(opt.value);
-                      setSortDir("desc");
-                    } else if (sortDir === "desc") {
-                      // Second click: flip to asc
-                      setSortDir("asc");
-                    } else {
-                      // Third click: deselect (back to default)
-                      setSortBy("default");
-                      setSortDir("desc");
-                    }
-                  }}
-                  className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all active:scale-[0.97]"
-                  style={isActive ? {
-                    background: "var(--brand)",
-                    color: "white",
-                    border: "1px solid var(--brand)",
-                  } : {
-                    background: "oklch(0.97 0.02 122)",
-                    color: "var(--muted-foreground)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  {opt.label}
-                  {isActive ? (
-                    <span className="text-[10px] leading-none" style={{ color: "white" }}>{sortDir === "desc" ? "↓" : "↑"}</span>
-                  ) : (
-                    <span className="text-[10px] leading-none opacity-40">↕</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-        </div>
-
-        {/* Job list — wrapped for refetch overlay */}
-        <div className="relative">
-          {/* Refetch overlay: subtle opacity fade when filter changes but data exists */}
-          {showRefetchOverlay && (
-            <div
-              className="absolute inset-0 z-10 rounded-2xl pointer-events-none"
-              style={{
-                background: "oklch(0.97 0.01 122 / 0.55)",
-                backdropFilter: "blur(1px)",
-                animation: "pulse 1.2s ease-in-out infinite",
-              }}
-            />
-          )}
-        {showSkeleton ? (
-          <JobCardSkeletonList count={5} />
-        ) : jobs.length === 0 ? (
-          <SmartEmptyState
-            category={category}
-            catName={catName}
-            catIcon={dbCategories.find(c => c.slug === category)?.icon ?? undefined}
-            selectedCity={selectedCity}
-            dateFilter={dateFilter}
-            selectedTimeSlots={selectedTimeSlots}
-            selectedDays={selectedDays}
-            showUrgentToday={showUrgentToday}
-            searchText={searchText}
-            isAuthenticated={isAuthenticated}
-            onClearCategory={() => setCategory("all")}
-            onClearCity={() => { setSelectedCity(null); setSelectedCities([]); }}
-            onClearDateFilter={() => setDateFilter(null)}
-            onClearTimeSlots={() => setSelectedTimeSlots([])}
-            onClearDays={() => setSelectedDays([])}
-            onClearUrgent={() => setShowUrgentToday(false)}
-            onClearSearch={() => { setSearchText(""); setDebouncedSearchText(""); }}
-            onSelectCity={(city) => {
-              setSelectedCities([city]);
-              setSelectedCity(city);
-            }}
-            onShowTomorrow={() => { setDateFilter("tomorrow"); }}
-            onShowThisWeek={() => { setDateFilter("this_week"); }}
-            onClearAllFilters={() => {
-              setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
-              setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
-              setSearchText(""); setDebouncedSearchText(""); clearSavedFilters();
-              // Clear location / radius filter (קרוב אלי chip)
-              setUserLat(null); setUserLng(null); setGeoCity(null);
-              clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false);
-              // Also clear URL query params (e.g. ?filter=today) so the page
-              // re-queries without any URL-driven filter still active.
-              navigate("/find-jobs", { replace: true });
-            }}
-            showGeoNoResults={userLat !== null && autoExpandedRadius && jobs.length === 0 && !isLoading}
-            radiusKm={radiusKm}
-            expandRadiusOptions={RADIUS_OPTIONS.filter(r => r.value > radiusKm) as { value: number; label: string }[]}
-            onExpandRadius={(km) => { setRadiusKm(km); setAutoExpandedRadius(false); }}
-            hasGeoFilter={userLat !== null}
-          />
-        ) : (
-          <>
-          {isFallback && (
-            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-2" dir="rtl">
-              <span className="mt-0.5 shrink-0 text-base">📍</span>
-              <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
-            </div>
-          )}
-          <motion.div
-            initial="hidden" animate="visible"
-            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-            className="space-y-4"
-          >
-            {pagedJobs.map(job => {
-              const j = job as unknown as JobCardJob & { distance?: number };
-              return (
-                <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
-                  <JobCard
-                    job={j}
-                    isSaved={savedIds.has(j.id)}
-                    isApplied={appliedJobIdsFj.has(j.id)}
-                    onSaveToggle={handleSaveToggle}
-                    onApply={handleApplyFj}
-                    onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
-                    onCategoryClick={handleCategoryFromCard}
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
-          </>
-        )}
-        </div>{/* end job list wrapper */}
-
-        {/* ── Infinite Scroll Sentinel ──────────────────────────────────────── */}
-        {/* Sentinel div: IntersectionObserver watches this to trigger next page load */}
-        <div ref={sentinelRef} className="h-4" aria-hidden="true" />
-        {/* Loading indicator while fetching next page */}
-        {isFetching && !isLoading && (
-          <div className="flex items-center justify-center gap-2 py-4" aria-label="טוען משרות נוספות">
-            <div className="flex gap-1">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="w-2 h-2 rounded-full animate-bounce"
-                  style={{ background: 'oklch(0.45 0.10 122)', animationDelay: `${i * 0.15}s` }} />
-              ))}
-            </div>
-            <span className="text-xs" style={{ color: 'oklch(0.55 0.04 122)' }}>טוען משרות נוספות...</span>
-          </div>
-        )}
-        {/* End of results indicator */}
-        {!hasMore && !isLoading && jobs.length > 0 && (
-          <p className="text-center text-xs py-4" style={{ color: 'oklch(0.65 0.04 122)' }}>
-            הוצגו כל {serverTotal} המשרות
-          </p>
-        )}
-
-        {/* Location prompt when no geo */}
-        {!userLat && !selectedCity && !isLoading && jobs.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-6">
-            <button onClick={handleLocationButtonClick} disabled={locating}
-              className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-right transition-all hover:opacity-90"
-              style={{ background: "oklch(0.50 0.18 160 / 0.06)", border: "1.5px dashed oklch(0.50 0.18 160 / 0.4)" }}>
-              <div className="w-10 h-10 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
-                <LocateFixed className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-green-800">עבודות קרוב אלי</p>
-                <p className="text-xs text-green-600">אפשר גישה למיקום להצגת משרות בסביבתך</p>
-              </div>
-              <Navigation className="h-4 w-4 text-green-500 shrink-0" />
-            </button>
-          </motion.div>
-        )}
-
-        {/* ── Push Notification Banner ──────────────────────────────────────── */}
-        {!isLoading && jobs.length > 0 && (
-          <div className="mt-4">
-            <PushNotificationBanner
-              category={category !== "all" ? category : null}
-              city={selectedCity}
-              compact
-            />
-          </div>
-        )}
-
-        {/* ══ SEO INTERNAL LINKS ══════════════════════════════════════════════ */}
-        <div className="mt-12 space-y-8">
-          {selectedCity && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Briefcase className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
-                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עוד משרות ב{selectedCity}</h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {dbCategories.map(cat => (
-                  <Link key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                    style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                    {cat.icon} עבודות {cat.name} ב{selectedCity}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-          {category !== "all" && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
-                <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עבודות {catName} לפי עיר</h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {SEO_CITIES.map(city => (
-                  <Link key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`}
-                    className="city-chip">
-                    עבודות {catName} ב{city}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
-              <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי עיר</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {SEO_CITIES.filter(c => c !== selectedCity).map(city => (
-                <Link key={city} href={`/jobs/${encodeURIComponent(city)}`}
-                  className="city-chip">
-                  עבודות ב{city}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="h-4 w-4" style={{ color: C_BRAND_HEX }} />
-              <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי קטגוריה</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {dbCategories.filter(c => c.slug !== category).map(cat => (
-                <Link key={cat.slug} href={`/jobs/${cat.slug}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                  style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                  {cat.icon} עבודות {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating scroll-to-top button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            key="scroll-top"
-            initial={{ opacity: 0, scale: 0.7, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.7, y: 12 }}
-            transition={{ duration: 0.22 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.93 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-24 left-4 z-50 w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.38 0.07 125.0) 0%, oklch(0.28 0.06 122) 100%)",
-              boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.40)",
-            }}
-            aria-label="חזרה לראש הדף"
-          >
-            <ArrowUp className="h-5 w-5" style={{ color: "oklch(0.97 0.02 91)" }} />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
-      <JobBottomSheet
-        job={bottomSheetJob}
-        open={bottomSheetOpen}
-        onClose={() => setBottomSheetOpen(false)}
-        onLoginRequired={requireLogin}
-        isAuthenticated={isAuthenticated}
-      />
-
-      {/* ── Calendar Bottom Sheet (mobile & desktop) ─────────────────────── */}
-      <AnimatePresence>
+    </AnimatePresence>, document.body)}
+    {/* ── Calendar Bottom Sheet (mobile & desktop) ─────────────────────── */}
+    {createPortal(<AnimatePresence>
         {calendarOpen && (
           <>
             {/* Backdrop */}
@@ -2199,7 +2198,7 @@ export default function FindJobs() {
             </motion.div>
           </>
         )}
-      </AnimatePresence>
-    </div>
+    </AnimatePresence>, document.body)}
+    </>
   );
 }

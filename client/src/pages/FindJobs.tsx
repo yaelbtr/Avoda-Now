@@ -1799,16 +1799,7 @@ export default function FindJobs() {
               );
             })}
           </div>
-          {/* Count — left side, pushed to end */}
-          <div className="shrink-0 mr-auto">
-            {isLoading ? (
-              <span className="text-sm text-gray-400">מחפש...</span>
-            ) : (
-              <span className="text-sm font-bold" style={{ color: "var(--brand)" }}>
-                {serverTotal > 0 ? `${serverTotal} משרות נמצאו` : "לא נמצאו משרות"}
-              </span>
-            )}
-          </div>
+
         </div>
 
         {/* Job list — wrapped for refetch overlay */}

@@ -501,6 +501,22 @@ export default function FindJobs() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close radius picker on outside click / touch
+  useEffect(() => {
+    if (!showRadiusPicker) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (radiusPickerRef.current && !radiusPickerRef.current.contains(e.target as Node)) {
+        setShowRadiusPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [showRadiusPicker]);
+
   // Chip row: track whether there is hidden content to the left (RTL end side)
   useEffect(() => {
     const el = chipRowRef.current;
@@ -528,6 +544,7 @@ export default function FindJobs() {
   const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const chipRowRef = useRef<HTMLDivElement | null>(null);
+  const radiusPickerRef = useRef<HTMLDivElement | null>(null);
   const [chipRowCanScrollLeft, setChipRowCanScrollLeft] = useState(false);
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | "date" | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
@@ -985,7 +1002,7 @@ export default function FindJobs() {
           >
           <div ref={chipRowRef} className="flex items-center gap-2 pb-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {/* קרוב אלי — with inline radius pills when active */}
-            <div className="shrink-0 flex items-center gap-1.5">
+            <div ref={radiusPickerRef} className="shrink-0 flex items-center gap-1.5">
               <button
                 onClick={() => {
                   if (userLat) {

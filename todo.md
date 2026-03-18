@@ -2310,3 +2310,6 @@
 - [x] Slim profile banner to compact single-line strip (icon + short text + arrow)
 - [x] Remove geo card block with radius buttons
 - [x] Add inline radius selector inside the "קרוב אלי" chip (expand on tap)
+
+## Radius Picker Outside-Click Close
+- [x] Add radiusPickerRef and mousedown/touchstart listener to close showRadiusPicker when clicking outside

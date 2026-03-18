@@ -1079,8 +1079,9 @@ export default function FindJobs() {
                           key={item}
                           className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{
-                            background: score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
-                            color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                            background: score >= 70 ? "oklch(0.92 0.06 85)" : "oklch(0.92 0.07 80)",
+                            color: score >= 70 ? "oklch(0.42 0.10 85)" : "oklch(0.42 0.12 76.7)",
+                            border: "1px solid oklch(0.80 0.10 85 / 0.5)",
                           }}
                         >
                           {item}

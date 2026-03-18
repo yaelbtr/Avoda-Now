@@ -1148,10 +1148,10 @@ export default function FindJobs() {
         })()}
         </AnimatePresence>
 
-        {/* ── SEARCH BAR inside hero, below profile card ── */}
+        {/* ── SEARCH BAR pinned to bottom of hero ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
-          className="relative z-20 max-w-lg mx-auto px-4 pb-4"
+          className="absolute bottom-0 inset-x-0 z-20 max-w-lg mx-auto px-4 pb-4"
           dir="rtl"
         >
           {/* Search input row */}

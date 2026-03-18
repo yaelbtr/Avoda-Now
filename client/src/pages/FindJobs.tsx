@@ -357,20 +357,6 @@ function SmartEmptyState({
         </div>
       )}
 
-      {/* Clear all */}
-      {hasAnyFilter && (
-        <div className="text-center mb-5">
-          <button
-            onClick={onClearAllFilters}
-            className="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"
-            style={{ background: "white", color: "oklch(0.45 0.06 122)", border: "1.5px solid oklch(0.88 0.04 122)" }}
-          >
-            <X className="h-3.5 w-3.5 inline ml-1" />
-            נקה כל הסינונים
-          </button>
-        </div>
-      )}
-
       {/* Popular cities */}
       <div>
         <p className="text-xs font-bold mb-3 text-center" style={{ color: C_TEXT_MUTED }}>חיפושים פופולריים:</p>

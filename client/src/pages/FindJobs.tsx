@@ -1853,6 +1853,9 @@ export default function FindJobs() {
               setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
               setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
               setSearchText(""); setDebouncedSearchText(""); clearSavedFilters();
+              // Also clear URL query params (e.g. ?filter=today) so the page
+              // re-queries without any URL-driven filter still active.
+              navigate("/find-jobs", { replace: true });
             }}
             showGeoNoResults={userLat !== null && autoExpandedRadius && jobs.length === 0 && !isLoading}
             radiusKm={radiusKm}

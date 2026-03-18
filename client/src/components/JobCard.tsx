@@ -655,53 +655,14 @@ export function JobCard({
 
       <div className="p-5 flex flex-col gap-4">
 
-        {/* ── Row 1: Header — title + badges + action icons ── */}
+        {/* ── Row 1: Header — title + action icons ── */}
         <div className="flex items-start justify-between gap-3">
 
-          {/* Right: title block */}
+          {/* Right: title + business name */}
           <div className="flex-1 min-w-0 text-right">
-            {/* Badge row — inline with title */}
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-extrabold text-[18px] leading-tight" style={{ color: "#1b1c1a" }}>
-                {job.title}
-              </h3>
-              {/* Status badges */}
-              {job.isUrgent && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
-                  style={{ background: "#FFF4F2", color: "#E53935" }}>
-                  דחוף
-                </span>
-              )}
-              {isJobDateToday && !job.isUrgent && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
-                  style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
-                  <Calendar className="h-2.5 w-2.5" />היום
-                </span>
-              )}
-              {isToday && !isJobDateToday && !job.isUrgent && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-orange-500 text-white">
-                  <Flame className="h-2.5 w-2.5" />להיום
-                </span>
-              )}
-              {isHighMatch && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
-                  style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
-                  <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
-                </span>
-              )}
-              {isWartime && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
-              )}
-              {isSeasonal && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
-              )}
-              {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
-                <span className="relative inline-flex items-center gap-1">
-                  <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full opacity-75" style={{ background: "#22c55e" }} />
-                  <span className="relative inline-flex rounded-full" style={{ width: 8, height: 8, background: "#16a34a" }} />
-                </span>
-              )}
-            </div>
+            <h3 className="font-extrabold text-[18px] leading-tight mb-1" style={{ color: "#1b1c1a" }}>
+              {job.title}
+            </h3>
             {/* Business name */}
             {job.businessName && (
               <p className="text-[13px] font-medium" style={{ color: "#46483d" }}>
@@ -744,6 +705,47 @@ export function JobCard({
             <SharePopover jobTitle={job.title} jobId={job.id} city={job.city} salary={job.salary} salaryType={job.salaryType} />
           </div>
         </div>
+
+        {/* ── Row 1b: Status badges ── */}
+        {(job.isUrgent || isJobDateToday || (isToday && !isJobDateToday) || isHighMatch || isWartime || isSeasonal || isNew) && (
+          <div className="flex items-center gap-2 flex-wrap -mt-2">
+            {job.isUrgent && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                style={{ background: "#FFF4F2", color: "#E53935" }}>
+                דחוף
+              </span>
+            )}
+            {isJobDateToday && !job.isUrgent && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
+                <Calendar className="h-2.5 w-2.5" />היום
+              </span>
+            )}
+            {isToday && !isJobDateToday && !job.isUrgent && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-orange-500 text-white">
+                <Flame className="h-2.5 w-2.5" />להיום
+              </span>
+            )}
+            {isHighMatch && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
+                <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
+              </span>
+            )}
+            {isWartime && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
+            )}
+            {isSeasonal && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
+            )}
+            {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
+              <span className="relative inline-flex items-center gap-1">
+                <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full opacity-75" style={{ background: "#22c55e" }} />
+                <span className="relative inline-flex rounded-full" style={{ width: 8, height: 8, background: "#16a34a" }} />
+              </span>
+            )}
+          </div>
+        )}
 
         {/* ── Row 2: Details grid 2×2 ── */}
         <div className="grid grid-cols-2 gap-y-2.5 gap-x-3">

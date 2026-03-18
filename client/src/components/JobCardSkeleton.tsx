@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 
 // ── Design tokens (mirrors JobCard) ──────────────────────────────────────────
-const C_BORDER = "oklch(0.87 0.04 84.0)";
+const C_BORDER = "oklch(0.87 0.04 84.0 / 0.5)";
 const C_SURFACE = "#ffffff";
-const S_CARD = "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)";
+const S_CARD = "0 1px 4px rgba(0,0,0,0.06)";
+const C_SHIMMER_BASE = "oklch(0.93 0.02 122)";
 
 // ── Shimmer block ─────────────────────────────────────────────────────────────
-// Each block has its own shimmer sweep so they all animate in sync.
 function Shimmer({
   width = "100%",
   height = 14,
@@ -29,7 +29,7 @@ function Shimmer({
         width,
         height,
         borderRadius: rounded,
-        background: "oklch(0.93 0.02 122)",
+        background: C_SHIMMER_BASE,
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,
@@ -51,7 +51,7 @@ function Shimmer({
   );
 }
 
-// ── Full JobCard skeleton — mirrors the "default" card variant ────────────────
+// ── Full JobCard skeleton — mirrors the "default" card variant (new 2×2 design) ──
 export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
     <motion.div
@@ -59,7 +59,7 @@ export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.28, ease: "easeOut", delay }}
-      className="rounded-2xl p-4 relative overflow-hidden"
+      className="rounded-2xl relative overflow-hidden"
       style={{
         background: C_SURFACE,
         border: `1px solid ${C_BORDER}`,
@@ -67,54 +67,61 @@ export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
       }}
       dir="rtl"
     >
-      {/* ── Header: category icon + title/badges + salary ── */}
-      <div className="flex items-start justify-between gap-3 mb-2">
-        {/* Category icon placeholder */}
-        <Shimmer width={44} height={44} rounded="0.75rem" delay={delay} />
+      <div className="p-5 flex flex-col gap-4">
+        {/* ── Row 1: Header — title + badges + action icons ── */}
+        <div className="flex items-start justify-between gap-3">
+          {/* Right: title + badge row */}
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Badge row inline with title */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Title */}
+              <Shimmer width="55%" height={20} rounded="0.4rem" delay={delay} />
+              {/* One status badge */}
+              <Shimmer width={52} height={20} rounded="9999px" delay={delay} />
+            </div>
+            {/* Business name */}
+            <Shimmer width="38%" height={13} rounded="0.35rem" delay={delay} />
+          </div>
 
-        {/* Title + badge row */}
-        <div className="flex-1 min-w-0 space-y-2">
-          <Shimmer width="62%" height={15} delay={delay} />
-          {/* Badges row */}
-          <div className="flex gap-1.5">
-            <Shimmer width={52} height={18} rounded="9999px" delay={delay} />
-            <Shimmer width={64} height={18} rounded="9999px" delay={delay} />
+          {/* Left: bookmark + share icon buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Shimmer width={32} height={32} rounded="9999px" delay={delay} />
+            <Shimmer width={32} height={32} rounded="9999px" delay={delay} />
           </div>
         </div>
 
-        {/* Salary placeholder */}
-        <div className="shrink-0 flex flex-col items-end gap-1">
-          <Shimmer width={70} height={16} delay={delay} />
-          <Shimmer width={50} height={11} delay={delay} />
+        {/* ── Row 2: Details grid 2×2 ── */}
+        <div className="grid grid-cols-2 gap-y-2.5 gap-x-3">
+          {/* Location */}
+          <div className="flex items-center gap-1.5">
+            <Shimmer width={16} height={16} rounded="9999px" delay={delay} />
+            <Shimmer width="70%" height={13} rounded="0.35rem" delay={delay} />
+          </div>
+          {/* Salary */}
+          <div className="flex items-center gap-1.5">
+            <Shimmer width={16} height={16} rounded="9999px" delay={delay} />
+            <Shimmer width="65%" height={13} rounded="0.35rem" delay={delay} />
+          </div>
+          {/* Date */}
+          <div className="flex items-center gap-1.5">
+            <Shimmer width={16} height={16} rounded="9999px" delay={delay} />
+            <Shimmer width="55%" height={13} rounded="0.35rem" delay={delay} />
+          </div>
+          {/* Time slot */}
+          <div className="flex items-center gap-1.5">
+            <Shimmer width={16} height={16} rounded="9999px" delay={delay} />
+            <Shimmer width="60%" height={13} rounded="0.35rem" delay={delay} />
+          </div>
         </div>
-      </div>
 
-      {/* ── Meta chips row (location · category · time · date) ── */}
-      <div
-        className="flex flex-wrap gap-x-3 gap-y-1.5 py-2 mb-2"
-        style={{
-          borderTop: "1px solid oklch(0.93 0.03 91.6)",
-          borderBottom: "1px solid oklch(0.93 0.03 91.6)",
-        }}
-      >
-        <Shimmer width={90} height={14} delay={delay} />
-        <Shimmer width={60} height={18} rounded="9999px" delay={delay} />
-        <Shimmer width={70} height={14} delay={delay} />
-        <Shimmer width={56} height={18} rounded="9999px" delay={delay} />
-      </div>
-
-      {/* ── Time row ── */}
-      <div className="flex items-center justify-between mb-3">
-        <Shimmer width={80} height={11} delay={delay} />
-      </div>
-
-      {/* ── Action buttons row ── */}
-      <div className="flex items-center gap-2 w-full">
-        <Shimmer width={80} height={34} rounded="9999px" delay={delay} />
-        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
-        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
-        <div className="flex-1" />
-        <Shimmer width={36} height={34} rounded="0.75rem" delay={delay} />
+        {/* ── Footer: full-width apply button ── */}
+        <Shimmer
+          width="100%"
+          height={48}
+          rounded="0.75rem"
+          delay={delay}
+          style={{ background: "oklch(0.88 0.04 100)" }}
+        />
       </div>
     </motion.div>
   );

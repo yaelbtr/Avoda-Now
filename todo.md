@@ -2387,3 +2387,4 @@
 - [x] UX: show toast "מסנן לפי: <category>" when category pill is clicked in FindJobs (handleCategoryFromCard)
 - [x] Fix: remove sticky positioning from search bar and filter/sort chip toolbar in FindJobs (should scroll with page)
 - [x] Bug: search bar overlaps filter/calendar bottom sheet — moved both panels to createPortal(document.body) to escape framer-motion stacking contexts300 and sheet to z-301
+- [x] Accessibility: close filter panel and calendar panel on Escape key press in FindJobs

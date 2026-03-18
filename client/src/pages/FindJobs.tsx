@@ -962,6 +962,18 @@ export default function FindJobs() {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, isFetching, isLoading, isQueryError]);
+
+  // ── Escape key: close any open bottom sheet ────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (filterOpen) { setFilterOpen(false); return; }
+      if (calendarOpen) { setCalendarOpen(false); }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [filterOpen, calendarOpen]);
+
   const totalPages = Math.ceil(serverTotal / PAGE_SIZE);
   const pagedJobs = jobs;
   // Total active filters: panel filters + quick chips (location, urgent, date)

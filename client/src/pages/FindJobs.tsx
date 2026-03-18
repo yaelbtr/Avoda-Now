@@ -1147,36 +1147,25 @@ export default function FindJobs() {
           );
         })()}
         </AnimatePresence>
-      </section>
 
-      {/* ══ MAIN CONTENT ══════════════════════════════════════════════════════════════ */}
-      <div className="max-w-2xl mx-auto px-4 pb-16 pt-3 relative z-10">
-
-        {/* Search bar */}
-        {/* ── TOOLBAR: sticky wrapper with frosted-glass on scroll ── */}
+        {/* ── SEARCH BAR inside hero, below profile card ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
-          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
-          style={{
-            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
-            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
-            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
-            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
-          }}
+          className="relative z-20 max-w-lg mx-auto px-4 pb-4"
+          dir="rtl"
         >
-          {/* Row 1: Search input first (RTL: right), then filter button (left) */}
-          <div className="flex items-center gap-2 pb-3">
-            {/* Search input — flex-1, placed first in DOM = rightmost in RTL */}
+          {/* Search input row */}
+          <div className="flex items-center gap-2 mb-2">
             <div
               className="flex items-center gap-3 flex-1 min-w-0 transition-all"
               style={{
-                background: "#ffffff",
-                border: `1.5px solid ${searchFocused ? "oklch(0.55 0.12 140)" : "oklch(0.88 0.04 122)"}`,
+                background: "rgba(255,255,255,0.92)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: `1.5px solid ${searchFocused ? "oklch(0.55 0.12 140)" : "rgba(255,255,255,0.7)"}`,
                 borderRadius: 10,
-                boxShadow: searchFocused ? "0 0 0 3px oklch(0.55 0.12 140 / 0.15)" : "none",
-                height: 40,
+                boxShadow: searchFocused ? "0 0 0 3px oklch(0.55 0.12 140 / 0.20)" : "0 2px 8px rgba(0,0,0,0.12)",
+                height: 44,
                 paddingLeft: 12,
                 paddingRight: 12,
                 transition: "border-color 0.18s ease, box-shadow 0.18s ease",
@@ -1200,20 +1189,20 @@ export default function FindJobs() {
                 </button>
               )}
             </div>
-
-            {/* Filter button — identical border/shadow/height to search box, placed second = leftmost in RTL */}
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={() => setFilterOpen(v => !v)}
               className="relative flex items-center justify-center shrink-0"
               style={{
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 borderRadius: 10,
-                background: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140 / 0.08)" : "#ffffff",
+                background: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140 / 0.15)" : "rgba(255,255,255,0.92)",
                 color: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140)" : "oklch(0.45 0.06 122)",
-                border: `1.5px solid ${filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140)" : "oklch(0.88 0.04 122)"}`,
-                boxShadow: filterOpen || activeFilterCount > 0 ? "0 0 0 3px oklch(0.55 0.12 140 / 0.10)" : "none",
+                border: `1.5px solid ${filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140)" : "rgba(255,255,255,0.7)"}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 transition: "border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease",
               }}
             >
@@ -1226,8 +1215,26 @@ export default function FindJobs() {
               )}
             </motion.button>
           </div>
+        </motion.div>
+      </section>
 
-          {/* Row 2: Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
+      {/* ══ MAIN CONTENT ═══════════════════════════════════════════════════════════════════════════════════ */}
+      <div className="max-w-2xl mx-auto px-4 pb-16 pt-3 relative z-10">
+
+        {/* ── TOOLBAR: sticky wrapper with frosted-glass on scroll (chip row only) ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
+          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
+          style={{
+            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
+            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
+            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
+            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
+            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}
+        >
+          {/* Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
           {/* Outer wrapper: relative + mask-image fade on left edge when scrolled */}
           <div
             className="relative -mx-4"

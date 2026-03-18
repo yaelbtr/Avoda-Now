@@ -10,6 +10,8 @@ import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import EmptyStateCarousel from "@/components/EmptyStateCarousel";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
+import { FIND_JOBS_OPEN } from "@shared/const";
+import FindJobsComingSoonOverlay from "@/components/FindJobsComingSoonOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { RADIUS_OPTIONS, getCategoryLabel, getCategoryIcon } from "@shared/categories";
@@ -2212,6 +2214,10 @@ export default function FindJobs() {
           </>
         )}
     </AnimatePresence>, document.body)}
+    {/* Coming-soon overlay — covers page and blocks all interaction when FIND_JOBS_OPEN is false */}
+    <AnimatePresence>
+      {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, document.body)}
+    </AnimatePresence>
     </>
   );
 }

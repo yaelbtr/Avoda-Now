@@ -2391,3 +2391,4 @@
 - [x] UI: highlight active category pill in JobCard when that category is in selectedCategories (bold border + checkmark)
 - [x] Bug: share button SharePopover was clipped by overflow-hidden on JobCard root — removed overflow-hidden, fixed urgent accent border-radius to compensate
 - [x] Feature: add share button (WhatsApp + copy link) to JobBottomSheet action area
+- [x] Feature: coming-soon overlay that covers FindJobs page and blocks all user interaction (FIND_JOBS_OPEN flag in shared/const.ts)

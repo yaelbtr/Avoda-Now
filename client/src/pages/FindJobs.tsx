@@ -1790,8 +1790,10 @@ export default function FindJobs() {
                   }}
                 >
                   {opt.label}
-                  {isActive && (
+                  {isActive ? (
                     <span className="text-[10px] leading-none">{sortDir === "desc" ? "↓" : "↑"}</span>
+                  ) : (
+                    <span className="text-[10px] leading-none opacity-40">↕</span>
                   )}
                 </button>
               );

@@ -193,10 +193,10 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.04 122) 0%, oklch(0.90 0.06 91) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)",
       headline: "לא נמצאו משרות",
-      subtitle: "נסה לשנות את הסינון או לחפש בעיר אחרת",
-      actions: hasAnyFilter
-        ? [{ id: "clear", label: "נקה סינון", onClick: onClearAllFilters, variant: "primary" }]
-        : [],
+      subtitle: hasAnyFilter
+        ? "נסה לשנות את הסינון או לחפש בעיר אחרת"
+        : "אין כרגע משרות זמינות — בדוק שוב מחר או שנה קטגוריה",
+      actions: [{ id: "clear", label: "נקה סינון", onClick: onClearAllFilters, variant: "primary" }],
     });
   }
 

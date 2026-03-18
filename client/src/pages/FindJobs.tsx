@@ -1209,7 +1209,7 @@ export default function FindJobs() {
                   ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)", fontWeight: 700 }
                   : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)", fontWeight: 700 }}
               >
-                {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
+                {locating ? <BrandLoader size="xs" /> : <Navigation className="h-3 w-3" />}
                 <span className="max-w-[80px] truncate">{userLat ? `${geoCity ?? "קרוב אלי"} · ${radiusKm} ק"מ` : "קרוב אלי"}</span>
                 {userLat && (
                   <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false); }} />

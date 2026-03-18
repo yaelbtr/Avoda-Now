@@ -8,7 +8,7 @@ const BLUE_MID = C_BRAND_MID;
 
 interface BrandLoaderProps {
   /** Size variant */
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   /** Show label text below */
   label?: string;
   /** Full-page overlay mode */
@@ -22,9 +22,9 @@ interface BrandLoaderProps {
  * - lg: full-page loader (80px)
  */
 export default function BrandLoader({ size = "md", label, fullPage = false }: BrandLoaderProps) {
-  const dim = size === "sm" ? 32 : size === "lg" ? 80 : 56;
-  const iconSize = size === "sm" ? 14 : size === "lg" ? 32 : 22;
-  const ringWidth = size === "sm" ? 2.5 : size === "lg" ? 4 : 3;
+  const dim = size === "xs" ? 14 : size === "sm" ? 32 : size === "lg" ? 80 : 56;
+  const iconSize = size === "xs" ? 6 : size === "sm" ? 14 : size === "lg" ? 32 : 22;
+  const ringWidth = size === "xs" ? 1.5 : size === "sm" ? 2.5 : size === "lg" ? 4 : 3;
 
   const inner = (
     <div className="flex flex-col items-center gap-3">

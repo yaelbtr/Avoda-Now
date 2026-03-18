@@ -1623,12 +1623,16 @@ export default function FindJobs() {
                             selected={calendarRange}
                             onSelect={(range) => {
                               setCalendarRange(range);
+                              const fmtLocal = (d: Date) => {
+                                const y = d.getFullYear();
+                                const mo = String(d.getMonth() + 1).padStart(2, "0");
+                                const dy = String(d.getDate()).padStart(2, "0");
+                                return `${y}-${mo}-${dy}`;
+                              };
                               if (range?.from && range?.to) {
-                                const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                                setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                                setDateFilter(`${fmtLocal(range.from)}:${fmtLocal(range.to)}`);
                               } else if (range?.from && !range?.to) {
-                                const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                                setDateFilter(fmt(range.from));
+                                setDateFilter(fmtLocal(range.from));
                               } else {
                                 setDateFilter(null);
                               }
@@ -2144,13 +2148,17 @@ export default function FindJobs() {
                     selected={calendarRange}
                     onSelect={(range) => {
                       setCalendarRange(range);
+                      const fmtLocal = (d: Date) => {
+                        const y = d.getFullYear();
+                        const m = String(d.getMonth() + 1).padStart(2, "0");
+                        const day = String(d.getDate()).padStart(2, "0");
+                        return `${y}-${m}-${day}`;
+                      };
                       if (range?.from && range?.to) {
-                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                        setDateFilter(`${fmt(range.from)}:${fmt(range.to)}`);
+                        setDateFilter(`${fmtLocal(range.from)}:${fmtLocal(range.to)}`);
                         setCalendarOpen(false);
                       } else if (range?.from && !range?.to) {
-                        const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                        setDateFilter(fmt(range.from));
+                        setDateFilter(fmtLocal(range.from));
                       }
                     }}
                     disabled={{ before: new Date() }}

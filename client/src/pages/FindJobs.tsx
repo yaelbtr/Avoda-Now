@@ -595,6 +595,11 @@ export default function FindJobs() {
   type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
   // Accumulated jobs across pages for infinite scroll
   const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
+  // pendingReset: when true, the next activeQueryData change will replace (not append) the list.
+  // This avoids the stale-data race where setAccumulatedJobs([]) runs before the new query
+  // response arrives, causing the old (stale) activeQueryData to re-populate the list and then
+  // block the fresh response because all IDs already exist.
+  const pendingResetRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const chipRowRef = useRef<HTMLDivElement | null>(null);
   const radiusPickerRef = useRef<HTMLDivElement | null>(null);
@@ -784,15 +789,21 @@ export default function FindJobs() {
   const serverTotal: number = activeQueryData?.total ?? 0;
   // isFallback: server expanded radius to 100km because nothing was found in user's radius
   const isFallback: boolean = userLat ? (activeQueryData?.isFallback ?? false) : false;
-  // Append new page results to accumulated list (avoid duplicates by id)
+  // Append new page results to accumulated list (avoid duplicates by id).
+  // When pendingResetRef is true we REPLACE the list instead of appending, then clear the flag.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (currentPageJobs.length === 0) return;
-    setAccumulatedJobs(prev => {
-      const existingIds = new Set(prev.map(j => j.id));
-      const newJobs = currentPageJobs.filter(j => !existingIds.has(j.id));
-      return newJobs.length > 0 ? [...prev, ...newJobs] : prev;
-    });
+    if (pendingResetRef.current) {
+      pendingResetRef.current = false;
+      setAccumulatedJobs(currentPageJobs as AnyJob[]);
+    } else {
+      setAccumulatedJobs(prev => {
+        const existingIds = new Set(prev.map(j => j.id));
+        const newJobs = currentPageJobs.filter(j => !existingIds.has(j.id));
+        return newJobs.length > 0 ? [...prev, ...newJobs] : prev;
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeQueryData]);
   let jobs: AnyJob[] = accumulatedJobs;
@@ -874,9 +885,11 @@ export default function FindJobs() {
   }, [isLoading, hasActiveFilter, jobs.length]);
   // Reset accumulated jobs + page when filters change
   useEffect(() => {
+    // Mark that the next query response should replace (not append) the accumulated list.
+    // We do NOT call setAccumulatedJobs([]) here to avoid the stale-data race condition.
+    pendingResetRef.current = true;
     setCurrentPage(1);
-    setAccumulatedJobs([]);
-  }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, debouncedSearchText]);
+  }, [category, selectedCategories.length, selectedCity, selectedCities.length, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, dateFilter, debouncedSearchText]);
   // Auto-save non-trivial filters to localStorage
   useEffect(() => {
     const hasFilters = selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";

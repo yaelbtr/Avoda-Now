@@ -629,7 +629,7 @@ export function JobCard({
         borderColor: job.isUrgent ? `${C_DANGER_HEX}60` : "oklch(0.80 0.06 84.0)",
       }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="group rounded-2xl p-4 relative overflow-hidden bg-white transition-all duration-200 hover:backdrop-blur-[20px] hover:bg-white/85"
+      className="group rounded-2xl p-5 relative overflow-hidden bg-white transition-all duration-200 hover:backdrop-blur-[20px] hover:bg-white/85"
       style={{
         border: `1px solid ${job.isUrgent ? `${C_DANGER_HEX}35` : "oklch(0.87 0.04 84.0)"}`,
         boxShadow: job.isUrgent
@@ -648,25 +648,45 @@ export function JobCard({
         />
       )}
 
-      {/* "New" green pulsing dot — top-left corner */}
-      {isNew && (
-        <span
-          className="absolute top-3 left-3 z-10 flex items-center justify-center"
-          style={{ width: 10, height: 10 }}
-        >
-          <span
-            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-            style={{ background: "#22c55e" }}
-          />
-          <span
-            className="relative inline-flex rounded-full"
-            style={{ width: 8, height: 8, background: "#16a34a" }}
-          />
-        </span>
-      )}
+      {/* Status badge — top-left corner (like MyApplications) */}
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+        {job.isUrgent && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: C_DANGER_HEX, color: "#fff" }}>
+            <Zap className="h-2.5 w-2.5" />דחוף
+          </span>
+        )}
+        {isJobDateToday && !job.isUrgent && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.45 0.18 145)", color: "#fff" }}>
+            <Calendar className="h-2.5 w-2.5" />היום
+          </span>
+        )}
+        {isToday && !isJobDateToday && !job.isUrgent && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500 text-white">
+            <Flame className="h-2.5 w-2.5" />להיום
+          </span>
+        )}
+        {isWartime && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
+        )}
+        {isSeasonal && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
+        )}
+        {isHighMatch && (
+          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
+            <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
+          </span>
+        )}
+        {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
+          <span className="inline-flex items-center gap-1" style={{ width: 10, height: 10 }}>
+            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full opacity-75" style={{ background: "#22c55e" }} />
+            <span className="relative inline-flex rounded-full" style={{ width: 8, height: 8, background: "#16a34a" }} />
+          </span>
+        )}
+      </div>
 
       {/* ── Header: title + category icon + salary ── */}
-      <div className="flex items-start justify-between gap-3 mb-2" dir="rtl">
+      {/* Top padding compensates for the absolute badge row */}
+      <div className="flex items-start justify-between gap-3 mb-2 pt-5" dir="rtl">
         {/* Right: category icon */}
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
@@ -682,41 +702,18 @@ export function JobCard({
           {getCategoryIcon(job.category)}
         </div>
 
-        {/* Center: title + badges + business */}
+        {/* Center: title + employer name */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[15px] leading-tight text-right mb-1" style={{ color: "var(--text-primary)" }}>
+          <h3 className="font-bold text-[15px] leading-tight text-right mb-0.5" style={{ color: "var(--text-primary)" }}>
             {job.title}
           </h3>
-          {/* Badges */}
-          <div className="flex flex-wrap gap-1">
-            {job.isUrgent && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${C_DANGER_HEX}15`, color: C_DANGER_HEX, border: `1px solid ${C_DANGER_HEX}30` }}>
-                <Zap className="h-2.5 w-2.5" />דחוף
-              </span>
-            )}
-            {isJobDateToday && !job.isUrgent && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.95 0.08 145)", color: "oklch(0.32 0.12 145)", border: "1px solid oklch(0.80 0.10 145)" }}>
-                <Calendar className="h-2.5 w-2.5" />היום
-              </span>
-            )}
-            {isToday && !isJobDateToday && !job.isUrgent && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200">
-                <Flame className="h-2.5 w-2.5" />להיום
-              </span>
-            )}
-            {isWartime && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-200">🆘 חירום</span>
-            )}
-            {isSeasonal && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
-            )}
-            {isHighMatch && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "oklch(0.96 0.08 145)", color: "oklch(0.35 0.12 145)", border: "1px solid oklch(0.82 0.10 145)" }}>
-                <Star className="h-2.5 w-2.5 fill-current" />התאמה גבוהה
-              </span>
-            )}
-          </div>
-
+          {/* Employer name row — like MyApplications */}
+          {job.businessName && (
+            <p className="flex items-center gap-1 text-[12px] font-medium text-right" style={{ color: "var(--text-secondary)" }}>
+              <Users className="h-3 w-3 shrink-0" style={{ color: C_BRAND_HEX }} />
+              {job.businessName}
+            </p>
+          )}
         </div>
 
         {/* Left: salary + hourly summary */}

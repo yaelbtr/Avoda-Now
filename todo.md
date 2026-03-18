@@ -2313,3 +2313,9 @@
 
 ## Radius Picker Outside-Click Close
 - [x] Add radiusPickerRef and mousedown/touchstart listener to close showRadiusPicker when clicking outside
+
+## Job Card Redesign (MyApplications-inspired)
+- [x] Move urgent/today/status badge to top-left corner of card (absolute positioned pill)
+- [x] Increase card padding from p-4 to p-5 for more breathing room
+- [x] Add employer name row with briefcase icon below title (like MyApplications)
+- [x] Increase gap between cards in FindJobs list

@@ -1646,7 +1646,7 @@ export default function FindJobs() {
           <motion.div
             initial="hidden" animate="visible"
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-            className="space-y-3"
+            className="space-y-4"
           >
             {pagedJobs.map(job => {
               const j = job as unknown as JobCardJob & { distance?: number };

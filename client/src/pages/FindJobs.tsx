@@ -459,7 +459,12 @@ export default function FindJobs() {
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [showCityInput, setShowCityInput] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState(""); // raw input — bound to <input>
+  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // debounced — used for filtering
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearchText(searchText), 200);
+    return () => clearTimeout(id);
+  }, [searchText]);
   const [showUrgentToday, setShowUrgentToday] = useState(
     params.get("urgent") === "1" || params.get("help") === "1" || filterParam === "today"
   );
@@ -775,8 +780,8 @@ export default function FindJobs() {
   const showSkeleton = isLoading;
   const showRefetchOverlay = !isLoading && isFetching;
 
-  if (searchText.trim()) {
-    const q = searchText.toLowerCase();
+  if (debouncedSearchText.trim()) {
+    const q = debouncedSearchText.toLowerCase();
     jobs = jobs.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q) || j.address.toLowerCase().includes(q));
   }
   if (showUrgentToday) {
@@ -847,7 +852,7 @@ export default function FindJobs() {
   useEffect(() => {
     setCurrentPage(1);
     setAccumulatedJobs([]);
-  }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, searchText]);
+  }, [category, selectedCity, userLat, showUrgentToday, selectedTimeSlots.length, selectedDays.length, sortBy, dateFilter, debouncedSearchText]);
   // Auto-save non-trivial filters to localStorage
   useEffect(() => {
     const hasFilters = selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default";
@@ -1126,7 +1131,7 @@ export default function FindJobs() {
                 dir="rtl"
               />
               {searchText && (
-                <button onClick={() => setSearchText("")} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <button onClick={() => { setSearchText(""); setDebouncedSearchText(""); }} className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
                   <X className="h-4 w-4" />
                 </button>
               )}
@@ -1810,7 +1815,7 @@ export default function FindJobs() {
             onClearTimeSlots={() => setSelectedTimeSlots([])}
             onClearDays={() => setSelectedDays([])}
             onClearUrgent={() => setShowUrgentToday(false)}
-            onClearSearch={() => setSearchText("")}
+            onClearSearch={() => { setSearchText(""); setDebouncedSearchText(""); }}
             onSelectCity={(city) => {
               setSelectedCities([city]);
               setSelectedCity(city);
@@ -1820,7 +1825,7 @@ export default function FindJobs() {
             onClearAllFilters={() => {
               setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
               setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
-              setSearchText(""); clearSavedFilters();
+              setSearchText(""); setDebouncedSearchText(""); clearSavedFilters();
             }}
             showGeoNoResults={userLat !== null && autoExpandedRadius && jobs.length === 0 && !isLoading}
             radiusKm={radiusKm}

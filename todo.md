@@ -2353,3 +2353,4 @@
 - [x] WorkerProfile uses calcProfileScore from shared/profileScore.ts (replaced inline IIFE)
 - [x] Profile card: move CTA button to its own row below chips row, label → "השלם לחשיפה מוגדלת"
 - [x] Filter button: keep constant style when active filters exist — only show red badge, no background/border change
+- [x] Search input: add 200ms debounce via split state (searchText raw + debouncedSearchText for filtering)

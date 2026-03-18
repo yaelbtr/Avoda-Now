@@ -406,7 +406,7 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
   };
 
   return (
-    <div className="absolute top-0 left-0 mt-2 ml-4" style={{ zIndex: 20 }}>
+    <div className="absolute top-0 left-0 mt-4 ml-4" style={{ zIndex: 20 }}>
       <motion.button
         onClick={onOpen}
         onMouseEnter={showTooltip}

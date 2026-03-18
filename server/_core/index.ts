@@ -21,6 +21,7 @@ import { makeRequest } from "./map";
 import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
 import { sendSms } from "../sms";
 import { scheduleDailyBackup } from "../backup";
+import { assertDbHealth } from "../dbHealthCheck";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -347,6 +348,9 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // ── DB health check: verify all schema tables exist before accepting traffic ──
+  await assertDbHealth();
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);

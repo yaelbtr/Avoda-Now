@@ -2362,3 +2362,4 @@
 - [x] Fix blank /find-jobs page — was transient 502 on sandbox wake-up; resolved by auto-retry logic
 - [x] Add smart auto-retry to tRPC client: retry on 502/503 (server down) but not on 4xx (client errors)
 - [x] Fix recurring blank /find-jobs page — root cause: system_settings table missing (blocked migration 0001/0002); fixed by marking migrations as applied + db:push; added loading guard in Router for maintenanceQuery
+- [x] Add startup DB health-check: verify all required tables exist, report missing ones, fail fast before accepting traffic

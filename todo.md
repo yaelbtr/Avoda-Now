@@ -2384,3 +2384,5 @@
 - [x] UI: add skeleton pill row (20px height, 80px width) for category badge in JobCardSkeleton
 - [x] UI: per-category color map for category badge in JobCard (getCategoryColor helper in shared/categories)
 - [x] Feature: click on category badge in JobCard filters FindJobs by that category (onCategoryClick prop)
+- [x] UX: show toast "מסנן לפי: <category>" when category pill is clicked in FindJobs (handleCategoryFromCard)
+- [x] Fix: remove sticky positioning from search bar and filter/sort chip toolbar in FindJobs (should scroll with page)

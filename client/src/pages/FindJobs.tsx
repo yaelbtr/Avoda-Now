@@ -11,7 +11,7 @@ import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { useAuth } from "@/contexts/AuthContext";
 import CityAutocomplete from "@/components/CityAutocomplete";
-import { RADIUS_OPTIONS } from "@shared/categories";
+import { RADIUS_OPTIONS, getCategoryLabel, getCategoryIcon } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
 import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
@@ -786,13 +786,20 @@ export default function FindJobs() {
   };
 
   /** Add a category to the active filter when the user clicks a category pill on a job card.
-   *  If the category is already active, this is a no-op (idempotent). */
+   *  If the category is already active, shows an "already filtering" toast instead. */
   const handleCategoryFromCard = (categorySlug: string) => {
+    const label = getCategoryLabel(categorySlug);
+    const icon  = getCategoryIcon(categorySlug);
     setSelectedCategories(prev => {
-      if (prev.includes(categorySlug)) return prev; // already active — no-op
+      if (prev.includes(categorySlug)) {
+        // Already active — inform the user instead of silently doing nothing
+        toast(`${icon} כבר מסנן לפי: ${label}`, { duration: 2000 });
+        return prev;
+      }
       const next = [...prev, categorySlug];
       // Keep legacy single-category field in sync
       setCategory(next.length === 1 ? categorySlug : "all");
+      toast.success(`${icon} מסנן לפי: ${label}`, { duration: 2500 });
       return next;
     });
   };
@@ -1239,7 +1246,7 @@ export default function FindJobs() {
         {/* ── TOOLBAR: sticky wrapper with frosted-glass on scroll (chip row only) ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
-          className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
+          className="flex flex-col gap-0 mb-3 -mx-4 px-4 pt-3"
           style={{
             background: "transparent",
             transition: "background 0.25s ease",

@@ -763,6 +763,8 @@ export default function FindJobs() {
   const activeQueryData = userLat ? (searchQuery.data as any) : (listQuery.data as any);
   const currentPageJobs: AnyJob[] = (activeQueryData?.jobs ?? []) as AnyJob[];
   const serverTotal: number = activeQueryData?.total ?? 0;
+  // isFallback: server expanded radius to 100km because nothing was found in user's radius
+  const isFallback: boolean = userLat ? (activeQueryData?.isFallback ?? false) : false;
   // Append new page results to accumulated list (avoid duplicates by id)
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
@@ -1839,6 +1841,13 @@ export default function FindJobs() {
             onExpandRadius={(km) => { setRadiusKm(km); setAutoExpandedRadius(false); }}
           />
         ) : (
+          <>
+          {isFallback && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-2" dir="rtl">
+              <span className="mt-0.5 shrink-0 text-base">📍</span>
+              <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
+            </div>
+          )}
           <motion.div
             initial="hidden" animate="visible"
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
@@ -1860,6 +1869,7 @@ export default function FindJobs() {
               );
             })}
           </motion.div>
+          </>
         )}
         </div>{/* end job list wrapper */}
 

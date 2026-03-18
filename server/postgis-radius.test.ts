@@ -153,12 +153,15 @@ describe("PostGIS Radius Search — jobs.search procedure", () => {
   });
 
   it("accepts all valid RADIUS_OPTIONS values (5, 10, 20, 50)", async () => {
-    vi.mocked(db.getJobsNearLocation).mockResolvedValue({ rows: [], total: 0 });
+    // Use total:1 so the fallback branch (radiusKm=100) is NOT triggered
+    vi.mocked(db.getJobsNearLocation).mockResolvedValue({ rows: [fakeJobRow()], total: 1 });
     const caller = appRouter.createCaller(makeCtx());
 
     for (const km of [5, 10, 20, 50]) {
+      vi.mocked(db.getJobsNearLocation).mockClear();
       await caller.jobs.search({ lat: 32.0853, lng: 34.7818, radiusKm: km });
-      const call = vi.mocked(db.getJobsNearLocation).mock.calls.at(-1)!;
+      // First call must use the requested radius (no fallback because total=1)
+      const call = vi.mocked(db.getJobsNearLocation).mock.calls[0]!;
       expect(call[2]).toBe(km);
     }
   });

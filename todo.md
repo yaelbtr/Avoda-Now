@@ -2363,5 +2363,6 @@
 - [x] Add smart auto-retry to tRPC client: retry on 502/503 (server down) but not on 4xx (client errors)
 - [x] Fix recurring blank /find-jobs page — root cause: system_settings table missing (blocked migration 0001/0002); fixed by marking migrations as applied + db:push; added loading guard in Router for maintenanceQuery
 - [x] Add startup DB health-check: verify all required tables exist, report missing ones, fail fast before accepting traffic
-- [ ] Fix: no jobs shown on /find-jobs page — diagnose jobs.search query returning empty results
+- [x] Fix: no jobs shown on /find-jobs page — jobs were outside user's radius; added 100km fallback with banner
 - [x] Fix: UPDATE jobs set closedReason/status fails — Drizzle ORM 0.44.x enum cast bug; fixed with sql`'expired'::job_status` explicit casts
+- [x] Fallback search: when no jobs in user's radius, expand to 100km and show nearest jobs with "אין משרות בקרבתך" banner

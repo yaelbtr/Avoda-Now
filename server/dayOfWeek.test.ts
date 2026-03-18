@@ -212,9 +212,11 @@ describe("jobs.list — dayOfWeek parameter forwarding", () => {
 // ── jobs.search — dayOfWeek parameter passing ─────────────────────────────────
 
 describe("jobs.search — dayOfWeek parameter forwarding", () => {
+  // Use total:1 so the fallback branch is NOT triggered (fallback only fires when total===0 and no filters)
+  const ONE_RESULT = { rows: [{ id: 1, title: "Test", description: "", category: "cleaning", address: "", city: "", latitude: 32, longitude: 34, salary: null, salaryType: null, contactPhone: null, contactName: null, businessName: null, workingHours: null, startTime: null, workersNeeded: 1, activeDuration: null, expiresAt: null, postedBy: 1, status: "active", reportCount: 0, jobTags: null, createdAt: new Date(), updatedAt: new Date(), jobDate: null, workStartTime: null, workEndTime: null, distance: 1 }], total: 1 };
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(db.getJobsNearLocation).mockResolvedValue(EMPTY_RESULT as never);
+    vi.mocked(db.getJobsNearLocation).mockResolvedValue(ONE_RESULT as never);
   });
 
   const baseSearchInput = {
@@ -227,6 +229,7 @@ describe("jobs.search — dayOfWeek parameter forwarding", () => {
     const caller = appRouter.createCaller(publicCtx());
     await caller.jobs.search(baseSearchInput);
 
+    // Called exactly once (no fallback because total=1)
     expect(db.getJobsNearLocation).toHaveBeenCalledOnce();
     // 9th argument (index 8) is dayOfWeek
     const callArgs = vi.mocked(db.getJobsNearLocation).mock.calls[0]!;

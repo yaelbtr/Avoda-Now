@@ -491,6 +491,7 @@ export default function FindJobs() {
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [toolbarScrolled, setToolbarScrolled] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
@@ -944,11 +945,17 @@ export default function FindJobs() {
           <div className="flex items-center gap-2 pb-3">
             {/* Search input — flex-1, placed first in DOM = rightmost in RTL */}
             <div
-              className="flex items-center gap-3 px-4 py-3.5 rounded-2xl flex-1 min-w-0"
+              className="flex items-center gap-3 flex-1 min-w-0 transition-all"
               style={{
-                background: "transparent",
-                border: `1.5px solid ${C_BORDER}`,
-                boxShadow: "none",
+                background: "#ffffff",
+                border: `1.5px solid ${searchFocused ? "oklch(0.55 0.12 140)" : "oklch(0.88 0.04 122)"}`,
+                borderRadius: 10,
+                boxShadow: searchFocused ? "0 0 0 3px oklch(0.55 0.12 140 / 0.15)" : "none",
+                paddingTop: 9,
+                paddingBottom: 9,
+                paddingLeft: 12,
+                paddingRight: 12,
+                transition: "border-color 0.18s ease, box-shadow 0.18s ease",
               }}
             >
               <Search className="h-5 w-5 shrink-0" style={{ color: C_BRAND_HEX }} />
@@ -956,9 +963,11 @@ export default function FindJobs() {
                 type="search"
                 value={searchText}
                 onChange={e => setSearchText(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 placeholder="חפש תפקיד, עיר..."
-                className="flex-1 min-w-0 bg-transparent text-sm font-medium outline-none placeholder:text-gray-400"
-                style={{ color: "oklch(0.22 0.03 122.3)" }}
+                className="flex-1 min-w-0 bg-transparent outline-none"
+                style={{ fontSize: 15, color: "#111827", caretColor: "oklch(0.55 0.12 140)" }}
                 dir="rtl"
               />
               {searchText && (

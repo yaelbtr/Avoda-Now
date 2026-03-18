@@ -2319,3 +2319,6 @@
 - [x] Increase card padding from p-4 to p-5 for more breathing room
 - [x] Add employer name row with briefcase icon below title (like MyApplications)
 - [x] Increase gap between cards in FindJobs list
+
+## Search Field Design Token Alignment
+- [x] Apply AvodaNow TOKENS to search input: white bg, 10px radius, brand border on focus, ring shadow, correct placeholder color

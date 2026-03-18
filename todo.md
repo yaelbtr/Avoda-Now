@@ -2322,3 +2322,6 @@
 
 ## Search Field Design Token Alignment
 - [x] Apply AvodaNow TOKENS to search input: white bg, 10px radius, brand border on focus, ring shadow, correct placeholder color
+
+## Filter Button Design Alignment
+- [x] Match filter button to search input: borderRadius 10px, same height (37px), white bg, consistent border color

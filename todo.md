@@ -2368,3 +2368,4 @@
 - [x] Fallback search: when no jobs in user's radius, expand to 100km and show nearest jobs with "אין משרות בקרבתך" banner
 - [x] Fix: no jobs shown when navigating to /find-jobs via menu — added useEffect to load workerLatitude/Longitude from profile when no location cache exists
 - [x] Fix: "נקה סינון" does not clear URL query params (e.g. ?filter=today stays in URL after clearing)
+- [x] Fix: "נקה סינון" does not clear the "קרוב אלי" radius/location filter chip

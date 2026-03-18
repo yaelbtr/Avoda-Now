@@ -1853,6 +1853,9 @@ export default function FindJobs() {
               setCategory("all"); setSelectedCategories([]); setSelectedCity(null); setSelectedCities([]);
               setSelectedTimeSlots([]); setSelectedDays([]); setDateFilter(null); setShowUrgentToday(false);
               setSearchText(""); setDebouncedSearchText(""); clearSavedFilters();
+              // Clear location / radius filter (קרוב אלי chip)
+              setUserLat(null); setUserLng(null); setGeoCity(null);
+              clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false);
               // Also clear URL query params (e.g. ?filter=today) so the page
               // re-queries without any URL-driven filter still active.
               navigate("/find-jobs", { replace: true });

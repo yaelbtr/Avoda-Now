@@ -73,6 +73,8 @@ export interface JobCardProps {
   variant?: "default" | "compact";
   /** Called when the category pill is clicked — lets FindJobs add the category to active filters */
   onCategoryClick?: (category: string) => void;
+  /** Set of currently active category filter values — pill is highlighted when job.category is included */
+  activeCategories?: string[];
 }
 
 const SITE_URL = "https://avodanow.co.il";
@@ -309,6 +311,7 @@ export function JobCard({
   onCardClick,
   variant = "default",
   onCategoryClick,
+  activeCategories,
 }: JobCardProps) {
   const { isAuthenticated } = useAuth();
   const isVolunteer = job.salaryType === "volunteer";
@@ -673,24 +676,29 @@ export function JobCard({
                 {job.businessName}
               </p>
             )}
-            {/* Category badge — per-category color, clickable to filter */}
+            {/* Category badge — per-category color, clickable to filter, highlighted when active */}
             {(() => {
               const catColor = getCategoryColor(job.category);
+              const isActive = activeCategories?.includes(job.category) ?? false;
               return (
                 <span
                   role={onCategoryClick ? "button" : undefined}
                   tabIndex={onCategoryClick ? 0 : undefined}
                   aria-label={onCategoryClick ? `סנן לפי קטגוריה: ${getCategoryLabel(job.category)}` : undefined}
-                  className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-opacity"
+                  aria-pressed={onCategoryClick ? isActive : undefined}
+                  className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all"
                   style={{
-                    background: catColor.bg,
-                    color: catColor.text,
-                    border: `1px solid ${catColor.border}`,
+                    background: isActive ? catColor.text : catColor.bg,
+                    color: isActive ? "#fff" : catColor.text,
+                    border: isActive ? `2px solid ${catColor.text}` : `1px solid ${catColor.border}`,
                     cursor: onCategoryClick ? "pointer" : "default",
+                    boxShadow: isActive ? `0 0 0 2px ${catColor.bg}` : undefined,
+                    fontWeight: isActive ? 700 : undefined,
                   }}
                   onClick={onCategoryClick ? (e) => { e.stopPropagation(); onCategoryClick(job.category); } : undefined}
                   onKeyDown={onCategoryClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onCategoryClick(job.category); } } : undefined}
                 >
+                  {isActive && <Check className="h-2.5 w-2.5 shrink-0" />}
                   <span>{getCategoryIcon(job.category)}</span>
                   <span>{getCategoryLabel(job.category)}</span>
                 </span>

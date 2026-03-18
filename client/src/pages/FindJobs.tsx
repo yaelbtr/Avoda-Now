@@ -1526,6 +1526,7 @@ export default function FindJobs() {
                     onApply={handleApplyFj}
                     onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
                     onCategoryClick={handleCategoryFromCard}
+                    activeCategories={selectedCategories}
                   />
                 </motion.div>
               );

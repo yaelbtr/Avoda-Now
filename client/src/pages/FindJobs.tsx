@@ -1756,7 +1756,7 @@ export default function FindJobs() {
           {/* Sort chips — right side (first in DOM = right in LTR) */}
           <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {([
-              { value: "date",    label: "תאריך עבודה" },
+              { value: "date",    label: "תאריך" },
               { value: "salary", label: "שכר" },
               ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
             ] as { value: typeof sortBy; label: string }[]).map(opt => {

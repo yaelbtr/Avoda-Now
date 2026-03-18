@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
+import EmptyStateCarousel from "@/components/EmptyStateCarousel";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { useAuth } from "@/contexts/AuthContext";
@@ -206,7 +207,7 @@ function QuickStats() {
 }
 
 
-// ── Smart Empty State ───────────────────────────────────────────────────────
+// ── Smart Empty State (delegated to EmptyStateCarousel) ─────────────────────
 interface SmartEmptyStateProps {
   category: string;
   catName: string;
@@ -258,70 +259,36 @@ function SmartEmptyState({
 }: SmartEmptyStateProps) {
   const hasAnyFilter = category !== "all" || !!selectedCity || !!dateFilter ||
     selectedTimeSlots.length > 0 || selectedDays.length > 0 || showUrgentToday || !!searchText;
-
-  // Determine primary reason for no results
-  const primaryReason = searchText ? "search"
-    : dateFilter === "today" ? "today"
-    : showUrgentToday ? "urgent"
-    : selectedTimeSlots.length > 0 ? "timeSlots"
-    : selectedDays.length > 0 ? "days"
-    : selectedCity ? "city"
-    : category !== "all" ? "category"
-    : "general";
-
   const nearbyCities = selectedCity ? (NEARBY_CITIES[selectedCity] ?? []) : [];
-
-  const headlineMap: Record<string, string> = {
-    search: `לא נמצאו תוצאות לחיפוש “${searchText}”`,
-    today: "אין משרות להיום כרגע",
-    urgent: "אין משרות דחופות כרגע",
-    timeSlots: "אין משרות בשעות הנבחרות",
-    days: "אין משרות בימים הנבחרים",
-    city: `אין משרות ב${selectedCity}`,
-    category: `אין משרות בקטגוריית ${catName}`,
-    general: "לא נמצאו משרות",
-  };
-
-  const subtitleMap: Record<string, string> = {
-    search: "נסה מילים אחרות או בדוק עם פחות פילטרים",
-    today: "משרות חדשות מתפרסמות בכל רגע — בדוק מחר או בשבוע",
-    urgent: "משרות דחופות מתפרסמות לעתים קרובות — נסה להרחיב את החיפוש",
-    timeSlots: "נסה להסיר סינון שעות או לבחור טווח רחב יותר",
-    days: "נסה להסיר סינון ימים או לבחור יותר ימים",
-    city: "נסה עיר קרובה או הרחב את החיפוש",
-    category: "נסה קטגוריה אחרת או בדוק כל המשרות",
-    general: "נסה לשנות את הסינון או לחפש בעיר אחרת",
-  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="py-6 px-2"
+      className="py-4 px-2"
       dir="rtl"
     >
-      {/* Illustration + headline */}
-      <div className="text-center mb-6">
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: "linear-gradient(135deg, oklch(0.94 0.04 122) 0%, oklch(0.90 0.06 91) 100%)", boxShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)" }}
-        >
-          <span className="text-4xl">
-            {primaryReason === "search" ? "🔍"
-              : primaryReason === "today" || primaryReason === "urgent" ? "⏰"
-              : primaryReason === "city" ? "📍"
-              : primaryReason === "category" ? (catIcon ?? "💼")
-              : "💼"}
-          </span>
-        </div>
-        <h3 className="text-xl font-black mb-2" style={{ color: "oklch(0.22 0.03 122.3)" }}>
-          {headlineMap[primaryReason]}
-        </h3>
-        <p className="text-sm" style={{ color: C_TEXT_MUTED }}>
-          {subtitleMap[primaryReason]}
-        </p>
-      </div>
+      {/* Single auto-rotating carousel replaces all separate info cards */}
+      <EmptyStateCarousel
+        showUrgentToday={showUrgentToday}
+        dateFilter={dateFilter}
+        category={category}
+        catName={catName}
+        catIcon={catIcon}
+        selectedCity={selectedCity}
+        selectedTimeSlots={selectedTimeSlots}
+        selectedDays={selectedDays}
+        searchText={searchText}
+        isAuthenticated={isAuthenticated}
+        nearbyCities={nearbyCities}
+        hasAnyFilter={hasAnyFilter}
+        onShowTomorrow={onShowTomorrow}
+        onShowThisWeek={onShowThisWeek}
+        onClearCategory={onClearCategory}
+        onSelectCity={onSelectCity}
+        onClearAllFilters={onClearAllFilters}
+      />
 
       {/* Active filter pills — quick remove */}
       {hasAnyFilter && (
@@ -381,108 +348,9 @@ function SmartEmptyState({
         </div>
       )}
 
-      {/* Smart suggestions grid */}
-      <div className="space-y-3 mb-6">
-        {/* Date suggestions */}
-        {(dateFilter === "today" || showUrgentToday) && (
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "oklch(0.97 0.02 91)", border: "1px solid oklch(0.88 0.04 91)" }}
-          >
-            <p className="text-xs font-bold mb-3" style={{ color: "oklch(0.40 0.08 91)" }}>📅 נסה תאריך אחר</p>
-            <div className="flex gap-2">
-              <button
-                onClick={onShowTomorrow}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
-                style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)" }}
-              >
-                משרות מחר
-              </button>
-              <button
-                onClick={onShowThisWeek}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
-                style={{ background: "white", color: "oklch(0.35 0.08 122)", border: "1.5px solid oklch(0.82 0.06 122)" }}
-              >
-                משרות השבוע
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Nearby cities */}
-        {selectedCity && nearbyCities.length > 0 && (
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "oklch(0.97 0.02 210)", border: "1px solid oklch(0.88 0.04 210)" }}
-          >
-            <p className="text-xs font-bold mb-3" style={{ color: "oklch(0.38 0.10 210)" }}>📍 ערים קרובות ל{selectedCity}</p>
-            <div className="flex flex-wrap gap-2">
-              {nearbyCities.map(city => (
-                <button
-                  key={city}
-                  onClick={() => onSelectCity(city)}
-                  className="city-chip"
-                >
-                  {city}
-                </button>
-              ))}
-              <button
-                onClick={onClearCity}
-                className="px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-                style={{ background: "oklch(0.35 0.12 210)", color: "white" }}
-              >
-                כל הארץ
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Category suggestion */}
-        {category !== "all" && (
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "oklch(0.97 0.02 122)", border: "1px solid oklch(0.88 0.04 122)" }}
-          >
-            <p className="text-xs font-bold mb-3" style={{ color: C_BRAND_HEX }}>💼 נסה קטגוריה רחבה יותר</p>
-            <button
-              onClick={onClearCategory}
-              className="w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
-              style={{ background: "oklch(0.35 0.08 122)", color: "oklch(0.96 0.04 80)" }}
-            >
-              הצג כל הקטגוריות
-            </button>
-          </div>
-        )}
-
-        {/* Alert CTA for logged-in users */}
-        {isAuthenticated && (
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "linear-gradient(135deg, oklch(0.96 0.04 280 / 0.5) 0%, oklch(0.97 0.02 250 / 0.5) 100%)", border: "1px solid oklch(0.85 0.06 280 / 0.4)" }}
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "oklch(0.55 0.18 280 / 0.15)" }}>
-                <span className="text-xl">🔔</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold mb-0.5" style={{ color: "oklch(0.30 0.12 280)" }}>קבל התראה כשיתפרסמו משרות חדשות</p>
-                <p className="text-xs" style={{ color: "oklch(0.45 0.08 280)" }}>ניתן להפעיל בדף הפרופיל שלך</p>
-              </div>
-            </div>
-            <Link
-              href="/profile"
-              className="mt-3 w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97]"
-              style={{ background: "oklch(0.50 0.18 280)", color: "white", display: "flex" }}
-            >
-              עבר להגדרות התראות ←
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Clear all + popular searches */}
+      {/* Clear all */}
       {hasAnyFilter && (
-        <div className="text-center mb-6">
+        <div className="text-center mb-5">
           <button
             onClick={onClearAllFilters}
             className="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-[0.97]"

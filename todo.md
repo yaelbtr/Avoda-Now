@@ -2268,3 +2268,15 @@
 - [x] Fix category-only query error (category IN filter)
 - [x] Fix geo-distance query error (ST_Distance / ST_DWithin)
 - [x] Convert jobs.category from job_category enum to varchar(64) to support dynamic categories table
+
+## Empty-State Carousel
+- [ ] Build EmptyStateCarousel component: auto-rotates every 3s, uniform card/button size, image per slide
+- [ ] Slides: no-urgent-jobs, try-another-date, expand-category, enable-notifications, expand-radius
+- [ ] Replace all separate info cards in FindJobs with the single carousel
+
+## Empty-State Carousel (Completed)
+- [x] Build EmptyStateCarousel component with auto-rotate every 3s, emoji illustrations, uniform card layout
+- [x] Replace SmartEmptyState multi-card layout with single EmptyStateCarousel
+- [x] Dot indicators for manual navigation
+- [x] Slides: no-urgent, try-tomorrow, try-this-week, try-category, try-city, notifications
+- [x] Uniform card size and button layout across all slides

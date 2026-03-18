@@ -1749,9 +1749,10 @@ export default function FindJobs() {
 
         {/* ── (profile banner moved above search bar) ── */}
 
-        {/* Results header — count only */}
-        <div className="flex items-center justify-end mb-3">
-          <div className="flex items-center gap-1.5">
+        {/* Results count + sort chips — single row, RTL: count right, chips left */}
+        <div className="flex items-center justify-between gap-2 mb-3" dir="rtl">
+          {/* Count — right side */}
+          <div className="shrink-0">
             {isLoading ? (
               <span className="text-sm text-gray-400">מחפש...</span>
             ) : (
@@ -1760,32 +1761,31 @@ export default function FindJobs() {
               </span>
             )}
           </div>
-        </div>
-
-        {/* Sort chips row */}
-        <div className="flex items-center gap-2 mb-3 overflow-x-auto" dir="rtl" style={{ scrollbarWidth: "none" }}>
-          {([
-            { value: "date",     label: "תאריך עבודה" },
-            { value: "salary",  label: "שכר" },
-            ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
-          ] as { value: typeof sortBy; label: string }[]).map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setSortBy(opt.value)}
-              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
-              style={sortBy === opt.value ? {
-                background: "oklch(0.28 0.07 122)",
-                color: "white",
-                border: "1.5px solid transparent",
-              } : {
-                background: "white",
-                color: "oklch(0.35 0.07 122)",
-                border: "1.5px solid oklch(0.86 0.04 122)",
-              }}
-            >
-              {opt.label}{sortBy === opt.value ? " ↓" : ""}
-            </button>
-          ))}
+          {/* Sort chips — left side */}
+          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {([
+              { value: "date",    label: "תאריך עבודה" },
+              { value: "salary", label: "שכר" },
+              ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
+            ] as { value: typeof sortBy; label: string }[]).map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
+                style={sortBy === opt.value ? {
+                  background: "oklch(0.28 0.07 122)",
+                  color: "white",
+                  border: "1.5px solid transparent",
+                } : {
+                  background: "white",
+                  color: "oklch(0.35 0.07 122)",
+                  border: "1.5px solid oklch(0.86 0.04 122)",
+                }}
+              >
+                {opt.label}{sortBy === opt.value ? " ↓" : ""}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Job list — wrapped for refetch overlay */}

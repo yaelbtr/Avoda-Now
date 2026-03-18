@@ -1,0 +1,8 @@
+{
+  "query": "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('system_settings', '__drizzle_migrations');\nSELECT * FROM \"__drizzle_migrations\" ORDER BY created_at DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('system_settings', '__drizzle_migrations');\nSELECT * FROM \"__drizzle_migrations\" ORDER BY created_at DESC LIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 2: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near \"\"__drizzle_migrations\" ORDER BY created_at DESC LIMIT 10\""
+  ]
+}

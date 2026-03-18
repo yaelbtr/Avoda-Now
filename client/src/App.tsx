@@ -204,6 +204,19 @@ function Router() {
   const isTestUser = user?.role === "test";
   const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
+
+  // While the maintenance check is in-flight (first load only, no cached data),
+  // show a minimal full-screen loader so the page never flashes blank.
+  // Once we have any data (or an error), we proceed normally — errors are treated
+  // as "not in maintenance" to avoid blocking the app on DB issues.
+  if (maintenanceQuery.isLoading && !maintenanceQuery.data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
     return <MaintenancePage />;
   }

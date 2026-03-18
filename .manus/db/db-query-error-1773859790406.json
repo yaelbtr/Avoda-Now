@@ -1,0 +1,12 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS \"system_settings\" (\n  \"key\" varchar(255) NOT NULL PRIMARY KEY,\n  \"value\" text,\n  \"updated_at\" timestamp DEFAULT now() NOT NULL\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute CREATE TABLE IF NOT EXISTS \"system_settings\" (\n  \"key\" varchar(255) NOT NULL PRIMARY KEY,\n  \"value\" text,\n  \"updated_at\" timestamp DEFAULT now() NOT NULL\n)",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near \"\"system_settings\" (",
+    "  \"key\" varchar(255) NOT NULL PRIMARY KEY,",
+    "  \"value\" text,",
+    "  \"updated_at\" timestamp DEFAULT now() NOT NULL",
+    ")\""
+  ]
+}

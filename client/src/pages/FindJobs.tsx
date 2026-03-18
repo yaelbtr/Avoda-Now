@@ -17,6 +17,7 @@ import {
   MapPin, Search, Briefcase, LocateFixed, Flame, X,
   Navigation, AlertCircle, SlidersHorizontal, UserCheck, ChevronDown,
   Clock, Zap, BadgePercent, ChevronLeft, ArrowUp, CalendarDays,
+  UserCircle2, CheckCircle2,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -492,6 +493,7 @@ export default function FindJobs() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [toolbarScrolled, setToolbarScrolled] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
@@ -867,6 +869,45 @@ export default function FindJobs() {
         />
         {/* Content */}
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
+          {/* Profile completion icon — top-left of hero, only when profile is incomplete */}
+          {isAuthenticated && !profileQuery.isLoading && (() => {
+            const profile = profileQuery.data;
+            const isProfileComplete = (profile?.preferredCategories && profile.preferredCategories.length > 0) && (!!profile?.preferredCity || !!profile?.workerLatitude);
+            if (isProfileComplete) return null;
+            return (
+              <motion.button
+                onClick={() => setProfilePanelOpen(true)}
+                className="absolute top-0 left-0 flex items-center justify-center rounded-full cursor-pointer"
+                style={{
+                  width: 42, height: 42,
+                  background: "oklch(0.88 0.13 70 / 0.18)",
+                  border: "2px solid oklch(0.88 0.13 70 / 0.7)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                }}
+                animate={{
+                  scale: [1, 1.12, 1, 1.08, 1],
+                  boxShadow: [
+                    "0 0 0px oklch(0.88 0.13 70 / 0.0)",
+                    "0 0 14px oklch(0.88 0.13 70 / 0.7)",
+                    "0 0 0px oklch(0.88 0.13 70 / 0.0)",
+                    "0 0 10px oklch(0.88 0.13 70 / 0.5)",
+                    "0 0 0px oklch(0.88 0.13 70 / 0.0)",
+                  ],
+                }}
+                transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.8, ease: "easeInOut" }}
+                aria-label="השלם פרופיל"
+              >
+                <UserCircle2 className="h-5 w-5" style={{ color: "oklch(0.95 0.12 75)" }} />
+                {/* Notification dot */}
+                <span
+                  className="absolute top-0 right-0 rounded-full"
+                  style={{ width: 10, height: 10, background: "oklch(0.65 0.22 25)", border: "2px solid white" }}
+                />
+              </motion.button>
+            );
+          })()}
+
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <motion.h1
@@ -882,49 +923,141 @@ export default function FindJobs() {
                   <>מצא עבודה זמנית באזורך</>
                 )}
               </motion.h1>
-
             </div>
           </div>
         </div>
       </section>
 
-      {/* ══ MAIN CONTENT ══════════════════════════════════════════════════════════════ */}
-      <div className="max-w-2xl mx-auto px-4 pb-16 pt-3 relative z-10">
-
-        {/* ── Profile completion banner (above search bar) ── */}
-        <AnimatePresence>
-          {isAuthenticated && !profileQuery.isLoading && (() => {
-            const profile = profileQuery.data;
-            const isProfileComplete = (profile?.preferredCategories && profile.preferredCategories.length > 0) && (!!profile?.preferredCity || !!profile?.workerLatitude);
-            if (isProfileComplete) return null;
-            return (
+      {/* ══ PROFILE COMPLETION PANEL (bottom-sheet) ══════════════════════════════ */}
+      <AnimatePresence>
+        {profilePanelOpen && (() => {
+          const profile = profileQuery.data;
+          const cats = profile?.preferredCategories ?? [];
+          const city = profile?.preferredCity ?? null;
+          const hasCategories = cats.length > 0;
+          const hasLocation = !!city || !!profile?.workerLatitude;
+          return (
+            <>
+              {/* Backdrop */}
               <motion.div
-                key="profile-banner-top"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.28, ease: "easeOut" }}
-                className="mb-3"
+                key="profile-panel-backdrop"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 z-40"
+                style={{ background: "rgba(0,0,0,0.45)" }}
+                onClick={() => setProfilePanelOpen(false)}
+              />
+              {/* Panel */}
+              <motion.div
+                key="profile-panel"
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
+                style={{ background: "white", maxHeight: "80vh", overflowY: "auto" }}
+                dir="rtl"
               >
-                <Link href="/worker-profile">
+                {/* Handle */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-10 h-1 rounded-full" style={{ background: "oklch(0.88 0.03 122)" }} />
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-2 pb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, background: "oklch(0.94 0.06 90)" }}>
+                      <UserCircle2 className="h-5 w-5" style={{ color: "oklch(0.45 0.12 90)" }} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm" style={{ color: "oklch(0.22 0.05 122)" }}>השלם את הפרופיל שלך</p>
+                      <p className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>קבל התאמות טובות יותר</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setProfilePanelOpen(false)} className="p-1 rounded-full" style={{ color: "oklch(0.55 0.05 122)" }}>
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Progress items */}
+                <div className="px-5 pb-4 flex flex-col gap-3">
+                  {/* Categories */}
                   <div
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.99]"
+                    className="flex items-center gap-3 p-3 rounded-xl"
                     style={{
-                      background: "oklch(0.96 0.04 122)",
-                      border: "1px solid oklch(0.88 0.08 122)",
+                      background: hasCategories ? "oklch(0.96 0.06 122)" : "oklch(0.97 0.02 90)",
+                      border: `1px solid ${hasCategories ? "oklch(0.82 0.10 122)" : "oklch(0.90 0.03 90)"}`
                     }}
                   >
-                    <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.50 0.14 85)" }} />
-                    <p className="flex-1 text-xs font-semibold" style={{ color: "oklch(0.32 0.07 122)" }}>
-                      השלם פרופיל — הוסף קטגוריות ומיקום להתאמות טובות יותר
-                    </p>
-                    <ChevronLeft className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.50 0.06 122)" }} />
+                    <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 34, height: 34, background: hasCategories ? "oklch(0.88 0.12 122)" : "oklch(0.92 0.04 90)" }}>
+                      {hasCategories
+                        ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.40 0.14 122)" }} />
+                        : <Briefcase className="h-4 w-4" style={{ color: "oklch(0.55 0.08 90)" }} />
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: "oklch(0.22 0.05 122)" }}>קטגוריות עבודה</p>
+                      {hasCategories ? (
+                        <p className="text-xs" style={{ color: "oklch(0.45 0.08 122)" }}>
+                          {cats.slice(0, 3).map(slug => dbCategories.find(c => c.slug === slug)?.name ?? slug).join(" · ")}
+                          {cats.length > 3 ? ` +${cats.length - 3}` : ""}
+                        </p>
+                      ) : (
+                        <p className="text-xs" style={{ color: "oklch(0.55 0.06 90)" }}>לא הוגדרו קטגוריות</p>
+                      )}
+                    </div>
+                    {!hasCategories && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "oklch(0.88 0.13 70)", color: "oklch(0.28 0.06 70)" }}>חסר</span>}
                   </div>
-                </Link>
+
+                  {/* Location */}
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{
+                      background: hasLocation ? "oklch(0.96 0.06 122)" : "oklch(0.97 0.02 90)",
+                      border: `1px solid ${hasLocation ? "oklch(0.82 0.10 122)" : "oklch(0.90 0.03 90)"}`
+                    }}
+                  >
+                    <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: 34, height: 34, background: hasLocation ? "oklch(0.88 0.12 122)" : "oklch(0.92 0.04 90)" }}>
+                      {hasLocation
+                        ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.40 0.14 122)" }} />
+                        : <MapPin className="h-4 w-4" style={{ color: "oklch(0.55 0.08 90)" }} />
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: "oklch(0.22 0.05 122)" }}>מיקום מועדף</p>
+                      {hasLocation ? (
+                        <p className="text-xs" style={{ color: "oklch(0.45 0.08 122)" }}>{city ?? "מיקום GPS"}</p>
+                      ) : (
+                        <p className="text-xs" style={{ color: "oklch(0.55 0.06 90)" }}>לא הוגדר מיקום</p>
+                      )}
+                    </div>
+                    {!hasLocation && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "oklch(0.88 0.13 70)", color: "oklch(0.28 0.06 70)" }}>חסר</span>}
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="px-5 pb-6">
+                  <Link href="/worker-profile">
+                    <button
+                      onClick={() => setProfilePanelOpen(false)}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                      style={{
+                        background: "linear-gradient(135deg, oklch(0.40 0.12 122) 0%, oklch(0.32 0.08 122) 100%)",
+                        color: "white",
+                        boxShadow: "0 4px 14px oklch(0.32 0.08 122 / 0.35)",
+                      }}
+                    >
+                      <span>עבור לדף הפרופיל</span>
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  </Link>
+                </div>
               </motion.div>
-            );
-          })()}
-        </AnimatePresence>
+            </>
+          );
+        })()}
+      </AnimatePresence>
+
+      {/* ══ MAIN CONTENT ══════════════════════════════════════════════════════════════ */}
+      <div className="max-w-2xl mx-auto px-4 pb-16 pt-3 relative z-10">
 
         {/* Search bar */}
         {/* ── TOOLBAR: sticky wrapper with frosted-glass on scroll ── */}

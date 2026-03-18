@@ -990,7 +990,7 @@ export default function FindJobs() {
           fetchPriority="high"
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.78, objectPosition: "center 40%" }}
+          style={{ opacity: 0.78, objectPosition: "center 10%" }}
         />
         {/* RTL-aware overlay: fades from transparent (right) to dark olive (left) */}
         <div

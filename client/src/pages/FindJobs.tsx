@@ -1029,10 +1029,9 @@ export default function FindJobs() {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* ══ PROFILE COMPLETION CARD (inline, below hero) ═══════════════════════════ */}
-      <AnimatePresence>
+        {/* ══ PROFILE COMPLETION CARD (overlaid on hero, vertically centered) ════════════ */}
+        <AnimatePresence>
         {profilePanelOpen && (() => {
           const profile = profileQuery.data;
           const cats = profile?.preferredCategories ?? [];
@@ -1052,12 +1051,13 @@ export default function FindJobs() {
           return (
             <motion.div
               key="profile-progress-card"
-              initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
-              animate={{ opacity: 1, y: 0, scaleY: 1 }}
-              exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              className="max-w-2xl mx-auto px-4 pt-3"
+              className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-20 max-w-sm mx-auto px-4"
               dir="rtl"
+              style={{ pointerEvents: "auto" }}
             >
               <div
                 className="rounded-2xl p-4"
@@ -1146,7 +1146,8 @@ export default function FindJobs() {
             </motion.div>
           );
         })()}
-      </AnimatePresence>
+        </AnimatePresence>
+      </section>
 
       {/* ══ MAIN CONTENT ══════════════════════════════════════════════════════════════ */}
       <div className="max-w-2xl mx-auto px-4 pb-16 pt-3 relative z-10">

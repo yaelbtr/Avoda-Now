@@ -2332,3 +2332,22 @@
 - [ ] Match title alignment: right-aligned, text-xl, same shadow
 - [ ] Match hero height: padding-based (pt-5 pb-5) instead of fixed 110px
 - [ ] Add back button pill (white translucent) like MyApplications
+
+## Hero Section & Profile Completion Redesign
+- [x] Hero image height 320px, objectPosition center 10% for mobile waiter image
+- [x] Top gradient overlay (rgba 0.52 → transparent at 55%) for title contrast
+- [x] Bottom gradient overlay (rgba 0.55 → 0.20 → transparent at 45%) for search bar contrast
+- [x] Title changed to "מצא עבודה זמנית באזורך" (centered, white)
+- [x] Profile completion icon (UserCircle + red dot) with pulsing glow animation
+- [x] Frosted-glass profile completion card (percentage, progress bar, missing chips, CTA)
+- [x] Card auto-closes on scroll >30px
+- [x] Profile data invalidates when returning from /worker-profile
+- [x] Success toast "פרופיל הושלם!" when score reaches 100%
+- [x] Search bar moved into hero with transparent frosted-glass background
+- [x] Filter buttons transparent background
+- [x] Missing item chips: #986600 background, #f4efe4 text, staggered entrance animation
+- [x] CTA button background #7a5200, label "השלם"
+- [x] Profile icon fixed positioning (top: 76px, left: 16px)
+- [x] Unified profile completion score: extracted shared/profileScore.ts (7 fields)
+- [x] FindJobs uses calcProfileScore from shared/profileScore.ts
+- [x] WorkerProfile uses calcProfileScore from shared/profileScore.ts (replaced inline IIFE)

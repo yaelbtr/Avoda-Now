@@ -31,6 +31,7 @@ import {
 } from "@/lib/colors";
 import { reverseGeocode } from "@/lib/reverseGeocode";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
@@ -632,16 +633,7 @@ export default function FindJobs() {
       utilsFj.user.getProfile.invalidate().then(() => {
         const freshProfile = utilsFj.user.getProfile.getData();
         if (!freshProfile) return;
-        const checks = [
-          !!(freshProfile as { name?: string | null }).name?.trim(),
-          !!(freshProfile as { profilePhoto?: string | null }).profilePhoto,
-          ((freshProfile.preferredCategories ?? []).length > 0),
-          !!(freshProfile.preferredCity || freshProfile.workerLatitude),
-          !!(freshProfile as { workerBio?: string | null }).workerBio?.trim(),
-          !!(freshProfile as { preferenceText?: string | null }).preferenceText?.trim(),
-          ((freshProfile as { preferredDays?: string[] }).preferredDays ?? []).length > 0,
-        ];
-        const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+        const score = calcProfileScore(freshProfile as Parameters<typeof calcProfileScore>[0]);
         if (score >= 100) {
           toast.success("פרופיל הושלם! עכשיו תקבל התאמות טובות יותר", { duration: 4000 });
         }
@@ -994,20 +986,8 @@ export default function FindJobs() {
         <AnimatePresence>
         {profilePanelOpen && (() => {
           const profile = profileQuery.data;
-          const cats = profile?.preferredCategories ?? [];
-          const city = profile?.preferredCity ?? null;
-          const hasCategories = cats.length > 0;
-          const hasLocation = !!city || !!profile?.workerLatitude;
-          const hasBio = !!(profile as { workerBio?: string | null } | null)?.workerBio?.trim();
-          const hasName = !!(profile as { name?: string | null } | null)?.name?.trim();
-          const checks = [hasName, hasCategories, hasLocation, hasBio];
-          const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
-          const missingItems = [
-            !hasCategories && "קטגוריות עבודה",
-            !hasLocation && "אזור מועדף",
-            !hasBio && "ביו קצר",
-            !hasName && "שם מלא",
-          ].filter(Boolean) as string[];
+          const score = calcProfileScore(profile as Parameters<typeof calcProfileScore>[0]);
+          const missingItems = calcProfileMissingItems(profile as Parameters<typeof calcProfileMissingItems>[0]);
           return (
             <motion.div
               key="profile-progress-card"

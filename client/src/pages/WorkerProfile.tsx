@@ -22,6 +22,7 @@ import { Eye, Trash2 } from "lucide-react";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
+import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -284,18 +285,16 @@ export default function WorkerProfile() {
     );
   };
 
-  // ── Profile completion score ────────────────────────────────────────────────
-  const completionScore = (() => {
-    const checks = [
-      !!name.trim(),                          // שם
-      !!profilePhoto,                          // תמונת פרופיל
-      selectedCategories.length > 0,           // קטגוריות
-      !!(preferredCity || preferredCities.length > 0), // מיקום
-      !!workerBio.trim(),                      // ביו
-      !!preferenceText.trim(),                 // תיאור העדפות
-      preferredDays.length > 0,               // ימים מועדפים
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  // ── Profile completion score — uses shared utility (single source of truth) ──
+  const completionScore = () => calcProfileScore({
+    name,
+    profilePhoto,
+    preferredCategories: selectedCategories,
+    preferredCity: preferredCity || (preferredCities.length > 0 ? String(preferredCities[0]) : null),
+    workerLatitude: null,
+    workerBio,
+    preferenceText,
+    preferredDays,
   });
 
   // ── Wizard submit ────────────────────────────────────────────────────────────

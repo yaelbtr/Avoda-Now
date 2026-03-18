@@ -1000,7 +1000,7 @@ export default function FindJobs() {
               style={{ pointerEvents: "auto" }}
             >
               <div
-                className="rounded-2xl p-4"
+                className="rounded-2xl p-5"
                 style={{
                   background: "rgba(255, 255, 255, 0.72)",
                   backdropFilter: "blur(18px) saturate(1.8)",
@@ -1010,7 +1010,7 @@ export default function FindJobs() {
                 }}
               >
                 {/* Header row */}
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {score >= 70
                       ? <CheckCircle2 className="h-4 w-4" style={{ color: "oklch(0.50 0.09 124.9)" }} />
@@ -1035,7 +1035,7 @@ export default function FindJobs() {
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full h-2 rounded-full mb-3" style={{ background: "oklch(0.90 0.03 100)" }}>
+                <div className="w-full h-2 rounded-full mb-4" style={{ background: "oklch(0.90 0.03 100)" }}>
                   <motion.div
                     className="h-2 rounded-full"
                     initial={{ width: 0 }}
@@ -1051,7 +1051,7 @@ export default function FindJobs() {
 
                 {/* Missing items row */}
                 {missingItems.length > 0 && (
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs" style={{ color: "oklch(0.55 0.05 122)" }}>חסר:</span>
                     {missingItems.map((item, i) => (
                       <motion.span
@@ -1073,7 +1073,7 @@ export default function FindJobs() {
                 )}
 
                 {/* CTA button — full row below chips */}
-                <Link href="/worker-profile" className="block w-full mt-1">
+                <Link href="/worker-profile" className="block w-full mt-3">
                   <button
                     onClick={() => setProfilePanelOpen(false)}
                     className="w-full flex items-center justify-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all active:scale-[0.97]"

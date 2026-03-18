@@ -2352,3 +2352,4 @@
 - [x] FindJobs uses calcProfileScore from shared/profileScore.ts
 - [x] WorkerProfile uses calcProfileScore from shared/profileScore.ts (replaced inline IIFE)
 - [x] Profile card: move CTA button to its own row below chips row, label → "השלם לחשיפה מוגדלת"
+- [x] Filter button: keep constant style when active filters exist — only show red badge, no background/border change

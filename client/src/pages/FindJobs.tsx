@@ -1142,14 +1142,13 @@ export default function FindJobs() {
                 width: 44,
                 height: 44,
                 borderRadius: 10,
-                background: filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140 / 0.25)" : "rgba(255,255,255,0.10)",
-                color: filterOpen || activeFilterCount > 0 ? "white" : "#ffffff",
-                border: `1.5px solid ${filterOpen || activeFilterCount > 0 ? "oklch(0.55 0.12 140)" : "rgba(255,255,255,0.45)"}`,
+                background: "rgba(255,255,255,0.10)",
+                color: "#ffffff",
+                border: "1.5px solid rgba(255,255,255,0.45)",
                 boxShadow: "0 1px 6px rgba(0,0,0,0.22)",
                 backdropFilter: "blur(20px) saturate(1.6)",
                 WebkitBackdropFilter: "blur(20px) saturate(1.6)",
-                filter: filterOpen || activeFilterCount > 0 ? "none" : "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
-                transition: "border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease",
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))",
               }}
             >
               <SlidersHorizontal className="h-5 w-5" />

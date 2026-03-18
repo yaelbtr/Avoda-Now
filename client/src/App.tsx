@@ -53,7 +53,9 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
-import { PENDING_GOOGLE_REG_KEY } from "@shared/const";
+import { PENDING_GOOGLE_REG_KEY, FIND_JOBS_OPEN } from "@shared/const";
+import { createPortal } from "react-dom";
+import FindJobsComingSoonOverlay from "./components/FindJobsComingSoonOverlay";
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
@@ -333,6 +335,8 @@ function App() {
               <ReferralCapture />
               <PostGoogleRegistration />
               <Router />
+              {/* Global coming-soon overlay — covers every page when FIND_JOBS_OPEN is false */}
+              {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, document.body)}
             </UserModeProvider>
           </AuthProvider>
         </TooltipProvider>

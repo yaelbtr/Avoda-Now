@@ -4,20 +4,21 @@ import { Home, Lock, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
- * Translucent "coming soon" overlay for FindJobs.
- * Rendered via createPortal at document.body level so it sits above
- * all page content without being trapped by stacking contexts.
+ * Global "coming soon" overlay — covers the entire app when FIND_JOBS_OPEN is false.
+ * Rendered via createPortal at document.body level in App.tsx so it escapes all
+ * stacking contexts and covers every page (Home, role selection, FindJobs, etc.).
  *
- * Visibility is controlled by the FIND_JOBS_OPEN flag in shared/const.ts.
+ * Mobile fix: uses a solid semi-transparent background as the primary layer so the
+ * overlay is always visible even on browsers that don't support backdrop-filter
+ * (older Android WebView, some iOS Safari versions). The blur is additive on top.
  *
- * Admin bypass: users with role === 'admin' are never shown the overlay,
- * allowing them to access and test the page while it is still closed.
+ * Admin bypass: users with role === 'admin' see null — full page access for testing.
  */
 export default function FindJobsComingSoonOverlay() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
-  // Admins bypass the overlay entirely — they can see and use the page
+  // Admins bypass the overlay entirely
   const isAdmin = isAuthenticated && user?.role === "admin";
   if (isAdmin) return null;
 
@@ -27,57 +28,60 @@ export default function FindJobsComingSoonOverlay() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       dir="rtl"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        /* frosted-glass effect — page content visible but blurred */
-        backdropFilter: "blur(6px) saturate(0.7) brightness(0.55)",
-        WebkitBackdropFilter: "blur(6px) saturate(0.7) brightness(0.55)",
-        background: "rgba(20, 30, 10, 0.45)",
+        /* Solid fallback — always visible on all browsers including mobile */
+        background: "rgba(15, 22, 8, 0.72)",
+        /* Frosted-glass enhancement for browsers that support it */
+        backdropFilter: "blur(8px) saturate(0.6)",
+        WebkitBackdropFilter: "blur(8px) saturate(0.6)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "24px",
-        /* block all pointer events on the page beneath */
+        /* Block all pointer events on the page beneath */
         pointerEvents: "all",
+        /* Prevent scroll on the body */
+        overflowY: "auto",
       }}
-      /* prevent any click from reaching the page below */
+      /* Prevent any click from reaching the page below */
       onClick={(e) => e.stopPropagation()}
     >
       <motion.div
         initial={{ scale: 0.88, opacity: 0, y: 24 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.92, opacity: 0, y: 16 }}
-        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.08 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26, delay: 0.06 }}
         style={{
-          background: "rgba(255, 255, 255, 0.97)",
+          background: "#ffffff",
           borderRadius: 24,
-          padding: "40px 32px 36px",
+          padding: "40px 28px 36px",
           maxWidth: 380,
           width: "100%",
           textAlign: "center",
-          boxShadow: "0 24px 60px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.12)",
-          border: "1px solid rgba(255,255,255,0.6)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.15)",
+          border: "1px solid rgba(200,215,180,0.5)",
         }}
       >
         {/* Icon */}
         <div
           style={{
-            width: 64,
-            height: 64,
+            width: 68,
+            height: 68,
             borderRadius: "50%",
-            background: "oklch(0.95 0.03 122)",
-            border: "2px solid oklch(0.82 0.08 122)",
+            background: "oklch(0.94 0.04 122)",
+            border: "2.5px solid oklch(0.78 0.09 122)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             margin: "0 auto 20px",
           }}
         >
-          <Lock size={28} color="oklch(0.35 0.08 122)" strokeWidth={2.2} />
+          <Lock size={30} color="oklch(0.32 0.08 122)" strokeWidth={2.2} />
         </div>
 
         {/* Title */}
@@ -85,26 +89,26 @@ export default function FindJobsComingSoonOverlay() {
           style={{
             fontSize: 22,
             fontWeight: 900,
-            color: "oklch(0.28 0.06 122)",
+            color: "oklch(0.25 0.07 122)",
             margin: "0 0 10px",
-            lineHeight: 1.3,
+            lineHeight: 1.35,
           }}
         >
-          חיפוש עבודה — בקרוב!
+          בקרוב אצלכם!
         </h2>
 
         {/* Body */}
         <p
           style={{
             fontSize: 15,
-            color: "#555",
-            lineHeight: 1.7,
+            color: "#4a4a4a",
+            lineHeight: 1.75,
             margin: "0 0 28px",
           }}
         >
-          מסך חיפוש העבודה עדיין לא נפתח לציבור.
+          המערכת עדיין לא נפתחה לציבור.
           <br />
-          אנחנו עובדים על זה ונעדכן בקרוב.
+          אנחנו עובדים קשה ונעדכן בקרוב.
           <br />
           <span style={{ color: "#888", fontSize: 13 }}>
             תודה על הסבלנות 🙏
@@ -120,7 +124,7 @@ export default function FindJobsComingSoonOverlay() {
             justifyContent: "center",
             gap: 8,
             width: "100%",
-            padding: "14px 0",
+            padding: "15px 0",
             borderRadius: 14,
             background: "oklch(0.35 0.08 122)",
             color: "#fff",
@@ -128,13 +132,20 @@ export default function FindJobsComingSoonOverlay() {
             fontWeight: 800,
             border: "none",
             cursor: "pointer",
-            boxShadow: "0 4px 14px rgba(79,88,59,0.30)",
-            transition: "background 0.18s",
+            boxShadow: "0 4px 16px rgba(60,80,30,0.30)",
+            transition: "background 0.18s, transform 0.12s",
+            WebkitTapHighlightColor: "transparent",
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.background = "oklch(0.28 0.06 122)")
           }
           onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "oklch(0.35 0.08 122)")
+          }
+          onTouchStart={(e) =>
+            (e.currentTarget.style.background = "oklch(0.28 0.06 122)")
+          }
+          onTouchEnd={(e) =>
             (e.currentTarget.style.background = "oklch(0.35 0.08 122)")
           }
         >

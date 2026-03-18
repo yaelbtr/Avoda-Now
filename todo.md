@@ -2393,3 +2393,5 @@
 - [x] Feature: add share button (WhatsApp + copy link) to JobBottomSheet action area
 - [x] Feature: coming-soon overlay that covers FindJobs page and blocks all user interaction (FIND_JOBS_OPEN flag in shared/const.ts)
 - [x] Feature: admin bypass for FindJobs coming-soon overlay (role === 'admin' skips the overlay)
+- [x] Bug: coming-soon overlay not visible on mobile — added solid rgba background as primary layer, backdrop-filter is additive
+- [x] Fix: moved coming-soon overlay to App.tsx (global) so it covers all pages via createPortal

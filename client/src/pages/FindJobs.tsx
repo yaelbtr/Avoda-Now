@@ -494,11 +494,18 @@ export default function FindJobs() {
   const [toolbarScrolled, setToolbarScrolled] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  // Track last scroll Y to detect downward scroll for profile card auto-close
+  const lastScrollY = useRef(0);
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
       setShowScrollTop(y > 320);
       setToolbarScrolled(y > 10);
+      // Close profile progress card when user scrolls down more than 30px
+      if (y > lastScrollY.current + 30) {
+        setProfilePanelOpen(false);
+      }
+      lastScrollY.current = y;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);

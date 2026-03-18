@@ -1784,7 +1784,7 @@ export default function FindJobs() {
                     color: "oklch(0.22 0.10 140)",
                     border: "1px solid oklch(0.68 0.14 140)",
                   } : {
-                    background: "white",
+                    background: "oklch(0.97 0.02 122)",
                     color: "var(--muted-foreground)",
                     border: "1px solid var(--border)",
                   }}

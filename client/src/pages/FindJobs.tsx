@@ -1179,8 +1179,8 @@ export default function FindJobs() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder="חפש תפקיד, עיר..."
-                className="flex-1 min-w-0 bg-transparent outline-none"
-                style={{ fontSize: 15, fontWeight: 700, color: searchFocused ? "#111827" : "#ffffff", caretColor: "oklch(0.55 0.12 140)", textShadow: "none" }}
+                className="flex-1 min-w-0 bg-transparent outline-none placeholder:text-white/80"
+                style={{ fontSize: 15, fontWeight: 600, color: searchFocused ? "#111827" : "#ffffff", caretColor: "oklch(0.55 0.12 140)" }}
                 dir="rtl"
               />
               {searchText && (

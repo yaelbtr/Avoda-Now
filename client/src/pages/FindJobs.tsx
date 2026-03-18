@@ -390,30 +390,10 @@ function SmartEmptyState({
 
 // ── Profile icon with tooltip (hover + long-press) ─────────────────────────
 function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const showTooltip = () => setTooltipVisible(true);
-  const hideTooltip = () => setTooltipVisible(false);
-
-  const handleTouchStart = () => {
-    longPressTimer.current = setTimeout(() => setTooltipVisible(true), 500);
-  };
-  const handleTouchEnd = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    // Small delay so tooltip is visible briefly before tap opens panel
-    setTimeout(() => setTooltipVisible(false), 600);
-  };
-
   return (
     <div className="absolute top-0 left-0 mt-4 ml-4" style={{ zIndex: 20 }}>
       <motion.button
         onClick={onOpen}
-        onMouseEnter={showTooltip}
-        onMouseLeave={hideTooltip}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
         className="flex items-center justify-center rounded-full cursor-pointer"
         style={{
           width: 42, height: 42,
@@ -443,42 +423,6 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
         />
       </motion.button>
 
-      {/* Tooltip */}
-      <AnimatePresence>
-        {tooltipVisible && (
-          <motion.div
-            key="profile-icon-tooltip"
-            initial={{ opacity: 0, y: 4, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.92 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-12 left-0 whitespace-nowrap pointer-events-none"
-            style={{ zIndex: 30 }}
-          >
-            <div
-              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg"
-              style={{
-                background: "oklch(0.20 0.05 122 / 0.92)",
-                color: "white",
-                backdropFilter: "blur(6px)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-              }}
-            >
-              השלם פרופיל
-            </div>
-            {/* Arrow pointing up */}
-            <div
-              className="absolute -top-1.5 left-3"
-              style={{
-                width: 0, height: 0,
-                borderLeft: "5px solid transparent",
-                borderRight: "5px solid transparent",
-                borderBottom: "6px solid oklch(0.20 0.05 122 / 0.92)",
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

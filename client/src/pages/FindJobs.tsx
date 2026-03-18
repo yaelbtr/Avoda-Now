@@ -999,6 +999,14 @@ export default function FindJobs() {
             background: "linear-gradient(to left, oklch(0.28 0.06 122 / 0.0) 0%, oklch(0.28 0.06 122 / 0.30) 45%, oklch(0.28 0.06 122 / 0.72) 100%)",
           }}
         />
+        {/* Top gradient overlay for title contrast */}
+        <div
+          className="absolute inset-x-0 top-0 pointer-events-none"
+          style={{
+            height: "55%",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.18) 60%, transparent 100%)",
+          }}
+        />
         {/* Content */}
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
           {/* Profile completion icon — top-left of hero, only when profile is incomplete */}

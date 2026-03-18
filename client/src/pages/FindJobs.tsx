@@ -678,6 +678,19 @@ export default function FindJobs() {
   const { loading: authLoading } = useAuth();
   const filterInitialized = useRef(false);
 
+  // Invalidate profile data when returning from the profile page so the
+  // completion icon disappears immediately if the profile was updated.
+  const prevPathRef = useRef<string | null>(null);
+  const [currentPath] = useLocation();
+  useEffect(() => {
+    if (prevPathRef.current === "/worker-profile" && currentPath !== "/worker-profile") {
+      utilsFj.user.getProfile.invalidate();
+    }
+    prevPathRef.current = currentPath;
+  // utilsFj is stable — intentionally omitted from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPath]);
+
   useEffect(() => {
     if (filterInitialized.current) return;
     if (authLoading) return;

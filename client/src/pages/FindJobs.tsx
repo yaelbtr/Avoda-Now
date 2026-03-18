@@ -1007,6 +1007,14 @@ export default function FindJobs() {
             background: "linear-gradient(to bottom, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.18) 60%, transparent 100%)",
           }}
         />
+        {/* Bottom gradient overlay for search bar contrast */}
+        <div
+          className="absolute inset-x-0 bottom-0 pointer-events-none"
+          style={{
+            height: "45%",
+            background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.20) 55%, transparent 100%)",
+          }}
+        />
         {/* Content */}
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
           {/* Profile completion icon — top-left of hero, only when profile is incomplete */}

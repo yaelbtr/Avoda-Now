@@ -879,7 +879,7 @@ export default function FindJobs() {
                 ) : category !== "all" ? (
                   <>עבודות <span style={{ color: "oklch(0.88 0.13 70)" }}>{catName}</span></>
                 ) : (
-                  <>מצא <span style={{ color: "oklch(0.88 0.13 70)" }}>עבודה זמנית</span> תוך דקות</>
+                  <>מצא <span style={{ color: "oklch(0.88 0.13 70)" }}>עבודה זמנית</span> באזורך</>
                 )}
               </motion.h1>
 

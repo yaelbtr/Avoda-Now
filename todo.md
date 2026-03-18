@@ -2325,3 +2325,10 @@
 
 ## Filter Button Design Alignment
 - [x] Match filter button to search input: borderRadius 10px, same height (37px), white bg, consistent border color
+
+## FindJobs Hero Alignment with MyApplications
+- [x] Match hero background: dark olive gradient + image at opacity 0.75
+- [ ] Match overlay: left-directional gradient (RTL-aware) instead of bottom-fade
+- [ ] Match title alignment: right-aligned, text-xl, same shadow
+- [ ] Match hero height: padding-based (pt-5 pb-5) instead of fixed 110px
+- [ ] Add back button pill (white translucent) like MyApplications

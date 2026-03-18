@@ -839,52 +839,50 @@ export default function FindJobs() {
     <div dir="rtl" className="min-h-screen" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden">
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+        }}
+      >
+        {/* Hero background image — same treatment as MyApplications */}
+        <img
+          src={HERO_IMG}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
+          style={{ opacity: 0.75 }}
+        />
+        {/* RTL-aware overlay: fades from transparent (right) to dark olive (left) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(to left, oklch(0.28 0.06 122 / 0.0) 0%, oklch(0.28 0.06 122 / 0.30) 45%, oklch(0.28 0.06 122 / 0.72) 100%)",
+          }}
+        />
+        {/* Content */}
+        <div className="relative z-10 max-w-lg mx-auto px-4 pt-5 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+                className="text-xl font-black leading-tight"
+                style={{ color: "white", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}
+              >
+                {selectedCity ? (
+                  <>עבודות ב<span style={{ color: "oklch(0.88 0.13 70)" }}>{selectedCity}</span></>
+                ) : category !== "all" ? (
+                  <>עבודות <span style={{ color: "oklch(0.88 0.13 70)" }}>{catName}</span></>
+                ) : (
+                  <>מצא <span style={{ color: "oklch(0.88 0.13 70)" }}>עבודה זמנית</span> תוך דקות</>
+                )}
+              </motion.h1>
 
-        {/* Image block — compact 110px banner */}
-        <div className="relative w-full" style={{ height: 110 }}>
-          <img
-            src={HERO_IMG}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "center 40%" }}
-          />
-          {/* Gradient: dark band in middle for text readability, fades to page-bg at bottom */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: [
-                "linear-gradient(to bottom,",
-                "  transparent 0%,",
-                "  oklch(0.10 0.06 122 / 0.00) 35%,",
-                "  oklch(0.10 0.06 122 / 0.55) 50%,",
-                "  oklch(0.10 0.06 122 / 0.65) 62%,",
-                "  oklch(0.10 0.06 122 / 0.20) 72%,",
-                "  oklch(0.95 0.03 91.6 / 0.80) 88%,",
-                "  oklch(0.95 0.03 91.6) 100%)",
-              ].join(" "),
-            }}
-          />
-          {/* Badge removed per design */}
-          {/* Headline — centered, single line */}
-          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "50%", transform: "translateY(-50%)" }}>
-            <motion.h1
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-              className="text-[26px] leading-[1.15] font-black"
-              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
-            >
-              {selectedCity ? (
-                <>עבודות ב<span style={{ color: "oklch(0.88 0.13 70)" }}>{selectedCity}</span></>
-              ) : category !== "all" ? (
-                <>עבודות <span style={{ color: "oklch(0.88 0.13 70)" }}>{catName}</span></>
-              ) : (
-                <>מצא <span style={{ color: "oklch(0.88 0.13 70)" }}>עבודה זמנית</span> תוך דקות</>
-              )}
-            </motion.h1>
+            </div>
           </div>
         </div>
       </section>

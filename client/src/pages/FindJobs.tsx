@@ -1187,12 +1187,8 @@ export default function FindJobs() {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}
           className="flex flex-col gap-0 mb-3 sticky top-0 z-30 -mx-4 px-4 pt-3"
           style={{
-            background: toolbarScrolled ? "rgba(255,255,255,0.82)" : "transparent",
-            backdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            WebkitBackdropFilter: toolbarScrolled ? "blur(14px) saturate(1.6)" : "none",
-            boxShadow: toolbarScrolled ? "0 2px 12px oklch(0.38 0.07 125.0 / 0.08)" : "none",
-            borderBottom: toolbarScrolled ? "1px solid oklch(0.92 0.03 91.6 / 0.7)" : "none",
-            transition: "background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+            background: "transparent",
+            transition: "background 0.25s ease",
           }}
         >
           {/* Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
@@ -1223,7 +1219,7 @@ export default function FindJobs() {
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
                 style={userLat
                   ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-                  : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }}
+                  : { background: "white", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
               >
                 {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
                 <span>{userLat ? `${geoCity ?? "קרוב אלי"} · ${radiusKm} ק"מ` : "קרוב אלי"}</span>

@@ -363,8 +363,16 @@ export default function EmptyStateCarousel({
             className="p-5 flex flex-col items-center text-center cursor-grab active:cursor-grabbing"
             style={{ touchAction: "pan-y" }}
           >
-            {/* Illustration emoji */}
-            <span className="text-5xl leading-none select-none mb-4 mt-1">{slide.emoji}</span>
+            {/* Illustration emoji — scale-in on each slide entry */}
+            <motion.span
+              key={slide.id + "-emoji"}
+              initial={{ scale: 0.55, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 320, damping: 18, delay: 0.08 }}
+              className="text-5xl leading-none select-none mb-4 mt-1 inline-block"
+            >
+              {slide.emoji}
+            </motion.span>
 
             {/* Text */}
             <h3

@@ -1269,21 +1269,6 @@ export default function FindJobs() {
 
         </motion.div>
 
-        {/* Progress bar — shown during refetch */}
-        <AnimatePresence>
-          {isFetching && !isLoading && (
-            <motion.div
-              key="progress-bar"
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="-mx-4 mb-2 h-0.5 origin-right"
-              style={{ background: "linear-gradient(to left, oklch(0.82 0.13 84), oklch(0.50 0.18 160))" }}
-            />
-          )}
-        </AnimatePresence>
-
         {/* Location dialog */}
         <AnimatePresence>
           {showLocationDialog && (

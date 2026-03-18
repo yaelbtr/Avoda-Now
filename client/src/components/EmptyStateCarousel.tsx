@@ -6,7 +6,7 @@
  * Each slide has a uniform layout: illustration icon, headline, subtitle, and
  * one or two action buttons of identical height.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { C_BRAND_HEX, C_TEXT_MUTED } from "@/lib/colors";
@@ -262,15 +262,51 @@ export default function EmptyStateCarousel({
     });
   }
 
-  // ── Auto-rotate ─────────────────────────────────────────────────────────
+  // ── Auto-rotate & swipe ─────────────────────────────────────────────────
   const [activeIdx, setActiveIdx] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [direction, setDirection] = useState<1 | -1>(1); // 1 = forward (RTL: swipe right→left), -1 = back
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const total = slides.length;
 
+  const goTo = useCallback((idx: number, dir: 1 | -1) => {
+    setDirection(dir);
+    setActiveIdx(idx);
+  }, []);
+
   const advance = useCallback(() => {
+    setDirection(1);
     setActiveIdx((i) => (i + 1) % total);
   }, [total]);
+
+  /** Called after a drag ends — decide whether to advance/retreat based on offset */
+  const handleDragEnd = useCallback(
+    (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+      const { offset, velocity } = info;
+      const SWIPE_THRESHOLD = 50; // px
+      const VELOCITY_THRESHOLD = 300; // px/s
+      const isRTL = true; // app is RTL — positive x = swipe toward start (previous)
+
+      // In RTL: dragging left (negative x) = advancing forward
+      const shouldAdvance =
+        offset.x < -SWIPE_THRESHOLD || velocity.x < -VELOCITY_THRESHOLD;
+      const shouldRetreat =
+        offset.x > SWIPE_THRESHOLD || velocity.x > VELOCITY_THRESHOLD;
+
+      if (shouldAdvance && total > 1) {
+        goTo((activeIdx + 1) % total, 1);
+      } else if (shouldRetreat && total > 1) {
+        goTo((activeIdx - 1 + total) % total, -1);
+      }
+
+      // Pause auto-rotate for 5 s after manual swipe
+      setPaused(true);
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+      resumeTimer.current = setTimeout(() => setPaused(false), 5000);
+    },
+    [activeIdx, total, goTo]
+  );
 
   useEffect(() => {
     // Reset to first slide when context changes
@@ -307,14 +343,25 @@ export default function EmptyStateCarousel({
           minHeight: 220,
         }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={slide.id}
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 16 }}
+            custom={direction}
+            variants={{
+              enter: (dir: number) => ({ opacity: 0, x: dir * -40 }),
+              center: { opacity: 1, x: 0 },
+              exit: (dir: number) => ({ opacity: 0, x: dir * 40 }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.28, ease: "easeInOut" }}
-            className="p-5 flex flex-col items-center text-center"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.18}
+            onDragEnd={handleDragEnd}
+            className="p-5 flex flex-col items-center text-center cursor-grab active:cursor-grabbing"
+            style={{ touchAction: "pan-y" }}
           >
             {/* Illustration bubble */}
             <div
@@ -379,7 +426,7 @@ export default function EmptyStateCarousel({
           {slides.map((s, i) => (
             <button
               key={s.id}
-              onClick={() => { setActiveIdx(i); setPaused(true); setTimeout(() => setPaused(false), 5000); }}
+              onClick={() => { goTo(i, i > activeIdx ? 1 : -1); setPaused(true); setTimeout(() => setPaused(false), 5000); }}
               className="transition-all duration-300 rounded-full"
               style={{
                 width: i === activeIdx ? 20 : 6,

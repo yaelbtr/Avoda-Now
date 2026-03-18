@@ -2284,3 +2284,7 @@
 ## Geo-Radius Slide in Carousel
 - [x] Add "לא נמצאו עבודות בטווח X ק"מ" as a slide in EmptyStateCarousel (with expand radius buttons 20/50 ק"מ)
 - [x] Remove the standalone geo no-results card from FindJobs
+
+## Carousel Swipe Gesture
+- [x] Add drag/swipe gesture to EmptyStateCarousel using framer-motion (left/right swipe changes slide)
+- [x] Pause auto-rotate on drag, resume after release

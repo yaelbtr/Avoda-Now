@@ -844,7 +844,7 @@ export default function FindJobs() {
         style={{
           background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
           paddingTop: "env(safe-area-inset-top, 0px)",
-          minHeight: 160,
+          minHeight: 240,
         }}
       >
         {/* Hero background image — same treatment as MyApplications */}
@@ -856,7 +856,7 @@ export default function FindJobs() {
           fetchPriority="high"
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.75, objectPosition: "center 15%" }}
+          style={{ opacity: 0.78, objectPosition: "center 10%" }}
         />
         {/* RTL-aware overlay: fades from transparent (right) to dark olive (left) */}
         <div
@@ -866,7 +866,7 @@ export default function FindJobs() {
           }}
         />
         {/* Content */}
-        <div className="relative z-10 max-w-lg mx-auto px-4 pt-7 pb-7">
+        <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <motion.h1

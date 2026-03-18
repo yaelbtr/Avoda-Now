@@ -532,6 +532,7 @@ export default function FindJobs() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>(undefined);
   const [sortBy, setSortBy] = useState<"distance" | "salary" | "date" | "default">(_savedFilters?.sortBy ?? "date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [toolbarScrolled, setToolbarScrolled] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -813,22 +814,23 @@ export default function FindJobs() {
   }
   // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
   jobs = [...jobs].sort((a, b) => {
+    const dir = sortDir === "asc" ? 1 : -1;
     if (sortBy === "salary") {
       const aSal = (a as { salary?: number | null }).salary ?? 0;
       const bSal = (b as { salary?: number | null }).salary ?? 0;
-      return bSal - aSal;
+      return (aSal - bSal) * dir; // desc=high first, asc=low first
     }
     if (sortBy === "date") {
       const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
       const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
       const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
       const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
-      return bDate - aDate;
+      return (aDate - bDate) * dir; // desc=newest first, asc=oldest first
     }
     if (sortBy === "distance" && userLat) {
       const aDist = (a as { distance?: number | null }).distance ?? Infinity;
       const bDist = (b as { distance?: number | null }).distance ?? Infinity;
-      return aDist - bDist;
+      return (aDist - bDist) * dir; // desc=far first, asc=near first
     }
     // default: distance first (if available), then urgent
     if (userLat) {
@@ -1757,24 +1759,45 @@ export default function FindJobs() {
               { value: "date",    label: "תאריך עבודה" },
               { value: "salary", label: "שכר" },
               ...(userLat ? [{ value: "distance", label: "עיר" }] : []),
-            ] as { value: typeof sortBy; label: string }[]).map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setSortBy(opt.value)}
-                className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
-                style={sortBy === opt.value ? {
-                  background: "oklch(0.28 0.07 122)",
-                  color: "white",
-                  border: "1.5px solid transparent",
-                } : {
-                  background: "white",
-                  color: "oklch(0.35 0.07 122)",
-                  border: "1.5px solid oklch(0.86 0.04 122)",
-                }}
-              >
-                {opt.label}{sortBy === opt.value ? " ↓" : ""}
-              </button>
-            ))}
+            ] as { value: typeof sortBy; label: string }[]).map(opt => {
+              const isActive = sortBy === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    if (!isActive) {
+                      // First click: select with desc
+                      setSortBy(opt.value);
+                      setSortDir("desc");
+                    } else if (sortDir === "desc") {
+                      // Second click: flip to asc
+                      setSortDir("asc");
+                    } else {
+                      // Third click: deselect (back to default)
+                      setSortBy("default");
+                      setSortDir("desc");
+                    }
+                  }}
+                  className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
+                  style={isActive ? {
+                    background: "oklch(0.28 0.07 122)",
+                    color: "white",
+                    border: "1.5px solid transparent",
+                  } : {
+                    background: "white",
+                    color: "oklch(0.35 0.07 122)",
+                    border: "1.5px solid oklch(0.86 0.04 122)",
+                  }}
+                >
+                  {opt.label}
+                  {isActive ? (
+                    <span className="text-[10px] leading-none">{sortDir === "desc" ? "↓" : "↑"}</span>
+                  ) : (
+                    <span className="text-[10px] leading-none opacity-40">↕</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
           {/* Count — left side, pushed to end */}
           <div className="shrink-0 mr-auto">

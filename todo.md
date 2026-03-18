@@ -2355,3 +2355,4 @@
 - [x] Filter button: keep constant style when active filters exist — only show red badge, no background/border change
 - [x] Search input: add 200ms debounce via split state (searchText raw + debouncedSearchText for filtering)
 - [x] Add sort chips row below filter chips: מיון label + תאריך עבודה / שכר / עיר buttons
+- [x] Sort chips: add asc/desc toggle — click1=select↓, click2=reverse↑, click3=deselect

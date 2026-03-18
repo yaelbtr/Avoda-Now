@@ -68,7 +68,7 @@ function saveFiltersToStorage(filters: Omit<SavedFilters, 'savedAt'>) {
 function clearSavedFilters() {
   try { localStorage.removeItem(FILTER_PREFS_KEY); } catch {}
 }
-const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-home-services-YoZj9FcDmwCDxbV9srgi42.webp";
+const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/findjobs-hero-waiter-99ABe34RpqUP33vKKU3zyw.webp";
 
 /** Maps day name strings to JS day numbers (0=Sun, 1=Mon, ..., 6=Sat) */
 const DAY_NAME_TO_NUM: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };

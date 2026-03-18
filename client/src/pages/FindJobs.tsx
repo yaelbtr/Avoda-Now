@@ -1778,15 +1778,16 @@ export default function FindJobs() {
                       setSortDir("desc");
                     }
                   }}
-                  className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 active:scale-[0.97]"
                   style={isActive ? {
-                    background: "oklch(0.28 0.07 122)",
-                    color: "white",
-                    border: "1.5px solid transparent",
+                    background: "oklch(0.88 0.08 140)",
+                    borderColor: "oklch(0.72 0.12 140)",
+                    color: "oklch(0.28 0.10 140)",
+                    boxShadow: "0 2px 8px oklch(0.72 0.12 140 / 0.25)",
                   } : {
                     background: "white",
-                    color: "oklch(0.35 0.07 122)",
-                    border: "1.5px solid oklch(0.86 0.04 122)",
+                    borderColor: "oklch(0.86 0.04 122)",
+                    color: "oklch(0.30 0.05 122)",
                   }}
                 >
                   {opt.label}

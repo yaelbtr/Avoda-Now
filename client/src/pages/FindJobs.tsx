@@ -1097,7 +1097,7 @@ export default function FindJobs() {
                       onClick={() => setProfilePanelOpen(false)}
                       className="shrink-0 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-all active:scale-[0.97]"
                       style={{
-                        background: score >= 70 ? "oklch(0.50 0.09 124.9)" : "oklch(0.55 0.12 76.7)",
+                        background: "#7a5200",
                         color: "white",
                       }}
                     >

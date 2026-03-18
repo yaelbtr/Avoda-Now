@@ -236,6 +236,8 @@ interface SmartEmptyStateProps {
   radiusKm?: number;
   expandRadiusOptions?: { value: number; label: string }[];
   onExpandRadius?: (km: number) => void;
+  /** True when a geo/location filter (קרוב אלי) is active */
+  hasGeoFilter?: boolean;
 }
 
 const DATE_FILTER_LABELS: Record<string, string> = {
@@ -263,9 +265,10 @@ function SmartEmptyState({
   onClearTimeSlots, onClearDays, onClearUrgent, onClearSearch,
   onSelectCity, onShowTomorrow, onShowThisWeek, onClearAllFilters,
   showGeoNoResults, radiusKm, expandRadiusOptions, onExpandRadius,
+  hasGeoFilter = false,
 }: SmartEmptyStateProps) {
   const hasAnyFilter = category !== "all" || !!selectedCity || !!dateFilter ||
-    selectedTimeSlots.length > 0 || selectedDays.length > 0 || showUrgentToday || !!searchText;
+    selectedTimeSlots.length > 0 || selectedDays.length > 0 || showUrgentToday || !!searchText || hasGeoFilter;
   const nearbyCities = selectedCity ? (NEARBY_CITIES[selectedCity] ?? []) : [];
 
   return (
@@ -1877,6 +1880,7 @@ export default function FindJobs() {
             radiusKm={radiusKm}
             expandRadiusOptions={RADIUS_OPTIONS.filter(r => r.value > radiusKm) as { value: number; label: string }[]}
             onExpandRadius={(km) => { setRadiusKm(km); setAutoExpandedRadius(false); }}
+            hasGeoFilter={userLat !== null}
           />
         ) : (
           <>

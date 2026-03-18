@@ -249,8 +249,9 @@ export default function EmptyStateCarousel({
     });
   }
 
-  // Slide: notifications (authenticated users only)
-  if (isAuthenticated) {
+  // Slide: notifications (authenticated users only, and only when no active filters so
+  // the "נקה סינון" action is not buried behind the notifications card)
+  if (isAuthenticated && !hasAnyFilter) {
     slides.push({
       id: "notifications",
       emoji: "🔔",

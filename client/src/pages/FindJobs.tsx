@@ -1388,7 +1388,7 @@ export default function FindJobs() {
                 onClick={() => setFilterOpen(false)}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 transition={{ duration: 0.22 }}
-                style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.40)", zIndex: 200 }}
+                style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.40)", zIndex: 300 }}
               />
               {/* Bottom sheet */}
               <motion.div
@@ -1403,7 +1403,7 @@ export default function FindJobs() {
                 exit={{ y: "100%", opacity: 0 }}
                 transition={{ type: "spring", stiffness: 320, damping: 32, mass: 0.9 }}
                 style={{
-                  position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 201,
+                  position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 301,
                   background: "#ffffff",
                   borderRadius: "24px 24px 0 0",
                   boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
@@ -2114,7 +2114,7 @@ export default function FindJobs() {
             <motion.div
               key="cal-backdrop"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200]"
+              className="fixed inset-0 z-[300]"
               style={{ background: "rgba(0,0,0,0.45)" }}
               onClick={() => setCalendarOpen(false)}
             />
@@ -2124,7 +2124,7 @@ export default function FindJobs() {
               ref={calSheetRef}
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="fixed bottom-0 left-0 right-0 z-[201] rounded-t-3xl overflow-hidden"
+              className="fixed bottom-0 left-0 right-0 z-[301] rounded-t-3xl overflow-hidden"
               style={{ background: "var(--page-bg)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}
               onTouchStart={handleCalTouchStart}
               onTouchMove={handleCalTouchMove}

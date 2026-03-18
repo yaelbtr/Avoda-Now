@@ -2386,3 +2386,4 @@
 - [x] Feature: click on category badge in JobCard filters FindJobs by that category (onCategoryClick prop)
 - [x] UX: show toast "מסנן לפי: <category>" when category pill is clicked in FindJobs (handleCategoryFromCard)
 - [x] Fix: remove sticky positioning from search bar and filter/sort chip toolbar in FindJobs (should scroll with page)
+- [x] Bug: search bar (z-20 absolute in hero) overlaps filter bottom sheet panel — raised filter/calendar backdrop to z-300 and sheet to z-301

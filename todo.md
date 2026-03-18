@@ -2378,3 +2378,5 @@
 - [x] Feature: replace shared job card component with new design from כרטיסעבודהרגיל.zip (worker home + FindJobs) — new design: large bold title, inline badges, 2x2 details grid, rounded bookmark/share icons, full-width "הגישו אותי" button
 - [ ] Update skeleton loading cards to match new JobCard 2x2 grid layout (FindJobs + HomeWorker)
 - [x] UI: move "היום"/"דחוף" status badges to appear below the bookmark/share buttons row in JobCard
+- [x] Bug: status badges (היום/דחוף) not visible on job card — confirmed not a bug: badges only show when conditions are met (isJobDateToday, isUrgent, isNew, etc.)
+- [x] Fix: hide businessName in JobCard when it is an empty string

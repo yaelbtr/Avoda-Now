@@ -664,7 +664,7 @@ export function JobCard({
               {job.title}
             </h3>
             {/* Business name */}
-            {job.businessName && (
+            {job.businessName && job.businessName.trim() !== "" && (
               <p className="text-[13px] font-medium" style={{ color: "#46483d" }}>
                 {job.businessName}
               </p>

@@ -354,6 +354,17 @@ function SmartEmptyState({
               </button>
             )}
           </div>
+          {/* Clear all — below the active filter pills */}
+          <div className="flex justify-center mt-3">
+            <button
+              onClick={onClearAllFilters}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-[0.97]"
+              style={{ background: "white", color: "oklch(0.45 0.05 122)", border: `1.5px solid ${C_BORDER}` }}
+            >
+              <X className="h-3 w-3" />
+              נקה סינונים
+            </button>
+          </div>
         </div>
       )}
 
@@ -1019,37 +1030,6 @@ export default function FindJobs() {
               )}
             </button>
 
-            {/* Clear all — shown at end of row when any filter is active */}
-            <AnimatePresence>
-              {activeFilterCount > 0 && (
-                <motion.button
-                  key="clear-all-chip"
-                  initial={{ opacity: 0, scale: 0.82, width: 0 }}
-                  animate={{ opacity: 1, scale: 1, width: "auto" }}
-                  exit={{ opacity: 0, scale: 0.82, width: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  onClick={() => {
-                    setCategory("all");
-                    setSelectedCategories([]);
-                    setSelectedCity(null);
-                    setSelectedCities([]);
-                    setSelectedTimeSlots([]);
-                    setSelectedDays([]);
-                    setDateFilter(null);
-                    setCalendarRange(undefined);
-                    setShowUrgentToday(false);
-                    setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false);
-                    clearSavedFilters();
-                    toast("הסינונים נוקו");
-                  }}
-                  className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all overflow-hidden"
-                  style={{ background: "white", color: "oklch(0.45 0.05 122)", border: `1px solid ${C_BORDER}` }}
-                >
-                  <X className="h-3 w-3" />
-                  <span>נקה סינונים</span>
-                </motion.button>
-              )}
-            </AnimatePresence>
           </div>
           </div>{/* end chip row outer wrapper */}
 

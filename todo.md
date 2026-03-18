@@ -2300,3 +2300,7 @@
 - [x] Move to end of chip row (after all other chips)
 - [x] Show when activeFilterCount > 0 (any filter active, not just urgent)
 - [x] Clicking it resets all filters (categories, cities, urgent, date, time slots, days, location)
+
+## Move Clear Filters Button
+- [x] Remove "נקה סינונים" chip from the top chip row (FindJobs toolbar)
+- [x] Add "נקה סינונים" button at the bottom of the active filters section in SmartEmptyState

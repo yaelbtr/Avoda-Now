@@ -2304,3 +2304,9 @@
 ## Move Clear Filters Button
 - [x] Remove "נקה סינונים" chip from the top chip row (FindJobs toolbar)
 - [x] Add "נקה סינונים" button at the bottom of the active filters section in SmartEmptyState
+
+## FindJobs Top Section Simplification
+- [x] Shrink hero from 180px to 110px
+- [x] Slim profile banner to compact single-line strip (icon + short text + arrow)
+- [x] Remove geo card block with radius buttons
+- [x] Add inline radius selector inside the "קרוב אלי" chip (expand on tap)

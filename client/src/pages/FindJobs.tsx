@@ -413,6 +413,7 @@ export default function FindJobs() {
   const [category, setCategory] = useState(resolvedCategory); // legacy — kept for SEO/URL/SmartEmptyState
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories); // multi-category (primary)
   const [radiusKm, setRadiusKm] = useState(10);
+  const [showRadiusPicker, setShowRadiusPicker] = useState(false);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
@@ -822,8 +823,8 @@ export default function FindJobs() {
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden">
 
-        {/* Image block — compact 180px banner */}
-        <div className="relative w-full" style={{ height: 180 }}>
+        {/* Image block — compact 110px banner */}
+        <div className="relative w-full" style={{ height: 110 }}>
           <img
             src={HERO_IMG}
             alt=""
@@ -882,29 +883,25 @@ export default function FindJobs() {
             return (
               <motion.div
                 key="profile-banner-top"
-                initial={{ opacity: 0, y: -8, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="mb-4"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="mb-3"
               >
                 <Link href="/worker-profile">
                   <div
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.99]"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.99]"
                     style={{
                       background: "oklch(0.96 0.04 122)",
-                      border: "1.5px solid oklch(0.88 0.08 122)",
-                      boxShadow: "0 2px 12px oklch(0.50 0.14 85 / 0.10)",
+                      border: "1px solid oklch(0.88 0.08 122)",
                     }}
                   >
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "oklch(0.50 0.14 85)", color: "white" }}>
-                      <Briefcase className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold" style={{ color: "oklch(0.28 0.06 122)" }}>השלם את הפרופיל שלך</p>
-                      <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.06 122)" }}>הוסף קטגוריות ומיקום להתאמות טובות יותר</p>
-                    </div>
-                    <span className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: "oklch(0.50 0.14 85)", color: "white" }}>עדכן</span>
+                    <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.50 0.14 85)" }} />
+                    <p className="flex-1 text-xs font-semibold" style={{ color: "oklch(0.32 0.07 122)" }}>
+                      השלם פרופיל — הוסף קטגוריות ומיקום להתאמות טובות יותר
+                    </p>
+                    <ChevronLeft className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.50 0.06 122)" }} />
                   </div>
                 </Link>
               </motion.div>
@@ -987,21 +984,48 @@ export default function FindJobs() {
             }}
           >
           <div ref={chipRowRef} className="flex items-center gap-2 pb-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
-            {/* קרוב אלי */}
-            <button
-              onClick={handleLocationButtonClick}
-              disabled={locating}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
-              style={userLat
-                ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
-                : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }}
-            >
-              {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
-              <span>{userLat ? (geoCity ?? "קרוב אלי") : "קרוב אלי"}</span>
-              {userLat && (
-                <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); }} />
-              )}
-            </button>
+            {/* קרוב אלי — with inline radius pills when active */}
+            <div className="shrink-0 flex items-center gap-1.5">
+              <button
+                onClick={() => {
+                  if (userLat) {
+                    setShowRadiusPicker(v => !v);
+                  } else {
+                    handleLocationButtonClick();
+                  }
+                }}
+                disabled={locating}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
+                style={userLat
+                  ? { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }
+                  : { background: "var(--brand)", color: "white", border: "1px solid var(--brand)" }}
+              >
+                {locating ? <BrandLoader size="sm" /> : <Navigation className="h-3 w-3" />}
+                <span>{userLat ? `${geoCity ?? "קרוב אלי"} · ${radiusKm} ק"מ` : "קרוב אלי"}</span>
+                {userLat && (
+                  <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false); }} />
+                )}
+              </button>
+              {/* Inline radius pills — visible when geo is active and picker is open */}
+              <AnimatePresence>
+                {userLat && showRadiusPicker && RADIUS_OPTIONS.map((r, i) => (
+                  <motion.button
+                    key={r.value}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    transition={{ duration: 0.15, delay: i * 0.04 }}
+                    onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); setShowRadiusPicker(false); }}
+                    className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold transition-all"
+                    style={radiusKm === r.value
+                      ? { background: "oklch(0.50 0.18 160)", color: "white", border: "1px solid oklch(0.50 0.18 160)" }
+                      : { background: "white", color: "oklch(0.32 0.07 122)", border: `1px solid ${"oklch(0.88 0.05 122)"}` }}
+                  >
+                    {r.label}
+                  </motion.button>
+                ))}
+              </AnimatePresence>
+            </div>
 
             {/* דחוף */}
             <button
@@ -1085,54 +1109,7 @@ export default function FindJobs() {
           )}
         </AnimatePresence>
 
-        {/* Geo card — shown when geo is active (no-results case is handled inside EmptyStateCarousel) */}
-        <AnimatePresence mode="wait">
-          {userLat ? (
-            /* Geo card: shown when geo is active and there are results (or still loading) */
-            <motion.div
-              key="geo-card"
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="mb-3 rounded-2xl overflow-hidden"
-              style={showUrgentToday
-                ? { border: "1px solid oklch(0.78 0.17 65 / 0.35)" }
-                : { border: "1px solid oklch(0.50 0.18 160 / 0.25)" }}
-            >
-              <div className="flex items-center justify-between gap-3 px-4 py-3"
-                style={showUrgentToday
-                  ? { background: "oklch(0.78 0.17 65 / 0.09)" }
-                  : { background: "oklch(0.50 0.18 160 / 0.08)" }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                    style={showUrgentToday
-                      ? { background: "oklch(0.78 0.17 65 / 0.18)", border: "1px solid oklch(0.78 0.17 65 / 0.35)" }
-                      : { background: "oklch(0.50 0.18 160 / 0.12)", border: "1px solid #bbf7d0" }}>
-                    <MapPin className="h-4 w-4" style={{ color: showUrgentToday ? "oklch(0.50 0.14 65)" : "#16a34a" }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold"
-                      style={{ color: showUrgentToday ? "oklch(0.35 0.12 65)" : "#166534" }}>
-                      {geoCity ? `מציג עבודות ליד ${geoCity}` : "מציג עבודות קרוב אליך"}
-                    </p>
-                    <p className="text-xs" style={{ color: showUrgentToday ? "oklch(0.55 0.10 65)" : "#16a34a" }}>בטווח {radiusKm} ק"מ</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {RADIUS_OPTIONS.map(r => (
-                    <button key={r.value} onClick={() => { setRadiusKm(r.value); setAutoExpandedRadius(false); }}
-                      className="px-2 py-1 rounded-full text-xs font-medium transition-all"
-                      style={radiusKm === r.value
-                        ? { background: showUrgentToday ? "oklch(0.60 0.14 65)" : C_SUCCESS_HEX, color: "white" }
-                        : { background: "white",
-                            color: showUrgentToday ? "oklch(0.45 0.12 65)" : "#15803d",
-                            border: showUrgentToday ? "1px solid oklch(0.78 0.17 65 / 0.40)" : "1px solid #bbf7d0" }}>
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {/* Geo card removed — radius now inline in chip row */}
 
         {/* Filter panel */}
         <AnimatePresence>

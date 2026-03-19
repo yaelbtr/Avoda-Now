@@ -35,10 +35,10 @@ const DAYS = [
 ];
 
 const TIME_SLOTS = [
-  { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅" },
-  { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️" },
-  { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🌆" },
-  { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙" },
+  { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅", isNight: false },
+  { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️", isNight: false },
+  { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🏆", isNight: false },
+  { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙", isNight: true },
 ];
 
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
@@ -809,7 +809,7 @@ export default function WorkerProfile() {
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground mb-2">שעות עבודה:</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {TIME_SLOTS.map((slot) => {
+                    {TIME_SLOTS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
                       const isSelected = preferredTimeSlots.includes(slot.value);
                       return (
                         <button

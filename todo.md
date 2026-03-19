@@ -2572,3 +2572,8 @@
 ## Bug Fix — סינון קטגוריות מוגבלות בפרופיל עובד לקטינים (Round 3u)
 - [x] שימוש ב-birthDateInfoQuery הקיים ב-WorkerProfile כדי לגזור isCurrentUserMinor
 - [x] סינון PREFERENCE_CATEGORIES: הסתר קטגוריות עם allowedForMinors=false כאשר isMinor=true
+
+## Bug Fix — הסתרת שעות לילה לקטינים בפרופיל ובפאנל סינון (Round 3v)
+- [x] WorkerProfile: הסתר slot "לילה" (22:00–06:00) מרשימת TIME_SLOTS כאשר isCurrentUserMinor=true
+- [x] FindJobs: הסתר slot "לילה" (22–06) מפאנל הסינון כאשר isCurrentUserMinor=true
+- [x] נקה "לילה" מ-selectedTimeSlots אם קטין ויש בחירה שמורה

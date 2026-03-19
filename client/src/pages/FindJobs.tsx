@@ -2042,11 +2042,11 @@ export default function FindJobs() {
                     <div className="overflow-hidden">
                       <div className="pt-3 flex flex-wrap gap-2">
                         {[
-                          { value: "morning", label: "בוקר", sub: "06–12", icon: "🌅" },
-                          { value: "afternoon", label: "צהריים", sub: "12–17", icon: "☀️" },
-                          { value: "evening", label: "ערב", sub: "17–22", icon: "🌆" },
-                          { value: "night", label: "לילה", sub: "22–06", icon: "🌙" },
-                        ].map(slot => {
+                          { value: "morning", label: "בוקר", sub: "06–12", icon: "🌅", isNight: false },
+                          { value: "afternoon", label: "צהריים", sub: "12–17", icon: "☀️", isNight: false },
+                          { value: "evening", label: "ערב", sub: "17–22", icon: "🏆", isNight: false },
+                          { value: "night", label: "לילה", sub: "22–06", icon: "🌙", isNight: true },
+                        ].filter(slot => !isCurrentUserMinor || !slot.isNight).map(slot => {
                           const isActive = selectedTimeSlots.includes(slot.value);
                           return (
                             <button key={slot.value}

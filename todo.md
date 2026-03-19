@@ -2553,3 +2553,8 @@
 - [x] חשוף שדה בפרוצדורות admin (updateCategory, create)
 - [x] הוסף toggle בטאב קטגוריות ב-Admin Panel (טבלה + מובייל + דיאלוג)
 - [x] סנן קטגוריות לפי allowedForMinors ב-queryJobs (sub-select על categories table)
+
+## Feature — Badge קטינים ב-JobCard + אזהרה ב-PostJob (Round 3r)
+- [x] חשוף allowedForMinors בתגובת getCategories (כולל ב-useCategories hook)
+- [x] הוסף badge "לא מתאים לקטינים" ב-JobCard כשהקטגוריה מסומנת allowedForMinors=false
+- [x] הוסף אזהרה ב-PostJob כשמעסיק בוחר קטגוריה שאינה מותרת לקטינים

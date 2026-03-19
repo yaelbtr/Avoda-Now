@@ -14,6 +14,7 @@ import {
 } from "@/lib/colors";
 import { AppButton } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCategories } from "@/hooks/useCategories";
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -331,6 +332,9 @@ export function JobCard({
   // job.categoryGroupName is populated server-side; falls back to false if not present
   const isWartime = (job as { categoryGroupName?: string }).categoryGroupName === "wartime";
   const isSeasonal = (job as { categoryGroupName?: string }).categoryGroupName === "seasonal";
+  // Minor restriction badge — driven by allowedForMinors field in DB categories table
+  const { bySlug: catBySlug } = useCategories();
+  const isMinorRestricted = job.category ? catBySlug[job.category]?.allowedForMinors === false : false;
   const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
   const isNew = job.createdAt && (Date.now() - new Date(job.createdAt).getTime()) < 60 * 60 * 1000;
   const [showApplyPanel, setShowApplyPanel] = useState(false);
@@ -480,8 +484,8 @@ export function JobCard({
 
         {/* Content */}
         <div className="p-3" dir="rtl">
-          {/* Category badge */}
-          <div className="mb-1.5">
+          {/* Category badge + minor restriction badge */}
+          <div className="mb-1.5 flex flex-wrap items-center gap-1">
             <span
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
               style={{
@@ -493,6 +497,19 @@ export function JobCard({
               <span className="text-[11px]">{getCategoryIcon(job.category)}</span>
               {getCategoryLabel(job.category)}
             </span>
+            {isMinorRestricted && (
+              <span
+                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                style={{
+                  background: "oklch(0.95 0.04 30 / 0.85)",
+                  color: "oklch(0.42 0.15 30)",
+                  border: "1px solid oklch(0.85 0.08 30 / 0.5)",
+                }}
+                title="משרה זו אינה מוצגת לעובדים מתחת לגיל 18"
+              >
+                🔞 לא מתאים לקטינים
+              </span>
+            )}
           </div>
 
           <h3

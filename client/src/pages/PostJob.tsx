@@ -67,7 +67,7 @@ function generateCaptcha() {
 
 export default function PostJob() {
   const [, navigate] = useLocation();
-  const { categories: dbCategories } = useCategories();
+  const { categories: dbCategories, bySlug: catBySlug } = useCategories();
   const { isAuthenticated, user } = useAuth();
   const { userMode, setUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
@@ -135,6 +135,7 @@ export default function PostJob() {
   const isLocalBusiness = watch("isLocalBusiness");
   const isVolunteer = watch("isVolunteer");
   const showPhone = watch("showPhone");
+  const watchedCategory = watch("category");
 
   // Region inactive state — set when server rejects with FORBIDDEN + region info
   const [regionBlocked, setRegionBlocked] = useState<{
@@ -560,6 +561,23 @@ export default function PostJob() {
             onChange={(e) => setValue("category", e.target.value)}
             error={errors.category?.message}
           />
+          {/* Minor restriction warning — shown when selected category has allowedForMinors=false */}
+          {watchedCategory && catBySlug[watchedCategory]?.allowedForMinors === false && (
+            <div
+              className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
+              style={{
+                background: "oklch(0.95 0.04 30 / 0.85)",
+                border: "1px solid oklch(0.85 0.08 30 / 0.5)",
+                color: "oklch(0.42 0.15 30)",
+              }}
+              dir="rtl"
+            >
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span className="font-medium">
+                משרה זו לא תוצג לעובדים מתחת לגיל 18
+              </span>
+            </div>
+          )}
 
           <AppTextarea
             id="description"

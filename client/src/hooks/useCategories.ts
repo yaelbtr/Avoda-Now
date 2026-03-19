@@ -10,6 +10,8 @@ export type CategoryItem = {
   imageUrl: string | null;
   isActive: boolean;
   sortOrder: number;
+  /** Whether this category is permitted for workers under 18. Managed in Admin Panel. */
+  allowedForMinors: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

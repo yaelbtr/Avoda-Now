@@ -2558,3 +2558,8 @@
 - [x] חשוף allowedForMinors בתגובת getCategories (כולל ב-useCategories hook)
 - [x] הוסף badge "לא מתאים לקטינים" ב-JobCard כשהקטגוריה מסומנת allowedForMinors=false
 - [x] הוסף אזהרה ב-PostJob כשמעסיק בוחר קטגוריה שאינה מותרת לקטינים
+
+## Feature — Consolidated minor-restriction warning in PostJob (Round 3s)
+-- [x] הסר את שני הבאנרים הנפרדים (קטגוריה + שעות) מ-PostJob
+- [x] הוסף באנר אחד מאוחד שמופיע כאשר אחד מהתנאים מתקיים (קטגוריה מוגבלת OR שעת סיום > 22:00)
+- [x] הבאנר יפרט את הסיבה/ות הספציפות (קטגוריה / שעות / שניהם)

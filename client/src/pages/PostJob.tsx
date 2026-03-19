@@ -137,6 +137,11 @@ export default function PostJob() {
   const showPhone = watch("showPhone");
   const watchedCategory = watch("category");
 
+  // Unified minor-restriction flag — true when either condition blocks minors from seeing this job
+  const categoryBlocksMinors = !!(watchedCategory && catBySlug[watchedCategory]?.allowedForMinors === false);
+  const hoursBlockMinors = !!(workEndTime && shouldWarnLateJob(workEndTime));
+  const jobBlocksMinors = categoryBlocksMinors || hoursBlockMinors;
+
   // Region inactive state — set when server rejects with FORBIDDEN + region info
   const [regionBlocked, setRegionBlocked] = useState<{
     regionId: number;
@@ -561,8 +566,8 @@ export default function PostJob() {
             onChange={(e) => setValue("category", e.target.value)}
             error={errors.category?.message}
           />
-          {/* Minor restriction warning — shown when selected category has allowedForMinors=false */}
-          {watchedCategory && catBySlug[watchedCategory]?.allowedForMinors === false && (
+          {/* Unified minor-restriction warning — shown when category OR hours block minors */}
+          {jobBlocksMinors && (
             <div
               className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
               style={{
@@ -575,6 +580,21 @@ export default function PostJob() {
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               <span className="font-medium">
                 משרה זו לא תוצג לעובדים מתחת לגיל 18
+                {categoryBlocksMinors && hoursBlockMinors && (
+                  <span className="block text-xs mt-0.5 font-normal">
+                    סיבה: קטגוריה מוגבלת לקטינים + שעת סיום לאחר 22:00
+                  </span>
+                )}
+                {categoryBlocksMinors && !hoursBlockMinors && (
+                  <span className="block text-xs mt-0.5 font-normal">
+                    סיבה: קטגוריה זו אינה מותרת לעבודת קטינים
+                  </span>
+                )}
+                {!categoryBlocksMinors && hoursBlockMinors && (
+                  <span className="block text-xs mt-0.5 font-normal">
+                    סיבה: שעת סיום לאחר 22:00 (חוק עבודת נוער)
+                  </span>
+                )}
               </span>
             </div>
           )}
@@ -906,16 +926,7 @@ export default function PostJob() {
                   dir="ltr"
                 />
               </div>
-              {/* Late-job warning — shown when end time is after 22:00 */}
-              {workEndTime && shouldWarnLateJob(workEndTime) && (
-                <div className="flex items-start gap-2 p-3 rounded-lg text-xs text-right"
-                  style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.40)", color: "oklch(0.45 0.10 70)" }}>
-                  <span style={{ fontSize: 15, flexShrink: 0 }}>⚠️</span>
-                  <span>
-                    <strong>שעת הסיום לאחר 22:00</strong> — משרה זו לא תוצג לעובדים מתחת לגיל 18 בהתאם לחוק עבודת נוער.
-                  </span>
-                </div>
-              )}
+              {/* Minor-restriction warning is now shown as a unified banner near the category selector above */}
             </div>
           </div>
         </div>

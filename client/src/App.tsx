@@ -335,8 +335,7 @@ function App() {
               <ReferralCapture />
               <PostGoogleRegistration />
               <Router />
-              {/* Global coming-soon overlay — covers every page when FIND_JOBS_OPEN is false */}
-              {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, document.body)}
+
             </UserModeProvider>
           </AuthProvider>
         </TooltipProvider>

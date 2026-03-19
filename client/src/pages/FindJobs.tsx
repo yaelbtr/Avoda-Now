@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { FIND_JOBS_OPEN } from "@shared/const";
+import FindJobsComingSoonOverlay from "@/components/FindJobsComingSoonOverlay";
 import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence, useInView } from "framer-motion";
@@ -2212,6 +2214,8 @@ export default function FindJobs() {
           </>
         )}
     </AnimatePresence>, document.body)}
+    {/* Coming-soon overlay — covers only this page when FIND_JOBS_OPEN is false */}
+    {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, document.body)}
     </>
   );
 }

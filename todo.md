@@ -2591,3 +2591,7 @@
 ## Feature — Mandatory birth-date gate in profile wizard (Round 3y)
 - [x] בדוק את זרימת האשף בפרופיל — איפה מוצג BirthDateModal ומה קורה כשאין תאריך לידה
 - [x] חסום כניסה לאשף הפרופיל אם birthDate=null — הצג מסך/מודאל חובה לפני המשך
+
+## Feature — Friendly error toast for minor restriction on accept (Round 3z)
+- [x] מצא את onError של updateApplicationStatus mutation ב-JobApplications
+- [x] הצג toast ידידותי עם הסיבה המדויקת כשמעסיק מנסה לקבל קטין לתפקיד מוגבל

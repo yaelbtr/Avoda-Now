@@ -266,7 +266,23 @@ export default function JobApplications() {
       utils.jobs.getJobApplications.invalidate({ jobId });
       toast.success(vars.action === "accept" ? "המועמד התקבל! פרטי הקשר נחשפו." : "המועמד נדחה.");
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e, vars) => {
+      // Minor restriction errors on accept — surface the exact server reason with a
+      // dedicated icon so the employer understands why the action was blocked.
+      const isMinorBlock =
+        vars.action === "accept" &&
+        (e.data?.code === "FORBIDDEN" || e.data?.code === "PRECONDITION_FAILED");
+
+      if (isMinorBlock) {
+        toast.error(e.message, {
+          description: "לא ניתן לקבל עובד זה למשרה בשל הגבלות חוק עבודת נוער.",
+          duration: 6000,
+          icon: "🔞",
+        });
+      } else {
+        toast.error(e.message);
+      }
+    },
   });
 
   if (authLoading) {

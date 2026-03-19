@@ -20,6 +20,7 @@ import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
+import { shouldWarnLateJob } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
@@ -885,6 +886,16 @@ export default function PostJob() {
                   dir="ltr"
                 />
               </div>
+              {/* Late-job warning — shown when end time is after 22:00 */}
+              {workEndTime && shouldWarnLateJob(workEndTime) && (
+                <div className="flex items-start gap-2 p-3 rounded-lg text-xs text-right"
+                  style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.40)", color: "oklch(0.45 0.10 70)" }}>
+                  <span style={{ fontSize: 15, flexShrink: 0 }}>⚠️</span>
+                  <span>
+                    <strong>שעת הסיום לאחר 22:00</strong> — משרה זו לא תוצג לעובדים מתחת לגיל 18 בהתאם לחוק עבודת נוער.
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

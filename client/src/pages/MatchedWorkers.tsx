@@ -33,6 +33,7 @@ interface MatchedWorker {
   name?: string;
   distance?: number;
   rating?: number;
+  isMinor?: boolean;
 }
 
 // ─── Worker Card ──────────────────────────────────────────────────────────────
@@ -88,6 +89,16 @@ function WorkerMatchCard({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-black truncate" style={{ color: C_DARK }}>
           {worker.name ?? `עובד #${worker.worker_id}`}
+          {worker.isMinor && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 3,
+              background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.45)",
+              color: "#d97706", borderRadius: 5, padding: "1px 6px",
+              fontSize: 10, fontWeight: 700, marginRight: 6, verticalAlign: "middle",
+            }}>
+              16–17
+            </span>
+          )}
         </p>
         <div className="flex items-center gap-3 mt-0.5 flex-wrap">
           {/* Score badge */}
@@ -166,6 +177,19 @@ export default function MatchedWorkers() {
 
   const [matchedWorkers, setMatchedWorkers] = useState<MatchedWorker[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Fetch isMinor status for matched workers after they are loaded
+  const workerIds = matchedWorkers?.map((w) => w.worker_id) ?? [];
+  const minorStatusQuery = trpc.user.getWorkersMinorStatus.useQuery(
+    { workerIds },
+    { enabled: workerIds.length > 0, staleTime: 5 * 60 * 1000 }
+  );
+  const enrichedWorkers: MatchedWorker[] | null = matchedWorkers
+    ? matchedWorkers.map((w) => ({
+        ...w,
+        isMinor: minorStatusQuery.data?.[w.worker_id] ?? false,
+      }))
+    : null;
 
   const handleMatch = async () => {
     if (!jobId) return;
@@ -287,11 +311,11 @@ export default function MatchedWorkers() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
-              {matchedWorkers && matchedWorkers.length > 0 ? (
+              {enrichedWorkers && enrichedWorkers.length > 0 ? (
                 <>
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold" style={{ color: C_DARK }}>
-                      נמצאו {matchedWorkers.length} עובדים מתאימים
+                      נמצאו {enrichedWorkers?.length ?? 0} עובדים מתאימים
                     </p>
                     <button
                       onClick={() => { setHasSearched(false); setMatchedWorkers(null); }}
@@ -301,7 +325,7 @@ export default function MatchedWorkers() {
                       חפש שוב
                     </button>
                   </div>
-                  {matchedWorkers.map((w, i) => (
+                  {enrichedWorkers!.map((w, i) => (
                     <motion.div
                       key={w.worker_id}
                       initial={{ opacity: 0, y: 12 }}

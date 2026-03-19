@@ -116,6 +116,7 @@ import {
   hasRequiredConsents,
   saveBirthDate,
   getWorkerBirthDate,
+  getWorkersMinorStatus,
   logLegalAcknowledgement,
 } from "./db";
 import { sendJobAlerts } from "./sms";
@@ -900,6 +901,29 @@ const jobsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "משרה זו אינה פעילה" });
       }
 
+      // ── Server-side age gate ─────────────────────────────────────────────────
+      const birthDate = await getWorkerBirthDate(ctx.user.id);
+      const age = calcAge(birthDate);
+      if (age === null) {
+        // No birth date on record — client should have shown BirthDateModal first
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "יש לאמת את גילך לפני הגשת מועמדות",
+        });
+      }
+      if (isTooYoung(age)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "אין באפשרותך להגיש מועמדות לפני גיל 16",
+        });
+      }
+      if (isMinor(age) && !isJobAccessibleToMinor(job.workEndTime)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "משרה זו מסתיימת לאחר 22:00 ולכן לא מתאימה לעובדים מתחת לגיל 18",
+        });
+      }
+      // ── End age gate ──────────────────────────────────────────────────────────
       // Prevent duplicate applications
       const existing = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
       if (existing) {
@@ -1950,6 +1974,12 @@ const userRouter = router({
       isTooYoung: isTooYoung(age),
     };
   }),
+  /** Get isMinor status for multiple worker IDs — used by employer views */
+  getWorkersMinorStatus: protectedProcedure
+    .input(z.object({ workerIds: z.array(z.number().int()).max(200) }))
+    .query(async ({ input }) => {
+      return getWorkersMinorStatus(input.workerIds);
+    }),
 
   /**
    * Check if a specific job is accessible to the current worker based on age.

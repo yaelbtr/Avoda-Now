@@ -71,6 +71,10 @@ vi.mock("./db", () => ({
   countRecentPhoneChangeFailures: vi.fn().mockResolvedValue(0),
   rateWorker: vi.fn(),
   getExistingRating: vi.fn().mockResolvedValue(null),
+  // Age gate helpers — default to adult (passes all age checks)
+  getWorkerBirthDate: vi.fn().mockResolvedValue(new Date("2000-01-01")),
+  logLegalAcknowledgement: vi.fn().mockResolvedValue(undefined),
+  getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("./_core/notification", () => ({ notifyOwner: vi.fn().mockResolvedValue(true) }));

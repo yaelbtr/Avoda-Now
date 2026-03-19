@@ -23,6 +23,7 @@ import {
 } from "@shared/categories";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
+import { BirthDateModal } from "@/components/BirthDateModal";
 import { saveReturnPath } from "@/const";
 import { useJobPostingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { useSEO } from "@/hooks/useSEO";
@@ -106,6 +107,8 @@ export default function JobDetails() {
   const [reported, setReported] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  // Age-gate state (same pattern as FindJobs)
+  const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
@@ -141,6 +144,28 @@ export default function JobDetails() {
   });
 
   const utils = trpc.useUtils();
+  // Apply mutation with age-gate
+  const applyMutationJD = trpc.jobs.applyToJob.useMutation({
+    onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה! 🎉"); },
+    onError: (e: { message: string }) => toast.error(e.message),
+  });
+  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+  const handleApplyJD = () => {
+    if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר למערכת"); return; }
+    const hasBirthDate = birthDateInfoQueryJD.data?.birthDate != null;
+    if (!hasBirthDate) {
+      setBirthDateModalOpen(true);
+      return;
+    }
+    applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
+  };
+  const handleBirthDateSuccessJD = () => {
+    setBirthDateModalOpen(false);
+    applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
+  };
 
   const handleMapReady = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -537,6 +562,33 @@ export default function JobDetails() {
             <span className="font-medium text-gray-900">{job.contactName}</span>
           </p>
 
+          {/* Apply button — shown to workers who haven't applied yet */}
+          {!isOwner && job.status === "active" && !myApplicationForJob && (
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleApplyJD}
+              disabled={applyMutationJD.isPending}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all mb-3"
+              style={{ background: C_BRAND_HEX, color: "#fff" }}
+            >
+              {applyMutationJD.isPending ? (
+                <BrandLoader size="sm" />
+              ) : (
+                <>
+                  <Briefcase className="h-4 w-4" />
+                  הגש מועמדות
+                </>
+              )}
+            </motion.button>
+          )}
+          {/* Already applied indicator */}
+          {!isOwner && isAuthenticated && myApplicationForJob && (
+            <div className="flex items-center justify-center gap-2 text-sm text-green-600 mb-3 py-2 rounded-xl bg-green-50 border border-green-200">
+              <CheckCircle2 className="h-4 w-4" />
+              הגשת מועמדות למשרה זו
+            </div>
+          )}
           {/* Contact via application only */}
           <div className="space-y-3">
             <p className="text-xs text-center text-gray-500">פנייה למעסיק מתבצעת דרך הגשת מועמדות בלבד</p>
@@ -718,6 +770,13 @@ export default function JobDetails() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         message={loginMessage}
+      />
+      {/* ── Birth Date Modal (age gate) ── */}
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={() => setBirthDateModalOpen(false)}
+        onSuccess={handleBirthDateSuccessJD}
+        jobId={job?.id}
       />
     </div>
   );

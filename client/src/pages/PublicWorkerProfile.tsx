@@ -172,8 +172,18 @@ export default function PublicWorkerProfile() {
 
           {/* Name + meta */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 900, margin: 0, lineHeight: 1.2 }}>
+            <h2 style={{ color: "#fff", fontSize: 22, fontWeight: 900, margin: 0, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               {profile.name ?? "עובד"}
+              {profile.isMinor && (
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: "rgba(251,191,36,0.20)", border: "1px solid rgba(251,191,36,0.55)",
+                  color: "#fbbf24", borderRadius: 6, padding: "2px 8px",
+                  fontSize: 11, fontWeight: 700, letterSpacing: "0.02em", flexShrink: 0,
+                }}>
+                  👤 16–17
+                </span>
+              )}
             </h2>
 
             {/* Categories summary */}

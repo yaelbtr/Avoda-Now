@@ -2438,3 +2438,10 @@
 - [x] Frontend: BirthDateModal shared component (date picker + declaration checkbox + error handling)
 - [x] Frontend: age-gate in FindJobs.tsx — no birth_date → show BirthDateModal before applying; after save → proceed with apply
 - [x] Tests: server/ageUtils.test.ts — 34 test files, 666 tests all passing
+
+## Age Verification Extensions
+- [x] Server: add age gate to applyToJob procedure (check birthDate + workEndTime before allowing application)
+- [x] Frontend: add age gate + BirthDateModal to JobDetails page
+- [x] Frontend: minor badge (16-17) on PublicWorkerProfile (isMinor from getPublicProfile) and MatchedWorkers (getWorkersMinorStatus batch query)
+- [x] Frontend: late-job warning in PostJob when workEndTime > 22:00 (shouldWarnLateJob from ageUtils)
+- [x] Tests: updated db mocks in applications.test.ts and bottomsheet.test.ts — 666/666 passing

@@ -39,6 +39,7 @@ import {
   LegalAcknowledgement,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _db: ReturnType<typeof drizzle<any>> | null = null;
@@ -1393,11 +1394,15 @@ export async function getPublicWorkerProfile(userId: number) {
       workerLongitude: users.workerLongitude,
       preferredDays: users.preferredDays,
       preferredTimeSlots: users.preferredTimeSlots,
+      birthDate: users.birthDate,
     })
     .from(users)
     .where(and(eq(users.id, userId), eq(users.status, "active")))
     .limit(1);
-  return result[0] ?? null;
+  if (!result[0]) return null;
+  const { birthDate: _bd, ...rest } = result[0];
+  // Compute isMinor server-side — never expose birthDate publicly
+  return { ...rest, isMinor: calcIsMinor(calcAge(_bd)) };
 }
 
 /** Get a single application by ID (includes worker profile + contactRevealed state) */
@@ -2901,4 +2906,19 @@ export async function logLegalAcknowledgement(params: {
     })
     .returning();
   return result[0];
+}
+
+/** Get isMinor status for a list of worker IDs — used by MatchedWorkers page */
+export async function getWorkersMinorStatus(workerIds: number[]): Promise<Record<number, boolean>> {
+  const db = await getDb();
+  if (!db || workerIds.length === 0) return {};
+  const rows = await db
+    .select({ id: users.id, birthDate: users.birthDate })
+    .from(users)
+    .where(inArray(users.id, workerIds));
+  const result: Record<number, boolean> = {};
+  for (const row of rows) {
+    result[row.id] = calcIsMinor(calcAge(row.birthDate)) ?? false;
+  }
+  return result;
 }

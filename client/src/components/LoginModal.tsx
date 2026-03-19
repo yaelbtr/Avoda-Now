@@ -102,6 +102,21 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // Pending registration data to pass to verifyOtp
   const pendingRegData = useRef<{ name: string; email: string } | null>(null);
 
+  // Send cooldown — 60 seconds after each OTP send attempt
+  const [sendCooldown, setSendCooldown] = useState(0);
+  const sendCooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startSendCooldown = useCallback(() => {
+    setSendCooldown(60);
+    if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
+    sendCooldownRef.current = setInterval(() => {
+      setSendCooldown(prev => {
+        if (prev <= 1) { clearInterval(sendCooldownRef.current!); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const utils = trpc.useUtils();
@@ -126,6 +141,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   }, []);
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  useEffect(() => () => { if (sendCooldownRef.current) clearInterval(sendCooldownRef.current); }, []);
 
   // Reset when modal closes
   useEffect(() => {
@@ -141,6 +157,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setTermsAccepted(false);
         setDigits(Array(OTP_LENGTH).fill(""));
         setResendCountdown(0);
+        setSendCooldown(0);
+        if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
         setSelectedRole(null);
         setSelectedCategories([]);
         setSelectedCity("");
@@ -163,6 +181,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setTermsAccepted(false);
     setDigits(Array(OTP_LENGTH).fill(""));
     setResendCountdown(0);
+    setSendCooldown(0);
+    if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
     setDuplicateError(null);
     setNotFoundError(null);
     setChannelEmailError(null);
@@ -195,6 +215,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         toast.success("משתמש טסט — הכנס את 6 הספרות הראשונות של הטלפון");
       } else {
         startResendTimer();
+        startSendCooldown();
         const displayPhone = formatPhoneDisplay(data.phone);
         toast.success(`קוד נשלח ל-${displayPhone} • תקף ל-5 דקות`, { duration: 5000 });
       }
@@ -693,22 +714,26 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   size="lg"
                   className="w-full"
                   onClick={() => handleSend("sms")}
-                  disabled={sendOtp.isPending || !isPhoneValid}
+                  disabled={sendOtp.isPending || !isPhoneValid || sendCooldown > 0}
                 >
                   {sendOtp.isPending && otpChannel === "sms"
                     ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
-                    : <><Phone className="h-4 w-4 ml-2" />קבל קוד ב-SMS</>}
+                    : sendCooldown > 0
+                      ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
+                      : <><Phone className="h-4 w-4 ml-2" />קבל קוד ב-SMS</>}
                 </AppButton>
                 <AppButton
                   variant="outline"
                   size="lg"
                   className="w-full bg-transparent"
                   onClick={() => handleSend("call")}
-                  disabled={sendOtp.isPending || !isPhoneValid}
+                  disabled={sendOtp.isPending || !isPhoneValid || sendCooldown > 0}
                 >
                   {sendOtp.isPending && otpChannel === "call"
                     ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />מחייג...</>
-                    : <><PhoneCall className="h-4 w-4 ml-2" />קבל קוד בשיחת טלפון</>}
+                    : sendCooldown > 0
+                      ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
+                      : <><PhoneCall className="h-4 w-4 ml-2" />קבל קוד בשיחת טלפון</>}
                 </AppButton>
               </div>
 
@@ -881,10 +906,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     size="lg"
                     className="w-full"
                     onClick={handleChannelProceed}
-                    disabled={sendOtp.isPending}
+                    disabled={sendOtp.isPending || sendCooldown > 0}
                   >
                     {sendOtp.isPending ? (
                       <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                    ) : sendCooldown > 0 ? (
+                      <>שלח שוב בעוד <span className="tabular-nums font-bold mx-1">{sendCooldown}</span>שנייות</>
                     ) : (
                       <>המשך לקבלת הקוד <ArrowLeft className="h-4 w-4 mr-1" /></>
                     )}

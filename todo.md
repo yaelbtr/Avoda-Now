@@ -2642,3 +2642,9 @@
 - [x] Remove WhatsApp button from login phone step
 - [x] Remove WhatsApp from channel selection step in registration
 - [x] Remove whatsapp from OtpChannel type in UI (keep server-side intact)
+
+## Round 4j: OTP Send Cooldown Timer
+- [x] Add 60-second sendCooldown state to LoginModal
+- [x] Disable SMS and Call send buttons during cooldown
+- [x] Show countdown text on disabled buttons
+- [x] Apply cooldown to both login phone step and registration channel step

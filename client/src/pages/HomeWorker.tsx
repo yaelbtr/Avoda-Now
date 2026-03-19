@@ -315,7 +315,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       <section className="relative overflow-hidden md:hidden">
 
         {/* Image block — fixed 380px, badge + headline overlaid at bottom */}
-        <div className="relative w-full" style={{ height: 380 }}>
+        <div className="relative w-full" style={{ height: 440 }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
             alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"

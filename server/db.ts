@@ -1443,9 +1443,11 @@ export async function getApplicationById(id: number) {
       workerPreferredCategories: users.preferredCategories,
       workerTags: users.workerTags,
       workerCreatedAt: users.createdAt,
-      // Job info for authorization
+       // Job info for authorization + minor eligibility
       jobPostedBy: jobs.postedBy,
       jobTitle: jobs.title,
+      jobCategory: jobs.category,
+      jobWorkEndTime: jobs.workEndTime,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
@@ -1454,7 +1456,6 @@ export async function getApplicationById(id: number) {
     .limit(1);
   return result[0] ?? null;
 }
-
 /** Mark an application's contact as revealed by the employer */
 export async function revealApplicationContact(id: number) {
   const db = await getDb();

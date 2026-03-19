@@ -913,29 +913,14 @@ const jobsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "משרה זו אינה פעילה" });
       }
 
-      // ── Server-side age gate ─────────────────────────────────────────────────
+      // ── Server-side minor eligibility guard (category + hours) ───────────────
+      await assertMinorEligible(ctx.user.id, {
+        category: job.category,
+        workEndTime: job.workEndTime,
+      });
+      // ── minAge requirement check (applies to all ages) ────────────────────────
       const birthDate = await getWorkerBirthDate(ctx.user.id);
-      const age = calcAge(birthDate);
-      if (age === null) {
-        // No birth date on record — client should have shown BirthDateModal first
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "יש לאמת את גילך לפני הגשת מועמדות",
-        });
-      }
-      if (isTooYoung(age)) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "אין באפשרותך להגיש מועמדות לפני גיל 16",
-        });
-      }
-      if (isMinor(age) && !isJobAccessibleToMinor(job.workEndTime)) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "משרה זו מסתיימת לאחר 22:00 ולכן לא מתאימה לעובדים מתחת לגיל 18",
-        });
-      }
-      // ── minAge requirement check ──────────────────────────────────────────────
+      const age = calcAge(birthDate)!; // assertMinorEligible already threw if null
       if (!meetsMinAgeRequirement(age, job.minAge)) {
         const required = job.minAge === 18 ? "18" : String(job.minAge);
         throw new TRPCError({
@@ -1036,6 +1021,17 @@ const jobsRouter = router({
       if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN", message: "אין לך גישה לפעולה זו" });
       }
+
+      // ── Minor eligibility guard (only when accepting) ───────────────────────────
+      // Prevents an employer from accepting a minor worker into a restricted job.
+      if (input.action === "accept" && app.workerId) {
+        await assertMinorEligible(app.workerId, {
+          category: app.jobCategory,
+          workEndTime: app.jobWorkEndTime,
+        });
+      }
+      // ── End minor eligibility guard ────────────────────────────────────────────
+
       await updateApplicationStatus(input.id, input.action);
 
       // Send Web Push notification to the worker

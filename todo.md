@@ -2583,10 +2583,10 @@
 - [x] כתוב vitest test: minor מנסה לשמור ["morning","night"] → נשמר רק ["morning"]
 
 ## Feature — Server-side minor eligibility guard for job applications (Round 3x)
-- [ ] צור server/minorGuard.ts עם פונקציה assertMinorEligible(userId, job, category)
-- [ ] שלב את הגארד ב-applyToJob procedure
-- [ ] שלב את הגארד ב-acceptWorker procedure
-- [ ] כתוב vitest tests לגארד ולאינטגרציה
+- [x] צור server/minorGuard.ts עם פונקציה assertMinorEligible(userId, job, category)
+- [x] שלב את הגארד ב-applyToJob procedure
+- [x] שלב את הגארד ב-acceptWorker procedure
+- [x] כתוב vitest tests לגארד ולאינטגרציה
 
 ## Feature — Mandatory birth-date gate in profile wizard (Round 3y)
 - [x] בדוק את זרימת האשף בפרופיל — איפה מוצג BirthDateModal ומה קורה כשאין תאריך לידה

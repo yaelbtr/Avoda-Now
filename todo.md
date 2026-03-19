@@ -2513,3 +2513,6 @@
 - [x] Diagnose: find conflicting click handler between MobileBottomNav nav item and FindJobs profile modal
 - [x] Fix: filterInitialized now backed by sessionStorage so it persists across remounts
 - [x] Test: 689/689 tests passing, TypeScript 0 errors
+
+## Legal — הוספת סעיף העסקת קטינים לתנאים (Round 3i)
+- [x] הוסף סעיף "העסקת קטינים (גילאי 16–18)" לדף Terms.tsx

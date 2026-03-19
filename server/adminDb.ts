@@ -3,7 +3,13 @@
  * All functions here are called only from adminProcedure-protected routes.
  */
 import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
-import { BirthdateChange, Job, applications, birthdateChanges, jobReports, jobs, notificationBatches, phoneChangeLogs, users } from "../drizzle/schema";
+import {
+  BirthdateChange, Job,
+  applications, birthdateChanges, jobReports, jobs,
+  notificationBatches, phoneChangeLogs, users,
+  pushSubscriptions, savedJobs, workerRatings,
+  workerAvailability, legalAcknowledgements,
+} from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
 
@@ -158,6 +164,51 @@ export async function adminUpdateUser(userId: number, data: { name?: string; pho
 export async function adminDeleteUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Cascade-delete all records that reference this user before removing the
+  // user row itself.  Tables with onDelete:"cascade" in the schema are handled
+  // automatically by Postgres; we manually delete the ones that are NOT
+  // declared with cascade (or where the FK has no onDelete clause).
+
+  // 1. Applications where this user is the worker
+  await db.delete(applications).where(eq(applications.workerId, userId));
+
+  // 2. Jobs posted by this user (and their applications, which cascade from jobs)
+  //    First delete applications for those jobs, then the jobs themselves.
+  const userJobs = await db
+    .select({ id: jobs.id })
+    .from(jobs)
+    .where(eq(jobs.postedBy, userId));
+  for (const j of userJobs) {
+    await db.delete(applications).where(eq(applications.jobId, j.id));
+  }
+  await db.delete(jobs).where(eq(jobs.postedBy, userId));
+
+  // 3. Worker availability
+  await db.delete(workerAvailability).where(eq(workerAvailability.userId, userId));
+
+  // 4. Push subscriptions
+  await db.delete(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
+
+  // 5. Saved jobs
+  await db.delete(savedJobs).where(eq(savedJobs.userId, userId));
+
+  // 6. Worker ratings (as worker or as employer)
+  await db.delete(workerRatings).where(eq(workerRatings.workerId, userId));
+  await db.delete(workerRatings).where(eq(workerRatings.employerId, userId));
+
+  // 7. Phone change logs
+  await db.delete(phoneChangeLogs).where(eq(phoneChangeLogs.userId, userId));
+
+  // 8. Legal acknowledgements
+  await db.delete(legalAcknowledgements).where(eq(legalAcknowledgements.userId, userId));
+
+  // 9. Birthdate changes
+  await db.delete(birthdateChanges).where(eq(birthdateChanges.userId, userId));
+
+  // 10. Finally delete the user row
+  //     (workerRegions, regionNotificationRequests, userConsents have
+  //      onDelete:"cascade" so Postgres handles them automatically)
   await db.delete(users).where(eq(users.id, userId));
 }
 

@@ -2595,3 +2595,7 @@
 ## Feature — Friendly error toast for minor restriction on accept (Round 3z)
 - [x] מצא את onError של updateApplicationStatus mutation ב-JobApplications
 - [x] הצג toast ידידותי עם הסיבה המדויקת כשמעסיק מנסה לקבל קטין לתפקיד מוגבל
+
+## Bug Fix — Cascade delete user in admin panel (Round 4a)
+- [x] מצא את כל הטבלאות עם FK ל-users.id
+- [x] עדכן deleteUser helper למחוק רשומות קשורות לפני מחיקת המשתמש

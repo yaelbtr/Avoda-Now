@@ -212,6 +212,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   }, [profileQuery.data, navigate]);
 
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
   const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
   const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
   const nearbyQuery = trpc.jobs.search.useQuery(
@@ -359,7 +361,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
             </span>
             <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
-              עבודות זמינות עכשיו
+              {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
             </span>
           </motion.div>
           {/* White headline — above the worker's head */}

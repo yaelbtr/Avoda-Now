@@ -2400,3 +2400,5 @@
 - [x] Feature: add "הגדר התראות" button to coming-soon overlay — navigates to /worker-profile?tab=settings; WorkerProfile reads ?tab query param to auto-activate the settings tab
 - [x] Content: replace worker home page hero image with new provided image (optimized WebP, 70KB, objectPosition 50% 15%)
 - [x] UI: increase mobile hero height from 380px to 440px to prevent face cutoff
+- [x] UI: verified mobile hero gradient overlay after 440px height change — absolute inset-0 covers 100% regardless of height, no adjustment needed
+- [x] Content: update hero image alt text to "עובד צעיר מחזיק מטאטא במטבח" (both mobile + desktop img tags)

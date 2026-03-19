@@ -318,7 +318,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div className="relative w-full" style={{ height: 440 }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
-            alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
+            alt="עובד צעיר מחזיק מטאטא במטבח"
             loading="eager"
             fetchPriority="high"
             decoding="async"
@@ -481,7 +481,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Full-bleed background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
-          alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
+          alt="עובד צעיר מחזיק מטאטא במטבח"
           loading="eager"
           fetchPriority="high"
           decoding="async"

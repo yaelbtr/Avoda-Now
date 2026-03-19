@@ -442,6 +442,17 @@ export default function FindJobs() {
   const initialCategory = params.get("category") ?? "all";
   const { isAuthenticated } = useAuth();
 
+  // Determine if the current user is a minor so we can hide restricted categories
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
+  // Categories visible in the filter panel — hide allowedForMinors=false for minors
+  const visibleCategories = isCurrentUserMinor
+    ? dbCategories.filter(c => c.allowedForMinors !== false)
+    : dbCategories;
+
   // Load saved filters from localStorage (URL params take priority)
   const _savedFilters = loadSavedFilters();
   const filterParam = params.get("filter");
@@ -1617,7 +1628,7 @@ export default function FindJobs() {
                 <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>עוד משרות ב{selectedCity}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
-                {dbCategories.map(cat => (
+                {visibleCategories.map(cat => (
                   <Link key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
                     style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
@@ -1663,7 +1674,7 @@ export default function FindJobs() {
               <h2 className="text-sm font-bold" style={{ color: "oklch(0.30 0.05 122)" }}>חיפוש לפי קטגוריה</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {dbCategories.filter(c => c.slug !== category).map(cat => (
+              {visibleCategories.filter(c => c.slug !== category).map(cat => (
                 <Link key={cat.slug} href={`/jobs/${cat.slug}`}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
                   style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
@@ -1807,7 +1818,7 @@ export default function FindJobs() {
                           style={selectedCategories.length === 0 ? activePill : inactivePill}>
                           ✨ הכל
                         </button>
-                        {dbCategories.map(cat => {
+                        {visibleCategories.map(cat => {
                           const isActive = selectedCategories.includes(cat.slug);
                           return (
                             <button key={cat.slug}

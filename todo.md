@@ -2603,3 +2603,8 @@
 ## Feature — Delete S3 profile photo on user deletion (Round 4b)
 - [x] בדוק storage helper API ואיך profilePhoto key מאוחסן
 - [x] הוסף מחיקת תמונת פרופיל מ-S3 ב-adminDeleteUser
+
+## Feature — Idle logout after 20 minutes (Round 4c)
+- [x] צור useIdleLogout hook עם timer 20 דקות ו-warning 2 דקות לפני
+- [x] בנה IdleWarningDialog component עם countdown
+- [x] חבר את ה-hook ב-App.tsx למשתמשים מחוברים בלבד

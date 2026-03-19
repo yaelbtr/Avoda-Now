@@ -59,6 +59,7 @@ import { PENDING_GOOGLE_REG_KEY, FIND_JOBS_OPEN } from "@shared/const";
 import { createPortal } from "react-dom";
 import FindJobsComingSoonOverlay from "./components/FindJobsComingSoonOverlay";
 import CookieConsentBanner from "./components/CookieConsentBanner";
+import { IdleLogoutManager } from "./components/IdleLogoutManager";
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
@@ -338,6 +339,7 @@ function App() {
               <MapsPreloader />
               <ReferralCapture />
               <PostGoogleRegistration />
+              <IdleLogoutManager />
               <Router />
               <CookieConsentBanner />
             </UserModeProvider>

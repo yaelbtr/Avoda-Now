@@ -355,9 +355,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               backdropFilter: "blur(10px)",
             }}
           >
-            <Zap className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+            <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
             <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
-              מצא עבודה תוך דקות
+              עבודות זמינות עכשיו
             </span>
           </motion.div>
           {/* White headline — above the worker's head */}

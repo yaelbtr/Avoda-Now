@@ -9,7 +9,6 @@ vi.mock("./sms", () => ({
 
 // Mock all DB helpers
 vi.mock("./db", () => ({
-  countActiveJobsByUser: vi.fn(),
   createJob: vi.fn(),
   getJobById: vi.fn(),
   getActiveJobs: vi.fn(),
@@ -74,24 +73,13 @@ const baseJobInput = {
 describe("jobs.create", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("creates a job when under the 3-job limit", async () => {
-    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(0);
+  it("creates a job successfully", async () => {
     vi.mocked(db.createJob).mockResolvedValue({ id: 42, ...baseJobInput } as never);
 
     const caller = appRouter.createCaller(makeCtx());
     const result = await caller.jobs.create(baseJobInput);
     expect(result).toMatchObject({ id: 42 });
     expect(db.createJob).toHaveBeenCalledOnce();
-  });
-
-  it("throws FORBIDDEN when user has 3 active jobs", async () => {
-    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(3);
-
-    const caller = appRouter.createCaller(makeCtx());
-    await expect(caller.jobs.create(baseJobInput)).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
-    expect(db.createJob).not.toHaveBeenCalled();
   });
 
   it("throws UNAUTHORIZED when not authenticated", async () => {

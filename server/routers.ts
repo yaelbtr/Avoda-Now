@@ -9,7 +9,6 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   checkAndIncrementSendRate,
   checkAndIncrementVerifyAttempts,
-  countActiveJobsByUser,
   createJob,
   deleteJob,
   getActiveJobs,
@@ -555,15 +554,6 @@ const jobsRouter = router({
   create: protectedProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
-      // Enforce active job limit (max 3 per user)
-      const activeCount = await countActiveJobsByUser(ctx.user.id);
-      if (activeCount >= 3) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "הגעת למגבלת 3 משרות פעילות. סגור משרה קיימת כדי לפרסם חדשה.",
-        });
-      }
-
       // ── Regional access control: block posting if region is not yet active ──
       // Admins bypass the regional check
       if (ctx.user.role !== "admin") {

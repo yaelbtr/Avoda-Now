@@ -2487,3 +2487,8 @@
 - [x] Cache invalidation: utils.user.getBirthDateInfo.invalidate() called in handleBirthDateSuccess
 - [x] Loading toast: toast.loading("מאמת פרטים...") shown when birthDateInfo is still loading on apply click
 - [x] FindJobs: replaced inline applyToJob mutation with useApplyWithAgeGate hook — 689/689 tests passing
+
+## Bug Fix — getBirthDateInfo DB query error (Round 3e)
+- [x] Fix: birthDate column was missing from production DB (TiDB) — added via ALTER TABLE
+- [x] Fix: minAge column was also missing from jobs table — added via ALTER TABLE
+- [x] pnpm db:push run to sync Drizzle migration state — 689/689 tests passing

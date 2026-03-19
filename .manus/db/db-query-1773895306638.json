@@ -1,0 +1,74 @@
+{
+  "query": "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' AND ordinal_position > 20 ORDER BY ordinal_position;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' AND ordinal_position > 20 ORDER BY ordinal_position;",
+  "rows": [
+    {
+      "column_name": "searchRadiusKm",
+      "data_type": "int"
+    },
+    {
+      "column_name": "preferenceText",
+      "data_type": "text"
+    },
+    {
+      "column_name": "preferredDays",
+      "data_type": "json"
+    },
+    {
+      "column_name": "preferredTimeSlots",
+      "data_type": "json"
+    },
+    {
+      "column_name": "expectedHourlyRate",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "availabilityStatus",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "signupCompleted",
+      "data_type": "tinyint"
+    },
+    {
+      "column_name": "profilePhoto",
+      "data_type": "text"
+    },
+    {
+      "column_name": "preferredCities",
+      "data_type": "json"
+    },
+    {
+      "column_name": "phonePrefix",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "phoneNumber",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "workerRating",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "completedJobsCount",
+      "data_type": "int"
+    },
+    {
+      "column_name": "regionId",
+      "data_type": "int"
+    },
+    {
+      "column_name": "referredBy",
+      "data_type": "int"
+    },
+    {
+      "column_name": "termsAcceptedAt",
+      "data_type": "timestamp"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\tdata_type\nsearchRadiusKm\tint\npreferenceText\ttext\npreferredDays\tjson\npreferredTimeSlots\tjson\nexpectedHourlyRate\tdecimal\navailabilityStatus\tenum\nsignupCompleted\ttinyint\nprofilePhoto\ttext\npreferredCities\tjson\nphonePrefix\tvarchar\nphoneNumber\tvarchar\nworkerRating\tdecimal\ncompletedJobsCount\tint\nregionId\tint\nreferredBy\tint\ntermsAcceptedAt\ttimestamp\n",
+  "stderr": "",
+  "execution_time_ms": 1654
+}

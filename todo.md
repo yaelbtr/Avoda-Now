@@ -2403,3 +2403,4 @@
 - [x] UI: verified mobile hero gradient overlay after 440px height change — absolute inset-0 covers 100% regardless of height, no adjustment needed
 - [x] Content: update hero image alt text to "עובד צעיר מחזיק מטאטא במטבח" (both mobile + desktop img tags)
 - [x] UI: move mobile hero headline above worker's face (top: 44% → 20%), update gradient for upper-area text readability
+- [x] UI: split mobile hero headline — white line ("מחפש עבודה זמנית?") positioned above worker's head (top: 18%), yellow line ("מצא אחת תוך דקות") + subtitle positioned below worker's head (top: 56%), dual-band gradient for readability

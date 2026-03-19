@@ -479,3 +479,30 @@ export async function adminClearPhoneChangeLockout(userId: number): Promise<numb
   // PostgreSQL DELETE returns the deleted rows; count them
   return Array.isArray(result) ? result.length : 0;
 }
+
+/**
+ * Force-expire all existing sessions for a user by setting forcedLogoutAt
+ * to the current timestamp (ms). Any JWT with iat < forcedLogoutAt will be
+ * rejected by the auth middleware on the next request.
+ */
+export async function adminForceLogoutUser(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(users)
+    .set({ forcedLogoutAt: Date.now() })
+    .where(eq(users.id, userId));
+}
+
+/**
+ * Clear the forced-logout flag so the user can log in again normally.
+ * (Useful if the admin wants to re-allow access after a forced logout.)
+ */
+export async function adminClearForcedLogout(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(users)
+    .set({ forcedLogoutAt: null })
+    .where(eq(users.id, userId));
+}

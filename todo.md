@@ -2608,3 +2608,11 @@
 - [x] צור useIdleLogout hook עם timer 20 דקות ו-warning 2 דקות לפני
 - [x] בנה IdleWarningDialog component עם countdown
 - [x] חבר את ה-hook ב-App.tsx למשתמשים מחוברים בלבד
+
+## Feature — Forced logout by admin (Round 4d)
+- [x] הוסף עמודת forcedLogoutAt לטבלת users בסכמה
+- [x] הרץ pnpm db:push
+- [x] הוסף בדיקת forcedLogoutAt ב-context.ts (JWT issuedAt vs forcedLogoutAt)
+- [x] הוסף admin mutation: forceLogoutUser
+- [x] הוסף כפתור "נתק משתמש" ב-Admin panel
+- [x] כתוב vitest tests

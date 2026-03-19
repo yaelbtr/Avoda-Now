@@ -144,6 +144,8 @@ import {
   adminSetJobStatus,
   adminSetUserRole,
   adminUnblockUser,
+  adminForceLogoutUser,
+  adminClearForcedLogout,
   adminCreateUser,
   adminUpdateUser,
   adminDeleteUser,
@@ -1239,6 +1241,24 @@ const adminRouter = router({
   deleteUser: adminProcedure
     .input(z.object({ userId: z.number() }))
     .mutation(async ({ input }) => { await adminDeleteUser(input.userId); return { success: true }; }),
+
+  /** Force-expire all active sessions for a user */
+  forceLogoutUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await adminForceLogoutUser(input.userId);
+      securityLogger.warn({ adminId: ctx.user.id, targetUserId: input.userId, event: "admin_force_logout" }, "Admin force-logged out user");
+      return { success: true };
+    }),
+
+  /** Clear the forced-logout flag so the user can log in again */
+  clearForcedLogout: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await adminClearForcedLogout(input.userId);
+      securityLogger.info({ adminId: ctx.user.id, targetUserId: input.userId, event: "admin_clear_forced_logout" }, "Admin cleared forced logout");
+      return { success: true };
+    }),
 
   // ── Applications Admin ────────────────────────────────────────────────────
 

@@ -41,6 +41,7 @@ import {
   Wrench,
   XCircle,
   Zap,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -171,6 +172,10 @@ export default function Admin() {
   });
   const unblockUser = trpc.admin.unblockUser.useMutation({
     onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("חסימת המשתמש הוסרה"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const forceLogoutUser = trpc.admin.forceLogoutUser.useMutation({
+    onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("המשתמש נותק בהצלחה — הסשן שלו יפוג בבקשה הבאה"); },
     onError: (e) => toast.error(e.message),
   });
   const setUserRole = trpc.admin.setUserRole.useMutation({
@@ -730,6 +735,14 @@ export default function Admin() {
                                 onClick={() => confirm("שחרור נעילת טלפון", `לשחרר נעילת שינוי טלפון של ${u.phone}?`, () => clearPhoneChangeLockout.mutate({ userId: u.id }))}
                               >
                                 <LockOpen className="w-3.5 h-3.5" />
+                              </button>
+                              {/* Force Logout */}
+                              <button
+                                title="נתק משתמש (בטל סשן)"
+                                className="p-1.5 rounded-lg hover:bg-orange-50 text-orange-500 transition-colors"
+                                onClick={() => confirm("ניתוק משתמש", `לנתק את המשתמש ${u.name || u.phone} מכל המכשירים? הסשן שלו יפוג בבקשה הבאה.`, () => forceLogoutUser.mutate({ userId: u.id }))}
+                              >
+                                <LogOut className="w-3.5 h-3.5" />
                               </button>
                               {/* Delete */}
                               <button

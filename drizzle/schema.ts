@@ -2,6 +2,7 @@ import {
   boolean,
   numeric,
   integer,
+  bigint,
   json,
   pgEnum,
   pgTable,
@@ -211,6 +212,12 @@ export const users = pgTable("users", {
    * Workers under 16 are blocked; workers 16-17 see only jobs ending before 22:00.
    */
   birthDate: varchar("birthDate", { length: 10 }),
+  /**
+   * UTC timestamp (ms) set by an admin to force-expire all sessions issued
+   * before this moment. Any JWT with iat < forcedLogoutAt is rejected.
+   * Null means no forced logout has been issued.
+   */
+  forcedLogoutAt: bigint("forcedLogoutAt", { mode: "number" }),
 });
 
 export type User = typeof users.$inferSelect;

@@ -160,6 +160,7 @@ import { sendWelcomeEmail } from "./_core/email";
 import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
 import { authLogger, securityLogger, getClientIp } from "./logger";
 import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor, meetsMinAgeRequirement } from "@shared/ageUtils";
+import { assertMinorEligible } from "./minorGuard";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 

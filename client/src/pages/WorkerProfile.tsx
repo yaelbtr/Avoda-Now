@@ -441,9 +441,75 @@ export default function WorkerProfile() {
   // ── WIZARD MODE (new worker) ─────────────────────────────────────────────────
   if (isNewWorker) {
     const canProceedStep1 = name.trim().length >= 2;
+    // Birth-date is required before the wizard can proceed.
+    // hasBirthDate is false while the query is loading (undefined) — treat as not-yet-declared.
+    const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
+    const birthDateLoading = birthDateInfoQuery.isLoading;
 
     return (
       <div className="max-w-lg mx-auto px-4 py-6" dir="rtl">
+        {/* ── Mandatory birth-date gate ─────────────────────────────────────── */}
+        {!birthDateLoading && !hasBirthDate && (
+          <div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.65)" }}
+          >
+            <div
+              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
+              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.18)", marginBottom: 0 }}
+            >
+              {/* Handle */}
+              <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: "oklch(0.88 0.02 100)" }} />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+                  <Calendar className="h-5 w-5" style={{ color: "#4F583B" }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">נדרש תאריך לידה</h3>
+                  <p className="text-xs text-muted-foreground">לפני שממשיכים במילוי הפרופיל</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-foreground leading-relaxed" dir="rtl">
+                המערכת משתמשת בתאריך הלידה כדי להציג לך משרות מתאימות ולוודא עמידה בדרישות חוק עבודת נוער.
+                לא ניתן להמשיך בלי הזנת תאריך לידה.
+              </p>
+
+              {/* Date input */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">תאריך לידה</label>
+                <input
+                  type="date"
+                  value={bdEditDate}
+                  onChange={(e) => setBdEditDate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  min="1920-01-01"
+                  className="w-full h-12 px-3 rounded-xl border text-base"
+                  style={{
+                    background: "white",
+                    borderColor: "oklch(0.88 0.04 100)",
+                    color: "var(--foreground)",
+                    fontSize: "16px",
+                    direction: "ltr",
+                  }}
+                />
+              </div>
+
+              <AppButton
+                variant="brand"
+                size="lg"
+                className="w-full"
+                disabled={!bdEditDate || updateBirthDateMutation.isPending}
+                onClick={() => setBdConfirmOpen(true)}
+              >
+                <Calendar className="h-4 w-4" />
+                אישור תאריך לידה והמשך
+              </AppButton>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-2">
           <h1 className="text-2xl font-black" style={{ color: "oklch(0.25 0.05 91)" }}>

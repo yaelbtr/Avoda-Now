@@ -2396,3 +2396,4 @@
 - [x] Bug: coming-soon overlay not visible on mobile — added solid rgba background as primary layer, backdrop-filter is additive
 - [x] Fix: moved coming-soon overlay to App.tsx (global) so it covers all pages via createPortal
 - [x] Fix: coming-soon overlay scoped back to /find-jobs only via createPortal in FindJobs.tsx
+- [x] Content: update coming-soon overlay body text — המערכת טרם נפתחה למעסיקים + מומלץ להגדיר קבלת התראות

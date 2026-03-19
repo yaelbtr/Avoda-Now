@@ -263,7 +263,7 @@ export default function MyApplications() {
       >
         {/* Hero background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/my-applications-hero-iyRXrGMtR7uTEGLVaADSBQ.webp"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/man-on-sofa_4ff4d4d8.png"
           alt=""
           aria-hidden="true"
           loading="lazy"

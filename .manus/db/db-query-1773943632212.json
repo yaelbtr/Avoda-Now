@@ -1,0 +1,75 @@
+{
+  "query": "SELECT slug, name, \"groupName\" FROM categories ORDER BY \"groupName\", slug LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT slug, name, \"groupName\" FROM categories ORDER BY \"groupName\", slug LIMIT 30;",
+  "rows": [
+    {
+      "slug": "childcare",
+      "name": "טיפול בילדים",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "cleaning",
+      "name": "ניקיון",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "delivery",
+      "name": "שליחויות",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "eldercare",
+      "name": "טיפול בקשישים",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "electricity",
+      "name": "חשמל",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "events",
+      "name": "אירועים",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "gardening",
+      "name": "גינון",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "kitchen",
+      "name": "מטבח ובישול",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "moving",
+      "name": "הובלות",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "other",
+      "name": "אחר",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "plumbing",
+      "name": "אינסטלציה",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "security",
+      "name": "אבטחה",
+      "groupName": "groupName"
+    },
+    {
+      "slug": "serving",
+      "name": "מלצרות וברים",
+      "groupName": "groupName"
+    }
+  ],
+  "messages": [],
+  "stdout": "slug\tname\tgroupName\nchildcare\tטיפול בילדים\tgroupName\ncleaning\tניקיון\tgroupName\ndelivery\tשליחויות\tgroupName\neldercare\tטיפול בקשישים\tgroupName\nelectricity\tחשמל\tgroupName\nevents\tאירועים\tgroupName\ngardening\tגינון\tgroupName\nkitchen\tמטבח ובישול\tgroupName\nmoving\tהובלות\tgroupName\nother\tאחר\tgroupName\nplumbing\tאינסטלציה\tgroupName\nsecurity\tאבטחה\tgroupName\nserving\tמלצרות וברים\tgroupName\n",
+  "stderr": "",
+  "execution_time_ms": 1623
+}

@@ -2540,3 +2540,9 @@
 - [x] הוסף דף /cookies (מדיניות עוגיות) וקשר אליו מה-banner
 - [x] הוסף כפתור "שנה העדפות עוגיות" בפוטר שפותח Settings modal
 - [x] הוסף cookieConsentVersion management ל-localStorage
+
+## Audit — קטגוריות מ-DB בלבד (Round 3p)
+- [x] בדוק כל שימוש בקטגוריות בקוד — האם מגיעות מ-DB או hardcoded
+- [x] JobsLanding, JobsToday, ApplicationView שודרגו ל-useCategories() (DB)
+- [x] JobCard: WARTIME/SEASONAL הוחלפו ב-groupName מ-DB (future-ready)
+- [x] 700/700 בדיקות, TypeScript 0 errors

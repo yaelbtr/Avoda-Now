@@ -6,7 +6,7 @@ import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { JOB_CATEGORIES } from "@shared/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { Flame, Briefcase, ChevronRight } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
@@ -22,6 +22,8 @@ export default function JobsToday() {
     description: "משרות דחופות ליום זה. הירשם עכשיו לעבודות זמניות והתחל לעבוד היום.",
     canonical: "/jobs-today",
   });
+
+  const { categories: dbCategories } = useCategories();
 
   const requireLogin = (message: string) => {
     setLoginMessage(message);
@@ -68,17 +70,17 @@ export default function JobsToday() {
           >
             הכל
           </button>
-          {JOB_CATEGORIES.map((cat) => (
+          {dbCategories.map((cat) => (
             <button
-              key={cat.value}
-              onClick={() => setCategory(cat.value)}
+              key={cat.slug}
+              onClick={() => setCategory(cat.slug)}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                category === cat.value
+                category === cat.slug
                   ? "bg-red-500 text-white border-red-500"
                   : "border-border text-muted-foreground hover:border-red-400 hover:text-red-600"
               }`}
             >
-              {cat.icon} {cat.label}
+              {cat.icon ?? "💼"} {cat.name}
             </button>
           ))}
         </div>

@@ -11,7 +11,7 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppButton } from "@/components/ui";
-import { JOB_CATEGORIES, SPECIAL_CATEGORIES } from "@shared/categories";
+import { useCategories } from "@/hooks/useCategories";
 import {
   User,
   MapPin,
@@ -30,11 +30,6 @@ import BrandLoader from "@/components/BrandLoader";
 import { toast } from "sonner";
 import { useState } from "react";
 import { getLoginUrl } from "@/const";
-
-const ALL_CATEGORIES = [
-  ...JOB_CATEGORIES,
-  ...SPECIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label, icon: c.icon })),
-];
 
 const OLIVE = "#4F583B";
 const OLIVE_LIGHT = "#f0f4eb";
@@ -159,9 +154,10 @@ export default function ApplicationView() {
     );
   }
 
+  const { categories: dbCategories } = useCategories();
   const app = appQuery.data!;
-  const categories = (app.workerPreferredCategories as string[] | null) ?? [];
-  const matchedCategories = ALL_CATEGORIES.filter((c) => categories.includes(c.value));
+  const workerCategorySlugs = (app.workerPreferredCategories as string[] | null) ?? [];
+  const matchedCategories = dbCategories.filter((c) => workerCategorySlugs.includes(c.slug));
   const joinedDate = new Date(app.workerCreatedAt).toLocaleDateString("he-IL", {
     year: "numeric",
     month: "long",
@@ -339,7 +335,7 @@ export default function ApplicationView() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {matchedCategories.map((cat) => (
                   <span
-                    key={cat.value}
+                    key={cat.slug}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -353,7 +349,7 @@ export default function ApplicationView() {
                       border: `1px solid ${OLIVE_BORDER}`,
                     }}
                   >
-                    {cat.icon} {cat.label}
+                    {cat.icon ?? "💼"} {cat.name}
                   </span>
                 ))}
               </div>

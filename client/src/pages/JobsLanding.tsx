@@ -24,7 +24,8 @@ import { useParams, useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { useJobListingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { trpc } from "@/lib/trpc";
-import { JOB_CATEGORIES, getCategoryLabel } from "@shared/categories";
+import { getCategoryLabel } from "@shared/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
@@ -43,18 +44,11 @@ const SEO_CITIES = [
   "חולון", "רחובות", "אשקלון", "בת ים", "הרצליה",
 ];
 
-// ─── All category slugs ───────────────────────────────────────────────────────
-const ALL_CATEGORY_SLUGS = JOB_CATEGORIES.map((c) => c.value);
-
-// ─── Time-based filter types ──────────────────────────────────────────────────
+// ──// ─── Time-based filter types ──────────────────────────────────────────────────
 type TimeFilter = "today" | "evening" | "weekend" | "immediate";
 const TIME_SLUGS: TimeFilter[] = ["today", "evening", "weekend", "immediate"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function isCategorySlug(slug: string): boolean {
-  return ALL_CATEGORY_SLUGS.includes(slug as (typeof ALL_CATEGORY_SLUGS)[number]);
-}
-
 function isTimeSlug(slug: string): slug is TimeFilter {
   return TIME_SLUGS.includes(slug as TimeFilter);
 }
@@ -127,6 +121,11 @@ function buildCanonical(city?: string, category?: string, time?: TimeFilter): st
 export default function JobsLanding() {
   const params = useParams<{ slug?: string; category?: string; city?: string }>();
   const { isAuthenticated } = useAuth();
+  const { categories: dbCategories } = useCategories();
+  // Derive valid category slugs from DB at runtime (Single Source of Truth)
+  const dbCategorySlugs = useMemo(() => new Set(dbCategories.map((c) => c.slug)), [dbCategories]);
+  const isCategorySlug = (slug: string) => dbCategorySlugs.has(slug);
+
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | undefined>();
   type BottomSheetJobType = JobCardJob & { contactPhone: string | null };
@@ -153,7 +152,8 @@ export default function JobsLanding() {
       return { resolvedCity: params.slug, resolvedCategory: undefined, resolvedTime: undefined };
     }
     return { resolvedCity: undefined, resolvedCategory: undefined, resolvedTime: undefined };
-  }, [params]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, dbCategorySlugs]);
 
   const h1 = buildH1(resolvedCity, resolvedCategory, resolvedTime);
   const description = buildDescription(resolvedCity, resolvedCategory, resolvedTime);
@@ -472,13 +472,13 @@ export default function JobsLanding() {
               <h2 className="text-sm font-bold text-gray-700">חיפוש לפי קטגוריה</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {JOB_CATEGORIES.map((cat) => (
+              {dbCategories.map((cat) => (
                 <Link
-                  key={cat.value}
-                  href={`/jobs/${cat.value}`}
+                  key={cat.slug}
+                  href={`/jobs/${cat.slug}`}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
                 >
-                  {cat.icon} עבודות {cat.label}
+                  {cat.icon ?? "💼"} עבודות {cat.name}
                 </Link>
               ))}
             </div>
@@ -491,13 +491,13 @@ export default function JobsLanding() {
               <h2 className="text-sm font-bold text-gray-700">מדריכים לעבודות זמניות</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {JOB_CATEGORIES.filter((c) => c.value !== "other").map((cat) => (
+              {dbCategories.filter((c) => c.slug !== "other").map((cat) => (
                 <Link
-                  key={cat.value}
-                  href={`/guide/temporary-jobs/${cat.value}`}
+                  key={cat.slug}
+                  href={`/guide/temporary-jobs/${cat.slug}`}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors"
                 >
-                  מדריך: {cat.label}
+                  מדריך: {cat.name}
                 </Link>
               ))}
               <Link

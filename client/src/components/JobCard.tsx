@@ -22,8 +22,6 @@ import {
   formatDistance,
   getStartTimeLabel,
   isJobToday,
-  WARTIME_CATEGORIES,
-  SEASONAL_CATEGORIES,
 } from "@shared/categories";
 import { minAgeLabel } from "@shared/ageUtils";
 
@@ -329,8 +327,10 @@ export function JobCard({
   // contactPhone is always null for workers (stripped server-side)
   const hasPhone = false;
   const countdown = expiryCountdown(job.expiresAt);
-  const isWartime = WARTIME_CATEGORIES.includes(job.category as typeof WARTIME_CATEGORIES[number]);
-  const isSeasonal = SEASONAL_CATEGORIES.includes(job.category as typeof SEASONAL_CATEGORIES[number]);
+  // groupName-based flags — driven by DB categories (groupName = "wartime" / "seasonal")
+  // job.categoryGroupName is populated server-side; falls back to false if not present
+  const isWartime = (job as { categoryGroupName?: string }).categoryGroupName === "wartime";
+  const isSeasonal = (job as { categoryGroupName?: string }).categoryGroupName === "seasonal";
   const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
   const isNew = job.createdAt && (Date.now() - new Date(job.createdAt).getTime()) < 60 * 60 * 1000;
   const [showApplyPanel, setShowApplyPanel] = useState(false);

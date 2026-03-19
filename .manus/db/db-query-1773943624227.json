@@ -1,0 +1,14 @@
+{
+  "query": "SELECT DISTINCT \"groupName\", COUNT(*) as count FROM categories GROUP BY \"groupName\" ORDER BY \"groupName\";",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT DISTINCT \"groupName\", COUNT(*) as count FROM categories GROUP BY \"groupName\" ORDER BY \"groupName\";",
+  "rows": [
+    {
+      "groupName": "groupName",
+      "count": "13"
+    }
+  ],
+  "messages": [],
+  "stdout": "groupName\tcount\ngroupName\t13\n",
+  "stderr": "",
+  "execution_time_ms": 1590
+}

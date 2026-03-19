@@ -2476,3 +2476,9 @@
 - [x] CarouselJobCard: replaced inline applyMutation with useApplyWithAgeGate
 - [x] SearchJobCard: replaced inline applyMutation with useApplyWithAgeGate
 - [x] TypeScript: 0 errors, 689/689 tests passing
+
+## UX Fix — BirthDateModal Mobile Layout
+- [x] Bottom-sheet style on mobile (slides up from bottom, rounded top corners)
+- [x] Full-width buttons on mobile (stacked, height 50px)
+- [x] Proper padding and font sizes for small screens (font-size: 16 prevents iOS zoom)
+- [x] Touch-friendly date input (height 48px) and checkbox (20x20)

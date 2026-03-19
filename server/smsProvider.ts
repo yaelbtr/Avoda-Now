@@ -39,6 +39,9 @@ export interface SmsProvider {
 
   /** Verify OTP that was sent to email */
   verifyEmailOtp(email: string, code: string): Promise<OtpVerifyResult>;
+
+  /** Send OTP via WhatsApp (Twilio Verify whatsapp channel) */
+  sendOtpWhatsApp(phone: string): Promise<OtpSendResult>;
 }
 
 // ─── Twilio Verify Provider ───────────────────────────────────────────────────
@@ -88,6 +91,35 @@ class TwilioVerifyProvider implements SmsProvider {
     } catch (err) {
       console.error("[TwilioVerify] sendOtp network error:", err);
       return { success: false, error: "לא ניתן לשלוח קוד כרגע. נסו שוב בעוד מספר דקות." };
+    }
+  }
+
+  /** Send OTP via WhatsApp (Twilio Verify whatsapp channel) */
+  async sendOtpWhatsApp(phone: string): Promise<OtpSendResult> {
+    if (!this.accountSid || !this.authToken || !this.serviceSid) {
+      return { success: false, error: "SMS service not configured" };
+    }
+    try {
+      const res = await fetch(`${this.baseUrl}/Verifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: this.authHeader,
+        },
+        body: new URLSearchParams({ To: phone, Channel: "whatsapp" }).toString(),
+      });
+      const body = await res.json() as { status?: string; message?: string; code?: number };
+      if (!res.ok) {
+        console.error("[TwilioVerify] sendOtpWhatsApp failed:", body);
+        if (body.code === 60200) return { success: false, error: "מספר הטלפון אינו תקין" };
+        // 60410 = WhatsApp channel not enabled on this service
+        if (body.code === 60410) return { success: false, error: "ערוץ WhatsApp אינו מופעל בשירות" };
+        return { success: false, error: "לא ניתן לשלוח קוד ב-WhatsApp כרגע. נסו שוב בעוד מספר דקות." };
+      }
+      return { success: true };
+    } catch (err) {
+      console.error("[TwilioVerify] sendOtpWhatsApp network error:", err);
+      return { success: false, error: "לא ניתן לשלוח קוד ב-WhatsApp כרגע. נסו שוב בעוד מספר דקות." };
     }
   }
 

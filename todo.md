@@ -2630,3 +2630,10 @@
 - [x] הוסף placeholder="DD/MM/YYYY" לשדה תאריך המשרה ב-PostJob
 - [x] הוסף ולידציה לתאריך לידה עתידי ב-WorkerProfile (שני מקומות)
 - [x] הוסף vitest tests ל-normalizeDateInput ולולידציה עתידית
+
+## Round 4h: WhatsApp OTP Fallback
+- [x] Add sendOtpWhatsApp() to SmsProvider interface and TwilioVerifyProvider
+- [x] Add "whatsapp" to channel enum in sendOtp procedure (routers.ts)
+- [x] Update verifyOtp procedure to accept whatsapp channel (same VerificationCheck endpoint)
+- [x] Update Login/Register UI to show "שלח קוד ב-WhatsApp" button when SMS fails
+- [x] Add tests for WhatsApp OTP send and verify

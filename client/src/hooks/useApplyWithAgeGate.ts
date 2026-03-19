@@ -5,14 +5,17 @@
  *
  * Behaviour:
  *  1. If user is not authenticated → call onLoginRequired and abort.
- *  2. If user has no birthDate on record → open BirthDateModal (via returned state),
+ *  2. If birthDateInfo is still loading → show "מאמת פרטים..." toast, store
+ *     pending params; a useEffect retries automatically once the query resolves.
+ *  3. If user has no birthDate on record → open BirthDateModal (via returned state),
  *     store the pending apply params, and abort the mutation.
- *  3. After BirthDateModal reports success → automatically retry the stored mutation.
- *  4. If birthDate already exists → call applyToJob immediately.
+ *  4. After BirthDateModal reports success → invalidate getBirthDateInfo cache so
+ *     all components reflect the new value, then automatically retry the stored mutation.
+ *  5. If birthDate already exists → call applyToJob immediately.
  *
  * Usage:
- *   const { apply, birthDateModalOpen, closeBirthDateModal, handleBirthDateSuccess } =
- *     useApplyWithAgeGate({ isAuthenticated, onLoginRequired });
+ *   const { apply, isPending, birthDateModalOpen, closeBirthDateModal, handleBirthDateSuccess } =
+ *     useApplyWithAgeGate({ isAuthenticated, onLoginRequired, onSuccess });
  *
  *   // In JSX:
  *   <BirthDateModal
@@ -24,7 +27,7 @@
  *   // On apply button click:
  *   apply({ jobId, message, origin });
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -48,9 +51,12 @@ export function useApplyWithAgeGate({
 }: UseApplyWithAgeGateOptions) {
   const utils = trpc.useUtils();
 
-  // Pending params stored while BirthDateModal is open
+  // Pending params stored while BirthDateModal is open or query is loading
   const [pendingParams, setPendingParams] = useState<ApplyParams | null>(null);
   const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
+
+  // Track whether we already showed the "מאמת פרטים..." toast to avoid duplicates
+  const loadingToastShownRef = useRef(false);
 
   // Fetch birth date info (cached, only when authenticated)
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
@@ -77,6 +83,7 @@ export function useApplyWithAgeGate({
   // When the query finishes loading and we have pending params, continue the flow.
   useEffect(() => {
     if (pendingParams && !birthDateInfoQuery.isLoading) {
+      loadingToastShownRef.current = false; // reset for next time
       const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
       if (!hasBirthDate) {
         setBirthDateModalOpen(true);
@@ -92,20 +99,23 @@ export function useApplyWithAgeGate({
   const apply = useCallback(
     (params: ApplyParams) => {
       if (!isAuthenticated) {
-        onLoginRequired?.("\u05db\u05d3\u05d9 \u05dc\u05d4\u05d2\u05d9\u05e9 \u05de\u05d5\u05e2\u05de\u05d3\u05d5\u05ea \u05d9\u05e9 \u05dc\u05d4\u05ea\u05d7\u05d1\u05e8");
+        onLoginRequired?.("כדי להגיש מועמדות יש להתחבר");
         return;
       }
 
-      // Wait until the birth-date query has resolved before deciding.
-      // If still loading, store params and let the effect below retry.
+      // If birthDateInfo is still loading, store params and show a toast so the
+      // user knows something is happening. The useEffect above will retry.
       if (birthDateInfoQuery.isLoading) {
         setPendingParams(params);
+        if (!loadingToastShownRef.current) {
+          loadingToastShownRef.current = true;
+          toast.loading("מאמת פרטים...", { id: "age-gate-loading", duration: 4000 });
+        }
         return;
       }
 
       const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
       if (!hasBirthDate) {
-        // Store params and open modal
         setPendingParams(params);
         setBirthDateModalOpen(true);
         return;
@@ -120,12 +130,15 @@ export function useApplyWithAgeGate({
   const handleBirthDateSuccess = useCallback(
     (_result: { age: number; isMinor: boolean }) => {
       setBirthDateModalOpen(false);
+      // Invalidate cache so all components (CarouselJobCard, SearchJobCard, etc.)
+      // immediately reflect the newly saved birthDate without a stale read.
+      utils.user.getBirthDateInfo.invalidate();
       if (pendingParams) {
         applyMutation.mutate(pendingParams);
         setPendingParams(null);
       }
     },
-    [pendingParams, applyMutation]
+    [pendingParams, applyMutation, utils.user.getBirthDateInfo]
   );
 
   /** Call this from BirthDateModal's onClose prop */

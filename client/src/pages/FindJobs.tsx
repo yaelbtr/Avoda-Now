@@ -29,6 +29,7 @@ import type { DateRange } from "react-day-picker";
 import BrandLoader from "@/components/BrandLoader";
 import { AppButton } from "@/components/AppButton";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -481,11 +482,7 @@ export default function FindJobs() {
   const [selectedDays, setSelectedDays] = useState<string[]>(_savedFilters?.selectedDays ?? []);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
-  // Age-gate: pending apply info while BirthDateModal is open
-  const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
-  const [pendingApplyJobId, setPendingApplyJobId] = useState<number | null>(null);
-  const [pendingApplyMessage, setPendingApplyMessage] = useState<string | undefined>(undefined);
-  const [pendingApplyOrigin, setPendingApplyOrigin] = useState<string>("");
+  // Age-gate state is managed by useApplyWithAgeGate hook
   const [bottomSheetJob, setBottomSheetJob] = useState<null | {
     id: number; title: string; category: string; address: string; city?: string | null;
     salary?: string | null; salaryType: string; contactPhone: string | null | undefined;
@@ -781,44 +778,20 @@ export default function FindJobs() {
   const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
-  const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
-  const applyMutationFj = trpc.jobs.applyToJob.useMutation({
-    onSuccess: () => { utilsFj.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
-    onError: (e: { message: string }) => toast.error(e.message),
+   const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const {
+    apply: applyWithAgeGateFj,
+    isPending: isApplyPendingFj,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal: closeAgeGateModal,
+  } = useApplyWithAgeGate({
+    isAuthenticated,
+    onLoginRequired: requireLogin,
   });
-  // Age-gate: fetch birth date info once (cached 5 min)
-  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const handleApplyFj = (jobId: number, message: string | undefined, origin: string) => {
-    if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר"); return; }
-    const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
-    if (!hasBirthDate) {
-      // No birth date on record — show modal to collect it before applying
-      setPendingApplyJobId(jobId);
-      setPendingApplyMessage(message);
-      setPendingApplyOrigin(origin);
-      setBirthDateModalOpen(true);
-      return;
-    }
-    applyMutationFj.mutate({ jobId, message, origin });
-  };
-
-  const handleBirthDateSuccess = (_result: { age: number; isMinor: boolean }) => {
-    setBirthDateModalOpen(false);
-    // After birth date saved, proceed with the pending apply
-    if (pendingApplyJobId !== null) {
-      applyMutationFj.mutate({
-        jobId: pendingApplyJobId,
-        message: pendingApplyMessage,
-        origin: pendingApplyOrigin,
-      });
-    }
-    setPendingApplyJobId(null);
-    setPendingApplyMessage(undefined);
-    setPendingApplyOrigin("");
+  // Wrap to match the (jobId, message, origin) signature expected by JobCard.onApply
+  const handleApplyFjWrapped = (jobId: number, message: string | undefined, origin: string) => {
+    applyWithAgeGateFj({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
     if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
@@ -1562,7 +1535,7 @@ export default function FindJobs() {
                     isSaved={savedIds.has(j.id)}
                     isApplied={appliedJobIdsFj.has(j.id)}
                     onSaveToggle={handleSaveToggle}
-                    onApply={handleApplyFj}
+                    onApply={handleApplyFjWrapped}
                     onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
                     onCategoryClick={handleCategoryFromCard}
                     activeCategories={selectedCategories}
@@ -1720,9 +1693,8 @@ export default function FindJobs() {
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
       <BirthDateModal
         isOpen={birthDateModalOpen}
-        onClose={() => { setBirthDateModalOpen(false); setPendingApplyJobId(null); }}
+        onClose={closeAgeGateModal}
         onSuccess={handleBirthDateSuccess}
-        jobId={pendingApplyJobId ?? undefined}
       />
       <JobBottomSheet
         job={bottomSheetJob}

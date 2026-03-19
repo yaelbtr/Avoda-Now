@@ -2482,3 +2482,8 @@
 - [x] Full-width buttons on mobile (stacked, height 50px)
 - [x] Proper padding and font sizes for small screens (font-size: 16 prevents iOS zoom)
 - [x] Touch-friendly date input (height 48px) and checkbox (20x20)
+
+## useApplyWithAgeGate Improvements (Round 3d)
+- [x] Cache invalidation: utils.user.getBirthDateInfo.invalidate() called in handleBirthDateSuccess
+- [x] Loading toast: toast.loading("מאמת פרטים...") shown when birthDateInfo is still loading on apply click
+- [x] FindJobs: replaced inline applyToJob mutation with useApplyWithAgeGate hook — 689/689 tests passing

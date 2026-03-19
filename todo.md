@@ -2546,3 +2546,10 @@
 - [x] JobsLanding, JobsToday, ApplicationView שודרגו ל-useCategories() (DB)
 - [x] JobCard: WARTIME/SEASONAL הוחלפו ב-groupName מ-DB (future-ready)
 - [x] 700/700 בדיקות, TypeScript 0 errors
+
+## Feature — allowedForMinors בטבלת categories (Round 3q)
+- [x] הוסף שדה allowedForMinors (boolean, default true) לטבלת categories ב-schema
+- [x] הרץ migration (pnpm db:push)
+- [x] חשוף שדה בפרוצדורות admin (updateCategory, create)
+- [x] הוסף toggle בטאב קטגוריות ב-Admin Panel (טבלה + מובייל + דיאלוג)
+- [x] סנן קטגוריות לפי allowedForMinors ב-queryJobs (sub-select על categories table)

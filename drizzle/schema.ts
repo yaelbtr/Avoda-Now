@@ -521,6 +521,13 @@ export const categories = pgTable("categories", {
   imageUrl: text("imageUrl"),
   /** Whether the category is visible to users and included in filters */
   isActive: boolean("isActive").default(true).notNull(),
+  /**
+   * Whether this category is permitted for display to users under 18.
+   * Defaults to true (most categories are allowed).
+   * Set to false for categories involving alcohol, nightlife, security, or other
+   * roles restricted by the Youth Labour Law (חוק עבודת הנוער).
+   */
+  allowedForMinors: boolean("allowedForMinors").default(true).notNull(),
   /** Display order (lower = shown first) */
   sortOrder: integer("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),

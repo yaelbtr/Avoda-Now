@@ -1,0 +1,1 @@
+ALTER TABLE "categories" ADD COLUMN "allowedForMinors" boolean DEFAULT true NOT NULL;

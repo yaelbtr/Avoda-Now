@@ -2266,6 +2266,7 @@ const categoriesRouter = router({
       imageUrl: z.string().url().optional().or(z.literal("")),
       isActive: z.boolean().optional(),
       sortOrder: z.number().int().optional(),
+      allowedForMinors: z.boolean().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
@@ -2283,6 +2284,7 @@ const categoriesRouter = router({
       imageUrl: z.string().url().optional().or(z.literal("")),
       isActive: z.boolean().optional(),
       sortOrder: z.number().int().optional(),
+      allowedForMinors: z.boolean().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });

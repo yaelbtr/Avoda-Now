@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, isNull, like, lte, ne, or, sql, asc } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNull, like, lte, ne, notInArray, or, sql, asc } from "drizzle-orm";
 import { alias as aliasedTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -22,7 +22,7 @@ import {
   phonePrefixes,
   phoneChangeLogs,
   workerRatings,
-  categories,
+  categories as categoriesTable,
   Category,
   regions,
   Region,
@@ -839,6 +839,25 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
       or(
         isNull(jobs.minAge),
         sql`${jobs.minAge} <= ${workerAge}`
+      )!
+    );
+  }
+
+  // ── Minor category filter ────────────────────────────────────────────────────
+  // When the worker is under 18, exclude jobs whose category is not allowed for minors.
+  // Uses a sub-select against the categories table (allowedForMinors = false).
+  // If the category slug is not in the categories table at all, the job is still shown.
+  if (workerAge != null && workerAge < 18) {
+    conditions.push(
+      or(
+        isNull(jobs.category),
+        notInArray(
+          jobs.category,
+          db
+            .select({ slug: categoriesTable.slug })
+            .from(categoriesTable)
+            .where(eq(categoriesTable.allowedForMinors, false))
+        )
       )!
     );
   }
@@ -1957,9 +1976,9 @@ export async function getActiveCategories(): Promise<Category[]> {
   if (!db) return [];
   return db
     .select()
-    .from(categories)
-    .where(eq(categories.isActive, true))
-    .orderBy(categories.sortOrder, categories.id);
+    .from(categoriesTable)
+    .where(eq(categoriesTable.isActive, true))
+    .orderBy(categoriesTable.sortOrder, categoriesTable.id);
 }
 
 /** Get all categories including inactive (for admin) */
@@ -1968,8 +1987,8 @@ export async function getAllCategories(): Promise<Category[]> {
   if (!db) return [];
   return db
     .select()
-    .from(categories)
-    .orderBy(categories.sortOrder, categories.id);
+    .from(categoriesTable)
+    .orderBy(categoriesTable.sortOrder, categoriesTable.id);
 }
 
 /** Get a single category by slug */
@@ -1978,8 +1997,8 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   if (!db) return null;
   const rows = await db
     .select()
-    .from(categories)
-    .where(eq(categories.slug, slug))
+    .from(categoriesTable)
+    .where(eq(categoriesTable.slug, slug))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -1996,7 +2015,7 @@ export async function createCategory(data: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  await db.insert(categories).values({
+  await db.insert(categoriesTable).values({
     slug: data.slug,
     name: data.name,
     icon: data.icon ?? "💼",
@@ -2019,30 +2038,30 @@ export async function updateCategory(id: number, data: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  await db.update(categories).set(data).where(eq(categories.id, id));
+  await db.update(categoriesTable).set(data).where(eq(categoriesTable.id, id));
 }
 
 /** Toggle isActive for a category */
 export async function toggleCategoryActive(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  const rows = await db.select({ isActive: categories.isActive }).from(categories).where(eq(categories.id, id)).limit(1);
+  const rows = await db.select({ isActive: categoriesTable.isActive }).from(categoriesTable).where(eq(categoriesTable.id, id)).limit(1);
   if (!rows[0]) throw new Error("Category not found");
-  await db.update(categories).set({ isActive: !rows[0].isActive }).where(eq(categories.id, id));
+  await db.update(categoriesTable).set({ isActive: !rows[0].isActive }).where(eq(categoriesTable.id, id));
 }
 
 /** Delete a category (admin only) */
 export async function deleteCategory(id: number) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  await db.delete(categories).where(eq(categories.id, id));
+  await db.delete(categoriesTable).where(eq(categoriesTable.id, id));
 }
 
 /** Seed initial categories if the table is empty */
 export async function seedCategoriesIfEmpty() {
   const db = await getDb();
   if (!db) return;
-  const existing = await db.select({ id: categories.id }).from(categories).limit(1);
+  const existing = await db.select({ id: categoriesTable.id }).from(categoriesTable).limit(1);
   if (existing.length > 0) return; // already seeded
 
   const seed = [
@@ -2068,7 +2087,7 @@ export async function seedCategoriesIfEmpty() {
   ];
 
   for (const cat of seed) {
-    await db.insert(categories).values({ ...cat, isActive: true });
+    await db.insert(categoriesTable).values({ ...cat, isActive: true });
   }
 }
 

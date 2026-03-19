@@ -39,6 +39,7 @@ type Category = {
   groupName: string | null;
   imageUrl: string | null;
   isActive: boolean;
+  allowedForMinors: boolean;
   sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
@@ -59,6 +60,7 @@ const EMPTY_FORM = {
   groupName: "general",
   imageUrl: "",
   isActive: true,
+  allowedForMinors: true,
   sortOrder: 0,
 };
 
@@ -135,6 +137,7 @@ export function AdminCategoriesTab() {
       groupName: cat.groupName ?? "general",
       imageUrl: cat.imageUrl ?? "",
       isActive: cat.isActive,
+      allowedForMinors: cat.allowedForMinors,
       sortOrder: cat.sortOrder,
     });
     setDialogOpen(true);
@@ -206,6 +209,7 @@ export function AdminCategoriesTab() {
                   <TableHead className="text-right">קבוצה</TableHead>
                   <TableHead className="text-right">סדר</TableHead>
                   <TableHead className="text-right">פעיל</TableHead>
+                  <TableHead className="text-right">קטינים</TableHead>
                   <TableHead className="text-right">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
@@ -225,6 +229,14 @@ export function AdminCategoriesTab() {
                         checked={cat.isActive}
                         onCheckedChange={() => toggleMut.mutate({ id: cat.id })}
                         disabled={toggleMut.isPending}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={cat.allowedForMinors}
+                        onCheckedChange={(v) => updateMut.mutate({ id: cat.id, allowedForMinors: v })}
+                        disabled={updateMut.isPending}
+                        title="מותר לקטינים"
                       />
                     </TableCell>
                     <TableCell>
@@ -273,6 +285,14 @@ export function AdminCategoriesTab() {
                       onCheckedChange={() => toggleMut.mutate({ id: cat.id })}
                       disabled={toggleMut.isPending}
                     />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">קטינים</span>
+                      <Switch
+                        checked={cat.allowedForMinors}
+                        onCheckedChange={(v) => updateMut.mutate({ id: cat.id, allowedForMinors: v })}
+                        disabled={updateMut.isPending}
+                      />
+                    </div>
                     <div className="flex gap-1">
                       <AppButton variant="outline" size="sm" onClick={() => openEdit(cat)}>
                         <Pencil className="h-3.5 w-3.5" />
@@ -358,6 +378,16 @@ export function AdminCategoriesTab() {
                 onCheckedChange={(v) => setForm(f => ({ ...f, isActive: v }))}
               />
               <Label>קטגוריה פעילה (מוצגת למשתמשים)</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={form.allowedForMinors}
+                onCheckedChange={(v) => setForm(f => ({ ...f, allowedForMinors: v }))}
+              />
+              <div>
+                <Label>מותר לקטינים (גיל 16–17)</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">כבוי עבור קטגוריות כגון אלכוהל, לילה, אבטחה ועבודות המגובלות על-פי חוק עבודת הנוער</p>
+              </div>
             </div>
           </div>
           <DialogFooter className="gap-2">

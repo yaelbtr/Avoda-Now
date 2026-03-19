@@ -43,6 +43,13 @@
       "when": 1773895692954,
       "tag": "0005_fresh_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773944203176,
+      "tag": "0006_awesome_mysterio",
+      "breakpoints": true
     }
   ]
 }

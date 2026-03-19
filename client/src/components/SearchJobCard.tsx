@@ -12,6 +12,8 @@ import {
 } from "@shared/categories";
 import { useAuth } from "@/contexts/AuthContext";
 import { shareJobOnWhatsApp } from "@/components/JobCard";
+import { BirthDateModal } from "@/components/BirthDateModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface SearchJob {
   id: number;
@@ -79,30 +81,29 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
   const [appliedLocally, setAppliedLocally] = useState(false);
   const isApplied = isAppliedProp || appliedLocally;
 
-  const applyMutation = trpc.jobs.applyToJob.useMutation({
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal,
+  } = useApplyWithAgeGate({
+    isAuthenticated,
+    onLoginRequired,
     onSuccess: () => {
       setAppliedLocally(true);
       setShowApplyPanel(false);
       setApplyMessage("");
       toast.success("מועמדות הוגשה בהצלחה!");
     },
-    onError: (err) => {
-      if (err.data?.code === "CONFLICT") {
-        setAppliedLocally(true);
-        setShowApplyPanel(false);
-        toast.info("כבר הגשת מועמדות למשרה זו");
-      } else {
-        toast.error(err.message || "שגיאה בהגשת מועמדות");
-      }
-    },
   });
-
   const handleApplySubmit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    applyMutation.mutate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin });
+    applyWithAgeGate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin });
   };
 
   return (
+    <>
     <div
       dir="rtl"
       style={{
@@ -377,10 +378,10 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
               </button>
               <button
                 onClick={handleApplySubmit}
-                disabled={applyMutation.isPending}
-                style={{ flex: 1, padding: "6px 12px", borderRadius: 8, border: "none", background: OLIVE, color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: applyMutation.isPending ? 0.7 : 1 }}
+                disabled={isApplyPending}
+                style={{ flex: 1, padding: "6px 12px", borderRadius: 8, border: "none", background: OLIVE, color: "white", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: isApplyPending ? 0.7 : 1 }}
               >
-                {applyMutation.isPending ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={12} />}
+                {isApplyPending ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={12} />}
                 שלח מועמדות
               </button>
             </div>
@@ -426,5 +427,13 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
         </div>
       )}
     </div>
+
+      {/* Age-gate modal */}
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={closeBirthDateModal}
+        onSuccess={handleBirthDateSuccess}
+      />
+    </>
   );
 }

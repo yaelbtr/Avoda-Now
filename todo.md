@@ -2469,3 +2469,10 @@
 - [x] Backend: all 5 call-sites in routers.ts updated to resolve and pass workerAge
 - [x] Frontend: server-side only — no client changes needed
 - [x] Tests: 689/689 passing (postgis-radius + contactphone.privacy mocks updated)
+
+## Bug Fix — BirthDateModal not shown before apply (Round 3c)
+- [x] Created useApplyWithAgeGate hook — centralises birthDate check, BirthDateModal trigger, and retry logic
+- [x] JobBottomSheet: replaced inline applyMutation with useApplyWithAgeGate
+- [x] CarouselJobCard: replaced inline applyMutation with useApplyWithAgeGate
+- [x] SearchJobCard: replaced inline applyMutation with useApplyWithAgeGate
+- [x] TypeScript: 0 errors, 689/689 tests passing

@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { shareJobOnWhatsApp, shareJobByEmail, shareJobOnFacebook, shareJobOnTelegram, copyJobLink } from "@/components/JobCard";
+import { BirthDateModal } from "@/components/BirthDateModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface CarouselJob {
   id: number;
@@ -209,25 +211,25 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
   const [applyMessage, setApplyMessage] = useState("");
   const [appliedLocally, setAppliedLocally] = useState(false);
 
-  const applyMutation = trpc.jobs.applyToJob.useMutation({
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal,
+  } = useApplyWithAgeGate({
+    isAuthenticated,
+    onLoginRequired,
     onSuccess: () => {
       setAppliedLocally(true);
       setShowApplyPanel(false);
       setApplyMessage("");
       toast.success("מועמדות הוגשה בהצלחה!");
     },
-    onError: (err) => {
-      if (err.data?.code === "CONFLICT") {
-        setAppliedLocally(true);
-        setShowApplyPanel(false);
-        toast.info("כבר הגשת מועמדות למשרה זו");
-      } else {
-        toast.error(err.message || "שגיאה בהגשת מועמדות");
-      }
-    },
   });
 
   return (
+    <>
     <div
       dir="rtl"
       style={{
@@ -475,11 +477,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
                     style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #e8e2d6", background: "white", fontSize: 10, fontWeight: 600, color: "#888", cursor: "pointer" }}
                   >ביטול</button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); applyMutation.mutate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin }); }}
-                    disabled={applyMutation.isPending}
-                    style={{ flex: 1, padding: "5px 10px", borderRadius: 7, border: "none", background: OLIVE, color: "white", fontSize: 10, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: applyMutation.isPending ? 0.7 : 1 }}
+                    onClick={(e) => { e.stopPropagation(); applyWithAgeGate({ jobId: job.id, message: applyMessage || undefined, origin: window.location.origin }); }}
+                    disabled={isApplyPending}
+                    style={{ flex: 1, padding: "5px 10px", borderRadius: 7, border: "none", background: OLIVE, color: "white", fontSize: 10, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, opacity: isApplyPending ? 0.7 : 1 }}
                   >
-                    {applyMutation.isPending ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={11} />}
+                    {isApplyPending ? <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={11} />}
                     שלח מועמדות
                   </button>
                 </div>
@@ -533,5 +535,12 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
         </div>
       </div>
     </div>
+      {/* Age-gate modal */}
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={closeBirthDateModal}
+        onSuccess={handleBirthDateSuccess}
+      />
+    </>
   );
 }

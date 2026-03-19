@@ -5,6 +5,8 @@ import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } fr
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { shareJobOnWhatsApp, copyJobLink } from "@/components/JobCard";
+import { BirthDateModal } from "@/components/BirthDateModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface JobBottomSheetProps {
   job: {
@@ -57,19 +59,20 @@ export default function JobBottomSheet({
     { enabled: isAuthenticated && !!job && open }
   );
 
-  const applyMutation = trpc.jobs.applyToJob.useMutation({
+  // Age-gate aware apply hook (shows BirthDateModal when birthDate is missing)
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal,
+  } = useApplyWithAgeGate({
+    isAuthenticated,
+    onLoginRequired,
     onSuccess: () => {
       setApplied(true);
       setShowMessageInput(false);
       toast.success("המועמדות נשלחה! המעסיק יקבל הודעה עם קישור לפרופיל שלך.");
-    },
-    onError: (err) => {
-      if (err.data?.code === "CONFLICT") {
-        setApplied(true);
-        toast.info("כבר הגשת מועמדות למשרה זו");
-      } else {
-        toast.error(err.message ?? "שגיאה בשליחת המועמדות");
-      }
     },
   });
 
@@ -128,7 +131,7 @@ export default function JobBottomSheet({
 
   const handleSubmitApplication = () => {
     if (!job) return;
-    applyMutation.mutate({
+    applyWithAgeGate({
       jobId: job.id,
       message: applyMessage.trim() || undefined,
       origin: window.location.origin,
@@ -145,7 +148,8 @@ export default function JobBottomSheet({
   // showPhoneNumber removed — contactPhone stripped server-side
 
   return (
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
       {open && (
       <>
       {/* Backdrop */}
@@ -437,7 +441,7 @@ export default function JobBottomSheet({
               </button>
               <button
                 onClick={handleSubmitApplication}
-                disabled={applyMutation.isPending}
+                disabled={isApplyPending}
                 style={{
                   flex: 1,
                   padding: "14px 0",
@@ -448,16 +452,16 @@ export default function JobBottomSheet({
                   fontWeight: 800,
                   border: "none",
                   outline: "none",
-                  cursor: applyMutation.isPending ? "not-allowed" : "pointer",
+                  cursor: isApplyPending ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
-                  opacity: applyMutation.isPending ? 0.7 : 1,
+                  opacity: isApplyPending ? 0.7 : 1,
                   boxShadow: "0 4px 14px rgba(79,88,59,0.3)",
                 }}
               >
-                {applyMutation.isPending ? (
+                {isApplyPending ? (
                   <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
                 ) : (
                   <Send size={16} />
@@ -533,9 +537,16 @@ export default function JobBottomSheet({
       </>
       )}
     </AnimatePresence>
+
+      {/* Age-gate modal — shown when user has no birthDate on record */}
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={closeBirthDateModal}
+        onSuccess={handleBirthDateSuccess}
+      />
+    </>
   );
 }
-
 function ShareRow({
   jobId,
   jobTitle,

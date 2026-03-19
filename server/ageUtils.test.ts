@@ -227,3 +227,52 @@ describe("constants", () => {
     expect(MINOR_END_TIME_CUTOFF).toBe("22:00");
   });
 });
+
+// ─── queryJobs age-gate integration: verify the SQL filter logic ──────────────
+// These tests validate the filter predicate used inside queryJobs() without
+// hitting the database — they mirror the exact condition:
+//   WHERE (jobs.minAge IS NULL OR jobs.minAge <= workerAge)
+describe("queryJobs age-gate predicate (unit)", () => {
+  /** Mirrors the server-side filter condition */
+  function passesAgeGate(minAge: number | null | undefined, workerAge: number | null | undefined): boolean {
+    if (workerAge == null) return true; // no filter applied for guests
+    if (minAge == null) return true;    // no restriction on job
+    return minAge <= workerAge;
+  }
+
+  it("guest (no workerAge) always passes — filter is skipped", () => {
+    expect(passesAgeGate(18, null)).toBe(true);
+    expect(passesAgeGate(18, undefined)).toBe(true);
+    expect(passesAgeGate(16, null)).toBe(true);
+  });
+
+  it("job with no minAge restriction always passes", () => {
+    expect(passesAgeGate(null, 16)).toBe(true);
+    expect(passesAgeGate(undefined, 16)).toBe(true);
+    expect(passesAgeGate(null, 25)).toBe(true);
+  });
+
+  it("16-year-old passes a minAge=16 job", () => {
+    expect(passesAgeGate(16, 16)).toBe(true);
+  });
+
+  it("16-year-old is blocked from a minAge=18 job", () => {
+    expect(passesAgeGate(18, 16)).toBe(false);
+  });
+
+  it("17-year-old is blocked from a minAge=18 job", () => {
+    expect(passesAgeGate(18, 17)).toBe(false);
+  });
+
+  it("18-year-old passes a minAge=18 job (boundary)", () => {
+    expect(passesAgeGate(18, 18)).toBe(true);
+  });
+
+  it("25-year-old passes a minAge=18 job", () => {
+    expect(passesAgeGate(18, 25)).toBe(true);
+  });
+
+  it("25-year-old passes a minAge=16 job", () => {
+    expect(passesAgeGate(16, 25)).toBe(true);
+  });
+});

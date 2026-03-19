@@ -649,37 +649,155 @@ export async function getJobById(id: number) {
   return result[0];
 }
 
-export async function getActiveJobs(
-  limit = 50,
-  category?: string,
-  city?: string,
-  dateFilter?: "today" | "tomorrow" | "this_week" | string, // also accepts "YYYY-MM-DD" or "YYYY-MM-DD:YYYY-MM-DD"
-  offset = 0,
-  dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
-  cities?: string[],    // multi-city filter (takes precedence over city when provided)
-  categories?: string[] // multi-category filter (takes precedence over category when provided)
-): Promise<{ rows: (typeof jobs.$inferSelect)[]; total: number }> {
+// ─── Unified Job Query ────────────────────────────────────────────────────────
+
+/**
+ * Shared filter options for all job-listing queries.
+ * Replaces the positional-argument signatures of getActiveJobs, getJobsNearLocation,
+ * getUrgentJobs, and getTodayJobs with a single, self-documenting options object.
+ */
+export interface QueryJobsOptions {
+  /** Query mode — determines which extra conditions and ordering are applied */
+  mode?: "list" | "nearby" | "urgent" | "today";
+
+  // ── Geo (mode="nearby" only) ────────────────────────────────────────────────
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
+
+  // ── Taxonomy filters ────────────────────────────────────────────────────────
+  /** Single category — ignored when `categories` is provided */
+  category?: string;
+  /** Multi-category filter — takes precedence over `category` */
+  categories?: string[];
+  /** Single city — ignored when `cities` is provided */
+  city?: string;
+  /** Multi-city filter — takes precedence over `city` */
+  cities?: string[];
+
+  // ── Date / time filters ─────────────────────────────────────────────────────
+  /**
+   * Preset or explicit date:
+   * "today" | "tomorrow" | "this_week" | "YYYY-MM-DD" | "YYYY-MM-DD:YYYY-MM-DD"
+   */
+  dateFilter?: string;
+  /** Day-of-week filter: JS convention 0=Sun … 6=Sat */
+  dayOfWeek?: number[];
+
+  // ── Pagination ──────────────────────────────────────────────────────────────
+  limit?: number;
+  offset?: number;
+
+  // ── Age gate ────────────────────────────────────────────────────────────────
+  /**
+   * Worker's age in years.  When provided, jobs whose `minAge` exceeds this
+   * value are excluded from results.  Pass `null` to skip the filter.
+   */
+  workerAge?: number | null;
+}
+
+/** Return type for list/urgent/today-mode queries (no distance column) */
+export type QueryJobsListResult = { rows: (typeof jobs.$inferSelect)[]; total: number };
+/** Return type for nearby-mode queries (includes computed distance column) */
+export type QueryJobsNearbyResult = { rows: Array<Record<string, unknown> & { distance: number }>; total: number };
+
+/**
+ * Single entry point for all job-listing queries.
+ *
+ * - mode="list"   → getActiveJobs behaviour  (default)
+ * - mode="nearby" → getJobsNearLocation behaviour  (requires lat/lng/radiusKm)
+ * - mode="urgent" → getUrgentJobs behaviour
+ * - mode="today"  → getTodayJobs behaviour
+ *
+ * All modes support the shared taxonomy, date, pagination, and workerAge filters.
+ */
+export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListResult | QueryJobsNearbyResult> {
+  const {
+    mode = "list",
+    lat, lng, radiusKm = 10,
+    category, categories, city, cities,
+    dateFilter, dayOfWeek,
+    limit = 50, offset = 0,
+    workerAge,
+  } = opts;
+
   const db = await getDb();
   if (!db) return { rows: [], total: 0 };
   await expireOldJobs();
-  const conditions = [or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!];
-  // Multi-category filter takes precedence over single category
+
+  // ── Base status condition ───────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const conditions: any[] = [
+    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+  ];
+
+  // ── Mode-specific conditions ────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let distanceExpr: any = null;
+
+  if (mode === "urgent") {
+    conditions.push(eq(jobs.isUrgent, true));
+  }
+
+  if (mode === "today") {
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    conditions.push(
+      or(
+        and(gte(jobs.startDateTime, now), lte(jobs.startDateTime, in24h))!,
+        eq(jobs.startTime, "today"),
+      )!
+    );
+  }
+
+  if (mode === "nearby") {
+    if (lat == null || lng == null) throw new Error("queryJobs: lat and lng are required for mode=nearby");
+    const radiusMeters = radiusKm * 1000;
+    const userPoint = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
+    distanceExpr = sql<number>`
+      ROUND(
+        (ST_Distance(
+          ${jobs.location}::geography,
+          ${userPoint}
+        ) / 1000.0)::numeric,
+        2
+      )
+    `;
+    conditions.push(
+      sql`(
+        (${jobs.location} IS NOT NULL AND ST_DWithin(${jobs.location}::geography, ${userPoint}, ${radiusMeters}))
+        OR
+        (${jobs.location} IS NULL AND (
+          6371 * acos(
+            cos(radians(${lat})) * cos(radians(${jobs.latitude}::float8))
+            * cos(${jobs.longitude}::float8 * pi()/180 - radians(${lng}))
+            + sin(radians(${lat})) * sin(radians(${jobs.latitude}::float8))
+          )
+        ) <= ${radiusKm})
+      )`
+    );
+  }
+
+  // ── Taxonomy filters ────────────────────────────────────────────────────────
   const effectiveCategories = categories && categories.length > 0
     ? categories
     : (category && category !== "all" ? [category] : []);
   if (effectiveCategories.length === 1) {
     conditions.push(eq(jobs.category, effectiveCategories[0] as string));
   } else if (effectiveCategories.length > 1) {
-    conditions.push(inArray(jobs.category, effectiveCategories as string[])); // multi-category
+    conditions.push(inArray(jobs.category, effectiveCategories as string[]));
   }
-  // Multi-city filter takes precedence over single city
+
   const effectiveCities = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
   if (effectiveCities.length === 1) {
     conditions.push(eq(jobs.city, effectiveCities[0]));
   } else if (effectiveCities.length > 1) {
     conditions.push(inArray(jobs.city, effectiveCities));
   }
-  if (dateFilter) {
+
+  // ── Date filter ─────────────────────────────────────────────────────────────
+  // mode="today" already adds its own startDateTime window; skip jobDate filter for it.
+  if (dateFilter && mode !== "today") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = today.toISOString().slice(0, 10);
@@ -694,15 +812,14 @@ export async function getActiveJobs(
       weekEnd.setDate(weekEnd.getDate() + 7);
       conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
     } else if (dateFilter.includes(":")) {
-      // Date range: "YYYY-MM-DD:YYYY-MM-DD"
       const [from, to] = dateFilter.split(":");
       conditions.push(sql`${jobs.jobDate} >= ${from} AND ${jobs.jobDate} <= ${to}`);
     } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) {
-      // Specific date: "YYYY-MM-DD"
       conditions.push(eq(jobs.jobDate, dateFilter));
     }
   }
-  // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat
+
+  // ── Day-of-week filter ──────────────────────────────────────────────────────
   if (dayOfWeek && dayOfWeek.length > 0) {
     conditions.push(
       or(
@@ -711,7 +828,56 @@ export async function getActiveJobs(
       )!
     );
   }
+
+  // ── Age gate filter ─────────────────────────────────────────────────────────
+  // Exclude jobs whose minAge requirement exceeds the worker's age.
+  // When workerAge is null/undefined the filter is skipped (guest or no birth date).
+  if (workerAge != null) {
+    conditions.push(
+      or(
+        isNull(jobs.minAge),
+        sql`${jobs.minAge} <= ${workerAge}`
+      )!
+    );
+  }
+
   const whereClause = and(...conditions);
+
+  // ── Execute query ───────────────────────────────────────────────────────────
+  if (mode === "nearby" && distanceExpr) {
+    const selectFields = {
+      id: jobs.id, title: jobs.title, description: jobs.description,
+      category: jobs.category, address: jobs.address, city: jobs.city,
+      latitude: jobs.latitude, longitude: jobs.longitude,
+      salary: jobs.salary, salaryType: jobs.salaryType,
+      contactPhone: jobs.contactPhone, contactName: jobs.contactName,
+      businessName: jobs.businessName, workingHours: jobs.workingHours,
+      startTime: jobs.startTime, startDateTime: jobs.startDateTime,
+      isUrgent: jobs.isUrgent, isLocalBusiness: jobs.isLocalBusiness,
+      workersNeeded: jobs.workersNeeded, activeDuration: jobs.activeDuration,
+      expiresAt: jobs.expiresAt, postedBy: jobs.postedBy,
+      status: jobs.status, reportCount: jobs.reportCount,
+      jobTags: jobs.jobTags, createdAt: jobs.createdAt, updatedAt: jobs.updatedAt,
+      jobDate: jobs.jobDate, workStartTime: jobs.workStartTime, workEndTime: jobs.workEndTime,
+      minAge: jobs.minAge, imageUrls: jobs.imageUrls,
+      distance: distanceExpr,
+    };
+    const [rows, countResult] = await Promise.all([
+      db.select(selectFields).from(jobs).where(whereClause).orderBy(distanceExpr, desc(jobs.createdAt)).limit(limit).offset(offset),
+      db.select({ total: count() }).from(jobs).where(whereClause),
+    ]);
+    return { rows: rows as Array<Record<string, unknown> & { distance: number }>, total: countResult[0]?.total ?? 0 };
+  }
+
+  if (mode === "today") {
+    const [rows, countResult] = await Promise.all([
+      db.select().from(jobs).where(whereClause).orderBy(jobs.startDateTime, desc(jobs.createdAt)).limit(limit).offset(offset),
+      db.select({ total: count() }).from(jobs).where(whereClause),
+    ]);
+    return { rows, total: countResult[0]?.total ?? 0 };
+  }
+
+  // mode="list" | "urgent"
   const [rows, countResult] = await Promise.all([
     db.select().from(jobs).where(whereClause).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset),
     db.select({ total: count() }).from(jobs).where(whereClause),
@@ -719,6 +885,24 @@ export async function getActiveJobs(
   return { rows, total: countResult[0]?.total ?? 0 };
 }
 
+// ── Backward-compatible wrappers (keep existing call-sites and tests working) ──
+
+/** @deprecated Use queryJobs({ mode: "list", ... }) directly */
+export async function getActiveJobs(
+  limit = 50,
+  category?: string,
+  city?: string,
+  dateFilter?: "today" | "tomorrow" | "this_week" | string,
+  offset = 0,
+  dayOfWeek?: number[],
+  cities?: string[],
+  categories?: string[],
+  workerAge?: number | null,
+): Promise<QueryJobsListResult> {
+  return queryJobs({ mode: "list", limit, category, city, dateFilter, offset, dayOfWeek, cities, categories, workerAge }) as Promise<QueryJobsListResult>;
+}
+
+/** @deprecated Use queryJobs({ mode: "nearby", ... }) directly */
 export async function getJobsNearLocation(
   lat: number,
   lng: number,
@@ -726,135 +910,36 @@ export async function getJobsNearLocation(
   category?: string,
   limit = 50,
   city?: string,
-  dateFilter?: "today" | "tomorrow" | "this_week" | string, // also accepts "YYYY-MM-DD" or "YYYY-MM-DD:YYYY-MM-DD"
+  dateFilter?: "today" | "tomorrow" | "this_week" | string,
   offset = 0,
-  dayOfWeek?: number[], // 0=Sun, 1=Mon, ..., 6=Sat (JS convention)
-  cities?: string[],    // multi-city filter (takes precedence over city when provided)
-  categories?: string[] // multi-category filter (takes precedence over category when provided)
-): Promise<{ rows: Array<Record<string, unknown> & { distance: number }>; total: number }> {
-  const db = await getDb();
-  if (!db) return { rows: [], total: 0 };
-  await expireOldJobs();
-
-  // PostGIS geography-based distance in km.
-  // ST_DWithin on geography uses metres; GIST index on jobs.location is used automatically.
-  const radiusMeters = radiusKm * 1000;
-  const userPoint = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
-  const distanceExpr = sql<number>`
-    ROUND(
-      (ST_Distance(
-        ${jobs.location}::geography,
-        ${userPoint}
-      ) / 1000.0)::numeric,
-      2
-    )
-  `;
-  const conditions = [
-    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-    // Use ST_DWithin for index-accelerated radius filter; fall back for NULL location rows
-    sql`(
-      (${jobs.location} IS NOT NULL AND ST_DWithin(${jobs.location}::geography, ${userPoint}, ${radiusMeters}))
-      OR
-      (${jobs.location} IS NULL AND (
-        6371 * acos(
-          cos(radians(${lat})) * cos(radians(${jobs.latitude}::float8))
-          * cos(${jobs.longitude}::float8 * pi()/180 - radians(${lng}))
-          + sin(radians(${lat})) * sin(radians(${jobs.latitude}::float8))
-        )
-      ) <= ${radiusKm})
-    )`,
-  ];
-  // Multi-category filter takes precedence over single category
-  const effectiveCategoriesNear = categories && categories.length > 0
-    ? categories
-    : (category && category !== "all" ? [category] : []);
-  if (effectiveCategoriesNear.length === 1) {
-    conditions.push(eq(jobs.category, effectiveCategoriesNear[0] as string));
-  } else if (effectiveCategoriesNear.length > 1) {
-    conditions.push(inArray(jobs.category, effectiveCategoriesNear as string[]));
-  }
-  // Multi-city filter takes precedence over single city
-  const effectiveCitiesNear = cities && cities.length > 0 ? cities : (city && city !== "all" ? [city] : []);
-  if (effectiveCitiesNear.length === 1) {
-    conditions.push(eq(jobs.city, effectiveCitiesNear[0]));
-  } else if (effectiveCitiesNear.length > 1) {
-    conditions.push(inArray(jobs.city, effectiveCitiesNear));
-  }
-  if (dateFilter) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().slice(0, 10);
-    if (dateFilter === "today") {
-      conditions.push(eq(jobs.jobDate, todayStr));
-    } else if (dateFilter === "tomorrow") {
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      conditions.push(eq(jobs.jobDate, tomorrow.toISOString().slice(0, 10)));
-    } else if (dateFilter === "this_week") {
-      const weekEnd = new Date(today);
-      weekEnd.setDate(weekEnd.getDate() + 7);
-      conditions.push(sql`${jobs.jobDate} >= ${todayStr} AND ${jobs.jobDate} <= ${weekEnd.toISOString().slice(0, 10)}`);
-    } else if (dateFilter.includes(":")) {
-      const [from, to] = dateFilter.split(":");
-      conditions.push(sql`${jobs.jobDate} >= ${from} AND ${jobs.jobDate} <= ${to}`);
-    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) {
-      conditions.push(eq(jobs.jobDate, dateFilter));
-    }
-  }
-  // dayOfWeek filter: JS 0=Sun..6=Sat → PostgreSQL EXTRACT(DOW) 0=Sun..6=Sat
-  if (dayOfWeek && dayOfWeek.length > 0) {
-    conditions.push(
-      or(
-        isNull(jobs.jobDate),
-        sql`EXTRACT(DOW FROM ${jobs.jobDate}::date) IN (${sql.join(dayOfWeek.map(d => sql`${d}`), sql`, `)})`
-      )!
-    );
-  }
-
-  const selectFields = {
-    id: jobs.id,
-    title: jobs.title,
-    description: jobs.description,
-    category: jobs.category,
-    address: jobs.address,
-    city: jobs.city,
-    latitude: jobs.latitude,
-    longitude: jobs.longitude,
-    salary: jobs.salary,
-    salaryType: jobs.salaryType,
-    contactPhone: jobs.contactPhone,
-    contactName: jobs.contactName,
-    businessName: jobs.businessName,
-    workingHours: jobs.workingHours,
-    startTime: jobs.startTime,
-    workersNeeded: jobs.workersNeeded,
-    activeDuration: jobs.activeDuration,
-    expiresAt: jobs.expiresAt,
-    postedBy: jobs.postedBy,
-    status: jobs.status,
-    reportCount: jobs.reportCount,
-    jobTags: jobs.jobTags,
-    createdAt: jobs.createdAt,
-    updatedAt: jobs.updatedAt,
-    jobDate: jobs.jobDate,
-    workStartTime: jobs.workStartTime,
-    workEndTime: jobs.workEndTime,
-    distance: distanceExpr,
-  };
-  const whereClause = and(...conditions);
-  const [rows, countResult] = await Promise.all([
-    db.select(selectFields).from(jobs).where(whereClause).orderBy(distanceExpr, desc(jobs.createdAt)).limit(limit).offset(offset),
-    db.select({ total: count() }).from(jobs).where(whereClause),
-  ]);
-  return { rows: rows as Array<Record<string, unknown> & { distance: number }>, total: countResult[0]?.total ?? 0 };
+  dayOfWeek?: number[],
+  cities?: string[],
+  categories?: string[],
+  workerAge?: number | null,
+): Promise<QueryJobsNearbyResult> {
+  return queryJobs({ mode: "nearby", lat, lng, radiusKm, category, limit, city, dateFilter, offset, dayOfWeek, cities, categories, workerAge }) as Promise<QueryJobsNearbyResult>;
 }
+
+/** @deprecated Use queryJobs({ mode: "urgent", ... }) directly */
+export async function getUrgentJobs(limit = 20, category?: string, workerAge?: number | null): Promise<(typeof jobs.$inferSelect)[]> {
+  const result = await queryJobs({ mode: "urgent", limit, category, workerAge }) as QueryJobsListResult;
+  return result.rows;
+}
+
+/** @deprecated Use queryJobs({ mode: "today", ... }) directly */
+export async function getTodayJobs(limit = 50, category?: string, workerAge?: number | null): Promise<(typeof jobs.$inferSelect)[]> {
+  const result = await queryJobs({ mode: "today", limit, category, workerAge }) as QueryJobsListResult;
+  return result.rows;
+}
+
+
+// ─── Job CRUD helpers ───────────────────────────────────────────────────────
 
 export async function getMyJobs(userId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(jobs).where(eq(jobs.postedBy, userId)).orderBy(desc(jobs.createdAt));
 }
-
 /**
  * Returns the employer's jobs enriched with a pendingCount of applications awaiting review.
  */
@@ -866,28 +951,15 @@ export async function getMyJobsWithPendingCounts(userId: number) {
     .from(jobs)
     .where(eq(jobs.postedBy, userId))
     .orderBy(desc(jobs.createdAt));
-
   if (myJobsList.length === 0) return [];
-
-  // Count pending applications per job in one query
   const counts = await db
-    .select({
-      jobId: applications.jobId,
-      pendingCount: count(),
-    })
+    .select({ jobId: applications.jobId, pendingCount: count() })
     .from(applications)
-    .where(
-      and(
-        eq(applications.status, "pending"),
-        inArray(applications.jobId, myJobsList.map((j) => j.id))
-      )
-    )
+    .where(and(eq(applications.status, "pending"), inArray(applications.jobId, myJobsList.map((j) => j.id))))
     .groupBy(applications.jobId);
-
   const countMap = new Map(counts.map((c) => [c.jobId, c.pendingCount]));
   return myJobsList.map((j) => ({ ...j, pendingCount: countMap.get(j.id) ?? 0 }));
 }
-
 /**
  * Returns all applications submitted by a worker, with job info.
  */
@@ -916,7 +988,6 @@ export async function getMyApplications(workerId: number) {
     .where(eq(applications.workerId, workerId))
     .orderBy(desc(applications.createdAt));
 }
-
 /** Returns the set of job IDs the worker has already applied to */
 export async function getAppliedJobIds(workerId: number): Promise<number[]> {
   const db = await getDb();
@@ -927,65 +998,36 @@ export async function getAppliedJobIds(workerId: number): Promise<number[]> {
     .where(eq(applications.workerId, workerId));
   return rows.map((r) => r.jobId);
 }
-
 export async function updateJobStatus(id: number, userId: number, status: Job["status"]) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(jobs).set({ status }).where(and(eq(jobs.id, id), eq(jobs.postedBy, userId)));
 }
-
 export async function deleteJob(id: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(jobs).where(and(eq(jobs.id, id), eq(jobs.postedBy, userId)));
 }
-
 export async function updateJob(id: number, userId: number, data: Partial<InsertJob>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(jobs).set(data).where(and(eq(jobs.id, id), eq(jobs.postedBy, userId)));
 }
-
-/** Get urgent jobs (isUrgent=true), sorted by createdAt desc */
-export async function getUrgentJobs(limit = 20, category?: string) {
-  const db = await getDb();
-  if (!db) return [];
-  await expireOldJobs();
-  const conditions = [
-    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-    eq(jobs.isUrgent, true),
-  ];
-  if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as string));
-  }
-  return db
-    .select()
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(desc(jobs.createdAt))
-    .limit(limit);
-}
-
 /** Mark a job as filled by the owner */
 export async function markJobFilled(jobId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db
     .update(jobs)
-    .set({
-      status: sql`'closed'::job_status`,
-      closedReason: sql`'found_worker'::closed_reason`,
-    })
+    .set({ status: sql`'closed'::job_status`, closedReason: sql`'found_worker'::closed_reason` })
     .where(and(eq(jobs.id, jobId), eq(jobs.postedBy, userId)));
 }
-
 /** Send reminder for a job (mark reminderSentAt) */
 export async function markReminderSent(jobId: number) {
   const db = await getDb();
   if (!db) return;
   await db.update(jobs).set({ reminderSentAt: new Date() }).where(eq(jobs.id, jobId));
 }
-
 /** Get active jobs that need a reminder (created 6+ hours ago, no reminder sent yet) */
 export async function getJobsNeedingReminder() {
   const db = await getDb();
@@ -994,34 +1036,24 @@ export async function getJobsNeedingReminder() {
   return db
     .select()
     .from(jobs)
-    .where(
-      and(
-        eq(jobs.status, "active"),
-        lte(jobs.createdAt, sixHoursAgo),
-        sql`${jobs.reminderSentAt} IS NULL`
-      )
-    )
+    .where(and(eq(jobs.status, "active"), lte(jobs.createdAt, sixHoursAgo), sql`${jobs.reminderSentAt} IS NULL`))
     .limit(100);
 }
 
 // ─── Worker Availability ──────────────────────────────────────────────────────
-
 /** Set or update a worker's availability (upsert by userId) */
 export async function setWorkerAvailable(data: InsertWorkerAvailability) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Delete old record for this user first
   await db.delete(workerAvailability).where(eq(workerAvailability.userId, data.userId));
   await db.insert(workerAvailability).values(data);
 }
-
 /** Remove a worker's availability */
 export async function setWorkerUnavailable(userId: number) {
   const db = await getDb();
   if (!db) return;
   await db.delete(workerAvailability).where(eq(workerAvailability.userId, userId));
 }
-
 /** Get current availability record for a user */
 export async function getWorkerAvailability(userId: number) {
   const db = await getDb();
@@ -1034,14 +1066,11 @@ export async function getWorkerAvailability(userId: number) {
     .limit(1);
   return result[0] ?? null;
 }
-
 /** Get available workers near a location, sorted by distance */
 export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50) {
   const db = await getDb();
   if (!db) return [];
   const now = new Date();
-
-  // PostGIS geography-based distance; GIST index on worker_availability.location used automatically.
   const radiusMeters = radiusKm * 1000;
   const userPoint = sql`ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
   const distanceExpr = sql<number>`
@@ -1053,7 +1082,6 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
       2
     )
   `;
-
   return db
     .select({
       id: workerAvailability.id,
@@ -1070,41 +1098,8 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
     })
     .from(workerAvailability)
     .innerJoin(users, eq(workerAvailability.userId, users.id))
-    .where(
-      and(
-        gte(workerAvailability.availableUntil, now),
-        sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`
-      )
-    )
+    .where(and(gte(workerAvailability.availableUntil, now), sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`))
     .orderBy(distanceExpr)
-    .limit(limit);
-}
-
-/** Get jobs whose startDateTime is within the next 24 hours (or startTime='today') */
-export async function getTodayJobs(limit = 50, category?: string) {
-  const db = await getDb();
-  if (!db) return [];
-  await expireOldJobs();
-  const now = new Date();
-  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-  const conditions = [
-    or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-    or(
-      // Exact timestamp within next 24 hours
-      and(gte(jobs.startDateTime, now), lte(jobs.startDateTime, in24h))!,
-      // Legacy enum value "today"
-      eq(jobs.startTime, "today"),
-    )!,
-  ];
-  if (category && category !== "all") {
-    conditions.push(eq(jobs.category, category as string));
-  }
-  return db
-    .select()
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(jobs.startDateTime, desc(jobs.createdAt))
     .limit(limit);
 }
 

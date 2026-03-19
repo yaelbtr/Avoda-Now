@@ -2456,3 +2456,16 @@
 - [x] Frontend: age gate warning in WorkerAvailability (HomeWorker duration dialog) when end time > 22:00 for minors
 - [x] Frontend: legal link in BirthDateModal — "תנאי עבודה לנוער" → חוק עבודת נוער
 - [x] Tests: meetsMinAgeRequirement + minAgeLabel tests added — 681/681 passing
+
+## Auto minAge Filter in Job Search (Round 3)
+- [x] DB helpers: workerAge param added to getActiveJobs, getJobsNearLocation, getUrgentJobs, getTodayJobs (backward-compat)
+- [x] Backend: resolve workerAge from ctx.user in list, search, nearby, listToday, listUrgent procedures
+- [x] Frontend: filtering is server-side — no frontend changes needed (ctx.user is resolved automatically)
+- [x] Tests: queryJobs age-gate predicate tests added to ageUtils.test.ts
+
+## DB Refactor — Unified queryJobs() (Round 3b)
+- [x] DB: thin wrappers over queryJobs() for getActiveJobs, getJobsNearLocation, getUrgentJobs, getTodayJobs
+- [x] DB: queryJobs accepts optional workerAge and filters WHERE minAge IS NULL OR minAge <= workerAge
+- [x] Backend: all 5 call-sites in routers.ts updated to resolve and pass workerAge
+- [x] Frontend: server-side only — no client changes needed
+- [x] Tests: 689/689 passing (postgis-radius + contactphone.privacy mocks updated)

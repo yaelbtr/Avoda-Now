@@ -47,6 +47,8 @@ vi.mock("./db", () => ({
   getNotificationPrefs: vi.fn().mockResolvedValue("none"),
   createApplication: vi.fn().mockResolvedValue({ id: 1 }),
   getApplicationByWorkerAndJob: vi.fn().mockResolvedValue(null),
+  // Age gate: return null so workerAge=null and minAge filter is skipped
+  getWorkerBirthDate: vi.fn().mockResolvedValue(null),
 }));
 
 function makeCtx(user: { id: number; role: string; phone?: string | null } | null = null) {

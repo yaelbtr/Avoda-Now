@@ -41,6 +41,8 @@ vi.mock("./db", () => ({
   associateWorkerWithRegion: vi.fn().mockResolvedValue(undefined),
   checkOutdatedConsents: vi.fn().mockResolvedValue([]),
   recordConsent: vi.fn().mockResolvedValue(undefined),
+  // Age gate: return null (no birth date) so workerAge=null and filter is skipped
+  getWorkerBirthDate: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("./sms", () => ({
@@ -138,7 +140,8 @@ describe("PostGIS Radius Search — jobs.search procedure", () => {
       0,         // offset
       undefined, // dayOfWeek
       undefined, // cities
-      undefined  // categories
+      undefined, // categories
+      null       // workerAge (no birth date → null)
     );
   });
 

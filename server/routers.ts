@@ -118,6 +118,7 @@ import {
   getWorkerBirthDate,
   getWorkersMinorStatus,
   logLegalAcknowledgement,
+  queryJobs,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -487,10 +488,14 @@ const jobsRouter = router({
       /** Day-of-week filter: JS convention 0=Sun, 1=Mon, ..., 6=Sat */
       dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
     }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories);
+      // Auto-filter by worker age when the caller is an authenticated worker
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories, workerAge);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -513,15 +518,19 @@ const jobsRouter = router({
       dayOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
     })
   )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
-      let { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories);
+      // Auto-filter by worker age when the caller is an authenticated worker
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+      let { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories, workerAge);
       // Fallback: when no jobs found in user's radius, expand to 100 km and show nearest jobs.
       // Only applies to page 1 (no point falling back on subsequent pages).
       let isFallback = false;
       if (total === 0 && input.page === 1 && !input.dateFilter && !input.city && !(input.cities?.length) && !input.category && !(input.categories?.length)) {
-        const fallback = await getJobsNearLocation(input.lat, input.lng, 100, undefined, limit, undefined, undefined, 0, undefined, undefined, undefined);
+        const fallback = await getJobsNearLocation(input.lat, input.lng, 100, undefined, limit, undefined, undefined, 0, undefined, undefined, undefined, workerAge);
         if (fallback.total > 0) {
           rows = fallback.rows;
           total = fallback.total;
@@ -768,7 +777,10 @@ const jobsRouter = router({
   listToday: publicProcedure
     .input(z.object({ category: z.string().optional(), limit: z.number().optional() }))
     .query(async ({ input, ctx }) => {
-      const jobs = await getTodayJobs(input.limit ?? 50, input.category);
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+      const jobs = await getTodayJobs(input.limit ?? 50, input.category, workerAge);
       // Never expose contactPhone to workers or unauthenticated users
       return jobs.map(j => ({ ...j, contactPhone: null }));
     }),
@@ -777,7 +789,10 @@ const jobsRouter = router({
   listUrgent: publicProcedure
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input, ctx }) => {
-      const jobs = await getUrgentJobs(input.limit ?? 20);
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+      const jobs = await getUrgentJobs(input.limit ?? 20, undefined, workerAge);
       // Never expose contactPhone to workers or unauthenticated users
       return jobs.map(j => ({ ...j, contactPhone: null }));
     }),

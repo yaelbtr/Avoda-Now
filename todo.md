@@ -2508,3 +2508,8 @@
 - [x] Fix: confirmation dialog in WorkerProfile truncated by mobile nav bar — add pb-safe / padding-bottom
 - [x] Backend: getBirthdateChanges admin procedure (paginated, with user name/email)
 - [x] Frontend: birthdate_changes audit table in Admin Panel (user, old date, new date, changed_at, IP)
+
+## Bug Fix — MobileBottomNav "חיפוש עבודה" opens profile modal (Round 3h)
+- [x] Diagnose: find conflicting click handler between MobileBottomNav nav item and FindJobs profile modal
+- [x] Fix: filterInitialized now backed by sessionStorage so it persists across remounts
+- [x] Test: 689/689 tests passing, TypeScript 0 errors

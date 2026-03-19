@@ -639,7 +639,12 @@ export default function FindJobs() {
 
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
   const { loading: authLoading } = useAuth();
-  const filterInitialized = useRef(false);
+  // Use sessionStorage so the "auto-open filter" only fires once per browser session,
+  // not on every remount (e.g. navigating away and back via the bottom nav).
+  const FILTER_INIT_KEY = "fj_filter_initialized";
+  const filterInitialized = useRef(
+    typeof sessionStorage !== "undefined" && sessionStorage.getItem(FILTER_INIT_KEY) === "1"
+  );
 
   // Invalidate profile data when returning from the profile page so the
   // completion icon disappears immediately if the profile was updated.
@@ -665,11 +670,15 @@ export default function FindJobs() {
   useEffect(() => {
     if (filterInitialized.current) return;
     if (authLoading) return;
-    if (!isAuthenticated) { filterInitialized.current = true; setFilterOpen(true); return; }
+    const markInitialized = () => {
+      filterInitialized.current = true;
+      try { sessionStorage.setItem(FILTER_INIT_KEY, "1"); } catch {}
+    };
+    if (!isAuthenticated) { markInitialized(); setFilterOpen(true); return; }
     if (profileQuery.isLoading) return;
     const profile = profileQuery.data;
     const hasProfile = (profile?.preferredCategories && profile.preferredCategories.length > 0) || !!profile?.preferredCity;
-    filterInitialized.current = true;
+    markInitialized();
     if (!hasProfile) setFilterOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);

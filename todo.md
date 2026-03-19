@@ -2413,3 +2413,28 @@
 - [x] Bug: Footer uses sm: breakpoints (sm:flex-row, sm:grid-cols-2) that cause incorrect layout in 420px wrapper — replaced with flex-col and grid-cols-1
 - [x] Feature: add GenderDisclaimer shared component with "לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים" — placed above MobileBottomNav in App.tsx, visible on all screens mobile+desktop
 - [x] Bug: GenderDisclaimer hidden by fixed MobileBottomNav on mobile — moved inside <main> before </AnimatePresence>, pb-16 → pb-24 to clear both disclaimer and bottom nav
+- [ ] DB: add birth_date (date) to workerProfiles table
+- [ ] DB: verify/add end_time column to jobs table
+- [ ] DB: create legal_acknowledgements table (user_id, worker_id, job_id, ack_type, approved, created_at)
+- [ ] Backend: calcAge(birth_date) + isMinor(age) utility in shared/ageUtils.ts
+- [ ] Backend: job visibility filter — minors see only jobs with end_time <= 22:00
+- [ ] Backend: saveBirthDate tRPC procedure (worker only, validates age >= 16)
+- [ ] Backend: log legal_acknowledgement when worker submits birth_date modal
+- [ ] Frontend: BirthDateModal shared component (date picker + declaration checkbox)
+- [ ] Frontend: apply-job gate — check birth_date before applying, show BirthDateModal if missing, block if age < 16 or job end_time > 22:00 for minors
+- [ ] Frontend: employer warning in PostJob when end_time > 22:00
+- [ ] Frontend: minor badge on PublicWorkerProfile ("עובד קטין (גיל X)")
+- [ ] Tests: vitest for age calculation, is_minor flag, job visibility filter
+
+## Minor Worker Age Verification (Completed)
+- [x] DB: add birthDate (date, nullable) to users table
+- [x] DB: add legal_acknowledgements table (userId, type, jobId, ipAddress, userAgent, createdAt)
+- [x] DB: db:push migration applied
+- [x] Backend: shared/ageUtils.ts — calcAge, isMinor, isTooYoung, isJobAccessibleToMinor, shouldWarnLateJob (single source of truth)
+- [x] Backend: saveBirthDate, getWorkerBirthDate, logLegalAcknowledgement helpers in db.ts
+- [x] Backend: saveBirthDate tRPC procedure (validates age >= 16, saves birthDate, logs legal ack)
+- [x] Backend: getBirthDateInfo tRPC procedure (returns birthDate, age, isMinor)
+- [x] Backend: checkJobAgeAccess tRPC procedure (returns accessible, reason)
+- [x] Frontend: BirthDateModal shared component (date picker + declaration checkbox + error handling)
+- [x] Frontend: age-gate in FindJobs.tsx — no birth_date → show BirthDateModal before applying; after save → proceed with apply
+- [x] Tests: server/ageUtils.test.ts — 34 test files, 666 tests all passing

@@ -35,6 +35,8 @@ import {
   userConsents,
   UserConsent,
   InsertUserConsent,
+  legalAcknowledgements,
+  LegalAcknowledgement,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2847,4 +2849,56 @@ export async function completeGoogleRegistration(
   await db.update(users)
     .set(updateSet)
     .where(and(eq(users.id, userId), isNull(users.termsAcceptedAt)));
+}
+
+// ─── Minor Worker / Age Verification ─────────────────────────────────────────
+
+/**
+ * Save a worker's birth date. Validates that the date is a valid YYYY-MM-DD
+ * string. Does NOT enforce age rules here — that is the router's responsibility.
+ */
+export async function saveBirthDate(userId: number, birthDate: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ birthDate }).where(eq(users.id, userId));
+}
+
+/**
+ * Get a worker's birth date string (YYYY-MM-DD) or null if not set.
+ */
+export async function getWorkerBirthDate(userId: number): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({ birthDate: users.birthDate })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return result[0]?.birthDate ?? null;
+}
+
+/**
+ * Insert a legal acknowledgement record.
+ * Used when a worker confirms their birth date is accurate.
+ */
+export async function logLegalAcknowledgement(params: {
+  userId: number;
+  workerId?: number;
+  jobId?: number;
+  ackType: string;
+  approved?: boolean;
+}): Promise<LegalAcknowledgement> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .insert(legalAcknowledgements)
+    .values({
+      userId: params.userId,
+      workerId: params.workerId ?? null,
+      jobId: params.jobId ?? null,
+      ackType: params.ackType,
+      approved: params.approved ?? true,
+    })
+    .returning();
+  return result[0];
 }

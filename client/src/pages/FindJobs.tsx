@@ -28,6 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import type { DateRange } from "react-day-picker";
 import BrandLoader from "@/components/BrandLoader";
 import { AppButton } from "@/components/AppButton";
+import { BirthDateModal } from "@/components/BirthDateModal";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -480,6 +481,11 @@ export default function FindJobs() {
   const [selectedDays, setSelectedDays] = useState<string[]>(_savedFilters?.selectedDays ?? []);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
+  // Age-gate: pending apply info while BirthDateModal is open
+  const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
+  const [pendingApplyJobId, setPendingApplyJobId] = useState<number | null>(null);
+  const [pendingApplyMessage, setPendingApplyMessage] = useState<string | undefined>(undefined);
+  const [pendingApplyOrigin, setPendingApplyOrigin] = useState<string>("");
   const [bottomSheetJob, setBottomSheetJob] = useState<null | {
     id: number; title: string; category: string; address: string; city?: string | null;
     salary?: string | null; salaryType: string; contactPhone: string | null | undefined;
@@ -780,9 +786,39 @@ export default function FindJobs() {
     onSuccess: () => { utilsFj.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
     onError: (e: { message: string }) => toast.error(e.message),
   });
+  // Age-gate: fetch birth date info once (cached 5 min)
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const handleApplyFj = (jobId: number, message: string | undefined, origin: string) => {
     if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר"); return; }
+    const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
+    if (!hasBirthDate) {
+      // No birth date on record — show modal to collect it before applying
+      setPendingApplyJobId(jobId);
+      setPendingApplyMessage(message);
+      setPendingApplyOrigin(origin);
+      setBirthDateModalOpen(true);
+      return;
+    }
     applyMutationFj.mutate({ jobId, message, origin });
+  };
+
+  const handleBirthDateSuccess = (_result: { age: number; isMinor: boolean }) => {
+    setBirthDateModalOpen(false);
+    // After birth date saved, proceed with the pending apply
+    if (pendingApplyJobId !== null) {
+      applyMutationFj.mutate({
+        jobId: pendingApplyJobId,
+        message: pendingApplyMessage,
+        origin: pendingApplyOrigin,
+      });
+    }
+    setPendingApplyJobId(null);
+    setPendingApplyMessage(undefined);
+    setPendingApplyOrigin("");
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
     if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
@@ -1682,6 +1718,12 @@ export default function FindJobs() {
       </AnimatePresence>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={() => { setBirthDateModalOpen(false); setPendingApplyJobId(null); }}
+        onSuccess={handleBirthDateSuccess}
+        jobId={pendingApplyJobId ?? undefined}
+      />
       <JobBottomSheet
         job={bottomSheetJob}
         open={bottomSheetOpen}

@@ -205,6 +205,12 @@ export const users = pgTable("users", {
   referredBy: integer("referredBy"),
   /** Timestamp when the user accepted the terms of service (null = never accepted / legacy user) */
   termsAcceptedAt: timestamp("termsAcceptedAt", { withTimezone: true }),
+  /**
+   * Worker's date of birth in YYYY-MM-DD format (e.g. "2008-05-14").
+   * Used to dynamically compute age and is_minor flag at query time.
+   * Workers under 16 are blocked; workers 16-17 see only jobs ending before 22:00.
+   */
+  birthDate: varchar("birthDate", { length: 10 }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -633,3 +639,29 @@ export const userConsents = pgTable(
 );
 export type UserConsent = typeof userConsents.$inferSelect;
 export type InsertUserConsent = typeof userConsents.$inferInsert;
+
+/**
+ * legal_acknowledgements — audit log for legal confirmations.
+ * Currently used to record when a worker submits their birth date
+ * and declares the information is accurate (ack_type = "birth_date_declaration").
+ * Future use: employer confirmation when hiring a minor worker.
+ */
+export const legalAcknowledgements = pgTable("legal_acknowledgements", {
+  id: serial("id").primaryKey(),
+  /** The user who gave the acknowledgement */
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Optional: worker being hired (for employer-side acks) */
+  workerId: integer("worker_id").references(() => users.id, { onDelete: "set null" }),
+  /** Optional: job context */
+  jobId: integer("job_id").references(() => jobs.id, { onDelete: "set null" }),
+  /**
+   * Type of acknowledgement:
+   * - "birth_date_declaration" — worker confirmed their birth date is accurate
+   * - "minor_employment_confirmation" — employer confirmed compliance with Youth Employment Law
+   */
+  ackType: varchar("ack_type", { length: 64 }).notNull(),
+  approved: boolean("approved").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+export type LegalAcknowledgement = typeof legalAcknowledgements.$inferSelect;
+export type InsertLegalAcknowledgement = typeof legalAcknowledgements.$inferInsert;

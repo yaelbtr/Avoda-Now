@@ -114,6 +114,9 @@ import {
   getUserConsents,
   completeGoogleRegistration,
   hasRequiredConsents,
+  saveBirthDate,
+  getWorkerBirthDate,
+  logLegalAcknowledgement,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -152,6 +155,7 @@ import { notifyOwner } from "./_core/notification";
 import { sendWelcomeEmail } from "./_core/email";
 import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
 import { authLogger, securityLogger, getClientIp } from "./logger";
+import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor } from "@shared/ageUtils";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -1898,9 +1902,83 @@ const userRouter = router({
       );
       return { success: true };
     }),
-});
 
-// ─── Push Notifications Router ─────────────────────────────────────────────
+  /**
+   * Save the current worker's birth date after they confirm the declaration.
+   * Validates:
+   *  - date is a valid YYYY-MM-DD string
+   *  - worker is at least 16 years old
+   * Logs a legal_acknowledgement record on success.
+   */
+  saveBirthDate: protectedProcedure
+    .input(z.object({
+      birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"),
+      jobId: z.number().int().positive().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const age = calcAge(input.birthDate);
+      if (age === null) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "תאריך לידה לא תקין." });
+      }
+      if (isTooYoung(age)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "הרשמה כעובד זמינה מגיל 16 בלבד.",
+        });
+      }
+      await saveBirthDate(ctx.user.id, input.birthDate);
+      await logLegalAcknowledgement({
+        userId: ctx.user.id,
+        jobId: input.jobId,
+        ackType: "birth_date_declaration",
+        approved: true,
+      });
+      return { success: true, age, isMinor: isMinor(age) };
+    }),
+
+  /**
+   * Get the current worker's birth date and computed age/isMinor flags.
+   * Returns null values if birth date has not been set yet.
+   */
+  getBirthDateInfo: protectedProcedure.query(async ({ ctx }) => {
+    const birthDate = await getWorkerBirthDate(ctx.user.id);
+    const age = calcAge(birthDate);
+    return {
+      birthDate,
+      age,
+      isMinor: isMinor(age),
+      isTooYoung: isTooYoung(age),
+    };
+  }),
+
+  /**
+   * Check if a specific job is accessible to the current worker based on age.
+   * Returns { accessible: true } or { accessible: false, reason }.
+   */
+  checkJobAgeAccess: protectedProcedure
+    .input(z.object({ jobId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const birthDate = await getWorkerBirthDate(ctx.user.id);
+      if (!birthDate) {
+        return { accessible: false, reason: "no_birth_date" as const };
+      }
+      const age = calcAge(birthDate);
+      if (age === null || isTooYoung(age)) {
+        return { accessible: false, reason: "too_young" as const };
+      }
+      if (isMinor(age)) {
+        const job = await getJobById(input.jobId);
+        if (!job) {
+          return { accessible: false, reason: "job_not_found" as const };
+        }
+        if (!isJobAccessibleToMinor(job.workEndTime)) {
+          return { accessible: false, reason: "late_end_time" as const };
+        }
+      }
+      return { accessible: true, reason: null };
+    }),
+});
+// ─── Push Notifications Router ──────────────────────────────────────────────
 
 const pushRouter = router({
   /** Subscribe current user to Web Push notifications */

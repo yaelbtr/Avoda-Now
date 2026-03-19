@@ -2402,3 +2402,4 @@
 - [x] UI: increase mobile hero height from 380px to 440px to prevent face cutoff
 - [x] UI: verified mobile hero gradient overlay after 440px height change — absolute inset-0 covers 100% regardless of height, no adjustment needed
 - [x] Content: update hero image alt text to "עובד צעיר מחזיק מטאטא במטבח" (both mobile + desktop img tags)
+- [x] UI: move mobile hero headline above worker's face (top: 44% → 20%), update gradient for upper-area text readability

@@ -2532,3 +2532,6 @@
 - [x] Integrate banner into App.tsx
 - [x] Gate analytics script loading on analyticsConsent
 - [x] Write vitest tests for consent logic (11 tests)
+
+## Design — Cookie Banner AvodaNow Design System (Round 3n)
+- [x] עצב מחדש את CookieConsentBanner לפי שפת העיצוב של AvodaNow (dark nav, glass-modal, AppButton, Heebo)

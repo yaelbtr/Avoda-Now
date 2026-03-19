@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { Home, Lock, ShieldCheck } from "lucide-react";
+import { Home, Lock, ShieldCheck, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
@@ -117,9 +117,9 @@ export default function FindJobsComingSoonOverlay() {
           </span>
         </p>
 
-        {/* Back to home button */}
+        {/* Set alerts button */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/worker-profile?tab=settings")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -137,6 +137,7 @@ export default function FindJobsComingSoonOverlay() {
             boxShadow: "0 4px 16px rgba(60,80,30,0.30)",
             transition: "background 0.18s, transform 0.12s",
             WebkitTapHighlightColor: "transparent",
+            marginBottom: 10,
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.background = "oklch(0.28 0.06 122)")
@@ -151,7 +152,44 @@ export default function FindJobsComingSoonOverlay() {
             (e.currentTarget.style.background = "oklch(0.35 0.08 122)")
           }
         >
-          <Home size={17} />
+          <Bell size={17} />
+          הגדר התראות
+        </button>
+
+        {/* Back to home button — secondary style */}
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            width: "100%",
+            padding: "13px 0",
+            borderRadius: 14,
+            background: "transparent",
+            color: "oklch(0.35 0.08 122)",
+            fontSize: 14,
+            fontWeight: 700,
+            border: "1.5px solid oklch(0.72 0.09 122)",
+            cursor: "pointer",
+            transition: "background 0.18s",
+            WebkitTapHighlightColor: "transparent",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = "oklch(0.96 0.03 122)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "transparent")
+          }
+          onTouchStart={(e) =>
+            (e.currentTarget.style.background = "oklch(0.96 0.03 122)")
+          }
+          onTouchEnd={(e) =>
+            (e.currentTarget.style.background = "transparent")
+          }
+        >
+          <Home size={16} />
           חזרה לדף הבית
         </button>
 

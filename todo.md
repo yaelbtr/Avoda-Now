@@ -2397,3 +2397,4 @@
 - [x] Fix: moved coming-soon overlay to App.tsx (global) so it covers all pages via createPortal
 - [x] Fix: coming-soon overlay scoped back to /find-jobs only via createPortal in FindJobs.tsx
 - [x] Content: update coming-soon overlay body text — המערכת טרם נפתחה למעסיקים + מומלץ להגדיר קבלת התראות
+- [x] Feature: add "הגדר התראות" button to coming-soon overlay — navigates to /worker-profile?tab=settings; WorkerProfile reads ?tab query param to auto-activate the settings tab

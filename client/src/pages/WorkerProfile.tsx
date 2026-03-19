@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { AppButton, BrandName } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -123,7 +123,14 @@ export default function WorkerProfile() {
     onError: () => toast.error("שגיאה בשמירת הגדרות ההתראות"),
   });
   // ── Shared state ──────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">("details");
+  const searchString = useSearch();
+  const initialTab = (() => {
+    const t = new URLSearchParams(searchString).get("tab");
+    return (["details", "work", "schedule", "settings"] as const).includes(t as any)
+      ? (t as "details" | "work" | "schedule" | "settings")
+      : "details";
+  })();
+  const [activeTab, setActiveTab] = useState<"details" | "work" | "schedule" | "settings">(initialTab);
   const [name, setName] = useState("");  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });

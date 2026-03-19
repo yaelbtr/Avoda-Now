@@ -499,13 +499,16 @@ export default function WorkerProfile() {
                 {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
                   <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
                 )}
+                {bdEditDate && /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > new Date().toISOString().split("T")[0] && (
+                  <p className="text-xs text-red-500" dir="rtl">תאריך לידה לא יכול להיות בעתיד</p>
+                )}
               </div>
 
               <AppButton
                 variant="brand"
                 size="lg"
                 className="w-full"
-                disabled={!bdEditDate || !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) || updateBirthDateMutation.isPending}
+                disabled={!bdEditDate || !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) || bdEditDate > new Date().toISOString().split("T")[0] || updateBirthDateMutation.isPending}
                 onClick={() => setBdConfirmOpen(true)}
               >
                 <Calendar className="h-4 w-4" />
@@ -1840,6 +1843,9 @@ export default function WorkerProfile() {
             {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
               <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
             )}
+            {bdEditDate && /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > new Date().toISOString().split("T")[0] && (
+              <p className="text-xs text-red-500" dir="rtl">תאריך לידה לא יכול להיות בעתיד</p>
+            )}
           </div>
 
           <AppButton
@@ -1849,6 +1855,7 @@ export default function WorkerProfile() {
             disabled={
               !bdEditDate ||
               !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ||
+              bdEditDate > new Date().toISOString().split("T")[0] ||
               !!birthDateInfoQuery.data?.canChangeAfter ||
               updateBirthDateMutation.isPending
             }

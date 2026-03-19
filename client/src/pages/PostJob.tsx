@@ -864,6 +864,7 @@ export default function PostJob() {
               required
               type="date"
               value={jobDate}
+              placeholder="DD/MM/YYYY"
               onChange={e => setJobDate(normalizeDateInput(e.target.value))}
               onBlur={() => setJobDateTouched(true)}
               min={new Date().toISOString().split("T")[0]}

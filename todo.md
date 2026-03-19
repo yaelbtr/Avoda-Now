@@ -2625,3 +2625,8 @@
 - [x] הוסף placeholder="DD/MM/YYYY" לשדות תאריך לידה ב-WorkerProfile (שני מקומות)
 - [x] הוסף ולידציה ויזואלית: שגיאה אדומה כאשר הפורמט אינו תקין
 - [x] החל normalizeDateInput על שדות תאריך ב-PostJob
+
+## Feature — Date field UX Round 4g
+- [x] הוסף placeholder="DD/MM/YYYY" לשדה תאריך המשרה ב-PostJob
+- [x] הוסף ולידציה לתאריך לידה עתידי ב-WorkerProfile (שני מקומות)
+- [x] הוסף vitest tests ל-normalizeDateInput ולולידציה עתידית

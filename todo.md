@@ -2492,3 +2492,14 @@
 - [x] Fix: birthDate column was missing from production DB (TiDB) — added via ALTER TABLE
 - [x] Fix: minAge column was also missing from jobs table — added via ALTER TABLE
 - [x] pnpm db:push run to sync Drizzle migration state — 689/689 tests passing
+
+## Feature — BirthDate Change (Round 3f)
+- [x] Schema: birthdateChanges audit table added to drizzle/schema.ts
+- [x] DB migration: birthdate_changes table created in production TiDB via ALTER TABLE
+- [x] Backend: updateBirthDate procedure — 30-day rate limit, IP logging, legal acknowledgement
+- [x] Backend: getBirthDateInfo extended to return lastChangedAt + canChangeAfter
+- [x] Frontend: birthDate card in WorkerProfile settings tab with date picker + current value display
+- [x] Frontend: confirmation bottom-sheet dialog with declaration checkbox
+- [x] Frontend: rate-limit banner when canChangeAfter is set
+- [x] Frontend: utils.user.getBirthDateInfo.invalidate() called on success
+- [x] Tests: 689/689 passing (TypeScript 0 errors)

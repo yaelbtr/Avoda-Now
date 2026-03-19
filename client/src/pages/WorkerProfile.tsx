@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2, Camera, ChevronDown, X, AlertTriangle, TrendingUp,
+  CheckCircle2, Camera, ChevronDown, X, AlertTriangle, TrendingUp, Calendar, Lock,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
@@ -92,6 +92,22 @@ export default function WorkerProfile() {
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
   const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, { enabled: isAuthenticated });
+  const utils = trpc.useUtils();
+
+  // BirthDate update state
+  const [bdEditDate, setBdEditDate] = useState("");
+  const [bdConfirmOpen, setBdConfirmOpen] = useState(false);
+  const [bdDeclared, setBdDeclared] = useState(false);
+  const updateBirthDateMutation = trpc.user.updateBirthDate.useMutation({
+    onSuccess: () => {
+      toast.success("תאריך לידה עודכן בהצלחה");
+      setBdConfirmOpen(false);
+      setBdDeclared(false);
+      utils.user.getBirthDateInfo.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   const updateMutation = trpc.user.updateProfile.useMutation({
     onSuccess: () => {
@@ -1682,6 +1698,157 @@ export default function WorkerProfile() {
             </p>
           )}
         </div>
+        {/* ── BirthDate Section ─────────────────────────────────────────── */}
+        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+              <Calendar className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+            </div>
+            <div>
+              <h2 className="font-bold text-foreground text-sm">תאריך לידה</h2>
+              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות</p>
+            </div>
+          </div>
+
+          {/* Current value */}
+          {birthDateInfoQuery.data?.birthDate ? (
+            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.96 0.03 122)", border: "1px solid oklch(0.88 0.06 122)" }}>
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium" style={{ color: "#4F583B" }}>תאריך לידה מאומת</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(birthDateInfoQuery.data.birthDate).toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" })}
+                  {birthDateInfoQuery.data.age != null && ` · גיל ${birthDateInfoQuery.data.age}`}
+                </p>
+              </div>
+              {birthDateInfoQuery.data.lastChangedAt && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                  <Lock className="h-3 w-3" />
+                  <span>עודכן {new Date(birthDateInfoQuery.data.lastChangedAt).toLocaleDateString("he-IL")}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "oklch(0.55 0.12 76.7)" }} />
+              <p className="text-xs" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר עדיין</p>
+            </div>
+          )}
+
+          {/* Rate-limit warning */}
+          {birthDateInfoQuery.data?.canChangeAfter && (
+            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200 mb-3">
+              ⏳ ניתן לשנות תאריך לידה שוב החל מ-{new Date(birthDateInfoQuery.data.canChangeAfter).toLocaleDateString("he-IL")}
+            </p>
+          )}
+
+          {/* Date input */}
+          <div className="space-y-2">
+            <AppLabel>תאריך לידה חדש</AppLabel>
+            <input
+              type="date"
+              value={bdEditDate}
+              onChange={(e) => setBdEditDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              min="1920-01-01"
+              disabled={!!birthDateInfoQuery.data?.canChangeAfter}
+              className="w-full h-12 px-3 rounded-xl border text-base"
+              style={{
+                background: birthDateInfoQuery.data?.canChangeAfter ? "oklch(0.96 0.01 100)" : "white",
+                borderColor: "oklch(0.88 0.04 100)",
+                color: "var(--foreground)",
+                fontSize: "16px", // prevent iOS zoom
+                direction: "ltr",
+              }}
+            />
+          </div>
+
+          <AppButton
+            variant="brand"
+            size="lg"
+            className="w-full mt-3"
+            disabled={
+              !bdEditDate ||
+              !!birthDateInfoQuery.data?.canChangeAfter ||
+              updateBirthDateMutation.isPending
+            }
+            onClick={() => setBdConfirmOpen(true)}
+          >
+            <Calendar className="h-4 w-4" />
+            עדכן תאריך לידה
+          </AppButton>
+        </div>
+
+        {/* ── BirthDate Confirmation Dialog ─────────────────────────────────── */}
+        {bdConfirmOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setBdConfirmOpen(false); setBdDeclared(false); } }}
+          >
+            <div
+              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 space-y-4"
+              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.15)" }}
+            >
+              {/* Handle */}
+              <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: "oklch(0.88 0.02 100)" }} />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
+                  <Calendar className="h-5 w-5" style={{ color: "#4F583B" }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">שינוי תאריך לידה</h3>
+                  <p className="text-xs text-muted-foreground">{bdEditDate ? new Date(bdEditDate + "T00:00:00").toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-foreground leading-relaxed" dir="rtl">
+                הנך מצהיר כי תאריך הלידה שהוזן נכון ומדויק.
+              </p>
+              <p className="text-xs text-muted-foreground" dir="rtl">
+                המערכת משתמשת במידע זה לצורך הצגת עבודות והפעלת מגבלות גיל בהתאם לחוק.
+                שינוי תאריך לידה מוגבל לפעם ב-30 יום.
+              </p>
+
+              {/* Declaration checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={bdDeclared}
+                  onChange={(e) => setBdDeclared(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
+                />
+                <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי הפרטים נכונים</span>
+              </label>
+
+              <div className="flex gap-3">
+                <AppButton
+                  variant="outline"
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => { setBdConfirmOpen(false); setBdDeclared(false); }}
+                  disabled={updateBirthDateMutation.isPending}
+                >
+                  ביטול
+                </AppButton>
+                <AppButton
+                  variant="brand"
+                  size="lg"
+                  className="flex-1"
+                  disabled={!bdDeclared || updateBirthDateMutation.isPending}
+                  onClick={() => {
+                    if (!bdDeclared) return;
+                    updateBirthDateMutation.mutate({ birthDate: bdEditDate, declarationConfirmed: true });
+                  }}
+                >
+                  {updateBirthDateMutation.isPending ? <BrandLoader size="sm" /> : "אישור"}
+                </AppButton>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Account Deletion Section (Step 9) ────────────────────────── */}
         <div className="rounded-2xl p-5" style={{ background: "#fff8f8", border: "1px solid #fecaca" }}>
           <div className="flex items-center gap-2 mb-3">

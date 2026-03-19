@@ -671,3 +671,24 @@ export const legalAcknowledgements = pgTable("legal_acknowledgements", {
 });
 export type LegalAcknowledgement = typeof legalAcknowledgements.$inferSelect;
 export type InsertLegalAcknowledgement = typeof legalAcknowledgements.$inferInsert;
+
+/**
+ * birthdate_changes — immutable audit log for every birthDate update.
+ * Provides a forensic trail for legal/compliance purposes.
+ * Rate-limiting: check this table to enforce max 1 change per 30 days.
+ */
+export const birthdateChanges = pgTable("birthdate_changes", {
+  id: serial("id").primaryKey(),
+  /** The user whose birthDate was changed */
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** Previous value (null on first-time set) */
+  oldBirthDate: varchar("old_birth_date", { length: 10 }),
+  /** New value saved */
+  newBirthDate: varchar("new_birth_date", { length: 10 }).notNull(),
+  /** UTC timestamp of the change */
+  changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow().notNull(),
+  /** Client IP address for forensic purposes */
+  ipAddress: varchar("ip_address", { length: 64 }),
+});
+export type BirthdateChange = typeof birthdateChanges.$inferSelect;
+export type InsertBirthdateChange = typeof birthdateChanges.$inferInsert;

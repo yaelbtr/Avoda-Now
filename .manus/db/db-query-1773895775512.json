@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `birthdate_changes` (\n  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n  `user_id` INT NOT NULL,\n  `old_birth_date` VARCHAR(10) DEFAULT NULL,\n  `new_birth_date` VARCHAR(10) NOT NULL,\n  `changed_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `ip_address` VARCHAR(64) DEFAULT NULL,\n  CONSTRAINT `fk_birthdate_changes_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute CREATE TABLE IF NOT EXISTS `birthdate_changes` (\n  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n  `user_id` INT NOT NULL,\n  `old_birth_date` VARCHAR(10) DEFAULT NULL,\n  `new_birth_date` VARCHAR(10) NOT NULL,\n  `changed_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `ip_address` VARCHAR(64) DEFAULT NULL,\n  CONSTRAINT `fk_birthdate_changes_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2140
+}

@@ -37,6 +37,8 @@ import {
   InsertUserConsent,
   legalAcknowledgements,
   LegalAcknowledgement,
+  birthdateChanges,
+  BirthdateChange,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
@@ -2861,6 +2863,55 @@ export async function saveBirthDate(userId: number, birthDate: string): Promise<
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ birthDate }).where(eq(users.id, userId));
+}
+
+/**
+ * Log a birthDate change to the audit table and update the user record atomically.
+ * Returns the audit row.
+ */
+export async function updateBirthDateWithAudit(params: {
+  userId: number;
+  newBirthDate: string;
+  ipAddress?: string | null;
+}): Promise<BirthdateChange> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Read current value for audit log
+  const current = await db
+    .select({ birthDate: users.birthDate })
+    .from(users)
+    .where(eq(users.id, params.userId))
+    .limit(1);
+  const oldBirthDate = current[0]?.birthDate ?? null;
+  // Write audit row
+  const auditRows = await db
+    .insert(birthdateChanges)
+    .values({
+      userId: params.userId,
+      oldBirthDate,
+      newBirthDate: params.newBirthDate,
+      ipAddress: params.ipAddress ?? null,
+    })
+    .returning();
+  // Update user record
+  await db.update(users).set({ birthDate: params.newBirthDate }).where(eq(users.id, params.userId));
+  return auditRows[0];
+}
+
+/**
+ * Return the most recent birthDate change for a user, or null if none.
+ * Used to enforce the 30-day rate limit.
+ */
+export async function getLastBirthDateChange(userId: number): Promise<BirthdateChange | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(birthdateChanges)
+    .where(eq(birthdateChanges.userId, userId))
+    .orderBy(desc(birthdateChanges.changedAt))
+    .limit(1);
+  return rows[0] ?? null;
 }
 
 /**

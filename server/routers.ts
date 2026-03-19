@@ -119,6 +119,8 @@ import {
   getWorkersMinorStatus,
   logLegalAcknowledgement,
   queryJobs,
+  updateBirthDateWithAudit,
+  getLastBirthDateChange,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1987,17 +1989,80 @@ const userRouter = router({
     }),
 
   /**
+   * Update an existing birthDate — requires re-declaration, enforces 30-day rate limit,
+   * and writes an immutable audit row to birthdate_changes.
+   */
+  updateBirthDate: protectedProcedure
+    .input(z.object({
+      birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"),
+      /** Frontend must pass true — confirms the declaration checkbox was checked */
+      declarationConfirmed: z.literal(true),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Validate date semantics
+      const age = calcAge(input.birthDate);
+      if (age === null) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "תאריך לידה לא תקין." });
+      }
+      if (isTooYoung(age)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "הרשמה כעובד זמינה מגיל 16 בלבד." });
+      }
+      // 30-day rate limit
+      const lastChange = await getLastBirthDateChange(ctx.user.id);
+      if (lastChange) {
+        const daysSince = (Date.now() - new Date(lastChange.changedAt).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSince < 30) {
+          const nextAllowed = new Date(new Date(lastChange.changedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: `ניתן לעדכן תאריך לידה פעם ב-30 יום. ניסיון הבא מותר ב-${nextAllowed.toLocaleDateString("he-IL")}.`,
+          });
+        }
+      }
+      // Write audit row + update user
+      // IP is extracted from the raw HTTP request via ctx if available
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ip = (ctx as any).req?.ip ?? (ctx as any).req?.headers?.["x-forwarded-for"] ?? null;
+      await updateBirthDateWithAudit({
+        userId: ctx.user.id,
+        newBirthDate: input.birthDate,
+        ipAddress: typeof ip === "string" ? ip.split(",")[0].trim() : null,
+      });
+      // Log legal acknowledgement
+      await logLegalAcknowledgement({
+        userId: ctx.user.id,
+        ackType: "birth_date_update_declaration",
+        approved: true,
+      });
+      return { success: true, age, isMinor: isMinor(age) };
+    }),
+
+  /**
    * Get the current worker's birth date and computed age/isMinor flags.
    * Returns null values if birth date has not been set yet.
    */
   getBirthDateInfo: protectedProcedure.query(async ({ ctx }) => {
     const birthDate = await getWorkerBirthDate(ctx.user.id);
     const age = calcAge(birthDate);
+    // Rate-limit info: when can the user change their birthDate next?
+    const lastChange = await getLastBirthDateChange(ctx.user.id);
+    let lastChangedAt: string | null = null;
+    let canChangeAfter: string | null = null;
+    if (lastChange) {
+      const changedAtMs = new Date(lastChange.changedAt).getTime();
+      lastChangedAt = new Date(changedAtMs).toISOString();
+      const nextAllowedMs = changedAtMs + 30 * 24 * 60 * 60 * 1000;
+      if (nextAllowedMs > Date.now()) {
+        canChangeAfter = new Date(nextAllowedMs).toISOString();
+      }
+    }
     return {
       birthDate,
       age,
       isMinor: isMinor(age),
       isTooYoung: isTooYoung(age),
+      lastChangedAt,
+      canChangeAfter,
     };
   }),
   /** Get isMinor status for multiple worker IDs — used by employer views */

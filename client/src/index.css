@@ -646,3 +646,71 @@
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+/* ── Mobile-Frame Wrapper ────────────────────────────────────────────────────
+ * On desktop: centers the app as a 420px mobile column with a subtle shadow.
+ * On real mobile (≤768px): full-screen, no frame, no shadow.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.desktop-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100dvh;
+  background: oklch(0.93 0.02 122 / 0.40);
+}
+
+.mobile-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  min-height: 100dvh;
+  background: var(--page-bg, oklch(0.9904 0.0107 95.3));
+  box-shadow: 0 0 60px oklch(0.20 0.04 122 / 0.18), 0 0 0 1px oklch(0.80 0.04 122 / 0.10);
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .desktop-wrapper {
+    display: block;
+    background: transparent;
+  }
+  .mobile-wrapper {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
+/* ── Constrain fixed overlays to mobile-wrapper on desktop ──────────────────
+ * On desktop, fixed elements (modals, bottom-sheets, overlays) that use
+ * fixed inset-0 would normally span the full viewport width.
+ * This rule limits them to the 420px mobile-wrapper column.
+ * On mobile (max-width: 768px) this rule has no effect.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  /* Full-cover backdrops */
+  #mobile-root .fixed.inset-0 {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 420px !important;
+    max-width: 420px !important;
+  }
+
+  /* Bottom-anchored sheets */
+  #mobile-root .fixed.bottom-0 {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 420px !important;
+    max-width: 420px !important;
+  }
+
+  /* Sonner toasts */
+  [data-sonner-toaster] {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 420px !important;
+    max-width: 420px !important;
+  }
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { getMobileRoot } from "@/lib/mobileRoot";
 import { FIND_JOBS_OPEN } from "@shared/const";
 import FindJobsComingSoonOverlay from "@/components/FindJobsComingSoonOverlay";
 import { useSearch, Link } from "wouter";
@@ -2119,7 +2120,7 @@ export default function FindJobs() {
               </motion.div>{/* end sheet */}
             </>
           )}
-    </AnimatePresence>, document.body)}
+    </AnimatePresence>, getMobileRoot())}
     {/* ── Calendar Bottom Sheet (mobile & desktop) ─────────────────────── */}
     {createPortal(<AnimatePresence>
         {calendarOpen && (
@@ -2213,9 +2214,9 @@ export default function FindJobs() {
             </motion.div>
           </>
         )}
-    </AnimatePresence>, document.body)}
+    </AnimatePresence>, getMobileRoot())}
     {/* Coming-soon overlay — covers only this page when FIND_JOBS_OPEN is false */}
-    {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, document.body)}
+    {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, getMobileRoot())}
     </>
   );
 }

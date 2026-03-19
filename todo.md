@@ -2404,3 +2404,7 @@
 - [x] Content: update hero image alt text to "עובד צעיר מחזיק מטאטא במטבח" (both mobile + desktop img tags)
 - [x] UI: move mobile hero headline above worker's face (top: 44% → 20%), update gradient for upper-area text readability
 - [x] UI: split mobile hero headline — white line ("מחפש עבודה זמנית?") positioned above worker's head (top: 18%), yellow line ("מצא אחת תוך דקות") + subtitle positioned below worker's head (top: 56%), dual-band gradient for readability
+- [x] Architecture: add desktop-wrapper + mobile-wrapper CSS (420px centered column on desktop, full-screen on mobile)
+- [x] Architecture: wrap App root in mobile-wrapper in main.tsx / index.html
+- [x] Architecture: fix portals (modals, bottom sheets, overlays) to constrain within mobile-wrapper on desktop — getMobileRoot() utility, CSS @media constraint for fixed.inset-0
+- [x] Architecture: audit and fix any fixed large widths that break out of 420px container — overflow-x: hidden on mobile-wrapper, CSS constraints on fixed overlays

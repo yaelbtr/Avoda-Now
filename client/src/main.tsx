@@ -67,7 +67,11 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <div className="desktop-wrapper">
+        <div id="mobile-root" className="mobile-wrapper">
+          <App />
+        </div>
+      </div>
     </QueryClientProvider>
   </trpc.Provider>
 );

@@ -10,6 +10,7 @@ import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import Footer from "./components/Footer";
+import GenderDisclaimer from "./components/GenderDisclaimer";
 import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import PageTransition from "./components/PageTransition";
@@ -315,6 +316,7 @@ function Router() {
         </AnimatePresence>
       </main>
 
+      <GenderDisclaimer />
       <MobileBottomNav />
       <div className="hidden md:block">
         <Footer />

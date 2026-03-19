@@ -20,7 +20,7 @@ import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { shouldWarnLateJob, minAgeLabel } from "@shared/ageUtils";
+import { shouldWarnLateJob, minAgeLabel, normalizeDateInput } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
@@ -864,7 +864,7 @@ export default function PostJob() {
               required
               type="date"
               value={jobDate}
-              onChange={e => setJobDate(e.target.value)}
+              onChange={e => setJobDate(normalizeDateInput(e.target.value))}
               onBlur={() => setJobDateTouched(true)}
               min={new Date().toISOString().split("T")[0]}
               dir="ltr"

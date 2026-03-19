@@ -2620,3 +2620,8 @@
 ## Bug Fix — Birth-date DD.MM.YYYY parsing (Round 4e)
 - [x] מצא את לוגיקת הפרסור של תאריך הלידה ב-WorkerProfile
 - [x] תמוך בפורמט DD.MM.YYYY (נקודות) בנוסף ל-DD/MM/YYYY
+
+## Feature — Date field UX improvements (Round 4f)
+- [x] הוסף placeholder="DD/MM/YYYY" לשדות תאריך לידה ב-WorkerProfile (שני מקומות)
+- [x] הוסף ולידציה ויזואלית: שגיאה אדומה כאשר הפורמט אינו תקין
+- [x] החל normalizeDateInput על שדות תאריך ב-PostJob

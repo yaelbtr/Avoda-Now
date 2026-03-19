@@ -483,25 +483,29 @@ export default function WorkerProfile() {
                 <input
                   type="date"
                   value={bdEditDate}
+                  placeholder="DD/MM/YYYY"
                   onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
                   max={new Date().toISOString().split("T")[0]}
                   min="1920-01-01"
                   className="w-full h-12 px-3 rounded-xl border text-base"
                   style={{
                     background: "white",
-                    borderColor: "oklch(0.88 0.04 100)",
+                    borderColor: bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ? "oklch(0.55 0.2 25)" : "oklch(0.88 0.04 100)",
                     color: "var(--foreground)",
                     fontSize: "16px",
                     direction: "ltr",
                   }}
                 />
+                {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
+                  <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
+                )}
               </div>
 
               <AppButton
                 variant="brand"
                 size="lg"
                 className="w-full"
-                disabled={!bdEditDate || updateBirthDateMutation.isPending}
+                disabled={!bdEditDate || !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) || updateBirthDateMutation.isPending}
                 onClick={() => setBdConfirmOpen(true)}
               >
                 <Calendar className="h-4 w-4" />
@@ -1819,6 +1823,7 @@ export default function WorkerProfile() {
             <input
               type="date"
               value={bdEditDate}
+              placeholder="DD/MM/YYYY"
               onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
               max={new Date().toISOString().split("T")[0]}
               min="1920-01-01"
@@ -1826,12 +1831,15 @@ export default function WorkerProfile() {
               className="w-full h-12 px-3 rounded-xl border text-base"
               style={{
                 background: birthDateInfoQuery.data?.canChangeAfter ? "oklch(0.96 0.01 100)" : "white",
-                borderColor: "oklch(0.88 0.04 100)",
+                borderColor: bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ? "oklch(0.55 0.2 25)" : "oklch(0.88 0.04 100)",
                 color: "var(--foreground)",
                 fontSize: "16px", // prevent iOS zoom
                 direction: "ltr",
               }}
             />
+            {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
+              <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
+            )}
           </div>
 
           <AppButton
@@ -1840,6 +1848,7 @@ export default function WorkerProfile() {
             className="w-full mt-3"
             disabled={
               !bdEditDate ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ||
               !!birthDateInfoQuery.data?.canChangeAfter ||
               updateBirthDateMutation.isPending
             }

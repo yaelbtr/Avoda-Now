@@ -1,7 +1,10 @@
 import { Briefcase, Mail, Zap, Users } from "lucide-react";
+import { useState } from "react";
 import { useCategories } from "@/hooks/useCategories";
 import { trpc } from "@/lib/trpc";
 import { BrandName } from "@/components/ui";
+import { useCookieConsent } from "@/components/CookieConsentBanner";
+import CookieSettingsModal from "@/components/CookieSettingsModal";
 
 const FG_PRIMARY  = "oklch(0.9904 0.0107 95.3 / 0.85)";
 const FG_MUTED    = "oklch(0.9904 0.0107 95.3 / 0.45)";
@@ -28,6 +31,8 @@ const SEO_CITIES = [
 
 export default function Footer() {
   const { categories: seoCategories } = useCategories();
+  const { analyticsConsent, saveCustom } = useCookieConsent();
+  const [showCookieSettings, setShowCookieSettings] = useState(false);
 
   // Dynamic badge: show active jobs if >50, closed if >50, workers if >100, else null
   const { data: hs } = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
@@ -366,10 +371,28 @@ export default function Footer() {
               </span>
             ))}
           </div>
+          {/* Cookie settings button — GDPR requirement */}
+          <button
+            onClick={() => setShowCookieSettings(true)}
+            className="text-[12px] transition-colors text-right w-fit"
+            style={{ color: ACCENT, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = ACCENT as string)}
+            aria-label="שנה העדפות עוגיות"
+          >
+            🍪 שנה העדפות עוגיות
+          </button>
           <p className="text-[11px] font-medium" style={{ color: FG_MUTED }}>
             © {new Date().getFullYear()} <BrandName /> · כל הזכויות שמורות
           </p>
         </div>
+        {showCookieSettings && (
+          <CookieSettingsModal
+            analyticsEnabled={analyticsConsent}
+            onSave={(analytics) => { saveCustom(analytics); setShowCookieSettings(false); }}
+            onClose={() => setShowCookieSettings(false)}
+          />
+        )}
 
         {/* Disclaimer */}
         <p className="text-[11px] text-center mt-3 leading-relaxed" style={{ color: FG_MUTED }}>

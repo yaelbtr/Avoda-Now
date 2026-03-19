@@ -21,6 +21,7 @@ import PostJob from "./pages/PostJob";
 import MyJobs from "./pages/MyJobs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 import JobPostingPolicy from "./pages/JobPostingPolicy";
 import SafetyPolicy from "./pages/SafetyPolicy";
 import UserContentPolicy from "./pages/UserContentPolicy";
@@ -270,6 +271,7 @@ function Router() {
                 <Route path="/my-jobs" component={MyJobs} />
                 <Route path="/terms" component={Terms} />
                 <Route path="/privacy" component={Privacy} />
+                <Route path="/cookies" component={Cookies} />
                 <Route path="/job-posting-policy" component={JobPostingPolicy} />
                 <Route path="/safety-policy" component={SafetyPolicy} />
                 <Route path="/user-content-policy" component={UserContentPolicy} />

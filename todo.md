@@ -2535,3 +2535,8 @@
 
 ## Design — Cookie Banner AvodaNow Design System (Round 3n)
 - [x] עצב מחדש את CookieConsentBanner לפי שפת העיצוב של AvodaNow (dark nav, glass-modal, AppButton, Heebo)
+
+## Feature — Cookie Consent GDPR Enhancements (Round 3o)
+- [x] הוסף דף /cookies (מדיניות עוגיות) וקשר אליו מה-banner
+- [x] הוסף כפתור "שנה העדפות עוגיות" בפוטר שפותח Settings modal
+- [x] הוסף cookieConsentVersion management ל-localStorage

@@ -252,7 +252,7 @@ function Router() {
       <GuestLoginBanner />
       <ReConsentModal />
 
-      <main id="main-content" className="flex-1 pb-16 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
+      <main id="main-content" className="flex-1 pb-24 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
         <AnimatePresence mode="wait">
           {showRoleSelection ? (
             <RoleSelectionScreen
@@ -314,9 +314,8 @@ function Router() {
             </PageTransition>
           )}
         </AnimatePresence>
+        <GenderDisclaimer />
       </main>
-
-      <GenderDisclaimer />
       <MobileBottomNav />
       <div className="hidden md:block">
         <Footer />

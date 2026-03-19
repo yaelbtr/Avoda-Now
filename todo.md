@@ -2412,3 +2412,4 @@
 - [x] Bug: Navbar shows desktop layout on desktop — forced always-mobile layout by removing md: breakpoints (flex md:hidden → flex, hidden md:flex → hidden)
 - [x] Bug: Footer uses sm: breakpoints (sm:flex-row, sm:grid-cols-2) that cause incorrect layout in 420px wrapper — replaced with flex-col and grid-cols-1
 - [x] Feature: add GenderDisclaimer shared component with "לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים" — placed above MobileBottomNav in App.tsx, visible on all screens mobile+desktop
+- [x] Bug: GenderDisclaimer hidden by fixed MobileBottomNav on mobile — moved inside <main> before </AnimatePresence>, pb-16 → pb-24 to clear both disclaimer and bottom nav

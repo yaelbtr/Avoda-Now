@@ -194,7 +194,7 @@ export default function Navbar() {
           transition: "background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease",
         }}
       >
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="w-full px-4">
           {/* ── Mobile header (3-column RTL layout) ── */}
           <div className="flex md:hidden items-center h-16">
             {/* Right side: hamburger + user icon */}

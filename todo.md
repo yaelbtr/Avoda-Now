@@ -2408,3 +2408,4 @@
 - [x] Architecture: wrap App root in mobile-wrapper in main.tsx / index.html
 - [x] Architecture: fix portals (modals, bottom sheets, overlays) to constrain within mobile-wrapper on desktop — getMobileRoot() utility, CSS @media constraint for fixed.inset-0
 - [x] Architecture: audit and fix any fixed large widths that break out of 420px container — overflow-x: hidden on mobile-wrapper, CSS constraints on fixed overlays
+- [x] Bug: Navbar and Footer overflow outside 420px mobile-wrapper on desktop — removed max-w-2xl/max-w-4xl from inner containers, removed left-0 right-0 from MobileBottomNav, CSS @media constraint handles fixed overlays

@@ -38,7 +38,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50"
+      className="md:hidden fixed bottom-0 z-50 w-full"
       dir="rtl"
       aria-label="ניווט תחתון"
       style={{

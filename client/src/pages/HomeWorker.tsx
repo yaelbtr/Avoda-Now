@@ -331,11 +331,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             style={{
               background: [
                 "linear-gradient(to bottom,",
-                "  oklch(0.10 0.06 122 / 0.45) 0%,",
-                "  oklch(0.10 0.06 122 / 0.60) 18%,",
-                "  oklch(0.10 0.06 122 / 0.55) 35%,",
-                "  oklch(0.10 0.06 122 / 0.15) 55%,",
-                "  oklch(0.95 0.03 91.6 / 0.80) 85%,",
+                "  transparent 0%,",
+                "  oklch(0.10 0.06 122 / 0.00) 30%,",
+                "  oklch(0.10 0.06 122 / 0.55) 48%,",
+                "  oklch(0.10 0.06 122 / 0.70) 62%,",
+                "  oklch(0.10 0.06 122 / 0.25) 72%,",
+                "  oklch(0.95 0.03 91.6 / 0.80) 88%,",
                 "  oklch(0.95 0.03 91.6) 100%)",
               ].join(" "),
             }}
@@ -358,7 +359,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </span>
           </motion.div>
           {/* Headline + subtitle — center of image, above the face */}
-          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "20%" }}>
+          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "52%" }}>
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="text-[32px] leading-[1.15] font-black mb-2"

@@ -317,13 +317,13 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         {/* Image block — fixed 380px, badge + headline overlaid at bottom */}
         <div className="relative w-full" style={{ height: 380 }}>
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker-warehouse-v2_eac87cc8.jpg"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
             alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
             loading="eager"
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "50% 40%" }}
+            style={{ objectPosition: "50% 15%" }}
           />
           {/* Gradient: dark band in middle for text readability, fades to page-bg at bottom */}
           <div
@@ -480,7 +480,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       >
         {/* Full-bleed background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-worker_3c7a5c3c.jpg"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
           alt="עובד מחסן מחייך בסביבת עבודה — מייצג מגוון עבודות זמניות בישראל"
           loading="eager"
           fetchPriority="high"
@@ -488,7 +488,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           width={1440}
           height={540}
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "70% 60%" }}
+          style={{ objectPosition: "50% 15%" }}
         />
 
         {/* Directional overlay: very light on left only */}

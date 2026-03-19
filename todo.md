@@ -2398,3 +2398,4 @@
 - [x] Fix: coming-soon overlay scoped back to /find-jobs only via createPortal in FindJobs.tsx
 - [x] Content: update coming-soon overlay body text — המערכת טרם נפתחה למעסיקים + מומלץ להגדיר קבלת התראות
 - [x] Feature: add "הגדר התראות" button to coming-soon overlay — navigates to /worker-profile?tab=settings; WorkerProfile reads ?tab query param to auto-activate the settings tab
+- [x] Content: replace worker home page hero image with new provided image (optimized WebP, 70KB, objectPosition 50% 15%)

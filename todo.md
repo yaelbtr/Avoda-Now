@@ -2637,3 +2637,8 @@
 - [x] Update verifyOtp procedure to accept whatsapp channel (same VerificationCheck endpoint)
 - [x] Update Login/Register UI to show "שלח קוד ב-WhatsApp" button when SMS fails
 - [x] Add tests for WhatsApp OTP send and verify
+
+## Round 4i: Disable WhatsApp OTP in UI
+- [x] Remove WhatsApp button from login phone step
+- [x] Remove WhatsApp from channel selection step in registration
+- [x] Remove whatsapp from OtpChannel type in UI (keep server-side intact)

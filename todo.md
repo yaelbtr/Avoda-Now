@@ -2577,3 +2577,7 @@
 - [x] WorkerProfile: הסתר slot "לילה" (22:00–06:00) מרשימת TIME_SLOTS כאשר isCurrentUserMinor=true
 - [x] FindJobs: הסתר slot "לילה" (22–06) מפאנל הסינון כאשר isCurrentUserMinor=true
 - [x] נקה "לילה" מ-selectedTimeSlots אם קטין ויש בחירה שמורה
+
+## Feature — Server-side strip of 'night' slot for minors in updateProfile (Round 3w)
+- [x] הוסף לוגיקה ב-updateProfile: אם preferredTimeSlots כולל "night" ומשתמש קטין — הסר אוטומטית
+- [x] כתוב vitest test: minor מנסה לשמור ["morning","night"] → נשמר רק ["morning"]

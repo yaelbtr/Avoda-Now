@@ -1610,6 +1610,16 @@ const userRouter = router({
           });
         }
       }
+      // Strip 'night' slot for minor users — enforced server-side regardless of client input
+      let sanitizedTimeSlots = input.preferredTimeSlots;
+      if (sanitizedTimeSlots && sanitizedTimeSlots.includes("night")) {
+        const birthDate = await getWorkerBirthDate(ctx.user.id);
+        const age = calcAge(birthDate);
+        if (isMinor(age)) {
+          sanitizedTimeSlots = sanitizedTimeSlots.filter(s => s !== "night");
+        }
+      }
+
       await updateWorkerProfile(ctx.user.id, {
         name: input.name ? sanitizeText(input.name) : input.name,
         phone: normalizedPhone,
@@ -1625,7 +1635,7 @@ const userRouter = router({
         preferenceText: input.preferenceText ? sanitizeText(input.preferenceText) : input.preferenceText,
         workerTags: input.workerTags ? sanitizeTextArray(input.workerTags) : input.workerTags,
         preferredDays: input.preferredDays,
-        preferredTimeSlots: input.preferredTimeSlots,
+        preferredTimeSlots: sanitizedTimeSlots,
         preferredCities: input.preferredCities,
         // Only allow email update for non-Google users (Google users get email from OAuth)
         email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,

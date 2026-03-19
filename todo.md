@@ -2410,3 +2410,4 @@
 - [x] Architecture: audit and fix any fixed large widths that break out of 420px container — overflow-x: hidden on mobile-wrapper, CSS constraints on fixed overlays
 - [x] Bug: Navbar and Footer overflow outside 420px mobile-wrapper on desktop — removed max-w-2xl/max-w-4xl from inner containers, removed left-0 right-0 from MobileBottomNav, CSS @media constraint handles fixed overlays
 - [x] Bug: Navbar shows desktop layout on desktop — forced always-mobile layout by removing md: breakpoints (flex md:hidden → flex, hidden md:flex → hidden)
+- [x] Bug: Footer uses sm: breakpoints (sm:flex-row, sm:grid-cols-2) that cause incorrect layout in 420px wrapper — replaced with flex-col and grid-cols-1

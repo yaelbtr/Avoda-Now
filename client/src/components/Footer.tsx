@@ -61,7 +61,7 @@ export default function Footer() {
       <div className="w-full px-4 pt-10 pb-6 relative z-10">
 
         {/* ── Brand row ── */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col items-start gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -121,7 +121,7 @@ export default function Footer() {
         <div style={{ borderTop: `1px solid ${DIVIDER}` }} className="mb-8" />
 
         {/* ── SEO Link Groups ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8">
 
           {/* Group 1 – Jobs by city */}
           <div>

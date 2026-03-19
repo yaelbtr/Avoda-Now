@@ -12,6 +12,7 @@ import {
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
+import { storageDelete } from "./storage";
 
 // ─── Jobs Admin ───────────────────────────────────────────────────────────────
 
@@ -164,6 +165,28 @@ export async function adminUpdateUser(userId: number, data: { name?: string; pho
 export async function adminDeleteUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // 0. Delete profile photo from S3 (if any) before removing DB rows.
+  //    profilePhoto is stored as a full CDN URL; extract the relative key by
+  //    stripping the CDN origin prefix.  Failure is non-fatal — log and continue.
+  const userRow = await db
+    .select({ profilePhoto: users.profilePhoto })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const photoUrl = userRow[0]?.profilePhoto;
+  if (photoUrl) {
+    try {
+      // The key is the path portion after the CDN origin, e.g.
+      // "https://cdn.example.com/<tenantId>/profile-photos/123-456.jpg"
+      // → "<tenantId>/profile-photos/123-456.jpg"
+      const relKey = new URL(photoUrl).pathname.replace(/^\//, "");
+      await storageDelete(relKey);
+    } catch (err) {
+      // Non-fatal: log but do not block the deletion
+      console.error(`[adminDeleteUser] Failed to delete S3 photo for user ${userId}:`, err);
+    }
+  }
 
   // Cascade-delete all records that reference this user before removing the
   // user row itself.  Tables with onDelete:"cascade" in the schema are handled

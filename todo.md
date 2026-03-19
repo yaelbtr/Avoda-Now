@@ -2599,3 +2599,7 @@
 ## Bug Fix — Cascade delete user in admin panel (Round 4a)
 - [x] מצא את כל הטבלאות עם FK ל-users.id
 - [x] עדכן deleteUser helper למחוק רשומות קשורות לפני מחיקת המשתמש
+
+## Feature — Delete S3 profile photo on user deletion (Round 4b)
+- [x] בדוק storage helper API ואיך profilePhoto key מאוחסן
+- [x] הוסף מחיקת תמונת פרופיל מ-S3 ב-adminDeleteUser

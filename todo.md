@@ -2648,3 +2648,7 @@
 - [x] Disable SMS and Call send buttons during cooldown
 - [x] Show countdown text on disabled buttons
 - [x] Apply cooldown to both login phone step and registration channel step
+
+## Round 4k: Fix Birth Date Blocking Profile Wizard
+- [x] Diagnose why valid birth date still blocks progression in WorkerProfile
+- [x] Fix validation logic so valid dates enable the confirm button

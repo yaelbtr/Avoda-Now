@@ -104,6 +104,15 @@ export default function WorkerProfile() {
   const [bdEditDate, setBdEditDate] = useState("");
   const [bdConfirmOpen, setBdConfirmOpen] = useState(false);
   const [bdDeclared, setBdDeclared] = useState(false);
+  // saveBirthDate — used in the wizard gate (first-time entry, no rate limit)
+  const saveBirthDateMutation = trpc.user.saveBirthDate.useMutation({
+    onSuccess: () => {
+      toast.success("תאריך לידה נשמר בהצלחה");
+      utils.user.getBirthDateInfo.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  // updateBirthDate — used in edit mode (change existing, 30-day rate limit)
   const updateBirthDateMutation = trpc.user.updateBirthDate.useMutation({
     onSuccess: () => {
       toast.success("תאריך לידה עודכן בהצלחה");
@@ -483,7 +492,6 @@ export default function WorkerProfile() {
                 <input
                   type="date"
                   value={bdEditDate}
-                  placeholder="DD/MM/YYYY"
                   onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
                   max={new Date().toISOString().split("T")[0]}
                   min="1920-01-01"
@@ -497,22 +505,38 @@ export default function WorkerProfile() {
                   }}
                 />
                 {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
-                  <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
+                  <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין</p>
                 )}
                 {bdEditDate && /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > new Date().toISOString().split("T")[0] && (
                   <p className="text-xs text-red-500" dir="rtl">תאריך לידה לא יכול להיות בעתיד</p>
                 )}
               </div>
 
+              {/* Declaration checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-xl" style={{ background: "oklch(0.97 0.01 100)", border: "1px solid oklch(0.90 0.03 100)" }}>
+                <input
+                  type="checkbox"
+                  checked={bdDeclared}
+                  onChange={(e) => setBdDeclared(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
+                />
+                <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי תאריך הלידה שהזנתי נכון ומדויק</span>
+              </label>
+
               <AppButton
                 variant="brand"
                 size="lg"
                 className="w-full"
-                disabled={!bdEditDate || !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) || bdEditDate > new Date().toISOString().split("T")[0] || updateBirthDateMutation.isPending}
-                onClick={() => setBdConfirmOpen(true)}
+                disabled={
+                  !bdEditDate ||
+                  !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ||
+                  bdEditDate > new Date().toISOString().split("T")[0] ||
+                  !bdDeclared ||
+                  saveBirthDateMutation.isPending
+                }
+                onClick={() => saveBirthDateMutation.mutate({ birthDate: bdEditDate })}
               >
-                <Calendar className="h-4 w-4" />
-                אישור תאריך לידה והמשך
+                {saveBirthDateMutation.isPending ? <BrandLoader size="sm" /> : <><Calendar className="h-4 w-4" /> אישור תאריך לידה והמשך</>}
               </AppButton>
             </div>
           </div>

@@ -23,6 +23,7 @@ import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } f
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
 import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
+import { normalizeDateInput } from "@shared/ageUtils";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -482,7 +483,7 @@ export default function WorkerProfile() {
                 <input
                   type="date"
                   value={bdEditDate}
-                  onChange={(e) => setBdEditDate(e.target.value)}
+                  onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
                   max={new Date().toISOString().split("T")[0]}
                   min="1920-01-01"
                   className="w-full h-12 px-3 rounded-xl border text-base"
@@ -1818,7 +1819,7 @@ export default function WorkerProfile() {
             <input
               type="date"
               value={bdEditDate}
-              onChange={(e) => setBdEditDate(e.target.value)}
+              onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
               max={new Date().toISOString().split("T")[0]}
               min="1920-01-01"
               disabled={!!birthDateInfoQuery.data?.canChangeAfter}

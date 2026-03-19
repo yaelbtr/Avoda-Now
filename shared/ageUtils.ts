@@ -81,6 +81,30 @@ export function meetsMinAgeRequirement(
 }
 
 /**
+ * Normalises a user-typed date string to YYYY-MM-DD.
+ *
+ * Accepts:
+ *   - YYYY-MM-DD  (native <input type="date"> value)
+ *   - DD/MM/YYYY  (common Israeli manual input)
+ *   - DD.MM.YYYY  (Samsung Galaxy / Android keyboard default)
+ *
+ * Returns the original string unchanged if it doesn't match any pattern,
+ * so the server-side validation will still reject it with a clear error.
+ */
+export function normalizeDateInput(raw: string): string {
+  if (!raw) return raw;
+  // Already ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  // DD/MM/YYYY or DD.MM.YYYY
+  const match = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+  if (match) {
+    const [, d, m, y] = match;
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  return raw;
+}
+
+/**
  * Returns a human-readable Hebrew label for a minAge value.
  * Used on job cards and PostJob form.
  */

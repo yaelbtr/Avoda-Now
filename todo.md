@@ -2616,3 +2616,7 @@
 - [x] הוסף admin mutation: forceLogoutUser
 - [x] הוסף כפתור "נתק משתמש" ב-Admin panel
 - [x] כתוב vitest tests
+
+## Bug Fix — Birth-date DD.MM.YYYY parsing (Round 4e)
+- [x] מצא את לוגיקת הפרסור של תאריך הלידה ב-WorkerProfile
+- [x] תמוך בפורמט DD.MM.YYYY (נקודות) בנוסף ל-DD/MM/YYYY

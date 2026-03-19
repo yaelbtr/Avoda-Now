@@ -2652,3 +2652,7 @@
 ## Round 4k: Fix Birth Date Blocking Profile Wizard
 - [x] Diagnose why valid birth date still blocks progression in WorkerProfile
 - [x] Fix validation logic so valid dates enable the confirm button
+
+## Round 4l: Fix Blank Page on "הגדר התראות" Button
+- [x] Find the "הגדר התראות" button in "בקרוב אצלכם" screen and trace navigation target
+- [x] Fix blank page rendering when navigating to the target route

@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { Home, Lock, ShieldCheck, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { saveReturnPath } from "@/const";
+import LoginModal from "@/components/LoginModal";
 
 /**
  * Global "coming soon" overlay — covers the entire app when FIND_JOBS_OPEN is false.
@@ -17,12 +20,23 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function FindJobsComingSoonOverlay() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const [loginOpen, setLoginOpen] = useState(false);
 
   // Admins bypass the overlay entirely
   const isAdmin = isAuthenticated && user?.role === "admin";
   if (isAdmin) return null;
 
+  const handleSetAlerts = () => {
+    if (isAuthenticated) {
+      navigate("/worker-profile?tab=settings");
+    } else {
+      saveReturnPath("/worker-profile?tab=settings");
+      setLoginOpen(true);
+    }
+  };
+
   return (
+    <>
     <motion.div
       key="find-jobs-overlay"
       initial={{ opacity: 0 }}
@@ -119,7 +133,7 @@ export default function FindJobsComingSoonOverlay() {
 
         {/* Set alerts button */}
         <button
-          onClick={() => navigate("/worker-profile?tab=settings")}
+          onClick={handleSetAlerts}
           style={{
             display: "flex",
             alignItems: "center",
@@ -212,5 +226,9 @@ export default function FindJobsComingSoonOverlay() {
         )}
       </motion.div>
     </motion.div>
+
+    {/* Login modal — opens when unauthenticated user clicks הגדר התראות */}
+    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+    </>
   );
 }

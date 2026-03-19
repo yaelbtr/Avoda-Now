@@ -196,7 +196,7 @@ export default function Navbar() {
       >
         <div className="w-full px-4">
           {/* ── Mobile header (3-column RTL layout) ── */}
-          <div className="flex md:hidden items-center h-16">
+          <div className="flex items-center h-16">
             {/* Right side: hamburger + user icon */}
             <div className="flex items-center gap-1">
               {/* Hamburger */}
@@ -337,7 +337,7 @@ export default function Navbar() {
           </div>
 
           {/* ── Desktop header ── */}
-          <div className="hidden md:flex items-center justify-between h-16">
+          <div className="hidden items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
               <motion.div
@@ -374,7 +374,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-0.5" aria-label="ניווט ראשי">
+            <nav className="hidden items-center gap-0.5" aria-label="ניווט ראשי">
               <ul className="flex items-center gap-0.5 list-none m-0 p-0">
               {navLinks.map((link) => {
                 const isActive = location === link.href;
@@ -467,7 +467,7 @@ export default function Navbar() {
                 </motion.button>
               )}
               {isAuthenticated ? (
-                <div className="hidden md:block">
+                <div className="hidden">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <motion.button

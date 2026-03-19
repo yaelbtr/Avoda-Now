@@ -2526,3 +2526,9 @@
 
 ## Fix — החלפת תמונה בדף my-applications (Round 3l)
 - [x] העלה תמונת גבר על ספה ל-CDN והחלף את תמונת האשה בדף MyApplications
+
+## Feature — Cookie Consent Banner (Round 3m)
+- [x] Build CookieConsentBanner component (Accept + Settings modal, localStorage)
+- [x] Integrate banner into App.tsx
+- [x] Gate analytics script loading on analyticsConsent
+- [x] Write vitest tests for consent logic (11 tests)

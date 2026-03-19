@@ -22,6 +22,7 @@ import {
   Bell,
   BellOff,
   Briefcase,
+  Calendar,
   CheckCircle,
   Clock,
   Eye,
@@ -140,6 +141,11 @@ export default function Admin() {
   const batchesQuery = trpc.admin.listBatches.useQuery(
     { limit: 300 },
     { enabled: !!user && user.role === "admin" && activeTab === "batches" }
+  );
+  const [bdSearchTerm, setBdSearchTerm] = useState("");
+  const birthdateChangesQuery = trpc.admin.getBirthdateChanges.useQuery(
+    { limit: 200, offset: 0 },
+    { enabled: !!user && user.role === "admin" && activeTab === "birthdate-audit" }
   );
 
   // Mutations
@@ -301,6 +307,7 @@ export default function Admin() {
               { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
               { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
               { value: "employer-lock", icon: <Lock className="w-4 h-4" />, label: "נעילת מעסיקים" },
+              { value: "birthdate-audit", icon: <Calendar className="w-4 h-4" />, label: "ביקורת גיל" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -369,6 +376,10 @@ export default function Admin() {
             <TabsTrigger value="employer-lock" className="flex items-center gap-2">
               <Lock className="w-4 h-4" />
               נעילת מעסיקים
+            </TabsTrigger>
+            <TabsTrigger value="birthdate-audit" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              ביקורת גיל
             </TabsTrigger>
           </TabsList>
 
@@ -1234,6 +1245,121 @@ export default function Admin() {
                   </p>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* ─── Birthdate Audit Tab ─── */}
+          <TabsContent value="birthdate-audit">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">יומן שינויי תאריך לידה</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    רשומות ביקורת לכל שינוי תאריך לידה — כולל IP, תאריך ישן וחדש.
+                  </p>
+                </div>
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => utils.admin.getBirthdateChanges.invalidate()}
+                >
+                  רענן
+                </AppButton>
+              </div>
+
+              {/* Search */}
+              <AppInput
+                placeholder="חיפוש לפי שם משתמש..."
+                value={bdSearchTerm}
+                onChange={(e) => setBdSearchTerm(e.target.value)}
+                dir="rtl"
+              />
+
+              {birthdateChangesQuery.isLoading ? (
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="pt-4">
+                        <div className="h-10 bg-muted animate-pulse rounded" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm" dir="rtl">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">#</th>
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">משתמש</th>
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">תאריך ישן</th>
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">תאריך חדש</th>
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">שונה ב</th>
+                            <th className="px-4 py-3 text-right font-semibold text-muted-foreground">כתובת IP</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(birthdateChangesQuery.data ?? [])
+                            .filter((r) =>
+                              !bdSearchTerm ||
+                              (r.userName ?? "").toLowerCase().includes(bdSearchTerm.toLowerCase())
+                            )
+                            .map((row, idx) => (
+                              <tr key={row.id} className={`border-b last:border-0 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}>
+                                <td className="px-4 py-3 text-muted-foreground">{row.id}</td>
+                                <td className="px-4 py-3">
+                                  <div className="font-medium">{row.userName ?? <span className="text-muted-foreground">—</span>}</div>
+                                  <div className="text-xs text-muted-foreground">ID: {row.userId}</div>
+                                </td>
+                                <td className="px-4 py-3 font-mono text-sm">
+                                  {row.oldBirthDate
+                                    ? new Date(row.oldBirthDate + "T00:00:00").toLocaleDateString("he-IL")
+                                    : <span className="text-muted-foreground text-xs">לא היה</span>
+                                  }
+                                </td>
+                                <td className="px-4 py-3 font-mono text-sm font-semibold">
+                                  {row.newBirthDate
+                                    ? new Date(row.newBirthDate + "T00:00:00").toLocaleDateString("he-IL")
+                                    : <span className="text-muted-foreground text-xs">—</span>
+                                  }
+                                </td>
+                                <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                                  {row.changedAt
+                                    ? new Date(row.changedAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
+                                    : "—"
+                                  }
+                                </td>
+                                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                                  {row.ipAddress ?? "—"}
+                                </td>
+                              </tr>
+                            ))
+                          }
+                        </tbody>
+                      </table>
+                      {(birthdateChangesQuery.data ?? []).filter((r) =>
+                        !bdSearchTerm ||
+                        (r.userName ?? "").toLowerCase().includes(bdSearchTerm.toLowerCase())
+                      ).length === 0 && (
+                        <div className="text-center py-10 text-muted-foreground">
+                          {birthdateChangesQuery.data?.length === 0
+                            ? "אין שינויי תאריך לידה במערכת"
+                            : "לא נמצאו תוצאות לחיפוש"}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Summary badge */}
+              {!birthdateChangesQuery.isLoading && birthdateChangesQuery.data && (
+                <p className="text-xs text-muted-foreground text-left">
+                  סה&quot;כ {birthdateChangesQuery.data.length} רשומות
+                </p>
+              )}
             </div>
           </TabsContent>
 

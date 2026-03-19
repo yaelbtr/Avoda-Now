@@ -138,6 +138,7 @@ import {
   adminGetAllReports,
   adminGetAllUsers,
   adminGetBatchById,
+  adminGetBirthdateChanges,
   adminGetReportedJobs,
   adminGetStats,
   adminRejectJob,
@@ -1337,6 +1338,17 @@ const adminRouter = router({
     .mutation(async ({ input }) => {
       await setSystemSetting("employerLock", input.active ? "true" : "false");
       return { success: true, active: input.active };
+    }),
+
+  /** Paginated audit log of all birthDate changes — for legal/compliance review */
+  getBirthdateChanges: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(200).default(50),
+      offset: z.number().int().min(0).default(0),
+    }))
+    .query(async ({ input }) => {
+      const rows = await adminGetBirthdateChanges({ limit: input.limit, offset: input.offset });
+      return rows;
     }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────

@@ -1787,8 +1787,8 @@ export default function WorkerProfile() {
             onClick={(e) => { if (e.target === e.currentTarget) { setBdConfirmOpen(false); setBdDeclared(false); } }}
           >
             <div
-              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 space-y-4"
-              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.15)" }}
+              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
+              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.15)", marginBottom: 0 }}
             >
               {/* Handle */}
               <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: "oklch(0.88 0.02 100)" }} />

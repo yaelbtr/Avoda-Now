@@ -3,7 +3,7 @@
  * All functions here are called only from adminProcedure-protected routes.
  */
 import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
-import { Job, applications, jobReports, jobs, notificationBatches, phoneChangeLogs, users } from "../drizzle/schema";
+import { BirthdateChange, Job, applications, birthdateChanges, jobReports, jobs, notificationBatches, phoneChangeLogs, users } from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
 
@@ -314,6 +314,37 @@ export async function adminCancelBatch(batchId: number) {
         eq(notificationBatches.status, "pending")
       )
     );
+}
+
+// ─── BirthDate Changes Audit ─────────────────────────────────────────────────
+
+/**
+ * Paginated list of all birthDate changes with user name/email joined.
+ * Ordered newest-first for the admin audit log.
+ */
+export async function adminGetBirthdateChanges(params: {
+  limit?: number;
+  offset?: number;
+}): Promise<Array<BirthdateChange & { userName: string | null; userEmail: string | null }>> {
+  const db = await getDb();
+  if (!db) return [];
+  const { limit = 50, offset = 0 } = params;
+  return db
+    .select({
+      id: birthdateChanges.id,
+      userId: birthdateChanges.userId,
+      oldBirthDate: birthdateChanges.oldBirthDate,
+      newBirthDate: birthdateChanges.newBirthDate,
+      changedAt: birthdateChanges.changedAt,
+      ipAddress: birthdateChanges.ipAddress,
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(birthdateChanges)
+    .innerJoin(users, eq(birthdateChanges.userId, users.id))
+    .orderBy(desc(birthdateChanges.changedAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 // ─── Phone Change Lockout ─────────────────────────────────────────────────────

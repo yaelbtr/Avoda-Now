@@ -2503,3 +2503,8 @@
 - [x] Frontend: rate-limit banner when canChangeAfter is set
 - [x] Frontend: utils.user.getBirthDateInfo.invalidate() called on success
 - [x] Tests: 689/689 passing (TypeScript 0 errors)
+
+## Fix — BirthDate Modal Truncated + Admin Audit View (Round 3g)
+- [x] Fix: confirmation dialog in WorkerProfile truncated by mobile nav bar — add pb-safe / padding-bottom
+- [x] Backend: getBirthdateChanges admin procedure (paginated, with user name/email)
+- [x] Frontend: birthdate_changes audit table in Admin Panel (user, old date, new date, changed_at, IP)

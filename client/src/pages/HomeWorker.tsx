@@ -355,7 +355,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               backdropFilter: "blur(10px)",
             }}
           >
-            <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+            <span className="animate-pulse">
+              <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+            </span>
             <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
               עבודות זמינות עכשיו
             </span>

@@ -138,13 +138,13 @@ describe("Signup consent flow", () => {
   it("blocks registration when termsAccepted is false", () => {
     const validateSignup = (termsAccepted: boolean, age18Accepted: boolean): string | null => {
       if (!termsAccepted) return "יש לאשר את תנאי השימוש";
-      if (!age18Accepted) return "יש לאשר כי הנך בן/בת 18 ומעלה";
+      if (!age18Accepted) return "יש לאשר כי הנך בן/בת 16 ומעלה";
       return null;
     };
 
     expect(validateSignup(false, false)).toBe("יש לאשר את תנאי השימוש");
     expect(validateSignup(false, true)).toBe("יש לאשר את תנאי השימוש");
-    expect(validateSignup(true, false)).toBe("יש לאשר כי הנך בן/בת 18 ומעלה");
+    expect(validateSignup(true, false)).toBe("יש לאשר כי הנך בן/בת 16 ומעלה");
     expect(validateSignup(true, true)).toBeNull();
   });
 

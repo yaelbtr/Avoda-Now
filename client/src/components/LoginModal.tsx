@@ -296,7 +296,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     if (activeTab === "register") {
       if (!regName.trim()) return toast.error("יש להכניס שם מלא");
       if (!termsAccepted) return toast.error("יש לאשר את תנאי השימוש");
-      if (!age18Accepted) return toast.error("יש לאשר כי הנך בן/בת 18 ומעלה");
+      if (!age18Accepted) return toast.error("יש לאשר כי הנך בן/בת 16 ומעלה");
       // Store registration data to pass to verifyOtp
       pendingRegData.current = { name: regName.trim(), email: regEmail.trim() };
     }
@@ -1394,7 +1394,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   />
                 </div>
                 <label htmlFor="reg-age18" className="text-sm leading-6 cursor-pointer" style={{ color: "#374151" }}>
-                  אני מאשר/ת כי אני בן/בת <strong>18 ומעלה</strong>
+                  אני מאשר/ת כי אני בן/בת <strong>16 ומעלה</strong>
                 </label>
               </div>
 

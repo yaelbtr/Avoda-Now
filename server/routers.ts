@@ -156,7 +156,7 @@ import { notifyOwner } from "./_core/notification";
 import { sendWelcomeEmail } from "./_core/email";
 import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
 import { authLogger, securityLogger, getClientIp } from "./logger";
-import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor } from "@shared/ageUtils";
+import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor, meetsMinAgeRequirement } from "@shared/ageUtils";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -468,6 +468,8 @@ const jobInputSchema = z.object({
   workEndTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   /** Up to 5 S3 image URLs uploaded by the employer */
   imageUrls: z.array(z.string().url()).max(5).optional(),
+  /** Minimum worker age: null = no restriction, 16 = 16+, 18 = adults only */
+  minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
 });
 
 const jobsRouter = router({
@@ -633,6 +635,7 @@ const jobsRouter = router({
         workStartTime: input.workStartTime ?? null,
         workEndTime: input.workEndTime ?? null,
         imageUrls: input.imageUrls ?? null,
+        minAge: input.minAge ?? null,
       });
       // Fire-and-forget: call external matching API to pre-compute matching workers
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
@@ -921,6 +924,14 @@ const jobsRouter = router({
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "משרה זו מסתיימת לאחר 22:00 ולכן לא מתאימה לעובדים מתחת לגיל 18",
+        });
+      }
+      // ── minAge requirement check ──────────────────────────────────────────────
+      if (!meetsMinAgeRequirement(age, job.minAge)) {
+        const required = job.minAge === 18 ? "18" : String(job.minAge);
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `משרה זו מיועדת לעובדים מגיל ${required} בלבד`,
         });
       }
       // ── End age gate ──────────────────────────────────────────────────────────
@@ -1996,14 +2007,17 @@ const userRouter = router({
       if (age === null || isTooYoung(age)) {
         return { accessible: false, reason: "too_young" as const };
       }
+      const job = await getJobById(input.jobId);
+      if (!job) {
+        return { accessible: false, reason: "job_not_found" as const };
+      }
       if (isMinor(age)) {
-        const job = await getJobById(input.jobId);
-        if (!job) {
-          return { accessible: false, reason: "job_not_found" as const };
-        }
         if (!isJobAccessibleToMinor(job.workEndTime)) {
           return { accessible: false, reason: "late_end_time" as const };
         }
+      }
+      if (!meetsMinAgeRequirement(age, job.minAge)) {
+        return { accessible: false, reason: "min_age_requirement" as const };
       }
       return { accessible: true, reason: null };
     }),

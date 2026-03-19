@@ -291,6 +291,12 @@ export const jobs = pgTable("jobs", {
   workStartTime: varchar("workStartTime", { length: 5 }),
   /** Work end time in HH:MM format (e.g. "18:00") */
   workEndTime: varchar("workEndTime", { length: 5 }),
+  /**
+   * Minimum worker age for this job.
+   * null = no restriction, 16 = must be 16+, 18 = must be 18+ (adults only).
+   * Enforced server-side in applyToJob.
+   */
+  minAge: integer("minAge"),
   /** JSON array of up to 5 S3 image URLs uploaded by the employer */
   imageUrls: json("imageUrls").$type<string[]>(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),

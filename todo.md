@@ -2445,3 +2445,14 @@
 - [x] Frontend: minor badge (16-17) on PublicWorkerProfile (isMinor from getPublicProfile) and MatchedWorkers (getWorkersMinorStatus batch query)
 - [x] Frontend: late-job warning in PostJob when workEndTime > 22:00 (shouldWarnLateJob from ageUtils)
 - [x] Tests: updated db mocks in applications.test.ts and bottomsheet.test.ts — 666/666 passing
+
+## Minor Worker Extensions (Round 2)
+- [x] DB: add minAge (integer, nullable, default null) to jobs table — values: null=no restriction, 16=16+, 18=18+
+- [x] Backend: minAge in createJob/updateJob procedures
+- [x] Backend: server-side age enforcement in applyToJob — block if worker age < job.minAge
+- [x] Backend: filter getWorkersMatchingJob to exclude workers younger than job.minAge
+- [x] Frontend: minAge selector in PostJob form (null / 16+ / 18+)
+- [x] Frontend: minAge badge on job cards and JobDetails ("גיל מינימלי: 18+")
+- [x] Frontend: age gate warning in WorkerAvailability (HomeWorker duration dialog) when end time > 22:00 for minors
+- [x] Frontend: legal link in BirthDateModal — "תנאי עבודה לנוער" → חוק עבודת נוער
+- [x] Tests: meetsMinAgeRequirement + minAgeLabel tests added — 681/681 passing

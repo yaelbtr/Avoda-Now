@@ -25,6 +25,7 @@ import {
   WARTIME_CATEGORIES,
   SEASONAL_CATEGORIES,
 } from "@shared/categories";
+import { minAgeLabel } from "@shared/ageUtils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,7 @@ export interface JobCardJob {
   jobDate?: string | null;
   workStartTime?: string | null;
   workEndTime?: string | null;
+  minAge?: number | null;
 }
 
 export interface JobCardProps {
@@ -742,7 +744,7 @@ export function JobCard({
         </div>
 
         {/* ── Row 1b: Status badges ── */}
-        {(job.isUrgent || isJobDateToday || (isToday && !isJobDateToday) || isHighMatch || isWartime || isSeasonal || isNew) && (
+        {(job.isUrgent || isJobDateToday || (isToday && !isJobDateToday) || isHighMatch || isWartime || isSeasonal || isNew || job.minAge) && (
           <div className="flex items-center gap-2 flex-wrap -mt-2">
             {job.isUrgent && (
               <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
@@ -772,6 +774,12 @@ export function JobCard({
             )}
             {isSeasonal && (
               <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 bg-amber-50 text-amber-600 border border-amber-200">🫓 פסח</span>
+            )}
+            {job.minAge && (
+              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
+                style={{ background: "rgba(239,68,68,0.08)", color: "rgb(185,28,28)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                🔞 {minAgeLabel(job.minAge)}
+              </span>
             )}
             {isNew && !job.isUrgent && !isJobDateToday && !isToday && (
               <span className="relative inline-flex items-center gap-1">

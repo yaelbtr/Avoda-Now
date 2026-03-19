@@ -9,6 +9,8 @@ import {
   isTooYoung,
   isJobAccessibleToMinor,
   shouldWarnLateJob,
+  meetsMinAgeRequirement,
+  minAgeLabel,
   MIN_WORKER_AGE,
   MINOR_MAX_AGE,
   MINOR_END_TIME_CUTOFF,
@@ -158,6 +160,57 @@ describe("shouldWarnLateJob", () => {
 
   it("returns true for late night (23:30)", () => {
     expect(shouldWarnLateJob("23:30")).toBe(true);
+  });
+});
+
+describe("meetsMinAgeRequirement", () => {
+  it("returns true when minAge is null (no restriction)", () => {
+    expect(meetsMinAgeRequirement(16, null)).toBe(true);
+  });
+  it("returns true when minAge is undefined (no restriction)", () => {
+    expect(meetsMinAgeRequirement(16, undefined)).toBe(true);
+  });
+  it("returns true when minAge is 0 (no restriction)", () => {
+    expect(meetsMinAgeRequirement(16, 0)).toBe(true);
+  });
+  it("returns false when age is null (unknown — block by default)", () => {
+    expect(meetsMinAgeRequirement(null, 18)).toBe(false);
+  });
+  it("returns true when worker age equals minAge (16 >= 16)", () => {
+    expect(meetsMinAgeRequirement(16, 16)).toBe(true);
+  });
+  it("returns true when worker age exceeds minAge (25 >= 18)", () => {
+    expect(meetsMinAgeRequirement(25, 18)).toBe(true);
+  });
+  it("returns false when worker age is below minAge (16 < 18)", () => {
+    expect(meetsMinAgeRequirement(16, 18)).toBe(false);
+  });
+  it("returns false when worker age is below minAge (17 < 18)", () => {
+    expect(meetsMinAgeRequirement(17, 18)).toBe(false);
+  });
+  it("returns true when worker is exactly 18 and minAge is 18", () => {
+    expect(meetsMinAgeRequirement(18, 18)).toBe(true);
+  });
+});
+
+describe("minAgeLabel", () => {
+  it("returns null for null minAge", () => {
+    expect(minAgeLabel(null)).toBeNull();
+  });
+  it("returns null for undefined minAge", () => {
+    expect(minAgeLabel(undefined)).toBeNull();
+  });
+  it("returns null for 0 minAge", () => {
+    expect(minAgeLabel(0)).toBeNull();
+  });
+  it("returns Hebrew label for minAge 18", () => {
+    expect(minAgeLabel(18)).toBe("מבוגרים בלבד (18+)");
+  });
+  it("returns Hebrew label for minAge 16", () => {
+    expect(minAgeLabel(16)).toBe("גיל 16+");
+  });
+  it("returns generic label for other values", () => {
+    expect(minAgeLabel(21)).toBe("גיל 21+");
   });
 });
 

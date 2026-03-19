@@ -21,6 +21,7 @@ import {
   getCategoryIcon, getCategoryLabel, formatSalary,
   getStartTimeLabel, formatDistance,
 } from "@shared/categories";
+import { minAgeLabel } from "@shared/ageUtils";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
 import { BirthDateModal } from "@/components/BirthDateModal";
@@ -378,6 +379,12 @@ export default function JobDetails() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200">
                     <Timer className="h-3 w-3" />
                     {expiryText}
+                  </span>
+                )}
+                {(job as any).minAge && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                    style={{ background: "rgba(239,68,68,0.08)", color: "rgb(185,28,28)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                    🔞 {minAgeLabel((job as any).minAge)}
                   </span>
                 )}
               </div>

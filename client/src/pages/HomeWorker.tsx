@@ -22,6 +22,7 @@ import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { toast } from "sonner";
+import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
@@ -222,6 +223,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   );
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
+  // Age-gate: fetch birth date info to warn minors about late availability
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+  const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
   const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
   const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
   const utils = trpc.useUtils();
@@ -1443,20 +1450,46 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               בחר את משך הזמינות. הזמינות תתבטל אוטומטית בסוף הזמן.
             </DialogDescription>
           </DialogHeader>
+          {/* Minor warning: shown when any duration option would cross 22:00 */}
+          {workerIsMinor && (() => {
+            const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+            const wouldCross = [2, 4, 8].some(h => nowMins + h * 60 > 22 * 60);
+            if (!wouldCross) return null;
+            return (
+              <div className="flex items-start gap-2 rounded-lg p-3 text-sm mb-2"
+                style={{ backgroundColor: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.4)" }}>
+                <span className="text-base mt-0.5">⚠️</span>
+                <p className="text-right leading-snug" style={{ color: "var(--amber)" }}>
+                  כקטין/ה, אסור לעבוד לאחר 22:00 לפי חוק עבודת נוער. בחר/י משך שאינו חוצה את השעה 22:00.
+                </p>
+              </div>
+            );
+          })()}
           <div className="grid grid-cols-3 gap-3 mt-2">
-            {([2, 4, 8] as const).map((h) => (
+            {([2, 4, 8] as const).map((h) => {
+              const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+              const crossesCutoff = workerIsMinor && (nowMins + h * 60 > 22 * 60);
+              return (
               <motion.button
                 key={h}
                 onClick={() => confirmAvailability(h)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all font-bold"
-                style={{ borderColor: "var(--border)", color: "var(--brand)" }}
+                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all font-bold relative"
+                style={{
+                  borderColor: crossesCutoff ? "rgba(251,191,36,0.6)" : "var(--border)",
+                  color: "var(--brand)",
+                  opacity: crossesCutoff ? 0.7 : 1,
+                }}
               >
-                <span className="text-2xl font-extrabold" style={{ color: "var(--amber)" }}>{h}</span>
+                {crossesCutoff && (
+                  <span className="absolute top-1 left-1 text-xs" title="חוצה 22:00">⚠️</span>
+                )}
+                <span className="text-2xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
                 <span className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>שעות</span>
               </motion.button>
-            ))}
+              );
+            })}
           </div>
           <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
         </DialogContent>

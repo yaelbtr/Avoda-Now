@@ -29,6 +29,13 @@
       "when": 1773888946012,
       "tag": "0003_busy_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773891232445,
+      "tag": "0004_next_magik",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@
  *  - Workers aged 16–17 are considered minors.
  *  - Minor workers can only see jobs where workEndTime <= "22:00".
  *  - Workers 18+ have no time restrictions.
+ *  - Jobs may specify a minAge (16 or 18); workers not meeting it are blocked.
  */
 
 export const MIN_WORKER_AGE = 16;
@@ -63,4 +64,29 @@ export function isJobAccessibleToMinor(workEndTime: string | null | undefined): 
 export function shouldWarnLateJob(workEndTime: string | null | undefined): boolean {
   if (!workEndTime) return false;
   return workEndTime > MINOR_END_TIME_CUTOFF;
+}
+
+/**
+ * Returns true if a worker's age meets the job's minimum age requirement.
+ * If minAge is null/undefined/0, there is no restriction → always true.
+ * If age is null (unknown), we block to be safe → false.
+ */
+export function meetsMinAgeRequirement(
+  age: number | null,
+  minAge: number | null | undefined,
+): boolean {
+  if (!minAge) return true; // No restriction
+  if (age === null) return false; // Unknown age → block
+  return age >= minAge;
+}
+
+/**
+ * Returns a human-readable Hebrew label for a minAge value.
+ * Used on job cards and PostJob form.
+ */
+export function minAgeLabel(minAge: number | null | undefined): string | null {
+  if (!minAge) return null;
+  if (minAge === 18) return "מבוגרים בלבד (18+)";
+  if (minAge === 16) return "גיל 16+";
+  return `גיל ${minAge}+`;
 }

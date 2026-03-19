@@ -20,7 +20,7 @@ import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { shouldWarnLateJob } from "@shared/ageUtils";
+import { shouldWarnLateJob, minAgeLabel } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
@@ -84,6 +84,7 @@ export default function PostJob() {
   const [jobDateTouched, setJobDateTouched] = useState(false);
   const [workStartTime, setWorkStartTime] = useState("");
   const [workEndTime, setWorkEndTime] = useState("");
+  const [minAge, setMinAge] = useState<16 | 18 | null>(null);
   const [jobImages, setJobImages] = useState<string[]>([]); // S3 URLs
   const [uploadingImages, setUploadingImages] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -342,6 +343,7 @@ export default function PostJob() {
       workStartTime: workStartTime || undefined,
       workEndTime: workEndTime || undefined,
       imageUrls: jobImages.length > 0 ? jobImages : undefined,
+      minAge: minAge ?? undefined,
     });
   };
 
@@ -900,6 +902,44 @@ export default function PostJob() {
           </div>
         </div>
 
+        {/* Minimum Age Requirement */}
+        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+          <div>
+            <h2 className="font-semibold text-foreground text-right mb-1">הגבלת גיל מינימלי <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></h2>
+            <p className="text-xs text-muted-foreground text-right mb-3">קבע גיל מינימלי לעובדים. ברירת מחדל: ללא הגבלה.</p>
+            <div className="flex flex-wrap gap-2">
+              {([null, 16, 18] as const).map((val) => (
+                <button
+                  key={String(val)}
+                  type="button"
+                  onClick={() => setMinAge(val)}
+                  className="px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all"
+                  style={minAge === val ? {
+                    background: "var(--brand)",
+                    borderColor: "var(--brand)",
+                    color: "white",
+                  } : {
+                    background: "transparent",
+                    borderColor: "var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                >
+                  {val === null ? "ללא הגבלה" : val === 18 ? "מבוגרים בלבד (18+)" : "גיל 16+"}
+                </button>
+              ))}
+            </div>
+            {minAge === 18 && (
+              <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>
+                ℹ️ משרה זו תוצג לעובדים בני 18 ומעלה בלבד.
+              </p>
+            )}
+            {minAge === 16 && (
+              <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>
+                ℹ️ משרה זו תוצג לעובדים בני 16 ומעלה (כולל קטינים).
+              </p>
+            )}
+          </div>
+        </div>
         {/* Job Images */}
         <div className="bg-card rounded-xl border border-border p-5 space-y-4">
           <div className="flex items-center justify-between">

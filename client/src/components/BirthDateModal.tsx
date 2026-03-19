@@ -125,6 +125,20 @@ export function BirthDateModal({ isOpen, onClose, onSuccess, jobId }: BirthDateM
             </Label>
           </div>
 
+          {/* Legal reference link */}
+          <p className="text-xs text-right" style={{ color: "var(--muted-foreground)" }}>
+            לפרטים על זכויות עובדים צעירים, ראה/י את{" "}
+            <a
+              href="https://www.nevo.co.il/law_html/Law01/P220_001.htm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80 transition-opacity"
+              style={{ color: "var(--brand)" }}
+            >
+              חוק עבודת נוער, תשי"ג-1953
+            </a>
+            .
+          </p>
           {/* Error message */}
           {localError && (
             <div className="flex items-center gap-2 text-destructive text-sm p-2 rounded-md bg-destructive/10">

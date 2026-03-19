@@ -86,13 +86,17 @@ export default function WorkerProfile() {
   });
 
   const { categories: dbCategories } = useCategories();
-  // Map DB categories to the shape expected by the UI
-  const PREFERENCE_CATEGORIES = dbCategories.map(c => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
-
   const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
   const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, { enabled: isAuthenticated });
+
+  // Map DB categories to the shape expected by the UI
+  // Hide allowedForMinors=false categories when the worker is a minor (reuses birthDateInfoQuery above)
+  const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
+  const PREFERENCE_CATEGORIES = dbCategories
+    .filter(c => !isCurrentUserMinor || c.allowedForMinors !== false)
+    .map(c => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
   const utils = trpc.useUtils();
 
   // BirthDate update state

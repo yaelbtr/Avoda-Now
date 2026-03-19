@@ -2568,3 +2568,7 @@
 - [x] הוסף קריאה ל-getBirthDateInfo ב-FindJobs כדי לדעת אם המשתמש קטין
 - [x] סנן את dbCategories בפאנל הסינון: הסתר קטגוריות עם allowedForMinors=false כאשר isMinor=true
 - [x] הסר קטגוריות מוגבלות מ-selectedCategories אם המשתמש קטין ויש בחירה שמורה
+
+## Bug Fix — סינון קטגוריות מוגבלות בפרופיל עובד לקטינים (Round 3u)
+- [x] שימוש ב-birthDateInfoQuery הקיים ב-WorkerProfile כדי לגזור isCurrentUserMinor
+- [x] סינון PREFERENCE_CATEGORIES: הסתר קטגוריות עם allowedForMinors=false כאשר isMinor=true

@@ -120,6 +120,8 @@ import {
   queryJobs,
   updateBirthDateWithAudit,
   getLastBirthDateChange,
+  logEvent,
+  getLogs,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -211,6 +213,10 @@ const authRouter = router({
       if (!input.isRegistration) {
         const isPrivilegedUser = existingUser && existingUser.role === "admin";
         if (!existingUser || (!existingUser.termsAcceptedAt && !isPrivilegedUser)) {
+          void logEvent("warn", "otp.send.blocked.not_registered", "Login OTP blocked — phone not registered", {
+            phone,
+            meta: { channel: input.channel, existsInDb: !!existingUser, hasTerms: !!existingUser?.termsAcceptedAt },
+          });
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "מספר זה אינו רשום במערכת.",
@@ -259,6 +265,10 @@ const authRouter = router({
         const allowed = await checkAndIncrementSendRate(phone, ip);
         if (!allowed) {
           securityLogger.warn({ ip, phone: phone.slice(-4), event: "otp_rate_limit_exceeded" }, "OTP rate limit exceeded");
+          void logEvent("warn", "otp.send.rate_limited", "OTP send rate limit exceeded", {
+            phone,
+            meta: { ip, channel: input.channel, isRegistration: input.isRegistration },
+          });
           throw new TRPCError({
             code: "TOO_MANY_REQUESTS",
             message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
@@ -286,12 +296,20 @@ const authRouter = router({
       }
 
       if (!result.success) {
+        void logEvent("error", "otp.send.failed", "OTP send failed via provider", {
+          phone,
+          meta: { channel: input.channel, error: result.error, isRegistration: input.isRegistration },
+        });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסה שוב בעוד מספר דקות.",
         });
       }
 
+      void logEvent("info", "otp.send.success", "OTP sent successfully", {
+        phone,
+        meta: { channel: input.channel, isRegistration: input.isRegistration },
+      });
       return { success: true, phone };
     }),
 
@@ -348,6 +366,7 @@ const authRouter = router({
       const attemptAllowed = await checkAndIncrementVerifyAttempts(phone);
       if (!attemptAllowed) {
         securityLogger.warn({ phone: phone.slice(-4), event: "otp_verify_rate_limit" }, "OTP verify rate limit exceeded");
+        void logEvent("warn", "otp.verify.rate_limited", "OTP verify rate limit exceeded", { phone });
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "מספר הניסיונות המרבי הגיע. בקש קוד חדש.",
@@ -359,6 +378,10 @@ const authRouter = router({
 
       if (!result.success || !result.approved) {
         securityLogger.warn({ phone: phone.slice(-4), event: "otp_verify_failed" }, "OTP verification failed");
+        void logEvent("warn", "otp.verify.failed", "OTP code rejected by provider", {
+          phone,
+          meta: { error: result.error },
+        });
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: result.error ?? "קוד האימות שגוי.",
@@ -380,15 +403,22 @@ const authRouter = router({
         }
         try {
           user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone);
+          void logEvent("info", "signup.user_created", "New user created via phone OTP", {
+            phone,
+            userId: user?.id,
+            meta: { name: input.name, hasEmail: !!input.email },
+          });
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : "";
           if (msg.startsWith("PHONE_DUPLICATE:")) {
+            void logEvent("warn", "signup.phone_duplicate", "Phone duplicate detected during signup", { phone });
             // Another account with the same number (different format) already exists
             throw new TRPCError({
               code: "CONFLICT",
               message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר.",
             });
           }
+          void logEvent("error", "signup.create_user_failed", `Failed to create user: ${msg}`, { phone, meta: { error: msg } });
           throw err;
         }
         // Send welcome email non-blocking (fire-and-forget)
@@ -427,6 +457,11 @@ const authRouter = router({
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
       authLogger.info({ userId: user.id, event: "login_success", method: "phone_otp" }, "User logged in via OTP");
+      void logEvent("info", "otp.verify.success", "OTP verified — user logged in", {
+        phone,
+        userId: user.id,
+        meta: { isNewUser: !!input.termsAccepted },
+      });
       const isNewUser = !input.termsAccepted ? false : true;
       return { success: true, user, isNewUser };
     }),
@@ -1360,6 +1395,25 @@ const adminRouter = router({
       const rows = await adminGetBirthdateChanges({ limit: input.limit, offset: input.offset });
       return rows;
     }),
+
+  /** Paginated system logs with phone/level/event filters — for debugging and support */
+  getSystemLogs: adminProcedure
+    .input(z.object({
+      phone: z.string().max(32).optional(),
+      level: z.enum(["info", "warn", "error"]).optional(),
+      event: z.string().max(128).optional(),
+      limit: z.number().int().min(1).max(200).default(50),
+      offset: z.number().int().min(0).default(0),
+    }))
+    .query(async ({ input }) => {
+      return getLogs({
+        phone: input.phone,
+        level: input.level,
+        event: input.event,
+        limit: input.limit,
+        offset: input.offset,
+      });
+    }),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
 
@@ -1538,25 +1592,40 @@ const userRouter = router({
           if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
         } catch { normalizedPhone = undefined; }
       }
-      await updateWorkerProfile(ctx.user.id, {
-        name: input.name,
-        phone: normalizedPhone,
-        locationMode: input.locationMode,
-        preferredCity: input.preferredCity,
-        workerLatitude: input.workerLatitude,
-        workerLongitude: input.workerLongitude,
-        searchRadiusKm: input.searchRadiusKm ?? undefined,
-        preferredCategories: input.preferredCategories,
-        preferenceText: input.preferenceText,
-        expectedHourlyRate: input.expectedHourlyRate,
-        workerBio: input.workerBio,
-        availabilityStatus: input.availabilityStatus,
-        preferredDays: input.preferredDays,
-        preferredTimeSlots: input.preferredTimeSlots,
-        preferredCities: input.preferredCities,
-        signupCompleted: true,
-      });
-      return { success: true };
+      try {
+        await updateWorkerProfile(ctx.user.id, {
+          name: input.name,
+          phone: normalizedPhone,
+          locationMode: input.locationMode,
+          preferredCity: input.preferredCity,
+          workerLatitude: input.workerLatitude,
+          workerLongitude: input.workerLongitude,
+          searchRadiusKm: input.searchRadiusKm ?? undefined,
+          preferredCategories: input.preferredCategories,
+          preferenceText: input.preferenceText,
+          expectedHourlyRate: input.expectedHourlyRate,
+          workerBio: input.workerBio,
+          availabilityStatus: input.availabilityStatus,
+          preferredDays: input.preferredDays,
+          preferredTimeSlots: input.preferredTimeSlots,
+          preferredCities: input.preferredCities,
+          signupCompleted: true,
+        });
+        void logEvent("info", "signup.complete", "Worker completed signup wizard", {
+          userId: ctx.user.id,
+          phone: ctx.user.phone ?? normalizedPhone,
+          meta: { name: input.name, locationMode: input.locationMode, categories: input.preferredCategories },
+        });
+        return { success: true };
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        void logEvent("error", "signup.complete.failed", `completeSignup failed: ${msg}`, {
+          userId: ctx.user.id,
+          phone: ctx.user.phone ?? normalizedPhone,
+          meta: { error: msg },
+        });
+        throw err;
+      }
     }),
   /** Update the current user's worker profile */
   updateProfile: protectedProcedure

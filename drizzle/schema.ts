@@ -706,3 +706,29 @@ export const birthdateChanges = pgTable("birthdate_changes", {
 });
 export type BirthdateChange = typeof birthdateChanges.$inferSelect;
 export type InsertBirthdateChange = typeof birthdateChanges.$inferInsert;
+
+// ─── System Logs ──────────────────────────────────────────────────────────────
+/**
+ * system_logs — centralised event/error log for debugging and support.
+ *
+ * level:  "info" | "warn" | "error"
+ * event:  machine-readable key, e.g. "otp.send", "otp.verify.fail", "signup.complete"
+ * phone:  normalised phone string for fast filtering (nullable for non-phone events)
+ * userId: FK to users if the actor is known at log time (nullable for pre-auth events)
+ * message: human-readable description of what happened
+ * meta:   arbitrary JSON payload (request params, error details, etc.)
+ */
+export const logLevelEnum = pgEnum("log_level", ["info", "warn", "error"]);
+
+export const systemLogs = pgTable("system_logs", {
+  id: serial("id").primaryKey(),
+  level: logLevelEnum("level").notNull().default("info"),
+  event: varchar("event", { length: 128 }).notNull(),
+  phone: varchar("phone", { length: 32 }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+  message: text("message").notNull(),
+  meta: json("meta"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+export type SystemLog = typeof systemLogs.$inferSelect;
+export type InsertSystemLog = typeof systemLogs.$inferInsert;

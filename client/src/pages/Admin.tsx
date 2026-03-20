@@ -42,6 +42,11 @@ import {
   XCircle,
   Zap,
   LogOut,
+  FileText,
+  AlertCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -147,6 +152,22 @@ export default function Admin() {
   const birthdateChangesQuery = trpc.admin.getBirthdateChanges.useQuery(
     { limit: 200, offset: 0 },
     { enabled: !!user && user.role === "admin" && activeTab === "birthdate-audit" }
+  );
+
+  // System Logs state
+  const [logsPhoneFilter, setLogsPhoneFilter] = useState("");
+  const [logsLevelFilter, setLogsLevelFilter] = useState<"" | "info" | "warn" | "error">("error");
+  const [logsOffset, setLogsOffset] = useState(0);
+  const LOGS_PAGE_SIZE = 50;
+  const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
+  const logsQuery = trpc.admin.getSystemLogs.useQuery(
+    {
+      phone: logsPhoneFilter.trim() || undefined,
+      level: logsLevelFilter || undefined,
+      limit: LOGS_PAGE_SIZE,
+      offset: logsOffset,
+    },
+    { enabled: !!user && user.role === "admin" && activeTab === "system-logs" }
   );
 
   // Mutations
@@ -313,6 +334,7 @@ export default function Admin() {
               { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
               { value: "employer-lock", icon: <Lock className="w-4 h-4" />, label: "נעילת מעסיקים" },
               { value: "birthdate-audit", icon: <Calendar className="w-4 h-4" />, label: "ביקורת גיל" },
+              { value: "system-logs", icon: <FileText className="w-4 h-4" />, label: "לוגים" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -385,6 +407,10 @@ export default function Admin() {
             <TabsTrigger value="birthdate-audit" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               ביקורת גיל
+            </TabsTrigger>
+            <TabsTrigger value="system-logs" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              לוגים
             </TabsTrigger>
           </TabsList>
 
@@ -1371,6 +1397,176 @@ export default function Admin() {
               {!birthdateChangesQuery.isLoading && birthdateChangesQuery.data && (
                 <p className="text-xs text-muted-foreground text-left">
                   סה&quot;כ {birthdateChangesQuery.data.length} רשומות
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* ─── System Logs Tab ─── */}
+          <TabsContent value="system-logs">
+            <div className="space-y-4" dir="rtl">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">לוג אירועים ושגיאות</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    רשומים מהשרת לאיתור בעיות הרשמה והתחברות. ניתן לסנן לפי מספר טלפון.
+                  </p>
+                </div>
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => { utils.admin.getSystemLogs.invalidate(); }}
+                >
+                  רענן
+                </AppButton>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex-1 min-w-[180px]">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">חיפוש לפי טלפון</label>
+                  <AppInput
+                    placeholder="לדוגמא: 0559258668"
+                    value={logsPhoneFilter}
+                    onChange={(e) => { setLogsPhoneFilter(e.target.value); setLogsOffset(0); }}
+                    dir="ltr"
+                  />
+                </div>
+                <div className="min-w-[140px]">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">רמת חומרה</label>
+                  <AppSelect
+                    value={logsLevelFilter}
+                    onChange={(e) => { setLogsLevelFilter(e.target.value as "" | "info" | "warn" | "error"); setLogsOffset(0); }}
+                    options={[
+                      { value: "", label: "כל הרמות" },
+                      { value: "error", label: "שגיאות" },
+                      { value: "warn", label: "אזהרות" },
+                      { value: "info", label: "מידע" },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* Logs Table */}
+              {logsQuery.isLoading ? (
+                <div className="space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Card key={i}><CardContent className="pt-4"><div className="h-10 bg-muted animate-pulse rounded" /></CardContent></Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm" dir="rtl">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground w-16">רמה</th>
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground">אירוע</th>
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground">טלפון</th>
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground">הודעה</th>
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground">זמן</th>
+                            <th className="px-3 py-3 text-right font-semibold text-muted-foreground w-8"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(logsQuery.data?.rows ?? []).map((row, idx) => (
+                            <>
+                              <tr
+                                key={row.id}
+                                className={`border-b cursor-pointer hover:bg-muted/30 transition-colors ${
+                                  idx % 2 === 0 ? "" : "bg-muted/10"
+                                }`}
+                                onClick={() => setExpandedLogId(expandedLogId === row.id ? null : row.id)}
+                              >
+                                <td className="px-3 py-2.5">
+                                  {row.level === "error" ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                      <AlertCircle className="w-3 h-3" />שגיאה
+                                    </span>
+                                  ) : row.level === "warn" ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                      <AlertTriangle className="w-3 h-3" />אזהרה
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                      <Info className="w-3 h-3" />מידע
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground max-w-[160px] truncate">{row.event}</td>
+                                <td className="px-3 py-2.5 font-mono text-xs">{row.phone ?? <span className="text-muted-foreground">—</span>}</td>
+                                <td className="px-3 py-2.5 text-sm max-w-[280px] truncate">{row.message}</td>
+                                <td className="px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap">
+                                  {new Date(row.createdAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {expandedLogId === row.id
+                                    ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                    : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                  }
+                                </td>
+                              </tr>
+                              {expandedLogId === row.id && (
+                                <tr key={`${row.id}-meta`} className="bg-muted/20">
+                                  <td colSpan={6} className="px-4 py-3">
+                                    <div className="text-xs space-y-1">
+                                      <div><span className="font-semibold">הודעה מלאה:</span> {row.message}</div>
+                                      {row.userId && <div><span className="font-semibold">User ID:</span> {row.userId}</div>}
+                                      {row.meta != null && (
+                                        <div>
+                                          <span className="font-semibold">Meta:</span>
+                                          <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto font-mono">
+                                            {JSON.stringify(row.meta, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </>
+                          ))}
+                        </tbody>
+                      </table>
+                      {(logsQuery.data?.rows ?? []).length === 0 && (
+                        <div className="text-center py-10 text-muted-foreground">
+                          {logsQuery.isFetched ? "אין תוצאות לפי הסנן" : ""}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pagination */}
+              {logsQuery.data && logsQuery.data.total > LOGS_PAGE_SIZE && (
+                <div className="flex items-center justify-between text-sm">
+                  <AppButton
+                    variant="secondary"
+                    size="sm"
+                    disabled={logsOffset === 0}
+                    onClick={() => setLogsOffset(Math.max(0, logsOffset - LOGS_PAGE_SIZE))}
+                  >
+                    עמוד קודם
+                  </AppButton>
+                  <span className="text-muted-foreground">
+                    רשומות {logsOffset + 1}–{Math.min(logsOffset + LOGS_PAGE_SIZE, logsQuery.data.total)} מתוך {logsQuery.data.total}
+                  </span>
+                  <AppButton
+                    variant="secondary"
+                    size="sm"
+                    disabled={logsOffset + LOGS_PAGE_SIZE >= logsQuery.data.total}
+                    onClick={() => setLogsOffset(logsOffset + LOGS_PAGE_SIZE)}
+                  >
+                    עמוד הבא
+                  </AppButton>
+                </div>
+              )}
+
+              {logsQuery.data && (
+                <p className="text-xs text-muted-foreground text-left">
+                  סה&quot;כ {logsQuery.data.total} רשומות
                 </p>
               )}
             </div>

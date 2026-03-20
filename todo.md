@@ -2656,3 +2656,13 @@
 ## Round 4l: Fix Blank Page on "הגדר התראות" Button
 - [x] Find the "הגדר התראות" button in "בקרוב אצלכם" screen and trace navigation target
 - [x] Fix blank page rendering when navigating to the target route
+
+## Round 5a: System Logs Table + Admin Panel
+- [x] Add system_logs table to drizzle/schema.ts (id, level, event, phone, userId, message, meta, createdAt)
+- [x] Push migration with pnpm db:push
+- [x] Add logEvent() helper to server/db.ts
+- [x] Wire logEvent() into sendOtp, verifyOtp, completeSignup, login procedures
+- [x] Add getLogs tRPC procedure (admin only) with phone + level filters
+- [x] Build admin logs tab in Admin.tsx with phone filter, level badge, expandable meta
+- [x] Added as a tab in existing Admin.tsx (no separate route needed)
+- [x] Write vitest tests for logEvent helper (9 tests passing)

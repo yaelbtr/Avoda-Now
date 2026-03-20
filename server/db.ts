@@ -39,6 +39,8 @@ import {
   LegalAcknowledgement,
   birthdateChanges,
   BirthdateChange,
+  systemLogs,
+  SystemLog,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
@@ -2987,4 +2989,81 @@ export async function getWorkersMinorStatus(workerIds: number[]): Promise<Record
     result[row.id] = calcIsMinor(calcAge(row.birthDate)) ?? false;
   }
   return result;
+}
+
+// ─── System Logs ─────────────────────────────────────────────────────────────
+
+/**
+ * logEvent — fire-and-forget structured event logger.
+ *
+ * Designed to never throw: if the DB is unavailable the error is silently
+ * swallowed so logging never breaks the primary request path.
+ *
+ * @param level   "info" | "warn" | "error"
+ * @param event   machine-readable dot-separated key, e.g. "otp.send", "signup.fail"
+ * @param message human-readable description
+ * @param opts    optional phone, userId, and arbitrary meta payload
+ */
+export async function logEvent(
+  level: "info" | "warn" | "error",
+  event: string,
+  message: string,
+  opts?: { phone?: string; userId?: number; meta?: Record<string, unknown> }
+): Promise<void> {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    await db.insert(systemLogs).values({
+      level,
+      event,
+      message,
+      phone: opts?.phone ?? null,
+      userId: opts?.userId ?? null,
+      meta: opts?.meta ?? null,
+    });
+  } catch {
+    // Intentionally silent — logging must never crash the caller
+  }
+}
+
+/**
+ * getLogs — paginated query for the admin logs panel.
+ *
+ * Filters: phone (partial match), level, event prefix.
+ * Returns rows newest-first.
+ */
+export async function getLogs(params: {
+  phone?: string;
+  level?: "info" | "warn" | "error";
+  event?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ rows: SystemLog[]; total: number }> {
+  const db = await getDb();
+  if (!db) return { rows: [], total: 0 };
+
+  const { phone, level, event, limit = 50, offset = 0 } = params;
+
+  const conditions = [];
+  if (phone) conditions.push(like(systemLogs.phone, `%${phone}%`));
+  if (level) conditions.push(eq(systemLogs.level, level));
+  if (event) conditions.push(like(systemLogs.event, `${event}%`));
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [rows, totalResult] = await Promise.all([
+    db
+      .select()
+      .from(systemLogs)
+      .where(where)
+      .orderBy(desc(systemLogs.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(systemLogs)
+      .where(where),
+  ]);
+
+  return { rows, total: totalResult[0]?.count ?? 0 };
 }

@@ -2717,3 +2717,9 @@
 - [x] Fix twilio.otp.test.ts mock to use importOriginal pattern (fixes 10 pre-existing test failures)
 - [x] Add 7 unit tests for splitIsraeliE164Phone in smsProvider.test.ts
 - [x] 760/760 tests passing
+
+## Round 5i: SendGrid Secrets Configuration
+- [x] Added SENDGRID_API_KEY to environment secrets
+- [x] Added EMAIL_FROM to environment secrets
+- [x] Created sendgrid.credentials.test.ts — validates API key format + live SendGrid API call
+- [x] 763/763 tests passing (3 new credential validation tests)

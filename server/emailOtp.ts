@@ -12,7 +12,7 @@
 import crypto from "crypto";
 import sgMail from "@sendgrid/mail";
 import { getDb } from "./db";
-import { emailVerifications } from "../drizzle/schema";
+import { emailVerifications, emailUnsubscribes } from "../drizzle/schema";
 import { eq, desc, and, gt } from "drizzle-orm";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -163,6 +163,85 @@ export async function verifyEmailOtp(
   return "ok";
 }
 
+// ─── Unsubscribe helpers ─────────────────────────────────────────────────────
+
+/** Generate a cryptographically secure random unsubscribe token (hex, 32 bytes). */
+export function generateUnsubscribeToken(): string {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+/**
+ * Upsert an unsubscribe token for the given email.
+ * Returns the token (existing or newly created).
+ * Call this before sending any marketing email.
+ */
+export async function getOrCreateUnsubscribeToken(email: string): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [existing] = await db
+    .select({ token: emailUnsubscribes.token })
+    .from(emailUnsubscribes)
+    .where(eq(emailUnsubscribes.email, email))
+    .limit(1);
+
+  if (existing) return existing.token;
+
+  const token = generateUnsubscribeToken();
+  await db.insert(emailUnsubscribes).values({ email, token });
+  return token;
+}
+
+/**
+ * Build the unsubscribe URL for a given token.
+ * Uses the production domain by default; falls back to localhost in dev.
+ */
+export function buildUnsubscribeUrl(token: string): string {
+  const base = process.env.APP_BASE_URL ?? "https://avodanow.co.il";
+  return `${base}/unsubscribe?token=${token}`;
+}
+
+/**
+ * Confirm an unsubscribe request by token.
+ * Returns the email that was unsubscribed, or null if token not found.
+ */
+export async function confirmUnsubscribe(token: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [record] = await db
+    .select()
+    .from(emailUnsubscribes)
+    .where(eq(emailUnsubscribes.token, token))
+    .limit(1);
+
+  if (!record) return null;
+
+  await db
+    .update(emailUnsubscribes)
+    .set({ unsubscribedAt: new Date() })
+    .where(eq(emailUnsubscribes.token, token));
+
+  return record.email;
+}
+
+/**
+ * Check if an email is unsubscribed from marketing emails.
+ * Returns true if the email has confirmed unsubscribe.
+ */
+export async function isEmailUnsubscribed(email: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  const [record] = await db
+    .select({ unsubscribedAt: emailUnsubscribes.unsubscribedAt })
+    .from(emailUnsubscribes)
+    .where(eq(emailUnsubscribes.email, email))
+    .limit(1);
+
+  return !!record?.unsubscribedAt;
+}
+
 // ─── Welcome Email ────────────────────────────────────────────────────────────
 
 /**
@@ -181,15 +260,24 @@ export async function sendWelcomeEmail(params: {
     return;
   }
 
+  // Skip if user has unsubscribed from marketing emails
+  const unsubscribed = await isEmailUnsubscribed(params.to);
+  if (unsubscribed) {
+    console.info(`[sendWelcomeEmail] Skipping — ${params.to} is unsubscribed`);
+    return;
+  }
+
   sgMail.setApiKey(apiKey);
 
   const firstName = params.name.split(" ")[0] || params.name;
+  const unsubToken = await getOrCreateUnsubscribeToken(params.to);
+  const unsubUrl = buildUnsubscribeUrl(unsubToken);
 
   await sgMail.send({
     to: params.to,
     from,
     subject: `ברוך הבא ל-AvodaNow, ${firstName}! 🎉`,
-    text: `שלום ${firstName},\n\nברוך הבא ל-AvodaNow!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות AvodaNow`,
+    text: `שלום ${firstName},\n\nברוך הבא ל-AvodaNow!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות AvodaNow\n\nלהסרה מרשימת התפוצה: ${unsubUrl}`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
@@ -219,8 +307,11 @@ export async function sendWelcomeEmail(params: {
           </a>
         </div>
 
-        <p style="color: #aaa; font-size: 12px; text-align: center; margin: 0;">
-          קיבלת מייל זה כי נרשמת ל-AvodaNow. אם לא ביצעת פעולה זו, התעלם מהודעה זו.
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+        <p style="color: #aaa; font-size: 12px; text-align: center; margin: 0; line-height: 1.8;">
+          קיבלת מייל זה כי נרשמת ל-AvodaNow.<br/>
+          אם לא ביצעת פעולה זו, התעלם מהודעה זו.<br/>
+          <a href="${unsubUrl}" style="color: #aaa; text-decoration: underline;">הסרה מרשימת התפוצה</a>
         </p>
       </div>
     `,

@@ -173,6 +173,7 @@ import {
   getEmailSendCooldown,
   EMAIL_OTP_MAX_ATTEMPTS,
   sendWelcomeEmail as sendWelcomeEmailOtp,
+  confirmUnsubscribe,
 } from "./emailOtp";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
@@ -573,6 +574,13 @@ const authRouter = router({
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
       return { success: true, user, isNewUser };
+    }),
+
+  unsubscribeEmail: publicProcedure
+    .input(z.object({ token: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const email = await confirmUnsubscribe(input.token);
+      return { success: true, email };
     }),
 });
 

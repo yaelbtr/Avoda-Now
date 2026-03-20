@@ -28,6 +28,7 @@ import UserContentPolicy from "./pages/UserContentPolicy";
 import ReviewsPolicy from "./pages/ReviewsPolicy";
 import Legal from "./pages/Legal";
 import Accessibility from "./pages/Accessibility";
+import Unsubscribe from "./pages/Unsubscribe";
 import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
@@ -279,6 +280,7 @@ function Router() {
                 <Route path="/reviews-policy" component={ReviewsPolicy} />
                 <Route path="/legal" component={Legal} />
                 <Route path="/accessibility" component={Accessibility} />
+                <Route path="/unsubscribe" component={Unsubscribe} />
                 <Route path="/admin" component={Admin} />
                 <Route path="/admin/regions" component={AdminRegionsPage} />
                 <Route path="/admin/regions/:id" component={AdminRegionDetailPage} />

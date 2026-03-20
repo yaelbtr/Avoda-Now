@@ -2697,3 +2697,13 @@
 - [x] Add sendWelcomeEmail helper to emailOtp.ts with Hebrew HTML template
 - [x] Wire sendWelcomeEmail into completeSignup procedure (fire-and-forget)
 - [x] Ensure email is only sent when user has an email address (ctx.user.email check)
+
+## Round 5g: Email Unsubscribe (CAN-SPAM / GDPR)
+- [x] Add email_unsubscribes table to drizzle/schema.ts (id, email, token, createdAt)
+- [x] Push migration with pnpm db:push
+- [x] Add getOrCreateUnsubscribeToken, buildUnsubscribeUrl, isEmailUnsubscribed, confirmUnsubscribe helpers to emailOtp.ts
+- [x] Add unsubscribeEmail tRPC procedure (publicProcedure, token-based)
+- [x] Add /unsubscribe page in client (confirm + success + error states)
+- [x] Register /unsubscribe route in App.tsx
+- [x] Update sendWelcomeEmail to include unsubscribe link in footer + skip unsubscribed users
+- [x] OTP emails are transactional — no unsubscribe required (CAN-SPAM exemption for transactional)

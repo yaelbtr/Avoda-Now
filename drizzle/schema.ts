@@ -753,3 +753,25 @@ export const emailVerifications = pgTable(
 );
 export type EmailVerification = typeof emailVerifications.$inferSelect;
 export type InsertEmailVerification = typeof emailVerifications.$inferInsert;
+
+/**
+ * email_unsubscribes — tracks users who have opted out of marketing emails.
+ * - token: a unique random token used in the unsubscribe link (no auth required)
+ * - unsubscribedAt: set when the user confirms unsubscribe; null = token created but not yet confirmed
+ */
+export const emailUnsubscribes = pgTable(
+  "email_unsubscribes",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 320 }).notNull().unique(),
+    token: varchar("token", { length: 64 }).notNull().unique(),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("email_unsubscribes_email_idx").on(t.email),
+    index("email_unsubscribes_token_idx").on(t.token),
+  ]
+);
+export type EmailUnsubscribe = typeof emailUnsubscribes.$inferSelect;
+export type InsertEmailUnsubscribe = typeof emailUnsubscribes.$inferInsert;

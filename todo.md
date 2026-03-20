@@ -2679,3 +2679,7 @@
 - [x] Update LoginModal to add email login button (login tab) + email channel card (registration channel step)
 - [x] Add 60-second cooldown to email send button
 - [x] Write vitest tests for email OTP logic (6 tests passing)
+
+## Round 5c: Disable Call OTP from UI
+- [x] Remove "קבל קוד בשיחת טלפון" button from login phone step
+- [x] Remove "call" channel card from registration channel step

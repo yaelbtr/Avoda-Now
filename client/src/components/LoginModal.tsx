@@ -800,19 +800,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
                       : <><Phone className="h-4 w-4 ml-2" />קבל קוד ב-SMS</>}
                 </AppButton>
-                <AppButton
-                  variant="outline"
-                  size="lg"
-                  className="w-full bg-transparent"
-                  onClick={() => handleSend("call")}
-                  disabled={sendOtp.isPending || !isPhoneValid || sendCooldown > 0}
-                >
-                  {sendOtp.isPending && otpChannel === "call"
-                    ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />מחייג...</>
-                    : sendCooldown > 0
-                      ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
-                      : <><PhoneCall className="h-4 w-4 ml-2" />קבל קוד בשיחת טלפון</>}
-                </AppButton>
+
 
                 {/* Divider */}
                 <div className="flex items-center gap-3 my-1">
@@ -945,7 +933,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 {/* Channel cards */}
                 <div className="space-y-3">
-                  {(["sms", "email", "call"] as OtpChannel[]).map((ch) => (
+                  {(["sms", "email"] as OtpChannel[]).map((ch) => (
                     <label
                       key={ch}
                       className="relative block cursor-pointer"

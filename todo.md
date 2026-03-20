@@ -2723,3 +2723,11 @@
 - [x] Added EMAIL_FROM to environment secrets
 - [x] Created sendgrid.credentials.test.ts — validates API key format + live SendGrid API call
 - [x] 763/763 tests passing (3 new credential validation tests)
+
+## Round 5j: Fix Name/Phone Still Not Saved for Email OTP Users (Deep Debug)
+- [x] Root cause identified: useEffect ran first-load branch AFTER user started typing (race condition — profileQuery.data arrived while user was filling wizard)
+- [x] Fixed useEffect: all setters now use functional updater `prev => prev || newValue` — never overwrites user-typed values regardless of timing
+- [x] Fixed hasFullPhoneVal: replaced hardcoded `prefix.length === 3` with `isValidPhoneValue()` — now handles 2-digit prefixes (02/03/04/08/09)
+- [x] Fixed handleSave: same hasFullPhone fix applied for consistency
+- [x] Added 23 regression tests in client/src/lib/IsraeliPhoneInput.test.ts
+- [x] 786/786 tests passing

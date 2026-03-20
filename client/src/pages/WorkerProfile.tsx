@@ -19,7 +19,7 @@ import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
 import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
 import { Eye, Trash2 } from "lucide-react";
-import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
+import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
 import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
@@ -266,28 +266,33 @@ export default function WorkerProfile() {
         pv = parseIsraeliPhone(d.phone);
       }
 
-      // Initialise snapshot and state only once (first load).
-      // On subsequent refetches (e.g. after completeSignup), do NOT override
-      // values the user has already typed — only update fields that came back
-      // non-empty from the server (so a successful save is reflected).
+      // Always prefer server data over blank defaults, but NEVER overwrite
+      // values the user has already typed — regardless of whether this is the
+      // first load or a subsequent refetch.
+      // Rule: only apply a server value when (a) it is non-empty AND (b) the
+      // current state is still the initial blank/default value.
+      if (newName) setName(prev => prev || newName);
+      if (d.phone) {
+        setPhone(prev => prev || (d.phone ?? ""));
+        setPhoneVal(prev => (prev.prefix || prev.number) ? prev : pv);
+        setOriginalPhoneVal(prev => (prev.prefix || prev.number) ? prev : pv);
+      }
+      if (newBio) setWorkerBio(prev => prev || newBio);
+      if (newCats.length) setSelectedCategories(prev => prev.length ? prev : newCats);
+      if (newPrefText) setPreferenceText(prev => prev || newPrefText);
+      setLocationMode(prev => prev || newLocMode);
+      if (newCity) setPreferredCity(prev => prev || newCity);
+      setSearchRadiusKm(prev => prev !== 5 ? prev : newRadius);
+      if (newDays.length) setPreferredDays(prev => prev.length ? prev : newDays);
+      if (newSlots.length) setPreferredTimeSlots(prev => prev.length ? prev : newSlots);
+      if (newCities.length) setPreferredCities(prev => prev.length ? prev : newCities);
+      if (newLat) setWorkerLatitude(prev => prev ?? newLat);
+      if (newLng) setWorkerLongitude(prev => prev ?? newLng);
+      const photo = (d as { profilePhoto?: string | null }).profilePhoto;
+      if (photo) setProfilePhoto(prev => prev ?? photo);
+
+      // Initialise the dirty-state snapshot once (first time we have server data)
       if (!savedSnapshot.current) {
-        // First load: populate everything from server
-        setName(newName);
-        setPhone(d.phone ?? "");
-        setPhoneVal(pv);
-        setOriginalPhoneVal(pv);
-        setWorkerBio(newBio);
-        setSelectedCategories(newCats);
-        setPreferenceText(newPrefText);
-        setLocationMode(newLocMode);
-        setPreferredCity(newCity);
-        setSearchRadiusKm(newRadius);
-        setPreferredDays(newDays);
-        setPreferredTimeSlots(newSlots);
-        setPreferredCities(newCities);
-        setWorkerLatitude(newLat);
-        setWorkerLongitude(newLng);
-        setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
         savedSnapshot.current = {
           name: newName, email: newEmail, workerBio: newBio,
           selectedCategories: newCats, preferenceText: newPrefText,
@@ -296,24 +301,6 @@ export default function WorkerProfile() {
           preferredTimeSlots: newSlots, preferredCities: newCities,
           workerLatitude: newLat, workerLongitude: newLng, phoneVal: pv,
         };
-      } else {
-        // Subsequent refetch: only update fields that the server now has data for
-        // (so a successful save is reflected), but never blank out user-typed values.
-        if (newName) setName(newName);
-        if (d.phone) { setPhone(d.phone); setPhoneVal(pv); setOriginalPhoneVal(pv); }
-        if (newBio) setWorkerBio(newBio);
-        if (newCats.length) setSelectedCategories(newCats);
-        if (newPrefText) setPreferenceText(newPrefText);
-        setLocationMode(newLocMode);
-        if (newCity) setPreferredCity(newCity);
-        setSearchRadiusKm(newRadius);
-        if (newDays.length) setPreferredDays(newDays);
-        if (newSlots.length) setPreferredTimeSlots(newSlots);
-        if (newCities.length) setPreferredCities(newCities);
-        if (newLat) setWorkerLatitude(newLat);
-        if (newLng) setWorkerLongitude(newLng);
-        const photo = (d as { profilePhoto?: string | null }).profilePhoto;
-        if (photo) setProfilePhoto(photo);
       }
     }
     if (user?.email) setEmail(user.email);
@@ -359,7 +346,8 @@ export default function WorkerProfile() {
   // ── Wizard submit ────────────────────────────────────────────────────────────
   const handleWizardSubmit = async () => {
     // Build the full phone string from phoneVal (IsraeliPhoneInput) for email_otp / Google users
-    const hasFullPhoneVal = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+    // Use isValidPhoneValue which handles both 2-digit (02/03) and 3-digit (050/054) prefixes
+    const hasFullPhoneVal = isValidPhoneValue(phoneVal);
     const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
     try {
       await completeSignupMutation.mutateAsync({
@@ -385,7 +373,8 @@ export default function WorkerProfile() {
   // ── Profile save ─────────────────────────────────────────────────────────────
   const handleSave = () => {
     // Detect phone change: if user already has a phone and the new value differs, require OTP
-    const hasFullPhone = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+    // Use isValidPhoneValue to handle both 2-digit (02/03) and 3-digit (050/054) prefixes
+    const hasFullPhone = isValidPhoneValue(phoneVal);
     const phoneChanged = hasFullPhone && (
       phoneVal.prefix !== originalPhoneVal.prefix ||
       phoneVal.number !== originalPhoneVal.number

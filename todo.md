@@ -2683,3 +2683,7 @@
 ## Round 5c: Disable Call OTP from UI
 - [x] Remove "קבל קוד בשיחת טלפון" button from login phone step
 - [x] Remove "call" channel card from registration channel step
+
+## Round 5d: Fix Post-Logout Redirect
+- [x] Fix main.tsx: redirect to / instead of Manus OAuth portal on UNAUTHORIZED error
+- [x] Fix DashboardLayout.tsx: redirect to / instead of Manus OAuth portal on unauthenticated

@@ -30,7 +30,12 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  window.location.href = getLoginUrl();
+  // Navigate to home (role selection) instead of Manus OAuth portal.
+  // Our auth is OTP/email-based — the OAuth portal is not relevant for end users.
+  const currentPath = window.location.pathname;
+  if (currentPath !== "/") {
+    window.location.href = "/";
+  }
 };
 
 queryClient.getQueryCache().subscribe(event => {

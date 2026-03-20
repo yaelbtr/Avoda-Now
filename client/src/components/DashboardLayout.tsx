@@ -72,7 +72,7 @@ export default function DashboardLayout({
             variant="brand"
             size="xl"
             onClick={() => {
-              window.location.href = getLoginUrl();
+              window.location.href = "/";
             }}
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >

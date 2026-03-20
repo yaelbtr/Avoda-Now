@@ -223,3 +223,48 @@ describe("TwilioVerifyProvider.sendOtpWhatsApp", () => {
     expect(result.error).toBe("לא ניתן לשלוח קוד ב-WhatsApp כרגע. נסו שוב בעוד מספר דקות.");
   });
 });
+
+// ─── splitIsraeliE164Phone ────────────────────────────────────────────────────
+import { splitIsraeliE164Phone } from "./smsProvider";
+
+describe("splitIsraeliE164Phone", () => {
+  it("splits a standard 3-digit mobile prefix (050)", () => {
+    const result = splitIsraeliE164Phone("+972501234567");
+    expect(result).toEqual({ prefix: "050", number: "1234567" });
+  });
+
+  it("splits a 3-digit mobile prefix (054)", () => {
+    const result = splitIsraeliE164Phone("+972541234567");
+    expect(result).toEqual({ prefix: "054", number: "1234567" });
+  });
+
+  it("splits a 3-digit mobile prefix (058)", () => {
+    const result = splitIsraeliE164Phone("+972581234567");
+    expect(result).toEqual({ prefix: "058", number: "1234567" });
+  });
+
+  it("splits a 3-digit mobile prefix (052)", () => {
+    const result = splitIsraeliE164Phone("+972521234567");
+    expect(result).toEqual({ prefix: "052", number: "1234567" });
+  });
+
+  it("returns null for invalid E.164 format", () => {
+    expect(splitIsraeliE164Phone("0501234567")).toBeNull();
+    expect(splitIsraeliE164Phone("+1234567890")).toBeNull();
+    expect(splitIsraeliE164Phone("")).toBeNull();
+  });
+
+  it("returns null for too-short number", () => {
+    expect(splitIsraeliE164Phone("+97250123")).toBeNull();
+  });
+
+  it("round-trips with normalizeIsraeliPhone", () => {
+    // normalizeIsraeliPhone("0501234567") → "+972501234567"
+    // splitIsraeliE164Phone("+972501234567") → { prefix: "050", number: "1234567" }
+    // combinePhone({ prefix: "050", number: "1234567" }) → "0501234567"
+    const split = splitIsraeliE164Phone("+972501234567");
+    expect(split).not.toBeNull();
+    const combined = split!.prefix + split!.number;
+    expect(combined).toBe("0501234567");
+  });
+});

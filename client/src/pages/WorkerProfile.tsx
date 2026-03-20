@@ -240,7 +240,7 @@ export default function WorkerProfile() {
   const toggleSection = (key: string) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  // Populate from server
+  // Populate from server — only initialise once to avoid overwriting user-entered values
   useEffect(() => {
     if (profileQuery.data) {
       const d = profileQuery.data;
@@ -258,8 +258,6 @@ export default function WorkerProfile() {
       const newLng = (d as any).workerLongitude ?? null;
       const newEmail = user?.email ?? "";
 
-      setName(newName);
-      setPhone(d.phone ?? "");
       // Populate split phone fields from DB or parse from combined phone
       let pv: PhoneValue = { prefix: "", number: "" };
       if ((d as any).phonePrefix && (d as any).phoneNumber) {
@@ -267,23 +265,29 @@ export default function WorkerProfile() {
       } else if (d.phone) {
         pv = parseIsraeliPhone(d.phone);
       }
-      setPhoneVal(pv);
-      setOriginalPhoneVal(pv);
-      setWorkerBio(newBio);
-      setSelectedCategories(newCats);
-      setPreferenceText(newPrefText);
-      setLocationMode(newLocMode);
-      setPreferredCity(newCity);
-      setSearchRadiusKm(newRadius);
-      setPreferredDays(newDays);
-      setPreferredTimeSlots(newSlots);
-      setPreferredCities(newCities);
-      setWorkerLatitude(newLat);
-      setWorkerLongitude(newLng);
-      setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
 
-      // Initialise snapshot (only once — first load)
+      // Initialise snapshot and state only once (first load).
+      // On subsequent refetches (e.g. after completeSignup), do NOT override
+      // values the user has already typed — only update fields that came back
+      // non-empty from the server (so a successful save is reflected).
       if (!savedSnapshot.current) {
+        // First load: populate everything from server
+        setName(newName);
+        setPhone(d.phone ?? "");
+        setPhoneVal(pv);
+        setOriginalPhoneVal(pv);
+        setWorkerBio(newBio);
+        setSelectedCategories(newCats);
+        setPreferenceText(newPrefText);
+        setLocationMode(newLocMode);
+        setPreferredCity(newCity);
+        setSearchRadiusKm(newRadius);
+        setPreferredDays(newDays);
+        setPreferredTimeSlots(newSlots);
+        setPreferredCities(newCities);
+        setWorkerLatitude(newLat);
+        setWorkerLongitude(newLng);
+        setProfilePhoto((d as { profilePhoto?: string | null }).profilePhoto ?? null);
         savedSnapshot.current = {
           name: newName, email: newEmail, workerBio: newBio,
           selectedCategories: newCats, preferenceText: newPrefText,
@@ -292,6 +296,24 @@ export default function WorkerProfile() {
           preferredTimeSlots: newSlots, preferredCities: newCities,
           workerLatitude: newLat, workerLongitude: newLng, phoneVal: pv,
         };
+      } else {
+        // Subsequent refetch: only update fields that the server now has data for
+        // (so a successful save is reflected), but never blank out user-typed values.
+        if (newName) setName(newName);
+        if (d.phone) { setPhone(d.phone); setPhoneVal(pv); setOriginalPhoneVal(pv); }
+        if (newBio) setWorkerBio(newBio);
+        if (newCats.length) setSelectedCategories(newCats);
+        if (newPrefText) setPreferenceText(newPrefText);
+        setLocationMode(newLocMode);
+        if (newCity) setPreferredCity(newCity);
+        setSearchRadiusKm(newRadius);
+        if (newDays.length) setPreferredDays(newDays);
+        if (newSlots.length) setPreferredTimeSlots(newSlots);
+        if (newCities.length) setPreferredCities(newCities);
+        if (newLat) setWorkerLatitude(newLat);
+        if (newLng) setWorkerLongitude(newLng);
+        const photo = (d as { profilePhoto?: string | null }).profilePhoto;
+        if (photo) setProfilePhoto(photo);
       }
     }
     if (user?.email) setEmail(user.email);
@@ -336,11 +358,14 @@ export default function WorkerProfile() {
 
   // ── Wizard submit ────────────────────────────────────────────────────────────
   const handleWizardSubmit = async () => {
+    // Build the full phone string from phoneVal (IsraeliPhoneInput) for email_otp / Google users
+    const hasFullPhoneVal = phoneVal.prefix.length === 3 && phoneVal.number.length === 7;
+    const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
     try {
       await completeSignupMutation.mutateAsync({
         name: name.trim() || (user?.name ?? ""),
-        // Pass phone only for OAuth users (Google) who don't have a phone yet
-        phone: (!user?.phone && phone.trim()) ? phone.trim() : undefined,
+        // Pass phone for users who don't have a verified phone yet (email_otp, Google)
+        phone: !user?.phone ? combinedPhone : undefined,
         locationMode,
         preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
         searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,

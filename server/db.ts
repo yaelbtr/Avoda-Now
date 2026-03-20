@@ -339,6 +339,8 @@ export async function updateWorkerProfile(
     workerBio?: string | null;
     name?: string | null;
     phone?: string | null;
+    phonePrefix?: string | null;
+    phoneNumber?: string | null;
     locationMode?: "city" | "radius";
     workerLatitude?: string | null;
     workerLongitude?: string | null;
@@ -363,8 +365,8 @@ export async function updateWorkerProfile(
   if (data.workerBio !== undefined) updateSet.workerBio = data.workerBio;
   if (data.name !== undefined) updateSet.name = data.name;
   if (data.phone !== undefined) updateSet.phone = data.phone;
-  if ((data as any).phonePrefix !== undefined) updateSet.phonePrefix = (data as any).phonePrefix;
-  if ((data as any).phoneNumber !== undefined) updateSet.phoneNumber = (data as any).phoneNumber;
+  if (data.phonePrefix !== undefined) updateSet.phonePrefix = data.phonePrefix;
+  if (data.phoneNumber !== undefined) updateSet.phoneNumber = data.phoneNumber;
   if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
   if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
   if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;

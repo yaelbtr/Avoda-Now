@@ -3,25 +3,38 @@ import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
 // ─── Mock DB helpers ──────────────────────────────────────────────────────────
-vi.mock("./db", () => ({
-  checkAndIncrementSendRate: vi.fn(),
-  checkAndIncrementVerifyAttempts: vi.fn(),
-  resetRateLimit: vi.fn(),
-  getUserByPhone: vi.fn(),
-  createUserByPhone: vi.fn(),
-  updateUserLastSignedIn: vi.fn(),
-  resetTestUserProfile: vi.fn(),
-  countActiveJobsByUser: vi.fn(),
-  createJob: vi.fn(),
-  getJobById: vi.fn(),
-  getActiveJobs: vi.fn(),
-  getJobsNearLocation: vi.fn(),
-  getMyJobs: vi.fn(),
-  updateJobStatus: vi.fn(),
-  deleteJob: vi.fn(),
-  updateJob: vi.fn(),
-  reportJob: vi.fn(),
-}));
+// Use importOriginal so any new exports added to db.ts are automatically included.
+// Only override the functions that need test-controlled behaviour.
+vi.mock("./db", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./db")>();
+  return {
+    ...actual,
+    // Override with vi.fn() stubs so tests can control return values
+    getDb: vi.fn(),
+    logEvent: vi.fn().mockResolvedValue(undefined),
+    checkAndIncrementSendRate: vi.fn(),
+    checkAndIncrementVerifyAttempts: vi.fn(),
+    resetRateLimit: vi.fn(),
+    getUserByPhone: vi.fn(),
+    createUserByPhone: vi.fn(),
+    updateUserLastSignedIn: vi.fn(),
+    resetTestUserProfile: vi.fn(),
+    countActiveJobsByUser: vi.fn(),
+    createJob: vi.fn(),
+    getJobById: vi.fn(),
+    getActiveJobs: vi.fn(),
+    getJobsNearLocation: vi.fn(),
+    getMyJobs: vi.fn(),
+    updateJobStatus: vi.fn(),
+    deleteJob: vi.fn(),
+    updateJob: vi.fn(),
+    reportJob: vi.fn(),
+    getPendingBatchForJob: vi.fn().mockResolvedValue(null),
+    getWorkerPushSubscriptions: vi.fn().mockResolvedValue([]),
+    markBatchSent: vi.fn().mockResolvedValue(undefined),
+    createNotificationBatch: vi.fn().mockResolvedValue(undefined),
+  };
+});
 
 // ─── Mock SMS provider ────────────────────────────────────────────────────────
 vi.mock("./smsProvider", () => ({
@@ -41,6 +54,14 @@ vi.mock("./smsProvider", () => ({
     throw new Error("מספר טלפון לא תקין");
   }),
   isValidIsraeliPhone: vi.fn((e164: string) => /^\+972[2-9]\d{7,9}$/.test(e164)),
+  splitIsraeliE164Phone: vi.fn((e164: string) => {
+    const match = e164.match(/^\+972(\d{8,9})$/);
+    if (!match) return null;
+    const local = "0" + match[1];
+    if (/^0[5][0-9]\d{7}$/.test(local)) return { prefix: local.slice(0, 3), number: local.slice(3) };
+    if (local.length >= 10) return { prefix: local.slice(0, 3), number: local.slice(3) };
+    return null;
+  }),
 }));
 
 import * as db from "./db";

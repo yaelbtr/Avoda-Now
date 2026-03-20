@@ -156,6 +156,7 @@ import {
 import {
   isValidIsraeliPhone,
   normalizeIsraeliPhone,
+  splitIsraeliE164Phone,
   smsProvider,
 } from "./smsProvider";
 import { adminProcedure } from "./_core/trpc";
@@ -1703,16 +1704,29 @@ const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Normalize phone if provided (only for OAuth users without phone)
       let normalizedPhone: string | undefined = undefined;
+      let normalizedPhonePrefix: string | undefined = undefined;
+      let normalizedPhoneNumber: string | undefined = undefined;
       if (input.phone && ctx.user.loginMethod !== "phone_otp") {
         try {
           normalizedPhone = normalizeIsraeliPhone(input.phone);
-          if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
+          if (!isValidIsraeliPhone(normalizedPhone)) {
+            normalizedPhone = undefined;
+          } else {
+            // Split into prefix/number for IsraeliPhoneInput compatibility
+            const split = splitIsraeliE164Phone(normalizedPhone);
+            if (split) {
+              normalizedPhonePrefix = split.prefix;
+              normalizedPhoneNumber = split.number;
+            }
+          }
         } catch { normalizedPhone = undefined; }
       }
       try {
         await updateWorkerProfile(ctx.user.id, {
           name: input.name,
           phone: normalizedPhone,
+          ...(normalizedPhonePrefix !== undefined ? { phonePrefix: normalizedPhonePrefix } : {}),
+          ...(normalizedPhoneNumber !== undefined ? { phoneNumber: normalizedPhoneNumber } : {}),
           locationMode: input.locationMode,
           preferredCity: input.preferredCity,
           workerLatitude: input.workerLatitude,

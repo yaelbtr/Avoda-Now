@@ -2707,3 +2707,13 @@
 - [x] Register /unsubscribe route in App.tsx
 - [x] Update sendWelcomeEmail to include unsubscribe link in footer + skip unsubscribed users
 - [x] OTP emails are transactional — no unsubscribe required (CAN-SPAM exemption for transactional)
+
+## Round 5h: Fix Wizard Step 1 Not Saving Name/Phone for Email OTP Users
+- [x] Diagnose root cause: useEffect in WorkerProfile was overriding user-typed name/phone on every profileQuery refetch
+- [x] Fix useEffect to initialize state only once (first load), never blank out user-typed values on subsequent refetches
+- [x] Fix completeSignup procedure to also save phonePrefix + phoneNumber (not just phone string)
+- [x] Add splitIsraeliE164Phone() utility to smsProvider.ts (Single Source of Truth for phone splitting)
+- [x] Add phonePrefix/phoneNumber as typed fields in updateWorkerProfile() (remove (data as any) casts)
+- [x] Fix twilio.otp.test.ts mock to use importOriginal pattern (fixes 10 pre-existing test failures)
+- [x] Add 7 unit tests for splitIsraeliE164Phone in smsProvider.test.ts
+- [x] 760/760 tests passing

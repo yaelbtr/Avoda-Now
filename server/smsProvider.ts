@@ -329,3 +329,32 @@ export function isValidIsraeliPhone(e164: string): boolean {
   // Must start with +972 and have 11-13 total chars
   return /^\+972[2-9]\d{7,9}$/.test(e164);
 }
+
+/**
+ * Split an E.164 Israeli phone number (+972XXXXXXXXX) into prefix and number parts.
+ * Returns { prefix: "050", number: "1234567" } or null if the format is unrecognised.
+ *
+ * Supports:
+ *   - 3-digit mobile prefixes: 050–059
+ *   - 2-digit landline prefixes: 02, 03, 04, 08, 09
+ */
+export function splitIsraeliE164Phone(e164: string): { prefix: string; number: string } | null {
+  // Must be E.164 Israeli: +972 followed by 8-9 digits
+  const match = e164.match(/^\+972(\d{8,9})$/);
+  if (!match) return null;
+  const local = "0" + match[1]; // e.g. "0501234567"
+
+  // 3-digit mobile prefix (e.g. 050, 052, 054, 055, 058)
+  if (/^0[5][0-9]\d{7}$/.test(local)) {
+    return { prefix: local.slice(0, 3), number: local.slice(3) };
+  }
+  // 2-digit landline prefix (02, 03, 04, 08, 09)
+  if (/^0[2348][0-9]\d{6}$/.test(local)) {
+    return { prefix: local.slice(0, 2), number: local.slice(2) };
+  }
+  // Fallback: treat first 3 chars as prefix
+  if (local.length >= 10) {
+    return { prefix: local.slice(0, 3), number: local.slice(3) };
+  }
+  return null;
+}

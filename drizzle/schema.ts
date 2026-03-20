@@ -732,3 +732,24 @@ export const systemLogs = pgTable("system_logs", {
 });
 export type SystemLog = typeof systemLogs.$inferSelect;
 export type InsertSystemLog = typeof systemLogs.$inferInsert;
+
+/**
+ * email_verifications — stores hashed OTP codes for email-based authentication.
+ * - codeHash: SHA-256 of the 6-digit code (never store raw code)
+ * - expiresAt: 5 minutes from creation
+ * - attempts: incremented on each wrong guess; blocked after 5
+ */
+export const emailVerifications = pgTable(
+  "email_verifications",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 320 }).notNull(),
+    codeHash: varchar("code_hash", { length: 64 }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("email_verifications_email_idx").on(t.email)]
+);
+export type EmailVerification = typeof emailVerifications.$inferSelect;
+export type InsertEmailVerification = typeof emailVerifications.$inferInsert;

@@ -165,6 +165,13 @@ import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
 import { authLogger, securityLogger, getClientIp } from "./logger";
 import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor, meetsMinAgeRequirement } from "@shared/ageUtils";
 import { assertMinorEligible } from "./minorGuard";
+import {
+  createEmailOtp,
+  sendEmailOtp,
+  verifyEmailOtp,
+  getEmailSendCooldown,
+  EMAIL_OTP_MAX_ATTEMPTS,
+} from "./emailOtp";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
 
@@ -463,6 +470,106 @@ const authRouter = router({
         meta: { isNewUser: !!input.termsAccepted },
       });
       const isNewUser = !input.termsAccepted ? false : true;
+      return { success: true, user, isNewUser };
+    }),
+
+  // ─── Email OTP ───────────────────────────────────────────────────────────────
+
+  sendEmailCode: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email("כתובת המייל אינה תקינה"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const email = input.email.toLowerCase().trim();
+
+      // Rate limit: 60-second cooldown per email
+      const cooldownMs = await getEmailSendCooldown(email);
+      if (cooldownMs > 0) {
+        const seconds = Math.ceil(cooldownMs / 1000);
+        void logEvent("warn", "email_otp.send.cooldown", `Email OTP cooldown active: ${seconds}s remaining`, { meta: { email } });
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `נא המתן ${seconds} שניות לפני שליחת קוד נוסף`,
+        });
+      }
+
+      // Create OTP record and send email
+      let code: string;
+      try {
+        code = await createEmailOtp(email);
+      } catch (err) {
+        void logEvent("error", "email_otp.send.db_error", "Failed to create email OTP record", { meta: { email, error: String(err) } });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה פנימית. נא נסה שנית" });
+      }
+
+      try {
+        await sendEmailOtp(email, code);
+      } catch (err) {
+        void logEvent("error", "email_otp.send.failed", "SendGrid send failed", { meta: { email, error: String(err) } });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שליחת המייל נכשלה. נא נסה שנית" });
+      }
+
+      void logEvent("info", "email_otp.send.success", "Email OTP sent", { meta: { email } });
+      return { success: true };
+    }),
+
+  verifyEmailCode: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email("כתובת המייל אינה תקינה"),
+        code: z.string().length(6, "קוד חייב להכיל 6 ספרות"),
+        termsAccepted: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const email = input.email.toLowerCase().trim();
+
+      const result = await verifyEmailOtp(email, input.code);
+
+      if (result === "not_found") {
+        void logEvent("warn", "email_otp.verify.not_found", "No OTP record found", { meta: { email } });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא קוד פעיל. שלח קוד חדש" });
+      }
+      if (result === "expired") {
+        void logEvent("warn", "email_otp.verify.expired", "OTP expired", { meta: { email } });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "פג תוקף הקוד. שלח קוד חדש" });
+      }
+      if (result === "max_attempts") {
+        void logEvent("warn", "email_otp.verify.max_attempts", "Max OTP attempts reached", { meta: { email } });
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `חרגת ${EMAIL_OTP_MAX_ATTEMPTS} ניסיונות. שלח קוד חדש` });
+      }
+      if (result === "wrong") {
+        void logEvent("warn", "email_otp.verify.wrong_code", "Wrong OTP code", { meta: { email } });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "קוד שגוי. נא נסה שנית" });
+      }
+
+      // result === "ok" — find or create user by email
+      let user = await getUserByEmail(email);
+      const isNewUser = !user;
+
+      if (!user) {
+        // New user — create account
+        user = await createUserByPhone("", email); // phone empty for email-only users
+        void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
+      } else {
+        await updateUserLastSignedIn(user.id);
+        void logEvent("info", "email_otp.verify.login", "User logged in via email OTP", { userId: user.id, meta: { email } });
+      }
+
+      // Create session (same format as phone OTP)
+      const token = await sdk.signSession(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name ?? user.email ?? "",
+        },
+        { expiresInMs: 30 * 24 * 60 * 60 * 1000 } // 30 days
+      );
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
+
       return { success: true, user, isNewUser };
     }),
 });

@@ -2666,3 +2666,16 @@
 - [x] Build admin logs tab in Admin.tsx with phone filter, level badge, expandable meta
 - [x] Added as a tab in existing Admin.tsx (no separate route needed)
 - [x] Write vitest tests for logEvent helper (9 tests passing)
+
+## Round 5b: Email OTP via SendGrid
+- [x] Add email_verifications table to drizzle/schema.ts (id, email, codeHash, expiresAt, attempts, createdAt)
+- [x] Push migration with pnpm db:push
+- [x] Install @sendgrid/mail package
+- [x] Add SENDGRID_API_KEY and EMAIL_FROM secrets
+- [x] Create server/emailOtp.ts with generateEmailCode, hashEmailCode, sendEmailOtp, createEmailOtp, verifyEmailOtp helpers
+- [x] Add sendEmailCode tRPC procedure (publicProcedure) with rate limiting (60s cooldown, 5 attempts)
+- [x] Add verifyEmailCode tRPC procedure (publicProcedure) — hash compare, expiry check, attempt tracking
+- [x] Wire logEvent() into email OTP procedures
+- [x] Update LoginModal to add email login button (login tab) + email channel card (registration channel step)
+- [x] Add 60-second cooldown to email send button
+- [x] Write vitest tests for email OTP logic (6 tests passing)

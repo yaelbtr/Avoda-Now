@@ -99,6 +99,13 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [otpChannel, setOtpChannel] = useState<OtpChannel>("sms");
   const [channelEmailError, setChannelEmailError] = useState<string | null>(null);
 
+  // Email login state (login tab only)
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  // Track whether current OTP was sent via email-only flow (login tab)
+  const [isEmailOtpFlow, setIsEmailOtpFlow] = useState(false);
+
   // Pending registration data to pass to verifyOtp
   const pendingRegData = useRef<{ name: string; email: string } | null>(null);
 
@@ -163,6 +170,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setSelectedCategories([]);
         setSelectedCity("");
         setChannelEmailError(null);
+        setLoginEmail("");
+        setLoginEmailError(null);
+        setShowEmailLogin(false);
+        setIsEmailOtpFlow(false);
         pendingRegData.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
       }, 300);
@@ -186,6 +197,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setDuplicateError(null);
     setNotFoundError(null);
     setChannelEmailError(null);
+    setLoginEmail("");
+    setLoginEmailError(null);
+    setShowEmailLogin(false);
+    setIsEmailOtpFlow(false);
     pendingRegData.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
   };
@@ -300,6 +315,57 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     },
   });
 
+  // Email OTP mutations (login tab only)
+  const sendEmailCode = trpc.auth.sendEmailCode.useMutation({
+    onSuccess: () => {
+      setIsEmailOtpFlow(true);
+      setOtpChannel("email");
+      setDigits(Array(OTP_LENGTH).fill(""));
+      setStep("otp");
+      startResendTimer();
+      startSendCooldown();
+      const masked = loginEmail.includes("@")
+        ? (() => { const [l, d] = loginEmail.split("@"); return `${l.slice(0, 2)}***@${d}`; })()
+        : loginEmail;
+      toast.success(`קוד נשלח למייל ${masked} • תקף ל-5 דקות`, { duration: 5000 });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
+    onSuccess: async (data) => {
+      if (maintenanceMode && data.user?.role !== "admin" && data.user?.role !== "test") {
+        await refetch();
+        toast.error("גישה מוגבלת — המערכת בתחזוקה. רק מנהלים יכולים להיכנס כעת.");
+        onClose();
+        onNonAdminLogin?.();
+        return;
+      }
+      await refetch();
+      queryClient.invalidateQueries();
+      if ((data as any).isNewUser && data.user?.id) {
+        const consentTypes = ["terms", "privacy", "age_18"] as const;
+        consentTypes.forEach((ct) => recordConsent.mutate({ consentType: ct }));
+      }
+      if (data.user?.userMode) {
+        setStep("success");
+        setTimeout(() => {
+          toast.success("התחברת בהצלחה! 🎉");
+          onClose();
+          const returnPath = popReturnPath();
+          if (returnPath) navigate(returnPath);
+        }, 800);
+      } else {
+        setStep("role");
+      }
+    },
+    onError: (e) => {
+      toast.error(e.message);
+      setDigits(Array(OTP_LENGTH).fill(""));
+      setTimeout(() => inputRefs.current[0]?.focus(), 60);
+    },
+  });
+
   const setModeMutation = trpc.user.setMode.useMutation({
     onError: (e) => toast.error(e.message),
   });
@@ -335,13 +401,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const submitOtp = useCallback((code: string) => {
     if (code.length !== OTP_LENGTH) return;
+    // Email OTP flow (login tab) — route to verifyEmailCode
+    if (isEmailOtpFlow) {
+      verifyEmailCode.mutate({ email: loginEmail, code });
+      return;
+    }
     const reg = pendingRegData.current;
     verifyOtp.mutate({
       phone: normalizedPhone || phone,
       code,
       ...(reg ? { name: reg.name, email: reg.email || undefined, termsAccepted: true } : {}),
     });
-  }, [verifyOtp, normalizedPhone, phone]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verifyOtp, verifyEmailCode, normalizedPhone, phone, isEmailOtpFlow, loginEmail]);
 
   const handleDigitChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -384,7 +456,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const handleChannelProceed = () => {
     const reg = pendingRegData.current;
-    // Validate email format when email channel is selected
+    // Email channel: validate and use sendEmailCode
     if (otpChannel === "email") {
       const emailVal = reg?.email || "";
       const emailErr = validateEmail(emailVal, true);
@@ -392,6 +464,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setChannelEmailError(emailErr);
         return;
       }
+      setChannelEmailError(null);
+      // Store email for verifyEmailCode
+      setLoginEmail(emailVal);
+      setIsEmailOtpFlow(true);
+      sendEmailCode.mutate({ email: emailVal });
+      return;
     }
     setChannelEmailError(null);
     sendOtp.mutate({
@@ -735,6 +813,74 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
                       : <><PhoneCall className="h-4 w-4 ml-2" />קבל קוד בשיחת טלפון</>}
                 </AppButton>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 my-1">
+                  <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
+                  <span className="text-xs" style={{ color: "#9a9a8a" }}>או</span>
+                  <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
+                </div>
+
+                {/* Email OTP toggle */}
+                {!showEmailLogin ? (
+                  <button
+                    type="button"
+                    className="w-full py-2.5 px-4 rounded-xl border-2 text-sm font-medium flex items-center justify-center gap-2 transition-all"
+                    style={{ borderColor: "oklch(0.88 0.04 122)", color: "#556b2f", background: "transparent" }}
+                    onClick={() => setShowEmailLogin(true)}
+                  >
+                    <Mail className="h-4 w-4" />
+                    התחבר עם כתובת מייל
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <AppInput
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="כתובת מייל"
+                      value={loginEmail}
+                      onChange={(e) => { setLoginEmail(e.target.value); setLoginEmailError(null); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const err = validateEmail(loginEmail, true);
+                          if (err) { setLoginEmailError(err); return; }
+                          sendEmailCode.mutate({ email: loginEmail });
+                        }
+                      }}
+                      className="w-full text-right"
+                      dir="ltr"
+                    />
+                    {loginEmailError && (
+                      <p className="text-xs" style={{ color: "oklch(0.45 0.18 25)" }}>{loginEmailError}</p>
+                    )}
+                    <AppButton
+                      variant="cta"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => {
+                        const err = validateEmail(loginEmail, true);
+                        if (err) { setLoginEmailError(err); return; }
+                        sendEmailCode.mutate({ email: loginEmail });
+                      }}
+                      disabled={sendEmailCode.isPending || !loginEmail.trim() || sendCooldown > 0}
+                    >
+                      {sendEmailCode.isPending
+                        ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                        : sendCooldown > 0
+                          ? <>שלח שוב בעוד <span className="tabular-nums font-bold">{sendCooldown}</span>שנייות</>
+                          : <><Mail className="h-4 w-4 ml-2" />שלח קוד למייל</>}
+                    </AppButton>
+                    <button
+                      type="button"
+                      className="w-full text-xs text-center hover:underline"
+                      style={{ color: "#9a9a8a" }}
+                      onClick={() => { setShowEmailLogin(false); setLoginEmail(""); setLoginEmailError(null); }}
+                    >
+                      בטל
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Footer */}
@@ -799,7 +945,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
                 {/* Channel cards */}
                 <div className="space-y-3">
-                  {(["sms", "call"] as OtpChannel[]).map((ch) => (
+                  {(["sms", "email", "call"] as OtpChannel[]).map((ch) => (
                     <label
                       key={ch}
                       className="relative block cursor-pointer"
@@ -824,10 +970,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         {/* Text */}
                         <div className="flex-1 text-right">
                           <p className="font-bold text-base" style={{ color: "#1a2010" }}>
-                            {ch === "sms" ? "קבלת סיסמה ב-SMS" : ch === "whatsapp" ? "קבלת סיסמה ב-WhatsApp" : "קבלת סיסמה בשיחת טלפון"}
+                            {ch === "sms" ? "קבלת סיסמא ב-SMS" : ch === "email" ? "קבלת סיסמא במייל" : ch === "whatsapp" ? "קבלת סיסמא ב-WhatsApp" : "קבלת סיסמא בשיחת טלפון"}
                           </p>
                           <p className="text-sm" style={{ color: "#6b7280" }}>
-                            {ch === "whatsapp" ? (
+                            {ch === "email" ? (
+                              <>הקוד יישלח לכתובת המייל שנרשמת בהרשמה</>
+                            ) : ch === "whatsapp" ? (
                               <>הקוד יישלח ל-WhatsApp במספר{" "}
                                 {phone ? (
                                   <span dir="ltr" style={{ unicodeBidi: "embed" }}>
@@ -868,7 +1016,9 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                           style={{ background: ch === "whatsapp" ? "rgba(37,211,102,0.10)" : "oklch(0.50 0.14 85 / 0.10)" }}
                         >
-                          {ch === "whatsapp" ? (
+                          {ch === "email" ? (
+                            <Mail className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
+                          ) : ch === "whatsapp" ? (
                             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#25D366">
                               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
@@ -1043,7 +1193,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                         onKeyDown={e => handleDigitKeyDown(i, e)}
                         onPaste={handlePaste}
                         onFocus={e => e.target.select()}
-                        disabled={verifyOtp.isPending}
+                        disabled={verifyOtp.isPending || verifyEmailCode.isPending}
                         className={[
                           "w-11 h-14 text-center text-2xl font-bold rounded-xl border-2 outline-none",
                           "bg-background text-foreground transition-all duration-150",
@@ -1064,22 +1214,30 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   size="lg"
                   className="w-full"
                   onClick={() => submitOtp(digits.join(""))}
-                  disabled={verifyOtp.isPending || !isOtpComplete}
+                  disabled={(verifyOtp.isPending || verifyEmailCode.isPending) || !isOtpComplete}
                 >
-                  {verifyOtp.isPending
+                  {(verifyOtp.isPending || verifyEmailCode.isPending)
                     ? <><Loader2 className="h-4 w-4 animate-spin ml-2" />מאמת...</>
                     : <><CheckCircle2 className="h-4 w-4 ml-2" />אמת קוד</>}
                 </AppButton>
 
                 <div className="flex items-center justify-between text-sm" dir="rtl">
                   <button
-                    onClick={() => handleResend()}
-                    disabled={resendCountdown > 0 || sendOtp.isPending}
+                    onClick={() => {
+                      if (isEmailOtpFlow) {
+                        if (resendCountdown > 0) return;
+                        setDigits(Array(OTP_LENGTH).fill(""));
+                        sendEmailCode.mutate({ email: loginEmail });
+                      } else {
+                        handleResend();
+                      }
+                    }}
+                    disabled={resendCountdown > 0 || sendOtp.isPending || sendEmailCode.isPending}
                     className={`flex items-center gap-1.5 transition-colors ${
                       resendCountdown > 0 ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:text-primary/80"
                     }`}
                   >
-                    {sendOtp.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                    {(sendOtp.isPending || sendEmailCode.isPending) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                     {resendCountdown > 0
                       ? <span>שלח שוב בעוד <span className="font-semibold tabular-nums">{resendCountdown}</span> שניות</span>
                       : "שלח קוד מחדש"}
@@ -1098,11 +1256,15 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       </button>
                     )}
                     <button
-                      onClick={() => { setStep("phone"); setDigits(Array(OTP_LENGTH).fill(""));}}
+                      onClick={() => {
+                        setStep("phone");
+                        setDigits(Array(OTP_LENGTH).fill(""));
+                        if (isEmailOtpFlow) { setShowEmailLogin(false); setIsEmailOtpFlow(false); }
+                      }}
                       className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />
-                      שנה מספר
+                      {isEmailOtpFlow ? "שנה מייל" : "שנה מספר"}
                     </button>
                   </div>
                 </div>

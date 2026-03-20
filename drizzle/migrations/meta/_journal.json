@@ -64,6 +64,13 @@
       "when": 1773964188805,
       "tag": "0008_blue_wendell_rand",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773967474972,
+      "tag": "0009_crazy_tag",
+      "breakpoints": true
     }
   ]
 }

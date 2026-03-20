@@ -2692,3 +2692,8 @@
 - [x] Fix name field showing email address instead of name in wizard step 1 (autocomplete=off + server loginMethod fix)
 - [x] Fix email field empty in wizard step 1 for email OTP users (pre-filled from user.email, read-only with "מאומת" badge)
 - [x] Fix phone field empty in wizard step 1 for email OTP users (now shows editable phone input for email_otp users)
+
+## Round 5f: Welcome Email After Signup
+- [x] Add sendWelcomeEmail helper to emailOtp.ts with Hebrew HTML template
+- [x] Wire sendWelcomeEmail into completeSignup procedure (fire-and-forget)
+- [x] Ensure email is only sent when user has an email address (ctx.user.email check)

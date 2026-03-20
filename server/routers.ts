@@ -172,6 +172,7 @@ import {
   verifyEmailOtp,
   getEmailSendCooldown,
   EMAIL_OTP_MAX_ATTEMPTS,
+  sendWelcomeEmail as sendWelcomeEmailOtp,
 } from "./emailOtp";
 
 // ─── OTP Auth ────────────────────────────────────────────────────────────────
@@ -1724,6 +1725,14 @@ const userRouter = router({
           phone: ctx.user.phone ?? normalizedPhone,
           meta: { name: input.name, locationMode: input.locationMode, categories: input.preferredCategories },
         });
+
+        // Send welcome email (fire-and-forget — don't block the response)
+        const userEmail = ctx.user.email;
+        if (userEmail) {
+          sendWelcomeEmailOtp({ to: userEmail, name: input.name })
+            .catch((err) => console.warn("[completeSignup] sendWelcomeEmail error:", err));
+        }
+
         return { success: true };
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);

@@ -162,3 +162,67 @@ export async function verifyEmailOtp(
 
   return "ok";
 }
+
+// ─── Welcome Email ────────────────────────────────────────────────────────────
+
+/**
+ * Send a welcome email after a new user completes the registration wizard.
+ * Fire-and-forget — caller should use .catch() to avoid blocking the response.
+ */
+export async function sendWelcomeEmail(params: {
+  to: string;
+  name: string;
+}): Promise<void> {
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const from = process.env.EMAIL_FROM ?? "no-reply@avodanow.co.il";
+
+  if (!apiKey) {
+    console.warn("[sendWelcomeEmail] SENDGRID_API_KEY not configured — skipping");
+    return;
+  }
+
+  sgMail.setApiKey(apiKey);
+
+  const firstName = params.name.split(" ")[0] || params.name;
+
+  await sgMail.send({
+    to: params.to,
+    from,
+    subject: `ברוך הבא ל-AvodaNow, ${firstName}! 🎉`,
+    text: `שלום ${firstName},\n\nברוך הבא ל-AvodaNow!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות AvodaNow`,
+    html: `
+      <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h1 style="color: #2d4a1e; font-size: 28px; margin: 0;">AvodaNow</h1>
+          <p style="color: #888; font-size: 13px; margin: 4px 0 0;">עבודה עכשיו</p>
+        </div>
+
+        <h2 style="color: #1a1a1a; font-size: 22px; margin-bottom: 8px;">ברוך הבא, ${firstName}! 🎉</h2>
+        <p style="color: #444; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          הפרופיל שלך נוצר בהצלחה. עכשיו אתה יכול לקבל הצעות עבודה ממעסיקים באזורך.
+        </p>
+
+        <div style="background: #f9f7f2; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+          <h3 style="color: #2d4a1e; margin: 0 0 12px; font-size: 16px;">מה הלאה?</h3>
+          <ul style="color: #555; font-size: 15px; line-height: 2; margin: 0; padding-right: 20px;">
+            <li>הגדר את הזמינות שלך כדי שמעסיקים יוכלו למצוא אותך</li>
+            <li>עדכן את הקטגוריות המועדפות עליך</li>
+            <li>הוסף תמונת פרופיל — עובדים עם תמונה מקבלים פי 3 יותר פניות</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="https://avodanow.co.il/worker-profile"
+             style="display: inline-block; background: #2d4a1e; color: #ffffff; text-decoration: none;
+                    padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold;">
+            כניסה לפרופיל שלי
+          </a>
+        </div>
+
+        <p style="color: #aaa; font-size: 12px; text-align: center; margin: 0;">
+          קיבלת מייל זה כי נרשמת ל-AvodaNow. אם לא ביצעת פעולה זו, התעלם מהודעה זו.
+        </p>
+      </div>
+    `,
+  });
+}

@@ -625,6 +625,7 @@ export default function WorkerProfile() {
                   placeholder="ישראל ישראלי"
                   dir="rtl"
                   autoFocus
+                  autoComplete="off"
                   icon={<User className="h-4 w-4" />}
                 />
 
@@ -633,8 +634,11 @@ export default function WorkerProfile() {
                   label={
                     <>
                       כתובת מייל
-                      {user?.email && (
+                      {user?.loginMethod === "google" && user?.email && (
                         <span className="mr-2 text-xs text-green-600 font-normal">נילא מחשבון Google</span>
+                      )}
+                      {user?.loginMethod === "email_otp" && user?.email && (
+                        <span className="mr-2 text-xs text-green-600 font-normal">מאומת</span>
                       )}
                     </>
                   }
@@ -642,13 +646,13 @@ export default function WorkerProfile() {
                   placeholder="example@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  readOnly={!!user?.email}
+                  readOnly={user?.loginMethod === "google" || user?.loginMethod === "email_otp"}
                   dir="ltr"
                 />
 
                 <div>
-                  {/* Phone field in wizard: OTP users have it read-only, OAuth users can enter */}
-                  {user?.loginMethod === "phone_otp" || user?.phone ? (
+                  {/* Phone field in wizard: phone_otp users have verified phone (read-only); email_otp and OAuth users can enter */}
+                  {user?.phone ? (
                     <>
                       <IsraeliPhoneInput
                         value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(user?.phone)}

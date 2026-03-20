@@ -23,6 +23,7 @@ import {
   getWorkerAvailability,
   getNearbyWorkers,
   createUserByPhone,
+  createUserByEmail,
   getUserByPhone,
   getUserByNormalizedPhone,
   getUserByEmail,
@@ -551,7 +552,7 @@ const authRouter = router({
 
       if (!user) {
         // New user — create account
-        user = await createUserByPhone("", email); // phone empty for email-only users
+        user = await createUserByEmail(email); // email-only user with correct loginMethod
         void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
       } else {
         await updateUserLastSignedIn(user.id);

@@ -206,6 +206,22 @@ export async function createUserByPhone(
   return result[0];
 }
 
+export async function createUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const openId = `email_${email.replace(/[^a-z0-9]/gi, "_")}_${Date.now()}`;
+  await db.insert(users).values({
+    openId,
+    phone: null,
+    name: null,
+    email,
+    loginMethod: "email_otp",
+    lastSignedIn: new Date(),
+  });
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return result[0];
+}
+
 export async function updateUserLastSignedIn(id: number) {
   const db = await getDb();
   if (!db) return;

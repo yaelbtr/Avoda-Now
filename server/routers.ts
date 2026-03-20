@@ -525,6 +525,10 @@ const authRouter = router({
         email: z.string().email("כתובת המייל אינה תקינה"),
         code: z.string().length(6, "קוד חייב להכיל 6 ספרות"),
         termsAccepted: z.boolean().optional(),
+        /** Full name collected during registration — saved immediately on new user creation */
+        name: z.string().min(2).max(100).optional(),
+        /** Phone number (local Israeli format) collected during registration */
+        phone: z.string().min(9).max(20).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -557,6 +561,25 @@ const authRouter = router({
         // New user — create account
         user = await createUserByEmail(email); // email-only user with correct loginMethod
         void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
+
+        // Immediately persist name and phone if provided during registration
+        if (input.name || input.phone) {
+          let normalizedPhone: string | undefined;
+          let phoneParts: { phonePrefix?: string; phoneNumber?: string } = {};
+          if (input.phone) {
+            try {
+              normalizedPhone = normalizeIsraeliPhone(input.phone);
+              const split = splitIsraeliE164Phone(normalizedPhone);
+              if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
+            } catch {
+              // invalid phone — skip silently, user can update in profile
+            }
+          }
+          await updateWorkerProfile(user.id, {
+            ...(input.name ? { name: input.name } : {}),
+            ...(normalizedPhone ? { phone: normalizedPhone, ...phoneParts } : {}),
+          });
+        }
       } else {
         await updateUserLastSignedIn(user.id);
         void logEvent("info", "email_otp.verify.login", "User logged in via email OTP", { userId: user.id, meta: { email } });

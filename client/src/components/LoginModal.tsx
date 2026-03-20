@@ -12,7 +12,7 @@ import {
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
   User, Mail,
 } from "lucide-react";
-import { IsraeliPhoneInput, combinePhone, type PhoneValue } from "@/components/IsraeliPhoneInput";
+import { IsraeliPhoneInput, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { AppInput, AppLabel } from "@/components/ui";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCategories } from "@/hooks/useCategories";
@@ -401,9 +401,19 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const submitOtp = useCallback((code: string) => {
     if (code.length !== OTP_LENGTH) return;
-    // Email OTP flow (login tab) — route to verifyEmailCode
+    // Email OTP flow — route to verifyEmailCode
+    // Pass name and phone for new registrations (pendingRegData is set in handleSend)
     if (isEmailOtpFlow) {
-      verifyEmailCode.mutate({ email: loginEmail, code });
+      const reg = pendingRegData.current;
+      const phoneForServer = reg ? (
+        isValidPhoneValue(phoneVal) ? combinePhone(phoneVal) : (phone.trim() || undefined)
+      ) : undefined;
+      verifyEmailCode.mutate({
+        email: loginEmail,
+        code,
+        ...(reg?.name ? { name: reg.name } : {}),
+        ...(phoneForServer ? { phone: phoneForServer } : {}),
+      });
       return;
     }
     const reg = pendingRegData.current;
@@ -413,7 +423,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       ...(reg ? { name: reg.name, email: reg.email || undefined, termsAccepted: true } : {}),
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [verifyOtp, verifyEmailCode, normalizedPhone, phone, isEmailOtpFlow, loginEmail]);
+  }, [verifyOtp, verifyEmailCode, normalizedPhone, phone, isEmailOtpFlow, loginEmail, phoneVal]);
 
   const handleDigitChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);

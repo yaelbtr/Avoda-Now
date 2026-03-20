@@ -2731,3 +2731,19 @@
 - [x] Fixed handleSave: same hasFullPhone fix applied for consistency
 - [x] Added 23 regression tests in client/src/lib/IsraeliPhoneInput.test.ts
 - [x] 786/786 tests passing
+
+## Round 5k: Fix Name/Phone Wizard Bug (Third Attempt)
+- [ ] Add console.log to handleWizardSubmit to trace name/phoneVal at submit time
+- [ ] Check network logs to see what completeSignup receives
+- [ ] Check server logs to see what updateWorkerProfile writes
+- [ ] Fix root cause definitively
+
+## Round 5k: Fix verifyEmailCode Not Saving Name/Phone
+- [x] Root cause: verifyEmailCode input schema had no `name` or `phone` fields — values collected in registration form were silently discarded
+- [x] Fixed server verifyEmailCode: added optional `name` and `phone` to input schema; after createUserByEmail(), calls updateWorkerProfile() immediately with name+phone
+- [x] Fixed LoginModal submitOtp: email OTP flow now passes reg.name and phone (from phoneVal) to verifyEmailCode.mutate
+- [x] Added isValidPhoneValue import to LoginModal
+- [x] Added phoneVal to submitOtp useCallback dependency array
+- [x] Removed debug console.log from handleWizardSubmit
+- [x] Added 4 regression tests in server/verifyEmailCode.name-phone.test.ts
+- [x] 790/790 tests passing

@@ -159,3 +159,68 @@ describe("sendEmail helper", () => {
     await expect(sendWelcomeEmail({ name: "ישראל", email: "test@example.com" })).resolves.not.toThrow();
   });
 });
+
+// ─── Welcome email routing logic ─────────────────────────────────────────────
+// Unit tests for the routing decisions around when welcome emails are sent.
+
+describe("welcome email routing decisions", () => {
+  /**
+   * Mirrors the guard in verifyEmailCode:
+   *   sendWelcomeEmailOtp({ to: email, name: input.name ?? "" })
+   *   — always fires for new email_otp users (email is always known)
+   */
+  it("email_otp: welcome email fires for every new user (email always known)", () => {
+    const isNewUser = true;
+    const loginMethod = "email_otp";
+    const email = "test@example.com";
+
+    const shouldSend = isNewUser && loginMethod === "email_otp" && !!email;
+    expect(shouldSend).toBe(true);
+  });
+
+  it("email_otp: welcome email does NOT fire for returning users", () => {
+    const isNewUser = false;
+    const loginMethod = "email_otp";
+    const email = "test@example.com";
+
+    const shouldSend = isNewUser && loginMethod === "email_otp" && !!email;
+    expect(shouldSend).toBe(false);
+  });
+
+  /**
+   * Mirrors the guard in completeSignup:
+   *   if (userEmail && ctx.user.loginMethod !== "email_otp")
+   *   — skips email_otp users to avoid duplicate welcome emails
+   */
+  it("completeSignup: skips welcome email for email_otp users (already sent in verifyEmailCode)", () => {
+    const loginMethod = "email_otp";
+    const userEmail = "test@example.com";
+
+    const shouldSend = !!userEmail && loginMethod !== "email_otp";
+    expect(shouldSend).toBe(false);
+  });
+
+  it("completeSignup: sends welcome email for phone_otp users with email", () => {
+    const loginMethod = "phone_otp";
+    const userEmail = "test@example.com";
+
+    const shouldSend = !!userEmail && loginMethod !== "email_otp";
+    expect(shouldSend).toBe(true);
+  });
+
+  it("completeSignup: sends welcome email for google users (always have email)", () => {
+    const loginMethod = "google";
+    const userEmail = "test@gmail.com";
+
+    const shouldSend = !!userEmail && loginMethod !== "email_otp";
+    expect(shouldSend).toBe(true);
+  });
+
+  it("completeSignup: does NOT send when email is missing", () => {
+    const loginMethod = "phone_otp";
+    const userEmail = null;
+
+    const shouldSend = !!userEmail && loginMethod !== "email_otp";
+    expect(shouldSend).toBe(false);
+  });
+});

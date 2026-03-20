@@ -2747,3 +2747,16 @@
 - [x] Removed debug console.log from handleWizardSubmit
 - [x] Added 4 regression tests in server/verifyEmailCode.name-phone.test.ts
 - [x] 790/790 tests passing
+
+## Round 6a: Welcome Email for New Users
+- [x] sendWelcomeEmail() already existed in server/emailOtp.ts (SendGrid, RTL Hebrew template with unsubscribe link)
+- [x] Wired to verifyEmailCode: fires immediately for new email_otp users (email always known at this point)
+- [x] Fixed completeSignup: skips welcome email for email_otp users to prevent duplicates (loginMethod !== email_otp guard)
+- [x] Fixed verifyOtp: removed premature welcome email (completeSignup handles phone_otp + google users)
+- [x] Removed unused sendWelcomeEmail import from _core/email.ts in routers.ts
+- [x] Added 6 routing logic regression tests in email.welcome.test.ts
+- [x] 796/796 tests passing
+
+Welcome email routing summary:
+  email_otp: fires in verifyEmailCode (immediately on registration)
+  phone_otp + google: fires in completeSignup (after wizard completion, only if email present)

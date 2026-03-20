@@ -162,7 +162,6 @@ import {
 import { adminProcedure } from "./_core/trpc";
 import { storagePut } from "./storage";
 import { notifyOwner } from "./_core/notification";
-import { sendWelcomeEmail } from "./_core/email";
 import { sanitizeText, sanitizeRichText, sanitizeTextArray } from "./sanitize";
 import { authLogger, securityLogger, getClientIp } from "./logger";
 import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor, meetsMinAgeRequirement } from "@shared/ageUtils";
@@ -432,12 +431,7 @@ const authRouter = router({
           void logEvent("error", "signup.create_user_failed", `Failed to create user: ${msg}`, { phone, meta: { error: msg } });
           throw err;
         }
-        // Send welcome email non-blocking (fire-and-forget)
-        if (user && input.email) {
-          sendWelcomeEmail({ name: input.name ?? "", email: input.email }).catch((err) =>
-            console.warn("[verifyOtp] sendWelcomeEmail error:", err)
-          );
-        }
+        // Welcome email is sent later in completeSignup wizard (after profile is complete)
       } else {
         // Existing user: must have accepted terms at some point
         if (!user.termsAcceptedAt) {
@@ -580,6 +574,10 @@ const authRouter = router({
             ...(normalizedPhone ? { phone: normalizedPhone, ...phoneParts } : {}),
           });
         }
+
+        // Send welcome email immediately — email is known at this point
+        sendWelcomeEmailOtp({ to: email, name: input.name ?? "" })
+          .catch((err) => console.warn("[verifyEmailCode] sendWelcomeEmail error:", err));
       } else {
         await updateUserLastSignedIn(user.id);
         void logEvent("info", "email_otp.verify.login", "User logged in via email OTP", { userId: user.id, meta: { email } });
@@ -1772,8 +1770,9 @@ const userRouter = router({
         });
 
         // Send welcome email (fire-and-forget — don't block the response)
+        // Skip for email_otp users: they already received the welcome email in verifyEmailCode
         const userEmail = ctx.user.email;
-        if (userEmail) {
+        if (userEmail && ctx.user.loginMethod !== "email_otp") {
           sendWelcomeEmailOtp({ to: userEmail, name: input.name })
             .catch((err) => console.warn("[completeSignup] sendWelcomeEmail error:", err));
         }

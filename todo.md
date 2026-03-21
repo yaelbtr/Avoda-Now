@@ -2799,3 +2799,12 @@ Isolation guarantees:
 - [x] Fixed normalizeIsraeliPhone: added early digit-only validation (was silently producing '+972notaphone')
 - [x] Fixed users.integration.test.ts: count assertions now filter by openId 'test-%' prefix to avoid cross-test pollution
 - [x] 30/30 integration tests passing, 826/826 unit tests passing
+
+## Round 6d: CI/CD GitHub Actions Pipeline
+- [x] Audit project scripts and GitHub repo connection
+- [x] Create .github/workflows/ci.yml — unit tests on every PR and push to main
+- [x] Create .github/workflows/integration.yml — integration tests with PostgreSQL service container
+- [x] Add TypeScript type check step to CI
+- [x] Configure secrets documentation (which secrets must be set in GitHub)
+- [x] Verify workflow YAML syntax
+- [x] Save checkpoint

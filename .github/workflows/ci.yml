@@ -1,0 +1,83 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ci.yml — Unit Tests + TypeScript Check
+#
+# Runs on:
+#   - Every pull request (any branch → main)
+#   - Every push to main
+#
+# Steps:
+#   1. Install dependencies (pnpm)
+#   2. TypeScript type check (tsc --noEmit)
+#   3. Unit tests (vitest run) — all mocked, no external services needed
+#
+# No secrets required — all external services are mocked in unit tests.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI — Unit Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit Tests & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm check
+
+      - name: Run unit tests
+        run: pnpm test
+        env:
+          # Minimal env for unit tests — all external services are mocked
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-ci-do-not-use-in-production-32chars
+          POSTGRES_URL: postgresql://unused:unused@localhost:5432/unused
+          SENDGRID_API_KEY: SG.test-fake-key-not-real
+          EMAIL_FROM: test@test.invalid
+          TWILIO_ACCOUNT_SID: ACtest00000000000000000000000000000
+          TWILIO_AUTH_TOKEN: test-auth-token-fake
+          TWILIO_VERIFY_SERVICE_SID: VAtest0000000000000000000000000000
+          VITE_APP_ID: test-app-id
+          OAUTH_SERVER_URL: http://localhost:9999/mock-oauth
+          VITE_OAUTH_PORTAL_URL: http://localhost:9999/mock-portal
+          OWNER_OPEN_ID: test-owner-open-id
+          OWNER_NAME: Test Owner
+          BUILT_IN_FORGE_API_URL: http://localhost:9999/mock-forge
+          BUILT_IN_FORGE_API_KEY: test-forge-key-fake
+          VITE_FRONTEND_FORGE_API_KEY: test-frontend-forge-key-fake
+          VITE_FRONTEND_FORGE_API_URL: http://localhost:9999/mock-forge

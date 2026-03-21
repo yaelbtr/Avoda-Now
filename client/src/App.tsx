@@ -33,6 +33,7 @@ import Admin from "./pages/Admin";
 import JobsToday from "./pages/JobsToday";
 import AvailableWorkers from "./pages/AvailableWorkers";
 import WorkerProfile from "./pages/WorkerProfile";
+import EmployerProfile from "./pages/EmployerProfile";
 import PublicWorkerProfile from "./pages/PublicWorkerProfile";
 import ApplicationView from "./pages/ApplicationView";
 import JobApplications from "./pages/JobApplications";
@@ -287,6 +288,7 @@ function Router() {
                 <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
                 <Route path="/available-workers" component={AvailableWorkers} />
                 <Route path="/worker-profile" component={WorkerProfile} />
+                <Route path="/employer-profile" component={EmployerProfile} />
                 <Route path="/worker/:id" component={PublicWorkerProfile} />
                 <Route path="/applications/:id" component={ApplicationView} />
                 <Route path="/jobs/:id/applications" component={JobApplications} />

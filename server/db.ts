@@ -3085,3 +3085,91 @@ export async function getLogs(params: {
 
   return { rows, total: totalResult[0]?.count ?? 0 };
 }
+
+// ── Employer Profile ──────────────────────────────────────────────────────────
+
+export async function getEmployerProfile(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      phone: users.phone,
+      phonePrefix: users.phonePrefix,
+      phoneNumber: users.phoneNumber,
+      email: users.email,
+      profilePhoto: users.profilePhoto,
+      companyName: users.companyName,
+      employerBio: users.employerBio,
+      defaultJobCity: users.defaultJobCity,
+      defaultJobCityId: users.defaultJobCityId,
+      defaultJobLatitude: users.defaultJobLatitude,
+      defaultJobLongitude: users.defaultJobLongitude,
+      workerSearchCity: users.workerSearchCity,
+      workerSearchCityId: users.workerSearchCityId,
+      workerSearchRadiusKm: users.workerSearchRadiusKm,
+      workerSearchLatitude: users.workerSearchLatitude,
+      workerSearchLongitude: users.workerSearchLongitude,
+      workerSearchLocationMode: users.workerSearchLocationMode,
+      minWorkerAge: users.minWorkerAge,
+      notificationPrefs: users.notificationPrefs,
+      signupCompleted: users.signupCompleted,
+    })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function updateEmployerProfile(
+  id: number,
+  data: {
+    name?: string | null;
+    phone?: string | null;
+    phonePrefix?: string | null;
+    phoneNumber?: string | null;
+    email?: string | null;
+    profilePhoto?: string | null;
+    companyName?: string | null;
+    employerBio?: string | null;
+    defaultJobCity?: string | null;
+    defaultJobCityId?: number | null;
+    defaultJobLatitude?: string | null;
+    defaultJobLongitude?: string | null;
+    workerSearchCity?: string | null;
+    workerSearchCityId?: number | null;
+    workerSearchRadiusKm?: number | null;
+    workerSearchLatitude?: string | null;
+    workerSearchLongitude?: string | null;
+    workerSearchLocationMode?: "city" | "radius";
+    minWorkerAge?: number | null;
+    signupCompleted?: boolean;
+  }
+) {
+  const db = await getDb();
+  if (!db) return;
+  const updateSet: Record<string, unknown> = {};
+  if (data.name !== undefined) updateSet.name = data.name;
+  if (data.phone !== undefined) updateSet.phone = data.phone;
+  if (data.phonePrefix !== undefined) updateSet.phonePrefix = data.phonePrefix;
+  if (data.phoneNumber !== undefined) updateSet.phoneNumber = data.phoneNumber;
+  if (data.email !== undefined) updateSet.email = data.email;
+  if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
+  if (data.companyName !== undefined) updateSet.companyName = data.companyName;
+  if (data.employerBio !== undefined) updateSet.employerBio = data.employerBio;
+  if (data.defaultJobCity !== undefined) updateSet.defaultJobCity = data.defaultJobCity;
+  if (data.defaultJobCityId !== undefined) updateSet.defaultJobCityId = data.defaultJobCityId;
+  if (data.defaultJobLatitude !== undefined) updateSet.defaultJobLatitude = data.defaultJobLatitude;
+  if (data.defaultJobLongitude !== undefined) updateSet.defaultJobLongitude = data.defaultJobLongitude;
+  if (data.workerSearchCity !== undefined) updateSet.workerSearchCity = data.workerSearchCity;
+  if (data.workerSearchCityId !== undefined) updateSet.workerSearchCityId = data.workerSearchCityId;
+  if (data.workerSearchRadiusKm !== undefined) updateSet.workerSearchRadiusKm = data.workerSearchRadiusKm;
+  if (data.workerSearchLatitude !== undefined) updateSet.workerSearchLatitude = data.workerSearchLatitude;
+  if (data.workerSearchLongitude !== undefined) updateSet.workerSearchLongitude = data.workerSearchLongitude;
+  if (data.workerSearchLocationMode !== undefined) updateSet.workerSearchLocationMode = data.workerSearchLocationMode;
+  if (data.minWorkerAge !== undefined) updateSet.minWorkerAge = data.minWorkerAge;
+  if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
+  if (Object.keys(updateSet).length === 0) return;
+  await db.update(users).set({ ...updateSet, updatedAt: new Date() }).where(eq(users.id, id));
+}

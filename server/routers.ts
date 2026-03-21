@@ -123,6 +123,8 @@ import {
   getLastBirthDateChange,
   logEvent,
   getLogs,
+  getEmployerProfile,
+  updateEmployerProfile,
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1931,6 +1933,112 @@ const userRouter = router({
       const buffer = Buffer.from(input.base64, "base64");
       const { url } = await storagePut(key, buffer, input.mimeType);
       await updateWorkerProfile(ctx.user.id, { profilePhoto: url });
+      return { url };
+    }),
+
+  // ── Employer Profile ──────────────────────────────────────────────────────────────────
+
+  /** Get the current employer's profile */
+  getEmployerProfile: protectedProcedure.query(async ({ ctx }) => {
+    const profile = await getEmployerProfile(ctx.user.id);
+    return profile;
+  }),
+
+  /** Update the current employer's profile */
+  updateEmployerProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2).max(100).optional(),
+        phone: z.string().min(9).max(20).nullable().optional(),
+        phonePrefix: z.string().length(3).nullable().optional(),
+        phoneNumber: z.string().length(7).regex(/^\d{7}$/).nullable().optional(),
+        email: z.string().email().max(320).nullable().optional(),
+        companyName: z.string().max(120).nullable().optional(),
+        employerBio: z.string().max(500).nullable().optional(),
+        defaultJobCity: z.string().max(100).nullable().optional(),
+        defaultJobCityId: z.number().int().nullable().optional(),
+        defaultJobLatitude: z.string().nullable().optional(),
+        defaultJobLongitude: z.string().nullable().optional(),
+        workerSearchCity: z.string().max(100).nullable().optional(),
+        workerSearchCityId: z.number().int().nullable().optional(),
+        workerSearchRadiusKm: z.number().int().min(1).max(200).nullable().optional(),
+        workerSearchLatitude: z.string().nullable().optional(),
+        workerSearchLongitude: z.string().nullable().optional(),
+        workerSearchLocationMode: z.enum(["city", "radius"]).optional(),
+        minWorkerAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
+        signupCompleted: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Phone validation (same pattern as worker profile)
+      let normalizedPhone: string | undefined = undefined;
+      if (input.phone !== undefined && input.phone !== null) {
+        if (ctx.user.loginMethod === "phone_otp") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "שינוי מספר טלפון אינו מותר למשתמשים שנכנסו עם OTP" });
+        }
+        try {
+          normalizedPhone = normalizeIsraeliPhone(input.phone);
+          if (!isValidIsraeliPhone(normalizedPhone)) throw new Error();
+        } catch {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+        }
+      }
+      let phonePrefix: string | undefined = undefined;
+      let phoneNumber: string | undefined = undefined;
+      if (input.phonePrefix != null && input.phoneNumber != null) {
+        const prefixValid = await isValidPhonePrefix(input.phonePrefix);
+        if (!prefixValid) throw new TRPCError({ code: "BAD_REQUEST", message: "קידומת טלפון לא תקינה" });
+        if (!/^\d{7}$/.test(input.phoneNumber)) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון חייב להכיל בדייק 7 ספרות" });
+        phonePrefix = input.phonePrefix;
+        phoneNumber = input.phoneNumber;
+        const combined = `${input.phonePrefix}${input.phoneNumber}`;
+        try {
+          normalizedPhone = normalizeIsraeliPhone(combined);
+          if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
+        } catch { normalizedPhone = undefined; }
+      }
+      if (normalizedPhone) {
+        const existing = await getUserByNormalizedPhone(normalizedPhone, normalizeIsraeliPhone);
+        if (existing && existing.id !== ctx.user.id) {
+          throw new TRPCError({ code: "CONFLICT", message: "מספר הטלפון כבר משויך לחשבון אחר במערכת." });
+        }
+      }
+      await updateEmployerProfile(ctx.user.id, {
+        name: input.name,
+        phone: normalizedPhone,
+        phonePrefix,
+        phoneNumber,
+        email: input.email ?? undefined,
+        companyName: input.companyName ?? undefined,
+        employerBio: input.employerBio ?? undefined,
+        defaultJobCity: input.defaultJobCity ?? undefined,
+        defaultJobCityId: input.defaultJobCityId ?? undefined,
+        defaultJobLatitude: input.defaultJobLatitude ?? undefined,
+        defaultJobLongitude: input.defaultJobLongitude ?? undefined,
+        workerSearchCity: input.workerSearchCity ?? undefined,
+        workerSearchCityId: input.workerSearchCityId ?? undefined,
+        workerSearchRadiusKm: input.workerSearchRadiusKm ?? undefined,
+        workerSearchLatitude: input.workerSearchLatitude ?? undefined,
+        workerSearchLongitude: input.workerSearchLongitude ?? undefined,
+        workerSearchLocationMode: input.workerSearchLocationMode,
+        minWorkerAge: input.minWorkerAge ?? undefined,
+        signupCompleted: input.signupCompleted,
+      });
+      return { success: true };
+    }),
+
+  /** Upload employer profile photo to S3 */
+  uploadEmployerProfilePhoto: protectedProcedure
+    .input(z.object({
+      base64: z.string(),
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const key = `employer-photos/${ctx.user.id}-${Date.now()}.${ext}`;
+      const buffer = Buffer.from(input.base64, "base64");
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      await updateEmployerProfile(ctx.user.id, { profilePhoto: url });
       return { url };
     }),
 

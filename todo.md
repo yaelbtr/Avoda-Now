@@ -2816,3 +2816,14 @@ Isolation guarantees:
 - [x] Create deploy-prod.yml — deploy to PROD on push to main (placeholder)
 - [x] Validate YAML syntax for all three workflows
 - [x] Save checkpoint
+
+## Round 7: Employer Personal Area
+
+- [x] Add employer profile fields to schema (companyName, employerCity, employerRadius, defaultJobCity, minWorkerAge)
+- [x] Run db:push to apply schema changes
+- [x] Add getEmployerProfile and updateEmployerProfile functions to server/db.ts
+- [x] Add getEmployerProfile and updateEmployerProfile tRPC procedures to server/routers.ts
+- [x] Create EmployerProfile.tsx page matching WorkerProfile design and style
+- [x] Add /employer-profile route to App.tsx
+- [x] Update Navbar to link employer mode user icon to /employer-profile
+- [x] Add employer profile link to Navbar dropdown menu and employerLinks nav array

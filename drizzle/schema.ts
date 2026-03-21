@@ -218,6 +218,42 @@ export const users = pgTable("users", {
    * Null means no forced logout has been issued.
    */
   forcedLogoutAt: bigint("forcedLogoutAt", { mode: "number" }),
+
+  // ── Employer-specific profile fields ─────────────────────────────────────
+  /** Company name (optional) — displayed on job cards and employer profile */
+  companyName: varchar("companyName", { length: 120 }),
+  /** Short bio / description for the employer */
+  employerBio: text("employerBio"),
+  /**
+   * Default job location city ID — pre-filled when posting a new job.
+   * References the cities table.
+   */
+  defaultJobCityId: integer("defaultJobCityId"),
+  /** Default job location free-text city name (for display) */
+  defaultJobCity: varchar("defaultJobCity", { length: 100 }),
+  /** Default job latitude for map display */
+  defaultJobLatitude: numeric("defaultJobLatitude", { precision: 10, scale: 7 }),
+  /** Default job longitude for map display */
+  defaultJobLongitude: numeric("defaultJobLongitude", { precision: 10, scale: 7 }),
+  /**
+   * Employer preferred worker search city — used to filter available workers.
+   */
+  workerSearchCity: varchar("workerSearchCity", { length: 100 }),
+  /** Worker search city ID */
+  workerSearchCityId: integer("workerSearchCityId"),
+  /** Worker search radius in km (default 10) */
+  workerSearchRadiusKm: integer("workerSearchRadiusKm").default(10),
+  /** Worker search latitude (for radius-based search) */
+  workerSearchLatitude: numeric("workerSearchLatitude", { precision: 10, scale: 7 }),
+  /** Worker search longitude (for radius-based search) */
+  workerSearchLongitude: numeric("workerSearchLongitude", { precision: 10, scale: 7 }),
+  /** Worker search location mode: city or radius */
+  workerSearchLocationMode: locationModeEnum("workerSearchLocationMode").default("city"),
+  /**
+   * Minimum worker age the employer is willing to hire.
+   * Values: 16 | 18 (null = no restriction).
+   */
+  minWorkerAge: integer("minWorkerAge"),
 });
 
 export type User = typeof users.$inferSelect;

@@ -10,7 +10,12 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "test:integration": "dotenv -e .env.test -- vitest run --config vitest.integration.config.ts",
+    "test:integration:watch": "dotenv -e .env.test -- vitest --config vitest.integration.config.ts",
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "db:push:test": "TEST_DATABASE_URL=postgresql://test_user:test_password@localhost:5432/jobnow_test drizzle-kit migrate --config drizzle.test.config.ts",
+    "db:seed:test": "node scripts/seed-test-db.mjs",
+    "db:setup:test": "bash scripts/setup-test-db.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
@@ -107,6 +112,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.20",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
     "mysql2": "^3.15.0",

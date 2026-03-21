@@ -2760,3 +2760,27 @@
 Welcome email routing summary:
   email_otp: fires in verifyEmailCode (immediately on registration)
   phone_otp + google: fires in completeSignup (after wizard completion, only if email present)
+
+## Round 6b: Isolated TEST Environment
+- [x] Audited current DB/ENV/vitest setup
+- [x] Created local PostgreSQL DB: jobnow_test (completely isolated from Neon production)
+- [x] Applied all drizzle migrations to test DB (25 tables + PostGIS)
+- [x] Created .env.test with fake credentials (RFC 2606 .invalid emails, fake API keys, no real secrets)
+- [x] Created scripts/seed-test-db.mjs — deterministic synthetic data (5 users, 3 jobs, 4 categories, 3 cities)
+- [x] Created scripts/setup-test-db.sh — one-time local PG setup script
+- [x] Created scripts/vitest-global-setup.mjs — seeds DB + safety guard before each integration test run
+- [x] Created vitest.integration.config.ts — separate vitest config (singleFork, 15s timeout, globalSetup)
+- [x] Created server/test-db.ts — typed Drizzle helper (getTestDb, closeTestDb, resetTestDb)
+- [x] Created drizzle.test.config.ts — drizzle-kit config for test DB migrations
+- [x] Added npm scripts: test:integration, test:integration:watch, db:seed:test, db:push:test, db:setup:test
+- [x] Installed dotenv-cli for .env.test loading
+- [x] Wrote 13 integration tests in server/users.integration.test.ts
+- [x] 13/13 integration tests passing, 809/809 unit tests passing
+- [x] Zero bleed verified: safety guard aborts if DB name doesn't contain 'test'
+
+Isolation guarantees:
+  DB: localhost:5432/jobnow_test vs Neon cloud (separate process, separate host)
+  Emails: .invalid TLD (RFC 2606) — never deliverable to real inboxes
+  Phones: synthetic +9725x1234xxx range
+  External services: SendGrid/Twilio/Forge all mocked in unit tests
+  Integration tests: real DB queries, no mocks for DB layer

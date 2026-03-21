@@ -2808,3 +2808,11 @@ Isolation guarantees:
 - [x] Configure secrets documentation (which secrets must be set in GitHub)
 - [x] Verify workflow YAML syntax
 - [x] Save checkpoint
+
+## Round 6e: CI/CD Workflows Restructure
+- [x] Remove old ci.yml and integration.yml
+- [x] Create ci.yml — unit + integration tests on every PR and push to develop/main
+- [x] Create deploy-test.yml — deploy to TEST on push to develop (placeholder)
+- [x] Create deploy-prod.yml — deploy to PROD on push to main (placeholder)
+- [x] Validate YAML syntax for all three workflows
+- [x] Save checkpoint

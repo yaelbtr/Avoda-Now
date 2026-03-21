@@ -1,34 +1,33 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# ci.yml — Unit Tests + TypeScript Check
-#
-# Runs on:
-#   - Every pull request (any branch → main)
-#   - Every push to main
-#
-# Steps:
-#   1. Install dependencies (pnpm)
-#   2. TypeScript type check (tsc --noEmit)
-#   3. Unit tests (vitest run) — all mocked, no external services needed
-#
-# No secrets required — all external services are mocked in unit tests.
-# ─────────────────────────────────────────────────────────────────────────────
-
-name: CI — Unit Tests
+name: CI
 
 on:
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches:
+      - develop
+      - main
 
 jobs:
-  unit-tests:
-    name: Unit Tests & Type Check
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: jobnow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test_user -d jobnow_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -41,43 +40,68 @@ jobs:
         with:
           version: "10"
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-pnpm-
 
-      - name: Install dependencies
+      - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: TypeScript type check
+      - name: TypeScript check
         run: pnpm check
-
-      - name: Run unit tests
-        run: pnpm test
         env:
-          # Minimal env for unit tests — all external services are mocked
           NODE_ENV: test
-          JWT_SECRET: test-jwt-secret-ci-do-not-use-in-production-32chars
-          POSTGRES_URL: postgresql://unused:unused@localhost:5432/unused
-          SENDGRID_API_KEY: SG.test-fake-key-not-real
+          JWT_SECRET: test-jwt-secret-ci-32chars-placeholder
+          POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
+          SENDGRID_API_KEY: SG.test-fake-key
           EMAIL_FROM: test@test.invalid
-          TWILIO_ACCOUNT_SID: ACtest00000000000000000000000000000
+          TWILIO_ACCOUNT_SID: ACtest000000000000000000000000000000
           TWILIO_AUTH_TOKEN: test-auth-token-fake
-          TWILIO_VERIFY_SERVICE_SID: VAtest0000000000000000000000000000
+          TWILIO_VERIFY_SERVICE_SID: VAtest000000000000000000000000000000
           VITE_APP_ID: test-app-id
-          OAUTH_SERVER_URL: http://localhost:9999/mock-oauth
-          VITE_OAUTH_PORTAL_URL: http://localhost:9999/mock-portal
-          OWNER_OPEN_ID: test-owner-open-id
+          OAUTH_SERVER_URL: http://localhost:9999
+          VITE_OAUTH_PORTAL_URL: http://localhost:9999
+          OWNER_OPEN_ID: test-owner
           OWNER_NAME: Test Owner
-          BUILT_IN_FORGE_API_URL: http://localhost:9999/mock-forge
-          BUILT_IN_FORGE_API_KEY: test-forge-key-fake
-          VITE_FRONTEND_FORGE_API_KEY: test-frontend-forge-key-fake
-          VITE_FRONTEND_FORGE_API_URL: http://localhost:9999/mock-forge
+          BUILT_IN_FORGE_API_URL: http://localhost:9999
+          BUILT_IN_FORGE_API_KEY: test-forge-key
+          VITE_FRONTEND_FORGE_API_KEY: test-frontend-key
+          VITE_FRONTEND_FORGE_API_URL: http://localhost:9999
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U test_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Apply DB migrations (test DB)
+        run: pnpm db:push:test
+        env:
+          TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
+
+      - name: Run tests
+        run: pnpm test && pnpm test:integration
+        env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
+          JWT_SECRET: test-jwt-secret-ci-32chars-placeholder
+          POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
+          SENDGRID_API_KEY: SG.test-fake-key
+          EMAIL_FROM: test@test.invalid
+          TWILIO_ACCOUNT_SID: ACtest000000000000000000000000000000
+          TWILIO_AUTH_TOKEN: test-auth-token-fake
+          TWILIO_VERIFY_SERVICE_SID: VAtest000000000000000000000000000000
+          VITE_APP_ID: test-app-id
+          OAUTH_SERVER_URL: http://localhost:9999
+          VITE_OAUTH_PORTAL_URL: http://localhost:9999
+          OWNER_OPEN_ID: test-owner
+          OWNER_NAME: Test Owner
+          BUILT_IN_FORGE_API_URL: http://localhost:9999
+          BUILT_IN_FORGE_API_KEY: test-forge-key
+          VITE_FRONTEND_FORGE_API_KEY: test-frontend-key
+          VITE_FRONTEND_FORGE_API_URL: http://localhost:9999

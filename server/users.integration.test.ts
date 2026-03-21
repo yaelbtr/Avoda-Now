@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { getTestDb, closeTestDb } from "./test-db";
 import * as schema from "../drizzle/schema";
 
@@ -48,13 +48,15 @@ describe("Integration: Test DB isolation", () => {
     }
   });
 
-  it("contains only synthetic test phone numbers", async () => {
+  it("contains only synthetic test phone numbers in seeded users", async () => {
     const db = getTestDb();
+    // Only check seeded users (openId starts with 'test-') — not transient test users
     const users = await db
       .select({ phone: schema.users.phone })
-      .from(schema.users);
+      .from(schema.users)
+      .where(like(schema.users.openId, "test-%"));
 
-    // All phones must be synthetic test numbers (+9725x1234xxx)
+    // All seeded phones must be synthetic test numbers (+9725x1234xxx)
     for (const user of users) {
       if (user.phone) {
         expect(user.phone).toMatch(/^\+9725[0-9]1234/);
@@ -64,9 +66,13 @@ describe("Integration: Test DB isolation", () => {
 });
 
 describe("Integration: Users table", () => {
-  it("has exactly 5 seeded test users", async () => {
+  it("has exactly 5 seeded test users (openId starts with 'test-')", async () => {
     const db = getTestDb();
-    const users = await db.select().from(schema.users);
+    // Filter only seeded users — transient test users from other test files are excluded
+    const users = await db
+      .select()
+      .from(schema.users)
+      .where(like(schema.users.openId, "test-%"));
     expect(users).toHaveLength(5);
   });
 
@@ -80,21 +86,25 @@ describe("Integration: Users table", () => {
     expect(admins[0].openId).toBe("test-admin-001");
   });
 
-  it("has 4 regular users", async () => {
+  it("has at least 4 regular users (seeded)", async () => {
     const db = getTestDb();
+    // Filter only seeded regular users
     const regular = await db
       .select()
       .from(schema.users)
-      .where(eq(schema.users.role, "user"));
-    expect(regular).toHaveLength(4);
+      .where(like(schema.users.openId, "test-%"));
+    const regularUsers = regular.filter((u) => u.role === "user");
+    expect(regularUsers).toHaveLength(4);
   });
 
-  it("has 1 incomplete signup (email user)", async () => {
+  it("has at least 1 incomplete signup (email user) among seeded users", async () => {
     const db = getTestDb();
-    const incomplete = await db
+    // Filter only seeded users with incomplete signup
+    const seeded = await db
       .select()
       .from(schema.users)
-      .where(eq(schema.users.signupCompleted, false));
+      .where(like(schema.users.openId, "test-%"));
+    const incomplete = seeded.filter((u) => !u.signupCompleted);
     expect(incomplete).toHaveLength(1);
     expect(incomplete[0].loginMethod).toBe("email_otp");
   });

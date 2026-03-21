@@ -2784,3 +2784,18 @@ Isolation guarantees:
   Phones: synthetic +9725x1234xxx range
   External services: SendGrid/Twilio/Forge all mocked in unit tests
   Integration tests: real DB queries, no mocks for DB layer
+
+## Round 6c: Integration Tests for verifyEmailCode Flow
+- [x] Analyzed verifyEmailCode procedure and email OTP infrastructure
+- [x] Wrote 17 integration tests in server/verifyEmailCode.integration.test.ts covering:
+  - new user created with name and phone saved correctly
+  - phone normalization (0501234567 → +972501234567)
+  - invalid phone rejected (normalizeIsraeliPhone now rejects non-digit chars)
+  - existing user login (no duplicate creation)
+  - OTP expiry rejection
+  - isNewUser flag (true for new, false for returning)
+  - welcome email path (isNewUser=true triggers welcome email)
+  - terms acceptance saved
+- [x] Fixed normalizeIsraeliPhone: added early digit-only validation (was silently producing '+972notaphone')
+- [x] Fixed users.integration.test.ts: count assertions now filter by openId 'test-%' prefix to avoid cross-test pollution
+- [x] 30/30 integration tests passing, 826/826 unit tests passing

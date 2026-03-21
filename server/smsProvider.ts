@@ -298,9 +298,14 @@ export const smsProvider: SmsProvider = new TwilioVerifyProvider();
  *   5XXXXXXXX     (9 digits, missing leading 0)
  */
 export function normalizeIsraeliPhone(raw: string): string {
-  // Strip all non-digit characters except leading +
+  // Strip allowed separators, then verify only digits remain
   const stripped = raw.trim();
   const digits = stripped.replace(/[\s\-().]/g, "").replace(/^\+/, "");
+
+  // Reject if non-digit characters remain after stripping separators
+  if (!/^\d+$/.test(digits)) {
+    throw new Error(`מספר טלפון לא תקין: ${raw}`);
+  }
 
   // Already in international format: 972 + 9 digits = 12 digits total
   if (digits.startsWith("972") && digits.length >= 11 && digits.length <= 13) {

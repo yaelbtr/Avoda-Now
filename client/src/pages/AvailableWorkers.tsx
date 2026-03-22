@@ -55,6 +55,13 @@ export default function AvailableWorkers() {
     staleTime: 60_000,
   });
   const minWorkerAge = isEmployer ? (employerProfileQuery.data?.minWorkerAge ?? null) : null;
+  // Use employer's saved search coordinates as fallback (preferred over Jerusalem default)
+  const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLatitude)
+    : null;
+  const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
+    : null;
 
   const getLocation = () => {
     setLocating(true);
@@ -69,8 +76,11 @@ export default function AvailableWorkers() {
     );
   };
 
+  // Priority: live GPS > employer saved location > Jerusalem default
+  const effectiveLat = userLat ?? savedLat ?? 31.7683;
+  const effectiveLng = userLng ?? savedLng ?? 35.2137;
   const workersQuery = trpc.workers.nearby.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, limit: 50, minWorkerAge },
+    { lat: effectiveLat, lng: effectiveLng, radiusKm, limit: 50, minWorkerAge },
     { enabled: true, refetchInterval: 60000 }
   );
 

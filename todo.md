@@ -2903,3 +2903,9 @@ Isolation guarantees:
 - [x] Replace Haversine JS filtering in `getWorkersMatchingJob` with PostGIS ST_DWithin SQL filter for radius-mode workers
 - [x] Wire `onCitySelect` on both CityPicker instances in WorkerProfile.tsx to save city coordinates
 - [x] Add 3 Vitest tests for getWorkersMatchingJob PostGIS ST_DWithin behavior (802 passing)
+
+## Round 7k Followup: GIST Index + EmployerProfile CityPicker
+
+- [x] Add GIST index on users.workerLocation via Drizzle migration for PostGIS performance
+- [x] Verify/wire onCitySelect in EmployerProfile CityPicker to save workerSearchLatitude/Longitude
+- [x] Fix HomeEmployer and AvailableWorkers to use employer's saved workerSearchLatitude/Longitude as fallback (priority: GPS > saved > Jerusalem default)

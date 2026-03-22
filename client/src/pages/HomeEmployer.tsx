@@ -111,7 +111,7 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
 export default function HomeEmployer() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const { resetUserMode } = useUserMode();
+  const { resetUserMode, userMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [userLat, setUserLat] = useState<number | null>(null);
@@ -164,8 +164,23 @@ export default function HomeEmployer() {
   const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: isAuthenticated });
   const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: isAuthenticated });
   const pendingCount = pendingAppsQuery.data?.total ?? 0;
+  // Load employer profile to use saved workerSearchLatitude/Longitude as fallback
+  const isEmployer = isAuthenticated && userMode === "employer";
+  const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
+    enabled: isEmployer,
+    staleTime: 60_000,
+  });
+  const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLatitude)
+    : null;
+  const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
+    : null;
+  // Priority: live GPS > employer saved location > Jerusalem default
+  const effectiveLat = userLat ?? savedLat ?? 31.7683;
+  const effectiveLng = userLng ?? savedLng ?? 35.2137;
   const workersQuery = trpc.workers.nearby.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: 20, limit: 8 },
+    { lat: effectiveLat, lng: effectiveLng, radiusKm: 20, limit: 8 },
     { staleTime: 60_000 }
   );
 

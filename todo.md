@@ -2853,3 +2853,12 @@ Isolation guarantees:
 ## Round 7e: Bug Fixes
 
 - [x] Fix CityPicker in worker profile edit view losing focus — accordion button was swallowing click events from the city search input
+
+## Round 7f: Accordion Refactor
+
+- [ ] Audit all accordion toggle button patterns across the codebase
+- [ ] Extract shared AccordionSection component to client/src/components/ui/AccordionSection.tsx
+- [ ] Replace accordion buttons in WorkerProfile.tsx with the new component
+- [ ] Replace accordion buttons in EmployerProfile.tsx with the new component
+- [ ] Replace any other accordion patterns found in other pages
+- [x] Fix CityPicker dropdown not showing on mobile — mousedown outside-click handler fires on keyboard events and resets open state

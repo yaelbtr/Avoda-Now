@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Search, X, MapPin } from "lucide-react";
@@ -17,19 +17,31 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: allCities = [] } = trpc.user.getCities.useQuery();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+  // Close dropdown when focus leaves the entire container.
+  // Using onBlur with a small delay so clicking a suggestion (which briefly
+  // shifts focus away from the input) doesn't close before addCity fires.
+  const handleBlur = useCallback(() => {
+    closeTimerRef.current = setTimeout(() => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(document.activeElement)
+      ) {
         setOpen(false);
       }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    }, 150);
   }, []);
+
+  const handleFocus = useCallback(() => {
+    // Cancel any pending close when focus returns to the container
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, [])
 
   // Filter cities based on search query — only show when user has typed something
   const suggestions = useMemo(() => {
@@ -61,7 +73,12 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
   };
 
   return (
-    <div className="space-y-2" ref={containerRef}>
+    <div
+      className="space-y-2"
+      ref={containerRef}
+      onBlur={handleBlur}
+      onFocus={handleFocus}
+    >
       {/* Selected city chips */}
       {selectedCities.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -103,7 +120,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
             setSearch(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => search.trim() && setOpen(true)}
+          onFocus={() => setOpen(true)}
           placeholder={
             maxCities && selectedCityIds.length >= maxCities
               ? `בחרת ${maxCities} ערים (מקסימום)`
@@ -117,7 +134,12 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
         {search && (
           <button
             type="button"
-            onClick={() => { setSearch(""); setOpen(false); }}
+            onMouseDown={(e) => {
+              // Prevent blur on the input before clearing
+              e.preventDefault();
+              setSearch("");
+              setOpen(false);
+            }}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" />

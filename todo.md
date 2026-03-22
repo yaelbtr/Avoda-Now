@@ -2869,3 +2869,7 @@ Isolation guarantees:
 - [x] Add inline alert/banner in worker profile when birthDate is missing, explaining it affects employer visibility
 - [x] Banner links directly to the personal details section (settings tab) where birthDate field is
 - [x] Integrate with existing profile completeness logic (missing fields list)
+
+## Round 7h: Default Job Location — GPS Button
+
+- [x] Add GPS "use my location" button above the MapView in EmployerProfile default job location section

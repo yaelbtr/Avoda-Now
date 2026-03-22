@@ -90,6 +90,7 @@ export default function EmployerProfile() {
   const [defaultJobCityId, setDefaultJobCityId] = useState<number | null>(null);
   const [defaultJobLatitude, setDefaultJobLatitude] = useState<string | null>(null);
   const [defaultJobLongitude, setDefaultJobLongitude] = useState<string | null>(null);
+  const [jobGeoLoading, setJobGeoLoading] = useState(false);
   // Map refs for default job location picker
   const jobMapRef = useRef<google.maps.Map | null>(null);
   const jobMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -585,6 +586,61 @@ export default function EmployerProfile() {
                   title="מיקום ברירת מחדל למשרה"
                   subtitle="ימולא אוטומטית בעת פרסום משרה"
                 />
+                {/* GPS button */}
+                <button
+                  type="button"
+                  disabled={jobGeoLoading}
+                  onClick={() => {
+                    if (!navigator.geolocation) { toast.error("הדפדפן שלך אינו תומך באיתור מיקום"); return; }
+                    setJobGeoLoading(true);
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        setDefaultJobLatitude(String(lat));
+                        setDefaultJobLongitude(String(lng));
+                        // Pan map to new location and drop marker
+                        if (jobMapRef.current) {
+                          jobMapRef.current.setCenter({ lat, lng });
+                          jobMapRef.current.setZoom(15);
+                          if (jobMarkerRef.current) jobMarkerRef.current.setMap(null);
+                          jobMarkerRef.current = new google.maps.Marker({
+                            position: { lat, lng },
+                            map: jobMapRef.current,
+                            animation: google.maps.Animation.DROP,
+                          });
+                        }
+                        // Reverse geocode to get city name
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                          setJobGeoLoading(false);
+                          if (status === "OK" && results?.[0]) {
+                            const cityComp = results[0].address_components?.find(
+                              (c) => c.types.includes("locality") || c.types.includes("sublocality")
+                            );
+                            setDefaultJobCity(cityComp?.long_name ?? results[0].formatted_address);
+                          }
+                        });
+                      },
+                      (err) => {
+                        setJobGeoLoading(false);
+                        toast.error(`שגיאה באיתור מיקום: ${err.message}`);
+                      },
+                      { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                  }}
+                  className="w-full flex items-center justify-center gap-2 mb-3 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: jobGeoLoading ? "oklch(0.94 0.03 122)" : "oklch(0.96 0.04 122)",
+                    border: "1.5px solid oklch(0.80 0.08 122)",
+                    color: "#4F583B",
+                    opacity: jobGeoLoading ? 0.7 : 1,
+                  }}
+                >
+                  {jobGeoLoading
+                    ? <><span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" /> מאתר מיקום...</>
+                    : <><Crosshair className="h-4 w-4" /> בחר את המיקום שלי</>}
+                </button>
                 {/* Map picker */}
                 <div className="rounded-xl overflow-hidden mb-3" style={{ border: "1px solid oklch(0.88 0.06 122)" }}>
                   <MapView

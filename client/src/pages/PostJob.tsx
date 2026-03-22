@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { useForm } from "react-hook-form";
@@ -20,11 +20,12 @@ import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
   MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase,
   Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus,
-  FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight,
+  FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
+import { usePostJobDraft, draftAge } from "@/hooks/usePostJobDraft";
 import {
   C_SUCCESS as SUCCESS, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
   C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
@@ -94,6 +95,11 @@ export default function PostJob() {
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
 
+  // ── Draft persistence ─────────────────────────────────────────────────────
+  const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+
   useSEO({
     title: "פרסום משרה",
     description: "פרסם משרה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
@@ -112,7 +118,15 @@ export default function PostJob() {
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const isDuplicate = !!urlParams.get("from");
 
-  const { register, handleSubmit, setValue, watch, formState: { errors }, trigger } = useForm<FormData>({
+  // Show draft banner on mount if draft exists and not a duplicate
+  useEffect(() => {
+    if (hasDraft && !isDuplicate && !draftRestored) {
+      setShowDraftBanner(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { register, handleSubmit, setValue, watch, getValues, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       salaryType: (urlParams.get("salaryType") as FormData["salaryType"]) || "hourly",
@@ -130,6 +144,68 @@ export default function PostJob() {
       startDateTime: urlParams.get("startDateTime") || "",
     },
   });
+
+  // ── Collect all form state for draft ────────────────────────────────────
+  const collectDraftData = useCallback(() => {
+    const vals = getValues();
+    return {
+      ...vals,
+      lat,
+      lng,
+      jobLocationMode,
+      jobSearchRadiusKm,
+      jobCity,
+      jobDate,
+      workStartTime,
+      workEndTime,
+      minAge,
+      jobImages,
+      activeTab,
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab]);
+
+  // Auto-save on every meaningful state change
+  useEffect(() => {
+    if (draftRestored || success) return;
+    saveDraft(collectDraftData());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab]);
+
+  // Restore draft into form fields
+  const restoreDraft = useCallback(() => {
+    if (!draft) return;
+    const fields: (keyof FormData)[] = [
+      "title", "description", "category", "address", "salary", "salaryType",
+      "hourlyRate", "estimatedHours", "contactName", "businessName", "workingHours",
+      "startTime", "startDateTime", "workersNeeded", "activeDuration",
+      "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
+    ];
+    fields.forEach((f) => {
+      const v = draft[f];
+      if (v !== undefined && v !== null) setValue(f, v as any);
+    });
+    if (draft.lat != null) setLat(draft.lat);
+    if (draft.lng != null) setLng(draft.lng);
+    if (draft.jobLocationMode) setJobLocationMode(draft.jobLocationMode);
+    if (draft.jobSearchRadiusKm) setJobSearchRadiusKm(draft.jobSearchRadiusKm);
+    if (draft.jobCity) setJobCity(draft.jobCity);
+    if (draft.jobDate) setJobDate(draft.jobDate);
+    if (draft.workStartTime) setWorkStartTime(draft.workStartTime);
+    if (draft.workEndTime) setWorkEndTime(draft.workEndTime);
+    if (draft.minAge !== undefined) setMinAge(draft.minAge ?? null);
+    if (draft.jobImages?.length) setJobImages(draft.jobImages);
+    if (draft.activeTab) setActiveTab(draft.activeTab as TabId);
+    setDraftRestored(true);
+    setShowDraftBanner(false);
+    toast.success("הטיוטה שוחזרה בהצלחה");
+  }, [draft, setValue]);
+
+  const discardDraft = useCallback(() => {
+    clearDraft();
+    setShowDraftBanner(false);
+    toast("הטיוטה נמחקה");
+  }, [clearDraft]);
 
   const salaryType = watch("salaryType");
   const isUrgent = watch("isUrgent");
@@ -206,8 +282,14 @@ export default function PostJob() {
     }
   };
 
+  // Watch form changes for draft saving (react-hook-form subscription)
+  watch((values) => {
+    if (!success) saveDraft({ ...collectDraftData(), ...values });
+  });
+
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
+      clearDraft();
       setSuccess(true);
       setTimeout(() => navigate(`/job/${job?.id}`), 2000);
     },
@@ -439,6 +521,8 @@ export default function PostJob() {
   const isLastTab = tabIndex === TABS.length - 1;
 
   const goNext = async () => {
+    // Save draft immediately when navigating between tabs
+    saveDraftNow(collectDraftData());
     // Validate fields for current tab before advancing
     if (activeTab === "details") {
       const ok = await trigger(["title", "description", "category"]);
@@ -490,6 +574,41 @@ export default function PostJob() {
             </h1>
             <div className="w-14" /> {/* spacer */}
           </div>
+
+          {/* Draft restore banner */}
+          {showDraftBanner && draft?.savedAt && (
+            <div
+              className="rounded-xl border p-3 mb-4 flex items-center gap-3 text-sm"
+              style={{ background: "oklch(0.97 0.03 100)", borderColor: "oklch(0.82 0.08 100)" }}
+              dir="rtl"
+            >
+              <RotateCcw className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm" style={{ color: "#4F583B" }}>נמצאה טיוטה שמורה</p>
+                <p className="text-xs" style={{ color: "oklch(0.50 0.06 122)" }}>נשמרה {draftAge(draft.savedAt)}</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={restoreDraft}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                  style={{ background: "#4F583B" }}
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  שחזר
+                </button>
+                <button
+                  type="button"
+                  onClick={discardDraft}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  style={{ background: "oklch(0.92 0.03 100)", color: "oklch(0.45 0.08 30)" }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  מחק
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Duplicate notice */}
           {isDuplicate && (

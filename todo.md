@@ -3023,3 +3023,13 @@ Isolation guarantees:
 - [x] Add AnimatePresence slide transition between tabs
 - [x] Add sticky bottom Prev/Next navigation bar
 - [x] Preserve all existing form fields and submission logic
+
+## Feature: PostJob localStorage draft saving
+
+- [x] Create usePostJobDraft hook (save/load/clear with debounce 800ms)
+- [x] Persist all form fields + extra state (lat/lng, jobDate, times, images, activeTab, etc.)
+- [x] Show restore banner on page load when draft exists (with age label)
+- [x] Auto-save on every form change (watch subscription) + debounced state changes
+- [x] Immediate save on tab navigation (saveDraftNow)
+- [x] Clear draft on successful submit
+- [x] 12 Vitest tests for pure draft utilities (854 passing total)

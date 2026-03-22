@@ -2862,3 +2862,4 @@ Isolation guarantees:
 - [ ] Replace accordion buttons in EmployerProfile.tsx with the new component
 - [ ] Replace any other accordion patterns found in other pages
 - [x] Fix CityPicker dropdown not showing on mobile — mousedown outside-click handler fires on keyboard events and resets open state
+- [x] Fix CityPicker dropdown clipped by overflow-hidden accordion ancestors — rewrote to use position:fixed with getBoundingClientRect, escapes all overflow containers

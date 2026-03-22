@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Search, X, MapPin } from "lucide-react";
@@ -13,35 +13,71 @@ interface CityPickerProps {
   compact?: boolean;
 }
 
+/**
+ * CityPicker — search-and-select for cities.
+ *
+ * The dropdown is rendered with `position: fixed` so it escapes any
+ * `overflow-hidden` ancestor (e.g. accordion animation containers).
+ * Its position is recalculated on every open via getBoundingClientRect.
+ */
 export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerProps) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: allCities = [] } = trpc.user.getCities.useQuery();
 
-  // Close dropdown when focus leaves the entire container.
-  // Using onBlur with a small delay so clicking a suggestion (which briefly
-  // shifts focus away from the input) doesn't close before addCity fires.
-  const handleBlur = useCallback(() => {
+  /** Compute fixed position from the input's bounding rect */
+  const updateDropdownPosition = useCallback(() => {
+    if (!inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: "fixed",
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, []);
+
+  const openDropdown = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    updateDropdownPosition();
+    setOpen(true);
+  }, [updateDropdownPosition]);
+
+  const scheduleClose = useCallback(() => {
     closeTimerRef.current = setTimeout(() => {
+      // Only close if focus is outside both input and dropdown
+      const active = document.activeElement;
+      const inputEl = inputRef.current;
+      const dropdownEl = dropdownRef.current;
       if (
-        containerRef.current &&
-        !containerRef.current.contains(document.activeElement)
+        active !== inputEl &&
+        !(dropdownEl && dropdownEl.contains(active))
       ) {
         setOpen(false);
       }
     }, 150);
   }, []);
 
-  const handleFocus = useCallback(() => {
-    // Cancel any pending close when focus returns to the container
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }, [])
+  // Reposition on scroll/resize so the dropdown tracks the input
+  useEffect(() => {
+    if (!open) return;
+    const handleScroll = () => updateDropdownPosition();
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [open, updateDropdownPosition]);
 
   // Filter cities based on search query — only show when user has typed something
   const suggestions = useMemo(() => {
@@ -51,7 +87,8 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
       .filter(
         (c) =>
           !selectedCityIds.includes(c.id) &&
-          (c.nameHe.includes(q) || (c.nameEn?.toLowerCase().includes(q.toLowerCase()) ?? false))
+          (c.nameHe.includes(q) ||
+            (c.nameEn?.toLowerCase().includes(q.toLowerCase()) ?? false))
       )
       .slice(0, 8);
   }, [allCities, search, selectedCityIds]);
@@ -72,13 +109,10 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
     onChange(selectedCityIds.filter((x) => x !== id));
   };
 
+  const isMaxReached = !!(maxCities && selectedCityIds.length >= maxCities);
+
   return (
-    <div
-      className="space-y-2"
-      ref={containerRef}
-      onBlur={handleBlur}
-      onFocus={handleFocus}
-    >
+    <div className="space-y-2">
       {/* Selected city chips */}
       {selectedCities.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -115,18 +149,20 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
         <Input
+          ref={inputRef}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setOpen(true);
+            openDropdown();
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={openDropdown}
+          onBlur={scheduleClose}
           placeholder={
-            maxCities && selectedCityIds.length >= maxCities
+            isMaxReached
               ? `בחרת ${maxCities} ערים (מקסימום)`
               : "הקלד שם עיר לחיפוש..."
           }
-          disabled={!!(maxCities && selectedCityIds.length >= maxCities)}
+          disabled={isMaxReached}
           className="pr-9 text-right text-sm"
           dir="rtl"
           autoComplete="off"
@@ -135,7 +171,6 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
           <button
             type="button"
             onMouseDown={(e) => {
-              // Prevent blur on the input before clearing
               e.preventDefault();
               setSearch("");
               setOpen(false);
@@ -145,34 +180,43 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
             <X className="h-3.5 w-3.5" />
           </button>
         )}
-
-        {/* Dropdown suggestions */}
-        {open && suggestions.length > 0 && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg overflow-hidden">
-            {suggestions.map((city) => (
-              <button
-                key={city.id}
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); addCity(city.id); }}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-right hover:bg-muted transition-colors"
-              >
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="flex-1 text-right">{city.nameHe}</span>
-                {city.district && (
-                  <span className="text-xs text-muted-foreground">{city.district}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* No results */}
-        {open && search.trim() && suggestions.length === 0 && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-xl shadow-lg px-3 py-3 text-sm text-muted-foreground text-center">
-            לא נמצאה עיר בשם "{search}"
-          </div>
-        )}
       </div>
+
+      {/* Dropdown — rendered with position:fixed to escape overflow:hidden ancestors */}
+      {open && (suggestions.length > 0 || search.trim()) && (
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="bg-popover border border-border rounded-xl shadow-lg overflow-hidden"
+          onMouseDown={(e) => e.preventDefault()} // keep input focused during click
+        >
+          {suggestions.length > 0
+            ? suggestions.map((city) => (
+                <button
+                  key={city.id}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    addCity(city.id);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-right hover:bg-muted transition-colors"
+                >
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="flex-1 text-right">{city.nameHe}</span>
+                  {city.district && (
+                    <span className="text-xs text-muted-foreground">
+                      {city.district}
+                    </span>
+                  )}
+                </button>
+              ))
+            : (
+              <div className="px-3 py-3 text-sm text-muted-foreground text-center">
+                לא נמצאה עיר בשם "{search}"
+              </div>
+            )}
+        </div>
+      )}
     </div>
   );
 }

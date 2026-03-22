@@ -1369,10 +1369,12 @@ export default function WorkerProfile() {
         <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
 
           {/* ── Sub-section: תחומי עיסוק מועדפים ── */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSection("work-categories")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right"
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-categories")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
           >
             <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Briefcase className="h-3 w-3" style={{ color: "#4F583B" }} />
@@ -1387,7 +1389,7 @@ export default function WorkerProfile() {
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
               style={{ transform: openSections["work-categories"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
-          </button>
+          </div>
           <div
             style={{
               display: "grid",
@@ -1440,10 +1442,12 @@ export default function WorkerProfile() {
           <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} />
 
           {/* ── Sub-section: מצב חיפוש עבודה ── */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSection("work-location")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right"
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-location")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
           >
             <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
@@ -1467,7 +1471,7 @@ export default function WorkerProfile() {
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
               style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
-          </button>
+          </div>
           <div
             style={{
               display: "grid",

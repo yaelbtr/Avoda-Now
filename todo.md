@@ -2997,3 +2997,10 @@ Isolation guarantees:
 ## Bug Fix: Availability button text not reflecting current state
 
 - [x] Show "סמן כלא זמין" on the availability button when worker is currently available
+
+## Feature: Employer Bottom Navigation Bar
+
+- [x] Audit worker BottomNav component for design tokens and structure
+- [x] Create EmployerBottomNav component (4 tabs: מסך הבית, פרסם משרה, המשרות שלי, עובדים זמינים)
+- [x] Integrate EmployerBottomNav into App.tsx (renders only when userMode === employer)
+- [x] All employer pages covered: HomeEmployer, PostJob, MyJobs, AvailableWorkers

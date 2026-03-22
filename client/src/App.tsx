@@ -9,6 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
+import EmployerBottomNav from "./components/EmployerBottomNav";
 import Footer from "./components/Footer";
 import GenderDisclaimer from "./components/GenderDisclaimer";
 import GuestLoginBanner from "./components/GuestLoginBanner";
@@ -325,6 +326,7 @@ function Router() {
         <GenderDisclaimer />
       </main>
       <MobileBottomNav />
+      <EmployerBottomNav />
       <div className="hidden md:block">
         <Footer />
       </div>

@@ -82,6 +82,7 @@ export default function PostJob() {
   const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
+  const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("search");
   const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
   const [jobCity, setJobCity] = useState("");
   const [jobDate, setJobDate] = useState("");
@@ -824,86 +825,112 @@ export default function PostJob() {
               {/* ── Tab 2: מיקום ושעות ────────────────────────────────── */}
               {activeTab === "location" && (
                 <div className="space-y-5">
-                  {/* Location */}
+                  {/* Location — two sub-tabs */}
                   <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
                     <h2 className="font-bold text-foreground flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-primary" />
                       מיקום ואיך לחפש עובדים
                     </h2>
 
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground">איך תרצה לחפש עובדים?</p>
-                      <div className="grid grid-cols-2 gap-2">
+                    {/* Sub-tab bar */}
+                    <div className="flex rounded-xl overflow-hidden border border-border">
+                      {(["search", "address"] as const).map((st) => (
                         <button
+                          key={st}
                           type="button"
-                          onClick={() => setJobLocationMode("radius")}
-                          className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "radius" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                          onClick={() => setLocationSubTab(st)}
+                          className={`flex-1 py-2 text-sm font-semibold transition-all ${
+                            locationSubTab === st
+                              ? "bg-primary text-white"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
                         >
-                          <Crosshair className="h-4 w-4" />עובדים ברדיוס
+                          {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המשרה"}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setJobLocationMode("city")}
-                          className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "city" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
-                        >
-                          <Building2 className="h-4 w-4" />עובדים מעיר
-                        </button>
+                      ))}
+                    </div>
+
+                    {/* Sub-tab 1: worker search preferences */}
+                    {locationSubTab === "search" && (
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground">איך תרצה לחפש עובדים?</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setJobLocationMode("radius")}
+                            className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "radius" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                          >
+                            <Crosshair className="h-4 w-4" />עובדים ברדיוס
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setJobLocationMode("city")}
+                            className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "city" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                          >
+                            <Building2 className="h-4 w-4" />עובדים מעיר
+                          </button>
+                        </div>
+
+                        {jobLocationMode === "radius" && (
+                          <div className="flex gap-2 pt-1">
+                            {[2, 5, 10, 20].map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                onClick={() => setJobSearchRadiusKm(r)}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${jobSearchRadiusKm === r ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"}`}
+                              >
+                                {r} ק"מ
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {jobLocationMode === "city" && (
+                          <div className="mt-1">
+                            <CityAutocomplete
+                              value={jobCity}
+                              onChange={setJobCity}
+                              onSelect={(city) => { setJobCity(city); toast.success(`עיר נבחרה: ${city}`); }}
+                              placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
+                            />
+                          </div>
+                        )}
                       </div>
-
-                      {jobLocationMode === "radius" && (
-                        <div className="flex gap-2 pt-1">
-                          {[2, 5, 10, 20].map((r) => (
-                            <button
-                              key={r}
-                              type="button"
-                              onClick={() => setJobSearchRadiusKm(r)}
-                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${jobSearchRadiusKm === r ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"}`}
-                            >
-                              {r} ק"מ
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {jobLocationMode === "city" && (
-                        <div className="mt-1">
-                          <CityAutocomplete
-                            value={jobCity}
-                            onChange={setJobCity}
-                            onSelect={(city) => { setJobCity(city); toast.success(`עיר נבחרה: ${city}`); }}
-                            placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
-
-                    <AppButton type="button" variant="outline" size="sm" onClick={getMyLocation} disabled={locating} className="gap-2">
-                      {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
-                      השתמש במיקום שלי
-                    </AppButton>
-
-                    <div className="rounded-xl overflow-hidden border border-border h-56">
-                      <MapView onMapReady={handleMapReady} className="h-56" />
-                    </div>
-
-                    {lat && lng && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        מיקום נבחר ({lat.toFixed(4)}, {lng.toFixed(4)})
-                      </p>
                     )}
 
-                    <AppInput
-                      id="address"
-                      label="כתובת"
-                      required
-                      placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
-                      dir="rtl"
-                      {...register("address")}
-                      error={errors.address?.message}
-                    />
+                    {/* Sub-tab 2: job address */}
+                    {locationSubTab === "address" && (
+                      <div className="space-y-3">
+                        <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
+
+                        <AppButton type="button" variant="outline" size="sm" onClick={getMyLocation} disabled={locating} className="gap-2">
+                          {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+                          השתמש במיקום שלי
+                        </AppButton>
+
+                        <div className="rounded-xl overflow-hidden border border-border h-56">
+                          <MapView onMapReady={handleMapReady} className="h-56" />
+                        </div>
+
+                        {lat && lng && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            מיקום נבחר ({lat.toFixed(4)}, {lng.toFixed(4)})
+                          </p>
+                        )}
+
+                        <AppInput
+                          id="address"
+                          label="כתובת"
+                          required
+                          placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
+                          dir="rtl"
+                          {...register("address")}
+                          error={errors.address?.message}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Date & Hours */}

@@ -3070,3 +3070,10 @@ Isolation guarantees:
 - [x] Refactor handleImageUpload to use fetch + FormData (multipart) — no more base64 in tRPC payload
 - [x] Remove uploadJobImage tRPC procedure (no longer used anywhere)
 - [x] 19 Vitest tests for upload logic (861 passing total)
+
+## UI: PostJob location card split into sub-tabs
+
+- [x] Split "מיקום ואיך לחפש עובדים" card into 2 sub-tabs: "העדפת חיפוש עובדים" and "כתובת המשרה"
+- [x] Sub-tab 1: worker search mode (radius/city) + distance selector
+- [x] Sub-tab 2: job address map + location picker (full map, GPS button)
+- [x] Added locationSubTab state (default: search)

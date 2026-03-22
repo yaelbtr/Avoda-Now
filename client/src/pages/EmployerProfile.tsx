@@ -91,6 +91,7 @@ export default function EmployerProfile() {
   const [defaultJobLatitude, setDefaultJobLatitude] = useState<string | null>(null);
   const [defaultJobLongitude, setDefaultJobLongitude] = useState<string | null>(null);
   const [jobGeoLoading, setJobGeoLoading] = useState(false);
+  const [workerGeoLoading, setWorkerGeoLoading] = useState(false);
   // Map refs for default job location picker
   const jobMapRef = useRef<google.maps.Map | null>(null);
   const jobMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -536,9 +537,42 @@ export default function EmployerProfile() {
                             </button>
                           ))}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          💡 המיקום שלך ישמש לחישוב המרחק
-                        </p>
+                        {/* GPS button for worker search radius */}
+                        <button
+                          type="button"
+                          disabled={workerGeoLoading}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!navigator.geolocation) { toast.error("הדפדפן שלך אינו תומך באיתור מיקום"); return; }
+                            setWorkerGeoLoading(true);
+                            navigator.geolocation.getCurrentPosition(
+                              (pos) => {
+                                setWorkerSearchLatitude(String(pos.coords.latitude));
+                                setWorkerSearchLongitude(String(pos.coords.longitude));
+                                setWorkerGeoLoading(false);
+                                toast.success("מיקום נשמר בהצלחה");
+                              },
+                              (err) => {
+                                setWorkerGeoLoading(false);
+                                toast.error(`שגיאה באיתור מיקום: ${err.message}`);
+                              },
+                              { enableHighAccuracy: true, timeout: 10000 }
+                            );
+                          }}
+                          className="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold border-2 transition-all border-primary/40 text-primary hover:bg-primary/10"
+                        >
+                          {workerGeoLoading
+                            ? <><span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" /> מאתר מיקום...</>
+                            : <><Crosshair className="h-3.5 w-3.5" /> {workerSearchLatitude ? "עדכן מיקום" : "בחר את המיקום שלי"}</>}
+                        </button>
+                        {workerSearchLatitude && (
+                          <p className="text-xs text-green-600 mt-1 text-center">✓ מיקום נשמר</p>
+                        )}
+                        {!workerSearchLatitude && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            💡 המיקום שלך ישמש לחישוב המרחק
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>

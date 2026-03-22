@@ -2873,3 +2873,16 @@ Isolation guarantees:
 ## Round 7h: Default Job Location — GPS Button
 
 - [x] Add GPS "use my location" button above the MapView in EmployerProfile default job location section
+
+## Round 7i: Location Gap Fixes
+
+- [ ] Fix getWorkersMatchingJob to use PostGIS radius matching for workers in radius mode
+- [ ] Fix defaultJobCity CityPicker to geocode and save lat/lng when a city is selected manually
+- [ ] Fix updateEmployerProfile to accept and save workerSearchLatitude/Longitude
+
+## Round 7i: Location Gap Fix
+
+- [x] Fix getWorkersMatchingJob to include radius-mode workers via Haversine distance check
+- [x] Add onCitySelect callback to CityPicker to expose lat/lng on city selection (DRY — no extra API call)
+- [x] Add GPS button to worker search radius section in EmployerProfile to save workerSearchLatitude/Longitude
+- [x] Pass job lat/lng to getWorkersMatchingJob call site in routers.ts

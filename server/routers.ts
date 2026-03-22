@@ -839,7 +839,7 @@ const jobsRouter = router({
       }
       // Fire-and-forget: notify matching workers via SMS + Web Push (does not block the response)
       const jobMeta = { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id };
-      getWorkersMatchingJob(input.category, city, ctx.user.id)
+      getWorkersMatchingJob(input.category, city, ctx.user.id, 100, input.latitude, input.longitude)
         .then(async (workers) => {
           // SMS alerts
           const smsSent = await sendJobAlerts(workers, jobMeta);

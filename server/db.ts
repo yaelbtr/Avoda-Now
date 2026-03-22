@@ -1301,7 +1301,9 @@ export async function getWorkersMatchingJob(
   jobCategory: string,
   jobCity: string | null | undefined,
   excludeUserId: number,
-  limit = 100
+  limit = 100,
+  jobLat?: number | null,
+  jobLng?: number | null,
 ): Promise<Array<{ id: number; phone: string; name: string | null; preferredCity: string | null }>> {
   const db = await getDb();
   if (!db) return [];
@@ -1313,6 +1315,10 @@ export async function getWorkersMatchingJob(
       name: users.name,
       preferredCity: users.preferredCity,
       preferredCategories: users.preferredCategories,
+      locationMode: users.locationMode,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
     })
     .from(users)
     .where(
@@ -1332,16 +1338,40 @@ export async function getWorkersMatchingJob(
     return Array.isArray(cats) && cats.includes(jobCategory);
   });
 
-  // Filter by city match if job has a city
-  const cityMatches = jobCity
-    ? categoryMatches.filter(
-        (r) =>
-          !r.preferredCity ||
-          r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
-      )
-    : categoryMatches;
+  // Haversine distance helper (returns km) — used for radius-mode workers
+  const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
 
-  return cityMatches
+  // Filter by location:
+  //   radius-mode workers: job must fall within the worker's preferred radius
+  //   city-mode workers:   worker's preferred city must match the job's city
+  const locationMatches = categoryMatches.filter((r) => {
+    if (r.locationMode === "radius") {
+      if (!r.workerLatitude || !r.workerLongitude) return false;
+      if (jobLat == null || jobLng == null) return false;
+      const wLat = parseFloat(r.workerLatitude);
+      const wLng = parseFloat(r.workerLongitude);
+      const radiusKm = r.searchRadiusKm ?? 5;
+      return haversineKm(wLat, wLng, jobLat, jobLng) <= radiusKm;
+    }
+    // city-mode (default)
+    if (!jobCity) return true; // no city on job → include all city-mode workers
+    return (
+      !r.preferredCity ||
+      r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
+    );
+  });
+
+  return locationMatches
     .filter((r) => !!r.phone)
     .slice(0, limit)
     .map((r) => ({ id: r.id, phone: r.phone!, name: r.name, preferredCity: r.preferredCity }));

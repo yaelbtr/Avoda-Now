@@ -11,6 +11,8 @@ interface CityPickerProps {
   /** Max cities selectable (default: unlimited) */
   maxCities?: number;
   compact?: boolean;
+  /** Optional: called when a city is selected, with the city's lat/lng and name */
+  onCitySelect?: (city: { id: number; nameHe: string; latitude: string | null; longitude: string | null }) => void;
 }
 
 /**
@@ -20,7 +22,7 @@ interface CityPickerProps {
  * `overflow-hidden` ancestor (e.g. accordion animation containers).
  * Its position is recalculated on every open via getBoundingClientRect.
  */
-export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerProps) {
+export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect }: CityPickerProps) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
@@ -101,6 +103,11 @@ export function CityPicker({ selectedCityIds, onChange, maxCities }: CityPickerP
   const addCity = (id: number) => {
     if (maxCities && selectedCityIds.length >= maxCities) return;
     onChange([...selectedCityIds, id]);
+    // Notify caller with lat/lng so they can geocode without an extra API call
+    if (onCitySelect) {
+      const city = allCities.find((c) => c.id === id);
+      if (city) onCitySelect({ id: city.id, nameHe: city.nameHe, latitude: city.latitude ?? null, longitude: city.longitude ?? null });
+    }
     setSearch("");
     setOpen(false);
   };

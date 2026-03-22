@@ -149,6 +149,12 @@ export default function PostJob() {
     regionSlug: string;
   } | null>(null);
 
+  // Fetch employer profile to prefill default job location
+  const { data: employerProfile } = trpc.user.getEmployerProfile.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
   const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 60_000,
@@ -236,8 +242,34 @@ export default function PostJob() {
 
   const handleMapReady = (map: google.maps.Map) => {
     mapRef.current = map;
-    map.setCenter({ lat: 31.7683, lng: 35.2137 });
-    map.setZoom(8);
+
+    // Prefill from employer's default job location if set (skip when duplicating a job)
+    const defLat = employerProfile?.defaultJobLatitude ? parseFloat(employerProfile.defaultJobLatitude) : null;
+    const defLng = employerProfile?.defaultJobLongitude ? parseFloat(employerProfile.defaultJobLongitude) : null;
+    const defCity = employerProfile?.defaultJobCity;
+
+    if (defLat && defLng && !isDuplicate) {
+      map.setCenter({ lat: defLat, lng: defLng });
+      map.setZoom(14);
+      setLat(defLat);
+      setLng(defLng);
+      markerRef.current = new google.maps.Marker({
+        position: { lat: defLat, lng: defLng },
+        map,
+        animation: google.maps.Animation.DROP,
+      });
+      if (defCity) {
+        setValue("address", defCity);
+      } else {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: defLat, lng: defLng } }, (results, status) => {
+          if (status === "OK" && results?.[0]) setValue("address", results[0].formatted_address);
+        });
+      }
+    } else {
+      map.setCenter({ lat: 31.7683, lng: 35.2137 });
+      map.setZoom(8);
+    }
 
     map.addListener("click", (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return;

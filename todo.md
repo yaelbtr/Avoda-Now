@@ -2837,3 +2837,9 @@ Isolation guarantees:
 - [x] Add Google Maps location picker to "מיקום ברירת מחדל למשרה" section in EmployerProfile
 - [x] Support click-on-map to set lat/lng + reverse geocode to city name
 - [x] Save defaultJobLat, defaultJobLng, defaultJobCity to employer profile
+
+## Round 7c: Auto-fill PostJob Location from Employer Profile
+
+- [x] Read employer defaultJobCity/lat/lng in PostJob form on mount
+- [x] Pre-fill location field with employer's default job location
+- [x] Allow employer to override the pre-filled location (map click still works)

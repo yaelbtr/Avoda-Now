@@ -790,6 +790,12 @@ export default function WorkerProfile() {
                           selectedCityIds={preferredCities}
                           onChange={setPreferredCities}
                           compact
+                          onCitySelect={(city) => {
+                            if (city.latitude && city.longitude) {
+                              setWorkerLatitude(city.latitude);
+                              setWorkerLongitude(city.longitude);
+                            }
+                          }}
                         />
                       </div>
                     )}
@@ -1619,6 +1625,13 @@ export default function WorkerProfile() {
                         return;
                       }
                       setPreferredCities(ids);
+                    }}
+                    onCitySelect={(city) => {
+                      // Save the first selected city's coordinates for future distance calculations
+                      if (city.latitude && city.longitude) {
+                        setWorkerLatitude(city.latitude);
+                        setWorkerLongitude(city.longitude);
+                      }
                     }}
                   />
                   {preferredCities.length >= 5 && (

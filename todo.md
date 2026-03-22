@@ -2894,3 +2894,12 @@ Isolation guarantees:
 - [x] PostJob uses CityAutocomplete + MapView — already saves lat/lng via geocoder and map click
 - [x] Always send workerSearchLatitude/Longitude regardless of mode (city or radius)
 - [x] Verified updateEmployerProfile accepts and persists workerSearchLatitude/Longitude
+
+## Round 7k: PostGIS Geometry Column for Worker Location
+
+- [x] Add `workerLocation geometry(Point, 4326)` column to users table in schema.ts
+- [x] Sync migration state — column already existed in DB from previous session, fixed drizzle migration journal
+- [x] Update `updateWorkerProfile` in db.ts to auto-compute `workerLocation` via ST_SetSRID/ST_MakePoint when lat/lng are provided
+- [x] Replace Haversine JS filtering in `getWorkersMatchingJob` with PostGIS ST_DWithin SQL filter for radius-mode workers
+- [x] Wire `onCitySelect` on both CityPicker instances in WorkerProfile.tsx to save city coordinates
+- [x] Add 3 Vitest tests for getWorkersMatchingJob PostGIS ST_DWithin behavior (802 passing)

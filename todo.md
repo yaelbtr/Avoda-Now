@@ -2975,3 +2975,7 @@ Isolation guarantees:
 - [x] AvailableWorkers: replace static availableUntilText with live WorkerCountdownBadge component
 - [x] WorkerCountdownBadge: color-coded urgency (green > 30min, amber < 30min, red < 10min)
 - [x] 13 new Vitest tests for countdown formatting (815 passing total)
+
+## Bug Fix: setWorkerAvailable PostgreSQL type error
+
+- [x] Fix "inconsistent types deduced for parameter $2" in setWorkerAvailable raw SQL

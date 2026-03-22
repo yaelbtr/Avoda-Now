@@ -1097,12 +1097,17 @@ export async function setWorkerAvailable(data: InsertWorkerAvailability) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(workerAvailability).where(eq(workerAvailability.userId, data.userId));
-  // Insert with geometry computed from lat/lng using raw SQL for PostGIS
+  // Insert with geometry computed from lat/lng using raw SQL for PostGIS.
+  // $2/$3 are numeric (Drizzle schema), so we pass separate float8 params ($7/$8)
+  // for ST_MakePoint to avoid PostgreSQL's "inconsistent types" error when the
+  // same parameter is used both as numeric and as float8 in the same query.
   if (data.latitude != null && data.longitude != null && _pool) {
+    const latFloat = parseFloat(String(data.latitude));
+    const lngFloat = parseFloat(String(data.longitude));
     await _pool.query(
       `INSERT INTO worker_availability ("userId", latitude, longitude, city, note, "availableUntil", "createdAt", "updatedAt", location)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($3::float8, $2::float8), 4326))`,
-      [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil]
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($7, $8), 4326))`,
+      [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil, lngFloat, latFloat]
     );
   } else {
     await db.insert(workerAvailability).values(data);

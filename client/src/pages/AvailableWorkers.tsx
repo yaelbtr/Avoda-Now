@@ -5,11 +5,12 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2, ShieldCheck } from "lucide-react";
+import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
 import { C_WHATSAPP } from "@/lib/colors";
+import { useCountdown } from "@/hooks/useCountdown";
 
 function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -20,13 +21,42 @@ function relativeTime(date: Date | string): string {
   return `זמין מלפני ${hrs === 1 ? "שעה" : hrs + " שעות"}`;
 }
 
-function availableUntilText(until: Date | string): string {
-  const ms = new Date(until).getTime() - Date.now();
-  if (ms <= 0) return "פג תוקף";
-  const hrs = Math.floor(ms / 3600000);
-  const mins = Math.floor((ms % 3600000) / 60000);
-  if (hrs === 0) return `פנוי עוד ${mins} דקות`;
-  return `פנוי עוד ${hrs} שעות`;
+/**
+ * Live countdown badge for a worker card.
+ * Shows "נשאר HH:MM:SS" ticking every second.
+ * Renders nothing once the time has expired.
+ */
+function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | string | null | undefined }) {
+  const countdown = useCountdown(availableUntil);
+  if (!countdown) return null;
+
+  // Determine urgency: < 30 minutes remaining → amber, < 10 min → red
+  const msLeft = availableUntil ? new Date(availableUntil).getTime() - Date.now() : 0;
+  const isUrgent = msLeft < 30 * 60_000;
+  const isCritical = msLeft < 10 * 60_000;
+
+  const color = isCritical
+    ? "oklch(0.55 0.20 25)"   // red
+    : isUrgent
+    ? "oklch(0.60 0.18 60)"   // amber
+    : "oklch(0.42 0.18 150)"; // green
+
+  const bg = isCritical
+    ? "oklch(0.97 0.04 25)"
+    : isUrgent
+    ? "oklch(0.97 0.04 60)"
+    : "oklch(0.97 0.04 150)";
+
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tabular-nums"
+      style={{ color, background: bg, border: `1px solid ${color}33` }}
+      title="זמן שנותר לזמינות"
+    >
+      <Timer className="h-2.5 w-2.5 shrink-0" style={{ color }} />
+      {countdown}
+    </span>
+  );
 }
 
 export default function AvailableWorkers() {
@@ -227,10 +257,11 @@ export default function AvailableWorkers() {
                             {relativeTime(worker.createdAt)}
                           </span>
                         </div>
+                        {/* Live countdown badge */}
                         {worker.availableUntil && (
-                          <p className="text-xs text-green-600 font-medium mt-0.5">
-                            {availableUntilText(worker.availableUntil)}
-                          </p>
+                          <div className="mt-1">
+                            <WorkerCountdownBadge availableUntil={worker.availableUntil} />
+                          </div>
                         )}
                         {worker.note && (
                           <p className="text-xs text-muted-foreground mt-1 italic">"{worker.note}"</p>

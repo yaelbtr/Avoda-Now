@@ -2964,3 +2964,14 @@ Isolation guarantees:
 ## Round 7U: Custom Availability Duration
 
 - [x] Add free-text hours input (1–72) to worker availability form alongside preset buttons (2,4,8,12,24,48,72 + custom)
+
+## Round 7V: Availability Countdown Timer
+
+- [x] Create useCountdown hook (HH:MM:SS, updates every second)
+- [x] Create useCountdownLabel hook (Hebrew label: "זמין עוד X שעות")
+- [x] HomeWorker: show live countdown in availability status badge (top row)
+- [x] HomeWorker: show "נשאר HH:MM:SS" inside the availability toggle button
+- [x] HomeWorker: show live countdown in info dialog
+- [x] AvailableWorkers: replace static availableUntilText with live WorkerCountdownBadge component
+- [x] WorkerCountdownBadge: color-coded urgency (green > 30min, amber < 30min, red < 10min)
+- [x] 13 new Vitest tests for countdown formatting (815 passing total)

@@ -24,6 +24,7 @@ import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { toast } from "sonner";
 import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useCountdown } from "@/hooks/useCountdown";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
 function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
@@ -271,6 +272,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const jobs = (userLat ? ((nearbyQuery.data as any)?.jobs ?? []) : ((latestQuery.data as any)?.jobs ?? [])) as JobItem[];
   const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
   const isAvailable = !!workerStatusQuery.data;
+  // availableUntil is a Date returned by the server via superjson
+  const availableUntil = (workerStatusQuery.data as { availableUntil?: Date } | null)?.availableUntil ?? null;
+  const countdown = useCountdown(availableUntil);
 
   const requestGeo = () => {
     setGeoRequested(true);
@@ -793,9 +797,20 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 }}
               />
             </div>
-            <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
-              {isAvailable ? "זמין כרגע" : "לא זמין"}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
+                {isAvailable ? "זמין כרגע" : "לא זמין"}
+              </span>
+              {isAvailable && countdown && (
+                <span
+                  className="text-[10px] font-mono font-bold tabular-nums"
+                  style={{ color: "oklch(0.42 0.16 150)", letterSpacing: "0.5px" }}
+                  title="זמן שנותר לזמינות"
+                >
+                  {countdown}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -831,7 +846,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               {isAvailable ? "סמן עצמך כלא זמין" : "סמן עצמך כזמין"}
             </p>
             <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
-              {isAvailable ? "הסר אותך מרשימת הזמינים" : "הופע בחיפושי מעסיקים באזורך"}
+              {isAvailable
+                ? countdown
+                  ? <span className="flex items-center gap-1.5">נשאר <span className="font-mono font-bold tabular-nums text-white">{countdown}</span></span>
+                  : "הסר אותך מרשימת הזמינים"
+                : "הופע בחיפושי מעסיקים באזורך"
+              }
             </p>
           </div>
           {availabilityLoading
@@ -1421,7 +1441,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               {isAvailable ? (
                 <span>
                   מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים ויכולים לפנות אליך ישירות.
-                  הזמינות תתבטל אוטומטית לאחר {selectedDuration} שעות, או לחץ שוב על הכפתור לביטול מיידי.
+                  {countdown
+                    ? <> זמן שנותר: <strong className="font-mono">{countdown}</strong>.</>  
+                    : " הזמינות עומדת לפוג בקרוב."
+                  }
+                  {" "}לחץ שוב על הכפתור לביטול מיידי.
                 </span>
               ) : (
                 <span>

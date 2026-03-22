@@ -2827,3 +2827,7 @@ Isolation guarantees:
 - [x] Add /employer-profile route to App.tsx
 - [x] Update Navbar to link employer mode user icon to /employer-profile
 - [x] Add employer profile link to Navbar dropdown menu and employerLinks nav array
+
+## Round 7 Bug Fix: Employer Profile Navigation
+
+- [x] Fix employer navbar "פרופיל" link — clicking opens /my-jobs instead of /employer-profile

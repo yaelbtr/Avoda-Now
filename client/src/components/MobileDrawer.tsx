@@ -234,6 +234,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
               {userMode === "employer" && navItem("/post-job", PlusCircle, "פרסם משרה")}
               {userMode === "employer" && navItem("/my-jobs", Briefcase, "המשרות שלי")}
               {userMode === "employer" && navItem("/available-workers", Users, "עובדים זמינים")}
+              {userMode === "employer" && navItem("/employer-profile", User, "פרופיל")}
             </ul>
 
             {/* ── Section 3: Account actions (only when relevant) ───────────── */}
@@ -243,7 +244,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
                 <ul className="px-2 py-1 flex flex-col gap-0.5 list-none m-0 p-0" aria-label="פעולות חשבון">
                   {isAuthenticated && (
                     <li>
-                    <Link href={userMode === "employer" ? "/my-jobs" : "/worker-profile"} className="block">
+                    <Link href={userMode === "employer" ? "/employer-profile" : "/worker-profile"} className="block">
                       <span className={ITEM} style={{ color: COLOR, border: "1px solid transparent", borderRadius: "0.75rem" }} onClick={() => setTimeout(onClose, 150)}>
                         <User className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1">אזור אישי</span>

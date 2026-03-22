@@ -2916,3 +2916,10 @@ Isolation guarantees:
 - [x] Backfill workerLocation geometry for existing users with lat/lng
 - [x] Wire workerSearchRadiusKm from employer profile into AvailableWorkers (initializes from saved, user can override)
 - [x] Wire workerSearchRadiusKm from employer profile into HomeEmployer (uses saved radius, fallback 20km)
+
+## Round 7M: MatchedWorkers Employer Profile Integration
+
+- [x] Audited MatchedWorkers: uses job lat/lng (not employer) — correct by design
+- [x] Added getWorkerNamesByIds batch helper to db.ts (no N+1)
+- [x] matchWorkers local fallback now returns enriched results (name + rating) via getWorkerNamesByIds
+- [x] matchWorkers fallback uses getWorkersMatchingJob with job lat/lng + worker searchRadiusKm (PostGIS ST_DWithin)

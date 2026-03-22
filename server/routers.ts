@@ -41,6 +41,7 @@ import {
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
+  getWorkerNamesByIds,
   getMyJobsWithPendingCounts,
   getMyApplications,
   createApplication,
@@ -985,8 +986,25 @@ const jobsRouter = router({
 
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
       if (!MATCHING_API_URL) {
-        // Return empty list if no external API configured yet
-        return { workers: [] as { worker_id: number; score: number }[] };
+        // Fallback: use internal DB matching when no external API is configured
+        const localWorkers = await getWorkersMatchingJob(
+          job.category,
+          job.city,
+          ctx.user.id,
+          50,
+          job.latitude ? Number(job.latitude) : null,
+          job.longitude ? Number(job.longitude) : null,
+        );
+        // Enrich with names and ratings in a single batch query
+        const nameMap = await getWorkerNamesByIds(localWorkers.map((w) => w.id));
+        return {
+          workers: localWorkers.map((w, i) => ({
+            worker_id: w.id,
+            score: 1 - i * 0.01,
+            name: nameMap.get(w.id)?.name ?? null,
+            rating: nameMap.get(w.id)?.workerRating ?? null,
+          })),
+        };
       }
 
       try {

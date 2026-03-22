@@ -3224,3 +3224,27 @@ export async function updateEmployerProfile(
   if (Object.keys(updateSet).length === 0) return;
   await db.update(users).set({ ...updateSet, updatedAt: new Date() }).where(eq(users.id, id));
 }
+
+/**
+ * Fetch name and rating for a list of worker IDs in a single query.
+ * Used to enrich matchWorkers local fallback results without N+1 queries.
+ */
+export async function getWorkerNamesByIds(
+  ids: number[],
+): Promise<Map<number, { name: string | null; workerRating: number | null }>> {
+  const result = new Map<number, { name: string | null; workerRating: number | null }>(); // workerRating is numeric → string in Drizzle, parsed below
+  if (ids.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({ id: users.id, name: users.name, workerRating: users.workerRating })
+    .from(users)
+    .where(inArray(users.id, ids));
+  for (const row of rows) {
+    result.set(row.id, {
+      name: row.name,
+      workerRating: row.workerRating != null ? parseFloat(row.workerRating) : null,
+    });
+  }
+  return result;
+}

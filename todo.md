@@ -3039,3 +3039,9 @@ Isolation guarantees:
 - [x] Job preview card in "פרסום" tab (title, location, salary, category, hours, contact)
 - [x] Per-tab completion indicator — green checkmark badge on completed tabs in tab bar
 - [x] localStorage draft saving verified — auto-save on every change, restore banner on load
+
+## Feature: PostJob autofill from employer profile
+
+- [x] Auto-fill contactName from employerProfile.name ?? user.name when form is empty and no draft exists
+- [x] Auto-fill businessName from employerProfile.companyName when form is empty and no draft exists
+- [x] Only autofill when field is currently empty (never overwrite user input or draft)

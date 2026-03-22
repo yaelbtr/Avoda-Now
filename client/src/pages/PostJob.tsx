@@ -236,6 +236,26 @@ export default function PostJob() {
     staleTime: 60_000,
   });
 
+  // ── Autofill contact fields from employer profile ─────────────────────────────
+  // Only runs once when profile loads; never overwrites user input or a restored draft.
+  useEffect(() => {
+    if (!employerProfile) return;
+    // Skip if a draft is waiting to be restored (it may have its own values)
+    if (hasDraft) return;
+    const currentContact = getValues("contactName");
+    const currentBusiness = getValues("businessName");
+    if (!currentContact) {
+      const profileName = employerProfile.name ?? user?.name ?? "";
+      if (profileName) setValue("contactName", profileName, { shouldDirty: false });
+    }
+    if (!currentBusiness) {
+      const profileCompany = employerProfile.companyName ?? "";
+      if (profileCompany) setValue("businessName", profileCompany, { shouldDirty: false });
+    }
+  // Run only when employerProfile first becomes available
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employerProfile]);
+
   const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 60_000,

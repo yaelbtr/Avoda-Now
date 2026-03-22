@@ -3050,3 +3050,8 @@ Isolation guarantees:
 
 - [x] Remove contact details card (contactName, businessName, showPhone) from conditions tab
 - [x] Add info notice in details tab: "פרטי איש הקשר נלקחים מהאזור האישי" with link to profile
+
+## Bug Fix: PostJob mutation returns HTML instead of JSON
+
+- [x] Root cause: PayloadTooLargeError — /api/trpc limit was 10kb, too small for job posts with images
+- [x] Fix: increased tRPC body limit from 10kb to 5mb in server/_core/index.ts

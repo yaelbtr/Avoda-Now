@@ -397,14 +397,7 @@ export default function EmployerProfile() {
                   )}
                   {/* Email */}
                   <AppInput
-                    label={
-                      <>
-                        כתובת מייל
-                        {user?.email && (
-                          <span className="mr-2 text-xs text-green-600 font-normal">נלקח מחשבון Google</span>
-                        )}
-                      </>
-                    }
+                    label="כתובת מייל"
                     type="email"
                     placeholder="example@gmail.com"
                     value={email}

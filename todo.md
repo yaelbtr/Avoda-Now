@@ -3012,3 +3012,14 @@ Isolation guarantees:
 ## UI: Remove phone verification banner from HomeEmployer
 
 - [x] Remove "ניתן לפרסם עד 3 משרות פעילות בו-זמנית. נדרש אימות טלפון" banner
+
+## Feature: PostJob tabbed layout (like WorkerProfile)
+
+- [x] Audit WorkerProfile tab design tokens and structure
+- [x] Group PostJob fields into 4 tabs: פרטי משרה / מיקום ושעות / תנאים / פרסום
+- [x] Implement sticky tab bar with active indicator matching WorkerProfile style
+- [x] Add per-tab validation (trigger) before allowing next tab
+- [x] Add animated progress dots above tab bar
+- [x] Add AnimatePresence slide transition between tabs
+- [x] Add sticky bottom Prev/Next navigation bar
+- [x] Preserve all existing form fields and submission logic

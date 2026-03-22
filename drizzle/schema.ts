@@ -173,6 +173,8 @@ export const users = pgTable("users", {
   workerLatitude: numeric("workerLatitude", { precision: 10, scale: 7 }),
   /** Worker's GPS longitude for radius-based matching */
   workerLongitude: numeric("workerLongitude", { precision: 10, scale: 7 }),
+  /** PostGIS Point geometry (SRID 4326) — auto-populated from workerLatitude/workerLongitude for spatial queries */
+  workerLocation: geometry("workerLocation"),
   /** Worker's preferred search radius in km */
   searchRadiusKm: integer("searchRadiusKm").default(5),
   /** Free text describing work preferences for AI matching */

@@ -2894,3 +2894,12 @@ Isolation guarantees:
 - [x] PostJob uses CityAutocomplete + MapView — already saves lat/lng via geocoder and map click
 - [x] Always send workerSearchLatitude/Longitude regardless of mode (city or radius)
 - [x] Verified updateEmployerProfile accepts and persists workerSearchLatitude/Longitude
+
+## Round 7k: PostGIS Geometry for Users Table
+
+- [x] Add workerLocation geometry(Point,4326) column to users table in schema
+- [x] Push DB migration (column already existed from pre-sandbox-reset migration)
+- [x] Update updateWorkerProfile db helper to compute and save workerLocation from workerLatitude/workerLongitude using ST_SetSRID/ST_MakePoint
+- [x] getNearbyWorkers already uses ST_DWithin on workerAvailability.location (no change needed)
+- [x] Update getWorkersMatchingJob radius branch to use ST_DWithin on workerLocation (replaces JS Haversine)
+- [x] Wire WorkerProfile CityPicker onCitySelect to save workerLatitude/workerLongitude from first selected city (GPS takes precedence)

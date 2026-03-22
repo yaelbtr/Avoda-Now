@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "workerLocation" geometry(Point, 4326);

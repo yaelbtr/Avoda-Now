@@ -370,6 +370,14 @@ export async function updateWorkerProfile(
   if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
   if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
   if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;
+  // Auto-compute PostGIS geometry from lat/lng when both are provided in this update
+  if (data.workerLatitude !== undefined && data.workerLongitude !== undefined) {
+    const lat = data.workerLatitude;
+    const lng = data.workerLongitude;
+    updateSet.workerLocation = lat && lng
+      ? sql`ST_SetSRID(ST_MakePoint(${parseFloat(lng)}, ${parseFloat(lat)}), 4326)`
+      : null;
+  }
   if (data.searchRadiusKm !== undefined) updateSet.searchRadiusKm = data.searchRadiusKm;
   if (data.preferenceText !== undefined) updateSet.preferenceText = data.preferenceText;
   if (data.workerTags !== undefined) updateSet.workerTags = data.workerTags;
@@ -1308,6 +1316,32 @@ export async function getWorkersMatchingJob(
   const db = await getDb();
   if (!db) return [];
 
+  // Build a job-point geography for ST_DWithin (radius-mode workers only).
+  // When jobLat/jobLng are absent, radius-mode workers are excluded (safe default).
+  const jobPoint = jobLat != null && jobLng != null
+    ? sql`ST_SetSRID(ST_MakePoint(${jobLng}::float8, ${jobLat}::float8), 4326)::geography`
+    : null;
+
+  // Location filter applied in SQL:
+  //   radius-mode: ST_DWithin on workerLocation geometry (index-backed, fast)
+  //   city-mode:   preferredCity matches job city (case-insensitive)
+  const locationCondition = sql`(
+    (
+      ${users.locationMode} = 'radius'
+      AND ${users.workerLocation} IS NOT NULL
+      AND ${jobPoint !== null
+        ? sql`ST_DWithin(${users.workerLocation}::geography, ${jobPoint}, (COALESCE(${users.searchRadiusKm}, 5) * 1000.0))`
+        : sql`FALSE`}
+    )
+    OR
+    (
+      ${users.locationMode} = 'city'
+      AND ${jobCity
+        ? sql`(${users.preferredCity} IS NULL OR LOWER(TRIM(${users.preferredCity})) = LOWER(TRIM(${jobCity})))`
+        : sql`TRUE`}
+    )
+  )`;
+
   const rows = await db
     .select({
       id: users.id,
@@ -1315,10 +1349,6 @@ export async function getWorkersMatchingJob(
       name: users.name,
       preferredCity: users.preferredCity,
       preferredCategories: users.preferredCategories,
-      locationMode: users.locationMode,
-      workerLatitude: users.workerLatitude,
-      workerLongitude: users.workerLongitude,
-      searchRadiusKm: users.searchRadiusKm,
     })
     .from(users)
     .where(
@@ -1327,48 +1357,17 @@ export async function getWorkersMatchingJob(
         eq(users.status, "active"),
         sql`${users.phone} IS NOT NULL`,
         sql`${users.preferredCategories} IS NOT NULL`,
-        sql`${users.id} != ${excludeUserId}`
+        sql`${users.id} != ${excludeUserId}`,
+        locationCondition,
       )
     )
     .limit(500); // fetch a wider set, then filter in JS for JSON array matching
 
-  // Filter by category match (JSON array contains jobCategory)
-  const categoryMatches = rows.filter((r) => {
+  // Filter by category match (JSON array contains jobCategory).
+  // Done in JS because Drizzle does not natively expose the PostgreSQL @> operator.
+  const locationMatches = rows.filter((r) => {
     const cats = r.preferredCategories as string[] | null;
     return Array.isArray(cats) && cats.includes(jobCategory);
-  });
-
-  // Haversine distance helper (returns km) — used for radius-mode workers
-  const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLng = ((lng2 - lng1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
-  // Filter by location:
-  //   radius-mode workers: job must fall within the worker's preferred radius
-  //   city-mode workers:   worker's preferred city must match the job's city
-  const locationMatches = categoryMatches.filter((r) => {
-    if (r.locationMode === "radius") {
-      if (!r.workerLatitude || !r.workerLongitude) return false;
-      if (jobLat == null || jobLng == null) return false;
-      const wLat = parseFloat(r.workerLatitude);
-      const wLng = parseFloat(r.workerLongitude);
-      const radiusKm = r.searchRadiusKm ?? 5;
-      return haversineKm(wLat, wLng, jobLat, jobLng) <= radiusKm;
-    }
-    // city-mode (default)
-    if (!jobCity) return true; // no city on job → include all city-mode workers
-    return (
-      !r.preferredCity ||
-      r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
-    );
   });
 
   return locationMatches

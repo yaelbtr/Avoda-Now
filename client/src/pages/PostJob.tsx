@@ -999,13 +999,6 @@ export default function PostJob() {
                           </p>
                         )}
 
-                        {lat && lng && (
-                          <p className="text-xs text-green-600 flex items-center gap-1">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            מיקום נבחר ({lat.toFixed(4)}, {lng.toFixed(4)})
-                          </p>
-                        )}
-
                         <PlacesAutocomplete
                           value={watch("address") ?? ""}
                           onChange={(val) => setValue("address", val, { shouldValidate: true })}

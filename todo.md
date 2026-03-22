@@ -2886,3 +2886,11 @@ Isolation guarantees:
 - [x] Add onCitySelect callback to CityPicker to expose lat/lng on city selection (DRY — no extra API call)
 - [x] Add GPS button to worker search radius section in EmployerProfile to save workerSearchLatitude/Longitude
 - [x] Pass job lat/lng to getWorkersMatchingJob call site in routers.ts
+
+## Round 7j: Save City Lat/Lng on Employer City Selection
+
+- [x] Wire onCitySelect in EmployerProfile workerSearchCity picker to save workerSearchLatitude/Longitude
+- [x] defaultJobCity uses MapView + GPS (no CityPicker) — already saves lat/lng via map click and GPS button
+- [x] PostJob uses CityAutocomplete + MapView — already saves lat/lng via geocoder and map click
+- [x] Always send workerSearchLatitude/Longitude regardless of mode (city or radius)
+- [x] Verified updateEmployerProfile accepts and persists workerSearchLatitude/Longitude

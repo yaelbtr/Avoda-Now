@@ -197,8 +197,9 @@ export default function EmployerProfile() {
       workerSearchCity: workerSearchMode === "city" ? (workerSearchCity.trim() || null) : null,
       workerSearchCityId: workerSearchMode === "city" ? workerSearchCityId : null,
       workerSearchRadiusKm: workerSearchMode === "radius" ? workerSearchRadiusKm : null,
-      workerSearchLatitude: workerSearchMode === "radius" ? workerSearchLatitude : null,
-      workerSearchLongitude: workerSearchMode === "radius" ? workerSearchLongitude : null,
+      // Always persist coordinates regardless of mode — city selection also sets these
+      workerSearchLatitude: workerSearchLatitude,
+      workerSearchLongitude: workerSearchLongitude,
       defaultJobCity: defaultJobCity.trim() || null,
       defaultJobCityId: defaultJobCityId,
       defaultJobLatitude: defaultJobLatitude,
@@ -604,6 +605,16 @@ export default function EmployerProfile() {
                           onChange={(ids) => {
                             const id = ids[0] ?? null;
                             setWorkerSearchCityId(id);
+                            // Clear coordinates when city is deselected
+                            if (!id) {
+                              setWorkerSearchLatitude(null);
+                              setWorkerSearchLongitude(null);
+                            }
+                          }}
+                          onCitySelect={(city) => {
+                            // Save city coordinates for distance calculations
+                            setWorkerSearchLatitude(city.latitude);
+                            setWorkerSearchLongitude(city.longitude);
                           }}
                           compact
                         />

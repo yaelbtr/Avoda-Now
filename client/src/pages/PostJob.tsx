@@ -859,20 +859,39 @@ export default function PostJob() {
 
                     {/* Sub-tab bar */}
                     <div className="flex rounded-xl overflow-hidden border border-border">
-                      {(["search", "address"] as const).map((st) => (
-                        <button
-                          key={st}
-                          type="button"
-                          onClick={() => setLocationSubTab(st)}
-                          className={`flex-1 py-2 text-sm font-semibold transition-all ${
-                            locationSubTab === st
-                              ? "bg-primary text-white"
-                              : "bg-background text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המשרה"}
-                        </button>
-                      ))}
+                      {(["search", "address"] as const).map((st) => {
+                        const isActive = locationSubTab === st;
+                        const addressDone = st === "address" && !!(lat && lng);
+                        return (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => setLocationSubTab(st)}
+                            className={`relative flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold transition-all ${
+                              isActive
+                                ? "bg-primary text-white"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                          >
+                            {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המשרה"}
+                            {addressDone && (
+                              <span
+                                className="flex items-center justify-center rounded-full shrink-0"
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  background: isActive ? "rgba(255,255,255,0.25)" : "oklch(0.55 0.18 145)",
+                                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                                }}
+                              >
+                                <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                                  <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Sub-tab 1: worker search preferences */}

@@ -9,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
-import { MapView } from "@/components/Map";
 import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
@@ -19,7 +18,7 @@ import { shouldWarnLateJob, normalizeDateInput } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
-  MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase,
+  MapPin, Loader2, CheckCircle2, Shield, Copy, Briefcase,
   Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus,
   FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2,
 } from "lucide-react";
@@ -80,7 +79,6 @@ export default function PostJob() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
-  const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
   const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("address");
@@ -94,10 +92,6 @@ export default function PostJob() {
   const [jobImages, setJobImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("details");
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const [mapShake, setMapShake] = useState(false);
   const [mapError, setMapError] = useState(false);
 
   // ── Draft persistence ─────────────────────────────────────────────────────
@@ -374,72 +368,7 @@ export default function PostJob() {
     },
   });
 
-  const handleMapReady = (map: google.maps.Map) => {
-    mapRef.current = map;
-    const defLat = employerProfile?.defaultJobLatitude ? parseFloat(employerProfile.defaultJobLatitude) : null;
-    const defLng = employerProfile?.defaultJobLongitude ? parseFloat(employerProfile.defaultJobLongitude) : null;
-    const defCity = employerProfile?.defaultJobCity ?? null;
 
-    if (defLat && defLng && !isDuplicate) {
-      map.setCenter({ lat: defLat, lng: defLng });
-      map.setZoom(14);
-      setLat(defLat);
-      setLng(defLng);
-      markerRef.current = new google.maps.Marker({ position: { lat: defLat, lng: defLng }, map, animation: google.maps.Animation.DROP });
-      if (defCity) {
-        setValue("address", defCity);
-      } else {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: { lat: defLat, lng: defLng } }, (results, status) => {
-          if (status === "OK" && results?.[0]) setValue("address", results[0].formatted_address);
-        });
-      }
-    } else {
-      map.setCenter({ lat: 31.7683, lng: 35.2137 });
-      map.setZoom(8);
-    }
-
-    map.addListener("click", (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
-      const newLat = e.latLng.lat();
-      const newLng = e.latLng.lng();
-      setLat(newLat);
-      setLng(newLng);
-      setMapError(false);
-      if (markerRef.current) markerRef.current.setMap(null);
-      markerRef.current = new google.maps.Marker({ position: { lat: newLat, lng: newLng }, map, animation: google.maps.Animation.DROP });
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
-        if (status === "OK" && results?.[0]) setValue("address", results[0].formatted_address);
-      });
-    });
-  };
-
-  const getMyLocation = () => {
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const newLat = pos.coords.latitude;
-        const newLng = pos.coords.longitude;
-        setLat(newLat);
-        setLng(newLng);
-        setMapError(false);
-        setLocating(false);
-        if (mapRef.current) {
-          mapRef.current.setCenter({ lat: newLat, lng: newLng });
-          mapRef.current.setZoom(15);
-          if (markerRef.current) markerRef.current.setMap(null);
-          markerRef.current = new google.maps.Marker({ position: { lat: newLat, lng: newLng }, map: mapRef.current, animation: google.maps.Animation.DROP });
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
-            if (status === "OK" && results?.[0]) setValue("address", results[0].formatted_address);
-          });
-        }
-        toast.success("מיקום נמצא!");
-      },
-      () => { setLocating(false); toast.error("לא ניתן לאתר מיקום"); }
-    );
-  };
 
   const onSubmit = (data: FormData) => {
     if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
@@ -600,17 +529,9 @@ export default function PostJob() {
     }
     if (activeTab === "location") {
       if (!lat || !lng) {
-        // Switch to the address sub-tab so the user sees the map
         setLocationSubTab("address");
         setMapError(true);
-        // Give React one tick to render the map container before scrolling
-        setTimeout(() => {
-          mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Trigger shake animation
-          setMapShake(true);
-          setTimeout(() => setMapShake(false), 600);
-        }, 80);
-        toast.error("אנא בחר מיקום על המפה");
+        toast.error("אנא בחר כתובת מהרשימה");
         return;
       }
       if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return; }
@@ -967,26 +888,6 @@ export default function PostJob() {
                     {/* Sub-tab 2: job address */}
                     {locationSubTab === "address" && (
                       <div className="space-y-3">
-                        <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
-
-                        <AppButton type="button" variant="outline" size="sm" onClick={getMyLocation} disabled={locating} className="gap-2">
-                          {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
-                          השתמש במיקום שלי
-                        </AppButton>
-
-                        <div
-                          ref={mapContainerRef}
-                          className={`rounded-xl overflow-hidden border h-56 transition-all ${
-                            mapShake
-                              ? "border-red-400 animate-[shake_0.5s_ease-in-out]"
-                              : mapError
-                              ? "border-red-400"
-                              : "border-border"
-                          }`}
-                        >
-                          <MapView onMapReady={handleMapReady} className="h-56" />
-                        </div>
-
                         {/* Inline location error — shown until a valid location is selected */}
                         {mapError && (
                           <p className="flex items-center gap-1.5 text-xs font-medium text-red-500" dir="rtl">
@@ -1007,16 +908,6 @@ export default function PostJob() {
                             setLng(newLng);
                             setMapError(false);
                             setValue("address", formattedAddress, { shouldValidate: true });
-                            if (markerRef.current) markerRef.current.setMap(null);
-                            if (mapRef.current) {
-                              mapRef.current.setCenter({ lat: newLat, lng: newLng });
-                              mapRef.current.setZoom(16);
-                              markerRef.current = new google.maps.Marker({
-                                position: { lat: newLat, lng: newLng },
-                                map: mapRef.current,
-                                animation: google.maps.Animation.DROP,
-                              });
-                            }
                           }}
                           placeholder="חפש כתובת..."
                           error={errors.address?.message}

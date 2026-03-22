@@ -2863,3 +2863,9 @@ Isolation guarantees:
 - [ ] Replace any other accordion patterns found in other pages
 - [x] Fix CityPicker dropdown not showing on mobile — mousedown outside-click handler fires on keyboard events and resets open state
 - [x] Fix CityPicker dropdown clipped by overflow-hidden accordion ancestors — rewrote to use position:fixed with getBoundingClientRect, escapes all overflow containers
+
+## Round 7g: BirthDate Nudge Notification
+
+- [x] Add inline alert/banner in worker profile when birthDate is missing, explaining it affects employer visibility
+- [x] Banner links directly to the personal details section (settings tab) where birthDate field is
+- [x] Integrate with existing profile completeness logic (missing fields list)

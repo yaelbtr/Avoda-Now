@@ -1179,13 +1179,16 @@ export default function WorkerProfile() {
         {(() => {
           const score = completionScore();
           if (score >= 100) return null;
-          const missingItems = [
-            !name.trim() && "שם מלא",
-            !profilePhoto && "תמונת פרופיל",
-            selectedCategories.length === 0 && "קטגוריות עבודה",
-            !preferredCity && preferredCities.length === 0 && "אזור מועדף",
-            !workerBio.trim() && "ביו קצר",
-          ].filter(Boolean) as string[];
+          // Each missing item knows which tab and optional section anchor to navigate to
+          type MissingItem = { label: string; tab: "details" | "work" | "schedule" | "settings"; sectionId?: string; highlight?: boolean };
+          const missingItems: MissingItem[] = ([
+            !name.trim() && { label: "שם מלא", tab: "details" as const },
+            !profilePhoto && { label: "תמונת פרופיל", tab: "details" as const },
+            selectedCategories.length === 0 && { label: "קטגוריות עבודה", tab: "work" as const },
+            !preferredCity && preferredCities.length === 0 && { label: "אזור מועדף", tab: "work" as const },
+            !workerBio.trim() && { label: "ביו קצר", tab: "details" as const },
+            !birthDateInfoQuery.data?.birthDate && { label: "תאריך לידה", tab: "details" as const, sectionId: "birthdate-section", highlight: true },
+          ] as (MissingItem | false)[]).filter(Boolean) as MissingItem[];
           return (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
@@ -1230,17 +1233,27 @@ export default function WorkerProfile() {
               {missingItems.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>חסר:</span>
-                  {missingItems.map(item => (
-                    <span
-                      key={item}
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  {missingItems.map(({ label, tab, sectionId, highlight }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab);
+                        if (sectionId) {
+                          setTimeout(() => {
+                            document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }, 120);
+                        }
+                      }}
+                      className="text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
-                        background: score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
-                        color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                        background: highlight ? "oklch(0.92 0.08 50)" : score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
+                        color: highlight ? "oklch(0.38 0.15 50)" : score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                        border: highlight ? "1px solid oklch(0.78 0.12 50)" : "none",
                       }}
                     >
-                      {item}
-                    </span>
+                      {highlight ? `👁 ${label}` : label}
+                    </button>
                   ))}
                 </div>
               )}
@@ -1816,14 +1829,14 @@ export default function WorkerProfile() {
           )}
         </div>
         {/* ── BirthDate Section ─────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        <div id="birthdate-section" className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Calendar className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <div>
               <h2 className="font-bold text-foreground text-sm">תאריך לידה</h2>
-              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות</p>
+              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות — משפיע על חשיפות אצל מעסיקים</p>
             </div>
           </div>
 
@@ -1846,9 +1859,12 @@ export default function WorkerProfile() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
-              <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "oklch(0.55 0.12 76.7)" }} />
-              <p className="text-xs" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר עדיין</p>
+            <div className="flex items-start gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.55 0.12 76.7)" }} />
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר</p>
+                <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 76.7)" }}>מעסיקים שהגדירו גיל מינימלי לא יוכלו לראות אותך ברשימת העובדים הזמינים. הוסף כדי להיות גלוי ליותר מעסיקים.</p>
+              </div>
             </div>
           )}
 

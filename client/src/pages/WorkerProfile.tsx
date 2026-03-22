@@ -1476,7 +1476,7 @@ export default function WorkerProfile() {
             }}
           >
           <div className="overflow-hidden">
-          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
+          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }} onClick={(e) => e.stopPropagation()}>
             <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
               <button
                 type="button"

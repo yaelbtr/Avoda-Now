@@ -2849,3 +2849,7 @@ Isolation guarantees:
 - [x] Read employer minWorkerAge from profile in available workers query
 - [x] Filter out workers below minWorkerAge using birthDate on server side
 - [x] Show indicator on available workers page when age filter is active
+
+## Round 7e: Bug Fixes
+
+- [x] Fix CityPicker in worker profile edit view losing focus — accordion button was swallowing click events from the city search input

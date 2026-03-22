@@ -162,16 +162,17 @@ export default function PostJob() {
       minAge,
       jobImages,
       activeTab,
+      locationSubTab,
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab]);
 
   // Auto-save on every meaningful state change
   useEffect(() => {
     if (draftRestored || success) return;
     saveDraft(collectDraftData());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab]);
 
   // Restore draft into form fields
   const restoreDraft = useCallback(() => {
@@ -197,6 +198,7 @@ export default function PostJob() {
     if (draft.minAge !== undefined) setMinAge(draft.minAge ?? null);
     if (draft.jobImages?.length) setJobImages(draft.jobImages);
     if (draft.activeTab) setActiveTab(draft.activeTab as TabId);
+    if (draft.locationSubTab) setLocationSubTab(draft.locationSubTab);
     setDraftRestored(true);
     setShowDraftBanner(false);
     toast.success("הטיוטה שוחזרה בהצלחה");

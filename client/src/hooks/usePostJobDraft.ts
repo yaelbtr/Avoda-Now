@@ -46,6 +46,7 @@ export interface PostJobDraft {
   minAge?: 16 | 18 | null;
   jobImages?: string[];
   activeTab?: string;
+  locationSubTab?: "search" | "address";
   // metadata
   savedAt?: number; // Unix ms
 }

@@ -3084,3 +3084,9 @@ Isolation guarantees:
 - [x] Auto-fill jobSearchRadiusKm from employerProfile.workerSearchRadiusKm when no draft exists
 - [x] Auto-fill jobCity from employerProfile.workerSearchCity when no draft exists
 - [x] Only autofill when fields are at default values and no draft exists
+
+## Feature: Persist locationSubTab in PostJob draft
+
+- [x] Add locationSubTab to collectDraftData() output
+- [x] Restore locationSubTab from draft in restoreDraft()
+- [x] Add locationSubTab to auto-save dependency array

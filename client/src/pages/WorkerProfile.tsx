@@ -789,15 +789,6 @@ export default function WorkerProfile() {
                         <CityPicker
                           selectedCityIds={preferredCities}
                           onChange={setPreferredCities}
-                          onCitySelect={(city) => {
-                            // Save the selected city's coordinates as the worker's
-                            // reference lat/lng for future distance calculations.
-                            // Only update if not already set (GPS takes precedence).
-                            if ((!workerLatitude || !workerLongitude) && city.latitude && city.longitude) {
-                              setWorkerLatitude(city.latitude);
-                              setWorkerLongitude(city.longitude);
-                            }
-                          }}
                           compact
                         />
                       </div>

@@ -1107,8 +1107,11 @@ export async function getWorkerAvailability(userId: number) {
     .limit(1);
   return result[0] ?? null;
 }
-/** Get available workers near a location, sorted by distance */
-export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50) {
+/** Get available workers near a location, sorted by distance.
+ * @param minAge - optional minimum age (e.g. 16 or 18); workers without a
+ *   recorded birthDate are excluded when this filter is active.
+ */
+export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50, minAge?: number | null) {
   const db = await getDb();
   if (!db) return [];
   const now = new Date();
@@ -1123,6 +1126,12 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
       2
     )
   `;
+  // Age filter: keep only workers whose birthDate is on or before the cutoff
+  // date (today minus minAge years). Workers with no birthDate are excluded
+  // when the filter is active, to avoid showing underage workers.
+  const ageCondition = minAge
+    ? sql`(${users.birthDate} IS NOT NULL AND ${users.birthDate}::date <= (CURRENT_DATE - (${minAge} * INTERVAL '1 year'))::date)`
+    : undefined;
   return db
     .select({
       id: workerAvailability.id,
@@ -1139,7 +1148,11 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
     })
     .from(workerAvailability)
     .innerJoin(users, eq(workerAvailability.userId, users.id))
-    .where(and(gte(workerAvailability.availableUntil, now), sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`))
+    .where(and(
+      gte(workerAvailability.availableUntil, now),
+      sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`,
+      ...(ageCondition ? [ageCondition] : []),
+    ))
     .orderBy(distanceExpr)
     .limit(limit);
 }

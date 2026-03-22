@@ -1602,9 +1602,18 @@ const workersRouter = router({
       lng: z.number(),
       radiusKm: z.number().default(20),
       limit: z.number().optional(),
+      /** Minimum worker age (16 or 18) from employer preferences. Workers
+       *  without a recorded birthDate are excluded when this is set. */
+      minWorkerAge: z.number().int().min(16).max(99).optional().nullable(),
     }))
     .query(async ({ input, ctx }) => {
-      const workers = await getNearbyWorkers(input.lat, input.lng, input.radiusKm, input.limit ?? 50);
+      const workers = await getNearbyWorkers(
+        input.lat,
+        input.lng,
+        input.radiusKm,
+        input.limit ?? 50,
+        input.minWorkerAge ?? null,
+      );
       // Only show phone to authenticated users
       if (!ctx.user) return workers.map(w => ({ ...w, userPhone: null }));
       return workers;

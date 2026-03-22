@@ -252,13 +252,41 @@ describe("PostGIS Radius Search — jobs.search procedure", () => {
 describe("PostGIS Radius Search — getNearbyWorkers distance computation", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("passes lat/lng/radiusKm to getNearbyWorkers", async () => {
+  it("passes lat/lng/radiusKm to getNearbyWorkers (no age filter)", async () => {
     vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
     const caller = appRouter.createCaller(makeCtx());
 
     await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 20 });
 
-    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50);
+    // 5th arg is minAge — null when not supplied
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, null);
+  });
+
+  it("passes minWorkerAge=18 to getNearbyWorkers when employer sets 18+", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 20, minWorkerAge: 18 });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, 18);
+  });
+
+  it("passes minWorkerAge=16 to getNearbyWorkers when employer sets 16+", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 10, minWorkerAge: 16 });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 10, 50, 16);
+  });
+
+  it("passes null minAge when minWorkerAge is explicitly null", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, minWorkerAge: null });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, null);
   });
 
   it("returns workers with distance field", async () => {

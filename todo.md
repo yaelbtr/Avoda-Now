@@ -2843,3 +2843,9 @@ Isolation guarantees:
 - [x] Read employer defaultJobCity/lat/lng in PostJob form on mount
 - [x] Pre-fill location field with employer's default job location
 - [x] Allow employer to override the pre-filled location (map click still works)
+
+## Round 7d: minWorkerAge Filter on Available Workers Page
+
+- [x] Read employer minWorkerAge from profile in available workers query
+- [x] Filter out workers below minWorkerAge using birthDate on server side
+- [x] Show indicator on available workers page when age filter is active

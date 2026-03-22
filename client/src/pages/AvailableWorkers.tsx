@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2 } from "lucide-react";
+import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2, ShieldCheck } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ function availableUntilText(until: Date | string): string {
 
 export default function AvailableWorkers() {
   const { isAuthenticated } = useAuth();
+  const { userMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -45,6 +47,15 @@ export default function AvailableWorkers() {
     }
   }, []);
 
+  // Fetch employer profile to get minWorkerAge preference.
+  // Only enabled when the user is authenticated and in employer mode.
+  const isEmployer = isAuthenticated && userMode === "employer";
+  const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
+    enabled: isEmployer,
+    staleTime: 60_000,
+  });
+  const minWorkerAge = isEmployer ? (employerProfileQuery.data?.minWorkerAge ?? null) : null;
+
   const getLocation = () => {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
@@ -59,7 +70,7 @@ export default function AvailableWorkers() {
   };
 
   const workersQuery = trpc.workers.nearby.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, limit: 50 },
+    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm, limit: 50, minWorkerAge },
     { enabled: true, refetchInterval: 60000 }
   );
 
@@ -142,6 +153,16 @@ export default function AvailableWorkers() {
         )}
       </div>
 
+      {/* Age filter indicator — shown only when employer has set a minWorkerAge */}
+      {minWorkerAge && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2 text-sm text-amber-800">
+          <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
+          <span>
+            מסנן גיל פעיל: מוצגים רק עובדים בני <strong>{minWorkerAge}+</strong> (לפי הגדרות הפרופיל שלך)
+          </span>
+        </div>
+      )}
+
       {/* Workers list */}
       {workersQuery.isLoading ? (
         <div className="flex justify-center py-16">
@@ -151,7 +172,11 @@ export default function AvailableWorkers() {
         <div className="text-center py-16 text-muted-foreground">
           <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium text-foreground">אין עובדים זמינים באזור כרגע</p>
-          <p className="text-sm mt-1">נסה להרחיב את הרדיוס או לחזור מאוחר יותר</p>
+          <p className="text-sm mt-1">
+            {minWorkerAge
+              ? `לא נמצאו עובדים בני ${minWorkerAge}+ בטווח ${radiusKm} ק"מ. נסה להרחיב את הרדיוס.`
+              : `נסה להרחיב את הרדיוס או לחזור מאוחר יותר`}
+          </p>
         </div>
       ) : (
         <>

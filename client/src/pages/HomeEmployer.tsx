@@ -176,11 +176,13 @@ export default function HomeEmployer() {
   const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
     ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
     : null;
+  // Use employer's saved search radius (fallback to 20km)
+  const savedRadiusKm = isEmployer ? (employerProfileQuery.data?.workerSearchRadiusKm ?? 20) : 20;
   // Priority: live GPS > employer saved location > Jerusalem default
   const effectiveLat = userLat ?? savedLat ?? 31.7683;
   const effectiveLng = userLng ?? savedLng ?? 35.2137;
   const workersQuery = trpc.workers.nearby.useQuery(
-    { lat: effectiveLat, lng: effectiveLng, radiusKm: 20, limit: 8 },
+    { lat: effectiveLat, lng: effectiveLng, radiusKm: savedRadiusKm, limit: 8 },
     { staleTime: 60_000 }
   );
 

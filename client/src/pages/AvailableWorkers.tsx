@@ -55,6 +55,11 @@ export default function AvailableWorkers() {
     staleTime: 60_000,
   });
   const minWorkerAge = isEmployer ? (employerProfileQuery.data?.minWorkerAge ?? null) : null;
+  // Initialize radiusKm from employer's saved preference (user can still change it manually)
+  const savedRadiusKm = isEmployer ? (employerProfileQuery.data?.workerSearchRadiusKm ?? null) : null;
+  useEffect(() => {
+    if (savedRadiusKm !== null) setRadiusKm(savedRadiusKm);
+  }, [savedRadiusKm]);
   // Use employer's saved search coordinates as fallback (preferred over Jerusalem default)
   const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
     ? parseFloat(employerProfileQuery.data.workerSearchLatitude)

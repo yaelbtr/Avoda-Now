@@ -2909,3 +2909,10 @@ Isolation guarantees:
 - [x] Add GIST index on users.workerLocation via Drizzle migration for PostGIS performance
 - [x] Verify/wire onCitySelect in EmployerProfile CityPicker to save workerSearchLatitude/Longitude
 - [x] Fix HomeEmployer and AvailableWorkers to use employer's saved workerSearchLatitude/Longitude as fallback (priority: GPS > saved > Jerusalem default)
+
+## Round 7L: Index Verification + Employer Radius Wiring
+
+- [x] Run EXPLAIN ANALYZE — index is valid (is_valid: true, is_ready: true); Seq Scan is expected with 17 rows (planner switches to Index Scan automatically at scale)
+- [x] Backfill workerLocation geometry for existing users with lat/lng
+- [x] Wire workerSearchRadiusKm from employer profile into AvailableWorkers (initializes from saved, user can override)
+- [x] Wire workerSearchRadiusKm from employer profile into HomeEmployer (uses saved radius, fallback 20km)

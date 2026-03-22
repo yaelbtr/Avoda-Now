@@ -10,6 +10,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
 import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
+import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
@@ -18,7 +19,7 @@ import { shouldWarnLateJob, normalizeDateInput } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
-  MapPin, Loader2, CheckCircle2, Shield, Copy, Briefcase,
+  MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase,
   Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus,
   FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2,
 } from "lucide-react";
@@ -93,6 +94,7 @@ export default function PostJob() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("details");
   const [mapError, setMapError] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   // ── Draft persistence ─────────────────────────────────────────────────────
   const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
@@ -369,6 +371,38 @@ export default function PostJob() {
   });
 
 
+
+  const getMyLocation = () => {
+    if (!navigator.geolocation) { toast.error("הדפדפן אינו תומך ב-GPS"); return; }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const newLat = pos.coords.latitude;
+        const newLng = pos.coords.longitude;
+        try {
+          await ensureMapsLoaded();
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
+            setLocating(false);
+            if (status === "OK" && results?.[0]) {
+              const address = results[0].formatted_address;
+              setLat(newLat);
+              setLng(newLng);
+              setMapError(false);
+              setValue("address", address, { shouldValidate: true });
+              toast.success("מיקום נמצא!");
+            } else {
+              toast.error("לא ניתן לאתר כתובת למיקום זה");
+            }
+          });
+        } catch {
+          setLocating(false);
+          toast.error("שגיאה בטעינת שירות המפות");
+        }
+      },
+      () => { setLocating(false); toast.error("לא ניתן לאתר מיקום"); }
+    );
+  };
 
   const onSubmit = (data: FormData) => {
     if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
@@ -899,6 +933,20 @@ export default function PostJob() {
                             בחירת מיקום נדרשת
                           </p>
                         )}
+
+                        <AppButton
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={getMyLocation}
+                          disabled={locating}
+                          className="gap-2 w-full"
+                        >
+                          {locating
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <LocateFixed className="h-4 w-4" />}
+                          השתמש במיקום שלי
+                        </AppButton>
 
                         <PlacesAutocomplete
                           value={watch("address") ?? ""}

@@ -3103,3 +3103,9 @@ Isolation guarantees:
 - [x] On place select: set lat/lng, center map, drop marker, fill address field
 - [x] Replace read-only address AppInput with PlacesAutocomplete in PostJob address sub-tab
 - [x] Keep map click and GPS as alternative location methods
+
+## Feature: GPS button in address sub-tab
+
+- [x] Add locating state and getMyLocation function using Geolocation + Geocoder
+- [x] Render GPS button above PlacesAutocomplete in address sub-tab
+- [x] On GPS success: set lat/lng, fill address field, clear mapError

@@ -3004,3 +3004,7 @@ Isolation guarantees:
 - [x] Create EmployerBottomNav component (4 tabs: מסך הבית, פרסם משרה, המשרות שלי, עובדים זמינים)
 - [x] Integrate EmployerBottomNav into App.tsx (renders only when userMode === employer)
 - [x] All employer pages covered: HomeEmployer, PostJob, MyJobs, AvailableWorkers
+
+## UX: Pulse animation on PostJob tab in EmployerBottomNav
+
+- [x] Add framer-motion pulse ring animation to PlusSquare icon when on /post-job route

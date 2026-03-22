@@ -1,19 +1,42 @@
 import { Link, useLocation } from "wouter";
 import { Home, PlusSquare, Briefcase, Users } from "lucide-react";
+import { motion } from "framer-motion";
 import { useUserMode } from "@/contexts/UserModeContext";
 
 const NAV_ITEMS = [
-  { href: "/",                  label: "מסך הבית",     icon: Home },
-  { href: "/post-job",          label: "פרסם משרה",    icon: PlusSquare },
-  { href: "/my-jobs",           label: "המשרות שלי",   icon: Briefcase },
+  { href: "/",                  label: "מסך הבית",      icon: Home },
+  { href: "/post-job",          label: "פרסם משרה",     icon: PlusSquare },
+  { href: "/my-jobs",           label: "המשרות שלי",    icon: Briefcase },
   { href: "/available-workers", label: "עובדים זמינים", icon: Users },
 ] as const;
+
+/** Animated pulse ring — shown only on the active /post-job tab */
+function PulseRing() {
+  return (
+    <>
+      {[0, 0.5, 1].map((delay) => (
+        <motion.span
+          key={delay}
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{ border: "1.5px solid var(--citrus)" }}
+          initial={{ opacity: 0.6, scale: 1 }}
+          animate={{ opacity: 0, scale: 2.2 }}
+          transition={{
+            duration: 1.6,
+            repeat: Infinity,
+            delay,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
 export default function EmployerBottomNav() {
   const [location] = useLocation();
   const { userMode } = useUserMode();
 
-  // Only show for employers
   if (userMode !== "employer") return null;
 
   return (
@@ -33,6 +56,7 @@ export default function EmployerBottomNav() {
       <ul className="flex items-center justify-around h-full list-none m-0 p-0">
         {NAV_ITEMS.map((item) => {
           const isActive = location === item.href;
+          const isPostJob = item.href === "/post-job";
           const Icon = item.icon;
 
           return (
@@ -54,12 +78,26 @@ export default function EmployerBottomNav() {
                     }
                   }}
                 >
-                  <span className="relative">
-                    <Icon
-                      className="h-5 w-5 transition-transform"
-                      style={{ transform: isActive ? "scale(1.15)" : "scale(1)" }}
-                    />
+                  {/* Icon wrapper — pulse rings live here when on /post-job */}
+                  <span className="relative flex items-center justify-center w-6 h-6">
+                    {isPostJob && isActive && <PulseRing />}
+                    <motion.span
+                      animate={
+                        isPostJob && isActive
+                          ? { scale: [1, 1.18, 1], rotate: [0, 8, -8, 0] }
+                          : { scale: isActive ? 1.15 : 1, rotate: 0 }
+                      }
+                      transition={
+                        isPostJob && isActive
+                          ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+                          : { type: "spring", stiffness: 400, damping: 20 }
+                      }
+                      className="flex items-center justify-center"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </motion.span>
                   </span>
+
                   <span
                     className="text-[10px] font-semibold leading-tight text-center"
                     style={{
@@ -74,6 +112,7 @@ export default function EmployerBottomNav() {
                   >
                     {item.label}
                   </span>
+
                   {isActive && (
                     <span
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"

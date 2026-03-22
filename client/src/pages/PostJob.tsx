@@ -97,6 +97,7 @@ export default function PostJob() {
   const markerRef = useRef<google.maps.Marker | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [mapShake, setMapShake] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
   // ── Draft persistence ─────────────────────────────────────────────────────
   const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
@@ -403,6 +404,7 @@ export default function PostJob() {
       const newLng = e.latLng.lng();
       setLat(newLat);
       setLng(newLng);
+      setMapError(false);
       if (markerRef.current) markerRef.current.setMap(null);
       markerRef.current = new google.maps.Marker({ position: { lat: newLat, lng: newLng }, map, animation: google.maps.Animation.DROP });
       const geocoder = new google.maps.Geocoder();
@@ -420,6 +422,7 @@ export default function PostJob() {
         const newLng = pos.coords.longitude;
         setLat(newLat);
         setLng(newLng);
+        setMapError(false);
         setLocating(false);
         if (mapRef.current) {
           mapRef.current.setCenter({ lat: newLat, lng: newLng });
@@ -598,6 +601,7 @@ export default function PostJob() {
       if (!lat || !lng) {
         // Switch to the address sub-tab so the user sees the map
         setLocationSubTab("address");
+        setMapError(true);
         // Give React one tick to render the map container before scrolling
         setTimeout(() => {
           mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -972,11 +976,27 @@ export default function PostJob() {
                         <div
                           ref={mapContainerRef}
                           className={`rounded-xl overflow-hidden border h-56 transition-all ${
-                            mapShake ? "border-red-400 animate-[shake_0.5s_ease-in-out]" : "border-border"
+                            mapShake
+                              ? "border-red-400 animate-[shake_0.5s_ease-in-out]"
+                              : mapError
+                              ? "border-red-400"
+                              : "border-border"
                           }`}
                         >
                           <MapView onMapReady={handleMapReady} className="h-56" />
                         </div>
+
+                        {/* Inline location error — shown until a valid location is selected */}
+                        {mapError && (
+                          <p className="flex items-center gap-1.5 text-xs font-medium text-red-500" dir="rtl">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                              <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2" />
+                              <path d="M6.5 3.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                              <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor" />
+                            </svg>
+                            בחירת מיקום נדרשת
+                          </p>
+                        )}
 
                         {lat && lng && (
                           <p className="text-xs text-green-600 flex items-center gap-1">

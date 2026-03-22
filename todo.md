@@ -3045,3 +3045,8 @@ Isolation guarantees:
 - [x] Auto-fill contactName from employerProfile.name ?? user.name when form is empty and no draft exists
 - [x] Auto-fill businessName from employerProfile.companyName when form is empty and no draft exists
 - [x] Only autofill when field is currently empty (never overwrite user input or draft)
+
+## UI: PostJob contact card refactor
+
+- [x] Remove contact details card (contactName, businessName, showPhone) from conditions tab
+- [x] Add info notice in details tab: "פרטי איש הקשר נלקחים מהאזור האישי" with link to profile

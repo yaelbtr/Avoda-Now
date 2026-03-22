@@ -1087,44 +1087,12 @@ export default function PostJob() {
                     </div>
                   </div>
 
-                  {/* Contact */}
-                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-                    <h2 className="font-bold text-foreground text-right">פרטי יצירת קשר</h2>
-
-                    <AppInput id="contactName" label="שם איש קשר" required placeholder="ישראל ישראלי" dir="rtl" {...register("contactName")} error={errors.contactName?.message} />
-
-                    <div>
-                      <AppLabel htmlFor="contactPhone">טלפון ליצירת קשר</AppLabel>
-                      <div id="contactPhone" dir="ltr" className="mt-1 flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-muted text-muted-foreground text-sm select-none">
-                        📱 {user?.phone ?? "יופיע אוטומטית מהחשבון"}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">הטלפון נלקח אוטומטית מחשבוןך</p>
-                    </div>
-
-                    <AppInput id="businessName" label="שם עסק" placeholder="שם החברה / העסק" dir="rtl" {...register("businessName")} />
-
-                    <div
-                      onClick={() => setValue("showPhone", !showPhone)}
-                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${showPhone ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-                    >
-                      <div>
-                        <p className={`font-semibold text-sm ${showPhone ? "text-primary" : "text-foreground"}`}>📞 הצג מספר טלפון לעובדים</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {showPhone ? "מספר הטלפון שלך יוצג בכרטיס המשרה" : "מספר הטלפון מוסתר — עובדים ישלחו מועמדות ותקבל SMS"}
-                        </p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${showPhone ? "border-primary bg-primary" : "border-muted-foreground"}`}>
-                        {showPhone && <span className="text-white text-xs">✓</span>}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
               {/* ── Tab 4: פרסום ─────────────────────────────────────── */}
               {activeTab === "publish" && (
                 <div className="space-y-5">
-
                   {/* ── Job Preview Card ──────────────────────────────── */}
                   <div
                     className="rounded-2xl border p-5 space-y-3"
@@ -1138,20 +1106,17 @@ export default function PostJob() {
                       >
                         <Briefcase className="h-3.5 w-3.5 text-white" />
                       </div>
-                      <h2 className="font-bold text-sm" style={{ color: "#4F583B" }}>תצוגה מקדימה של המשרה</h2>
+                      <h2 className="font-bold text-sm" style={{ color: "#4F583B" }}>תצוגה מקדימית של המשרה</h2>
                     </div>
 
-                    {/* Title */}
-                    <div>
-                      <p className="text-lg font-black leading-tight" style={{ color: "#1a1a1a" }}>
-                        {watchedTitle || <span className="text-muted-foreground italic text-base font-normal">ללא כותרת</span>}
-                      </p>
-                      {watchedCategory && catBySlug[watchedCategory] && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium mt-1 px-2 py-0.5 rounded-full" style={{ background: "oklch(0.90 0.06 100)", color: "#4F583B" }}>
-                          {catBySlug[watchedCategory].icon} {catBySlug[watchedCategory].name}
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-lg font-black leading-tight" style={{ color: "#1a1a1a" }}>
+                      {watchedTitle || <span className="text-muted-foreground italic text-base font-normal">ללא כותרת</span>}
+                    </p>
+                    {watchedCategory && catBySlug[watchedCategory] && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium mt-1 px-2 py-0.5 rounded-full" style={{ background: "oklch(0.90 0.06 100)", color: "#4F583B" }}>
+                        {catBySlug[watchedCategory].icon} {catBySlug[watchedCategory].name}
+                      </span>
+                    )}
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       {/* Location */}

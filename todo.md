@@ -2993,3 +2993,7 @@ Isolation guarantees:
 - [x] Add toast.success with duration info on setAvailableMutation onSuccess
 - [x] Add toast.success on setUnavailableMutation onSuccess
 - [x] Add toast.error with message on both mutations onError
+
+## Bug Fix: Availability button text not reflecting current state
+
+- [x] Show "סמן כלא זמין" on the availability button when worker is currently available

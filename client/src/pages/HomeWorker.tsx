@@ -500,7 +500,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   whileTap={{ scale: 0.97 }}
                 >
                   <Zap size={14} />
-                  הגדר זמינות עכשיו
+                  {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent
@@ -609,7 +609,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               transition={{ type: "spring", stiffness: 420, damping: 22 }}
             >
               <Search size={15} />
-              הגדר זמינות עכשיו
+              {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </motion.button>
           </motion.div>

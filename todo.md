@@ -3055,3 +3055,10 @@ Isolation guarantees:
 
 - [x] Root cause: PayloadTooLargeError — /api/trpc limit was 10kb, too small for job posts with images
 - [x] Fix: increased tRPC body limit from 10kb to 5mb in server/_core/index.ts
+
+## Feature: PostJob image size validation
+
+- [x] Add 4MB per-image client-side validation in PostJob image upload handler
+- [x] Show Hebrew error message with actual file size when image exceeds limit
+- [x] Oversized images are skipped (continue) — valid images in same batch still upload
+- [x] MAX_IMAGE_SIZE constant defined once outside the loop (DRY)

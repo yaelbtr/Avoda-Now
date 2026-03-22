@@ -285,10 +285,14 @@ export default function PostJob() {
     if (remaining <= 0) { toast.error("ניתן להעלות עד 5 תמונות"); return; }
     const toUpload = files.slice(0, remaining);
     setUploadingImages(true);
+    const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB — must match server tRPC limit (5mb)
     try {
       const urls: string[] = [];
       for (const file of toUpload) {
-        if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} גדולה מדי (מקסימום 5MB)`); continue; }
+        if (file.size > MAX_IMAGE_SIZE) {
+          toast.error(`"${file.name}" גדולה מדי — מקסימום 4MB לתמונה (הקובץ הנוכחי: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+          continue;
+        }
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve((reader.result as string).split(",")[1]);

@@ -879,7 +879,7 @@ export default function PostJob() {
 
                     {/* Sub-tab bar */}
                     <div className="flex rounded-xl overflow-hidden border border-border">
-                      {(["search", "address"] as const).map((st) => {
+                      {(["address", "search"] as const).map((st) => {
                         const isActive = locationSubTab === st;
                         const addressDone = st === "address" && !!(lat && lng);
                         return (

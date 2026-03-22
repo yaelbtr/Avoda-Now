@@ -10,6 +10,7 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
 import { MapView } from "@/components/Map";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
@@ -1005,13 +1006,26 @@ export default function PostJob() {
                           </p>
                         )}
 
-                        <AppInput
-                          id="address"
-                          label="כתובת"
-                          required
-                          placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
-                          dir="rtl"
-                          {...register("address")}
+                        <PlacesAutocomplete
+                          value={watch("address") ?? ""}
+                          onChange={(val) => setValue("address", val, { shouldValidate: true })}
+                          onPlaceSelect={({ lat: newLat, lng: newLng, formattedAddress }) => {
+                            setLat(newLat);
+                            setLng(newLng);
+                            setMapError(false);
+                            setValue("address", formattedAddress, { shouldValidate: true });
+                            if (markerRef.current) markerRef.current.setMap(null);
+                            if (mapRef.current) {
+                              mapRef.current.setCenter({ lat: newLat, lng: newLng });
+                              mapRef.current.setZoom(16);
+                              markerRef.current = new google.maps.Marker({
+                                position: { lat: newLat, lng: newLng },
+                                map: mapRef.current,
+                                animation: google.maps.Animation.DROP,
+                              });
+                            }
+                          }}
+                          placeholder="חפש כתובת..."
                           error={errors.address?.message}
                         />
                       </div>

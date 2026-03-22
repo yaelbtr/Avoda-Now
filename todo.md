@@ -3096,3 +3096,10 @@ Isolation guarantees:
 - [x] Add mapContainerRef to the map div in the address sub-tab
 - [x] In goNext(), when lat/lng missing: switch to "address" sub-tab, scroll mapContainerRef into view, show inline error
 - [x] Add shake CSS animation to map container when triggered
+
+## Feature: Google Places Autocomplete for job address
+
+- [x] Create PlacesAutocomplete component using google.maps.places.Autocomplete
+- [x] On place select: set lat/lng, center map, drop marker, fill address field
+- [x] Replace read-only address AppInput with PlacesAutocomplete in PostJob address sub-tab
+- [x] Keep map click and GPS as alternative location methods

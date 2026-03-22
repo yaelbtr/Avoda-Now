@@ -3062,3 +3062,11 @@ Isolation guarantees:
 - [x] Show Hebrew error message with actual file size when image exceeds limit
 - [x] Oversized images are skipped (continue) — valid images in same batch still upload
 - [x] MAX_IMAGE_SIZE constant defined once outside the loop (DRY)
+
+## Refactor: PostJob image upload via /api/upload-photo
+
+- [x] Audit /api/upload-photo endpoint and uploadJobImage tRPC mutation
+- [x] Add /api/upload-job-image Express endpoint with multer memory storage (8mb hard limit)
+- [x] Refactor handleImageUpload to use fetch + FormData (multipart) — no more base64 in tRPC payload
+- [x] Remove uploadJobImage tRPC procedure (no longer used anywhere)
+- [x] 19 Vitest tests for upload logic (861 passing total)

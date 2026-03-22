@@ -276,7 +276,18 @@ export default function PostJob() {
   });
 
   const utils = trpc.useUtils();
-  const uploadJobImage = trpc.jobs.uploadJobImage.useMutation();
+  // Image upload via dedicated multipart endpoint (avoids base64 bloat in tRPC payload)
+  const uploadJobImageToServer = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("/api/upload-job-image", { method: "POST", body: formData, credentials: "include" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Upload failed" }));
+      throw new Error(err.error ?? "Upload failed");
+    }
+    const data = await res.json() as { url: string };
+    return data.url;
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -293,16 +304,9 @@ export default function PostJob() {
           toast.error(`"${file.name}" גדולה מדי — מקסימום 4MB לתמונה (הקובץ הנוכחי: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
           continue;
         }
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve((reader.result as string).split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
-        if (!["image/jpeg", "image/png", "image/webp"].includes(mimeType)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
-        const result = await uploadJobImage.mutateAsync({ base64, mimeType });
-        urls.push(result.url);
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
+        const url = await uploadJobImageToServer(file);
+        urls.push(url);
       }
       setJobImages(prev => [...prev, ...urls]);
       if (urls.length > 0) toast.success(`${urls.length} תמונות הועלו בהצלחה`);

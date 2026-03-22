@@ -3,6 +3,7 @@ import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -123,6 +124,33 @@ async function startServer() {
     } catch (err) {
       console.error("[upload-photo]", err);
       res.status(500).json({ error: "Upload failed" });
+    }
+  });
+
+  // ── Job image upload endpoint (8mb limit, auth required, no DB update) ──────
+  const jobImageUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 8 * 1024 * 1024 }, // 8mb hard limit (client enforces 4mb)
+    fileFilter: (_req, file, cb) => {
+      if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) cb(null, true);
+      else cb(new Error("Unsupported image type"));
+    },
+  });
+
+  app.post("/api/upload-job-image", jobImageUpload.single("image"), async (req, res) => {
+    try {
+      const { sdk: sdkInstance } = await import("./sdk");
+      const authUser = await sdkInstance.authenticateRequest(req).catch(() => null);
+      if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+      if (!req.file) return res.status(400).json({ error: "No image file provided" });
+      const { storagePut } = await import("../storage");
+      const ext = req.file.mimetype === "image/png" ? "png" : req.file.mimetype === "image/webp" ? "webp" : "jpg";
+      const key = `job-images/${authUser.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype);
+      return res.json({ url });
+    } catch (err) {
+      console.error("[upload-job-image]", err);
+      return res.status(500).json({ error: "Upload failed" });
     }
   });
 

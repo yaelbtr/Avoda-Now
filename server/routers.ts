@@ -1313,19 +1313,6 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  /** Upload a job image to S3 and return the URL. Max 5 per job. */
-  uploadJobImage: protectedProcedure
-    .input(z.object({
-      base64: z.string(),
-      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
-      const key = `job-images/${ctx.user.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const buffer = Buffer.from(input.base64, "base64");
-      const { url } = await storagePut(key, buffer, input.mimeType);
-      return { url };
-    }),
 });
 // ─── Admin Router ─────────────────────────────────────────────────────────────
 

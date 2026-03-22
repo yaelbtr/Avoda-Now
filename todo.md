@@ -3008,3 +3008,7 @@ Isolation guarantees:
 ## UX: Pulse animation on PostJob tab in EmployerBottomNav
 
 - [x] Add framer-motion pulse ring animation to PlusSquare icon when on /post-job route
+
+## UI: Remove phone verification banner from HomeEmployer
+
+- [x] Remove "ניתן לפרסם עד 3 משרות פעילות בו-זמנית. נדרש אימות טלפון" banner

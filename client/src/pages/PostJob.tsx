@@ -567,13 +567,6 @@ export default function PostJob() {
         </div>
       )}
 
-      {/* Limit notice */}
-      <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5 flex items-center gap-3 text-sm">
-        <Shield className="h-4 w-4 text-primary shrink-0" />
-        <span className="text-muted-foreground">
-          ניתן לפרסם עד <strong className="text-foreground">3 משרות פעילות</strong> בו-זמנית. נדרש אימות טלפון.
-        </span>
-      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Basic info */}

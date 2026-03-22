@@ -95,6 +95,8 @@ export default function PostJob() {
   const [activeTab, setActiveTab] = useState<TabId>("details");
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [mapShake, setMapShake] = useState(false);
 
   // ── Draft persistence ─────────────────────────────────────────────────────
   const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
@@ -593,7 +595,19 @@ export default function PostJob() {
       if (!ok) return;
     }
     if (activeTab === "location") {
-      if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); return; }
+      if (!lat || !lng) {
+        // Switch to the address sub-tab so the user sees the map
+        setLocationSubTab("address");
+        // Give React one tick to render the map container before scrolling
+        setTimeout(() => {
+          mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Trigger shake animation
+          setMapShake(true);
+          setTimeout(() => setMapShake(false), 600);
+        }, 80);
+        toast.error("אנא בחר מיקום על המפה");
+        return;
+      }
       if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return; }
       const ok = await trigger(["address"]);
       if (!ok) return;
@@ -955,7 +969,12 @@ export default function PostJob() {
                           השתמש במיקום שלי
                         </AppButton>
 
-                        <div className="rounded-xl overflow-hidden border border-border h-56">
+                        <div
+                          ref={mapContainerRef}
+                          className={`rounded-xl overflow-hidden border h-56 transition-all ${
+                            mapShake ? "border-red-400 animate-[shake_0.5s_ease-in-out]" : "border-border"
+                          }`}
+                        >
                           <MapView onMapReady={handleMapReady} className="h-56" />
                         </div>
 

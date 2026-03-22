@@ -3090,3 +3090,9 @@ Isolation guarantees:
 - [x] Add locationSubTab to collectDraftData() output
 - [x] Restore locationSubTab from draft in restoreDraft()
 - [x] Add locationSubTab to auto-save dependency array
+
+## Feature: Auto-switch to Job Address sub-tab on missing location
+
+- [x] Add mapContainerRef to the map div in the address sub-tab
+- [x] In goNext(), when lat/lng missing: switch to "address" sub-tab, scroll mapContainerRef into view, show inline error
+- [x] Add shake CSS animation to map container when triggered

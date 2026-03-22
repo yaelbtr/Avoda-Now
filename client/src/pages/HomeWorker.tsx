@@ -149,7 +149,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [geoRequested, setGeoRequested] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
+  const [selectedDuration, setSelectedDuration] = useState<number>(4);
+  const [customHours, setCustomHours] = useState<string>("");
   const [quickAvailOpen, setQuickAvailOpen] = useState(false);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
@@ -291,7 +292,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
-  const confirmAvailability = (hours: 2 | 4 | 8) => {
+  const confirmAvailability = (hours: number) => {
     setSelectedDuration(hours);
     setDurationOpen(false);
     setAvailabilityLoading(true);
@@ -1465,17 +1466,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
             );
           })()}
-          <div className="grid grid-cols-3 gap-3 mt-2">
-            {([2, 4, 8] as const).map((h) => {
+          {/* Preset quick-select buttons */}
+          <div className="grid grid-cols-4 gap-2 mt-2">
+            {([2, 4, 8, 12, 24, 48, 72] as const).map((h) => {
               const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
               const crossesCutoff = workerIsMinor && (nowMins + h * 60 > 22 * 60);
               return (
               <motion.button
                 key={h}
-                onClick={() => confirmAvailability(h)}
+                onClick={() => { setCustomHours(""); confirmAvailability(h); }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all font-bold relative"
+                className="flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all font-bold relative"
                 style={{
                   borderColor: crossesCutoff ? "rgba(251,191,36,0.6)" : "var(--border)",
                   color: "var(--brand)",
@@ -1485,13 +1487,64 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 {crossesCutoff && (
                   <span className="absolute top-1 left-1 text-xs" title="חוצה 22:00">⚠️</span>
                 )}
-                <span className="text-2xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
-                <span className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>שעות</span>
+                <span className="text-xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
+                <span className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>שע'</span>
               </motion.button>
               );
             })}
           </div>
-          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
+
+          {/* Custom hours input */}
+          <div className="mt-3">
+            <p className="text-xs text-right mb-1.5" style={{ color: "var(--muted-foreground)" }}>או הזן מספר שעות חופשי (1–72):</p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                min={1}
+                max={72}
+                value={customHours}
+                onChange={(e) => setCustomHours(e.target.value)}
+                placeholder="למשל: 36"
+                className="flex-1 rounded-lg border px-3 py-2 text-right text-sm"
+                style={{
+                  borderColor: "var(--border)",
+                  backgroundColor: "var(--card)",
+                  color: "var(--foreground)",
+                  outline: "none",
+                }}
+                dir="rtl"
+              />
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const h = parseInt(customHours, 10);
+                  if (!isNaN(h) && h >= 1 && h <= 72) {
+                    setCustomHours("");
+                    confirmAvailability(h);
+                  }
+                }}
+                disabled={!customHours || parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72}
+                className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                style={{
+                  backgroundColor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand)"
+                    : "var(--muted)",
+                  color: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand-foreground)"
+                    : "var(--muted-foreground)",
+                  cursor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72 ? "pointer" : "not-allowed",
+                }}
+              >
+                אשר
+              </motion.button>
+            </div>
+            {customHours && (parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72) && (
+              <p className="text-xs mt-1 text-right" style={{ color: "oklch(0.55 0.2 25)" }}>יש להזין מספר בין 1 ל-72</p>
+            )}
+          </div>
+
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => { setCustomHours(""); setDurationOpen(false); }}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
 

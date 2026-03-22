@@ -2960,3 +2960,7 @@ Isolation guarantees:
 - [x] Updated setWorkerAvailable to auto-compute PostGIS geometry from lat/lng
 - [x] Documented migration 0014 in journal and marked as applied
 - [x] 802 tests passing, no new regressions
+
+## Round 7U: Custom Availability Duration
+
+- [x] Add free-text hours input (1–72) to worker availability form alongside preset buttons (2,4,8,12,24,48,72 + custom)

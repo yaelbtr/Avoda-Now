@@ -1090,12 +1090,23 @@ export async function getJobsNeedingReminder() {
 }
 
 // ─── Worker Availability ──────────────────────────────────────────────────────
-/** Set or update a worker's availability (upsert by userId) */
+/** Set or update a worker's availability (upsert by userId).
+ * Auto-computes PostGIS geometry from lat/lng so ST_DWithin queries work.
+ */
 export async function setWorkerAvailable(data: InsertWorkerAvailability) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(workerAvailability).where(eq(workerAvailability.userId, data.userId));
-  await db.insert(workerAvailability).values(data);
+  // Insert with geometry computed from lat/lng using raw SQL for PostGIS
+  if (data.latitude != null && data.longitude != null && _pool) {
+    await _pool.query(
+      `INSERT INTO worker_availability ("userId", latitude, longitude, city, note, "availableUntil", "createdAt", "updatedAt", location)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($3::float8, $2::float8), 4326))`,
+      [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil]
+    );
+  } else {
+    await db.insert(workerAvailability).values(data);
+  }
 }
 /** Remove a worker's availability */
 export async function setWorkerUnavailable(userId: number) {

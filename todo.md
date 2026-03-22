@@ -2948,3 +2948,15 @@ Isolation guarantees:
 - [x] Frontend: added push prompt banner in MyJobs (subscribe CTA + active state with unsubscribe)
 - [x] Handle notification click → navigate to /jobs/{id}/applications (already in sw.js)
 - [x] 802 tests passing, no regressions
+
+## Round 7S: Push Banner on HomeEmployer
+
+- [ ] Add push notification permission banner to HomeEmployer page (reuse MyJobs pattern)
+
+## Round 7T: AvailableWorkers Bug Fix
+
+- [x] Diagnosed: worker_availability.location column was missing (migration not applied)
+- [x] Added location geometry(Point,4326) column to worker_availability + GIST index
+- [x] Updated setWorkerAvailable to auto-compute PostGIS geometry from lat/lng
+- [x] Documented migration 0014 in journal and marked as applied
+- [x] 802 tests passing, no new regressions

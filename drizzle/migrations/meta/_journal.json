@@ -99,6 +99,13 @@
       "when": 1742607600000,
       "tag": "0013_gist_worker_location",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1742619600000,
+      "tag": "0014_worker_availability_location",
+      "breakpoints": true
     }
   ]
 }

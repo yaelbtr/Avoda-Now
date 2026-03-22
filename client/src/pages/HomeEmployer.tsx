@@ -10,8 +10,9 @@ import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil,
-  Star, Clock, MapPin,
+  Star, Clock, MapPin, Bell, BellOff,
 } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 import { CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 
@@ -163,6 +164,7 @@ export default function HomeEmployer() {
 
   const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: isAuthenticated });
   const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const push = usePushNotifications();
   const pendingCount = pendingAppsQuery.data?.total ?? 0;
   // Load employer profile to use saved workerSearchLatitude/Longitude as fallback
   const isEmployer = isAuthenticated && userMode === "employer";

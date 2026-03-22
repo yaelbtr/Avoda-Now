@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, \"isAvailable\", \"workerLatitude\", \"workerLongitude\", \"workerSearchMode\", \"workerCity\" FROM users ORDER BY \"updatedAt\" DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, name, \"isAvailable\", \"workerLatitude\", \"workerLongitude\", \"workerSearchMode\", \"workerCity\" FROM users ORDER BY \"updatedAt\" DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "יעל ביטרן",
+      "isAvailable": "isAvailable",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "workerSearchMode": "workerSearchMode",
+      "workerCity": "workerCity"
+    },
+    {
+      "id": "30004",
+      "name": "יעל ביטרן",
+      "isAvailable": "isAvailable",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "workerSearchMode": "workerSearchMode",
+      "workerCity": "workerCity"
+    },
+    {
+      "id": "120008",
+      "name": "יהודה דוד ביטרן",
+      "isAvailable": "isAvailable",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "workerSearchMode": "workerSearchMode",
+      "workerCity": "workerCity"
+    },
+    {
+      "id": "482142",
+      "name": "יעל טסט",
+      "isAvailable": "isAvailable",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "workerSearchMode": "workerSearchMode",
+      "workerCity": "workerCity"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tisAvailable\tworkerLatitude\tworkerLongitude\tworkerSearchMode\tworkerCity\n1\tיעל ביטרן\tisAvailable\tworkerLatitude\tworkerLongitude\tworkerSearchMode\tworkerCity\n30004\tיעל ביטרן\tisAvailable\tworkerLatitude\tworkerLongitude\tworkerSearchMode\tworkerCity\n120008\tיהודה דוד ביטרן\tisAvailable\tworkerLatitude\tworkerLongitude\tworkerSearchMode\tworkerCity\n482142\tיעל טסט\tisAvailable\tworkerLatitude\tworkerLongitude\tworkerSearchMode\tworkerCity\n",
+  "stderr": "",
+  "execution_time_ms": 1525
+}

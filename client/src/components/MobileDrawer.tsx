@@ -234,7 +234,6 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
               {userMode === "employer" && navItem("/post-job", PlusCircle, "פרסם משרה")}
               {userMode === "employer" && navItem("/my-jobs", Briefcase, "המשרות שלי")}
               {userMode === "employer" && navItem("/available-workers", Users, "עובדים זמינים")}
-              {userMode === "employer" && navItem("/employer-profile", User, "פרופיל")}
             </ul>
 
             {/* ── Section 3: Account actions (only when relevant) ───────────── */}

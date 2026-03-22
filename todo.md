@@ -2923,3 +2923,12 @@ Isolation guarantees:
 - [x] Added getWorkerNamesByIds batch helper to db.ts (no N+1)
 - [x] matchWorkers local fallback now returns enriched results (name + rating) via getWorkerNamesByIds
 - [x] matchWorkers fallback uses getWorkersMatchingJob with job lat/lng + worker searchRadiusKm (PostGIS ST_DWithin)
+
+## Round 7N: MATCHING_API_URL Production Secret
+
+- [ ] Set MATCHING_API_URL via webdev_request_secrets
+- [ ] Validate secret is accessible in server env and write Vitest test
+
+## Round 7O: Employer Menu Fix
+
+- [x] Remove "פרופיל" item from employer navigation menu (keep only "אזור אישי")

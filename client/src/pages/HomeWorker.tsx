@@ -252,12 +252,35 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
   };
   const setAvailableMutation = trpc.workers.setAvailable.useMutation({
-    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
-    onError: () => setAvailabilityLoading(false),
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      const h = selectedDuration;
+      const label = h === 1 ? "שעה אחת" : h < 11 ? `${h} שעות` : `${h} שעות`;
+      toast.success(`✓ אתה מסומן כזמין ל-${label}`, {
+        description: "מעסיקים יכולים לראות אותך עכשיו",
+        duration: 4000,
+      });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
   });
   const setUnavailableMutation = trpc.workers.setUnavailable.useMutation({
-    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
-    onError: () => setAvailabilityLoading(false),
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      toast.success("סומנת כלא זמין", { duration: 3000 });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
   });
   const quickAvailMutation = trpc.user.quickUpdateAvailability.useMutation({
     onSuccess: () => { profileQuery.refetch(); toast.success("סטאטוס זמינות עודכן!"); setQuickAvailOpen(false); },

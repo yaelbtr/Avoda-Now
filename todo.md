@@ -2987,3 +2987,9 @@ Isolation guarantees:
 - [x] Wrap updateWorkerProfile PostGIS update in try/catch with structured error log
 - [x] Add logPostgisError helper to logger.ts (DRY — reused by all PostGIS operations)
 - [x] Write Vitest tests for the logging helper (8 tests, 830 passing total)
+
+## Bug Fix: Missing availability success feedback
+
+- [x] Add toast.success with duration info on setAvailableMutation onSuccess
+- [x] Add toast.success on setUnavailableMutation onSuccess
+- [x] Add toast.error with message on both mutations onError

@@ -44,6 +44,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
+import { postgisLogger, logPostgisError } from "./logger";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _db: ReturnType<typeof drizzle<any>> | null = null;
@@ -390,7 +391,15 @@ export async function updateWorkerProfile(
   if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
   if (data.email !== undefined) updateSet.email = data.email;
   if (Object.keys(updateSet).length === 0) return;
-  await db.update(users).set(updateSet).where(eq(users.id, id));
+  try {
+    await db.update(users).set(updateSet).where(eq(users.id, id));
+  } catch (err) {
+    // Only log with spatial context when a PostGIS geometry update was attempted
+    if (newLat != null && newLng != null) {
+      logPostgisError("updateWorkerProfile", { lat: newLat, lng: newLng }, id, err);
+    }
+    throw err;
+  }
 }
 
 // ─── Phone Update ───────────────────────────────────────────────────────────
@@ -1104,11 +1113,16 @@ export async function setWorkerAvailable(data: InsertWorkerAvailability) {
   if (data.latitude != null && data.longitude != null && _pool) {
     const latFloat = parseFloat(String(data.latitude));
     const lngFloat = parseFloat(String(data.longitude));
-    await _pool.query(
-      `INSERT INTO worker_availability ("userId", latitude, longitude, city, note, "availableUntil", "createdAt", "updatedAt", location)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($7, $8), 4326))`,
-      [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil, lngFloat, latFloat]
-    );
+    try {
+      await _pool.query(
+        `INSERT INTO worker_availability ("userId", latitude, longitude, city, note, "availableUntil", "createdAt", "updatedAt", location)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($7, $8), 4326))`,
+        [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil, lngFloat, latFloat]
+      );
+    } catch (err) {
+      logPostgisError("setWorkerAvailable", { lat: data.latitude, lng: data.longitude }, data.userId, err);
+      throw err; // re-throw so the tRPC caller returns a proper 500
+    }
   } else {
     await db.insert(workerAvailability).values(data);
   }

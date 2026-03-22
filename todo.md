@@ -2979,3 +2979,11 @@ Isolation guarantees:
 ## Bug Fix: setWorkerAvailable PostgreSQL type error
 
 - [x] Fix "inconsistent types deduced for parameter $2" in setWorkerAvailable raw SQL
+
+## PostGIS Error Logging
+
+- [x] Add postgisLogger child logger to logger.ts
+- [x] Wrap setWorkerAvailable _pool.query in try/catch with structured error log (coords, userId, error code)
+- [x] Wrap updateWorkerProfile PostGIS update in try/catch with structured error log
+- [x] Add logPostgisError helper to logger.ts (DRY — reused by all PostGIS operations)
+- [x] Write Vitest tests for the logging helper (8 tests, 830 passing total)

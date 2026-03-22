@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { toast } from "sonner";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Bell, BellOff } from "lucide-react";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; dot?: string }> = {
@@ -351,6 +353,7 @@ export default function MyJobs() {
   };
 
   const activeJobs = useMemo(() => myJobs?.filter((j) => j.status === "active") ?? [], [myJobs]);
+  const push = usePushNotifications();
 
   // ── Auth loading ──────────────────────────────────────────────────────────
   if (loading) {
@@ -511,6 +514,79 @@ export default function MyJobs() {
                   הגעת למגבלה — סגור משרה כדי לפרסם חדשה.
                 </motion.p>
               )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Push notification prompt ── */}
+        <AnimatePresence>
+          {!isLoading && push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
+            <motion.div
+              key="push-prompt"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                ...cardStyle,
+                background: "oklch(0.97 0.04 85 / 0.50)",
+                border: "1px solid oklch(0.82 0.12 85 / 0.40)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
+                  style={{ background: "oklch(0.88 0.14 75 / 0.25)", color: "oklch(0.50 0.18 65)" }}
+                >
+                  <Bell className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "oklch(0.25 0.05 120)" }}>קבל התראות על מועמדים חדשים</p>
+                  <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.04 120)" }}>נשלח לך התראה מיד כשמועמד מגיש בקשה</p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={push.subscribe}
+                  disabled={push.isLoading}
+                  className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: "oklch(0.50 0.18 65)",
+                    color: "white",
+                    opacity: push.isLoading ? 0.7 : 1,
+                  }}
+                >
+                  {push.isLoading ? "..." : "הפעל"}
+                </motion.button>
+              </div>
+              {push.error && (
+                <p className="text-xs mt-2" style={{ color: "oklch(0.55 0.22 25)" }}>{push.error}</p>
+              )}
+            </motion.div>
+          )}
+          {!isLoading && push.isSubscribed && (
+            <motion.div
+              key="push-active"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+              style={{
+                background: "oklch(0.94 0.08 160 / 0.15)",
+                border: "1px solid oklch(0.75 0.12 160 / 0.30)",
+                color: "oklch(0.38 0.15 160)",
+              }}
+            >
+              <Bell className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">התראות פעילות — תקבל עדכון על כל מועמד חדש</span>
+              <button
+                onClick={push.unsubscribe}
+                className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                title="בטל התראות"
+              >
+                <BellOff className="h-3.5 w-3.5" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

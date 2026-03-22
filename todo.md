@@ -2940,3 +2940,11 @@ Isolation guarantees:
 ## Round 7Q: MyJobs Applicants Badge
 
 - [x] Add pending applicants count badge directly on job card header (visible without expanding panel)
+
+## Round 7R: Push Notifications for New Applicants
+
+- [x] Audit: push infrastructure fully implemented (VAPID keys, push_subscriptions table, sw.js, sendPushToUser)
+- [x] Server: jobs.apply already calls sendPushToUser(job.postedBy, ...) — no changes needed
+- [x] Frontend: added push prompt banner in MyJobs (subscribe CTA + active state with unsubscribe)
+- [x] Handle notification click → navigate to /jobs/{id}/applications (already in sw.js)
+- [x] 802 tests passing, no regressions

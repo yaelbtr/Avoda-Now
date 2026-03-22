@@ -602,7 +602,8 @@ export default function MyJobs() {
                       </div>
                     </div>
 
-                    {/* Status badge */}
+                  {/* Badges row: status + pending applicants */}
+                  <div className="flex flex-col items-end gap-1.5">
                     <div
                       className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
                       style={{ background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}
@@ -612,6 +613,23 @@ export default function MyJobs() {
                       )}
                       {statusCfg.label}
                     </div>
+                    {pendingCount > 0 && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                        style={{
+                          background: "oklch(0.60 0.22 25 / 0.12)",
+                          border: "1px solid oklch(0.60 0.22 25 / 0.30)",
+                          color: "oklch(0.50 0.22 25)",
+                        }}
+                      >
+                        <Users className="h-3 w-3" />
+                        {pendingCount} חדש{pendingCount > 1 ? "ים" : ""}
+                      </motion.div>
+                    )}
+                  </div>
                   </div>
 
                   {/* Meta row */}

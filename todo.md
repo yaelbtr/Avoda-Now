@@ -2936,3 +2936,7 @@ Isolation guarantees:
 ## Round 7P: MyJobs Page Redesign
 
 - [x] Redesign MyJobs page to match AvodaNow design language (follow MyApplications style) — dark header banner, light cards, stats row, consistent colors
+
+## Round 7Q: MyJobs Applicants Badge
+
+- [x] Add pending applicants count badge directly on job card header (visible without expanding panel)

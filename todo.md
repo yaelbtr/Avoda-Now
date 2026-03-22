@@ -3033,3 +3033,9 @@ Isolation guarantees:
 - [x] Immediate save on tab navigation (saveDraftNow)
 - [x] Clear draft on successful submit
 - [x] 12 Vitest tests for pure draft utilities (854 passing total)
+
+## Feature: PostJob UX improvements (round 2)
+
+- [x] Job preview card in "פרסום" tab (title, location, salary, category, hours, contact)
+- [x] Per-tab completion indicator — green checkmark badge on completed tabs in tab bar
+- [x] localStorage draft saving verified — auto-save on every change, restore banner on load

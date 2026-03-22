@@ -212,6 +212,14 @@ export default function PostJob() {
   const isVolunteer = watch("isVolunteer");
   const showPhone = watch("showPhone");
   const watchedCategory = watch("category");
+  const watchedTitle = watch("title");
+  const watchedAddress = watch("address");
+  const watchedSalary = watch("salary");
+  const watchedHourlyRate = watch("hourlyRate");
+  const watchedContactName = watch("contactName");
+
+  // ── Tab completion tracking ─────────────────────────────────────────────────────
+  const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
 
   const categoryBlocksMinors = !!(watchedCategory && catBySlug[watchedCategory]?.allowedForMinors === false);
   const hoursBlockMinors = !!(workEndTime && shouldWarnLateJob(workEndTime));
@@ -538,6 +546,8 @@ export default function PostJob() {
       const ok = await trigger(["contactName"]);
       if (!ok) return;
     }
+    // Mark current tab as completed
+    setCompletedTabs(prev => new Set(Array.from(prev).concat(activeTab)));
     const nextId = TABS[tabIndex + 1]?.id;
     if (nextId) setActiveTab(nextId);
   };
@@ -641,17 +651,29 @@ export default function PostJob() {
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
+              const isDone = completedTabs.has(tab.id);
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all relative"
                   style={isActive
                     ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
                     : { color: "oklch(0.50 0.06 122)" }
                   }
                 >
+                  {/* Completion checkmark badge */}
+                  {isDone && !isActive && (
+                    <span
+                      className="absolute top-1 right-1 flex items-center justify-center rounded-full"
+                      style={{ width: 14, height: 14, background: "oklch(0.55 0.18 145)", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
+                    >
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <path d="M1.5 4L3 5.5L6.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  )}
                   <Icon className="h-4 w-4" />
                   {tab.label}
                 </button>
@@ -1082,6 +1104,91 @@ export default function PostJob() {
               {/* ── Tab 4: פרסום ─────────────────────────────────────── */}
               {activeTab === "publish" && (
                 <div className="space-y-5">
+
+                  {/* ── Job Preview Card ──────────────────────────────── */}
+                  <div
+                    className="rounded-2xl border p-5 space-y-3"
+                    style={{ background: "oklch(0.97 0.03 100)", borderColor: "oklch(0.84 0.06 100)" }}
+                    dir="rtl"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className="flex items-center justify-center rounded-full"
+                        style={{ width: 28, height: 28, background: "#4F583B" }}
+                      >
+                        <Briefcase className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <h2 className="font-bold text-sm" style={{ color: "#4F583B" }}>תצוגה מקדימה של המשרה</h2>
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <p className="text-lg font-black leading-tight" style={{ color: "#1a1a1a" }}>
+                        {watchedTitle || <span className="text-muted-foreground italic text-base font-normal">ללא כותרת</span>}
+                      </p>
+                      {watchedCategory && catBySlug[watchedCategory] && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium mt-1 px-2 py-0.5 rounded-full" style={{ background: "oklch(0.90 0.06 100)", color: "#4F583B" }}>
+                          {catBySlug[watchedCategory].icon} {catBySlug[watchedCategory].name}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {/* Location */}
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                        <span className="text-muted-foreground text-xs">
+                          {watchedAddress || (jobCity ? jobCity : "מיקום לא נבחר")}
+                        </span>
+                      </div>
+
+                      {/* Date */}
+                      {jobDate && (
+                        <div className="flex items-start gap-1.5">
+                          <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-muted-foreground text-xs">
+                            {new Date(jobDate).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}
+                            {workStartTime && workEndTime && ` · ${workStartTime}–${workEndTime}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Salary */}
+                      {!isVolunteer && (watchedSalary || watchedHourlyRate) && (
+                        <div className="flex items-start gap-1.5">
+                          <Banknote className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-muted-foreground text-xs">
+                            {salaryType === "hourly" && watchedHourlyRate ? `₪${watchedHourlyRate}/שעה` : null}
+                            {salaryType === "total" && watchedSalary ? `₪${watchedSalary} סה"כ` : null}
+                            {salaryType === "daily" && watchedSalary ? `₪${watchedSalary}/יום` : null}
+                          </span>
+                        </div>
+                      )}
+                      {isVolunteer && (
+                        <div className="flex items-start gap-1.5">
+                          <Banknote className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-xs font-medium" style={{ color: "oklch(0.55 0.18 145)" }}>התנדבות</span>
+                        </div>
+                      )}
+
+                      {/* Urgency */}
+                      {isUrgent && (
+                        <div className="flex items-start gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
+                          <span className="text-xs font-semibold text-amber-600">דחוף</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Contact */}
+                    {watchedContactName && (
+                      <p className="text-xs" style={{ color: "oklch(0.55 0.06 122)" }}>
+                        איש קשר: <strong>{watchedContactName}</strong>
+                        {watch("businessName") ? ` · ${watch("businessName")}` : ""}
+                      </p>
+                    )}
+                  </div>
+
                   {/* CAPTCHA */}
                   <div className="bg-card rounded-2xl border border-border p-5">
                     <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">

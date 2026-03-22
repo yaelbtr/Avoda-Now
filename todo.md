@@ -3077,3 +3077,10 @@ Isolation guarantees:
 - [x] Sub-tab 1: worker search mode (radius/city) + distance selector
 - [x] Sub-tab 2: job address map + location picker (full map, GPS button)
 - [x] Added locationSubTab state (default: search)
+
+## Feature: PostJob autofill worker search preferences from employer profile
+
+- [x] Auto-fill jobLocationMode from employerProfile.workerSearchLocationMode when no draft exists
+- [x] Auto-fill jobSearchRadiusKm from employerProfile.workerSearchRadiusKm when no draft exists
+- [x] Auto-fill jobCity from employerProfile.workerSearchCity when no draft exists
+- [x] Only autofill when fields are at default values and no draft exists

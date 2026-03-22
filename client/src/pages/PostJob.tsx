@@ -237,12 +237,14 @@ export default function PostJob() {
     staleTime: 60_000,
   });
 
-  // ── Autofill contact fields from employer profile ─────────────────────────────
+  // ── Autofill contact + worker search preferences from employer profile ──────
   // Only runs once when profile loads; never overwrites user input or a restored draft.
   useEffect(() => {
     if (!employerProfile) return;
     // Skip if a draft is waiting to be restored (it may have its own values)
     if (hasDraft) return;
+
+    // Contact fields
     const currentContact = getValues("contactName");
     const currentBusiness = getValues("businessName");
     if (!currentContact) {
@@ -252,6 +254,29 @@ export default function PostJob() {
     if (!currentBusiness) {
       const profileCompany = employerProfile.companyName ?? "";
       if (profileCompany) setValue("businessName", profileCompany, { shouldDirty: false });
+    }
+
+    // Worker search preferences — only autofill if still at default values
+    if (employerProfile.workerSearchLocationMode) {
+      setJobLocationMode(employerProfile.workerSearchLocationMode as "radius" | "city");
+    }
+    if (
+      employerProfile.workerSearchLocationMode === "radius" &&
+      employerProfile.workerSearchRadiusKm != null
+    ) {
+      // Snap to nearest supported radius chip (2/5/10/20); fallback to 5
+      const supported = [2, 5, 10, 20] as const;
+      const km = employerProfile.workerSearchRadiusKm;
+      const snapped = supported.reduce((prev, cur) =>
+        Math.abs(cur - km) < Math.abs(prev - km) ? cur : prev
+      );
+      setJobSearchRadiusKm(snapped);
+    }
+    if (
+      employerProfile.workerSearchLocationMode === "city" &&
+      employerProfile.workerSearchCity
+    ) {
+      setJobCity(employerProfile.workerSearchCity);
     }
   // Run only when employerProfile first becomes available
   // eslint-disable-next-line react-hooks/exhaustive-deps

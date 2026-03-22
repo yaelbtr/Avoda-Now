@@ -82,7 +82,7 @@ export default function PostJob() {
   const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
-  const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("search");
+  const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("address");
   const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
   const [jobCity, setJobCity] = useState("");
   const [jobDate, setJobDate] = useState("");

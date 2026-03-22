@@ -2831,3 +2831,9 @@ Isolation guarantees:
 ## Round 7 Bug Fix: Employer Profile Navigation
 
 - [x] Fix employer navbar "פרופיל" link — clicking opens /my-jobs instead of /employer-profile
+
+## Round 7b: Google Maps Location Picker in Employer Profile
+
+- [x] Add Google Maps location picker to "מיקום ברירת מחדל למשרה" section in EmployerProfile
+- [x] Support click-on-map to set lat/lng + reverse geocode to city name
+- [x] Save defaultJobLat, defaultJobLng, defaultJobCity to employer profile

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
+import { MapView } from "@/components/Map";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -89,6 +90,9 @@ export default function EmployerProfile() {
   const [defaultJobCityId, setDefaultJobCityId] = useState<number | null>(null);
   const [defaultJobLatitude, setDefaultJobLatitude] = useState<string | null>(null);
   const [defaultJobLongitude, setDefaultJobLongitude] = useState<string | null>(null);
+  // Map refs for default job location picker
+  const jobMapRef = useRef<google.maps.Map | null>(null);
+  const jobMarkerRef = useRef<google.maps.Marker | null>(null);
 
   // ── Settings state ──
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
@@ -588,19 +592,76 @@ export default function EmployerProfile() {
                   title="מיקום ברירת מחדל למשרה"
                   subtitle="ימולא אוטומטית בעת פרסום משרה"
                 />
-                <CityPicker
-                  selectedCityIds={defaultJobCityId ? [defaultJobCityId] : []}
-                  onChange={(ids) => {
-                    const id = ids[0] ?? null;
-                    setDefaultJobCityId(id);
-                  }}
-                  compact
-                />
-                {defaultJobCityId && (
-                  <div className="flex items-center gap-2 mt-3 p-2.5 rounded-xl" style={{ background: "oklch(0.96 0.03 122)", border: "1px solid oklch(0.88 0.06 122)" }}>
+                {/* Map picker */}
+                <div className="rounded-xl overflow-hidden mb-3" style={{ border: "1px solid oklch(0.88 0.06 122)" }}>
+                  <MapView
+                    onMapReady={(map) => {
+                      jobMapRef.current = map;
+                      // Center on Israel
+                      const initLat = defaultJobLatitude ? parseFloat(defaultJobLatitude) : 31.7683;
+                      const initLng = defaultJobLongitude ? parseFloat(defaultJobLongitude) : 35.2137;
+                      map.setCenter({ lat: initLat, lng: initLng });
+                      map.setZoom(defaultJobLatitude ? 14 : 8);
+                      // Restore existing marker if lat/lng saved
+                      if (defaultJobLatitude && defaultJobLongitude) {
+                        jobMarkerRef.current = new google.maps.Marker({
+                          position: { lat: parseFloat(defaultJobLatitude), lng: parseFloat(defaultJobLongitude) },
+                          map,
+                          animation: google.maps.Animation.DROP,
+                        });
+                      }
+                      // Click to pick location
+                      map.addListener("click", (e: google.maps.MapMouseEvent) => {
+                        if (!e.latLng) return;
+                        const lat = e.latLng.lat();
+                        const lng = e.latLng.lng();
+                        setDefaultJobLatitude(String(lat));
+                        setDefaultJobLongitude(String(lng));
+                        if (jobMarkerRef.current) jobMarkerRef.current.setMap(null);
+                        jobMarkerRef.current = new google.maps.Marker({
+                          position: { lat, lng },
+                          map,
+                          animation: google.maps.Animation.DROP,
+                        });
+                        // Reverse geocode to get city name
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                          if (status === "OK" && results?.[0]) {
+                            const cityComp = results[0].address_components?.find(
+                              (c) => c.types.includes("locality") || c.types.includes("sublocality")
+                            );
+                            const cityName = cityComp?.long_name ?? results[0].formatted_address;
+                            setDefaultJobCity(cityName);
+                          }
+                        });
+                      });
+                    }}
+                    className="h-52"
+                  />
+                </div>
+                {/* Address display */}
+                {defaultJobCity && (
+                  <div className="flex items-center gap-2 mb-3 p-2.5 rounded-xl" style={{ background: "oklch(0.96 0.03 122)", border: "1px solid oklch(0.88 0.06 122)" }}>
                     <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
-                    <p className="text-xs" style={{ color: "#4F583B" }}>מיקום ברירת מחדל הוגדר</p>
+                    <p className="text-xs font-medium" style={{ color: "#4F583B" }}>{defaultJobCity}</p>
+                    <button
+                      type="button"
+                      className="mr-auto text-xs underline"
+                      style={{ color: "oklch(0.55 0.10 122)" }}
+                      onClick={() => {
+                        setDefaultJobCity("");
+                        setDefaultJobCityId(null);
+                        setDefaultJobLatitude(null);
+                        setDefaultJobLongitude(null);
+                        if (jobMarkerRef.current) { jobMarkerRef.current.setMap(null); jobMarkerRef.current = null; }
+                      }}
+                    >
+                      נקה
+                    </button>
                   </div>
+                )}
+                {!defaultJobCity && (
+                  <p className="text-xs text-muted-foreground mb-1">לחץ על המפה לבחירת מיקום</p>
                 )}
               </SectionCard>
 

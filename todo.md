@@ -2932,3 +2932,7 @@ Isolation guarantees:
 ## Round 7O: Employer Menu Fix
 
 - [x] Remove "פרופיל" item from employer navigation menu (keep only "אזור אישי")
+
+## Round 7P: MyJobs Page Redesign
+
+- [x] Redesign MyJobs page to match AvodaNow design language (follow MyApplications style) — dark header banner, light cards, stats row, consistent colors

@@ -3162,3 +3162,6 @@ Isolation guarantees:
 
 ## Bug Fix — adminDeleteUser notification_batches FK
 - [x] Fix adminDeleteUser: delete notification_batches for user's jobs before deleting jobs
+
+## Bug Fix — adminDeleteUser job_reports FK
+- [x] Fix adminDeleteUser: delete job_reports for user's jobs before deleting jobs (FK: job_reports.jobId → jobs.id, no cascade)

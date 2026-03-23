@@ -208,7 +208,11 @@ export async function adminDeleteUser(userId: number) {
     for (const jid of jobIds) {
       await db.delete(applications).where(eq(applications.jobId, jid));
     }
-    // 2b. Notification batches referencing these jobs (FK: notification_batches.jobId → jobs.id)
+    // 2b. Job reports referencing these jobs (FK: job_reports.jobId → jobs.id, no cascade)
+    for (const jid of jobIds) {
+      await db.delete(jobReports).where(eq(jobReports.jobId, jid));
+    }
+    // 2c. Notification batches referencing these jobs (FK: notification_batches.jobId → jobs.id, no cascade)
     for (const jid of jobIds) {
       await db.delete(notificationBatches).where(eq(notificationBatches.jobId, jid));
     }

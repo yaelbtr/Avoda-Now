@@ -1465,7 +1465,7 @@ export default function PostJob() {
 
         {/* ── Sticky bottom nav ────────────────────────────────────────────── */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-safe"
+          className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe"
           style={{ background: "var(--page-bg)", borderTop: "1px solid oklch(0.92 0.02 100)" }}
         >
           <div className="max-w-lg mx-auto py-3 flex gap-3">

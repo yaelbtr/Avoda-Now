@@ -393,15 +393,15 @@ startServer().catch(console.error);
 
 // ── Availability expiry reminder: run every 5 minutes ────────────────────────
 // Sends an SMS to workers whose availability expires in ~30 minutes.
-setInterval(async () => {
+// Retries up to 3 times with exponential backoff on transient DB errors.
+async function runAvailabilityReminder(attempt = 1): Promise<void> {
   try {
     const expiring = await getWorkersWithExpiringAvailability();
     for (const worker of expiring) {
       const minutesLeft = Math.round((worker.availableUntil.getTime() - Date.now()) / 60_000);
       const msg =
-        `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.
-` +
-        `להארכת הזמינות כנס ל: https://job-now.manus.space`;
+        `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.\n` +
+        `להארכת הזמינות כנס ל: https://avodanow.co.il`;
       const result = await sendSms(worker.phone, msg);
       if (result.success) {
         await markAvailabilityReminderSent(worker.availabilityId);
@@ -409,6 +409,21 @@ setInterval(async () => {
       }
     }
   } catch (err) {
-    console.warn("[Reminder] Error sending availability expiry reminders:", err);
+    const isTransient =
+      err instanceof Error &&
+      (err.message.includes("Connection terminated") ||
+        err.message.includes("connection timeout") ||
+        err.message.includes("ECONNRESET") ||
+        err.message.includes("ETIMEDOUT"));
+
+    if (isTransient && attempt < 3) {
+      const delay = attempt * 2_000; // 2s, 4s
+      console.warn(`[Reminder] Transient DB error (attempt ${attempt}/3), retrying in ${delay}ms:`, (err as Error).message);
+      setTimeout(() => runAvailabilityReminder(attempt + 1), delay);
+    } else {
+      console.warn("[Reminder] Error sending availability expiry reminders:", err);
+    }
   }
-}, 5 * 60 * 1000); // every 5 minutes
+}
+
+setInterval(() => runAvailabilityReminder(), 5 * 60 * 1000); // every 5 minutes

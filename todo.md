@@ -3186,3 +3186,6 @@ Isolation guarantees:
 
 ## Bug Fix — Role combo in admin user-edit modal doesn't open
 - [x] Fix: role Select combo in admin user-edit modal appears empty and doesn't open — AppSelect now supports children prop
+
+## Bug Fix — worker_availability DB connection error
+- [x] Fix recurring "Connection terminated unexpectedly" in worker_availability reminder job — added pool error handler, idleTimeoutMillis, connectionTimeoutMillis, and retry wrapper with exponential backoff

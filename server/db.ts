@@ -61,6 +61,18 @@ export async function getDb() {
           ? { rejectUnauthorized: false }
           : false,
         max: 10,
+        // Keep connections alive and handle idle timeouts gracefully
+        idleTimeoutMillis: 30_000,       // release idle connections after 30s
+        connectionTimeoutMillis: 10_000, // fail fast if can't connect in 10s
+        allowExitOnIdle: false,
+      });
+      // Swallow pool-level errors (e.g. idle connection terminated by server)
+      // so they don't crash the process — individual queries will retry on next call
+      _pool.on("error", (err) => {
+        console.warn("[Database] Pool connection error (will reconnect):", err.message);
+        // Reset cached db so next getDb() call re-initialises if needed
+        _db = null;
+        _pool = null;
       });
       _db = drizzle(_pool);
     } catch (error) {

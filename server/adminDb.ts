@@ -196,14 +196,22 @@ export async function adminDeleteUser(userId: number) {
   // 1. Applications where this user is the worker
   await db.delete(applications).where(eq(applications.workerId, userId));
 
-  // 2. Jobs posted by this user (and their applications, which cascade from jobs)
-  //    First delete applications for those jobs, then the jobs themselves.
+  // 2. Jobs posted by this user — delete all child rows that reference jobs.id
+  //    before deleting the jobs themselves (FK constraints without CASCADE).
   const userJobs = await db
     .select({ id: jobs.id })
     .from(jobs)
     .where(eq(jobs.postedBy, userId));
-  for (const j of userJobs) {
-    await db.delete(applications).where(eq(applications.jobId, j.id));
+  if (userJobs.length > 0) {
+    const jobIds = userJobs.map((j) => j.id);
+    // 2a. Applications referencing these jobs
+    for (const jid of jobIds) {
+      await db.delete(applications).where(eq(applications.jobId, jid));
+    }
+    // 2b. Notification batches referencing these jobs (FK: notification_batches.jobId → jobs.id)
+    for (const jid of jobIds) {
+      await db.delete(notificationBatches).where(eq(notificationBatches.jobId, jid));
+    }
   }
   await db.delete(jobs).where(eq(jobs.postedBy, userId));
 

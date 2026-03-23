@@ -3156,3 +3156,9 @@ Isolation guarantees:
 - [x] Apply phoneRequiredProcedure to jobs.create, jobs.applyToJob, jobs.sendPublishOtp, jobs.verifyPublishOtp
 - [x] Handle PHONE_REQUIRED on frontend: dispatch custom event from main.tsx interceptor
 - [x] Navbar listens for avodanow:phone-required event and opens LoginModal with contextual message
+
+## Bug Fix — Delete Jobs Query Error
+- [ ] Fix: "delete from jobs where postedBy = $1" deletes ALL jobs by user instead of single job
+
+## Bug Fix — adminDeleteUser notification_batches FK
+- [x] Fix adminDeleteUser: delete notification_batches for user's jobs before deleting jobs

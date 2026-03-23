@@ -84,6 +84,7 @@ export default function PostJob() {
   const [workStartTime, setWorkStartTime] = useState("");
   const [workEndTime, setWorkEndTime] = useState("");
   const [hoursSubTab, setHoursSubTab] = useState<"fields" | "presets">("fields");
+  const [hoursError, setHoursError] = useState(false);
   const [minAge, setMinAge] = useState<16 | 18 | null>(null);
   const [jobImages, setJobImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -549,6 +550,7 @@ export default function PostJob() {
         return;
       }
       if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return; }
+      if (!workStartTime || !workEndTime) { setHoursError(true); toast.error("אנא מלא שעת התחלה וסיום או בחר משמרת"); return; }
       const ok = await trigger(["address"]);
       if (!ok) return;
     }
@@ -966,10 +968,10 @@ export default function PostJob() {
                     />
 
                     <div>
-                      <AppLabel>שעות עבודה <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></AppLabel>
+                      <AppLabel>שעות עבודה <span style={{ color: "#ef4444", fontSize: 12, fontWeight: 600 }}>*</span></AppLabel>
 
                       {/* Sub-tab bar — same style as location sub-tabs */}
-                      <div className="flex flex-row-reverse gap-1 mt-2 mb-3">
+                      <div className="flex flex-row-reverse gap-1 mt-2 mb-3" onClick={() => setHoursError(false)}>
                         {(["presets", "fields"] as const).map(tab => {
                           const label = tab === "fields" ? "שעת התחלה וסיום" : "בחירת משמרת";
                           const isActive = hoursSubTab === tab;
@@ -993,8 +995,8 @@ export default function PostJob() {
                       {/* Sub-tab 1: manual time fields */}
                       {hoursSubTab === "fields" && (
                         <div className="grid grid-cols-2 gap-3">
-                          <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => setWorkEndTime(e.target.value)} dir="ltr" />
-                          <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => setWorkStartTime(e.target.value)} dir="ltr" />
+                          <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => { setWorkEndTime(e.target.value); setHoursError(false); }} dir="ltr" />
+                          <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => { setWorkStartTime(e.target.value); setHoursError(false); }} dir="ltr" />
                         </div>
                       )}
 
@@ -1014,7 +1016,7 @@ export default function PostJob() {
                                 type="button"
                                 onClick={() => {
                                   if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
-                                  else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); }
+                                  else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); setHoursError(false); }
                                 }}
                                 className="px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all"
                                 style={isActive
@@ -1027,6 +1029,18 @@ export default function PostJob() {
                             );
                           })}
                         </div>
+                      )}
+
+                      {/* Inline hours error */}
+                      {hoursError && (
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-red-500 mt-2" dir="rtl">
+                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                            <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M6.5 3.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                            <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor" />
+                          </svg>
+                          יש למלא שעת התחלה וסיום, או לבחור משמרת
+                        </p>
                       )}
                     </div>
 

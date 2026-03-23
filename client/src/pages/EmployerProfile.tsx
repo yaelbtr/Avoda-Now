@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppLabel } from "@/components/ui";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
+import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { toast } from "sonner";
 import {
   User, MapPin, Save, ArrowRight, Bell, MessageSquare,
@@ -13,7 +15,6 @@ import {
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
-import { MapView } from "@/components/Map";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -92,10 +93,6 @@ export default function EmployerProfile() {
   const [defaultJobLongitude, setDefaultJobLongitude] = useState<string | null>(null);
   const [jobGeoLoading, setJobGeoLoading] = useState(false);
   const [workerGeoLoading, setWorkerGeoLoading] = useState(false);
-  // Map refs for default job location picker
-  const jobMapRef = useRef<google.maps.Map | null>(null);
-  const jobMarkerRef = useRef<google.maps.Marker | null>(null);
-
   // ── Settings state ──
   const [notifPref, setNotifPref] = useState<NotifPref>("both");
   const [minWorkerAge, setMinWorkerAge] = useState<16 | 18 | null>(null);
@@ -631,132 +628,70 @@ export default function EmployerProfile() {
                   title="מיקום ברירת מחדל למשרה"
                   subtitle="ימולא אוטומטית בעת פרסום משרה"
                 />
-                {/* GPS button */}
-                <button
-                  type="button"
-                  disabled={jobGeoLoading}
-                  onClick={() => {
-                    if (!navigator.geolocation) { toast.error("הדפדפן שלך אינו תומך באיתור מיקום"); return; }
-                    setJobGeoLoading(true);
-                    navigator.geolocation.getCurrentPosition(
-                      (pos) => {
-                        const lat = pos.coords.latitude;
-                        const lng = pos.coords.longitude;
-                        setDefaultJobLatitude(String(lat));
-                        setDefaultJobLongitude(String(lng));
-                        // Pan map to new location and drop marker
-                        if (jobMapRef.current) {
-                          jobMapRef.current.setCenter({ lat, lng });
-                          jobMapRef.current.setZoom(15);
-                          if (jobMarkerRef.current) jobMarkerRef.current.setMap(null);
-                          jobMarkerRef.current = new google.maps.Marker({
-                            position: { lat, lng },
-                            map: jobMapRef.current,
-                            animation: google.maps.Animation.DROP,
-                          });
-                        }
-                        // Reverse geocode to get city name
-                        const geocoder = new google.maps.Geocoder();
-                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                          setJobGeoLoading(false);
-                          if (status === "OK" && results?.[0]) {
-                            const cityComp = results[0].address_components?.find(
-                              (c) => c.types.includes("locality") || c.types.includes("sublocality")
-                            );
-                            setDefaultJobCity(cityComp?.long_name ?? results[0].formatted_address);
+                <div className="space-y-3">
+                  {/* GPS button */}
+                  <AppButton
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={jobGeoLoading}
+                    onClick={() => {
+                      if (!navigator.geolocation) { toast.error("הדפדפן אינו תומך ב-GPS"); return; }
+                      setJobGeoLoading(true);
+                      navigator.geolocation.getCurrentPosition(
+                        async (pos) => {
+                          const lat = pos.coords.latitude;
+                          const lng = pos.coords.longitude;
+                          try {
+                            await ensureMapsLoaded();
+                            const geocoder = new google.maps.Geocoder();
+                            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                              setJobGeoLoading(false);
+                              if (status === "OK" && results?.[0]) {
+                                setDefaultJobLatitude(String(lat));
+                                setDefaultJobLongitude(String(lng));
+                                setDefaultJobCity(results[0].formatted_address);
+                                toast.success("מיקום נמצא!");
+                              } else {
+                                toast.error("לא ניתן לאתר כתובת למיקום זה");
+                              }
+                            });
+                          } catch {
+                            setJobGeoLoading(false);
+                            toast.error("שגיאה בטעינת שירות המפות");
                           }
-                        });
-                      },
-                      (err) => {
-                        setJobGeoLoading(false);
-                        toast.error(`שגיאה באיתור מיקום: ${err.message}`);
-                      },
-                      { enableHighAccuracy: true, timeout: 10000 }
-                    );
-                  }}
-                  className="w-full flex items-center justify-center gap-2 mb-3 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: jobGeoLoading ? "oklch(0.94 0.03 122)" : "oklch(0.96 0.04 122)",
-                    border: "1.5px solid oklch(0.80 0.08 122)",
-                    color: "#4F583B",
-                    opacity: jobGeoLoading ? 0.7 : 1,
-                  }}
-                >
-                  {jobGeoLoading
-                    ? <><span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" /> מאתר מיקום...</>
-                    : <><Crosshair className="h-4 w-4" /> בחר את המיקום שלי</>}
-                </button>
-                {/* Map picker */}
-                <div className="rounded-xl overflow-hidden mb-3" style={{ border: "1px solid oklch(0.88 0.06 122)" }}>
-                  <MapView
-                    onMapReady={(map) => {
-                      jobMapRef.current = map;
-                      // Center on Israel
-                      const initLat = defaultJobLatitude ? parseFloat(defaultJobLatitude) : 31.7683;
-                      const initLng = defaultJobLongitude ? parseFloat(defaultJobLongitude) : 35.2137;
-                      map.setCenter({ lat: initLat, lng: initLng });
-                      map.setZoom(defaultJobLatitude ? 14 : 8);
-                      // Restore existing marker if lat/lng saved
-                      if (defaultJobLatitude && defaultJobLongitude) {
-                        jobMarkerRef.current = new google.maps.Marker({
-                          position: { lat: parseFloat(defaultJobLatitude), lng: parseFloat(defaultJobLongitude) },
-                          map,
-                          animation: google.maps.Animation.DROP,
-                        });
-                      }
-                      // Click to pick location
-                      map.addListener("click", (e: google.maps.MapMouseEvent) => {
-                        if (!e.latLng) return;
-                        const lat = e.latLng.lat();
-                        const lng = e.latLng.lng();
-                        setDefaultJobLatitude(String(lat));
-                        setDefaultJobLongitude(String(lng));
-                        if (jobMarkerRef.current) jobMarkerRef.current.setMap(null);
-                        jobMarkerRef.current = new google.maps.Marker({
-                          position: { lat, lng },
-                          map,
-                          animation: google.maps.Animation.DROP,
-                        });
-                        // Reverse geocode to get city name
-                        const geocoder = new google.maps.Geocoder();
-                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                          if (status === "OK" && results?.[0]) {
-                            const cityComp = results[0].address_components?.find(
-                              (c) => c.types.includes("locality") || c.types.includes("sublocality")
-                            );
-                            const cityName = cityComp?.long_name ?? results[0].formatted_address;
-                            setDefaultJobCity(cityName);
-                          }
-                        });
-                      });
+                        },
+                        () => { setJobGeoLoading(false); toast.error("לא ניתן לאתר מיקום"); },
+                        { enableHighAccuracy: true, timeout: 10000 }
+                      );
                     }}
-                    className="h-52"
-                  />
-                </div>
-                {/* Address display */}
-                {defaultJobCity && (
-                  <div className="flex items-center gap-2 mb-3 p-2.5 rounded-xl" style={{ background: "oklch(0.96 0.03 122)", border: "1px solid oklch(0.88 0.06 122)" }}>
-                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
-                    <p className="text-xs font-medium" style={{ color: "#4F583B" }}>{defaultJobCity}</p>
-                    <button
-                      type="button"
-                      className="mr-auto text-xs underline"
-                      style={{ color: "oklch(0.55 0.10 122)" }}
-                      onClick={() => {
-                        setDefaultJobCity("");
-                        setDefaultJobCityId(null);
+                    className="gap-2 w-full"
+                  >
+                    {jobGeoLoading
+                      ? <><span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" /> מאתר מיקום...</>
+                      : <><Crosshair className="h-4 w-4" /> השתמש במיקום שלי</>}
+                  </AppButton>
+
+                  {/* Places Autocomplete */}
+                  <PlacesAutocomplete
+                    value={defaultJobCity}
+                    onChange={(val) => {
+                      setDefaultJobCity(val);
+                      // Clear coords if user manually clears the field
+                      if (!val) {
                         setDefaultJobLatitude(null);
                         setDefaultJobLongitude(null);
-                        if (jobMarkerRef.current) { jobMarkerRef.current.setMap(null); jobMarkerRef.current = null; }
-                      }}
-                    >
-                      נקה
-                    </button>
-                  </div>
-                )}
-                {!defaultJobCity && (
-                  <p className="text-xs text-muted-foreground mb-1">לחץ על המפה לבחירת מיקום</p>
-                )}
+                        setDefaultJobCityId(null);
+                      }
+                    }}
+                    onPlaceSelect={({ lat, lng, formattedAddress }) => {
+                      setDefaultJobLatitude(String(lat));
+                      setDefaultJobLongitude(String(lng));
+                      setDefaultJobCity(formattedAddress);
+                    }}
+                    placeholder="חפש כתובת..."
+                  />
+                </div>
               </SectionCard>
 
               {/* Save button */}

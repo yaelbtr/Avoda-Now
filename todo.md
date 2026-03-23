@@ -3109,3 +3109,8 @@ Isolation guarantees:
 - [x] Add locating state and getMyLocation function using Geolocation + Geocoder
 - [x] Render GPS button above PlacesAutocomplete in address sub-tab
 - [x] On GPS success: set lat/lng, fill address field, clear mapError
+
+## Feature: PlacesAutocomplete in employer profile
+
+- [x] Replace address AppInput in employer profile with PlacesAutocomplete
+- [x] On place select: set lat/lng fields alongside address text

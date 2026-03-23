@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { shouldRetry, retryDelay } from "@/lib/queryRetry";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { PHONE_REQUIRED_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -27,6 +27,14 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+  const isPhoneRequired = error.message === PHONE_REQUIRED_ERR_MSG;
+
+  if (isPhoneRequired) {
+    // Dispatch a custom event so the Navbar can open LoginModal with a phone-required message.
+    // This avoids a hard redirect and keeps the user on the current page.
+    window.dispatchEvent(new CustomEvent("avodanow:phone-required"));
+    return;
+  }
 
   if (!isUnauthorized) return;
 

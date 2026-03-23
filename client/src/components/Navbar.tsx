@@ -40,12 +40,24 @@ export default function Navbar() {
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState<string | undefined>(undefined);
   const [reportOpen, setReportOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // Auto-show profile completion for Google users with no phone
   // Use a session flag so it only prompts once per browser session (not on every render)
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const completeProfileShown = useRef(false);
+
+  // Listen for the global phone-required event dispatched by the tRPC error interceptor.
+  // Opens LoginModal with a contextual message so the user can add their phone number.
+  useEffect(() => {
+    const handlePhoneRequired = () => {
+      setLoginMessage("כדי להמשיך יש להוסיף מספר טלפון לחשבון שלך");
+      setLoginOpen(true);
+    };
+    window.addEventListener("avodanow:phone-required", handlePhoneRequired);
+    return () => window.removeEventListener("avodanow:phone-required", handlePhoneRequired);
+  }, []);
 
   useEffect(() => {
     if (
@@ -649,7 +661,11 @@ export default function Navbar() {
         onReportOpen={() => setReportOpen(true)}
       />
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal
+        open={loginOpen}
+        onClose={() => { setLoginOpen(false); setLoginMessage(undefined); }}
+        message={loginMessage}
+      />
       <ReportProblemModal open={reportOpen} onClose={() => setReportOpen(false)} />
       <CompleteProfileModal
         open={completeProfileOpen}

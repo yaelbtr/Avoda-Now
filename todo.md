@@ -3149,3 +3149,10 @@ Isolation guarantees:
 - [ ] Remove google_oauth check from Navbar.tsx
 - [ ] Remove GoogleAuthButton component (dead code)
 - [ ] Remove getGoogleLoginUrl from const.ts
+
+## Feature — Phone Enforcement in authenticateRequest
+- [x] Add phoneRequiredProcedure middleware in trpc.ts — throws FORBIDDEN with PHONE_REQUIRED_ERR_MSG
+- [x] Add PHONE_REQUIRED_ERR_MSG to shared/const.ts
+- [x] Apply phoneRequiredProcedure to jobs.create, jobs.applyToJob, jobs.sendPublishOtp, jobs.verifyPublishOtp
+- [x] Handle PHONE_REQUIRED on frontend: dispatch custom event from main.tsx interceptor
+- [x] Navbar listens for avodanow:phone-required event and opens LoginModal with contextual message

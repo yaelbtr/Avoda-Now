@@ -6,7 +6,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { phoneRequiredProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   checkAndIncrementSendRate,
   checkAndIncrementVerifyAttempts,
@@ -738,7 +738,7 @@ const jobsRouter = router({
       return { ...job, contactPhone: null };
     }),
 
-  create: protectedProcedure
+  create: phoneRequiredProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
       // ── Regional access control: block posting if region is not yet active ──
@@ -1101,7 +1101,7 @@ const jobsRouter = router({
     }),
 
   /** Worker applies to a job — records application and sends SMS to employer */
-  applyToJob: protectedProcedure
+  applyToJob: phoneRequiredProcedure
     .input(
       z.object({
         jobId: z.number(),
@@ -1325,7 +1325,7 @@ const jobsRouter = router({
    * and emailOtp infrastructure but is a separate call so it doesn't interfere
    * with the login flow.
    */
-  sendPublishOtp: protectedProcedure
+  sendPublishOtp: phoneRequiredProcedure
     .input(z.object({
       channel: z.enum(["sms", "email"]),
     }))
@@ -1376,7 +1376,7 @@ const jobsRouter = router({
    * Step 2: Verify the OTP and, if valid, create the job.
    * Accepts the full job payload so the job is only created after OTP success.
    */
-  verifyPublishOtp: protectedProcedure
+  verifyPublishOtp: phoneRequiredProcedure
     .input(z.object({
       channel: z.enum(["sms", "email"]),
       code: z.string().length(6),

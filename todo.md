@@ -3205,3 +3205,6 @@ Isolation guarantees:
 - [x] Backend: add MAX_ACTIVE_OFFERS constant to shared/const.ts (Single Source of Truth)
 - [x] Frontend: show friendly Hebrew error toast in MatchedWorkers when limit is reached (reuses existing onError handler)
 - [x] Tests: 6 Vitest tests for countActiveOffers and the limit guard in sendJobOffer (918 passing total)
+
+## Bug Fix — countActiveOffers query type error
+- [x] Fix: replaced sql<number>`count(*)::int` with Drizzle's count() helper — same pattern as countActiveJobsByUser

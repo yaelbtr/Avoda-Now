@@ -1537,10 +1537,10 @@ export async function countActiveOffers(jobId: number): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ cnt: count() })
     .from(applications)
     .where(and(eq(applications.jobId, jobId), eq(applications.status, "offered")));
-  return result[0]?.count ?? 0;
+  return result[0]?.cnt ?? 0;
 }
 
 /**

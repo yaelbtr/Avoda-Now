@@ -43,7 +43,6 @@ const schema = z.object({
   hourlyRate: z.string().optional(),
   estimatedHours: z.string().optional(),
   contactName: z.string().min(2, "נדרש שם"),
-  businessName: z.string().optional(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
@@ -134,7 +133,6 @@ export default function PostJob() {
       address: urlParams.get("address") || "",
       salary: urlParams.get("salary") || "",
       contactName: urlParams.get("contactName") || "",
-      businessName: urlParams.get("businessName") || "",
     },
   });
 
@@ -171,7 +169,7 @@ export default function PostJob() {
     if (!draft) return;
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
-      "hourlyRate", "estimatedHours", "contactName", "businessName",
+      "hourlyRate", "estimatedHours", "contactName",
       "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
@@ -240,16 +238,10 @@ export default function PostJob() {
 
     // Contact fields
     const currentContact = getValues("contactName");
-    const currentBusiness = getValues("businessName");
     if (!currentContact) {
       const profileName = employerProfile.name ?? user?.name ?? "";
       if (profileName) setValue("contactName", profileName, { shouldDirty: false });
     }
-    if (!currentBusiness) {
-      const profileCompany = employerProfile.companyName ?? "";
-      if (profileCompany) setValue("businessName", profileCompany, { shouldDirty: false });
-    }
-
     // Worker search preferences — only autofill if still at default values
     if (employerProfile.workerSearchLocationMode) {
       setJobLocationMode(employerProfile.workerSearchLocationMode as "radius" | "city");
@@ -432,7 +424,7 @@ export default function PostJob() {
       hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
       estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
       contactName: data.contactName,
-      businessName: data.businessName || undefined,
+      businessName: employerProfile?.companyName || undefined,
       startTime: "flexible",
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
@@ -1206,7 +1198,7 @@ export default function PostJob() {
                     {watchedContactName && (
                       <p className="text-xs" style={{ color: "oklch(0.55 0.06 122)" }}>
                         איש קשר: <strong>{watchedContactName}</strong>
-                        {watch("businessName") ? ` · ${watch("businessName")}` : ""}
+                        {employerProfile?.companyName ? ` · ${employerProfile.companyName}` : ""}
                       </p>
                     )}
                   </div>

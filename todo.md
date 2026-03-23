@@ -3229,3 +3229,11 @@ Isolation guarantees:
 - [x] Backend respondToOffer (reject): sets status=offer_rejected
 - [x] JobApplications: shows offered/offer_rejected sections with worker phone visible when contactRevealed=true
 - [x] getApplicationById: includes employerPhone + employerNotificationPrefs via aliased join
+
+## Bug Fix — "Please login" on home page (round 2)
+- [ ] Find which protectedProcedure fires on / for unauthenticated users (race condition with auth)
+- [ ] Add useAuthQuery guard to prevent firing before auth resolves
+
+## Bug Fix — "Please login" on home page (third occurrence)
+- [x] Root cause: WorkerRegionBanner (regions.workerRegionStatus, regions.myNotifications), usePushNotifications (push.vapidKey), and EmployerProfile (getNotificationPrefs) were missing useAuthQuery guards
+- [x] Fix: added authQuery() to all three components — consistent with useAuthQuery pattern

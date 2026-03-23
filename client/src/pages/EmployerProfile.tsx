@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useLocation } from "wouter";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppLabel } from "@/components/ui";
@@ -64,6 +65,7 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: React.ElementTyp
 export default function EmployerProfile() {
   useSEO({ title: "פרופיל מעסיק | AvodaNow" });
   const { user } = useAuth();
+  const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
 
   // ── Tab state ──
@@ -98,8 +100,8 @@ export default function EmployerProfile() {
   const [minWorkerAge, setMinWorkerAge] = useState<16 | 18 | null>(null);
 
   // ── tRPC queries ──
-  const profileQuery = trpc.user.getEmployerProfile.useQuery(undefined, { staleTime: 30_000 });
-  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { staleTime: 30_000 });
+  const profileQuery = trpc.user.getEmployerProfile.useQuery(undefined, authQuery({ staleTime: 30_000 }));
+  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, authQuery({ staleTime: 30_000 }));
 
   // ── tRPC mutations ──
   const updateMutation = trpc.user.updateEmployerProfile.useMutation({

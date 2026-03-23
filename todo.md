@@ -3192,3 +3192,9 @@ Isolation guarantees:
 
 ## Feature — DB Pool keepAlive
 - [x] Add keepAlive and keepAliveInitialDelayMillis to pg.Pool config
+
+## Feature — Offer Job to Worker (Full Implementation)
+- [x] Backend: implement offerJob procedure (create application record with status "offered")
+- [x] Backend: notify worker on offer (SMS/push/both per notificationPrefs) with job link
+- [x] Frontend: show "offered" applications in worker's My Applications page
+- [x] Frontend: worker can Reject or Show Phone to employer on offered applications

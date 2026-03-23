@@ -32,6 +32,13 @@ vi.mock("./db", () => ({
   getWorkerRegions: vi.fn().mockResolvedValue([]),
   getCitiesByIds: vi.fn().mockResolvedValue([]),
   upsertWorkerRegionAssociations: vi.fn().mockResolvedValue(undefined),
+  // job offer deps
+  createJobOffer: vi.fn().mockResolvedValue(undefined),
+  respondToJobOffer: vi.fn().mockResolvedValue(undefined),
+  getWorkerProfile: vi.fn().mockResolvedValue(null),
+  getApplicationsForJob: vi.fn().mockResolvedValue([]),
+  getApplicationsForJobWithDistance: vi.fn().mockResolvedValue([]),
+  getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
 }));
 
 import * as db from "./db";
@@ -45,6 +52,7 @@ function makeCtx(overrides: Partial<AuthUser> = {}): TrpcContext {
     openId: "test-user",
     email: null,
     name: "Test User",
+    phone: "+972501234567",
     loginMethod: "phone_otp",
     role: "user",
     createdAt: new Date(),

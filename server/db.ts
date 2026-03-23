@@ -339,6 +339,7 @@ export async function getWorkerProfile(id: number) {
       completedJobsCount: users.completedJobsCount,
       availabilityStatus: users.availabilityStatus,
       expectedHourlyRate: users.expectedHourlyRate,
+      notificationPrefs: users.notificationPrefs,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -1076,6 +1077,8 @@ export async function getMyApplications(workerId: number) {
       jobSalaryType: jobs.salaryType,
       jobStatus: jobs.status,
       employerName: users.name,
+      employerPhone: users.phone,
+      jobPostedBy: jobs.postedBy,
     })
     .from(applications)
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
@@ -1524,6 +1527,44 @@ export async function createApplication(workerId: number, jobId: number, message
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(applications).values({ workerId, jobId, message: message ?? null });
+}
+
+/**
+ * Create a job offer record (employer proactively offers a job to a worker).
+ * Returns the new application row.
+ */
+export async function createJobOffer(workerId: number, jobId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const rows = await db
+    .insert(applications)
+    .values({ workerId, jobId, status: "offered", message: null })
+    .returning();
+  return rows[0];
+}
+
+/**
+ * Worker responds to a job offer:
+ * - accept: sets status to "accepted", reveals contact
+ * - reject: sets status to "offer_rejected"
+ */
+export async function respondToJobOffer(
+  applicationId: number,
+  action: "accept" | "reject"
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (action === "accept") {
+    await db
+      .update(applications)
+      .set({ status: "accepted", contactRevealed: true, revealedAt: new Date() })
+      .where(eq(applications.id, applicationId));
+  } else {
+    await db
+      .update(applications)
+      .set({ status: "offer_rejected" })
+      .where(eq(applications.id, applicationId));
+  }
 }
 
 /** Get a worker's public profile by user ID (for employer to view after receiving application SMS) */

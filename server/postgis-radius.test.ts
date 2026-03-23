@@ -43,10 +43,26 @@ vi.mock("./db", () => ({
   recordConsent: vi.fn().mockResolvedValue(undefined),
   // Age gate: return null (no birth date) so workerAge=null and filter is skipped
   getWorkerBirthDate: vi.fn().mockResolvedValue(null),
+  // job offer deps
+  createJobOffer: vi.fn().mockResolvedValue(undefined),
+  respondToJobOffer: vi.fn().mockResolvedValue(undefined),
+  getWorkerProfile: vi.fn().mockResolvedValue(null),
+  getApplicationsForJob: vi.fn().mockResolvedValue([]),
+  getApplicationByWorkerAndJob: vi.fn().mockResolvedValue(null),
+  getApplicationById: vi.fn().mockResolvedValue(null),
+  markEmployerApplicationsViewed: vi.fn().mockResolvedValue(undefined),
+  getUnreadApplicationsCount: vi.fn().mockResolvedValue(0),
+  revealApplicationContact: vi.fn().mockResolvedValue(undefined),
+  updateApplicationStatus: vi.fn().mockResolvedValue(undefined),
+  getMyApplications: vi.fn().mockResolvedValue([]),
+  createApplication: vi.fn().mockResolvedValue(undefined),
+  withdrawApplication: vi.fn().mockResolvedValue(undefined),
+  getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("./sms", () => ({
   sendJobAlerts: vi.fn().mockResolvedValue(0),
+  sendSms: vi.fn().mockResolvedValue(undefined),
 }));
 
 import * as db from "./db";
@@ -58,6 +74,7 @@ function makeCtx(overrides: Partial<TrpcContext["user"]> = {}): TrpcContext {
     openId: "test-postgis",
     email: "test@avodanow.co.il",
     name: "PostGIS Tester",
+    phone: "+972501234567",
     loginMethod: "phone_otp",
     role: "user",
     createdAt: new Date(),

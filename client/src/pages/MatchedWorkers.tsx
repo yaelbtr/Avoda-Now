@@ -53,8 +53,8 @@ function WorkerMatchCard({
     onSuccess: (data) => {
       setOfferSent(true);
       onOfferSent(worker.worker_id);
-      if (data.stub) {
-        toast.success("ההצעה נשלחה (מצב בדיקה — API חיצוני לא מוגדר עדיין)");
+      if (data.alreadyExists) {
+        toast("הצעה כבר נשלחה לעובד זה", { icon: "ℹ️" });
       } else {
         toast.success("הצעת עבודה נשלחה לעובד!");
       }

@@ -12,6 +12,7 @@ import {
   HourglassIcon, ChevronRight, Phone, MessageCircle,
   Bell, BellOff, Bookmark, BookmarkX, Flame,
   Search, ChevronLeft, ArrowUpDown, Loader2, Send, Share2,
+  Gift, ThumbsDown,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
 import { formatDistanceToNow } from "date-fns";
@@ -51,6 +52,20 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; bg: 
     color: "oklch(0.58 0.02 100)",
     border: "oklch(0.87 0.04 84.0)",
   },
+  offered: {
+    label: "הצעת עבודה!",
+    icon: <Gift className="h-3.5 w-3.5" />,
+    bg: "oklch(0.55 0.18 260 / 0.10)",
+    color: "oklch(0.45 0.18 260)",
+    border: "oklch(0.55 0.18 260 / 0.30)",
+  },
+  offer_rejected: {
+    label: "דחיתי הצעה",
+    icon: <ThumbsDown className="h-3.5 w-3.5" />,
+    bg: "oklch(0.93 0.02 91.6)",
+    color: "oklch(0.58 0.02 100)",
+    border: "oklch(0.87 0.04 84.0)",
+  },
 };
 
 type MyApplication = {
@@ -67,10 +82,12 @@ type MyApplication = {
   jobSalaryType: string | null;
   jobStatus: string | null;
   employerName: string | null;
+  employerPhone?: string | null;
+  jobPostedBy?: number | null;
   workerPhone?: string | null;
 };
 
-type AppStatus = "pending" | "viewed" | "accepted" | "rejected";
+type AppStatus = "pending" | "viewed" | "accepted" | "rejected" | "offered" | "offer_rejected";
 type AppSortBy = "jobDate" | "salary" | "city";
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -168,6 +185,19 @@ export default function MyApplications() {
       toast.success("המשרה הוסרה מהשמורים");
     },
     onError: () => toast.error("שגיאה בהסרת המשרה"),
+  });
+
+  // Respond to employer's job offer
+  const respondToOffer = trpc.jobs.respondToOffer.useMutation({
+    onSuccess: (_, vars) => {
+      utils.jobs.myApplications.invalidate();
+      if (vars.action === "accept") {
+        toast.success("אישרת את ההצעה! המעסיק קיבל את הטלפון שלך.");
+      } else {
+        toast("דחיתא את ההצעה", { icon: "✅" });
+      }
+    },
+    onError: (err) => toast.error(err.message ?? "שגיאה בעיבוד ההצעה"),
   });
 
   // ── Filter + sort ─────────────────────────────────────────────────────────
@@ -560,6 +590,8 @@ export default function MyApplications() {
                             { key: "pending",  label: "ממתינות / נצפה" },
                             { key: "accepted", label: "התקבלתי" },
                             { key: "rejected", label: "לא התקבלתי" },
+                            { key: "offered",  label: "הצעות עבודה" },
+                            { key: "offer_rejected", label: "הצעות שדחיתי" },
                           ] as { key: AppStatus; label: string }[]).map(({ key, label }) => {
                             const checked = statusFilter.includes(key);
                             return (
@@ -614,6 +646,8 @@ export default function MyApplications() {
                 const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.pending;
                 const isAccepted = app.status === "accepted";
                 const isRejected = app.status === "rejected";
+                const isOffered = app.status === "offered";
+                const isOfferRejected = app.status === "offer_rejected";
                 const timeAgo = formatDistanceToNow(new Date(app.createdAt), {
                   addSuffix: true,
                   locale: he,
@@ -629,16 +663,37 @@ export default function MyApplications() {
                     style={{
                       background: isAccepted
                         ? "oklch(0.65 0.22 160 / 0.05)"
+                        : isOffered
+                        ? "oklch(0.55 0.18 260 / 0.05)"
                         : "white",
                       border: isAccepted
                         ? "1px solid oklch(0.65 0.22 160 / 0.20)"
+                        : isOffered
+                        ? "2px solid oklch(0.55 0.18 260 / 0.40)"
                         : "1px solid oklch(0.87 0.04 84.0)",
                       borderRadius: "1rem",
                       padding: "1rem",
-                      boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
-                      opacity: isRejected ? 0.70 : 1,
+                      boxShadow: isOffered
+                        ? "0 4px 16px oklch(0.55 0.18 260 / 0.12)"
+                        : "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
+                      opacity: (isRejected || isOfferRejected) ? 0.70 : 1,
                     }}
                   >
+                    {/* Offered banner */}
+                    {isOffered && (
+                      <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-semibold"
+                        style={{
+                          background: "oklch(0.55 0.18 260 / 0.12)",
+                          color: "oklch(0.40 0.18 260)",
+                          border: "1px solid oklch(0.55 0.18 260 / 0.20)",
+                        }}
+                      >
+                        <Gift className="h-4 w-4 shrink-0" />
+                        <span>המעסיק שלח לך הצעת עבודה! אשר כדי לחשוף את הטלפון שלך, או דחה.</span>
+                      </div>
+                    )}
+
                     {/* Top row: icon + title + status badge */}
                     <div className="flex items-start gap-3 mb-2">
                       <div
@@ -646,17 +701,26 @@ export default function MyApplications() {
                         style={{
                           background: isAccepted
                             ? "oklch(0.65 0.22 160 / 0.12)"
+                            : isOffered
+                            ? "oklch(0.55 0.18 260 / 0.12)"
                             : "oklch(0.38 0.07 125.0 / 0.08)",
                         }}
                       >
-                        <Briefcase
-                          className="h-5 w-5"
-                          style={{
-                            color: isAccepted
-                              ? "oklch(0.52 0.22 150)"
-                              : "oklch(0.38 0.07 125.0)",
-                          }}
-                        />
+                        {isOffered ? (
+                          <Gift
+                            className="h-5 w-5"
+                            style={{ color: "oklch(0.45 0.18 260)" }}
+                          />
+                        ) : (
+                          <Briefcase
+                            className="h-5 w-5"
+                            style={{
+                              color: isAccepted
+                                ? "oklch(0.52 0.22 150)"
+                                : "oklch(0.38 0.07 125.0)",
+                            }}
+                          />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
@@ -757,6 +821,82 @@ export default function MyApplications() {
                       <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.52 0.22 150)" }}>
                         ✓ התקבלת! המעסיק ייצור איתך קשר בקרוב.
                       </p>
+                    )}
+
+                    {/* Offered: accept (reveal phone) or reject buttons */}
+                    {isOffered && (
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          disabled={respondToOffer.isPending}
+                          onClick={() => respondToOffer.mutate({ applicationId: app.id, action: "accept" })}
+                          className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-bold transition-all"
+                          style={{
+                            background: "oklch(0.45 0.18 260)",
+                            color: "white",
+                            border: "none",
+                            boxShadow: "0 2px 8px oklch(0.45 0.18 260 / 0.30)",
+                            opacity: respondToOffer.isPending ? 0.7 : 1,
+                          }}
+                        >
+                          {respondToOffer.isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Phone className="h-3.5 w-3.5" />
+                          )}
+                          חשוף טלפון מעסיק
+                        </button>
+                        <button
+                          disabled={respondToOffer.isPending}
+                          onClick={() => respondToOffer.mutate({ applicationId: app.id, action: "reject" })}
+                          className="flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all"
+                          style={{
+                            background: "oklch(0.93 0.02 91.6)",
+                            color: "oklch(0.50 0.04 100)",
+                            border: "1px solid oklch(0.85 0.03 91.6)",
+                            opacity: respondToOffer.isPending ? 0.7 : 1,
+                          }}
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          דחה
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Accepted from offer: show employer phone */}
+                    {isAccepted && app.contactRevealed && app.employerPhone && (
+                      <div className="flex gap-2 mt-3">
+                        <a href={`tel:${app.employerPhone}`} className="flex-1">
+                          <button
+                            className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
+                            style={{
+                              background: "oklch(0.45 0.18 260 / 0.10)",
+                              border: "1px solid oklch(0.45 0.18 260 / 0.25)",
+                              color: "oklch(0.40 0.18 260)",
+                            }}
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                            התקשר למעסיק
+                          </button>
+                        </a>
+                        <a
+                          href={`https://wa.me/${app.employerPhone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1"
+                        >
+                          <button
+                            className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
+                            style={{
+                              background: "oklch(0.65 0.22 160 / 0.08)",
+                              border: "1px solid oklch(0.65 0.22 160 / 0.20)",
+                              color: "oklch(0.52 0.22 150)",
+                            }}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            WhatsApp
+                          </button>
+                        </a>
+                      </div>
                     )}
 
                     {/* View job link + share */}

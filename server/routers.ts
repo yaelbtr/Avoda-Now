@@ -127,8 +127,10 @@ import {
   getLogs,
   getEmployerProfile,
   updateEmployerProfile,
+  createJobOffer,
+  respondToJobOffer,
 } from "./db";
-import { sendJobAlerts } from "./sms";
+import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
 import {
   adminApproveJob,
@@ -944,9 +946,14 @@ const jobsRouter = router({
     return { success: true };
   }),
   /** Worker's own applications with job info and status */
-  myApplications: protectedProcedure.query(async ({ ctx }) =>
-    getMyApplications(ctx.user.id)
-  ),
+  myApplications: protectedProcedure.query(async ({ ctx }) => {
+    const apps = await getMyApplications(ctx.user.id);
+    // Only expose employer phone when the worker has accepted the offer (contactRevealed)
+    return apps.map(app => ({
+      ...app,
+      employerPhone: (app.status === "accepted" && app.contactRevealed) ? app.employerPhone : null,
+    }));
+  }),
   /** Count of unread application status updates since lastSeenAt */
   unreadApplicationsCount: protectedProcedure
     .input(z.object({ lastSeenAt: z.date() }))
@@ -1038,37 +1045,77 @@ const jobsRouter = router({
    * Send a job offer to a specific worker via external API.
    */
   sendJobOffer: protectedProcedure
-    .input(z.object({ jobId: z.number(), workerId: z.number() }))
+    .input(z.object({ jobId: z.number(), workerId: z.number(), origin: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
-      const MATCHING_API_URL = process.env.MATCHING_API_URL;
-      if (!MATCHING_API_URL) {
-        // Stub: log and return success when no external API configured
-        console.log(`[JobOffer] Stub: offer job #${input.jobId} to worker #${input.workerId}`);
-        return { success: true, stub: true };
+      // Prevent duplicate offers
+      const existing = await getApplicationByWorkerAndJob(input.workerId, input.jobId);
+      if (existing) {
+        // If already offered/applied, just return success without re-notifying
+        return { success: true, alreadyExists: true };
       }
 
-      try {
-        const res = await fetch(`${MATCHING_API_URL}/job-offer`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ job_id: input.jobId, worker_id: input.workerId }),
-        });
-        if (!res.ok) throw new Error(`Job offer API error: ${res.status}`);
-        // Notify worker via Push
-        sendPushToUser(input.workerId, {
-          title: "💼 הצעת עבודה חדשה!",
-          body: `מעסיק שלח לך הצעת עבודה למשרה: ${job.title}`,
-          url: "/my-applications",
-        }).catch((e) => console.warn("[JobOffer] Push to worker failed:", e));
-        return { success: true, stub: false };
-      } catch (err) {
-        console.warn("[JobOffer] External API call failed:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה בשליחת ההצעה" });
+      // Get worker profile to determine notification prefs and phone
+      const worker = await getWorkerProfile(input.workerId);
+      if (!worker) throw new TRPCError({ code: "NOT_FOUND", message: "עובד לא נמצא" });
+
+      // Create application record with status "offered"
+      await createJobOffer(input.workerId, input.jobId);
+
+      const jobUrl = `${input.origin ?? "https://avodanow.co.il"}/job/${input.jobId}`;
+      const employerName = ctx.user.name ?? "מעסיק";
+      const jobLabel = job.category ?? job.title ?? "משרה";
+
+      const notifPrefs = worker.notificationPrefs ?? "both";
+
+      // Send SMS if prefs allow
+      if ((notifPrefs === "both" || notifPrefs === "sms_only") && worker.phone) {
+        const smsBody = `שלום ${worker.name ?? ""},\n${employerName} שלח לך הצעת עבודה: ${jobLabel}.\nלצפייה ואישור/דחייה: ${jobUrl}\n\nלהסרה מרשימת ההתראות: https://avodanow.co.il/worker-profile`;
+        sendSms(worker.phone, smsBody).catch(e => console.warn("[JobOffer] SMS failed:", e));
       }
+
+      // Send Push if prefs allow
+      if (notifPrefs === "both" || notifPrefs === "push_only") {
+        sendPushToUser(input.workerId, {
+          title: `💼 הצעת עבודה: ${jobLabel}`,
+          body: `${employerName} שלח לך הצעת עבודה. לחץ לצפייה ואישור.`,
+          url: "/my-applications",
+        }).catch(e => console.warn("[JobOffer] Push failed:", e));
+      }
+
+      console.log(`[JobOffer] Offered job #${input.jobId} to worker #${input.workerId} (prefs: ${notifPrefs})`);
+      return { success: true, alreadyExists: false };
+    }),
+
+  /** Worker responds to an employer's job offer: reveal phone or reject */
+  respondToOffer: protectedProcedure
+    .input(z.object({
+      applicationId: z.number(),
+      action: z.enum(["accept", "reject"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const app = await getApplicationById(input.applicationId);
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "הצעה לא נמצאה" });
+      if (app.workerId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+      if (app.status !== "offered") throw new TRPCError({ code: "BAD_REQUEST", message: "הצעה זו כבר טופלה" });
+
+      await respondToJobOffer(input.applicationId, input.action);
+
+      if (input.action === "accept") {
+        // Notify employer via push
+        if (app.jobPostedBy) {
+          sendPushToUser(app.jobPostedBy, {
+            title: "📞 עובד אישר את הצעתך!",
+            body: `${app.workerName ?? "עובד"} אישר את ההצעה למשרה "${app.jobTitle ?? ""}". הטלפון שלו גלוי עכשיו.`,
+            url: `/job/${app.jobId}/applications`,
+          }).catch(e => console.warn("[JobOffer] Push to employer failed:", e));
+        }
+      }
+
+      return { success: true };
     }),
 
   /** Mark a job as filled — only the job owner can do this */

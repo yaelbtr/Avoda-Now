@@ -104,6 +104,8 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "viewed",
   "accepted",
   "rejected",
+  "offered",       // employer proactively offered the job to the worker
+  "offer_rejected", // worker declined the employer's offer
 ]);
 export const phoneChangeResultEnum = pgEnum("phone_change_result", [
   "success",

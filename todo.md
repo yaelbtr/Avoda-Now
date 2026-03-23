@@ -3168,3 +3168,6 @@ Isolation guarantees:
 
 ## Bug Fix — Invalid category value on post-job
 - [x] Fix: category value sent from PostJob form doesn't match server enum — added gardening/serving/electricity/plumbing/moving to JOB_CATEGORIES, CATEGORY_COLORS, and z.enum in routers.ts
+
+## Feature — Job Detail Page Redesign (AvodaNow Design)
+- [x] Redesign job detail page using AvodaNow design tokens (brand colors, AppButton, RTL layout)

@@ -1002,12 +1002,12 @@ export default function PostJob() {
 
                       {/* Sub-tab 2: shift presets */}
                       {hoursSubTab === "presets" && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-2 gap-2" dir="rtl">
                           {([
-                            { label: "☀️ בוקר (06:00–14:00)",    start: "06:00", end: "14:00" },
-                            { label: "🌤️ צהריים (12:00–20:00)",  start: "12:00", end: "20:00" },
-                            { label: "🌆 ערב (16:00–22:00)",     start: "16:00", end: "22:00" },
-                            { label: "🌙 לילה (22:00–06:00)",    start: "22:00", end: "06:00" },
+                            { label: "בוקר",    sub: "06:00–14:00", icon: "☀️",  start: "06:00", end: "14:00" },
+                            { label: "צהריים",  sub: "12:00–20:00", icon: "🌤️", start: "12:00", end: "20:00" },
+                            { label: "ערב",     sub: "16:00–22:00", icon: "🌆",  start: "16:00", end: "22:00" },
+                            { label: "לילה",    sub: "22:00–06:00", icon: "🌙",  start: "22:00", end: "06:00" },
                           ] as const).map(preset => {
                             const isActive = workStartTime === preset.start && workEndTime === preset.end;
                             return (
@@ -1018,13 +1018,17 @@ export default function PostJob() {
                                   if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
                                   else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); setHoursError(false); setHoursTimeError(false); }
                                 }}
-                                className="px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all"
-                                style={isActive
-                                  ? { background: "oklch(0.35 0.08 122)", borderColor: "oklch(0.35 0.08 122)", color: "white" }
-                                  : { background: "transparent", borderColor: "oklch(0.88 0.04 122)", color: "oklch(0.45 0.08 122)" }
-                                }
+                                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                                  isActive
+                                    ? "border-primary bg-primary/5 text-primary"
+                                    : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                                }`}
                               >
-                                {preset.label}
+                                <span className="text-lg">{preset.icon}</span>
+                                <div className="text-right">
+                                  <div className="font-bold text-sm">{preset.label}</div>
+                                  <div className="text-xs opacity-70">{preset.sub}</div>
+                                </div>
                               </button>
                             );
                           })}

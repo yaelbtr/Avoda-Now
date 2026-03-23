@@ -997,8 +997,8 @@ export default function PostJob() {
                       {/* Sub-tab 1: manual time fields */}
                       {hoursSubTab === "fields" && (
                         <div className="grid grid-cols-2 gap-3">
-                          <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => { setWorkEndTime(e.target.value); setHoursError(false); setHoursTimeError(false); }} dir="ltr" />
                           <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => { setWorkStartTime(e.target.value); setHoursError(false); setHoursTimeError(false); }} dir="ltr" />
+                          <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => { setWorkEndTime(e.target.value); setHoursError(false); setHoursTimeError(false); }} dir="ltr" />
                         </div>
                       )}
 

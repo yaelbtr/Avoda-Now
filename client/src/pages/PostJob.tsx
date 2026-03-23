@@ -1117,19 +1117,19 @@ export default function PostJob() {
                         הגבלת גיל מינימלי <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span>
                       </h2>
                       <p className="text-xs text-muted-foreground text-right mb-3">קבע גיל מינימלי לעובדים. ברירת מחדל: ללא הגבלה.</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-row flex-nowrap gap-2">
                         {([null, 16, 18] as const).map((val) => (
                           <button
                             key={String(val)}
                             type="button"
                             onClick={() => setMinAge(val)}
-                            className="px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all"
+                            className="flex-1 px-3 py-2 rounded-full text-sm font-semibold border-2 transition-all whitespace-nowrap text-center"
                             style={minAge === val
                               ? { background: "var(--brand)", borderColor: "var(--brand)", color: "white" }
                               : { background: "transparent", borderColor: "var(--border)", color: "var(--foreground)" }
                             }
                           >
-                            {val === null ? "ללא הגבלה" : val === 18 ? "מבוגרים בלבד (18+)" : "גיל 16+"}
+                            {val === null ? "ללא הגבלה" : val === 18 ? "מבוגרים (18+)" : "גיל 16+"}
                           </button>
                         ))}
                       </div>

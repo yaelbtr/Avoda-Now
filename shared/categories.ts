@@ -10,6 +10,11 @@ export const JOB_CATEGORIES = [
   { value: "eldercare", label: "טיפול בקשישים", icon: "🧓" },
   { value: "retail", label: "קמעונאות", icon: "🛍️" },
   { value: "events", label: "אירועים", icon: "🎉" },
+  { value: "gardening", label: "גינון", icon: "🌿" },
+  { value: "serving", label: "הגשה", icon: "🍽️" },
+  { value: "electricity", label: "חשמל", icon: "⚡" },
+  { value: "plumbing", label: "אינסטלציה", icon: "🔧" },
+  { value: "moving", label: "הובלות", icon: "📦" },
   { value: "other", label: "אחר", icon: "💼" },
 ] as const;
 
@@ -63,6 +68,11 @@ export const CATEGORY_COLORS: Record<string, { bg: string; text: string; border:
   eldercare:    { bg: "oklch(0.92 0.04 260)",  text: "oklch(0.30 0.08 260)",  border: "oklch(0.79 0.06 260)" },
   retail:       { bg: "oklch(0.93 0.07 160)",  text: "oklch(0.30 0.11 160)",  border: "oklch(0.79 0.09 160)" },
   events:       { bg: "oklch(0.93 0.07 300)",  text: "oklch(0.31 0.12 300)",  border: "oklch(0.80 0.10 300)" },
+  gardening:    { bg: "oklch(0.92 0.09 135)",  text: "oklch(0.27 0.13 135)",  border: "oklch(0.77 0.11 135)" },
+  serving:      { bg: "oklch(0.93 0.06 55)",   text: "oklch(0.32 0.10 55)",   border: "oklch(0.81 0.08 55)" },
+  electricity:  { bg: "oklch(0.93 0.08 90)",   text: "oklch(0.32 0.13 90)",   border: "oklch(0.81 0.11 90)" },
+  plumbing:     { bg: "oklch(0.92 0.06 220)",  text: "oklch(0.29 0.10 220)",  border: "oklch(0.79 0.08 220)" },
+  moving:       { bg: "oklch(0.92 0.05 30)",   text: "oklch(0.30 0.09 30)",   border: "oklch(0.80 0.07 30)" },
   other:        { bg: "oklch(0.93 0.03 84)",   text: "oklch(0.38 0.06 84)",   border: "oklch(0.87 0.04 84)" },
 };
 

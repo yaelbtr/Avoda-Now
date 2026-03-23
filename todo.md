@@ -3165,3 +3165,6 @@ Isolation guarantees:
 
 ## Bug Fix — adminDeleteUser job_reports FK
 - [x] Fix adminDeleteUser: delete job_reports for user's jobs before deleting jobs (FK: job_reports.jobId → jobs.id, no cascade)
+
+## Bug Fix — Invalid category value on post-job
+- [x] Fix: category value sent from PostJob form doesn't match server enum — added gardening/serving/electricity/plumbing/moving to JOB_CATEGORIES, CATEGORY_COLORS, and z.enum in routers.ts

@@ -618,7 +618,8 @@ const jobInputSchema = z.object({
   category: z.enum([
     "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
     "security", "construction", "childcare", "eldercare", "retail",
-    "events", "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
+    "events", "gardening", "serving", "electricity", "plumbing", "moving",
+    "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
   ]),
   address: z.string().min(2).max(300),
   city: z.string().max(100).optional(),

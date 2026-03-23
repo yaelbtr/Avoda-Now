@@ -970,7 +970,7 @@ export default function PostJob() {
 
                       {/* Sub-tab bar — same style as location sub-tabs */}
                       <div className="flex flex-row-reverse gap-1 mt-2 mb-3">
-                        {(["fields", "presets"] as const).map(tab => {
+                        {(["presets", "fields"] as const).map(tab => {
                           const label = tab === "fields" ? "שעת התחלה וסיום" : "בחירת משמרת";
                           const isActive = hoursSubTab === tab;
                           return (
@@ -993,8 +993,8 @@ export default function PostJob() {
                       {/* Sub-tab 1: manual time fields */}
                       {hoursSubTab === "fields" && (
                         <div className="grid grid-cols-2 gap-3">
-                          <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => setWorkStartTime(e.target.value)} dir="ltr" />
                           <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => setWorkEndTime(e.target.value)} dir="ltr" />
+                          <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => setWorkStartTime(e.target.value)} dir="ltr" />
                         </div>
                       )}
 

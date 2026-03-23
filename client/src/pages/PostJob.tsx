@@ -46,7 +46,6 @@ const schema = z.object({
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
   startTime: z.string(),
-  startDateTime: z.string().optional(),
   workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
@@ -142,7 +141,6 @@ export default function PostJob() {
       contactName: urlParams.get("contactName") || "",
       businessName: urlParams.get("businessName") || "",
       workingHours: urlParams.get("workingHours") || "",
-      startDateTime: urlParams.get("startDateTime") || "",
     },
   });
 
@@ -180,7 +178,7 @@ export default function PostJob() {
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
       "hourlyRate", "estimatedHours", "contactName", "businessName", "workingHours",
-      "startTime", "startDateTime", "workersNeeded", "activeDuration",
+      "startTime", "workersNeeded", "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
     fields.forEach((f) => {
@@ -443,7 +441,6 @@ export default function PostJob() {
       businessName: data.businessName || undefined,
       workingHours: data.workingHours || undefined,
       startTime: data.startTime as Parameters<typeof createJob.mutate>[0]["startTime"],
-      startDateTime: data.startDateTime ? new Date(data.startDateTime).toISOString() : undefined,
       workersNeeded: parseInt(data.workersNeeded),
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
@@ -1030,13 +1027,6 @@ export default function PostJob() {
                       <AppInput id="workersNeeded" label="עובדים דרושים" type="number" min="1" dir="ltr" {...register("workersNeeded")} />
                     </div>
 
-                    <AppInput
-                      id="startDateTime"
-                      label="🔥 תאריך ושעת התחלה מדויקים (אופציונלי)"
-                      type="datetime-local"
-                      dir="ltr"
-                      {...register("startDateTime")}
-                    />
                   </div>
                 </div>
               )}

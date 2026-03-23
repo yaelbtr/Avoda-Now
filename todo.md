@@ -3114,3 +3114,11 @@ Isolation guarantees:
 
 - [x] Replace address AppInput in employer profile with PlacesAutocomplete
 - [x] On place select: set lat/lng fields alongside address text
+
+## Feature: Remove redundant PostJob fields
+
+- [x] Audit workStartTime, workersNeeded, exactDateTime usage in schema/routers/db/matching
+- [ ] Remove workStartTime field from PostJob UI and state
+- [ ] Remove workersNeeded field from PostJob UI and state
+- [x] Remove exactDateTime field from PostJob UI and state
+- [x] Verify submission and matching logic unaffected

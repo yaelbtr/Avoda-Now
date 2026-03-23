@@ -3134,3 +3134,18 @@ Isolation guarantees:
 - [x] Redesign JobPublishOtpModal to match LoginModal visual style (channel cards, OTP inputs, security badge, RTL)
 - [x] Add 60-second resend countdown timer to "שלח קוד חדש" button in OTP step
 - [x] Add send cooldown timer on channel selection screen (prevents re-sending immediately)
+
+## Bug Fix — Phone Number Enforcement
+- [ ] Email OTP login: block new user creation if phone not provided (server-side)
+- [ ] Email OTP login: add phone field to login tab's email flow (frontend)
+- [ ] Google OAuth: block completeGoogleRegistration if phone not provided (server-side)
+- [ ] Google OAuth: make phone required in CompleteProfileModal (remove skip option)
+
+## Bug Fix — Remove Google OAuth (phone bypass)
+- [x] Block /api/oauth/callback route (redirect to home with error)
+- [ ] Remove completeGoogleRegistration procedure from routers.ts (dead code)
+- [ ] Remove PostGoogleRegistration component from App.tsx (dead code)
+- [ ] Remove CompleteProfileModal component (dead code)
+- [ ] Remove google_oauth check from Navbar.tsx
+- [ ] Remove GoogleAuthButton component (dead code)
+- [ ] Remove getGoogleLoginUrl from const.ts

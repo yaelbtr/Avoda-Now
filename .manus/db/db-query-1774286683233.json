@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \"loginMethod\", COUNT(*) as count, COUNT(CASE WHEN phone IS NULL OR phone = '' THEN 1 END) as no_phone FROM users GROUP BY \"loginMethod\" ORDER BY count DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT \"loginMethod\", COUNT(*) as count, COUNT(CASE WHEN phone IS NULL OR phone = '' THEN 1 END) as no_phone FROM users GROUP BY \"loginMethod\" ORDER BY count DESC;",
+  "rows": [
+    {
+      "loginMethod": "loginMethod",
+      "count": "4",
+      "no_phone": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "loginMethod\tcount\tno_phone\nloginMethod\t4\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1710
+}

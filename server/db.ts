@@ -1048,13 +1048,26 @@ export async function getMyJobsWithPendingCounts(userId: number) {
     .where(eq(jobs.postedBy, userId))
     .orderBy(desc(jobs.createdAt));
   if (myJobsList.length === 0) return [];
-  const counts = await db
+  const jobIds = myJobsList.map((j) => j.id);
+  // Pending-only count (for the "new" badge)
+  const pendingCounts = await db
     .select({ jobId: applications.jobId, pendingCount: count() })
     .from(applications)
-    .where(and(eq(applications.status, "pending"), inArray(applications.jobId, myJobsList.map((j) => j.id))))
+    .where(and(eq(applications.status, "pending"), inArray(applications.jobId, jobIds)))
     .groupBy(applications.jobId);
-  const countMap = new Map(counts.map((c) => [c.jobId, c.pendingCount]));
-  return myJobsList.map((j) => ({ ...j, pendingCount: countMap.get(j.id) ?? 0 }));
+  // Total applicant count across all statuses (for auto-expand)
+  const totalCounts = await db
+    .select({ jobId: applications.jobId, totalCount: count() })
+    .from(applications)
+    .where(inArray(applications.jobId, jobIds))
+    .groupBy(applications.jobId);
+  const pendingMap = new Map(pendingCounts.map((c) => [c.jobId, c.pendingCount]));
+  const totalMap = new Map(totalCounts.map((c) => [c.jobId, c.totalCount]));
+  return myJobsList.map((j) => ({
+    ...j,
+    pendingCount: pendingMap.get(j.id) ?? 0,
+    totalApplicationCount: totalMap.get(j.id) ?? 0,
+  }));
 }
 /**
  * Returns all applications submitted by a worker, with job info.

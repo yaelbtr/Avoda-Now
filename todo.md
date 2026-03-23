@@ -3237,3 +3237,7 @@ Isolation guarantees:
 ## Bug Fix — "Please login" on home page (third occurrence)
 - [x] Root cause: WorkerRegionBanner (regions.workerRegionStatus, regions.myNotifications), usePushNotifications (push.vapidKey), and EmployerProfile (getNotificationPrefs) were missing useAuthQuery guards
 - [x] Fix: added authQuery() to all three components — consistent with useAuthQuery pattern
+
+## Feature — MyJobs: auto-expand applicants section when applicants exist
+- [x] db.ts: added totalApplicationCount to getMyJobsWithPendingCounts (separate query, all statuses)
+- [x] MyJobs.tsx: useEffect auto-expands all jobs with totalApplicationCount > 0 on first data load (runs once)

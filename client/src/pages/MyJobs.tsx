@@ -303,6 +303,7 @@ export default function MyJobs() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [expandedApplicants, setExpandedApplicants] = useState<Set<number>>(new Set());
+  const [autoExpandDone, setAutoExpandDone] = useState(false);
 
   useSEO({
     title: "המשרות שלי",
@@ -328,6 +329,18 @@ export default function MyJobs() {
     if (isAuthenticated) markViewed.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
+
+  // Auto-expand applicants section for jobs that have any applicants (runs once on data load)
+  useEffect(() => {
+    if (!myJobs || autoExpandDone) return;
+    const jobsWithApplicants = myJobs
+      .filter((j) => ((j as { totalApplicationCount?: number }).totalApplicationCount ?? 0) > 0)
+      .map((j) => j.id);
+    if (jobsWithApplicants.length > 0) {
+      setExpandedApplicants(new Set(jobsWithApplicants));
+    }
+    setAutoExpandDone(true);
+  }, [myJobs, autoExpandDone]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

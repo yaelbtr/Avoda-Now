@@ -1313,6 +1313,185 @@ const jobsRouter = router({
       return { success: true };
     }),
 
+  // ─── Job Publish OTP ─────────────────────────────────────────────────────────
+
+  /**
+   * Step 1: Send a 6-digit OTP to the employer's phone (SMS) or email.
+   * The OTP is scoped to job publishing — it reuses the existing Twilio Verify
+   * and emailOtp infrastructure but is a separate call so it doesn't interfere
+   * with the login flow.
+   */
+  sendPublishOtp: protectedProcedure
+    .input(z.object({
+      channel: z.enum(["sms", "email"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+
+      if (input.channel === "email") {
+        const email = user.email;
+        if (!email) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצאה כתובת מייל בחשבונך" });
+        }
+        // Cooldown check
+        const cooldownMs = await getEmailSendCooldown(email);
+        if (cooldownMs > 0) {
+          const seconds = Math.ceil(cooldownMs / 1000);
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `המתן ${seconds} שניות לפני שליחה חוזרת` });
+        }
+        const code = await createEmailOtp(email);
+        await sendEmailOtp(email, code);
+        return { channel: "email" as const, maskedTarget: email.replace(/(.{2}).*(@.*)/, "$1***$2") };
+      } else {
+        // SMS via Twilio Verify
+        const phone = user.phone;
+        if (!phone) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון בחשבונך" });
+        }
+        const result = await smsProvider.sendOtp(phone);
+        if (!result.success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שליחת קוד SMS נכשלה. נסה שוב" });
+        }
+        const last4 = phone.slice(-4);
+        return { channel: "sms" as const, maskedTarget: `****${last4}` };
+      }
+    }),
+
+  /**
+   * Step 2: Verify the OTP and, if valid, create the job.
+   * Accepts the full job payload so the job is only created after OTP success.
+   */
+  verifyPublishOtp: protectedProcedure
+    .input(z.object({
+      channel: z.enum(["sms", "email"]),
+      code: z.string().length(6),
+      jobData: jobInputSchema,
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+
+      // ── Verify OTP ──────────────────────────────────────────────────────────
+      if (input.channel === "email") {
+        const email = user.email;
+        if (!email) throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצאה כתובת מייל" });
+        const result = await verifyEmailOtp(email, input.code);
+        if (result === "not_found" || result === "expired") {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "הקוד פג תוקף. שלח קוד חדש" });
+        }
+        if (result === "max_attempts") {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `חרגת ${EMAIL_OTP_MAX_ATTEMPTS} ניסיונות. שלח קוד חדש` });
+        }
+        if (result === "wrong") {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי. נסה שוב" });
+        }
+      } else {
+        // SMS via Twilio Verify
+        const phone = user.phone;
+        if (!phone) throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון" });
+        const verifyResult = await smsProvider.verifyOtp(phone, input.code);
+        if (!verifyResult.success) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי או פג תוקף. נסה שוב" });
+        }
+      }
+
+      // ── OTP valid — create the job (same logic as jobs.create) ──────────────
+      const jobInput = input.jobData;
+
+      if (user.role !== "admin") {
+        const regionCheck = await checkRegionActiveForJob(jobInput.latitude, jobInput.longitude);
+        if (!regionCheck.allowed) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `האזור עדיין בהרצה ונפתח בקרוב למעסיקים.`,
+            cause: { regionId: regionCheck.regionId, regionName: regionCheck.regionName, regionSlug: regionCheck.regionSlug },
+          });
+        }
+      }
+
+      const contactPhone = user.phone ?? jobInput.contactPhone;
+      if (!contactPhone) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון בחשבונך" });
+      }
+
+      const durationDays = parseInt(jobInput.activeDuration);
+      const expiresMs = jobInput.isUrgent ? 12 * 60 * 60 * 1000 : durationDays * 24 * 60 * 60 * 1000;
+      const expiresAt = new Date(Date.now() + expiresMs);
+
+      const extractCity = (addr: string): string => {
+        const parts = addr.split(",").map(p => p.trim()).filter(Boolean);
+        for (let i = parts.length - 1; i >= 0; i--) {
+          const part = parts[i];
+          if (/^\d+$/.test(part)) continue;
+          if (part === "ישראל" || part === "Israel") continue;
+          return part;
+        }
+        return parts[0] ?? addr;
+      };
+      const city = jobInput.city ?? extractCity(jobInput.address);
+
+      const sanitizedInput = {
+        ...jobInput,
+        title: sanitizeText(jobInput.title),
+        description: sanitizeRichText(jobInput.description),
+        address: sanitizeText(jobInput.address),
+        city: sanitizeText(city),
+        contactName: sanitizeText(jobInput.contactName),
+        businessName: sanitizeText(jobInput.businessName),
+        workingHours: sanitizeText(jobInput.workingHours),
+        jobTags: sanitizeTextArray(jobInput.jobTags ?? [jobInput.category]),
+      };
+
+      const job = await createJob({
+        ...sanitizedInput,
+        contactPhone,
+        city: sanitizedInput.city,
+        latitude: jobInput.latitude.toString(),
+        longitude: jobInput.longitude.toString(),
+        salary: jobInput.salary?.toString(),
+        hourlyRate: jobInput.hourlyRate?.toString(),
+        estimatedHours: jobInput.estimatedHours?.toString(),
+        expiresAt,
+        isUrgent: jobInput.isUrgent ?? false,
+        isLocalBusiness: jobInput.isLocalBusiness ?? false,
+        showPhone: jobInput.showPhone ?? false,
+        startDateTime: jobInput.startDateTime ? new Date(jobInput.startDateTime) : null,
+        postedBy: user.id,
+        status: "active",
+        jobTags: jobInput.jobTags ?? [jobInput.category],
+        jobLocationMode: jobInput.jobLocationMode ?? "radius",
+        jobSearchRadiusKm: jobInput.jobSearchRadiusKm ?? 5,
+        jobDate: jobInput.jobDate ?? null,
+        workStartTime: jobInput.workStartTime ?? null,
+        workEndTime: jobInput.workEndTime ?? null,
+        imageUrls: jobInput.imageUrls ?? null,
+        minAge: jobInput.minAge ?? null,
+      });
+
+      // Fire-and-forget: matching + alerts (same as jobs.create)
+      const MATCHING_API_URL = process.env.MATCHING_API_URL;
+      if (MATCHING_API_URL) {
+        fetch(`${MATCHING_API_URL}/match-workers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: job.id, job_description: jobInput.description, latitude: jobInput.latitude, longitude: jobInput.longitude, city, location_mode: jobInput.jobLocationMode ?? "radius" }),
+        }).catch((err) => console.warn("[MatchAPI] Pre-compute call failed:", err));
+      }
+      const jobMeta = { title: jobInput.title, city, category: jobInput.category, isUrgent: jobInput.isUrgent ?? false, id: job.id };
+      getWorkersMatchingJob(jobInput.category, city, user.id, 100, jobInput.latitude, jobInput.longitude)
+        .then(async (workers) => {
+          const smsSent = await sendJobAlerts(workers, jobMeta);
+          if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} workers for job #${job.id}`);
+          const workerIds = workers.map((w) => w.id);
+          if (workerIds.length > 0) {
+            const pushSent = await sendJobPushNotifications(workerIds, jobMeta);
+            if (pushSent > 0) console.log(`[JobAlert] Sent Push to ${pushSent} workers for job #${job.id}`);
+          }
+        })
+        .catch((err) => console.warn("[JobAlert] Error sending alerts:", err));
+
+      return job;
+    }),
+
 });
 // ─── Admin Router ─────────────────────────────────────────────────────────────
 

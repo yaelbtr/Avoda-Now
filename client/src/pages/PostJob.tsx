@@ -12,6 +12,7 @@ import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
 import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import LoginModal from "@/components/LoginModal";
+import JobPublishOtpModal from "@/components/JobPublishOtpModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES } from "@shared/categories";
@@ -103,6 +104,8 @@ export default function PostJob() {
   const [legalAllConfirmed, setLegalAllConfirmed] = useState(false);
   const [legalCheckboxError, setLegalCheckboxError] = useState(false);
   const [salaryError, setSalaryError] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [pendingJobData, setPendingJobData] = useState<Record<string, unknown> | null>(null);
 
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const isDuplicate = !!urlParams.get("from");
@@ -401,7 +404,8 @@ export default function PostJob() {
       return;
     }
     setLegalCheckboxError(false);
-    createJob.mutate({
+    // Collect job payload and open OTP modal instead of submitting directly
+    const jobPayload = {
       title: data.title,
       description: data.description,
       category: data.category as Parameters<typeof createJob.mutate>[0]["category"],
@@ -426,7 +430,9 @@ export default function PostJob() {
       workEndTime: workEndTime || undefined,
       imageUrls: jobImages.length > 0 ? jobImages : undefined,
       minAge: minAge ?? undefined,
-    });
+    };
+    setPendingJobData(jobPayload);
+    setShowOtpModal(true);
   };
 
   // ── Guards ────────────────────────────────────────────────────────────────
@@ -1466,6 +1472,22 @@ export default function PostJob() {
       </form>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+
+      {/* OTP verification modal for job publishing */}
+      {pendingJobData && (
+        <JobPublishOtpModal
+          open={showOtpModal}
+          onClose={() => setShowOtpModal(false)}
+          jobData={pendingJobData}
+          onSuccess={(job) => {
+            setShowOtpModal(false);
+            clearDraft();
+            setSuccess(true);
+            const jobId = (job as { id?: number })?.id;
+            setTimeout(() => navigate(jobId ? `/job/${jobId}` : "/my-jobs"), 1500);
+          }}
+        />
+      )}
     </div>
   );
 }

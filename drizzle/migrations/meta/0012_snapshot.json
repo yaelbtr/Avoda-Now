@@ -2417,7 +2417,9 @@
         "pending",
         "viewed",
         "accepted",
-        "rejected"
+        "rejected",
+        "offered",
+        "offer_rejected"
       ]
     },
     "public.availability_status": {

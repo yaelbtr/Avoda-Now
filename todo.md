@@ -3208,3 +3208,8 @@ Isolation guarantees:
 
 ## Bug Fix — countActiveOffers query type error
 - [x] Fix: replaced sql<number>`count(*)::int` with Drizzle's count() helper — same pattern as countActiveJobsByUser
+
+## Bug Fix — countActiveOffers still failing after count() fix
+- [x] Root cause: offered/offer_rejected enum values were never migrated to the DB (only in schema.ts)
+- [x] Fix: applied ALTER TYPE application_status ADD VALUE directly via pg driver
+- [x] Fix: updated Drizzle snapshots (0012, 0013) to include offered/offer_rejected so db:push stays in sync

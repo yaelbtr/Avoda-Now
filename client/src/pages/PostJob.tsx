@@ -1059,6 +1059,38 @@ export default function PostJob() {
                           יש למלא שעת התחלה וסיום, או לבחור משמרת
                         </p>
                       )}
+
+                      {/* Youth employment law warning — shown when end time is after 22:00 or shift is overnight */}
+                      {(shouldWarnLateJob(workEndTime) || isOvernightShift(workStartTime, workEndTime)) && workStartTime && workEndTime && (
+                        <div
+                          className="flex items-start gap-2 rounded-xl px-3 py-2.5 mt-2 text-xs font-medium"
+                          dir="rtl"
+                          style={{
+                            background: "oklch(0.97 0.05 85)",
+                            border: "1px solid oklch(0.82 0.12 80)",
+                            color: "oklch(0.45 0.12 60)",
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 mt-0.5">
+                            <path d="M7 1.5L12.5 11H1.5L7 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                            <path d="M7 5.5v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                            <circle cx="7" cy="9.5" r="0.65" fill="currentColor" />
+                          </svg>
+                          <span>
+                            משרה זו לא תוצג לעובדים מתחת לגיל 18 בשל חוק עבודת נוער.
+                            {" "}
+                            <a
+                              href="https://www.gov.il/he/departments/guides/working_youth"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline"
+                              style={{ color: "oklch(0.40 0.12 60)" }}
+                            >
+                              קרא עוד
+                            </a>
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                   </div>

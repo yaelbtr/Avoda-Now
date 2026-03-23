@@ -14,7 +14,7 @@ import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import LoginModal from "@/components/LoginModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
-import { SALARY_TYPES, START_TIMES } from "@shared/categories";
+import { SALARY_TYPES } from "@shared/categories";
 import { shouldWarnLateJob, normalizeDateInput } from "@shared/ageUtils";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -45,7 +45,6 @@ const schema = z.object({
   contactName: z.string().min(2, "נדרש שם"),
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
-  startTime: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
@@ -129,7 +128,6 @@ export default function PostJob() {
     resolver: zodResolver(schema),
     defaultValues: {
       salaryType: (urlParams.get("salaryType") as FormData["salaryType"]) || "hourly",
-      startTime: (urlParams.get("startTime") as FormData["startTime"]) || "flexible",
       activeDuration: "7",
       title: urlParams.get("title") || "",
       description: urlParams.get("description") || "",
@@ -176,7 +174,7 @@ export default function PostJob() {
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
       "hourlyRate", "estimatedHours", "contactName", "businessName", "workingHours",
-      "startTime", "activeDuration",
+      "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
     fields.forEach((f) => {
@@ -438,7 +436,7 @@ export default function PostJob() {
       contactName: data.contactName,
       businessName: data.businessName || undefined,
       workingHours: data.workingHours || undefined,
-      startTime: data.startTime as Parameters<typeof createJob.mutate>[0]["startTime"],
+      startTime: "flexible",
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
       isLocalBusiness: data.isLocalBusiness ?? false,
@@ -1013,13 +1011,6 @@ export default function PostJob() {
                         <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => setWorkEndTime(e.target.value)} dir="ltr" />
                       </div>
                     </div>
-
-                    <AppSelect
-                      label="זמן התחלה"
-                      defaultValue="flexible"
-                      options={START_TIMES.map((s) => ({ value: s.value, label: s.label }))}
-                      onChange={(e) => setValue("startTime", e.target.value)}
-                    />
 
                   </div>
                 </div>

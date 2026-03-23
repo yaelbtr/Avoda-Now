@@ -3189,3 +3189,6 @@ Isolation guarantees:
 
 ## Bug Fix — worker_availability DB connection error
 - [x] Fix recurring "Connection terminated unexpectedly" in worker_availability reminder job — added pool error handler, idleTimeoutMillis, connectionTimeoutMillis, and retry wrapper with exponential backoff
+
+## Feature — DB Pool keepAlive
+- [x] Add keepAlive and keepAliveInitialDelayMillis to pg.Pool config

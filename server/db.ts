@@ -62,9 +62,11 @@ export async function getDb() {
           : false,
         max: 10,
         // Keep connections alive and handle idle timeouts gracefully
-        idleTimeoutMillis: 30_000,       // release idle connections after 30s
-        connectionTimeoutMillis: 10_000, // fail fast if can't connect in 10s
+        idleTimeoutMillis: 30_000,            // release idle connections after 30s
+        connectionTimeoutMillis: 10_000,      // fail fast if can't connect in 10s
         allowExitOnIdle: false,
+        keepAlive: true,                      // send TCP keepalive packets
+        keepAliveInitialDelayMillis: 10_000,  // start keepalive after 10s of inactivity
       });
       // Swallow pool-level errors (e.g. idle connection terminated by server)
       // so they don't crash the process — individual queries will retry on next call

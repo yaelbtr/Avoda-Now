@@ -717,7 +717,7 @@ export default function PostJob() {
 
       {/* ── Tab Content ──────────────────────────────────────────────────── */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="max-w-lg mx-auto px-4 mt-4 pb-36">
+        <div className="max-w-lg mx-auto px-4 mt-4 pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -822,10 +822,17 @@ export default function PostJob() {
                       </label>
                     )}
                   </div>
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <span />
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )}
-
-              {/* ── Tab 2: מיקום ושעות ────────────────────────────────── */}
+              {/* Tab 2: מיקום ושעות */}
               {activeTab === "location" && (
                 <div className="space-y-5">
                   {/* Location — two sub-tabs */}
@@ -1111,10 +1118,21 @@ export default function PostJob() {
                     </div>
 
                   </div>
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
+                    </button>
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )}
 
-              {/* ── Tab 3: תנאים ותשלום ──────────────────────────────── */}
+              {/* ── Tab 3: תנאים ותשלום ──────────────────────── */}
               {activeTab === "conditions" && (
                 <div className="space-y-5">
                   {/* Salary */}
@@ -1260,11 +1278,21 @@ export default function PostJob() {
                       {minAge === 16 && <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>ℹ️ משרה זו תוצג לעובדים בני 16 ומעלה (כולל קטינים).</p>}
                     </div>
                   </div>
-
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
+                    </button>
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )}
 
-              {/* ── Tab 4: פרסום ─────────────────────────────────────── */}
+              {/* ── Tab 4: פרסום ─────────────────────────────────────────────── */}
               {activeTab === "publish" && (
                 <div className="space-y-5">
                   {/* ── Job Preview Card ──────────────────────────────── */}
@@ -1443,6 +1471,14 @@ export default function PostJob() {
                     )}
                   </div>
 
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
+                    </button>
+                    <span />
+                  </div>
                   {/* Submit */}
                   <AppButton
                     type="submit"
@@ -1463,39 +1499,7 @@ export default function PostJob() {
           </AnimatePresence>
         </div>
 
-        {/* ── Sticky bottom nav ────────────────────────────────────────────── */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe"
-          style={{ background: "var(--page-bg)", borderTop: "1px solid oklch(0.92 0.02 100)" }}
-        >
-          <div className="max-w-lg mx-auto py-3 flex gap-3">
-            {tabIndex > 0 && (
-              <AppButton type="button" variant="outline" size="lg" className="flex-1 gap-2" onClick={goPrev}>
-                <ArrowRight className="h-4 w-4" />
-                הקודם
-              </AppButton>
-            )}
-            {!isLastTab ? (
-              <AppButton type="button" variant="brand" size="lg" className="flex-1 gap-2" onClick={goNext}>
-                הבא
-                <ArrowLeft className="h-4 w-4" />
-              </AppButton>
-            ) : (
-              <AppButton
-                type="submit"
-                variant="brand"
-                size="lg"
-                className="flex-1 gap-2"
-                disabled={createJob.isPending}
-              >
-                {createJob.isPending
-                  ? <><Loader2 className="h-4 w-4 animate-spin" />מפרסם...</>
-                  : <><Send className="h-4 w-4" />פרסם עבודה</>
-                }
-              </AppButton>
-            )}
-          </div>
-        </div>
+
       </form>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />

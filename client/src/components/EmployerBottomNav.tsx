@@ -38,9 +38,6 @@ export default function EmployerBottomNav() {
   const { userMode } = useUserMode();
 
   if (userMode !== "employer") return null;
-  // PostJob has its own sticky bottom nav — hide the global one to avoid overlap
-  if (location === "/post-job") return null;
-
   return (
     <nav
       className="md:hidden fixed bottom-0 z-50 w-full"

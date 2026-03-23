@@ -1530,6 +1530,20 @@ export async function createApplication(workerId: number, jobId: number, message
 }
 
 /**
+ * Count the number of active (status='offered') job offers for a given job.
+ * Used to enforce MAX_ACTIVE_OFFERS limit before creating a new offer.
+ */
+export async function countActiveOffers(jobId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(applications)
+    .where(and(eq(applications.jobId, jobId), eq(applications.status, "offered")));
+  return result[0]?.count ?? 0;
+}
+
+/**
  * Create a job offer record (employer proactively offers a job to a worker).
  * Returns the new application row.
  */

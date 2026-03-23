@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
-import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
@@ -129,6 +129,7 @@ import {
   updateEmployerProfile,
   createJobOffer,
   respondToJobOffer,
+  countActiveOffers,
 } from "./db";
 import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1056,6 +1057,15 @@ const jobsRouter = router({
       if (existing) {
         // If already offered/applied, just return success without re-notifying
         return { success: true, alreadyExists: true };
+      }
+
+      // Enforce maximum active offers per job
+      const activeOfferCount = await countActiveOffers(input.jobId);
+      if (activeOfferCount >= MAX_ACTIVE_OFFERS) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `לא ניתן לשלוח יותר מ-${MAX_ACTIVE_OFFERS} הצעות עבודה פעילות בו-זמנית למשרה זו. המתן לתגובת העובדים שכבר קיבלו הצעה.`,
+        });
       }
 
       // Get worker profile to determine notification prefs and phone

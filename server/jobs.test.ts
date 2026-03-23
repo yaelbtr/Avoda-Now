@@ -36,6 +36,7 @@ vi.mock("./db", () => ({
   createJobOffer: vi.fn().mockResolvedValue(undefined),
   respondToJobOffer: vi.fn().mockResolvedValue(undefined),
   getApplicationByWorkerAndJob: vi.fn().mockResolvedValue(null),
+  countActiveOffers: vi.fn().mockResolvedValue(0),
   getApplicationById: vi.fn().mockResolvedValue(null),
   getWorkerProfile: vi.fn().mockResolvedValue(null),
   markEmployerApplicationsViewed: vi.fn().mockResolvedValue(undefined),
@@ -176,5 +177,82 @@ describe("auth.logout", () => {
     const result = await caller.auth.logout();
     expect(result).toEqual({ success: true });
     expect((ctx.res as { clearCookie: ReturnType<typeof vi.fn> }).clearCookie).toHaveBeenCalledOnce();
+  });
+});
+
+describe("jobs.sendJobOffer — active offer limit", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const offerInput = { jobId: 10, workerId: 20, origin: "https://avodanow.co.il" };
+
+  it("sends offer successfully when active count is below limit", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);
+    vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null);
+    vi.mocked(db.countActiveOffers).mockResolvedValue(3); // below MAX_ACTIVE_OFFERS=5
+    vi.mocked(db.getWorkerProfile).mockResolvedValue({ id: 20, name: "עובד", phone: "+972501234567", notificationPrefs: "sms_only" } as never);
+    vi.mocked(db.createJobOffer).mockResolvedValue({ id: 99 } as never);
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    const result = await caller.jobs.sendJobOffer(offerInput);
+    expect(result).toEqual({ success: true, alreadyExists: false });
+    expect(db.createJobOffer).toHaveBeenCalledWith(20, 10);
+  });
+
+  it("sends offer successfully when active count equals limit minus 1 (boundary)", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);
+    vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null);
+    vi.mocked(db.countActiveOffers).mockResolvedValue(4); // exactly MAX_ACTIVE_OFFERS - 1
+    vi.mocked(db.getWorkerProfile).mockResolvedValue({ id: 20, name: "עובד", phone: "+972501234567", notificationPrefs: "push_only" } as never);
+    vi.mocked(db.createJobOffer).mockResolvedValue({ id: 100 } as never);
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    const result = await caller.jobs.sendJobOffer(offerInput);
+    expect(result).toEqual({ success: true, alreadyExists: false });
+  });
+
+  it("throws BAD_REQUEST when active offer count equals MAX_ACTIVE_OFFERS", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);
+    vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null);
+    vi.mocked(db.countActiveOffers).mockResolvedValue(5); // exactly at limit
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    await expect(caller.jobs.sendJobOffer(offerInput)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(db.createJobOffer).not.toHaveBeenCalled();
+  });
+
+  it("throws BAD_REQUEST when active offer count exceeds MAX_ACTIVE_OFFERS", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);
+    vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null);
+    vi.mocked(db.countActiveOffers).mockResolvedValue(7); // over limit
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    await expect(caller.jobs.sendJobOffer(offerInput)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(db.createJobOffer).not.toHaveBeenCalled();
+  });
+
+  it("returns alreadyExists=true without checking limit when duplicate offer exists", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);
+    vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue({ id: 55, status: "offered" } as never);
+    // countActiveOffers should NOT be called since we short-circuit on duplicate
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    const result = await caller.jobs.sendJobOffer(offerInput);
+    expect(result).toEqual({ success: true, alreadyExists: true });
+    expect(db.countActiveOffers).not.toHaveBeenCalled();
+    expect(db.createJobOffer).not.toHaveBeenCalled();
+  });
+
+  it("throws FORBIDDEN when non-owner tries to send offer", async () => {
+    vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 99, category: "delivery", title: "שליח" } as never);
+
+    const caller = appRouter.createCaller(makeCtx({ id: 1 }));
+    await expect(caller.jobs.sendJobOffer(offerInput)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    expect(db.countActiveOffers).not.toHaveBeenCalled();
   });
 });

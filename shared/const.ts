@@ -16,6 +16,12 @@ export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
 export const AXIOS_TIMEOUT_MS = 30_000;
 /** Max support reports per IP/user per hour to prevent abuse */
 export const SUPPORT_REPORT_RATE_LIMIT = 5;
+
+/**
+ * Maximum number of active (status='offered') job offers allowed per job posting
+ * at any one time. Enforced server-side in sendJobOffer.
+ */
+export const MAX_ACTIVE_OFFERS = 5;
 export const UNAUTHED_ERR_MSG = 'Please login (10001)';
 export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
 /**

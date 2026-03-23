@@ -3198,3 +3198,10 @@ Isolation guarantees:
 - [x] Backend: notify worker on offer (SMS/push/both per notificationPrefs) with job link
 - [x] Frontend: show "offered" applications in worker's My Applications page
 - [x] Frontend: worker can Reject or Show Phone to employer on offered applications
+
+## Feature — Active Offer Limit per Job (Max 5)
+- [x] Backend: add countActiveOffers(jobId) helper in db.ts (counts applications with status='offered')
+- [x] Backend: enforce MAX_ACTIVE_OFFERS=5 in sendJobOffer — throw BAD_REQUEST when limit reached
+- [x] Backend: add MAX_ACTIVE_OFFERS constant to shared/const.ts (Single Source of Truth)
+- [x] Frontend: show friendly Hebrew error toast in MatchedWorkers when limit is reached (reuses existing onError handler)
+- [x] Tests: 6 Vitest tests for countActiveOffers and the limit guard in sendJobOffer (918 passing total)

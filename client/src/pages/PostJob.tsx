@@ -406,6 +406,10 @@ export default function PostJob() {
       setActiveTab("location");
       return;
     }
+    if (!data.contactName || data.contactName.trim().length < 2) {
+      toast.error("אנא הזן שם איש קשר");
+      return;
+    }
     if (!legalAllConfirmed) {
       setLegalCheckboxError(true);
       toast.error("יש לאשר את התנאים לפני פרסום המשרה");
@@ -557,8 +561,6 @@ export default function PostJob() {
       if (!ok) return;
     }
     if (activeTab === "conditions") {
-      const ok = await trigger(["contactName"]);
-      if (!ok) return;
       // Salary is required unless volunteer
       const currentSalaryType = getValues("salaryType");
       const currentSalary = getValues("salary");
@@ -1230,23 +1232,6 @@ export default function PostJob() {
                     </div>
                   </div>
 
-                  {/* Contact */}
-                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-                    <h2 className="font-bold text-foreground flex items-center gap-2">
-                      <User className="h-4 w-4 text-primary" />
-                      פרטי קשר
-                    </h2>
-                    <AppInput
-                      id="contactName"
-                      label="שם איש קשר"
-                      required
-                      placeholder="שם מלא"
-                      dir="rtl"
-                      {...register("contactName")}
-                      error={errors.contactName?.message}
-                    />
-                  </div>
-
                   {/* Min age */}
                   <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
                     <div>
@@ -1358,6 +1343,28 @@ export default function PostJob() {
                       <p className="text-xs" style={{ color: "oklch(0.55 0.06 122)" }}>
                         איש קשר: <strong>{watchedContactName}</strong>
                         {employerProfile?.companyName ? ` · ${employerProfile.companyName}` : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Contact — auto-filled from employer profile */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <User className="h-4 w-4 text-primary" />
+                      פרטי קשר
+                    </h2>
+                    <AppInput
+                      id="contactName"
+                      label="שם איש קשר"
+                      required
+                      placeholder="שם מלא"
+                      dir="rtl"
+                      {...register("contactName")}
+                      error={errors.contactName?.message}
+                    />
+                    {employerProfile?.companyName && (
+                      <p className="text-xs text-muted-foreground">
+                        שם עסק: <strong className="text-foreground">{employerProfile.companyName}</strong>
                       </p>
                     )}
                   </div>

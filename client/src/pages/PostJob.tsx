@@ -41,7 +41,6 @@ const schema = z.object({
   salary: z.string().optional(),
   salaryType: z.string(),
   hourlyRate: z.string().optional(),
-  estimatedHours: z.string().optional(),
   contactName: z.string().min(2, "נדרש שם"),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
@@ -169,7 +168,7 @@ export default function PostJob() {
     if (!draft) return;
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
-      "hourlyRate", "estimatedHours", "contactName",
+      "hourlyRate", "contactName",
       "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
@@ -422,7 +421,6 @@ export default function PostJob() {
       salary: data.salary ? parseFloat(data.salary) : undefined,
       salaryType: data.salaryType as Parameters<typeof createJob.mutate>[0]["salaryType"],
       hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
-      estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
       contactName: data.contactName,
       businessName: employerProfile?.companyName || undefined,
       startTime: "flexible",
@@ -1039,10 +1037,7 @@ export default function PostJob() {
                           <AppInput id="hourlyRate" label="מחיר לשעה (₪)" type="number" min="0" step="5" placeholder="70" dir="ltr" {...register("hourlyRate")} />
                           <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪ לשעה</p>
                         </div>
-                        <div>
-                          <AppInput id="estimatedHours" label="שעות עבודה משוערות" type="number" min="0.5" max="24" step="0.5" placeholder="4" dir="ltr" {...register("estimatedHours")} />
-                          <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 4 שעות</p>
-                        </div>
+
                       </div>
                     )}
 

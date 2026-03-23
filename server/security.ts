@@ -276,3 +276,53 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000);
+
+// ── Generic in-memory rate limiter factory ──────────────────────────────────
+/**
+ * Creates a reusable in-memory rate limiter.
+ *
+ * @param maxRequests  Maximum allowed calls within the window.
+ * @param windowMs     Rolling window duration in milliseconds.
+ * @returns            Object with `check(key)` and `reset(key)` helpers.
+ *
+ * `check(key)` returns:
+ *   - `{ allowed: true }` when the call is within the limit.
+ *   - `{ allowed: false, retryAfterMs: number }` when the limit is exceeded,
+ *     where `retryAfterMs` is the milliseconds until the window resets.
+ */
+export function createInMemoryRateLimiter(maxRequests: number, windowMs: number) {
+  const store = new Map<string, { count: number; windowStart: number }>();
+
+  // Auto-cleanup stale entries every windowMs to prevent memory leaks
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of Array.from(store.entries())) {
+      if (now - entry.windowStart >= windowMs) store.delete(key);
+    }
+  }, windowMs);
+
+  return {
+    check(key: string): { allowed: true } | { allowed: false; retryAfterMs: number } {
+      const now = Date.now();
+      const entry = store.get(key);
+
+      if (!entry || now - entry.windowStart >= windowMs) {
+        // New window
+        store.set(key, { count: 1, windowStart: now });
+        return { allowed: true };
+      }
+
+      if (entry.count >= maxRequests) {
+        const retryAfterMs = windowMs - (now - entry.windowStart);
+        return { allowed: false, retryAfterMs };
+      }
+
+      entry.count++;
+      return { allowed: true };
+    },
+
+    reset(key: string): void {
+      store.delete(key);
+    },
+  };
+}

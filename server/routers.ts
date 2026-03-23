@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
 import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -657,6 +658,9 @@ const jobInputSchema = z.object({
   /** Minimum worker age: null = no restriction, 16 = 16+, 18 = adults only */
   minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
 });
+
+/** Rate limiter for job-publish OTP sends: max 3 per user per 10 minutes */
+const publishOtpRateLimiter = createInMemoryRateLimiter(3, 10 * 60 * 1000);
 
 const jobsRouter = router({
   list: publicProcedure
@@ -1327,6 +1331,17 @@ const jobsRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
+
+      // ── Rate limit: max 3 sends per user per 10 minutes ────────────────────
+      const rlKey = `publish-otp:${user.id}`;
+      const rlResult = publishOtpRateLimiter.check(rlKey);
+      if (!rlResult.allowed) {
+        const minutes = Math.ceil(rlResult.retryAfterMs / 60_000);
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `שלחת יותר מדי קודות. נסה שוב בעוד ${minutes} דקות`,
+        });
+      }
 
       if (input.channel === "email") {
         const email = user.email;

@@ -138,7 +138,10 @@ export default function PostJob() {
     },
   });
 
-  // ── Collect all form state for draft ────────────────────────────────────
+  // Watch contactName early so it can be used in draft auto-save deps
+  const watchedContactName = watch("contactName");
+
+  // ── Collect all form state for draft ──────────────────────────────────────
   const collectDraftData = useCallback(() => {
     const vals = getValues();
     return {
@@ -157,14 +160,14 @@ export default function PostJob() {
       locationSubTab,
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
 
-  // Auto-save on every meaningful state change
+  // Auto-save on every meaningful state change (including contactName edits)
   useEffect(() => {
     if (draftRestored || success) return;
     saveDraft(collectDraftData());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
 
   // Restore draft into form fields
   const restoreDraft = useCallback(() => {
@@ -213,8 +216,6 @@ export default function PostJob() {
   const watchedAddress = watch("address");
   const watchedSalary = watch("salary");
   const watchedHourlyRate = watch("hourlyRate");
-  const watchedContactName = watch("contactName");
-
   // ── Tab completion tracking ─────────────────────────────────────────────────────
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
 

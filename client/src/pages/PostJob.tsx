@@ -1081,6 +1081,28 @@ export default function PostJob() {
                       />
                                     </div>
 
+                    {/* Urgent toggle — shown first, emphasized with amber */}
+                    <div
+                      onClick={() => setValue("isUrgent", !isUrgent)}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        isUrgent
+                          ? "border-amber-400 bg-amber-50 shadow-md shadow-amber-100"
+                          : "border-amber-200 hover:border-amber-400 hover:bg-amber-50/40"
+                      }`}
+                    >
+                      <div>
+                        <p className={`font-bold text-sm ${isUrgent ? "text-amber-700" : "text-foreground"}`}>
+                          ⚡ צריך עובד עכשיו — <span className={isUrgent ? "text-amber-600" : "text-amber-500"}>משרה דחופה</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">יוצג ראשון ברשימה · תפוג אחרי 12 שעות</p>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        isUrgent ? "border-amber-500 bg-amber-500" : "border-amber-300"
+                      }`}>
+                        {isUrgent && <span className="text-white text-xs font-bold">✓</span>}
+                      </div>
+                    </div>
+
                     {/* Volunteer toggle */}
                     <div
                       onClick={() => { const next = !isVolunteer; setValue("isVolunteer", next); if (next) setValue("salaryType", "volunteer"); else setValue("salaryType", "hourly"); }}
@@ -1092,20 +1114,6 @@ export default function PostJob() {
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isVolunteer ? "border-green-500 bg-green-500" : "border-muted-foreground"}`}>
                         {isVolunteer && <span className="text-white text-xs">✓</span>}
-                      </div>
-                    </div>
-
-                    {/* Urgent toggle */}
-                    <div
-                      onClick={() => setValue("isUrgent", !isUrgent)}
-                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isUrgent ? "border-red-400 bg-red-50" : "border-border hover:border-red-300"}`}
-                    >
-                      <div>
-                        <p className={`font-semibold text-sm ${isUrgent ? "text-red-700" : "text-foreground"}`}>⚡ צריך עובד עכשיו — משרה דחופה</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">יוצג ראשון ברשימה · תפוג אחרי 12 שעות</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isUrgent ? "border-red-500 bg-red-500" : "border-muted-foreground"}`}>
-                        {isUrgent && <span className="text-white text-xs">✓</span>}
                       </div>
                     </div>
                   </div>

@@ -44,7 +44,6 @@ const schema = z.object({
   estimatedHours: z.string().optional(),
   contactName: z.string().min(2, "נדרש שם"),
   businessName: z.string().optional(),
-  workingHours: z.string().optional(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
@@ -136,7 +135,6 @@ export default function PostJob() {
       salary: urlParams.get("salary") || "",
       contactName: urlParams.get("contactName") || "",
       businessName: urlParams.get("businessName") || "",
-      workingHours: urlParams.get("workingHours") || "",
     },
   });
 
@@ -173,7 +171,7 @@ export default function PostJob() {
     if (!draft) return;
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
-      "hourlyRate", "estimatedHours", "contactName", "businessName", "workingHours",
+      "hourlyRate", "estimatedHours", "contactName", "businessName",
       "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
@@ -435,7 +433,6 @@ export default function PostJob() {
       estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
       contactName: data.contactName,
       businessName: data.businessName || undefined,
-      workingHours: data.workingHours || undefined,
       startTime: "flexible",
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
@@ -1068,8 +1065,7 @@ export default function PostJob() {
                         ]}
                         onChange={(e) => setValue("activeDuration", e.target.value as "1" | "3" | "7")}
                       />
-                      <AppInput id="workingHours" label="שעות עבודה (טקסט חופשי)" placeholder="08:00-16:00" dir="ltr" {...register("workingHours")} />
-                    </div>
+                                    </div>
 
                     {/* Volunteer toggle */}
                     <div

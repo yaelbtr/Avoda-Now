@@ -899,6 +899,29 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
     );
   }
 
+  // ── Minor late-hours filter ──────────────────────────────────────────────────
+  // Workers under 18 may not work past 22:00 (Israeli youth employment law).
+  // Exclude jobs where:
+  //   a) workEndTime > '22:00'  (late same-day shift), OR
+  //   b) workEndTime < workStartTime (overnight shift — end wraps past midnight)
+  // Jobs with no workEndTime set are always shown (no restriction).
+  if (workerAge != null && workerAge < 18) {
+    conditions.push(
+      or(
+        isNull(jobs.workEndTime),
+        and(
+          // Not a late end time
+          sql`${jobs.workEndTime} <= '22:00'`,
+          // Not an overnight shift (end >= start means same-day or no start time)
+          or(
+            isNull(jobs.workStartTime),
+            sql`${jobs.workEndTime} >= ${jobs.workStartTime}`
+          )!
+        )!
+      )!
+    );
+  }
+
   const whereClause = and(...conditions);
 
   // ── Execute query ───────────────────────────────────────────────────────────

@@ -717,7 +717,7 @@ export default function PostJob() {
 
       {/* ── Tab Content ──────────────────────────────────────────────────── */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="max-w-lg mx-auto px-4 mt-4 pb-32">
+        <div className="max-w-lg mx-auto px-4 mt-4 pb-36">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -1475,10 +1475,23 @@ export default function PostJob() {
                 הקודם
               </AppButton>
             )}
-            {!isLastTab && (
+            {!isLastTab ? (
               <AppButton type="button" variant="brand" size="lg" className="flex-1 gap-2" onClick={goNext}>
                 הבא
                 <ArrowLeft className="h-4 w-4" />
+              </AppButton>
+            ) : (
+              <AppButton
+                type="submit"
+                variant="brand"
+                size="lg"
+                className="flex-1 gap-2"
+                disabled={createJob.isPending}
+              >
+                {createJob.isPending
+                  ? <><Loader2 className="h-4 w-4 animate-spin" />מפרסם...</>
+                  : <><Send className="h-4 w-4" />פרסם עבודה</>
+                }
               </AppButton>
             )}
           </div>

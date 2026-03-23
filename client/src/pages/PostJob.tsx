@@ -1018,28 +1018,55 @@ export default function PostJob() {
                         label="סוג שכר"
                         defaultValue="hourly"
                         options={SALARY_TYPES.map((s) => ({ value: s.value, label: s.label }))}
-                        onChange={(e) => setValue("salaryType", e.target.value)}
+                        onChange={(e) => {
+                          const type = e.target.value;
+                          setValue("salaryType", type);
+                          // Clear the amount field when switching types
+                          setValue("salary", "");
+                          setValue("hourlyRate", "");
+                        }}
                       />
-                      <AppInput
-                        id="salary"
-                        label={salaryType === "volunteer" ? "התנדבות" : "סכום (₪)"}
-                        type="number"
-                        placeholder={salaryType === "volunteer" ? "—" : "50"}
-                        disabled={salaryType === "volunteer"}
-                        dir="ltr"
-                        {...register("salary")}
-                      />
-                    </div>
-
-                    {salaryType !== "volunteer" && (
-                      <div className="grid grid-cols-2 gap-3">
+                      {salaryType === "volunteer" ? (
+                        <AppInput
+                          id="salary-volunteer"
+                          label="התנדבות"
+                          type="text"
+                          placeholder="—"
+                          disabled
+                          dir="ltr"
+                        />
+                      ) : salaryType === "hourly" ? (
                         <div>
-                          <AppInput id="hourlyRate" label="מחיר לשעה (₪)" type="number" min="0" step="5" placeholder="70" dir="ltr" {...register("hourlyRate")} />
-                          <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪ לשעה</p>
+                          <AppInput
+                            id="hourlyRate"
+                            label="מחיר לשעה (₪)"
+                            type="number"
+                            min="0"
+                            step="5"
+                            placeholder="70"
+                            dir="ltr"
+                            {...register("hourlyRate")}
+                          />
+                          <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪/שעה</p>
                         </div>
-
-                      </div>
-                    )}
+                      ) : (
+                        <div>
+                          <AppInput
+                            id="salary"
+                            label={salaryType === "daily" ? "שכר יומי (₪)" : "סכום כולל (₪)"}
+                            type="number"
+                            min="0"
+                            step="10"
+                            placeholder={salaryType === "daily" ? "300" : "500"}
+                            dir="ltr"
+                            {...register("salary")}
+                          />
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {salaryType === "daily" ? "לדוגמא: 300 ₪/יום" : 'לדוגמא: 500 ₪ סה"כ'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <AppSelect

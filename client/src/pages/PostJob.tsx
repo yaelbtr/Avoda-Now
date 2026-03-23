@@ -22,7 +22,7 @@ import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
   MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase,
   Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus,
-  FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2,
+  FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2, User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,6 +111,7 @@ export default function PostJob() {
   const [captchaError, setCaptchaError] = useState(false);
   const [legalAllConfirmed, setLegalAllConfirmed] = useState(false);
   const [legalCheckboxError, setLegalCheckboxError] = useState(false);
+  const [salaryError, setSalaryError] = useState(false);
 
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const isDuplicate = !!urlParams.get("from");
@@ -558,6 +559,21 @@ export default function PostJob() {
     if (activeTab === "conditions") {
       const ok = await trigger(["contactName"]);
       if (!ok) return;
+      // Salary is required unless volunteer
+      const currentSalaryType = getValues("salaryType");
+      const currentSalary = getValues("salary");
+      const currentHourlyRate = getValues("hourlyRate");
+      if (currentSalaryType !== "volunteer") {
+        const hasSalary = currentSalaryType === "hourly"
+          ? !!(currentHourlyRate && parseFloat(currentHourlyRate) > 0)
+          : !!(currentSalary && parseFloat(currentSalary) > 0);
+        if (!hasSalary) {
+          setSalaryError(true);
+          toast.error("אנא הזן שכר למשרה");
+          return;
+        }
+      }
+      setSalaryError(false);
     }
     // Mark current tab as completed
     setCompletedTabs(prev => new Set(Array.from(prev).concat(activeTab)));
@@ -1132,12 +1148,14 @@ export default function PostJob() {
                           <AppInput
                             id="hourlyRate"
                             label="מחיר לשעה (₪)"
+                            required
                             type="number"
                             min="0"
                             step="5"
                             placeholder="70"
                             dir="ltr"
-                            {...register("hourlyRate")}
+                            {...register("hourlyRate", { onChange: () => setSalaryError(false) })}
+                            error={salaryError ? "נדרש מחיר לשעה" : undefined}
                           />
                           <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪/שעה</p>
                         </div>
@@ -1146,12 +1164,14 @@ export default function PostJob() {
                           <AppInput
                             id="salary"
                             label={salaryType === "daily" ? "שכר יומי (₪)" : "סכום כולל (₪)"}
+                            required
                             type="number"
                             min="0"
                             step="10"
                             placeholder={salaryType === "daily" ? "300" : "500"}
                             dir="ltr"
-                            {...register("salary")}
+                            {...register("salary", { onChange: () => setSalaryError(false) })}
+                            error={salaryError ? "נדרש שכר" : undefined}
                           />
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {salaryType === "daily" ? "לדוגמא: 300 ₪/יום" : 'לדוגמא: 500 ₪ סה"כ'}
@@ -1208,6 +1228,23 @@ export default function PostJob() {
                         {isVolunteer && <span className="text-white text-xs">✓</span>}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Contact */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <User className="h-4 w-4 text-primary" />
+                      פרטי קשר
+                    </h2>
+                    <AppInput
+                      id="contactName"
+                      label="שם איש קשר"
+                      required
+                      placeholder="שם מלא"
+                      dir="rtl"
+                      {...register("contactName")}
+                      error={errors.contactName?.message}
+                    />
                   </div>
 
                   {/* Min age */}

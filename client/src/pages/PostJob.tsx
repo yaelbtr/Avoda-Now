@@ -46,7 +46,6 @@ const schema = z.object({
   businessName: z.string().optional(),
   workingHours: z.string().optional(),
   startTime: z.string(),
-  workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
@@ -131,7 +130,6 @@ export default function PostJob() {
     defaultValues: {
       salaryType: (urlParams.get("salaryType") as FormData["salaryType"]) || "hourly",
       startTime: (urlParams.get("startTime") as FormData["startTime"]) || "flexible",
-      workersNeeded: urlParams.get("workersNeeded") || "1",
       activeDuration: "7",
       title: urlParams.get("title") || "",
       description: urlParams.get("description") || "",
@@ -178,7 +176,7 @@ export default function PostJob() {
     const fields: (keyof FormData)[] = [
       "title", "description", "category", "address", "salary", "salaryType",
       "hourlyRate", "estimatedHours", "contactName", "businessName", "workingHours",
-      "startTime", "workersNeeded", "activeDuration",
+      "startTime", "activeDuration",
       "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
     ];
     fields.forEach((f) => {
@@ -441,7 +439,6 @@ export default function PostJob() {
       businessName: data.businessName || undefined,
       workingHours: data.workingHours || undefined,
       startTime: data.startTime as Parameters<typeof createJob.mutate>[0]["startTime"],
-      workersNeeded: parseInt(data.workersNeeded),
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
       isLocalBusiness: data.isLocalBusiness ?? false,
@@ -1017,15 +1014,12 @@ export default function PostJob() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <AppSelect
-                        label="זמן התחלה"
-                        defaultValue="flexible"
-                        options={START_TIMES.map((s) => ({ value: s.value, label: s.label }))}
-                        onChange={(e) => setValue("startTime", e.target.value)}
-                      />
-                      <AppInput id="workersNeeded" label="עובדים דרושים" type="number" min="1" dir="ltr" {...register("workersNeeded")} />
-                    </div>
+                    <AppSelect
+                      label="זמן התחלה"
+                      defaultValue="flexible"
+                      options={START_TIMES.map((s) => ({ value: s.value, label: s.label }))}
+                      onChange={(e) => setValue("startTime", e.target.value)}
+                    />
 
                   </div>
                 </div>

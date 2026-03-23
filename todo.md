@@ -3119,6 +3119,13 @@ Isolation guarantees:
 
 - [x] Audit workStartTime, workersNeeded, exactDateTime usage in schema/routers/db/matching
 - [ ] Remove workStartTime field from PostJob UI and state
-- [ ] Remove workersNeeded field from PostJob UI and state
+- [x] Remove workersNeeded field from PostJob UI and state
 - [x] Remove exactDateTime field from PostJob UI and state
 - [x] Verify submission and matching logic unaffected
+
+## Feature: Remove workersNeeded from PostJob UI
+
+- [x] Remove workersNeeded AppInput from PostJob UI
+- [x] Remove workersNeeded from Zod schema (keep server default=1)
+- [x] Remove workersNeeded from defaultValues, restoreDraft, urlParams
+- [x] Verify job cards/details still display workersNeeded correctly

@@ -177,6 +177,8 @@ export default function PostJob() {
     ];
     fields.forEach((f) => {
       const v = draft[f];
+      // Skip empty contactName so the profile autofill can still run
+      if (f === "contactName" && (!v || (v as string).trim() === "")) return;
       if (v !== undefined && v !== null) setValue(f, v as any);
     });
     if (draft.lat != null) setLat(draft.lat);
@@ -232,16 +234,14 @@ export default function PostJob() {
   });
 
   // ── Autofill contact + worker search preferences from employer profile ──────
-  // Only runs once when profile loads; never overwrites user input or a restored draft.
+  // Fills contactName from profile whenever the field is empty (even if a draft exists).
   useEffect(() => {
     if (!employerProfile) return;
-    // Skip if a draft is waiting to be restored (it may have its own values)
-    if (hasDraft) return;
 
-    // Contact fields
+    // Contact fields — always fill if empty (draft may not have contactName)
     const currentContact = getValues("contactName");
-    if (!currentContact) {
-      const profileName = employerProfile.name ?? user?.name ?? "";
+    if (!currentContact || currentContact.trim() === "") {
+      const profileName = (employerProfile.name ?? "").trim() || (user?.name ?? "").trim();
       if (profileName) setValue("contactName", profileName, { shouldDirty: false });
     }
     // Worker search preferences — only autofill if still at default values

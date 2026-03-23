@@ -3213,3 +3213,7 @@ Isolation guarantees:
 - [x] Root cause: offered/offer_rejected enum values were never migrated to the DB (only in schema.ts)
 - [x] Fix: applied ALTER TYPE application_status ADD VALUE directly via pg driver
 - [x] Fix: updated Drizzle snapshots (0012, 0013) to include offered/offer_rejected so db:push stays in sync
+
+## Bug Fix — "Please login (10001)" on home page for unauthenticated users
+- [x] Root cause: HomeEmployer fired myJobs + totalPendingApplications + getEmployerProfile before auth.me resolved (race condition)
+- [x] Fix: added authLoading guard — enabled: !authLoading && isAuthenticated for all three queries

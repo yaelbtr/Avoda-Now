@@ -111,7 +111,7 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
 /* ── Main component ───────────────────────────────────────────────── */
 export default function HomeEmployer() {
   const [, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { resetUserMode, userMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
@@ -162,12 +162,12 @@ export default function HomeEmployer() {
     navigate("/post-job");
   };
 
-  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: isAuthenticated });
-  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: !authLoading && isAuthenticated });
+  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: !authLoading && isAuthenticated });
   const push = usePushNotifications();
   const pendingCount = pendingAppsQuery.data?.total ?? 0;
   // Load employer profile to use saved workerSearchLatitude/Longitude as fallback
-  const isEmployer = isAuthenticated && userMode === "employer";
+  const isEmployer = !authLoading && isAuthenticated && userMode === "employer";
   const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
     enabled: isEmployer,
     staleTime: 60_000,

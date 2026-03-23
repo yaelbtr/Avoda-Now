@@ -966,37 +966,71 @@ export default function PostJob() {
 
                     <div>
                       <AppLabel>שעות עבודה <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></AppLabel>
-                      <div className="flex flex-wrap gap-2 mt-2 mb-2">
-                        {[
-                          { label: "☀️ בוקר", start: "06:00", end: "14:00" },
-                          { label: "☀️ צהריים", start: "12:00", end: "20:00" },
-                          { label: "🌆 ערב", start: "16:00", end: "22:00" },
-                          { label: "🌙 לילה", start: "22:00", end: "06:00" },
-                        ].map(preset => {
-                          const isActive = workStartTime === preset.start && workEndTime === preset.end;
-                          return (
-                            <button
-                              key={preset.label}
-                              type="button"
-                              onClick={() => {
-                                if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
-                                else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); }
-                              }}
-                              className="px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
-                              style={isActive
-                                ? { background: "oklch(0.35 0.08 122)", borderColor: "oklch(0.35 0.08 122)", color: "white" }
-                                : { background: "white", borderColor: "oklch(0.88 0.04 122)", color: "oklch(0.35 0.08 122)" }
-                              }
-                            >
-                              {preset.label} ({preset.start}–{preset.end})
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => setWorkStartTime(e.target.value)} dir="ltr" />
-                        <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => setWorkEndTime(e.target.value)} dir="ltr" />
-                      </div>
+                      {/* Shift preset tabs — same style as location sub-tabs */}
+                      {(() => {
+                        const SHIFTS = [
+                          { key: "morning",   label: "☀️ בוקר",    start: "06:00", end: "14:00" },
+                          { key: "noon",      label: "🌤️ צהריים",  start: "12:00", end: "20:00" },
+                          { key: "evening",   label: "🌆 ערב",     start: "16:00", end: "22:00" },
+                          { key: "night",     label: "🌙 לילה",    start: "22:00", end: "06:00" },
+                          { key: "custom",    label: "✏️ מותאם",   start: "",      end: ""      },
+                        ] as const;
+                        type ShiftKey = typeof SHIFTS[number]["key"];
+                        const activeShift: ShiftKey | "" = (() => {
+                          if (!workStartTime && !workEndTime) return "";
+                          const match = SHIFTS.find(s => s.key !== "custom" && s.start === workStartTime && s.end === workEndTime);
+                          return match ? match.key : "custom";
+                        })();
+                        return (
+                          <>
+                            {/* Tab bar */}
+                            <div className="flex flex-row flex-nowrap gap-1 mt-2 mb-3 bg-muted/40 rounded-xl p-1">
+                              {SHIFTS.map(shift => {
+                                const isActive = activeShift === shift.key;
+                                return (
+                                  <button
+                                    key={shift.key}
+                                    type="button"
+                                    onClick={() => {
+                                      if (shift.key === "custom") {
+                                        // keep existing times or clear to let user type
+                                        if (activeShift !== "custom") { setWorkStartTime(""); setWorkEndTime(""); }
+                                      } else if (isActive) {
+                                        setWorkStartTime(""); setWorkEndTime("");
+                                      } else {
+                                        setWorkStartTime(shift.start); setWorkEndTime(shift.end);
+                                      }
+                                    }}
+                                    className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all text-center"
+                                    style={isActive
+                                      ? { background: "oklch(0.35 0.08 122)", color: "white", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }
+                                      : { background: "transparent", color: "oklch(0.45 0.08 122)" }
+                                    }
+                                  >
+                                    {shift.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {/* Time range display for presets */}
+                            {activeShift && activeShift !== "custom" && (() => {
+                              const s = SHIFTS.find(sh => sh.key === activeShift)!;
+                              return (
+                                <p className="text-xs text-center text-muted-foreground mb-3">
+                                  {s.start} – {s.end}
+                                </p>
+                              );
+                            })()}
+                            {/* Manual inputs for custom */}
+                            {activeShift === "custom" && (
+                              <div className="grid grid-cols-2 gap-3">
+                                <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => setWorkStartTime(e.target.value)} dir="ltr" />
+                                <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => setWorkEndTime(e.target.value)} dir="ltr" />
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
 
                   </div>

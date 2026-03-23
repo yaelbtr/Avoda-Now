@@ -3174,3 +3174,6 @@ Isolation guarantees:
 
 ## Feature — Post-Job Redirect to Matched Workers
 - [x] After job publish success, redirect to /matched-workers?jobId={id}
+
+## Feature — Toast with Link After Job Publish
+- [x] Show toast "המשרה פורסמה! לצפייה בעובדים מתאימים ←" with clickable link on job publish success

@@ -336,7 +336,21 @@ export default function PostJob() {
     onSuccess: (job) => {
       clearDraft();
       setSuccess(true);
-      setTimeout(() => navigate(`/matched-workers?jobId=${job?.id}`), 2000);
+      const matchedUrl = `/matched-workers?jobId=${job?.id}`;
+      toast.success(
+        <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
+          המשרה פורסמה!
+          <a
+            href={matchedUrl}
+            style={{ color: "#4a5d23", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}
+            onClick={(e) => { e.preventDefault(); navigate(matchedUrl); }}
+          >
+            לצפייה בעובדים מתאימים ←
+          </a>
+        </span>,
+        { duration: 4000 }
+      );
+      setTimeout(() => navigate(matchedUrl), 2000);
     },
     onError: (e) => {
       const msg = e.message;
@@ -1484,7 +1498,23 @@ export default function PostJob() {
             clearDraft();
             setSuccess(true);
             const jobId = (job as { id?: number })?.id;
-            setTimeout(() => navigate(jobId ? `/matched-workers?jobId=${jobId}` : "/my-jobs"), 1500);
+            const matchedUrl = jobId ? `/matched-workers?jobId=${jobId}` : "/my-jobs";
+            toast.success(
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
+                המשרה פורסמה!
+                {jobId && (
+                  <a
+                    href={matchedUrl}
+                    style={{ color: "#4a5d23", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}
+                    onClick={(e) => { e.preventDefault(); navigate(matchedUrl); }}
+                  >
+                    לצפייה בעובדים מתאימים ←
+                  </a>
+                )}
+              </span>,
+              { duration: 4000 }
+            );
+            setTimeout(() => navigate(matchedUrl), 1500);
           }}
         />
       )}

@@ -3241,3 +3241,6 @@ Isolation guarantees:
 ## Feature — MyJobs: auto-expand applicants section when applicants exist
 - [x] db.ts: added totalApplicationCount to getMyJobsWithPendingCounts (separate query, all statuses)
 - [x] MyJobs.tsx: useEffect auto-expands all jobs with totalApplicationCount > 0 on first data load (runs once)
+
+## Bug Fix — JobApplications: wrong badge for offer-accepted state
+- [x] Fix: badge shows "הצעה נשלחה" even when worker accepted — should show "העובד אישר את ההצעה" when offered+contactRevealed=true

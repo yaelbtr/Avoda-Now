@@ -96,7 +96,10 @@ function ApplicantCard({
   isPending: boolean;
 }) {
   const [rateOpen, setRateOpen] = useState(false);
-  const statusStyle = STATUS_STYLE[app.status] ?? { label: app.status, className: "bg-gray-100 text-gray-700" };
+  // When status=offered and worker accepted (contactRevealed=true), override the badge label
+  const statusStyle = app.status === "offered" && app.contactRevealed
+    ? { label: "העובד אישר את ההצעה", className: "bg-green-100 text-green-800" }
+    : (STATUS_STYLE[app.status] ?? { label: app.status, className: "bg-gray-100 text-gray-700" });
   const contactRevealed = app.contactRevealed && app.workerPhone;
   const phone = app.workerPhone ?? "";
   const rating = app.workerRating ? parseFloat(app.workerRating) : null;

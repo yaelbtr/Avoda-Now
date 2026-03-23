@@ -53,12 +53,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 type TabId = "details" | "location" | "conditions" | "publish";
 
-function generateCaptcha() {
-  const a = Math.floor(Math.random() * 9) + 1;
-  const b = Math.floor(Math.random() * 9) + 1;
-  return { a, b, answer: a + b };
-}
-
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "details",    label: "פרטי משרה",  icon: FileText  },
   { id: "location",   label: "מיקום ושעות", icon: Clock     },
@@ -106,9 +100,6 @@ export default function PostJob() {
     noIndex: true,
   });
 
-  const [captcha, setCaptcha] = useState(generateCaptcha);
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaError, setCaptchaError] = useState(false);
   const [legalAllConfirmed, setLegalAllConfirmed] = useState(false);
   const [legalCheckboxError, setLegalCheckboxError] = useState(false);
   const [salaryError, setSalaryError] = useState(false);
@@ -394,13 +385,6 @@ export default function PostJob() {
   const onSubmit = (data: FormData) => {
     if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
     if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); setActiveTab("location"); return; }
-    if (parseInt(captchaInput) !== captcha.answer) {
-      setCaptchaError(true);
-      setCaptcha(generateCaptcha());
-      setCaptchaInput("");
-      toast.error("קוד אבטחה שגוי, נסה שוב");
-      return;
-    }
     if (!jobDate) {
       setJobDateTouched(true);
       toast.error("אנא בחר תאריך לעבודה");
@@ -417,7 +401,6 @@ export default function PostJob() {
       return;
     }
     setLegalCheckboxError(false);
-    setCaptchaError(false);
     createJob.mutate({
       title: data.title,
       description: data.description,
@@ -1396,26 +1379,6 @@ export default function PostJob() {
                         שם עסק: <strong className="text-foreground">{employerProfile.companyName}</strong>
                       </p>
                     )}
-                  </div>
-
-                  {/* CAPTCHA */}
-                  <div className="bg-card rounded-2xl border border-border p-5">
-                    <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-primary" />
-                      אימות אנטי-ספאם
-                    </h2>
-                    <p className="text-sm text-muted-foreground mb-3 text-right">
-                      פתור: <strong className="text-foreground text-base">{captcha.a} + {captcha.b} = ?</strong>
-                    </p>
-                    <AppInput
-                      type="number"
-                      placeholder="הכנס את התשובה"
-                      value={captchaInput}
-                      onChange={(e) => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
-                      wrapperClassName="max-w-32"
-                      error={captchaError ? "תשובה שגויאה, נסה שוב" : undefined}
-                      dir="ltr"
-                    />
                   </div>
 
                   {/* Region blocked */}

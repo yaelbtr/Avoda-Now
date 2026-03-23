@@ -3171,3 +3171,6 @@ Isolation guarantees:
 
 ## Feature — Job Detail Page Redesign (AvodaNow Design)
 - [x] Redesign job detail page using AvodaNow design tokens (brand colors, AppButton, RTL layout)
+
+## Feature — Post-Job Redirect to Matched Workers
+- [x] After job publish success, redirect to /matched-workers?jobId={id}

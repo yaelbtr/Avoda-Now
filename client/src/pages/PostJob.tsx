@@ -336,7 +336,7 @@ export default function PostJob() {
     onSuccess: (job) => {
       clearDraft();
       setSuccess(true);
-      setTimeout(() => navigate(`/job/${job?.id}`), 2000);
+      setTimeout(() => navigate(`/matched-workers?jobId=${job?.id}`), 2000);
     },
     onError: (e) => {
       const msg = e.message;
@@ -1484,7 +1484,7 @@ export default function PostJob() {
             clearDraft();
             setSuccess(true);
             const jobId = (job as { id?: number })?.id;
-            setTimeout(() => navigate(jobId ? `/job/${jobId}` : "/my-jobs"), 1500);
+            setTimeout(() => navigate(jobId ? `/matched-workers?jobId=${jobId}` : "/my-jobs"), 1500);
           }}
         />
       )}

@@ -41,8 +41,11 @@ function isNew(createdAt: Date | string): boolean {
 
 const STATUS_STYLE: Record<string, { label: string; className: string }> = {
   pending: { label: "ממתין", className: "bg-yellow-100 text-yellow-800" },
+  viewed: { label: "נצפה", className: "bg-blue-100 text-blue-800" },
   accepted: { label: "התקבל", className: "bg-green-100 text-green-800" },
   rejected: { label: "נדחה", className: "bg-red-100 text-red-800" },
+  offered: { label: "הצעה נשלחה", className: "bg-purple-100 text-purple-800" },
+  offer_rejected: { label: "דחה הצעה", className: "bg-gray-100 text-gray-600" },
 };
 
 // ── Star rating display ─────────────────────────────────────────────────────
@@ -322,6 +325,10 @@ export default function JobApplications() {
   const pending = applicants?.filter((a) => a.status === "pending") ?? [];
   const accepted = applicants?.filter((a) => a.status === "accepted") ?? [];
   const rejected = applicants?.filter((a) => a.status === "rejected") ?? [];
+  // Offer-related groups
+  const offered = applicants?.filter((a) => a.status === "offered") ?? [];
+  const offerAccepted = applicants?.filter((a) => a.status === "offered" && a.contactRevealed) ?? [];
+  const offerRejected = applicants?.filter((a) => a.status === "offer_rejected") ?? [];
   const total = applicants?.length ?? 0;
 
   return (
@@ -419,6 +426,69 @@ export default function JobApplications() {
                 </h2>
                 <div className="space-y-3">
                   {rejected.map((app) => (
+                    <ApplicantCard
+                      key={app.id}
+                      app={app}
+                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                      isPending={updateStatus.isPending}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Offers sent (awaiting worker response) ── */}
+            {offered.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                  הצעות שנשלחו — ממתינות לתשובת העובד
+                  <Badge className="bg-purple-100 text-purple-800">{offered.length}</Badge>
+                </h2>
+                <div className="space-y-3">
+                  {offered.map((app) => (
+                    <ApplicantCard
+                      key={app.id}
+                      app={app}
+                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                      isPending={updateStatus.isPending}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Offer accepted by worker (employer sees worker phone) ── */}
+            {offerAccepted.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                  אישרו הצעה — טלפון העובד גלוי
+                  <Badge className="bg-green-100 text-green-800">{offerAccepted.length}</Badge>
+                </h2>
+                <div className="space-y-3">
+                  {offerAccepted.map((app) => (
+                    <ApplicantCard
+                      key={app.id}
+                      app={app}
+                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                      isPending={updateStatus.isPending}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Offer rejected by worker ── */}
+            {offerRejected.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                  דחו את ההצעה
+                  <Badge variant="secondary">{offerRejected.length}</Badge>
+                </h2>
+                <div className="space-y-3">
+                  {offerRejected.map((app) => (
                     <ApplicantCard
                       key={app.id}
                       app={app}

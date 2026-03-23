@@ -1115,11 +1115,26 @@ const jobsRouter = router({
       await respondToJobOffer(input.applicationId, input.action);
 
       if (input.action === "accept") {
-        // Notify employer via push
-        if (app.jobPostedBy) {
-          sendPushToUser(app.jobPostedBy, {
-            title: "📞 עובד אישר את הצעתך!",
-            body: `${app.workerName ?? "עובד"} אישר את ההצעה למשרה "${app.jobTitle ?? ""}". הטלפון שלו גלוי עכשיו.`,
+        const workerPhone = app.workerPhone ?? "";
+        const workerName = app.workerName ?? "עובד";
+        const jobTitle = app.jobTitle ?? "";
+        const employerId = app.jobPostedBy;
+        const employerPhone = app.employerPhone;
+        const employerPrefs = app.employerNotificationPrefs ?? "both";
+
+        // SMS to employer with worker phone
+        if (employerPhone && (employerPrefs === "sms_only" || employerPrefs === "both")) {
+          sendSms(
+            employerPhone,
+            `אישרור הצעה! ${workerName} אישר את הצעתך למשרה "${jobTitle}". הטלפון שלו: ${workerPhone}`
+          ).catch(e => console.warn("[JobOffer] SMS to employer failed:", e));
+        }
+
+        // Push to employer with worker phone
+        if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
+          sendPushToUser(employerId, {
+            title: `📞 ${workerName} אישר את הצעתך!`,
+            body: `משרה: ${jobTitle}. טלפון העובד: ${workerPhone}`,
             url: `/job/${app.jobId}/applications`,
           }).catch(e => console.warn("[JobOffer] Push to employer failed:", e));
         }

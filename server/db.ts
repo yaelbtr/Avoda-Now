@@ -1569,9 +1569,11 @@ export async function respondToJobOffer(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   if (action === "accept") {
+    // Keep status as "offered" — contactRevealed=true signals the worker accepted.
+    // This lets the employer distinguish offer-accepted from regular accepted applications.
     await db
       .update(applications)
-      .set({ status: "accepted", contactRevealed: true, revealedAt: new Date() })
+      .set({ contactRevealed: true, revealedAt: new Date() })
       .where(eq(applications.id, applicationId));
   } else {
     await db
@@ -1618,6 +1620,8 @@ export async function getPublicWorkerProfile(userId: number) {
 export async function getApplicationById(id: number) {
   const db = await getDb();
   if (!db) return null;
+  // Alias the users table so we can join it twice (worker + employer)
+  const employer = aliasedTable(users, "employer");
   const result = await db
     .select({
       id: applications.id,
@@ -1636,15 +1640,19 @@ export async function getApplicationById(id: number) {
       workerPreferredCategories: users.preferredCategories,
       workerTags: users.workerTags,
       workerCreatedAt: users.createdAt,
-       // Job info for authorization + minor eligibility
+      // Job info for authorization + minor eligibility
       jobPostedBy: jobs.postedBy,
       jobTitle: jobs.title,
       jobCategory: jobs.category,
       jobWorkEndTime: jobs.workEndTime,
+      // Employer info (for offer-accept notifications: send worker phone to employer)
+      employerPhone: employer.phone,
+      employerNotificationPrefs: employer.notificationPrefs,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .leftJoin(employer, eq(jobs.postedBy, employer.id))
     .where(eq(applications.id, id))
     .limit(1);
   return result[0] ?? null;

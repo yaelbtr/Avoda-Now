@@ -823,8 +823,8 @@ export default function MyApplications() {
                       </p>
                     )}
 
-                    {/* Offered: accept (reveal phone) or reject buttons */}
-                    {isOffered && (
+                    {/* Offered: accept or reject buttons — only show when worker hasn't responded yet */}
+                    {isOffered && !app.contactRevealed && (
                       <div className="flex gap-2 mt-3">
                         <button
                           disabled={respondToOffer.isPending}
@@ -841,9 +841,9 @@ export default function MyApplications() {
                           {respondToOffer.isPending ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <Phone className="h-3.5 w-3.5" />
+                            <CheckCircle className="h-3.5 w-3.5" />
                           )}
-                          חשוף טלפון מעסיק
+                          אשר הצעה
                         </button>
                         <button
                           disabled={respondToOffer.isPending}
@@ -862,40 +862,15 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Accepted from offer: show employer phone */}
-                    {isAccepted && app.contactRevealed && app.employerPhone && (
-                      <div className="flex gap-2 mt-3">
-                        <a href={`tel:${app.employerPhone}`} className="flex-1">
-                          <button
-                            className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-                            style={{
-                              background: "oklch(0.45 0.18 260 / 0.10)",
-                              border: "1px solid oklch(0.45 0.18 260 / 0.25)",
-                              color: "oklch(0.40 0.18 260)",
-                            }}
-                          >
-                            <Phone className="h-3.5 w-3.5" />
-                            התקשר למעסיק
-                          </button>
-                        </a>
-                        <a
-                          href={`https://wa.me/${app.employerPhone.replace(/\D/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1"
-                        >
-                          <button
-                            className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-                            style={{
-                              background: "oklch(0.65 0.22 160 / 0.08)",
-                              border: "1px solid oklch(0.65 0.22 160 / 0.20)",
-                              color: "oklch(0.52 0.22 150)",
-                            }}
-                          >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            WhatsApp
-                          </button>
-                        </a>
+                    {/* Offered + contactRevealed: worker accepted the offer, waiting for employer to call */}
+                    {isOffered && app.contactRevealed && (
+                      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "oklch(0.45 0.18 260 / 0.08)", border: "1px solid oklch(0.45 0.18 260 / 0.20)" }}>
+                        <p className="text-xs font-bold" style={{ color: "oklch(0.45 0.18 260)" }}>
+                          ✓ אישרת את ההצעה!
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 260)" }}>
+                          המעסיק קיבל את הטלפון שלך ויצור איתך קשר בקרוב.
+                        </p>
                       </div>
                     )}
 

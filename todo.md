@@ -3222,3 +3222,10 @@ Isolation guarantees:
 - [x] Create useAuthQuery hook in client/src/hooks/useAuthQuery.ts
 - [x] Migrate all enabled: isAuthenticated query sites to use useAuthQuery (25 pages/components/hooks migrated, 2 prop-based exceptions kept as-is)
 - [x] Ensure !authLoading guard is applied consistently everywhere (baked into useAuthQuery hook)
+
+## Bug Fix — Job Offer Flow Correction
+- [x] MyApplications: offer card shows Accept/Reject only; after accept shows confirmation message
+- [x] Backend respondToOffer (accept): keeps status=offered, sets contactRevealed=true, notifies employer via SMS/Push with worker phone
+- [x] Backend respondToOffer (reject): sets status=offer_rejected
+- [x] JobApplications: shows offered/offer_rejected sections with worker phone visible when contactRevealed=true
+- [x] getApplicationById: includes employerPhone + employerNotificationPrefs via aliased join

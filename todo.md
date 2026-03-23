@@ -3177,3 +3177,12 @@ Isolation guarantees:
 
 ## Feature — Toast with Link After Job Publish
 - [x] Show toast "המשרה פורסמה! לצפייה בעובדים מתאימים ←" with clickable link on job publish success
+
+## Bug Fix — Homepage query fires for unauthenticated users
+- [ ] Fix: query on homepage calls protectedProcedure when user=null → "Please login (10001)"
+
+## Bug Fix — OTP "קוד שגוי" on worker-profile
+- [ ] Fix: OTP verification returns "קוד שגוי" for Google user (id=497267) adding phone on worker-profile
+
+## Bug Fix — Role combo in admin user-edit modal doesn't open
+- [x] Fix: role Select combo in admin user-edit modal appears empty and doesn't open — AppSelect now supports children prop

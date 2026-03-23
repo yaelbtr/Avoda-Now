@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, title, category, city, latitude, longitude, \"postedBy\", \"startTime\", \"salaryType\", salary, status, \"minAge\", \"workEndTime\", \"regionId\" FROM jobs WHERE id = 60010",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, title, category, city, latitude, longitude, \"postedBy\", \"startTime\", \"salaryType\", salary, status, \"minAge\", \"workEndTime\", \"regionId\" FROM jobs WHERE id = 60010",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 5544
+}

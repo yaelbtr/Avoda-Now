@@ -1,0 +1,98 @@
+{
+  "query": "SELECT id, title, category, city, status, \"postedBy\", \"minAge\", \"workEndTime\", \"regionId\" FROM jobs ORDER BY id DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, title, category, city, status, \"postedBy\", \"minAge\", \"workEndTime\", \"regionId\" FROM jobs ORDER BY id DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "60004",
+      "title": "מלצר",
+      "category": "agriculture",
+      "city": "ישראל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "60003",
+      "title": "מלצר",
+      "category": "kitchen",
+      "city": "ישראל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "60002",
+      "title": "מלצר",
+      "category": "kitchen",
+      "city": "ישראל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "60001",
+      "title": "מלצר",
+      "category": "kitchen",
+      "city": "ישראל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "30003",
+      "title": "ביביסיטר",
+      "category": "childcare",
+      "city": "אברבנאל 121א בני ברק",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "30002",
+      "title": "מנקה רחובות",
+      "category": "cleaning",
+      "city": "ישראל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "30001",
+      "title": "שליח אוכל",
+      "category": "volunteer",
+      "city": "ישראל",
+      "status": "closed",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    },
+    {
+      "id": "1",
+      "title": "שליח אוכל",
+      "category": "volunteer",
+      "city": "אברבנאל",
+      "status": "expired",
+      "postedBy": "postedBy",
+      "minAge": "minAge",
+      "workEndTime": "workEndTime",
+      "regionId": "regionId"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcategory\tcity\tstatus\tpostedBy\tminAge\tworkEndTime\tregionId\n60004\tמלצר\tagriculture\tישראל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n60003\tמלצר\tkitchen\tישראל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n60002\tמלצר\tkitchen\tישראל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n60001\tמלצר\tkitchen\tישראל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n30003\tביביסיטר\tchildcare\tאברבנאל 121א בני ברק\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n30002\tמנקה רחובות\tcleaning\tישראל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n30001\tשליח אוכל\tvolunteer\tישראל\tclosed\tpostedBy\tminAge\tworkEndTime\tregionId\n1\tשליח אוכל\tvolunteer\tאברבנאל\texpired\tpostedBy\tminAge\tworkEndTime\tregionId\n",
+  "stderr": "",
+  "execution_time_ms": 1590
+}

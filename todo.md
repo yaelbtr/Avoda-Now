@@ -3129,3 +3129,8 @@ Isolation guarantees:
 - [x] Remove workersNeeded from Zod schema (keep server default=1)
 - [x] Remove workersNeeded from defaultValues, restoreDraft, urlParams
 - [x] Verify job cards/details still display workersNeeded correctly
+
+## OTP Publish Modal Redesign
+- [x] Redesign JobPublishOtpModal to match LoginModal visual style (channel cards, OTP inputs, security badge, RTL)
+- [x] Add 60-second resend countdown timer to "שלח קוד חדש" button in OTP step
+- [x] Add send cooldown timer on channel selection screen (prevents re-sending immediately)

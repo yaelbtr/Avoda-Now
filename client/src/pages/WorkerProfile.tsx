@@ -24,6 +24,7 @@ import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
 import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
 import { normalizeDateInput } from "@shared/ageUtils";
+import { SHIFT_PRESETS } from "@shared/const";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -35,12 +36,7 @@ const DAYS = [
   { value: "saturday", label: "שבת" },
 ];
 
-const TIME_SLOTS = [
-  { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅", isNight: false },
-  { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️", isNight: false },
-  { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🏆", isNight: false },
-  { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙", isNight: true },
-];
+// TIME_SLOTS replaced by SHIFT_PRESETS imported from @shared/const
 
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
 
@@ -931,7 +927,7 @@ export default function WorkerProfile() {
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground mb-2">שעות עבודה:</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {TIME_SLOTS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
+                    {SHIFT_PRESETS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
                       const isSelected = preferredTimeSlots.includes(slot.value);
                       return (
                         <button
@@ -1728,7 +1724,7 @@ export default function WorkerProfile() {
 
             <p className="text-xs font-medium text-muted-foreground mb-2">שעות עבודה:</p>
             <div className="grid grid-cols-2 gap-2">
-              {TIME_SLOTS.map((slot) => {
+              {SHIFT_PRESETS.map((slot) => {
                 const isSelected = preferredTimeSlots.includes(slot.value);
                 return (
                   <button
@@ -2075,7 +2071,7 @@ export default function WorkerProfile() {
         preferredDays={preferredDays}
         preferredTimeSlots={preferredTimeSlots}
         dayLabels={DAYS}
-        timeSlotLabels={TIME_SLOTS}
+        timeSlotLabels={SHIFT_PRESETS}
         locationMode={locationMode}
         preferredCities={preferredCities}
         cityNames={(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe)}

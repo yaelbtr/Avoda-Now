@@ -16,6 +16,7 @@ import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES } from "@shared/categories";
 import { shouldWarnLateJob, normalizeDateInput, isEndTimeInvalid, isOvernightShift } from "@shared/ageUtils";
+import { SHIFT_PRESETS } from "@shared/const";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import {
@@ -1003,12 +1004,7 @@ export default function PostJob() {
                       {/* Sub-tab 2: shift presets */}
                       {hoursSubTab === "presets" && (
                         <div className="grid grid-cols-2 gap-2" dir="rtl">
-                          {([
-                            { label: "בוקר",    sub: "06:00–14:00", icon: "☀️",  start: "06:00", end: "14:00" },
-                            { label: "צהריים",  sub: "12:00–20:00", icon: "🌤️", start: "12:00", end: "20:00" },
-                            { label: "ערב",     sub: "16:00–22:00", icon: "🌆",  start: "16:00", end: "22:00" },
-                            { label: "לילה",    sub: "22:00–06:00", icon: "🌙",  start: "22:00", end: "06:00" },
-                          ] as const).map(preset => {
+                          {SHIFT_PRESETS.map(preset => {
                             const isActive = workStartTime === preset.start && workEndTime === preset.end;
                             return (
                               <button

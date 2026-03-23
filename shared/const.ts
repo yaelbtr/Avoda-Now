@@ -64,3 +64,38 @@ export const LEGAL_DOCUMENT_PATHS: Record<LegalConsentType, string> = {
   user_content_policy: "/user-content-policy",
   reviews_policy: "/reviews-policy",
 };
+
+/**
+ * Single source of truth for shift presets used across the platform.
+ *
+ * Used by:
+ *  - PostJob (employer selects a shift when posting a job)
+ *  - WorkerProfile / HomeWorker (worker marks preferred time slots)
+ *  - FindJobs (filter by shift)
+ *  - queryJobs server-side (minor late-hours filter references these hours)
+ *
+ * Fields:
+ *  - value   : stable identifier stored in DB / state
+ *  - label   : Hebrew display name
+ *  - sub     : human-readable time range (display only)
+ *  - start   : ISO HH:MM start time (used to pre-fill workStartTime)
+ *  - end     : ISO HH:MM end time   (used to pre-fill workEndTime)
+ *  - icon    : emoji shown in the card UI
+ *  - isNight : true when the shift ends past midnight (used for minor filtering)
+ */
+export interface ShiftPreset {
+  readonly value: string;
+  readonly label: string;
+  readonly sub: string;
+  readonly start: string;
+  readonly end: string;
+  readonly icon: string;
+  readonly isNight: boolean;
+}
+
+export const SHIFT_PRESETS: readonly ShiftPreset[] = [
+  { value: "morning",   label: "בוקר",   sub: "06:00–14:00", start: "06:00", end: "14:00", icon: "☀️",  isNight: false },
+  { value: "afternoon", label: "צהריים", sub: "12:00–20:00", start: "12:00", end: "20:00", icon: "🌤️", isNight: false },
+  { value: "evening",   label: "ערב",    sub: "16:00–22:00", start: "16:00", end: "22:00", icon: "🌆",  isNight: false },
+  { value: "night",     label: "לילה",   sub: "22:00–06:00", start: "22:00", end: "06:00", icon: "🌙",  isNight: true  },
+] as const;

@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import {
@@ -111,8 +112,9 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
 /* ── Main component ───────────────────────────────────────────────── */
 export default function HomeEmployer() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { resetUserMode, userMode } = useUserMode();
+  const authQuery = useAuthQuery();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [userLat, setUserLat] = useState<number | null>(null);
@@ -162,14 +164,14 @@ export default function HomeEmployer() {
     navigate("/post-job");
   };
 
-  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: !authLoading && isAuthenticated });
-  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: !authLoading && isAuthenticated });
+  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, authQuery());
+  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, authQuery());
   const push = usePushNotifications();
   const pendingCount = pendingAppsQuery.data?.total ?? 0;
   // Load employer profile to use saved workerSearchLatitude/Longitude as fallback
-  const isEmployer = !authLoading && isAuthenticated && userMode === "employer";
+  const isEmployer = isAuthenticated && userMode === "employer";
   const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
-    enabled: isEmployer,
+    enabled: authQuery({ enabled: userMode === "employer" }).enabled,
     staleTime: 60_000,
   });
   const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude

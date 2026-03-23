@@ -14,6 +14,7 @@ import EmptyStateCarousel from "@/components/EmptyStateCarousel";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { RADIUS_OPTIONS, getCategoryLabel, getCategoryIcon } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
@@ -440,12 +441,12 @@ export default function FindJobs() {
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
   const initialCategory = params.get("category") ?? "all";
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const authQuery = useAuthQuery();
 
   // Determine if the current user is a minor so we can hide restricted categories
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    ...authQuery({ staleTime: 5 * 60 * 1000 }),
   });
   const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
   // Categories visible in the filter panel — hide allowedForMinors=false for minors
@@ -648,8 +649,7 @@ export default function FindJobs() {
   const [noIndexReady, setNoIndexReady] = useState(false);
   useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical, noIndex: noIndexReady });
 
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
-  const { loading: authLoading } = useAuth();
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   // Use sessionStorage so the "auto-open filter" only fires once per browser session,
   // not on every remount (e.g. navigating away and back via the bottom nav).
   const FILTER_INIT_KEY = "fj_filter_initialized";
@@ -792,12 +792,12 @@ export default function FindJobs() {
     { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
   const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
   const utilsFj = trpc.useUtils();
   const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
-  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, authQuery());
    const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
   const {
     apply: applyWithAgeGateFj,

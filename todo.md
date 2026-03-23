@@ -3217,3 +3217,8 @@ Isolation guarantees:
 ## Bug Fix — "Please login (10001)" on home page for unauthenticated users
 - [x] Root cause: HomeEmployer fired myJobs + totalPendingApplications + getEmployerProfile before auth.me resolved (race condition)
 - [x] Fix: added authLoading guard — enabled: !authLoading && isAuthenticated for all three queries
+
+## Feature — useAuthQuery hook (Single Source of Truth for auth-gated queries)
+- [x] Create useAuthQuery hook in client/src/hooks/useAuthQuery.ts
+- [x] Migrate all enabled: isAuthenticated query sites to use useAuthQuery (25 pages/components/hooks migrated, 2 prop-based exceptions kept as-is)
+- [x] Ensure !authLoading guard is applied consistently everywhere (baked into useAuthQuery hook)

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "./AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 
 type UserMode = "worker" | "employer" | null;
 
@@ -88,6 +89,7 @@ const UserModeContext = createContext<UserModeContextValue>({
 
 export function UserModeProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
   const userId = user?.id;
 
   // Initialise from localStorage — but only if it belongs to the current user.
@@ -130,7 +132,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
 
   // Fetch mode from server when authenticated
   const modeQuery = trpc.user.getMode.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });

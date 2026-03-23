@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -36,6 +37,7 @@ const ACTIVE_BG = "oklch(0.42 0.07 124.9)";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const authQuery = useAuthQuery();
   const { theme, toggleTheme, switchable } = useTheme();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
@@ -107,7 +109,7 @@ export default function Navbar() {
   }, []);
 
   const { data: profileData } = trpc.user.getProfile.useQuery(undefined, {
-    enabled: isAuthenticated && userMode === "worker",
+    ...authQuery({ enabled: userMode === "worker" }),
     staleTime: 60_000,
   });
   const profilePhoto = profileData?.profilePhoto ?? null;
@@ -115,7 +117,7 @@ export default function Navbar() {
   const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
     { lastSeenAt },
     {
-      enabled: isAuthenticated && userMode === "worker",
+      ...authQuery({ enabled: userMode === "worker" }),
       refetchInterval: 60_000, // re-check every minute
       staleTime: 30_000,
     }
@@ -123,7 +125,7 @@ export default function Navbar() {
   const hasUnread = (unreadCount ?? 0) > 0;
 
   const { data: savedIdsData } = trpc.savedJobs.getSavedIds.useQuery(undefined, {
-    enabled: isAuthenticated && userMode === "worker",
+    ...authQuery({ enabled: userMode === "worker" }),
     staleTime: 30_000,
   });
   const savedJobsCount = savedIdsData?.ids?.length ?? 0;

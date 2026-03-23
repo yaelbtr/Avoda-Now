@@ -4,6 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { AppButton } from "@/components/ui";
 import BrandLoader from "@/components/BrandLoader";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -97,6 +98,7 @@ export default function MyApplications() {
   const [, navigate] = useLocation();
   const search = useSearch();
   const { isAuthenticated, loading } = useAuth();
+  const authQuery = useAuthQuery();
 
   useSEO({
     title: "המועמדויות שלי",
@@ -149,12 +151,10 @@ export default function MyApplications() {
   }, [isAuthenticated]);
 
   const { data: applications, isLoading: appsLoading } = trpc.jobs.myApplications.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
   });
 
-  const { data: savedJobs, isLoading: savedLoading } = trpc.savedJobs.getSavedJobs.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+  const { data: savedJobs, isLoading: savedLoading } = trpc.savedJobs.getSavedJobs.useQuery(undefined, authQuery());
 
   const utils = trpc.useUtils();
 

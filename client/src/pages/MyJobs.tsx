@@ -4,6 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { AppButton } from "@/components/ui";
@@ -297,6 +298,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
 export default function MyJobs() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const authQuery = useAuthQuery();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -312,7 +314,7 @@ export default function MyJobs() {
   const utils = trpc.useUtils();
 
   const { data: myJobs, isLoading } = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
   });
 
   const markViewed = trpc.jobs.markApplicationsViewed.useMutation({

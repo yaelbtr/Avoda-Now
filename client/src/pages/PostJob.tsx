@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
@@ -65,6 +66,7 @@ export default function PostJob() {
   const [, navigate] = useLocation();
   const { categories: dbCategories, bySlug: catBySlug } = useCategories();
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
   const { userMode, setUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
@@ -224,7 +226,7 @@ export default function PostJob() {
   } | null>(null);
 
   const { data: employerProfile } = trpc.user.getEmployerProfile.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 60_000,
   });
 
@@ -265,10 +267,7 @@ export default function PostJob() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [employerProfile]);
 
-  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 60_000,
-  });
+  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, authQuery({ staleTime: 60_000 }));
 
   const requestNotif = trpc.regions.requestNotification.useMutation({
     onSuccess: (d) => {

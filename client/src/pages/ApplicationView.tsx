@@ -10,6 +10,7 @@
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { AppButton } from "@/components/ui";
 import { useCategories } from "@/hooks/useCategories";
 import {
@@ -39,6 +40,7 @@ export default function ApplicationView() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const applicationId = parseInt(params.id ?? "0");
 
   const [contactRevealed, setContactRevealed] = useState(false);
@@ -47,7 +49,7 @@ export default function ApplicationView() {
   const appQuery = trpc.jobs.getApplication.useQuery(
     { id: applicationId },
     {
-      enabled: isAuthenticated && !!applicationId && !isNaN(applicationId),
+      ...authQuery({ enabled: !!applicationId && !isNaN(applicationId) }),
     }
   );
 

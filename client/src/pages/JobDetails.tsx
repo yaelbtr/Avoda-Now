@@ -4,6 +4,7 @@ import { parseJobId, buildJobPath } from "@/lib/jobSlug";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { AppButton } from "@/components/ui";
 import { MapView } from "@/components/Map";
 import {
@@ -114,6 +115,7 @@ export default function JobDetails() {
   const [, navigate] = useLocation();
   const jobId = parseJobId(params.id ?? "0");
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
 
   const { data: job, isLoading, error } = trpc.jobs.getById.useQuery(
     { id: jobId },
@@ -154,7 +156,7 @@ export default function JobDetails() {
   });
 
   const { data: myApplications } = trpc.jobs.myApplications.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 30_000,
   });
   const myApplicationForJob = myApplications?.find(a => a.jobId === jobId);
@@ -174,10 +176,7 @@ export default function JobDetails() {
     onError: (e: { message: string }) => toast.error(e.message),
   });
 
-  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-  });
+  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
 
   const handleApplyJD = () => {
     if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר למערכת"); return; }

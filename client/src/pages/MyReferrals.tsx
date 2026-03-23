@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { Copy, Check, Users, Share2, Gift } from "lucide-react";
 import { toast } from "sonner";
 import BrandLoader from "@/components/BrandLoader";
@@ -10,10 +11,11 @@ const SITE_URL = "https://avodanow.co.il";
 
 export default function MyReferrals() {
   const { user, isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [copied, setCopied] = useState(false);
 
   const { data, isLoading } = trpc.referral.myStats.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
   });
 
   const referralLink = user ? `${SITE_URL}/?ref=${user.id}` : "";

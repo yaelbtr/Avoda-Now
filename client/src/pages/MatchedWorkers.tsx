@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   ChevronRight,
   Loader2,
@@ -163,6 +164,7 @@ function WorkerMatchCard({
 export default function MatchedWorkers() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [offeredWorkers, setOfferedWorkers] = useState<Set<number>>(new Set());
 
   // Get jobId from URL query param
@@ -170,7 +172,7 @@ export default function MatchedWorkers() {
 
   const { data: job } = trpc.jobs.getById.useQuery(
     { id: jobId },
-    { enabled: !!jobId && isAuthenticated }
+    authQuery({ enabled: !!jobId })
   );
 
   const matchMutation = trpc.jobs.matchWorkers.useMutation();

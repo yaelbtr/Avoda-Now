@@ -7,6 +7,7 @@ import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   Search, MapPin, ChevronLeft, Zap, Flame,
   Map, List, ArrowLeft, TrendingUp, Star,
@@ -142,6 +143,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { resetUserMode } = useUserMode();
+  const authQuery = useAuthQuery();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -208,7 +210,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   }, []);
 
   // Redirect new workers who haven't completed signup yet
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
   useEffect(() => {
     if (profileQuery.data && profileQuery.data.signupCompleted === false) {
       navigate("/worker-profile");
@@ -224,20 +226,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     { enabled: !!userLat }
   );
   const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
-  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
+  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
   // Age-gate: fetch birth date info to warn minors about late availability
-  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-  });
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
   const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
   const utils = trpc.useUtils();
   const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   // Applied job IDs (from myApplications)
-  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
   const appliedJobIds = new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
   const applyMutation = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },

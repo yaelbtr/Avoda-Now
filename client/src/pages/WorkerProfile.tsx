@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useLocation, useSearch } from "wouter";
 import { AppButton, BrandName } from "@/components/ui";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ function WizardProgress({ step, total }: { step: number; total: number }) {
 
 export default function WorkerProfile() {
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
 
   useSEO({
@@ -83,10 +85,10 @@ export default function WorkerProfile() {
   });
 
   const { categories: dbCategories } = useCategories();
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
-  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
-  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, { enabled: isAuthenticated });
+  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, authQuery());
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery());
 
   // Map DB categories to the shape expected by the UI
   // Hide allowedForMinors=false categories when the worker is a minor (reuses birthDateInfoQuery above)

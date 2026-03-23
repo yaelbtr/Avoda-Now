@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Search, Flame, FileText, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
 export default function MobileBottomNav() {
   const [location] = useLocation();
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const { userMode } = useUserMode();
 
   const lastSeenAt = useMemo(() => {
@@ -26,7 +28,7 @@ export default function MobileBottomNav() {
   const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
     { lastSeenAt },
     {
-      enabled: isAuthenticated && userMode === "worker",
+      ...authQuery({ enabled: userMode === "worker" }),
       refetchInterval: 60_000,
       staleTime: 30_000,
     }

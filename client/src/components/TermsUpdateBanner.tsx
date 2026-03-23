@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { AlertTriangle, X, CheckCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { LEGAL_DOCUMENT_LABELS, LEGAL_DOCUMENT_PATHS, type LegalConsentType } from "@shared/const";
 import { C_BRAND_HEX, C_HONEY_HEX } from "@/lib/colors";
 
@@ -22,11 +23,12 @@ import { C_BRAND_HEX, C_HONEY_HEX } from "@/lib/colors";
  */
 export default function TermsUpdateBanner() {
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [dismissed, setDismissed] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
   const { data, isLoading } = trpc.user.checkOutdatedConsents.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
   });

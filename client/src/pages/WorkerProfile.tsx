@@ -350,6 +350,10 @@ export default function WorkerProfile() {
     // Use isValidPhoneValue which handles both 2-digit (02/03) and 3-digit (050/054) prefixes
     const hasFullPhoneVal = isValidPhoneValue(phoneVal);
     const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
+    if (locationMode === "radius" && !workerLatitude) {
+      toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
+      return;
+    }
     try {
       await completeSignupMutation.mutateAsync({
         name: name.trim() || (user?.name ?? ""),
@@ -386,6 +390,10 @@ export default function WorkerProfile() {
     if (phoneChanged && userAlreadyHasPhone) {
       // Phone changed — require OTP verification first
       setPhoneChangeModalOpen(true);
+      return;
+    }
+    if (locationMode === "radius" && !workerLatitude) {
+      toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
       return;
     }
 
@@ -744,9 +752,9 @@ export default function WorkerProfile() {
                       </div>
                     </div>
                     {locationMode === "radius" && (
-                      <div className="mt-3">
+                      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                         <p className="text-xs text-muted-foreground mb-2">בחר רדיוס:</p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mb-3">
                           {[2, 5, 10, 20, 50].map((r) => (
                             <button
                               key={r}
@@ -762,6 +770,50 @@ export default function WorkerProfile() {
                             </button>
                           ))}
                         </div>
+                        {/* Geolocation button — required for radius mode */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!navigator.geolocation) {
+                              toast.error("הדפדפן שלך לא תומך באיתור מיקום");
+                              return;
+                            }
+                            setGeoLoading(true);
+                            navigator.geolocation.getCurrentPosition(
+                              (pos) => {
+                                setWorkerLatitude(String(pos.coords.latitude));
+                                setWorkerLongitude(String(pos.coords.longitude));
+                                setGeoLoading(false);
+                                toast.success("מיקום נשמר בהצלחה!");
+                              },
+                              () => {
+                                setGeoLoading(false);
+                                toast.error("לא ניתן לאתר את המיקום. אנא אפשר גישה למיקום בהגדרות הדפדפן.");
+                              },
+                              { timeout: 10000 }
+                            );
+                          }}
+                          disabled={geoLoading}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all disabled:opacity-60"
+                          style={{
+                            borderColor: workerLatitude ? "oklch(0.55 0.14 145)" : "oklch(0.75 0.12 30)",
+                            background: workerLatitude ? "oklch(0.97 0.03 145)" : "oklch(0.98 0.03 30)",
+                            color: workerLatitude ? "oklch(0.35 0.12 145)" : "oklch(0.35 0.10 30)",
+                          }}
+                        >
+                          {geoLoading ? (
+                            <><BrandLoader size="sm" /> מאתר...</>
+                          ) : workerLatitude ? (
+                            <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר — לחץ לעדכון</>
+                          ) : (
+                            <><Crosshair className="h-3.5 w-3.5" /> חובה: שתף את המיקום הנוכחי שלי</>
+                          )}
+                        </button>
+                        {!workerLatitude && (
+                          <p className="text-xs mt-1.5" style={{ color: "oklch(0.50 0.15 30)" }}>
+                            נדרש מיקום כדי להציג לך משרות לפי מרחק
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -816,8 +868,14 @@ export default function WorkerProfile() {
                   variant="brand"
                   size="xl"
                   className="flex-1"
-                  disabled={false}
-                  onClick={() => setWizardStep(3)}
+                  disabled={locationMode === "radius" && !workerLatitude}
+                  onClick={() => {
+                    if (locationMode === "radius" && !workerLatitude) {
+                      toast.error("חובה לשתף מיקום לפני המשך");
+                      return;
+                    }
+                    setWizardStep(3);
+                  }}
                 >
                   המשך
                   <ArrowLeft className="h-4 w-4" />

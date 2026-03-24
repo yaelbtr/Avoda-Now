@@ -3339,3 +3339,16 @@ Isolation guarantees:
 
 ## Bug Fix: SendGrid content order (text/plain must precede text/html)
 - [x] Fix sendViaSendGrid content array order in _core/email.ts
+
+## Feature: Location requirement for radius mode in WorkerProfile wizard
+- [x] Add geolocation button to wizard step 2 (same UI as edit mode) — inside radius mode section
+- [x] Block "המשך" button in wizard step 2 if locationMode=radius && workerLatitude=null
+- [x] Add validation to handleWizardSubmit: reject if locationMode=radius && workerLatitude=null
+- [x] Add validation to handleSave: reject if locationMode=radius && workerLatitude=null
+
+## Feature: "מיקום לא מוגדר" indicator in MatchedWorkers
+- [x] Add locationMissingGps flag to matchWorkers return value (server/routers.ts)
+- [x] Refactor locationFiltered from .filter() to for-loop to attach per-worker flag
+- [x] MatchedWorker interface: add locationMissingGps?: boolean
+- [x] WorkerMatchCard: show amber "מיקום לא מוגדר" badge when locationMissingGps=true
+- [x] enrichedWorkers: propagate locationMissingGps from raw match result

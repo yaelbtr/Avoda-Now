@@ -49,6 +49,7 @@ interface MatchedWorker {
   distance?: number;
   rating?: number;
   isMinor?: boolean;
+  locationMissingGps?: boolean;
 }
 
 // ─── Worker Card ──────────────────────────────────────────────────────────────
@@ -133,6 +134,16 @@ function WorkerMatchCard({
               {worker.distance < 1
                 ? `${Math.round(worker.distance * 1000)} מ'`
                 : `${worker.distance.toFixed(1)} ק"מ`}
+            </span>
+          )}
+          {/* Missing GPS indicator for radius-mode workers without location */}
+          {worker.locationMissingGps && (
+            <span
+              className="text-xs flex items-center gap-0.5 px-1.5 py-0.5 rounded-full"
+              style={{ background: "oklch(0.97 0.04 55)", color: "oklch(0.45 0.12 55)", border: "1px solid oklch(0.85 0.08 55)" }}
+            >
+              <MapPin className="h-3 w-3" />
+              מיקום לא מוגדר
             </span>
           )}
           {/* Rating */}
@@ -252,6 +263,7 @@ export default function MatchedWorkers() {
     ? matchedWorkers.map((w) => ({
         ...w,
         isMinor: minorStatusQuery.data?.[w.worker_id] ?? false,
+        locationMissingGps: w.locationMissingGps ?? false,
       }))
     : null;
 

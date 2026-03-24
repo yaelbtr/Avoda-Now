@@ -1029,6 +1029,7 @@ const jobsRouter = router({
               score: 1 - i * 0.01,
               name: nameMap.get(w.id)?.name ?? null,
               rating: nameMap.get(w.id)?.workerRating ?? null,
+              locationMissingGps: false, // internal path already filters these out
             })),
         };
       }
@@ -1078,18 +1079,32 @@ const jobsRouter = router({
         });
         const cityNameMap = await getCityNamesByIds(Array.from(allCityIds));
 
-        const locationFiltered = notEngaged.filter((w) => {
+        // Evaluate each worker and attach a locationMissingGps flag for radius-mode
+        // workers who were included because the job has no coordinates (no distance
+        // validation possible). The UI can surface these with a "מיקום לא מוגדר" tag.
+        type EnrichedWorker = typeof notEngaged[number] & { locationMissingGps?: boolean };
+        const locationFiltered: EnrichedWorker[] = [];
+
+        for (const w of notEngaged) {
           const loc = workerLocations.get(w.worker_id);
           // fail-closed: worker not found in our DB → exclude
           if (!loc) {
             console.info(`[LocationGuard] worker ${w.worker_id} not in local DB → excluded`);
-            return false;
+            continue;
           }
 
           if (loc.locationMode === "radius") {
             // Radius-mode: check haversine distance against worker's searchRadiusKm
-            if (jobLat == null || jobLng == null) return true; // no job coords → include
-            if (!loc.workerLatitude || !loc.workerLongitude) return false; // no worker coords → exclude
+            if (jobLat == null || jobLng == null) {
+              // No job coords → include but flag as unverified distance
+              locationFiltered.push({ ...w, locationMissingGps: !loc.workerLatitude || !loc.workerLongitude });
+              continue;
+            }
+            if (!loc.workerLatitude || !loc.workerLongitude) {
+              // Worker has no GPS → include with flag (was previously excluded; now included per fix)
+              locationFiltered.push({ ...w, locationMissingGps: true });
+              continue;
+            }
             const R = 6371;
             const dLat = ((jobLat - Number(loc.workerLatitude)) * Math.PI) / 180;
             const dLng = ((jobLng - Number(loc.workerLongitude)) * Math.PI) / 180;
@@ -1099,41 +1114,55 @@ const jobsRouter = router({
                 Math.cos((jobLat * Math.PI) / 180) *
                 Math.sin(dLng / 2) ** 2;
             const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return distKm <= (loc.searchRadiusKm ?? 5);
+            if (distKm <= (loc.searchRadiusKm ?? 5)) {
+              locationFiltered.push({ ...w, locationMissingGps: false });
+            }
+            continue;
           }
 
           // city-mode (default): prefer placeId comparison (canonical, locale-independent),
           // fall back to city-name text comparison for workers/jobs that predate placeId.
-          if (!jobCity && !jobPlaceId) return true; // no city on job → include all
+          if (!jobCity && !jobPlaceId) {
+            locationFiltered.push({ ...w, locationMissingGps: false }); // no city on job → include all
+            continue;
+          }
 
-          // ── Primary: placeId match ─────────────────────────────────────────────
+          // ── Primary: placeId match ─────────────────────────────────────────────────────────
           // If both job and worker have a placeId, use it as the single source of truth.
           if (jobPlaceId && loc.preferredCityPlaceId) {
-            const match = loc.preferredCityPlaceId === jobPlaceId;
-            if (!match) {
+            if (loc.preferredCityPlaceId === jobPlaceId) {
+              locationFiltered.push({ ...w, locationMissingGps: false });
+            } else {
               console.info(
                 `[LocationGuard] worker ${w.worker_id} placeId mismatch: worker=${loc.preferredCityPlaceId} job=${jobPlaceId} → excluded`
               );
             }
-            return match;
+            continue;
           }
 
-          // ── Fallback: city-name text comparison ───────────────────────────────
+          // ── Fallback: city-name text comparison ─────────────────────────────────────────
           // Used when either side lacks a placeId (legacy data or Maps API unavailable).
-          if (!jobCity) return true; // job has no city text either → include
+          if (!jobCity) {
+            locationFiltered.push({ ...w, locationMissingGps: false }); // job has no city text either → include
+            continue;
+          }
 
           // Check preferredCities (array of city IDs) first — canonical field from CityPicker.
           if (loc.preferredCities && loc.preferredCities.length > 0) {
-            return loc.preferredCities.some((id) => {
+            const matches = loc.preferredCities.some((id) => {
               const name = cityNameMap.get(id);
               return name ? name.trim().toLowerCase() === jobCity : false;
             });
+            if (matches) locationFiltered.push({ ...w, locationMissingGps: false });
+            continue;
           }
 
           // Last resort: legacy preferredCity string field
-          if (!loc.preferredCity) return false; // worker has no city preference → exclude
-          return loc.preferredCity.trim().toLowerCase() === jobCity;
-        });
+          if (!loc.preferredCity) continue; // worker has no city preference → exclude
+          if (loc.preferredCity.trim().toLowerCase() === jobCity) {
+            locationFiltered.push({ ...w, locationMissingGps: false });
+          }
+        }
 
         console.info(
           `[LocationGuard] job ${input.jobId} (${job.city}): ${notEngaged.length} → ${locationFiltered.length} workers after location filter`

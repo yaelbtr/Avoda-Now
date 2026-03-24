@@ -818,13 +818,7 @@ export default function MyJobs() {
                       </AppButton>
                     ) : null}
 
-                    {/* Delete */}
-                    <AppButton variant="ghost" size="sm" className="gap-1.5 text-xs"
-                      onClick={() => setDeleteId(job.id)}
-                      style={{ color: "oklch(0.55 0.22 25)" }}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                      מחק
-                    </AppButton>
+
                   </div>
 
                   {/* ── Applicants Panel ── */}

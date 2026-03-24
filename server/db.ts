@@ -1431,10 +1431,13 @@ export async function getWorkersMatchingJob(
     : null;
 
   // Radius-mode filter: worker's workerLocation must be within their searchRadiusKm of the job.
+  // Workers with locationMode='radius' but no workerLocation (null) are included as a fallback
+  // because we cannot determine their distance — they should not be silently excluded.
   // Falls back to including all radius-mode workers when the job has no coordinates.
   const radiusCondition = jobPoint
     ? sql`(
         ${users.locationMode} != 'radius'
+        OR ${users.workerLocation} IS NULL
         OR (
           ${users.workerLocation} IS NOT NULL
           AND ST_DWithin(

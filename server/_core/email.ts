@@ -86,8 +86,8 @@ async function sendViaSendGrid(payload: EmailPayload): Promise<boolean> {
         from: { email: from },
         subject: payload.subject,
         content: [
-          { type: "text/html", value: payload.html },
           { type: "text/plain", value: payload.text ?? payload.html.replace(/<[^>]+>/g, "") },
+          { type: "text/html", value: payload.html },
         ],
       }),
     });

@@ -3332,3 +3332,10 @@ Isolation guarantees:
 ## Bug Fix: Back button 404 on /matched-workers and /worker/:id
 - [x] Fix MatchedWorkers back button: navigate(-1) → navigate(/job/:id)
 - [x] Fix PublicWorkerProfile back button: navigate(-1 as any) → window.history.back()
+
+## Bug Fix: radius-mode workers with null workerLocation excluded from matching
+- [x] Fix getWorkersMatchingJob: include radius-mode workers with null workerLocation (fallback to include)
+- [ ] Fix WorkerProfile UI: require location when locationMode=radius before saving
+
+## Bug Fix: SendGrid content order (text/plain must precede text/html)
+- [x] Fix sendViaSendGrid content array order in _core/email.ts

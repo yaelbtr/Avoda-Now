@@ -11,22 +11,19 @@ import {
   CheckCircle,
   Clock,
   Gift,
-  HourglassIcon,
   Loader2,
   MapPin,
   MessageCircle,
   Phone,
-  Send,
   Share2,
   Star,
-  ThumbsDown,
   User,
   XCircle,
 } from "lucide-react";
 import { RateWorkerModal } from "@/components/RateWorkerModal";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
-import { getApplicationStatusLabel } from "@shared/const";
+import { StatusBadge } from "@/components/StatusBadge";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -113,7 +110,6 @@ function ApplicantCard({
   const isPendingApp = app.status === "pending" || app.status === "viewed";
 
   const effectiveStatus = isOfferedAccepted ? "offered_accepted" : app.status;
-  const cfg = getApplicationStatusLabel(effectiveStatus);
 
   const phone = app.workerPhone ?? "";
   const rating = app.workerRating ? parseFloat(app.workerRating) : null;
@@ -241,18 +237,12 @@ function ApplicantCard({
           )}
         </div>
 
-        {/* Status badge — label + tooltip from shared/const single source of truth */}
-        <span
-          className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold shrink-0"
-          title={cfg.tooltip}
-          style={{
-            background: cfg.bg,
-            color: cfg.color,
-            border: `1px solid ${cfg.color}33`,
-          }}
-        >
-          {cfg.label}
-        </span>
+        {/* Status badge — Radix Tooltip via shared StatusBadge */}
+        <StatusBadge
+          status={app.status}
+          effectiveStatus={effectiveStatus}
+          className="px-2.5 py-1 font-semibold shrink-0"
+        />
       </div>
 
       {/* ── Meta row ── */}

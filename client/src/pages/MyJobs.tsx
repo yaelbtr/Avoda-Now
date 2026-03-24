@@ -27,7 +27,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
-import { normalizePhoneForWhatsApp, getApplicationStatusLabel } from "@shared/const";
+import { normalizePhoneForWhatsApp } from "@shared/const";
+import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Bell, BellOff } from "lucide-react";
@@ -231,19 +232,8 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                   <span className="text-sm font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>
                     {app.workerName ?? "עובד"}
                   </span>
-                  {/* Status badge — single source of truth via getApplicationStatusLabel */}
-                  {(() => {
-                    const cfg = getApplicationStatusLabel(app.status);
-                    return (
-                      <span
-                        className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                        title={cfg.tooltip}
-                        style={{ background: cfg.bg, color: cfg.color }}
-                      >
-                        {cfg.label}
-                      </span>
-                    );
-                  })()}
+                  {/* Status badge — Radix Tooltip via shared StatusBadge */}
+                  <StatusBadge status={app.status} className="px-1.5 py-0.5" />
                 </div>
                 {app.workerPreferredCity && (
                   <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "oklch(0.55 0.03 120)" }}>

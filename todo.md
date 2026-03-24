@@ -3382,3 +3382,9 @@ Isolation guarantees:
 - [x] Add workerProfilePhoto to getApplicationsForJobWithDistance SELECT in db.ts
 - [x] Add tooltip (title) descriptions to APPLICATION_STATUS_LABELS in shared/const.ts
 - [x] Apply title attribute to status badges in JobApplications and MyJobs
+
+## Feature: Radix Tooltip for status badges
+- [x] Verify Radix Tooltip is available (shadcn/ui tooltip.tsx)
+- [x] Create shared StatusBadge component in client/src/components/StatusBadge.tsx
+- [x] Replace title attribute in MyJobs ApplicantsPanel with StatusBadge
+- [x] Replace title attribute in JobApplications ApplicantCard with StatusBadge

@@ -3289,3 +3289,9 @@ Isolation guarantees:
 - [x] Dry-run mode (DRY_RUN=1) for safe preview before writing
 - [x] Skips address-like strings (contains digits or >40 chars)
 - [x] Ran script: 12 jobs updated (6x "בני ברק", 6x "ישראל"); 1 address-like skipped; 1 ZERO_RESULTS ("אברבנאל")
+
+## Manual city correction + backfill re-run
+- [x] Job 30003 ("ביביסיטר"): city corrected from "אברבנאל 121א בני ברק" → "בני ברק"
+- [x] Job 60005 ("שליח"): city corrected from "אברבנאל" → "בני ברק"
+- [x] Re-ran backfill script: 2 more jobs resolved → ChIJeXLMWyNKHRURhzlCjBfKL6M
+- [x] All 14 jobs now have cityPlaceId set (0 missing, 0 no-city)

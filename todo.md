@@ -3255,3 +3255,5 @@ Isolation guarantees:
 - [x] Offer accepted section: green confirmation banner + Phone/WhatsApp contact buttons
 - [x] Dark olive header bar (matching navbar), SectionHeader component with colored count pill
 - [x] Skeleton loading uses AvodaNow card style, empty state uses brand icon block
+
+- [x] Redesign ApplicantCard to exactly match MyApplications card structure (motion.div, same tokens, same layout)

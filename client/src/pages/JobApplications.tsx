@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AppButton } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
@@ -13,9 +14,10 @@ import {
   HourglassIcon,
   Loader2,
   MapPin,
-  MessageSquare,
+  MessageCircle,
   Phone,
   Send,
+  Share2,
   Star,
   ThumbsDown,
   User,
@@ -41,7 +43,7 @@ function isNew(createdAt: Date | string): boolean {
   return Date.now() - new Date(createdAt).getTime() < 24 * 60 * 60 * 1000;
 }
 
-// ── Status config (mirrors MyApplications STATUS_CONFIG) ─────────────────────
+// ── Status config (identical tokens to MyApplications STATUS_CONFIG) ──────────
 
 const STATUS_CONFIG: Record<string, {
   label: string;
@@ -78,7 +80,6 @@ const STATUS_CONFIG: Record<string, {
     color: "oklch(0.58 0.02 100)",
     border: "oklch(0.87 0.04 84.0)",
   },
-  // offered + pending (worker hasn't responded)
   offered: {
     label: "הצעה נשלחה",
     icon: <Send className="h-3.5 w-3.5" />,
@@ -86,7 +87,6 @@ const STATUS_CONFIG: Record<string, {
     color: "oklch(0.45 0.18 260)",
     border: "oklch(0.55 0.18 260 / 0.30)",
   },
-  // offered + contactRevealed (worker accepted)
   offered_accepted: {
     label: "העובד אישר",
     icon: <CheckCircle className="h-3.5 w-3.5" />,
@@ -127,13 +127,14 @@ function MiniStars({ rating }: { rating: number }) {
   );
 }
 
-// ── Applicant card ────────────────────────────────────────────────────────────
+// ── Applicant card — mirrors MyApplications card structure exactly ────────────
 
 function ApplicantCard({
   app,
   onAccept,
   onReject,
   isPending,
+  idx,
 }: {
   app: {
     id: number;
@@ -153,22 +154,9 @@ function ApplicantCard({
   onAccept: (id: number) => void;
   onReject: (id: number) => void;
   isPending: boolean;
+  idx: number;
 }) {
   const [rateOpen, setRateOpen] = useState(false);
-
-  // Resolve effective status key for config lookup
-  const effectiveStatus =
-    app.status === "offered" && app.contactRevealed
-      ? "offered_accepted"
-      : app.status;
-
-  const cfg = STATUS_CONFIG[effectiveStatus] ?? {
-    label: app.status,
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  };
 
   const isAccepted = app.status === "accepted";
   const isRejected = app.status === "rejected" || app.status === "offer_rejected";
@@ -176,32 +164,33 @@ function ApplicantCard({
   const isOfferedAccepted = app.status === "offered" && app.contactRevealed;
   const isPendingApp = app.status === "pending" || app.status === "viewed";
 
-  const contactRevealed = app.contactRevealed && app.workerPhone;
+  const effectiveStatus = isOfferedAccepted ? "offered_accepted" : app.status;
+  const cfg = STATUS_CONFIG[effectiveStatus] ?? STATUS_CONFIG.pending;
+
   const phone = app.workerPhone ?? "";
   const rating = app.workerRating ? parseFloat(app.workerRating) : null;
 
-  // Card border/bg based on state
+  // Card style — identical logic to MyApplications
   const cardStyle: React.CSSProperties = {
     background: isAccepted || isOfferedAccepted
-      ? "oklch(0.65 0.22 160 / 0.04)"
+      ? "oklch(0.65 0.22 160 / 0.05)"
       : isOfferedPending
-      ? "oklch(0.55 0.18 260 / 0.04)"
+      ? "oklch(0.55 0.18 260 / 0.05)"
       : "white",
     border: isAccepted || isOfferedAccepted
-      ? "1px solid oklch(0.65 0.22 160 / 0.25)"
+      ? "1px solid oklch(0.65 0.22 160 / 0.20)"
       : isOfferedPending
-      ? "2px solid oklch(0.55 0.18 260 / 0.35)"
+      ? "2px solid oklch(0.55 0.18 260 / 0.40)"
       : "1px solid oklch(0.87 0.04 84.0)",
     borderRadius: "1rem",
     padding: "1rem",
     boxShadow: isOfferedPending
-      ? "0 4px 16px oklch(0.55 0.18 260 / 0.10)"
+      ? "0 4px 16px oklch(0.55 0.18 260 / 0.12)"
       : "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
     opacity: isRejected ? 0.70 : 1,
-    transition: "all 0.2s ease",
   };
 
-  // Avatar icon bg
+  // Avatar bg — same as MyApplications
   const avatarBg = isAccepted || isOfferedAccepted
     ? "oklch(0.65 0.22 160 / 0.12)"
     : isOfferedPending
@@ -215,13 +204,20 @@ function ApplicantCard({
     : "oklch(0.38 0.07 125.0)";
 
   return (
-    <div style={cardStyle} dir="rtl">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ delay: idx * 0.04 }}
+      style={cardStyle}
+      dir="rtl"
+    >
       {/* ── Offered pending banner ── */}
       {isOfferedPending && (
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-semibold"
           style={{
-            background: "oklch(0.55 0.18 260 / 0.10)",
+            background: "oklch(0.55 0.18 260 / 0.12)",
             color: "oklch(0.40 0.18 260)",
             border: "1px solid oklch(0.55 0.18 260 / 0.20)",
           }}
@@ -231,9 +227,9 @@ function ApplicantCard({
         </div>
       )}
 
-      {/* ── Top row: avatar + name + status badge ── */}
+      {/* ── Top row: icon + name/meta + status badge ── */}
       <div className="flex items-start gap-3 mb-2">
-        {/* Avatar */}
+        {/* Icon block */}
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: avatarBg }}
@@ -245,15 +241,15 @@ function ApplicantCard({
           )}
         </div>
 
-        {/* Name + meta */}
+        {/* Name + sub-info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-bold" style={{ color: "var(--text-primary, #1a2010)" }}>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary, #1a2010)" }}>
               {app.workerName ?? "עובד אנונימי"}
             </p>
             {isNew(app.createdAt) && isPendingApp && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                 style={{
                   background: "oklch(0.55 0.18 260 / 0.12)",
                   color: "oklch(0.40 0.18 260)",
@@ -264,9 +260,9 @@ function ApplicantCard({
               </span>
             )}
           </div>
-          {/* Rating row */}
+          {/* Rating / experience line */}
           {rating !== null && rating > 0 ? (
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1 mt-0.5">
               <MiniStars rating={rating} />
               {(app.completedJobsCount ?? 0) > 0 && (
                 <span className="text-xs" style={{ color: "var(--text-muted, #6b7280)" }}>
@@ -318,17 +314,16 @@ function ApplicantCard({
         </p>
       )}
 
-      {/* ── Message ── */}
+      {/* ── Message — identical quote style to MyApplications ── */}
       {app.message && (
         <p
-          className="text-xs italic mb-2 line-clamp-2 px-3 py-2 rounded-lg flex items-start gap-1.5"
+          className="text-xs italic mb-2 line-clamp-2 px-3 py-2 rounded-lg"
           style={{
             color: "var(--text-secondary, #374151)",
             background: "oklch(0.93 0.03 91.6)",
             borderRight: "3px solid oklch(0.75 0.12 76.7)",
           }}
         >
-          <MessageSquare className="h-3 w-3 mt-0.5 shrink-0" style={{ color: "oklch(0.65 0.13 76.7)" }} />
           "{app.message}"
         </p>
       )}
@@ -369,7 +364,7 @@ function ApplicantCard({
       )}
 
       {/* ── Accepted: contact buttons + rate ── */}
-      {isAccepted && contactRevealed && (
+      {isAccepted && app.contactRevealed && phone && (
         <div className="flex gap-2 mt-3">
           <a href={`tel:${phone}`} className="flex-1">
             <button
@@ -398,9 +393,7 @@ function ApplicantCard({
                 color: "oklch(0.52 0.22 150)",
               }}
             >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
+              <MessageCircle className="h-3.5 w-3.5" />
               WhatsApp
             </button>
           </a>
@@ -422,13 +415,13 @@ function ApplicantCard({
       )}
 
       {/* Accepted but contact not yet revealed */}
-      {isAccepted && !contactRevealed && (
+      {isAccepted && !app.contactRevealed && (
         <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.52 0.22 150)" }}>
           ✓ התקבל! פרטי הקשר יחשפו בקרוב.
         </p>
       )}
 
-      {/* ── Offer accepted by worker: show phone ── */}
+      {/* ── Offer accepted by worker: confirmation + contact ── */}
       {isOfferedAccepted && (
         <>
           <div
@@ -474,9 +467,7 @@ function ApplicantCard({
                     color: "oklch(0.52 0.22 150)",
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
+                  <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </button>
               </a>
@@ -484,6 +475,26 @@ function ApplicantCard({
           )}
         </>
       )}
+
+      {/* ── Bottom row: view profile link + share — mirrors MyApplications ── */}
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          onClick={async () => {
+            const url = `${window.location.origin}/worker/${app.workerId}`;
+            if (navigator.share) {
+              try { await navigator.share({ title: app.workerName ?? "עובד", url }); } catch {}
+            } else {
+              await navigator.clipboard.writeText(url);
+              toast.success("קישור הועתק ללוח");
+            }
+          }}
+          className="p-1 rounded-lg transition-all"
+          title="שתף"
+          style={{ color: "var(--text-muted, #6b7280)" }}
+        >
+          <Share2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
 
       {/* Rating modal */}
       {app.workerId && (
@@ -495,7 +506,7 @@ function ApplicantCard({
           applicationId={app.id}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -553,7 +564,6 @@ export default function JobApplications() {
       const isMinorBlock =
         vars.action === "accept" &&
         (e.data?.code === "FORBIDDEN" || e.data?.code === "PRECONDITION_FAILED");
-
       if (isMinorBlock) {
         toast.error(e.message, {
           description: "לא ניתן לקבל עובד זה למשרה בשל הגבלות חוק עבודת נוער.",
@@ -577,10 +587,7 @@ export default function JobApplications() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-6" style={{ background: "var(--page-bg, #f8f5ee)" }} dir="rtl">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}
-        >
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}>
           <Briefcase className="h-8 w-8" style={{ color: "oklch(0.38 0.07 125.0)" }} />
         </div>
         <p className="text-base font-semibold text-center" style={{ color: "var(--text-primary, #1a2010)" }}>
@@ -594,10 +601,7 @@ export default function JobApplications() {
   if (error?.data?.code === "FORBIDDEN") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-6" style={{ background: "var(--page-bg, #f8f5ee)" }} dir="rtl">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ background: "oklch(0.93 0.02 91.6)" }}
-        >
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "oklch(0.93 0.02 91.6)" }}>
           <XCircle className="h-8 w-8" style={{ color: "oklch(0.58 0.02 100)" }} />
         </div>
         <p className="text-base font-semibold text-center" style={{ color: "var(--text-primary, #1a2010)" }}>
@@ -611,9 +615,7 @@ export default function JobApplications() {
   const pending = applicants?.filter((a) => a.status === "pending" || a.status === "viewed") ?? [];
   const accepted = applicants?.filter((a) => a.status === "accepted") ?? [];
   const rejected = applicants?.filter((a) => a.status === "rejected") ?? [];
-  // offered = pending offers only (worker has NOT yet responded)
   const offered = applicants?.filter((a) => a.status === "offered" && !a.contactRevealed) ?? [];
-  // offerAccepted = worker accepted the offer (contactRevealed=true)
   const offerAccepted = applicants?.filter((a) => a.status === "offered" && a.contactRevealed) ?? [];
   const offerRejected = applicants?.filter((a) => a.status === "offer_rejected") ?? [];
   const total = applicants?.length ?? 0;
@@ -665,6 +667,7 @@ export default function JobApplications() {
                   border: "1px solid oklch(0.87 0.04 84.0)",
                   borderRadius: "1rem",
                   padding: "1rem",
+                  boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
                 }}
               >
                 <div className="flex items-start gap-3">
@@ -673,7 +676,9 @@ export default function JobApplications() {
                     <div className="h-4 rounded-lg animate-pulse w-1/3" style={{ background: "oklch(0.93 0.02 91.6)" }} />
                     <div className="h-3 rounded-lg animate-pulse w-1/2" style={{ background: "oklch(0.93 0.02 91.6)" }} />
                   </div>
+                  <div className="h-6 w-16 rounded-full animate-pulse" style={{ background: "oklch(0.93 0.02 91.6)" }} />
                 </div>
+                <div className="mt-2 h-3 rounded-lg animate-pulse w-2/3" style={{ background: "oklch(0.93 0.02 91.6)" }} />
               </div>
             ))}
           </div>
@@ -693,151 +698,159 @@ export default function JobApplications() {
             </p>
           </div>
         ) : (
-          <>
-            {/* ── Pending ── */}
-            {pending.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="ממתינים לתשובה"
-                  count={pending.length}
-                  bg="oklch(0.75 0.12 76.7 / 0.12)"
-                  color="oklch(0.65 0.13 76.7)"
-                  border="oklch(0.75 0.12 76.7 / 0.30)"
-                />
-                <div className="space-y-3">
-                  {pending.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+          <AnimatePresence>
+            <>
+              {/* ── Pending ── */}
+              {pending.length > 0 && (
+                <section key="pending">
+                  <SectionHeader
+                    title="ממתינים לתשובה"
+                    count={pending.length}
+                    bg="oklch(0.75 0.12 76.7 / 0.12)"
+                    color="oklch(0.65 0.13 76.7)"
+                    border="oklch(0.75 0.12 76.7 / 0.30)"
+                  />
+                  <div className="space-y-3">
+                    {pending.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* ── Accepted ── */}
-            {accepted.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="התקבלו"
-                  count={accepted.length}
-                  bg="oklch(0.65 0.22 160 / 0.12)"
-                  color="oklch(0.52 0.22 150)"
-                  border="oklch(0.65 0.22 160 / 0.30)"
-                />
-                <div className="space-y-3">
-                  {accepted.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+              {/* ── Accepted ── */}
+              {accepted.length > 0 && (
+                <section key="accepted">
+                  <SectionHeader
+                    title="התקבלו"
+                    count={accepted.length}
+                    bg="oklch(0.65 0.22 160 / 0.12)"
+                    color="oklch(0.52 0.22 150)"
+                    border="oklch(0.65 0.22 160 / 0.30)"
+                  />
+                  <div className="space-y-3">
+                    {accepted.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* ── Rejected ── */}
-            {rejected.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="נדחו"
-                  count={rejected.length}
-                  bg="oklch(0.93 0.02 91.6)"
-                  color="oklch(0.58 0.02 100)"
-                  border="oklch(0.87 0.04 84.0)"
-                />
-                <div className="space-y-3">
-                  {rejected.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+              {/* ── Rejected ── */}
+              {rejected.length > 0 && (
+                <section key="rejected">
+                  <SectionHeader
+                    title="נדחו"
+                    count={rejected.length}
+                    bg="oklch(0.93 0.02 91.6)"
+                    color="oklch(0.58 0.02 100)"
+                    border="oklch(0.87 0.04 84.0)"
+                  />
+                  <div className="space-y-3">
+                    {rejected.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* ── Offers sent (awaiting worker response) ── */}
-            {offered.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="הצעות שנשלחו — ממתינות לתשובת העובד"
-                  count={offered.length}
-                  bg="oklch(0.55 0.18 260 / 0.10)"
-                  color="oklch(0.45 0.18 260)"
-                  border="oklch(0.55 0.18 260 / 0.30)"
-                />
-                <div className="space-y-3">
-                  {offered.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+              {/* ── Offers sent (awaiting worker response) ── */}
+              {offered.length > 0 && (
+                <section key="offered">
+                  <SectionHeader
+                    title="הצעות שנשלחו — ממתינות לתשובת העובד"
+                    count={offered.length}
+                    bg="oklch(0.55 0.18 260 / 0.10)"
+                    color="oklch(0.45 0.18 260)"
+                    border="oklch(0.55 0.18 260 / 0.30)"
+                  />
+                  <div className="space-y-3">
+                    {offered.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* ── Offer accepted by worker ── */}
-            {offerAccepted.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="אישרו הצעה — טלפון העובד גלוי"
-                  count={offerAccepted.length}
-                  bg="oklch(0.65 0.22 160 / 0.12)"
-                  color="oklch(0.52 0.22 150)"
-                  border="oklch(0.65 0.22 160 / 0.30)"
-                />
-                <div className="space-y-3">
-                  {offerAccepted.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+              {/* ── Offer accepted by worker ── */}
+              {offerAccepted.length > 0 && (
+                <section key="offer-accepted">
+                  <SectionHeader
+                    title="אישרו הצעה — טלפון העובד גלוי"
+                    count={offerAccepted.length}
+                    bg="oklch(0.65 0.22 160 / 0.12)"
+                    color="oklch(0.52 0.22 150)"
+                    border="oklch(0.65 0.22 160 / 0.30)"
+                  />
+                  <div className="space-y-3">
+                    {offerAccepted.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* ── Offer rejected by worker ── */}
-            {offerRejected.length > 0 && (
-              <section>
-                <SectionHeader
-                  title="דחו את ההצעה"
-                  count={offerRejected.length}
-                  bg="oklch(0.93 0.02 91.6)"
-                  color="oklch(0.58 0.02 100)"
-                  border="oklch(0.87 0.04 84.0)"
-                />
-                <div className="space-y-3">
-                  {offerRejected.map((app) => (
-                    <ApplicantCard
-                      key={app.id}
-                      app={app}
-                      onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
-                      onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
-                      isPending={updateStatus.isPending}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+              {/* ── Offer rejected by worker ── */}
+              {offerRejected.length > 0 && (
+                <section key="offer-rejected">
+                  <SectionHeader
+                    title="דחו את ההצעה"
+                    count={offerRejected.length}
+                    bg="oklch(0.93 0.02 91.6)"
+                    color="oklch(0.58 0.02 100)"
+                    border="oklch(0.87 0.04 84.0)"
+                  />
+                  <div className="space-y-3">
+                    {offerRejected.map((app, idx) => (
+                      <ApplicantCard
+                        key={app.id}
+                        app={app}
+                        idx={idx}
+                        onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
+                        onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
+                        isPending={updateStatus.isPending}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          </AnimatePresence>
         )}
       </div>
     </div>

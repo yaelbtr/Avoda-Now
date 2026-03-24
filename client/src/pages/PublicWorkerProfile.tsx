@@ -122,7 +122,7 @@ export default function PublicWorkerProfile() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
-          onClick={() => navigate(-1 as any)}
+          onClick={() => window.history.back()}
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowRight className="h-5 w-5" />

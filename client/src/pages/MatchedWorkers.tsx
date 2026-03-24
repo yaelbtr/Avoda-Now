@@ -300,7 +300,7 @@ export default function MatchedWorkers() {
         style={{ background: C_BG, borderBottom: `1px solid ${C_BORDER}` }}
       >
         <button
-          onClick={() => navigate(-1 as unknown as string)}
+          onClick={() => navigate(`/job/${jobId}`)}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: C_LIGHT_GREEN }}
         >

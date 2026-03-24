@@ -3328,3 +3328,7 @@ Isolation guarantees:
 
 ## Change back button in JobApplications
 - [x] Navigate to /job/:id instead of /my-jobs
+
+## Bug Fix: Back button 404 on /matched-workers and /worker/:id
+- [x] Fix MatchedWorkers back button: navigate(-1) → navigate(/job/:id)
+- [x] Fix PublicWorkerProfile back button: navigate(-1 as any) → window.history.back()

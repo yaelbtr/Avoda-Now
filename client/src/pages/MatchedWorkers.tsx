@@ -17,6 +17,9 @@ import {
   Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
+import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
+import { useCategories } from "@/hooks/useCategories";
+import { SHIFT_PRESETS } from "@shared/const";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -25,6 +28,16 @@ const C_DARK = "oklch(0.28 0.06 122)";
 const C_GREEN = "oklch(0.38 0.10 125)";
 const C_LIGHT_GREEN = "oklch(0.92 0.05 122)";
 const C_BORDER = "oklch(0.90 0.04 91.6)";
+
+const DAYS = [
+  { value: "sunday",    label: "א׳" },
+  { value: "monday",    label: "ב׳" },
+  { value: "tuesday",   label: "ג׳" },
+  { value: "wednesday", label: "ד׳" },
+  { value: "thursday",  label: "ה׳" },
+  { value: "friday",    label: "ש׳" },
+  { value: "saturday",  label: "שבת" },
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,10 +56,12 @@ function WorkerMatchCard({
   worker,
   jobId,
   onOfferSent,
+  onCardClick,
 }: {
   worker: MatchedWorker;
   jobId: number;
   onOfferSent: (workerId: number) => void;
+  onCardClick: (workerId: number) => void;
 }) {
   const [offerSent, setOfferSent] = useState(false);
 
@@ -75,8 +90,9 @@ function WorkerMatchCard({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl p-4 flex items-center gap-3"
+      className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
       style={{ background: "white", border: `1px solid ${C_BORDER}` }}
+      onClick={() => onCardClick(worker.worker_id)}
     >
       {/* Avatar */}
       <div
@@ -128,18 +144,19 @@ function WorkerMatchCard({
         </div>
       </div>
 
-      {/* Action button */}
+      {/* Action button — stop propagation so click doesn't open modal */}
       {offerSent ? (
         <div
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0"
           style={{ background: C_LIGHT_GREEN, color: C_DARK }}
+          onClick={(e) => e.stopPropagation()}
         >
           <CheckCircle2 className="h-3.5 w-3.5" />
           נשלח
         </div>
       ) : (
         <button
-          onClick={() => sendOffer.mutate({ jobId, workerId: worker.worker_id })}
+          onClick={(e) => { e.stopPropagation(); sendOffer.mutate({ jobId, workerId: worker.worker_id }); }}
           disabled={sendOffer.isPending}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0 transition-all"
           style={{
@@ -159,6 +176,53 @@ function WorkerMatchCard({
   );
 }
 
+// ─── Worker Profile Bottom Sheet ──────────────────────────────────────────────
+
+function WorkerProfileSheet({
+  workerId,
+  onClose,
+}: {
+  workerId: number | null;
+  onClose: () => void;
+}) {
+  const { categories: dbCategories } = useCategories();
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
+
+  const profileQuery = trpc.user.getPublicProfile.useQuery(
+    { userId: workerId! },
+    { enabled: workerId != null, staleTime: 2 * 60 * 1000 }
+  );
+
+  const profile = profileQuery.data;
+  const categoryLabels = dbCategories.map((c) => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
+  const cityNames = profile?.preferredCities
+    ? (citiesQuery.data ?? []).filter((c) => (profile.preferredCities as number[]).includes(c.id)).map((c) => c.nameHe)
+    : [];
+
+  return (
+    <WorkerProfilePreviewModal
+      open={workerId != null}
+      onClose={onClose}
+      name={profile?.name ?? ""}
+      photo={profile?.profilePhoto ?? null}
+      bio={profile?.workerBio ?? ""}
+      categories={(profile?.preferredCategories as string[] | null) ?? []}
+      categoryLabels={categoryLabels}
+      preferredDays={(profile?.preferredDays as string[] | null) ?? []}
+      preferredTimeSlots={(profile?.preferredTimeSlots as string[] | null) ?? []}
+      dayLabels={DAYS}
+      timeSlotLabels={SHIFT_PRESETS}
+      locationMode={(profile?.locationMode as "city" | "radius") ?? "city"}
+      preferredCities={(profile?.preferredCities as number[] | null) ?? []}
+      cityNames={cityNames}
+      searchRadiusKm={profile?.searchRadiusKm ?? 5}
+      workerRating={profile?.workerRating ?? null}
+      completedJobsCount={profile?.completedJobsCount ?? 0}
+      availabilityStatus={(profile?.availabilityStatus as "available_now" | "available_today" | "available_hours" | "not_available" | null) ?? null}
+    />
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function MatchedWorkers() {
@@ -166,6 +230,7 @@ export default function MatchedWorkers() {
   const { isAuthenticated } = useAuth();
   const authQuery = useAuthQuery();
   const [offeredWorkers, setOfferedWorkers] = useState<Set<number>>(new Set());
+  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
 
   // Get jobId from URL query param
   const jobId = parseInt(new URLSearchParams(window.location.search).get("jobId") ?? "0");
@@ -338,6 +403,7 @@ export default function MatchedWorkers() {
                         worker={w}
                         jobId={jobId}
                         onOfferSent={handleOfferSent}
+                        onCardClick={(id) => setSelectedWorkerId(id)}
                       />
                     </motion.div>
                   ))}
@@ -374,6 +440,12 @@ export default function MatchedWorkers() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Worker profile bottom sheet */}
+      <WorkerProfileSheet
+        workerId={selectedWorkerId}
+        onClose={() => setSelectedWorkerId(null)}
+      />
     </div>
   );
 }

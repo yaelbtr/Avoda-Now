@@ -1620,6 +1620,8 @@ export async function getPublicWorkerProfile(userId: number) {
       workerLongitude: users.workerLongitude,
       preferredDays: users.preferredDays,
       preferredTimeSlots: users.preferredTimeSlots,
+      locationMode: users.locationMode,
+      searchRadiusKm: users.searchRadiusKm,
       birthDate: users.birthDate,
     })
     .from(users)

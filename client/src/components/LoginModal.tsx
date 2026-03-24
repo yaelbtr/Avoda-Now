@@ -88,6 +88,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [isTestBypass, setIsTestBypass] = useState(false);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
   const [notFoundError, setNotFoundError] = useState<string | null>(null);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 
   // Post-OTP setup state
   const [selectedRole, setSelectedRole] = useState<"worker" | "employer" | null>(null);
@@ -113,8 +114,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [sendCooldown, setSendCooldown] = useState(0);
   const sendCooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startSendCooldown = useCallback(() => {
-    setSendCooldown(60);
+  const startSendCooldown = useCallback((seconds = 60) => {
+    setSendCooldown(seconds);
     if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
     sendCooldownRef.current = setInterval(() => {
       setSendCooldown(prev => {
@@ -123,6 +124,18 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       });
     }, 1000);
   }, []);
+
+  /** Parse remaining seconds from a TOO_MANY_REQUESTS error message like "נא המתן 57 שניות" */
+  const handleRateLimitError = useCallback((e: { data?: { code?: string } | null; message: string }) => {
+    if (e.data?.code === "TOO_MANY_REQUESTS") {
+      const match = e.message.match(/(\d+)/);
+      const secs = match ? parseInt(match[1], 10) : 60;
+      startSendCooldown(secs);
+      setRateLimitError(e.message);
+      return true;
+    }
+    return false;
+  }, [startSendCooldown]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -170,6 +183,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setSelectedCategories([]);
         setSelectedCity("");
         setChannelEmailError(null);
+        setRateLimitError(null);
         setLoginEmail("");
         setLoginEmailError(null);
         setShowEmailLogin(false);
@@ -197,6 +211,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setDuplicateError(null);
     setNotFoundError(null);
     setChannelEmailError(null);
+    setRateLimitError(null);
     setLoginEmail("");
     setLoginEmailError(null);
     setShowEmailLogin(false);
@@ -221,6 +236,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // ── tRPC mutations ───────────────────────────────────────────────────────────
   const sendOtp = trpc.auth.sendOtp.useMutation({
     onSuccess: (data) => {
+      setRateLimitError(null);
       setNormalizedPhone(data.phone);
       setDigits(Array(OTP_LENGTH).fill(""));
       setStep("otp");
@@ -238,7 +254,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     onError: (e) => {
       // CONFLICT = phone or email already registered
       if (e.data?.code === "CONFLICT") {
-        // In channel step, duplicateError is shown inline there too
         setDuplicateError(e.message);
         return;
       }
@@ -247,6 +262,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setNotFoundError(e.message);
         return;
       }
+      // TOO_MANY_REQUESTS — show inline error with exact remaining cooldown
+      if (handleRateLimitError(e)) return;
       toast.error(e.message);
     },
   });
@@ -318,6 +335,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // Email OTP mutations (login tab only)
   const sendEmailCode = trpc.auth.sendEmailCode.useMutation({
     onSuccess: () => {
+      setRateLimitError(null);
       setIsEmailOtpFlow(true);
       setOtpChannel("email");
       setDigits(Array(OTP_LENGTH).fill(""));
@@ -329,7 +347,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         : loginEmail;
       toast.success(`קוד נשלח למייל ${masked} • תקף ל-5 דקות`, { duration: 5000 });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      if (handleRateLimitError(e)) return;
+      toast.error(e.message);
+    },
   });
 
   const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
@@ -795,6 +816,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                 </div>
               )}
 
+              {/* Rate-limit error banner */}
+              {rateLimitError && (
+                <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                  style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                >
+                  <span className="mt-0.5 shrink-0">⚠️</span>
+                  <p className="font-medium">{rateLimitError}</p>
+                </div>
+              )}
+
               {/* Send OTP buttons — SMS or Call */}
               <div className="flex flex-col gap-2">
                 <AppButton
@@ -1206,6 +1237,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     {isTestBypass ? "קוד ביצוע בלבד — ללא SMS" : "הקוד תקף ל-10 דקות · מקסימום 3 ניסיונות"}
                   </p>
                 </div>
+
+                {/* Rate-limit error banner (shown when resend is rate-limited) */}
+                {rateLimitError && (
+                  <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                    style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                  >
+                    <span className="mt-0.5 shrink-0">⚠️</span>
+                    <p className="font-medium">{rateLimitError}</p>
+                  </div>
+                )}
 
                 <AppButton
                   variant="cta"

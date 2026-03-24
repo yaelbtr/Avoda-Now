@@ -3310,3 +3310,8 @@ Isolation guarantees:
 - [x] server/routers.ts updateEmployerProfile: workerSearchCity guarded by cityZodRefine
 - [x] defaultJobCity (EmployerProfile PlacesAutocomplete) intentionally excluded — it is a full address field
 - [x] 957/957 unit tests passing, TypeScript clean
+
+## OTP rate-limit error UX fix
+- [x] LoginModal: parse seconds from TOO_MANY_REQUESTS error, start sendCooldown with exact remaining time, show inline error banner
+- [x] LoginModal: same fix for sendEmailCode TOO_MANY_REQUESTS
+- [x] JobPublishOtpModal: same fix for sendPublishOtp TOO_MANY_REQUESTS

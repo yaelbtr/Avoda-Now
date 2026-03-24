@@ -51,6 +51,7 @@ export default function JobPublishOtpModal({
   const [resendCountdown, setResendCountdown] = useState(0);
   const [sendCooldown, setSendCooldown] = useState(0);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [sendRateLimitError, setSendRateLimitError] = useState<string | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -67,6 +68,7 @@ export default function JobPublishOtpModal({
         setResendCountdown(0);
         setSendCooldown(0);
         setOtpError(null);
+        setSendRateLimitError(null);
         if (timerRef.current) clearInterval(timerRef.current);
         if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
       }, 300);
@@ -97,8 +99,8 @@ export default function JobPublishOtpModal({
     }, 1000);
   }, []);
 
-  const startSendCooldown = useCallback(() => {
-    setSendCooldown(60);
+  const startSendCooldown = useCallback((seconds = 60) => {
+    setSendCooldown(seconds);
     if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
     sendCooldownRef.current = setInterval(() => {
       setSendCooldown(prev => {
@@ -108,9 +110,10 @@ export default function JobPublishOtpModal({
     }, 1000);
   }, []);
 
-  // ── tRPC mutations ───────────────────────────────────────────────────────────
+  // ── tRPC mutations ──────────────────────────────────────────────────────────────────────────────
   const sendOtp = trpc.jobs.sendPublishOtp.useMutation({
     onSuccess: (data) => {
+      setSendRateLimitError(null);
       setMaskedTarget(data.maskedTarget);
       setDigits(Array(OTP_LENGTH).fill(""));
       setOtpError(null);
@@ -120,6 +123,13 @@ export default function JobPublishOtpModal({
       toast.success(`קוד נשלח ל-${data.maskedTarget} • תקף ל-5 דקות`, { duration: 5000 });
     },
     onError: (e) => {
+      if (e.data?.code === "TOO_MANY_REQUESTS") {
+        const match = e.message.match(/(\d+)/);
+        const secs = match ? parseInt(match[1], 10) : 60;
+        startSendCooldown(secs);
+        setSendRateLimitError(e.message);
+        return;
+      }
       toast.error(e.message);
     },
   });
@@ -297,6 +307,16 @@ export default function JobPublishOtpModal({
                     );
                   })}
                 </div>
+
+                {/* Rate-limit error banner */}
+                {sendRateLimitError && (
+                  <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                    style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                  >
+                    <span className="mt-0.5 shrink-0">⚠️</span>
+                    <p className="font-medium">{sendRateLimitError}</p>
+                  </div>
+                )}
 
                 {/* CTA */}
                 <div className="space-y-3 pt-1">

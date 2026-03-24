@@ -3325,3 +3325,6 @@ Isolation guarantees:
 
 ## Bug Fix: Browser back from /jobs/:id/applications lands on 404
 - [x] Add NumericJobRedirect component that redirects /jobs/:id (numeric) to /job/:id
+
+## Change back button in JobApplications
+- [x] Navigate to /job/:id instead of /my-jobs

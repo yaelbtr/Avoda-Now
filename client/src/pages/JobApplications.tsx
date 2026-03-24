@@ -632,7 +632,7 @@ export default function JobApplications() {
       >
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
-            onClick={() => navigate("/my-jobs")}
+            onClick={() => navigate(`/job/${jobId}`)}
             className="flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-xl transition-all"
             style={{
               color: "oklch(0.85 0.05 91)",
@@ -641,7 +641,7 @@ export default function JobApplications() {
             }}
           >
             <ArrowRight className="w-4 h-4" />
-            חזרה
+            חזרה למשרה
           </button>
           <div className="flex-1">
             <h1 className="text-base font-bold" style={{ color: "oklch(0.95 0.02 91)" }}>

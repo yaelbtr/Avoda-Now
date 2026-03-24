@@ -3357,3 +3357,16 @@ Isolation guarantees:
 - [x] Add CITY_ALLOWLIST Set in shared/cityValidation.ts
 - [x] Update validateCityName to skip address-keyword check for allowlisted cities
 - [x] Update tests: allowlisted cities must pass, non-allowlisted keyword strings must still fail
+
+## Feature: 3-candidate cap per job posting
+- [x] Add MAX_ACCEPTED_CANDIDATES = 3 to shared/const.ts
+- [x] Add cap_reached to closedReasonEnum in schema.ts + run db:push
+- [x] Add countAcceptedCandidates(jobId) helper in db.ts
+- [x] Update updateApplicationStatus (accept path): count accepted → if >=3 auto-close job with cap_reached
+- [x] Update respondToJobOffer (accept path): count accepted → if >=3 auto-close job with cap_reached; if job already closed with cap_reached throw CAP_REACHED error
+- [x] Update sendJobOffer: block if job already closed with cap_reached
+- [x] Update queryJobs: exclude jobs with status=closed AND closedReason=cap_reached
+- [x] Update getMyApplications: return jobClosedReason so worker UI can show "העבודה נסגרה"
+- [x] Update MyApplications UI: show "העבודה נסגרה" banner when jobStatus=closed + jobClosedReason=cap_reached
+- [x] Update JobApplications/MatchedWorkers UI: show cap-reached banner and disable send-offer
+- [x] Write vitest tests for the cap logic

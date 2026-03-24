@@ -94,6 +94,8 @@ export const closedReasonEnum = pgEnum("closed_reason", [
   "found_worker",
   "expired",
   "manual",
+  /** Job automatically closed because MAX_ACCEPTED_CANDIDATES workers accepted */
+  "cap_reached",
 ]);
 export const jobLocationModeEnum = pgEnum("job_location_mode", [
   "city",

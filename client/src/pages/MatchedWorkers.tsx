@@ -59,11 +59,14 @@ function WorkerMatchCard({
   jobId,
   onOfferSent,
   onCardClick,
+  isCapReached = false,
 }: {
   worker: MatchedWorker;
   jobId: number;
   onOfferSent: (workerId: number) => void;
   onCardClick: (workerId: number) => void;
+  /** When true, the send-offer button is hidden — job cap already reached */
+  isCapReached?: boolean;
 }) {
   const [offerSent, setOfferSent] = useState(false);
 
@@ -157,7 +160,7 @@ function WorkerMatchCard({
       </div>
 
       {/* Action button — stop propagation so click doesn't open modal */}
-      {offerSent ? (
+      {isCapReached ? null : offerSent ? (
         <div
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0"
           style={{ background: C_LIGHT_GREEN, color: C_DARK }}
@@ -401,6 +404,24 @@ export default function MatchedWorkers() {
                       חפש שוב
                     </button>
                   </div>
+                  {/* Cap-reached banner in MatchedWorkers */}
+                  {job?.status === "closed" && job?.closedReason === "cap_reached" && (
+                    <div
+                      className="rounded-2xl px-4 py-3 flex items-start gap-3"
+                      style={{ background: "oklch(0.45 0.18 160 / 0.10)", border: "1px solid oklch(0.45 0.18 160 / 0.30)" }}
+                    >
+                      <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "oklch(0.45 0.18 160)" }} />
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.14 160)" }}>
+                          המשרה הושלמה — קיבלת 3 מועמדים
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 160)" }}>
+                          לא ניתן לשלוח הצעות נוספות למשרה זו.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {enrichedWorkers!.map((w, i) => (
                     <motion.div
                       key={w.worker_id}
@@ -413,6 +434,7 @@ export default function MatchedWorkers() {
                         jobId={jobId}
                         onOfferSent={handleOfferSent}
                         onCardClick={(id) => setSelectedWorkerId(id)}
+                        isCapReached={job?.status === "closed" && job?.closedReason === "cap_reached"}
                       />
                     </motion.div>
                   ))}

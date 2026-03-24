@@ -22,6 +22,13 @@ export const SUPPORT_REPORT_RATE_LIMIT = 5;
  * at any one time. Enforced server-side in sendJobOffer.
  */
 export const MAX_ACTIVE_OFFERS = 5;
+
+/**
+ * Maximum number of workers that can accept (or be accepted into) a single job posting.
+ * When this cap is reached the job is automatically closed with closedReason = 'cap_reached'.
+ * Enforced server-side in updateApplicationStatus and respondToJobOffer.
+ */
+export const MAX_ACCEPTED_CANDIDATES = 3;
 export const UNAUTHED_ERR_MSG = 'Please login (10001)';
 export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
 /**

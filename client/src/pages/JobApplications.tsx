@@ -135,6 +135,7 @@ function ApplicantCard({
   onReject,
   isPending,
   idx,
+  isCapReached = false,
 }: {
   app: {
     id: number;
@@ -155,6 +156,8 @@ function ApplicantCard({
   onReject: (id: number) => void;
   isPending: boolean;
   idx: number;
+  /** When true the accept button is hidden — job cap already reached */
+  isCapReached?: boolean;
 }) {
   const [rateOpen, setRateOpen] = useState(false);
 
@@ -331,21 +334,24 @@ function ApplicantCard({
       {/* ── Pending: accept / reject ── */}
       {isPendingApp && (
         <div className="flex gap-2 mt-3">
-          <button
-            disabled={isPending}
-            onClick={() => onAccept(app.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-bold transition-all"
-            style={{
-              background: "oklch(0.38 0.07 125.0)",
-              color: "white",
-              border: "none",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.28)",
-              opacity: isPending ? 0.7 : 1,
-            }}
-          >
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
-            קבל
-          </button>
+          {/* Hide accept button when cap is reached */}
+          {!isCapReached && (
+            <button
+              disabled={isPending}
+              onClick={() => onAccept(app.id)}
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-bold transition-all"
+              style={{
+                background: "oklch(0.38 0.07 125.0)",
+                color: "white",
+                border: "none",
+                boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.28)",
+                opacity: isPending ? 0.7 : 1,
+              }}
+            >
+              {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+              קבל
+            </button>
+          )}
           <button
             disabled={isPending}
             onClick={() => onReject(app.id)}
@@ -612,13 +618,18 @@ export default function JobApplications() {
     );
   }
 
-  const pending = applicants?.filter((a) => a.status === "pending" || a.status === "viewed") ?? [];
-  const accepted = applicants?.filter((a) => a.status === "accepted") ?? [];
-  const rejected = applicants?.filter((a) => a.status === "rejected") ?? [];
-  const offered = applicants?.filter((a) => a.status === "offered" && !a.contactRevealed) ?? [];
-  const offerAccepted = applicants?.filter((a) => a.status === "offered" && a.contactRevealed) ?? [];
-  const offerRejected = applicants?.filter((a) => a.status === "offer_rejected") ?? [];
-  const total = applicants?.length ?? 0;
+  const jobStatus = applicants?.jobStatus ?? null;
+  const jobClosedReason = applicants?.jobClosedReason ?? null;
+  const acceptedCount = applicants?.acceptedCount ?? 0;
+  const allApplicants = applicants?.applicants ?? [];
+  const isCapReached = jobClosedReason === "cap_reached";
+  const pending = allApplicants.filter((a) => a.status === "pending" || a.status === "viewed");
+  const accepted = allApplicants.filter((a) => a.status === "accepted");
+  const rejected = allApplicants.filter((a) => a.status === "rejected");
+  const offered = allApplicants.filter((a) => a.status === "offered" && !a.contactRevealed);
+  const offerAccepted = allApplicants.filter((a) => a.status === "offered" && a.contactRevealed);
+  const offerRejected = allApplicants.filter((a) => a.status === "offer_rejected");
+  const total = allApplicants.length;
 
   return (
     <div className="min-h-screen" style={{ background: "var(--page-bg, #f8f5ee)" }} dir="rtl">
@@ -649,7 +660,8 @@ export default function JobApplications() {
             </h1>
             {!isLoading && (
               <p className="text-xs" style={{ color: "oklch(0.70 0.04 91)" }}>
-                {total} מועמד{total !== 1 ? "ים" : ""} · {pending.length} ממתינ{pending.length !== 1 ? "ים" : ""}
+                {total} מועמד{total !== 1 ? "ים" : ""} · {acceptedCount}/{3} התקבלו
+                {isCapReached && " · ✅ הושלמה"}
               </p>
             )}
           </div>
@@ -657,6 +669,24 @@ export default function JobApplications() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+        {/* Cap-reached banner */}
+        {!isLoading && isCapReached && (
+          <div
+            className="rounded-2xl px-4 py-3 flex items-start gap-3"
+            style={{ background: "oklch(0.45 0.18 160 / 0.10)", border: "1px solid oklch(0.45 0.18 160 / 0.30)" }}
+          >
+            <CheckCircle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "oklch(0.45 0.18 160)" }} />
+            <div>
+              <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.14 160)" }}>
+                המשרה הושלמה — קיבלת 3 מועמדים
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 160)" }}>
+                המשרה נסגרה אוטומטית. לא ניתן לשלוח הצעות נוספות.
+              </p>
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
@@ -719,6 +749,7 @@ export default function JobApplications() {
                         onAccept={(id) => updateStatus.mutate({ id, action: "accept" })}
                         onReject={(id) => updateStatus.mutate({ id, action: "reject" })}
                         isPending={updateStatus.isPending}
+                        isCapReached={isCapReached}
                       />
                     ))}
                   </div>

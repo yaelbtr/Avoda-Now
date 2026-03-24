@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
-import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACCEPTED_CANDIDATES, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
 import { cityZodRefine } from "@shared/cityValidation";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
@@ -131,6 +131,8 @@ import {
   createJobOffer,
   respondToJobOffer,
   countActiveOffers,
+  countAcceptedCandidates,
+  autoCloseJobIfCapReached,
   getApplicantWorkerIdsForJob,
   getWorkerLocationsByIds,
   getCityNamesByIds,
@@ -1185,6 +1187,14 @@ const jobsRouter = router({
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
+      // Block if job is closed because the candidate cap was reached
+      if (job.status === "closed" && job.closedReason === "cap_reached") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `המשרה נסגרה — כבר התקבלו ${MAX_ACCEPTED_CANDIDATES} מועמדים.`,
+        });
+      }
+
       // Prevent duplicate offers
       const existing = await getApplicationByWorkerAndJob(input.workerId, input.jobId);
       if (existing) {
@@ -1198,6 +1208,15 @@ const jobsRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: `לא ניתן לשלוח יותר מ-${MAX_ACTIVE_OFFERS} הצעות עבודה פעילות בו-זמנית למשרה זו. המתן לתגובת העובדים שכבר קיבלו הצעה.`,
+        });
+      }
+
+      // Block if accepted candidate cap is already reached
+      const acceptedCount = await countAcceptedCandidates(input.jobId);
+      if (acceptedCount >= MAX_ACCEPTED_CANDIDATES) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `המשרה כבר מלאה — ${MAX_ACCEPTED_CANDIDATES} מועמדים אישרו.`,
         });
       }
 
@@ -1245,6 +1264,17 @@ const jobsRouter = router({
       if (app.workerId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
       if (app.status !== "offered") throw new TRPCError({ code: "BAD_REQUEST", message: "הצעה זו כבר טופלה" });
 
+      // Block accept if the job was already closed due to cap_reached
+      if (input.action === "accept") {
+        const job = await getJobById(app.jobId);
+        if (job && job.status === "closed" && job.closedReason === "cap_reached") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "העבודה נסגרה — כבר התקבל מספר המועמדים המקסימלי.",
+          });
+        }
+      }
+
       await respondToJobOffer(input.applicationId, input.action);
 
       if (input.action === "accept") {
@@ -1255,11 +1285,25 @@ const jobsRouter = router({
         const employerPhone = app.employerPhone;
         const employerPrefs = app.employerNotificationPrefs ?? "both";
 
+        // Auto-close the job if the candidate cap is now reached
+        const capReached = await autoCloseJobIfCapReached(app.jobId, MAX_ACCEPTED_CANDIDATES);
+        if (capReached) {
+          console.log(`[CandidateCap] Job #${app.jobId} auto-closed (cap_reached after ${MAX_ACCEPTED_CANDIDATES} acceptances)`);
+          // Notify employer that the job is now filled
+          if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
+            sendPushToUser(employerId, {
+              title: `✅ המשרה הושלמה!`,
+              body: `קיבלת ${MAX_ACCEPTED_CANDIDATES} מועמדים למשרה "${jobTitle}". המשרה נסגרה אוטומטית.`,
+              url: `/job/${app.jobId}/applications`,
+            }).catch(e => console.warn("[CandidateCap] Push to employer failed:", e));
+          }
+        }
+
         // SMS to employer with worker phone
         if (employerPhone && (employerPrefs === "sms_only" || employerPrefs === "both")) {
           sendSms(
             employerPhone,
-            `אישרור הצעה! ${workerName} אישר את הצעתך למשרה "${jobTitle}". הטלפון שלו: ${workerPhone}`
+            `אישררור הצעה! ${workerName} אישר את הצעתך למשרה "${jobTitle}". הטלפון שלו: ${workerPhone}`
           ).catch(e => console.warn("[JobOffer] SMS to employer failed:", e));
         }
 
@@ -1389,11 +1433,17 @@ const jobsRouter = router({
         job.latitude,
         job.longitude
       );
+      const acceptedCount = await countAcceptedCandidates(input.jobId);
       // Strip phone for non-accepted applicants
-      return rows.map((r) => ({
-        ...r,
-        workerPhone: r.contactRevealed ? r.workerPhone : null,
-      }));
+      return {
+        jobStatus: job.status,
+        jobClosedReason: job.closedReason ?? null,
+        acceptedCount,
+        applicants: rows.map((r) => ({
+          ...r,
+          workerPhone: r.contactRevealed ? r.workerPhone : null,
+        })),
+      };
     }),
 
   /** Get applications for a job (employer view) */
@@ -1441,7 +1491,27 @@ const jobsRouter = router({
       }
       // ── End minor eligibility guard ────────────────────────────────────────────
 
+      // ── Candidate cap guard (only when accepting) ──────────────────────────────
+      if (input.action === "accept") {
+        const alreadyAccepted = await countAcceptedCandidates(app.jobId);
+        if (alreadyAccepted >= MAX_ACCEPTED_CANDIDATES) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `המשרה כבר מלאה — כבר התקבלו ${MAX_ACCEPTED_CANDIDATES} מועמדים.`,
+          });
+        }
+      }
+      // ── End candidate cap guard ────────────────────────────────────────────────
+
       await updateApplicationStatus(input.id, input.action);
+
+      // Auto-close the job if the candidate cap is now reached
+      if (input.action === "accept") {
+        const capReached = await autoCloseJobIfCapReached(app.jobId, MAX_ACCEPTED_CANDIDATES);
+        if (capReached) {
+          console.log(`[CandidateCap] Job #${app.jobId} auto-closed (cap_reached after ${MAX_ACCEPTED_CANDIDATES} acceptances via updateApplicationStatus)`);
+        }
+      }
 
       // Send Web Push notification to the worker
       if (app.workerId) {

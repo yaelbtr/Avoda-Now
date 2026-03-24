@@ -807,6 +807,8 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const conditions: any[] = [
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+    // Exclude jobs that were auto-closed because the candidate cap was reached
+    or(isNull(jobs.closedReason), ne(jobs.closedReason, "cap_reached"))!,
   ];
 
   // ── Mode-specific conditions ────────────────────────────────────────────────
@@ -1114,6 +1116,7 @@ export async function getMyApplications(workerId: number) {
       jobSalaryType: jobs.salaryType,
       jobHourlyRate: jobs.hourlyRate,
       jobStatus: jobs.status,
+      jobClosedReason: jobs.closedReason,
       employerName: users.name,
       employerPhone: users.phone,
       jobPostedBy: jobs.postedBy,
@@ -1608,6 +1611,65 @@ export async function countActiveOffers(jobId: number): Promise<number> {
     .from(applications)
     .where(and(eq(applications.jobId, jobId), eq(applications.status, "offered")));
   return result[0]?.cnt ?? 0;
+}
+
+/**
+ * Count the number of workers who have accepted (or been accepted into) a job.
+ * Counts applications with status='accepted' OR (status='offered' AND contactRevealed=true).
+ * Used to enforce MAX_ACCEPTED_CANDIDATES cap.
+ */
+export async function countAcceptedCandidates(jobId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .select({ cnt: count() })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.jobId, jobId),
+        or(
+          eq(applications.status, "accepted"),
+          and(eq(applications.status, "offered"), eq(applications.contactRevealed, true))
+        )!
+      )
+    );
+  return result[0]?.cnt ?? 0;
+}
+
+/**
+ * Auto-close a job with closedReason='cap_reached' if MAX_ACCEPTED_CANDIDATES is met.
+ * Returns true if the job was closed, false if it was already closed or cap not yet reached.
+ * Also rejects all remaining 'offered' (not yet responded) applications for the job.
+ */
+export async function autoCloseJobIfCapReached(
+  jobId: number,
+  maxCandidates: number
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const accepted = await countAcceptedCandidates(jobId);
+  if (accepted < maxCandidates) return false;
+  // Close the job
+  await db
+    .update(jobs)
+    .set({
+      status: sql`'closed'::job_status`,
+      closedReason: sql`'cap_reached'::closed_reason`,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(jobs.id, jobId), eq(jobs.status, "active")));
+  // Reject all remaining pending/offered applications that have not yet been accepted
+  await db
+    .update(applications)
+    .set({ status: "offer_rejected", updatedAt: new Date() })
+    .where(
+      and(
+        eq(applications.jobId, jobId),
+        eq(applications.status, "offered"),
+        eq(applications.contactRevealed, false)
+      )
+    );
+  return true;
 }
 
 /**

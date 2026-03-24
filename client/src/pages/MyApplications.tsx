@@ -83,6 +83,7 @@ type MyApplication = {
   jobSalaryType: string | null;
   jobHourlyRate?: string | null;
   jobStatus: string | null;
+  jobClosedReason?: string | null;
   employerName: string | null;
   employerPhone?: string | null;
   jobPostedBy?: number | null;
@@ -824,8 +825,20 @@ export default function MyApplications() {
                       </p>
                     )}
 
-                    {/* Offered: accept or reject buttons — only show when worker hasn't responded yet */}
-                    {isOffered && !app.contactRevealed && (
+                    {/* Job closed due to cap_reached: show banner instead of accept/reject buttons */}
+                    {isOffered && !app.contactRevealed && app.jobClosedReason === "cap_reached" && (
+                      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "oklch(0.95 0.03 55 / 0.60)", border: "1px solid oklch(0.75 0.12 55 / 0.40)" }}>
+                        <p className="text-xs font-bold" style={{ color: "oklch(0.50 0.14 55)" }}>
+                          🔒 העבודה נסגרה
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 55)" }}>
+                          המשרה מולאה ע"י מועמדים אחרים לפני שהספקת לאשר.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Offered: accept or reject buttons — only show when worker hasn't responded yet and job is still open */}
+                    {isOffered && !app.contactRevealed && app.jobClosedReason !== "cap_reached" && (
                       <div className="flex gap-2 mt-3">
                         <button
                           disabled={respondToOffer.isPending}

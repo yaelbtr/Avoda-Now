@@ -6,13 +6,19 @@
  *  2. Length guard (> 40 chars)
  *  3. ASCII digit guard
  *  4. Hebrew ordinal suffix guard
- *  5. Address keyword guard
- *  6. Valid city names (must NOT produce errors)
- *  7. Zod refine helper
+ *  5. Address keyword guard (non-allowlisted)
+ *  6. CITY_ALLOWLIST — allowlisted names must pass despite containing keywords
+ *  7. Valid city names (must NOT produce errors)
+ *  8. Zod refine helper
  */
 
 import { describe, it, expect } from "vitest";
-import { validateCityName, cityZodRefine, CITY_MAX_LENGTH } from "./cityValidation";
+import {
+  validateCityName,
+  cityZodRefine,
+  CITY_MAX_LENGTH,
+  CITY_ALLOWLIST,
+} from "./cityValidation";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -91,19 +97,18 @@ describe("Hebrew ordinal suffix guard", () => {
   });
 });
 
-// ─── 5. Address keyword guard ─────────────────────────────────────────────────
+// ─── 5. Address keyword guard (non-allowlisted) ───────────────────────────────
 
-describe("address keyword guard", () => {
+describe("address keyword guard (non-allowlisted)", () => {
   it("rejects input containing 'רחוב'", () => {
     expect(invalid("רחוב הרצל").valid).toBe(false);
   });
 
-  it("rejects input containing 'שדרות' as a standalone word", () => {
-    // "שדרות" as a street prefix
+  it("rejects 'שדרות רוטשילד' (keyword + street name, not a city)", () => {
     expect(invalid("שדרות רוטשילד").valid).toBe(false);
   });
 
-  it("rejects input containing 'כיכר'", () => {
+  it("rejects input containing 'כיכר' followed by a name", () => {
     expect(invalid("כיכר רבין").valid).toBe(false);
   });
 
@@ -115,20 +120,67 @@ describe("address keyword guard", () => {
     expect(invalid("רח' הרצל").valid).toBe(false);
   });
 
-  it("does NOT reject city name 'שדרות' (the city in Negev)", () => {
-    // "שדרות" alone is a valid city name — the keyword regex requires a word
-    // boundary on both sides, so a standalone "שדרות" should be valid.
-    // NOTE: The current regex matches (^|\s)שדרות(\s|$) which WILL match
-    // "שדרות" alone. This is a known trade-off: the city "שדרות" is rare
-    // enough that we prefer safety. If needed, add an allowlist.
-    // This test documents the current behaviour rather than asserting valid.
-    const r = validateCityName("שדרות");
-    // Document: currently flagged as address keyword — acceptable trade-off.
-    expect(typeof r.valid).toBe("boolean"); // just ensure it doesn't throw
+  it("rejects 'מעלה הגבעה' (not in allowlist)", () => {
+    // Generic "מעלה X" that is not a real locality name
+    expect(invalid("מעלה הגבעה").valid).toBe(false);
   });
 });
 
-// ─── 6. Valid city names ──────────────────────────────────────────────────────
+// ─── 6. CITY_ALLOWLIST ────────────────────────────────────────────────────────
+
+describe("CITY_ALLOWLIST — allowlisted names bypass keyword guard", () => {
+  it("CITY_ALLOWLIST is a non-empty Set", () => {
+    expect(CITY_ALLOWLIST.size).toBeGreaterThan(0);
+  });
+
+  it("accepts 'שדרות' (city in the Negev)", () => {
+    expect(valid("שדרות").valid).toBe(true);
+    expect(valid("שדרות").error).toBeNull();
+  });
+
+  it("accepts 'מעלה אדומים'", () => {
+    expect(valid("מעלה אדומים").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה גלבוע'", () => {
+    expect(valid("מעלה גלבוע").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה עירון'", () => {
+    expect(valid("מעלה עירון").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה אפרים'", () => {
+    expect(valid("מעלה אפרים").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה מכמש'", () => {
+    expect(valid("מעלה מכמש").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה שומרון'", () => {
+    expect(valid("מעלה שומרון").valid).toBe(true);
+  });
+
+  it("accepts 'מעלה חמישה'", () => {
+    expect(valid("מעלה חמישה").valid).toBe(true);
+  });
+
+  it("accepts 'כיכר המדינה'", () => {
+    expect(valid("כיכר המדינה").valid).toBe(true);
+  });
+
+  it("still rejects 'שדרות רוטשילד' even though 'שדרות' is allowlisted (full name differs)", () => {
+    // The allowlist checks the FULL trimmed string, not a prefix.
+    expect(invalid("שדרות רוטשילד").valid).toBe(false);
+  });
+
+  it("still rejects 'מעלה הגבעה' (not in allowlist)", () => {
+    expect(invalid("מעלה הגבעה").valid).toBe(false);
+  });
+});
+
+// ─── 7. Valid city names ──────────────────────────────────────────────────────
 
 describe("valid city names", () => {
   const validCities = [
@@ -152,6 +204,9 @@ describe("valid city names", () => {
     "אום אל-פחם",
     "טייבה",
     "קריית גת",
+    // allowlisted cities also appear here as a cross-check
+    "שדרות",
+    "מעלה אדומים",
   ];
 
   for (const city of validCities) {
@@ -161,13 +216,27 @@ describe("valid city names", () => {
   }
 });
 
-// ─── 7. Zod refine helper ─────────────────────────────────────────────────────
+// ─── 8. Zod refine helper ─────────────────────────────────────────────────────
 
 describe("cityZodRefine", () => {
   it("does not add issue for valid city", () => {
     const issues: unknown[] = [];
     const ctx = { addIssue: (i: unknown) => issues.push(i) };
     cityZodRefine("תל אביב", ctx);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("does not add issue for allowlisted city 'שדרות'", () => {
+    const issues: unknown[] = [];
+    const ctx = { addIssue: (i: unknown) => issues.push(i) };
+    cityZodRefine("שדרות", ctx);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("does not add issue for allowlisted city 'מעלה אדומים'", () => {
+    const issues: unknown[] = [];
+    const ctx = { addIssue: (i: unknown) => issues.push(i) };
+    cityZodRefine("מעלה אדומים", ctx);
     expect(issues).toHaveLength(0);
   });
 
@@ -185,5 +254,12 @@ describe("cityZodRefine", () => {
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe("custom");
     expect(issues[0].message).toBeTruthy();
+  });
+
+  it("adds issue for non-allowlisted keyword string 'שדרות רוטשילד'", () => {
+    const issues: { code: string; message: string }[] = [];
+    const ctx = { addIssue: (i: { code: string; message: string }) => issues.push(i) };
+    cityZodRefine("שדרות רוטשילד", ctx);
+    expect(issues).toHaveLength(1);
   });
 });

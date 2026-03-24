@@ -3352,3 +3352,8 @@ Isolation guarantees:
 - [x] MatchedWorker interface: add locationMissingGps?: boolean
 - [x] WorkerMatchCard: show amber "מיקום לא מוגדר" badge when locationMissingGps=true
 - [x] enrichedWorkers: propagate locationMissingGps from raw match result
+
+## Feature: City allowlist for address-keyword guard
+- [x] Add CITY_ALLOWLIST Set in shared/cityValidation.ts
+- [x] Update validateCityName to skip address-keyword check for allowlisted cities
+- [x] Update tests: allowlisted cities must pass, non-allowlisted keyword strings must still fail

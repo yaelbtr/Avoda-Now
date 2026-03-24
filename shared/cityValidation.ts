@@ -3,8 +3,9 @@
  *
  * Used by:
  *  - CityAutocomplete (client-side inline error)
+ *  - CityPicker (client-side inline error)
  *  - PostJob form (submit-time guard)
- *  - server/routers.ts postJob + updateJob Zod schema (server-side guard)
+ *  - server/routers.ts postJob + updateJob + completeSignup + updateProfile Zod schemas
  *
  * Rules (ordered by specificity):
  *  1. Empty / whitespace-only → not a city (caller decides if required)
@@ -14,12 +15,60 @@
  *     Note: standalone aleph/bet used in city names (e.g. "באר שבע") are fine;
  *     we only flag when a digit-like letter immediately follows a digit sequence.
  *  5. Contains common address keywords (רחוב, שדרות, כיכר, etc.)
+ *     EXCEPTION: names in CITY_ALLOWLIST are exempt from rule 5.
  *
  * Returns null when valid, or a Hebrew error string when invalid.
  */
 
 /** Maximum length for a valid city name. */
 export const CITY_MAX_LENGTH = 40;
+
+/**
+ * Allowlist of legitimate Israeli locality names that contain words that also
+ * appear in ADDRESS_KEYWORDS. These names must pass the keyword guard even
+ * though they would otherwise be flagged.
+ *
+ * Normalised to lowercase-trimmed for comparison.
+ *
+ * Sources:
+ *  - CBS (Lamas) official locality list
+ *  - Wikipedia list of Israeli cities and local councils
+ *
+ * Keyword → localities that contain it:
+ *  שדרות  → שדרות (city in Negev)
+ *  כיכר   → כיכר המדינה (neighbourhood/area used as a city reference)
+ *  דרך    → (no standalone locality named "דרך X" — kept for safety)
+ *  מעלה   → מעלה אדומים, מעלה גלבוע, מעלה עירון, מעלה אפרים, מעלה מכמש,
+ *            מעלה שומרון, מעלה זיתים, מעלה לבונה, מעלה חמישה
+ *  מורד   → (no known locality — kept for safety)
+ *  שכונת  → (prefix, not a locality name)
+ */
+export const CITY_ALLOWLIST: ReadonlySet<string> = new Set([
+  // ── שדרות ────────────────────────────────────────────────────────────────
+  "שדרות",
+
+  // ── מעלה ─────────────────────────────────────────────────────────────────
+  "מעלה אדומים",
+  "מעלה גלבוע",
+  "מעלה עירון",
+  "מעלה אפרים",
+  "מעלה מכמש",
+  "מעלה שומרון",
+  "מעלה זיתים",
+  "מעלה לבונה",
+  "מעלה חמישה",
+  "מעלה הגליל",
+  "מעלה יוסף",
+  "מעלה אמוס",
+  "מעלה ארבל",
+  "מעלה גמלא",
+  "מעלה אלפא",
+
+  // ── כיכר ─────────────────────────────────────────────────────────────────
+  // "כיכר המדינה" is a square/neighbourhood, not a standalone city,
+  // but users sometimes type it as a location reference.
+  "כיכר המדינה",
+]);
 
 /** Regex: ASCII digits anywhere in the string. */
 const HAS_ASCII_DIGIT = /\d/;
@@ -99,7 +148,14 @@ export function validateCityName(
     };
   }
 
-  if (ADDRESS_KEYWORD_REGEX.test(trimmed)) {
+  // Rule 5: address keyword guard — skip for allowlisted locality names.
+  // Normalise to trimmed lowercase for a case-insensitive comparison.
+  const normalised = trimmed.toLowerCase();
+  const isAllowlisted = Array.from(CITY_ALLOWLIST).some(
+    (entry) => entry.toLowerCase() === normalised
+  );
+
+  if (!isAllowlisted && ADDRESS_KEYWORD_REGEX.test(trimmed)) {
     return {
       valid: false,
       error: "נראה שהוזנה כתובת מלאה. יש להזין שם עיר בלבד (למשל: תל אביב)",

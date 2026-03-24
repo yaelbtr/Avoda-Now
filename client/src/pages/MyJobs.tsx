@@ -803,18 +803,19 @@ export default function MyJobs() {
                     )}
                   </div>
 
-                  {/* Action buttons */}
-                  <div className="flex gap-2 flex-wrap">
-                    {/* Matched workers */}
-                    {job.status === "active" && (
-                      <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
+                  {/* Matched workers — text link aligned to the left */}
+                  {job.status === "active" && (
+                    <div className="flex justify-start">
+                      <button
                         onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
-                        style={{ background: "oklch(0.93 0.05 122 / 0.40)", border: "1px solid oklch(0.75 0.10 122 / 0.50)", color: "oklch(0.35 0.08 122)" }}>
-                        <Sparkles className="h-3.5 w-3.5" />
-                        עובדים מתאימים
-                      </AppButton>
-                    )}
-                  </div>
+                        className="flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
+                        style={{ color: "oklch(0.38 0.12 85)" }}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        עובדים מתאימים ←
+                      </button>
+                    </div>
+                  )}
 
                   {/* ── Applicants section — only shown when there are applicants ── */}
                   {totalApplicationCount > 0 && (<div style={{ marginTop: "0.75rem", borderTop: "1px solid oklch(0.90 0.02 122)" }}>

@@ -745,7 +745,7 @@ export default function MyJobs() {
                     )}
                     <span className="flex items-center gap-1 font-medium">
                       <DollarSign className="h-3 w-3" style={{ color: isVolunteer ? "oklch(0.50 0.18 160)" : "oklch(0.55 0.14 80)" }} />
-                      <span style={{ color: isVolunteer ? "oklch(0.38 0.15 160)" : "oklch(0.35 0.06 120)" }}>
+                      <span style={{ color: isVolunteer ? "oklch(0.38 0.15 160)" : "oklch(0.45 0.04 120)" }}>
                         {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
                       </span>
                     </span>
@@ -753,7 +753,7 @@ export default function MyJobs() {
                       <span className="flex items-center gap-1 font-bold">
                         {isExpiringSoon && <Zap className="h-3 w-3" style={{ color: "oklch(0.60 0.22 25)" }} />}
                         <Clock className="h-3 w-3" style={{ color: isExpiringSoon ? "oklch(0.60 0.22 25)" : "oklch(0.55 0.14 80)" }} />
-                        <span style={{ color: isExpiringSoon ? "oklch(0.45 0.22 25)" : "oklch(0.35 0.06 120)" }}>
+                        <span style={{ color: isExpiringSoon ? "oklch(0.45 0.22 25)" : "oklch(0.45 0.04 120)" }}>
                           {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
                         </span>
                       </span>

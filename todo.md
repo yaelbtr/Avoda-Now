@@ -3257,3 +3257,5 @@ Isolation guarantees:
 - [x] Skeleton loading uses AvodaNow card style, empty state uses brand icon block
 
 - [x] Redesign ApplicantCard to exactly match MyApplications card structure (motion.div, same tokens, same layout)
+
+- [x] Fix: console.error noise from expected 401 and 504 gateway errors — add isSilentError filter in main.tsx

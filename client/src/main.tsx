@@ -46,11 +46,26 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   }
 };
 
+/** Returns true for errors that are expected and should not pollute the console. */
+const isSilentError = (error: unknown): boolean => {
+  if (!(error instanceof TRPCClientError)) return false;
+  // 401 Unauthorized — expected when unauthenticated users hit protected procedures
+  const httpStatus = (error.data as { httpStatus?: number } | undefined)?.httpStatus;
+  if (httpStatus === 401) return true;
+  // Gateway errors (504 / HTML response) — transient, handled by queryRetry with backoff
+  if (
+    error.message.includes("Unexpected token") ||
+    error.message.includes("Unable to transform response from server") ||
+    error.message.includes("Failed to fetch")
+  ) return true;
+  return false;
+};
+
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Query Error]", error);
+    if (!isSilentError(error)) console.error("[API Query Error]", error);
   }
 });
 
@@ -58,7 +73,7 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Mutation Error]", error);
+    if (!isSilentError(error)) console.error("[API Mutation Error]", error);
   }
 });
 

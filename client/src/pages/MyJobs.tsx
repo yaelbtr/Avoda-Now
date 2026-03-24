@@ -693,53 +693,53 @@ export default function MyJobs() {
                       </div>
                     </div>
 
-                  {/* Top-right: status badge + icon action buttons */}
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    {/* Icon buttons row: View + Close/Reactivate */}
-                    <div className="flex items-center gap-1">
-                      {/* View icon button */}
+                  {/* Top-right: icon action buttons only */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* View icon button */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.92 }}
+                      onClick={() => navigate(`/job/${job.id}`)}
+                      title="צפה במשרה"
+                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                      style={{ background: "oklch(0.94 0.06 85 / 0.40)", border: "1px solid oklch(0.85 0.08 80)", color: "oklch(0.45 0.12 80)" }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </motion.button>
+
+                    {/* Close / Reactivate icon button */}
+                    {job.status === "active" ? (
                       <motion.button
                         whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.92 }}
-                        onClick={() => navigate(`/job/${job.id}`)}
-                        title="צפה במשרה"
+                        onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
+                        disabled={updateStatus.isPending}
+                        title="סגור משרה"
                         className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
-                        style={{ background: "oklch(0.94 0.06 85 / 0.40)", border: "1px solid oklch(0.85 0.08 80)", color: "oklch(0.45 0.12 80)" }}
+                        style={{ background: "oklch(0.96 0.01 120)", border: "1px solid oklch(0.88 0.02 120)", color: "oklch(0.45 0.04 120)", opacity: updateStatus.isPending ? 0.6 : 1 }}
                       >
-                        <Eye className="h-4 w-4" />
+                        <XCircle className="h-4 w-4" />
                       </motion.button>
+                    ) : job.status === "closed" ? (
+                      <motion.button
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
+                        disabled={updateStatus.isPending || activeJobs.length >= 3}
+                        title="הפעל מחדש"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                        style={{ background: "oklch(0.68 0.20 160 / 0.10)", border: "1px solid oklch(0.68 0.20 160 / 0.30)", color: "oklch(0.38 0.15 160)", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                      </motion.button>
+                    ) : null}
+                  </div>
+                  </div>
 
-                      {/* Close / Reactivate icon button */}
-                      {job.status === "active" ? (
-                        <motion.button
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.92 }}
-                          onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
-                          disabled={updateStatus.isPending}
-                          title="סגור משרה"
-                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
-                          style={{ background: "oklch(0.96 0.01 120)", border: "1px solid oklch(0.88 0.02 120)", color: "oklch(0.45 0.04 120)", opacity: updateStatus.isPending ? 0.6 : 1 }}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </motion.button>
-                      ) : job.status === "closed" ? (
-                        <motion.button
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.92 }}
-                          onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
-                          disabled={updateStatus.isPending || activeJobs.length >= 3}
-                          title="הפעל מחדש"
-                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
-                          style={{ background: "oklch(0.68 0.20 160 / 0.10)", border: "1px solid oklch(0.68 0.20 160 / 0.30)", color: "oklch(0.38 0.15 160)", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </motion.button>
-                      ) : null}
-                    </div>
-
-                    {/* Status badge */}
+                  {/* Status badge + pending count — above meta row */}
+                  <div className="flex items-center gap-2 mb-2">
                     <div
-                      className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
                       style={{ background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}
                     >
                       {statusCfg.dot && (
@@ -752,7 +752,7 @@ export default function MyJobs() {
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
                         style={{
                           background: "oklch(0.60 0.22 25 / 0.12)",
                           border: "1px solid oklch(0.60 0.22 25 / 0.30)",
@@ -763,7 +763,6 @@ export default function MyJobs() {
                         {pendingCount} חדש{pendingCount > 1 ? "ים" : ""}
                       </motion.div>
                     )}
-                  </div>
                   </div>
 
                   {/* Meta row */}

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AppTextarea, AppLabel } from "@/components/ui";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
+import { invalidateWorkerProfile } from "@/hooks/useWorkerProfile";
 
 interface RateWorkerModalProps {
   open: boolean;
@@ -38,7 +39,7 @@ export function RateWorkerModal({ open, onClose, workerId, workerName, applicati
   const rateMutation = trpc.ratings.rateWorker.useMutation({
     onSuccess: ({ isNew }) => {
       toast.success(isNew ? "הדירוג נשמר בהצלחה!" : "הדירוג עודכן בהצלחה!");
-      utils.user.getPublicProfile.invalidate({ userId: workerId });
+      invalidateWorkerProfile(utils, workerId);
       onClose();
     },
     onError: (e) => toast.error(e.message),

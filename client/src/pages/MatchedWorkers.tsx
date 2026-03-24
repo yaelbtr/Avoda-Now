@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
 import { useCategories } from "@/hooks/useCategories";
+import { useWorkerProfile } from "@/hooks/useWorkerProfile";
 import { SHIFT_PRESETS } from "@shared/const";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -188,12 +189,8 @@ function WorkerProfileSheet({
   const { categories: dbCategories } = useCategories();
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
 
-  const profileQuery = trpc.user.getPublicProfile.useQuery(
-    { userId: workerId! },
-    { enabled: workerId != null, staleTime: 2 * 60 * 1000 }
-  );
-
-  const profile = profileQuery.data;
+  // useWorkerProfile provides 10-min tRPC staleTime + module-level in-memory cache
+  const { profile } = useWorkerProfile(workerId);
   const categoryLabels = dbCategories.map((c) => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
   const cityNames = profile?.preferredCities
     ? (citiesQuery.data ?? []).filter((c) => (profile.preferredCities as number[]).includes(c.id)).map((c) => c.nameHe)

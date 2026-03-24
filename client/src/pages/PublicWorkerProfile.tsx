@@ -6,6 +6,7 @@ import BrandLoader from "@/components/BrandLoader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
 import { useCategories } from "@/hooks/useCategories";
+import { useWorkerProfile } from "@/hooks/useWorkerProfile";
 
 const OLIVE = "#4F583B";
 
@@ -46,10 +47,12 @@ export default function PublicWorkerProfile() {
   const { categories: dbCategories } = useCategories();
   const ALL_CATEGORIES = dbCategories.map(c => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
 
-  const profileQuery = trpc.user.getPublicProfile.useQuery(
-    { userId },
-    { enabled: !!userId && !isNaN(userId) }
+  // useWorkerProfile: 10-min tRPC staleTime + module-level in-memory cache
+  const { profile: profileData, isLoading: profileLoading, error: profileError } = useWorkerProfile(
+    !isNaN(userId) && userId > 0 ? userId : null,
   );
+  // Wrap in a query-like shape so the rest of the component stays unchanged
+  const profileQuery = { data: profileData, isLoading: profileLoading, error: profileError };
 
   const reviewsQuery = trpc.ratings.getWorkerReviews.useQuery(
     { workerId: userId },

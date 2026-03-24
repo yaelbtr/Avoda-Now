@@ -3295,3 +3295,10 @@ Isolation guarantees:
 - [x] Job 60005 ("שליח"): city corrected from "אברבנאל" → "בני ברק"
 - [x] Re-ran backfill script: 2 more jobs resolved → ChIJeXLMWyNKHRURhzlCjBfKL6M
 - [x] All 14 jobs now have cityPlaceId set (0 missing, 0 no-city)
+
+## City input validation (address guard)
+- [x] shared/cityValidation.ts — single source of truth: validateCityName(), cityZodRefine(), CITY_MAX_LENGTH
+- [x] Rules: length > 40, ASCII digits, Hebrew ordinal suffix (e.g. 121א), address keywords (רחוב, שדרות, כיכר, דרך, ...)
+- [x] CityAutocomplete — inline error with AlertCircle icon + aria-invalid; clears on dropdown selection
+- [x] server/routers.ts jobInputSchema — city field guarded by cityZodRefine via .superRefine()
+- [x] shared/cityValidation.test.ts — 39 unit tests (39/39 passing); vitest.config.ts updated to include shared/**/*.test.ts

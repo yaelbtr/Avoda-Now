@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
 import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { cityZodRefine } from "@shared/cityValidation";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
@@ -628,7 +629,7 @@ const jobInputSchema = z.object({
     "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
   ]),
   address: z.string().min(2).max(300),
-  city: z.string().max(100).optional(),
+  city: z.string().max(100).optional().superRefine(cityZodRefine),
   latitude: z.number(),
   longitude: z.number(),
   salary: z.number().optional(),

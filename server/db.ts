@@ -1704,6 +1704,55 @@ export async function getApplicantWorkerIdsForJob(jobId: number): Promise<Set<nu
   return new Set(rows.map((r) => r.workerId));
 }
 
+/**
+ * Fetch location-relevant fields for a batch of worker IDs.
+ * Used to apply a server-side location guard on external matching API results
+ * so that city-mode workers from a different city are never returned.
+ *
+ * Returns a Map<userId, { locationMode, preferredCity, workerLatitude, workerLongitude, searchRadiusKm }>
+ */
+export async function getWorkerLocationsByIds(
+  workerIds: number[],
+): Promise<Map<number, {
+  locationMode: string | null;
+  preferredCity: string | null;
+  workerLatitude: string | null;
+  workerLongitude: string | null;
+  searchRadiusKm: number | null;
+}>> {
+  const result = new Map<number, {
+    locationMode: string | null;
+    preferredCity: string | null;
+    workerLatitude: string | null;
+    workerLongitude: string | null;
+    searchRadiusKm: number | null;
+  }>();
+  if (workerIds.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({
+      id: users.id,
+      locationMode: users.locationMode,
+      preferredCity: users.preferredCity,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
+    })
+    .from(users)
+    .where(sql`${users.id} = ANY(ARRAY[${sql.join(workerIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
+  for (const row of rows) {
+    result.set(row.id, {
+      locationMode: row.locationMode,
+      preferredCity: row.preferredCity,
+      workerLatitude: row.workerLatitude,
+      workerLongitude: row.workerLongitude,
+      searchRadiusKm: row.searchRadiusKm,
+    });
+  }
+  return result;
+}
+
 /** Get all applications for a specific job (for employer view) */
 export async function getApplicationsForJob(jobId: number) {
   const db = await getDb();

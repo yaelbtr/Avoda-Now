@@ -131,6 +131,7 @@ import {
   respondToJobOffer,
   countActiveOffers,
   getApplicantWorkerIdsForJob,
+  getWorkerLocationsByIds,
 } from "./db";
 import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1042,10 +1043,47 @@ const jobsRouter = router({
         });
         if (!res.ok) throw new Error(`Matching API error: ${res.status}`);
         const data = await res.json() as { workers: { worker_id: number; score: number }[] };
-        // Filter out workers already engaged with this job
-        return {
-          workers: data.workers.filter((w) => !engagedWorkerIds.has(w.worker_id)),
-        };
+
+        // Step 1: filter out workers already engaged with this job
+        const notEngaged = data.workers.filter((w) => !engagedWorkerIds.has(w.worker_id));
+
+        // Step 2: server-side location guard — the external API may rank workers
+        // purely on semantic/category similarity without respecting the worker's
+        // preferred city or radius setting. We re-apply the same location rules
+        // that the internal DB path uses, so city-mode workers from a different
+        // city (e.g. Beer Sheva for a Bnei Brak job) are never returned.
+        const workerLocations = await getWorkerLocationsByIds(notEngaged.map((w) => w.worker_id));
+        const jobCity = (job.city ?? "").trim().toLowerCase();
+        const jobLat = job.latitude ? Number(job.latitude) : null;
+        const jobLng = job.longitude ? Number(job.longitude) : null;
+
+        const locationFiltered = notEngaged.filter((w) => {
+          const loc = workerLocations.get(w.worker_id);
+          if (!loc) return true; // unknown worker → include (fail-open)
+
+          if (loc.locationMode === "radius") {
+            // Radius-mode: check haversine distance against worker's searchRadiusKm
+            if (jobLat == null || jobLng == null) return true; // no job coords → include
+            if (!loc.workerLatitude || !loc.workerLongitude) return true; // no worker coords → include
+            const R = 6371;
+            const dLat = ((jobLat - Number(loc.workerLatitude)) * Math.PI) / 180;
+            const dLng = ((jobLng - Number(loc.workerLongitude)) * Math.PI) / 180;
+            const a =
+              Math.sin(dLat / 2) ** 2 +
+              Math.cos((Number(loc.workerLatitude) * Math.PI) / 180) *
+                Math.cos((jobLat * Math.PI) / 180) *
+                Math.sin(dLng / 2) ** 2;
+            const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return distKm <= (loc.searchRadiusKm ?? 5);
+          }
+
+          // city-mode (default): match by city name
+          if (!jobCity) return true; // no city on job → include all
+          if (!loc.preferredCity) return true; // worker has no city preference → include
+          return loc.preferredCity.trim().toLowerCase() === jobCity;
+        });
+
+        return { workers: locationFiltered };
       } catch (err) {
         console.warn("[MatchWorkers] External API call failed:", err);
         return { workers: [] as { worker_id: number; score: number }[] };

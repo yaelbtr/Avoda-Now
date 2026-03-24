@@ -1,0 +1,11 @@
+{
+  "query": "\n-- Check Efrat's profile\nSELECT id, name, \"preferredCity\", \"locationMode\", \"searchRadiusKm\",\n       \"workerLocation\"::text, \"workerLatitude\", \"workerLongitude\"\nFROM users\nWHERE name ILIKE '%אפרת%' AND \"userMode\" = 'worker'\nLIMIT 5;\n\n-- Check job 60011\nSELECT id, city, category, latitude, longitude, \"jobLocationMode\"\nFROM jobs\nWHERE id = 60011;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \n-- Check Efrat's profile\nSELECT id, name, \"preferredCity\", \"locationMode\", \"searchRadiusKm\",\n       \"workerLocation\"::text, \"workerLatitude\", \"workerLongitude\"\nFROM users\nWHERE name ILIKE '%אפרת%' AND \"userMode\" = 'worker'\nLIMIT 5;\n\n-- Check job 60011\nSELECT id, city, category, latitude, longitude, \"jobLocationMode\"\nFROM jobs\nWHERE id = 60011;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 2 column 25 near \"::text, \"workerLatitude\", \"workerLongitude\"",
+    "FROM users",
+    "WHERE name ILIKE '%אפרת%' AND \"userMode\" = 'worker'",
+    "LIMIT 5\""
+  ]
+}

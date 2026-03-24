@@ -3265,3 +3265,4 @@ Isolation guarantees:
 - [x] Fix MyJobs card: "התנדבות" shown incorrectly (should only show when payType=volunteer)
 
 - [x] Fix: formatSalary() didn't handle Drizzle Decimal objects (PostgreSQL numeric) — salary showed "לא צוין" even when set. Fixed by using String(salary) conversion and accepting { toString() } type.
+- [x] Fix: salary not displayed — hourlyRate stored separately from salary, formatSalary updated to accept optional hourlyRate param; all components updated (JobCard, CarouselJobCard, SearchJobCard, JobBottomSheet, JobDetails, MyApplications, ActivityTicker, db.ts)

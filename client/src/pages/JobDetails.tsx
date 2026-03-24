@@ -452,7 +452,7 @@ export default function JobDetails() {
             <div className="col-span-2 flex items-center gap-2 pt-1" style={{ borderTop: `1px dashed ${T.border}` }}>
               <span className="text-lg">💰</span>
               <span className="font-bold text-base" style={{ color: isVolunteer ? "oklch(0.38 0.14 145)" : T.brand }}>
-                {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
+                {isVolunteer ? "💚 התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
               </span>
             </div>
           </div>

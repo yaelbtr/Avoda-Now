@@ -23,6 +23,7 @@ interface SearchJob {
   city?: string | null;
   salary?: string | null;
   salaryType: string;
+  hourlyRate?: string | null;
   contactPhone: string | null;
   businessName?: string | null;
   startTime: string;
@@ -68,7 +69,7 @@ const OLIVE = "oklch(0.40 0.10 88)";
 
 export default function SearchJobCard({ job, showDistance, isSaved, isApplied: isAppliedProp, onSaveToggle, onLoginRequired, onCardClick }: SearchJobCardProps) {
   const { isAuthenticated } = useAuth();
-  const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
+  const salaryStr = formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null);
   const catIcon = getCategoryIcon(job.category);
   const catLabel = getCategoryLabel(job.category);
   const location = job.city ?? job.address;

@@ -81,6 +81,7 @@ type MyApplication = {
   jobCity: string | null;
   jobSalary: string | null;
   jobSalaryType: string | null;
+  jobHourlyRate?: string | null;
   jobStatus: string | null;
   employerName: string | null;
   employerPhone?: string | null;
@@ -754,9 +755,9 @@ export default function MyApplications() {
                           {app.jobCity ?? app.jobAddress}
                         </span>
                       )}
-                      {app.jobSalary && (
+                      {(app.jobSalary || app.jobHourlyRate) && (
                         <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "oklch(0.65 0.13 76.7)" }}>
-                          {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly")}
+                          {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly", app.jobHourlyRate ?? null)}
                         </span>
                       )}
                       <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-faint)" }}>
@@ -906,7 +907,7 @@ export default function MyApplications() {
                           const parts = [title];
                           if (app.employerName) parts.push(app.employerName);
                           if (app.jobCity) parts.push(`ב${app.jobCity}`);
-                          if (app.jobSalary) parts.push(formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly"));
+                          if (app.jobSalary || app.jobHourlyRate) parts.push(formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly", app.jobHourlyRate ?? null));
                           const text = parts.join(" | ");
                           if (navigator.share) {
                             try { await navigator.share({ title, text, url }); }

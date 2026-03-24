@@ -14,6 +14,7 @@ type FeedItem = {
   city?: string | null;
   salary?: string | null;
   salaryType?: string;
+  hourlyRate?: string | null;
   isUrgent?: boolean | null;
   category?: string;
   note?: string | null;
@@ -26,8 +27,8 @@ function buildMessage(item: FeedItem): string {
     const salary =
       item.salaryType === "volunteer"
         ? " — התנדבות"
-        : item.salary
-        ? ` — ${formatSalary(item.salary, item.salaryType ?? "hourly")}`
+        : (item.salary || item.hourlyRate)
+        ? ` — ${formatSalary(item.salary ?? null, item.salaryType ?? "hourly", item.hourlyRate ?? null)}`
         : "";
     const prefix = item.isUrgent ? "⚡ דרוש עובד דחוף" : "📢 עבודה חדשה";
     return `${prefix}: ${item.title}${loc}${salary}`;

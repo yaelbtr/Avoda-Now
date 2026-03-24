@@ -748,7 +748,7 @@ export default function MyJobs() {
                       style={{ color: isVolunteer ? "oklch(0.38 0.15 160)" : "oklch(0.45 0.12 80)" }}
                     >
                       <DollarSign className="h-3 w-3" />
-                      {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType) || "לא צוין")}
+                      {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
                     </span>
                     {daysLeft !== null && job.status === "active" && (
                       <span

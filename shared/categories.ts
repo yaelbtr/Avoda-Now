@@ -132,10 +132,20 @@ export function isJobToday(
  * - otherwise → "₪{amount} {type label}"
  */
 // salary may be a string, number, or Drizzle Decimal object (PostgreSQL numeric)
-export function formatSalary(salary: string | number | null | undefined | { toString(): string }, salaryType: string): string {
+// hourlyRate is a separate DB column used when salaryType="hourly"
+export function formatSalary(
+  salary: string | number | null | undefined | { toString(): string },
+  salaryType: string,
+  hourlyRate?: string | number | null | undefined | { toString(): string },
+): string {
   if (salaryType === "התנדבות" || salaryType === "volunteer") return "התנדבות";
-  if (salary === null || salary === undefined || salary === "") return "";
-  const num = typeof salary === "number" ? salary : parseFloat(String(salary));
+  // For hourly type, prefer hourlyRate column over salary column
+  const effectiveValue =
+    salaryType === "hourly" && hourlyRate !== null && hourlyRate !== undefined && hourlyRate !== ""
+      ? hourlyRate
+      : salary;
+  if (effectiveValue === null || effectiveValue === undefined || effectiveValue === "") return "";
+  const num = typeof effectiveValue === "number" ? effectiveValue : parseFloat(String(effectiveValue));
   if (isNaN(num) || num <= 0) return "";
   const typeLabel = getSalaryTypeLabel(salaryType);
   return `₪${num.toLocaleString("he-IL")} ${typeLabel}`;

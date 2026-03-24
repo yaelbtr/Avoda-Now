@@ -656,6 +656,7 @@ export default function MyJobs() {
               const isExpiringSoon = daysLeft !== null && daysLeft <= 1 && job.status === "active";
               const applicantsExpanded = expandedApplicants.has(job.id);
               const pendingCount = (job as { pendingCount?: number }).pendingCount ?? 0;
+              const totalApplicationCount = (job as { totalApplicationCount?: number }).totalApplicationCount ?? 0;
 
               return (
                 <motion.div
@@ -815,8 +816,8 @@ export default function MyJobs() {
                     )}
                   </div>
 
-                  {/* ── Applicants section — always visible, collapsible ── */}
-                  <div style={{ marginTop: "0.75rem", borderTop: "1px solid oklch(0.90 0.02 122)" }}>
+                  {/* ── Applicants section — only shown when there are applicants ── */}
+                  {totalApplicationCount > 0 && (<div style={{ marginTop: "0.75rem", borderTop: "1px solid oklch(0.90 0.02 122)" }}>
                     {/* Section header with collapse toggle */}
                     <button
                       onClick={() => toggleApplicants(job.id)}
@@ -854,7 +855,7 @@ export default function MyJobs() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </div>)}
                 </motion.div>
               );
             })}

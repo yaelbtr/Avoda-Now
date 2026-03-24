@@ -3283,3 +3283,9 @@ Isolation guarantees:
 - [x] Root cause: getWorkersMatchingJob (internal DB path) only checked legacy `preferredCity` string; workers using CityPicker store IDs in `preferredCities` array (not string), so they bypassed the city filter entirely
 - [x] Fix: Added `preferredCities` to SELECT; batch-resolved city IDs to Hebrew names via getCityNamesByIds (O(n) pattern); city filter now checks `preferredCities` array first, falls back to `preferredCity` string; workers with no city data at all are included (incomplete profile)
 - [x] TypeScript clean, 918/918 unit tests passing
+
+## Backfill cityPlaceId for existing jobs
+- [x] Script: scripts/backfill-city-place-id.mjs — resolves each distinct city name via Google Maps Place Autocomplete (Israel, language=he), deduplicates API calls, rate-limited to 5 req/s
+- [x] Dry-run mode (DRY_RUN=1) for safe preview before writing
+- [x] Skips address-like strings (contains digits or >40 chars)
+- [x] Ran script: 12 jobs updated (6x "בני ברק", 6x "ישראל"); 1 address-like skipped; 1 ZERO_RESULTS ("אברבנאל")

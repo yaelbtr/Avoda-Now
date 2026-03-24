@@ -3302,3 +3302,11 @@ Isolation guarantees:
 - [x] CityAutocomplete — inline error with AlertCircle icon + aria-invalid; clears on dropdown selection
 - [x] server/routers.ts jobInputSchema — city field guarded by cityZodRefine via .superRefine()
 - [x] shared/cityValidation.test.ts — 39 unit tests (39/39 passing); vitest.config.ts updated to include shared/**/*.test.ts
+
+## City validation extended to WorkerProfile & EmployerProfile
+- [x] CityPicker: inline address-guard error (AlertCircle + red border) on search input when ≥4 chars typed; clears on X button
+- [x] server/routers.ts completeSignup: preferredCity guarded by cityZodRefine
+- [x] server/routers.ts updateProfile (worker): preferredCity guarded by cityZodRefine
+- [x] server/routers.ts updateEmployerProfile: workerSearchCity guarded by cityZodRefine
+- [x] defaultJobCity (EmployerProfile PlacesAutocomplete) intentionally excluded — it is a full address field
+- [x] 957/957 unit tests passing, TypeScript clean

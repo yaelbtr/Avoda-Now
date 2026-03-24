@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
-import { Search, X, MapPin } from "lucide-react";
+import { Search, X, MapPin, AlertCircle } from "lucide-react";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
+import { validateCityName } from "../../../shared/cityValidation";
 
 /// <reference types="@types/google.maps" />
 
@@ -60,6 +61,7 @@ interface CityPickerProps {
  */
 export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect }: CityPickerProps) {
   const [search, setSearch] = useState("");
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const inputRef = useRef<HTMLInputElement>(null);
@@ -203,7 +205,15 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
           ref={inputRef}
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value);
+            const v = e.target.value;
+            setSearch(v);
+            // Validate inline — only flag once user has typed enough (≥ 4 chars)
+            if (v.trim().length >= 4) {
+              const { error } = validateCityName(v);
+              setSearchError(error);
+            } else {
+              setSearchError(null);
+            }
             openDropdown();
           }}
           onFocus={openDropdown}
@@ -214,9 +224,11 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
               : "הקלד שם עיר לחיפוש..."
           }
           disabled={isMaxReached}
-          className="pr-9 text-right text-sm"
+          className={`pr-9 text-right text-sm ${searchError ? "border-destructive focus-visible:ring-destructive/30" : ""}`}
           dir="rtl"
           autoComplete="off"
+          aria-invalid={!!searchError}
+          aria-describedby={searchError ? "city-picker-error" : undefined}
         />
         {search && (
           <button
@@ -224,6 +236,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
             onMouseDown={(e) => {
               e.preventDefault();
               setSearch("");
+              setSearchError(null);
               setOpen(false);
             }}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -232,6 +245,18 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
           </button>
         )}
       </div>
+      {/* Address-like input validation error */}
+      {searchError && (
+        <div
+          id="city-picker-error"
+          role="alert"
+          className="flex items-center gap-1.5 mt-1 text-xs text-destructive text-right"
+          dir="rtl"
+        >
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>{searchError}</span>
+        </div>
+      )}
 
       {/* Dropdown — rendered with position:fixed to escape overflow:hidden ancestors */}
       {open && (suggestions.length > 0 || search.trim()) && (

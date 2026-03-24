@@ -1898,6 +1898,7 @@ export async function getApplicationsForJob(jobId: number) {
       workerTags: users.workerTags,
       workerRating: users.workerRating,
       completedJobsCount: users.completedJobsCount,
+      workerProfilePhoto: users.profilePhoto,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))

@@ -3370,3 +3370,9 @@ Isolation guarantees:
 - [x] Update MyApplications UI: show "העבודה נסגרה" banner when jobStatus=closed + jobClosedReason=cap_reached
 - [x] Update JobApplications/MatchedWorkers UI: show cap-reached banner and disable send-offer
 - [x] Write vitest tests for the cap logic
+
+## Feature: Worker avatar + status label in MyJobs applicant rows
+- [x] Extend getMyJobs applicants to return profilePhoto per worker
+- [x] Add WorkerAvatar shared component (photo or letter-avatar fallback)
+- [x] Add applicationStatusLabel() utility in shared/const.ts
+- [x] Update MyJobs applicant row UI: show avatar + status label

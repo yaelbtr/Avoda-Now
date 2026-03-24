@@ -119,6 +119,27 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
 ] as const;
 
 /**
+ * Human-readable Hebrew labels for each application/offer status.
+ * Used in MyJobs applicant rows and MyApplications cards.
+ * Single source of truth — do not duplicate in individual components.
+ */
+export const APPLICATION_STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  pending:       { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)" },
+  viewed:        { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)" },
+  accepted:      { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)" },
+  rejected:      { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)" },
+  offered:       { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)" },
+  offer_rejected:{ label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)" },
+};
+
+/**
+ * Returns the Hebrew label config for an application status, with a safe fallback.
+ */
+export function getApplicationStatusLabel(status: string) {
+  return APPLICATION_STATUS_LABELS[status] ?? { label: status, color: "oklch(0.50 0.02 120)", bg: "oklch(0.93 0.01 120)" };
+}
+
+/**
  * Normalizes an Israeli phone number to the E.164 format required by wa.me.
  * Handles inputs like: "0559258668", "+972559258668", "972559258668", "055-925-8668"
  * Returns a full number like "972559258668" (no + prefix, no dashes).

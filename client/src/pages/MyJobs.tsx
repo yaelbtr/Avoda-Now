@@ -27,7 +27,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
-import { normalizePhoneForWhatsApp } from "@shared/const";
+import { normalizePhoneForWhatsApp, getApplicationStatusLabel } from "@shared/const";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Bell, BellOff } from "lucide-react";
@@ -130,6 +130,8 @@ type Applicant = {
   contactRevealed: boolean;
   message: string | null;
   createdAt: Date;
+  /** CDN URL of the worker's profile photo, null if not set */
+  workerProfilePhoto?: string | null;
 };
 
 function ApplicantsPanel({ jobId }: { jobId: number }) {
@@ -205,32 +207,42 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
           >
             {/* Worker info row */}
             <div className="flex items-start gap-2.5 mb-2">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{
-                  background: isAccepted ? "oklch(0.68 0.20 160 / 0.18)" : "oklch(0.50 0.14 85 / 0.12)",
-                  color: isAccepted ? "oklch(0.38 0.15 160)" : "oklch(0.38 0.07 125.0)",
-                }}
-              >
-                {app.workerName?.charAt(0) ?? "?"}
-              </div>
+              {/* Avatar: photo if available, else coloured letter-avatar */}
+              {app.workerProfilePhoto ? (
+                <img
+                  src={app.workerProfilePhoto}
+                  alt={app.workerName ?? "עובד"}
+                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                  style={{ border: "1px solid oklch(0.88 0.03 120)" }}
+                />
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                  style={{
+                    background: isAccepted ? "oklch(0.68 0.20 160 / 0.18)" : "oklch(0.50 0.14 85 / 0.12)",
+                    color: isAccepted ? "oklch(0.38 0.15 160)" : "oklch(0.38 0.07 125.0)",
+                  }}
+                >
+                  {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   <span className="text-sm font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>
                     {app.workerName ?? "עובד"}
                   </span>
-                  {isAccepted && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style={{ background: "oklch(0.68 0.20 160 / 0.12)", color: "oklch(0.38 0.15 160)" }}>
-                      התקבל
-                    </span>
-                  )}
-                  {isRejected && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style={{ background: "oklch(0.93 0.01 120)", color: "oklch(0.50 0.02 120)" }}>
-                      נדחה
-                    </span>
-                  )}
+                  {/* Status badge — single source of truth via getApplicationStatusLabel */}
+                  {(() => {
+                    const cfg = getApplicationStatusLabel(app.status);
+                    return (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                        style={{ background: cfg.bg, color: cfg.color }}
+                      >
+                        {cfg.label}
+                      </span>
+                    );
+                  })()}
                 </div>
                 {app.workerPreferredCity && (
                   <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "oklch(0.55 0.03 120)" }}>

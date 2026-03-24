@@ -26,6 +26,7 @@ import {
 import { RateWorkerModal } from "@/components/RateWorkerModal";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
+import { getApplicationStatusLabel } from "@shared/const";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,65 +44,7 @@ function isNew(createdAt: Date | string): boolean {
   return Date.now() - new Date(createdAt).getTime() < 24 * 60 * 60 * 1000;
 }
 
-// ── Status config (identical tokens to MyApplications STATUS_CONFIG) ──────────
-
-const STATUS_CONFIG: Record<string, {
-  label: string;
-  icon: React.ReactNode;
-  bg: string;
-  color: string;
-  border: string;
-}> = {
-  pending: {
-    label: "ממתין",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.75 0.12 76.7 / 0.12)",
-    color: "oklch(0.65 0.13 76.7)",
-    border: "oklch(0.75 0.12 76.7 / 0.30)",
-  },
-  viewed: {
-    label: "נצפה",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.50 0.07 125.0 / 0.12)",
-    color: "oklch(0.38 0.07 125.0)",
-    border: "oklch(0.50 0.07 125.0 / 0.30)",
-  },
-  accepted: {
-    label: "התקבל",
-    icon: <CheckCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.65 0.22 160 / 0.12)",
-    color: "oklch(0.52 0.22 150)",
-    border: "oklch(0.65 0.22 160 / 0.30)",
-  },
-  rejected: {
-    label: "נדחה",
-    icon: <XCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  },
-  offered: {
-    label: "הצעה נשלחה",
-    icon: <Send className="h-3.5 w-3.5" />,
-    bg: "oklch(0.55 0.18 260 / 0.10)",
-    color: "oklch(0.45 0.18 260)",
-    border: "oklch(0.55 0.18 260 / 0.30)",
-  },
-  offered_accepted: {
-    label: "העובד אישר",
-    icon: <CheckCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.65 0.22 160 / 0.12)",
-    color: "oklch(0.52 0.22 150)",
-    border: "oklch(0.65 0.22 160 / 0.30)",
-  },
-  offer_rejected: {
-    label: "דחה הצעה",
-    icon: <ThumbsDown className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  },
-};
+// STATUS_CONFIG removed — use getApplicationStatusLabel from @shared/const instead
 
 // ── Star rating display ─────────────────────────────────────────────────────
 
@@ -151,6 +94,8 @@ function ApplicantCard({
     distanceKm: number | null;
     workerRating?: string | null;
     completedJobsCount?: number;
+    /** CDN URL of the worker's profile photo, null if not set */
+    workerProfilePhoto?: string | null;
   };
   onAccept: (id: number) => void;
   onReject: (id: number) => void;
@@ -168,7 +113,7 @@ function ApplicantCard({
   const isPendingApp = app.status === "pending" || app.status === "viewed";
 
   const effectiveStatus = isOfferedAccepted ? "offered_accepted" : app.status;
-  const cfg = STATUS_CONFIG[effectiveStatus] ?? STATUS_CONFIG.pending;
+  const cfg = getApplicationStatusLabel(effectiveStatus);
 
   const phone = app.workerPhone ?? "";
   const rating = app.workerRating ? parseFloat(app.workerRating) : null;
@@ -232,15 +177,28 @@ function ApplicantCard({
 
       {/* ── Top row: icon + name/meta + status badge ── */}
       <div className="flex items-start gap-3 mb-2">
-        {/* Icon block */}
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: avatarBg }}
-        >
-          {isOfferedPending ? (
-            <Gift className="h-5 w-5" style={{ color: avatarColor }} />
+        {/* Avatar: profile photo if available, else letter-avatar; Gift icon overlay for offered-pending */}
+        <div className="relative shrink-0">
+          {app.workerProfilePhoto && !isOfferedPending ? (
+            <img
+              src={app.workerProfilePhoto}
+              alt={app.workerName ?? "עובד"}
+              className="w-10 h-10 rounded-xl object-cover"
+              style={{ border: "1px solid oklch(0.88 0.03 120)" }}
+            />
           ) : (
-            <User className="h-5 w-5" style={{ color: avatarColor }} />
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: avatarBg }}
+            >
+              {isOfferedPending ? (
+                <Gift className="h-5 w-5" style={{ color: avatarColor }} />
+              ) : (
+                <span className="text-sm font-bold" style={{ color: avatarColor }}>
+                  {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -283,16 +241,16 @@ function ApplicantCard({
           )}
         </div>
 
-        {/* Status badge */}
+        {/* Status badge — label + tooltip from shared/const single source of truth */}
         <span
           className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold shrink-0"
+          title={cfg.tooltip}
           style={{
             background: cfg.bg,
             color: cfg.color,
-            border: `1px solid ${cfg.border}`,
+            border: `1px solid ${cfg.color}33`,
           }}
         >
-          {cfg.icon}
           {cfg.label}
         </span>
       </div>

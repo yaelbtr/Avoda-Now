@@ -3376,3 +3376,9 @@ Isolation guarantees:
 - [x] Add WorkerAvatar shared component (photo or letter-avatar fallback)
 - [x] Add applicationStatusLabel() utility in shared/const.ts
 - [x] Update MyJobs applicant row UI: show avatar + status label
+
+## Refactor: Unify status labels + profilePhoto + tooltips
+- [x] Replace STATUS_CONFIG in JobApplications.tsx with getApplicationStatusLabel from shared/const.ts
+- [x] Add workerProfilePhoto to getApplicationsForJobWithDistance SELECT in db.ts
+- [x] Add tooltip (title) descriptions to APPLICATION_STATUS_LABELS in shared/const.ts
+- [x] Apply title attribute to status badges in JobApplications and MyJobs

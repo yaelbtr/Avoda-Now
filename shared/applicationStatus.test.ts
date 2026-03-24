@@ -25,11 +25,12 @@ describe("APPLICATION_STATUS_LABELS", () => {
     }
   });
 
-  it("every entry has non-empty label, color, and bg", () => {
+  it("every entry has non-empty label, color, bg, and tooltip", () => {
     for (const [key, cfg] of Object.entries(APPLICATION_STATUS_LABELS)) {
-      expect(cfg.label, `${key}.label should be non-empty`).toBeTruthy();
-      expect(cfg.color, `${key}.color should be non-empty`).toBeTruthy();
-      expect(cfg.bg,    `${key}.bg should be non-empty`).toBeTruthy();
+      expect(cfg.label,   `${key}.label should be non-empty`).toBeTruthy();
+      expect(cfg.color,   `${key}.color should be non-empty`).toBeTruthy();
+      expect(cfg.bg,      `${key}.bg should be non-empty`).toBeTruthy();
+      expect(cfg.tooltip, `${key}.tooltip should be non-empty`).toBeTruthy();
     }
   });
 });
@@ -71,8 +72,19 @@ describe("getApplicationStatusLabel", () => {
     const cfg = getApplicationStatusLabel("unknown_xyz");
     // Fallback label should equal the raw status string
     expect(cfg.label).toBe("unknown_xyz");
-    // Fallback should still have color and bg
+    // Fallback should still have color, bg, and tooltip
     expect(cfg.color).toBeTruthy();
     expect(cfg.bg).toBeTruthy();
+    expect(cfg.tooltip).toBeTruthy();
+  });
+
+  it("returns correct tooltip for 'offered'", () => {
+    const cfg = getApplicationStatusLabel("offered");
+    expect(cfg.tooltip).toContain("הצעת");
+  });
+
+  it("returns correct tooltip for 'offered_accepted'", () => {
+    const cfg = getApplicationStatusLabel("offered_accepted");
+    expect(cfg.tooltip).toContain("אישר");
   });
 });

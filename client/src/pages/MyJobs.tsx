@@ -237,6 +237,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                     return (
                       <span
                         className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                        title={cfg.tooltip}
                         style={{ background: cfg.bg, color: cfg.color }}
                       >
                         {cfg.label}

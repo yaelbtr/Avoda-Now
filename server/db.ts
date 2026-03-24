@@ -1949,6 +1949,7 @@ export async function getApplicationsForJobWithDistance(
       distanceKm: distanceExpr,
       workerRating: users.workerRating,
       completedJobsCount: users.completedJobsCount,
+      workerProfilePhoto: users.profilePhoto,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))

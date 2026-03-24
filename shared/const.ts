@@ -120,23 +120,40 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
 
 /**
  * Human-readable Hebrew labels for each application/offer status.
- * Used in MyJobs applicant rows and MyApplications cards.
+ * Used in MyJobs applicant rows, JobApplications, and MyApplications cards.
  * Single source of truth — do not duplicate in individual components.
+ *
+ * Fields:
+ *  - label   : Short badge text
+ *  - color   : Text/icon color (OKLCH)
+ *  - bg      : Badge background (OKLCH)
+ *  - tooltip : Longer description shown as title attribute on the badge
  */
-export const APPLICATION_STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  pending:       { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)" },
-  viewed:        { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)" },
-  accepted:      { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)" },
-  rejected:      { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)" },
-  offered:       { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)" },
-  offer_rejected:{ label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)" },
+export const APPLICATION_STATUS_LABELS: Record<
+  string,
+  { label: string; color: string; bg: string; tooltip: string }
+> = {
+  pending:        { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)",  tooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה" },
+  viewed:         { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)",  tooltip: "צפית בבקשה, המעסיק טרם החליט אם לקבל או לדחות" },
+  accepted:       { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "המעסיק קיבל את העובד ופרטי הקשר נחשפו" },
+  rejected:       { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)",        tooltip: "המעסיק דחה את בקשת העובד" },
+  offered:        { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)", tooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה" },
+  offer_rejected: { label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)",  tooltip: "העובד דחה את הצעת העבודה ששלחת" },
+  offered_accepted:{ label: "העובד אישר",           color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "העובד אישר את הצעת העבודה ופרטי הקשר נחשפו" },
 };
 
 /**
  * Returns the Hebrew label config for an application status, with a safe fallback.
  */
 export function getApplicationStatusLabel(status: string) {
-  return APPLICATION_STATUS_LABELS[status] ?? { label: status, color: "oklch(0.50 0.02 120)", bg: "oklch(0.93 0.01 120)" };
+  return (
+    APPLICATION_STATUS_LABELS[status] ?? {
+      label: status,
+      color: "oklch(0.50 0.02 120)",
+      bg: "oklch(0.93 0.01 120)",
+      tooltip: status,
+    }
+  );
 }
 
 /**

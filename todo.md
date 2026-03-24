@@ -3247,3 +3247,11 @@ Isolation guarantees:
 
 ## Bug Fix — JobApplications: offered section includes accepted offers
 - [x] Fix: offered filter was `status=offered` (all), causing accepted offers to appear in both "ממתינות" and "אישרו הצעה" sections. Fixed to `status=offered && !contactRevealed` for pending section only.
+
+## Redesign — JobApplications card to AvodaNow design language
+- [x] Replace shadcn Card/Badge with OKLCH inline styles matching MyApplications pattern
+- [x] Avatar icon block (rounded-xl, brand bg), status badge with border, meta row with Clock/MapPin
+- [x] Pending actions: brand olive-green "קבל" + muted "דחה" inline buttons
+- [x] Offer accepted section: green confirmation banner + Phone/WhatsApp contact buttons
+- [x] Dark olive header bar (matching navbar), SectionHeader component with colored count pill
+- [x] Skeleton loading uses AvodaNow card style, empty state uses brand icon block

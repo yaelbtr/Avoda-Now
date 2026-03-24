@@ -3388,3 +3388,8 @@ Isolation guarantees:
 - [x] Create shared StatusBadge component in client/src/components/StatusBadge.tsx
 - [x] Replace title attribute in MyJobs ApplicantsPanel with StatusBadge
 - [x] Replace title attribute in JobApplications ApplicantCard with StatusBadge
+
+## Bug: "ראה את כל המשרות" shows employer-locked popup for workers
+- [x] Find the button handler in the worker home page
+- [x] Find the employer-locked gate logic and ensure it only applies to employers/non-workers
+- [x] Fix routing so workers navigate directly to FindJobs without the lock

@@ -48,6 +48,9 @@ vi.mock("./db", () => ({
   withdrawApplication: vi.fn().mockResolvedValue(undefined),
   getWorkerBirthDate: vi.fn().mockResolvedValue(null),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
+  // Candidate cap helpers — default to 0 accepted (cap not reached)
+  countAcceptedCandidates: vi.fn().mockResolvedValue(0),
+  autoCloseJobIfCapReached: vi.fn().mockResolvedValue(false),
 }));
 
 import * as db from "./db";

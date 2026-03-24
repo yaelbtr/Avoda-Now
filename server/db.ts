@@ -807,8 +807,10 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const conditions: any[] = [
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
-    // Exclude jobs that were auto-closed because the candidate cap was reached
-    or(isNull(jobs.closedReason), ne(jobs.closedReason, "cap_reached"))!,
+    // Exclude jobs that were auto-closed because the candidate cap was reached.
+    // Use sql cast because Drizzle sends the literal as text and Postgres needs an explicit
+    // cast to the closed_reason enum when comparing with <> ($n::closed_reason).
+    or(isNull(jobs.closedReason), sql`${jobs.closedReason} <> 'cap_reached'::closed_reason`)!,
   ];
 
   // ── Mode-specific conditions ────────────────────────────────────────────────

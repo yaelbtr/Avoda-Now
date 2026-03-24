@@ -329,7 +329,9 @@ export default function JobApplications() {
   const accepted = applicants?.filter((a) => a.status === "accepted") ?? [];
   const rejected = applicants?.filter((a) => a.status === "rejected") ?? [];
   // Offer-related groups
-  const offered = applicants?.filter((a) => a.status === "offered") ?? [];
+  // offered = pending offers only (worker has NOT yet responded)
+  const offered = applicants?.filter((a) => a.status === "offered" && !a.contactRevealed) ?? [];
+  // offerAccepted = worker accepted the offer (contactRevealed=true)
   const offerAccepted = applicants?.filter((a) => a.status === "offered" && a.contactRevealed) ?? [];
   const offerRejected = applicants?.filter((a) => a.status === "offer_rejected") ?? [];
   const total = applicants?.length ?? 0;

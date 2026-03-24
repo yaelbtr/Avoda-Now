@@ -3244,3 +3244,6 @@ Isolation guarantees:
 
 ## Bug Fix — JobApplications: wrong badge for offer-accepted state
 - [x] Fix: badge shows "הצעה נשלחה" even when worker accepted — should show "העובד אישר את ההצעה" when offered+contactRevealed=true
+
+## Bug Fix — JobApplications: offered section includes accepted offers
+- [x] Fix: offered filter was `status=offered` (all), causing accepted offers to appear in both "ממתינות" and "אישרו הצעה" sections. Fixed to `status=offered && !contactRevealed` for pending section only.

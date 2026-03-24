@@ -3322,3 +3322,6 @@ Isolation guarantees:
 
 ## Bug Fix: "הגדר התראות" button navigation blocked by overlay
 - [x] Fix FindJobsComingSoonOverlay to hide when not on /find-jobs route
+
+## Bug Fix: Browser back from /jobs/:id/applications lands on 404
+- [x] Add NumericJobRedirect component that redirects /jobs/:id (numeric) to /job/:id

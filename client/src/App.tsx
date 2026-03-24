@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import React from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
@@ -66,6 +67,21 @@ import { IdleLogoutManager } from "./components/IdleLogoutManager";
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
+
+/**
+ * Redirects /jobs/:id (numeric) → /job/:id.
+ * Fixes browser-back from /jobs/:id/applications landing on JobsLanding with a numeric slug.
+ */
+function NumericJobRedirect({ params }: { params?: { id?: string } }) {
+  const id = params?.id ?? "";
+  if (/^\d+$/.test(id)) {
+    window.location.replace(`/job/${id}`);
+    return null;
+  }
+  // Non-numeric: fall through to JobsLanding
+  const JobsLandingFallback = JobsLanding as React.ComponentType;
+  return <JobsLandingFallback />;
+}
 
 /**
  * Sets the manus bypass flag ONLY when running on the Manus sandbox/dev
@@ -304,6 +320,8 @@ function Router() {
                 <Route path="/jobs/ניקיון-לפסח" component={PassoverLandingPage} />
                 <Route path="/jobs/מנקה-לפסח" component={PassoverLandingPage} />
                 <Route path="/jobs/:category/:city" component={JobsLanding} />
+                {/* Redirect /jobs/:id (numeric job ID) → /job/:id to fix browser-back from /jobs/:id/applications */}
+                <Route path="/jobs/:id" component={NumericJobRedirect} />
                 <Route path="/jobs/:slug" component={JobsLanding} />
                 <Route path="/guide/temporary-jobs/:category" component={GuidePage} />
                 <Route path="/guide/temporary-jobs" component={GuideHub} />

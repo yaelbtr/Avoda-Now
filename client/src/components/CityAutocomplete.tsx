@@ -30,7 +30,8 @@ interface Suggestion {
 interface CityAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect: (city: string, lat: number, lng: number) => void;
+  /** Called when user selects a city. placeId is provided when the result came from Google Places. */
+  onSelect: (city: string, lat: number, lng: number, placeId?: string) => void;
   placeholder?: string;
   className?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -201,8 +202,9 @@ export default function CityAutocomplete({
     setGoogleSuggestions([]);
 
     // If we have DB lat/lng, use them immediately
+    // Still pass placeId if available (from Google Places) so callers can store it for matching.
     if (suggestion.lat != null && suggestion.lng != null) {
-      onSelect(suggestion.nameHe, suggestion.lat, suggestion.lng);
+      onSelect(suggestion.nameHe, suggestion.lat, suggestion.lng, suggestion.placeId);
       return;
     }
 
@@ -210,7 +212,7 @@ export default function CityAutocomplete({
     if (suggestion.placeId) {
       const cached = getCachedGeo(suggestion.placeId);
       if (cached) {
-        onSelect(cached.city, cached.lat, cached.lng);
+        onSelect(cached.city, cached.lat, cached.lng, suggestion.placeId);
         return;
       }
       if (geocoder.current) {
@@ -219,13 +221,13 @@ export default function CityAutocomplete({
             const loc = results[0].geometry.location;
             const result: GeoResult = { city: suggestion.nameHe, lat: loc.lat(), lng: loc.lng() };
             setCachedGeo(suggestion.placeId!, result);
-            onSelect(result.city, result.lat, result.lng);
+            onSelect(result.city, result.lat, result.lng, suggestion.placeId);
           }
         });
       }
     } else {
       // No lat/lng available at all — pass 0,0 as fallback
-      onSelect(suggestion.nameHe, 0, 0);
+      onSelect(suggestion.nameHe, 0, 0, undefined);
     }
   };
 

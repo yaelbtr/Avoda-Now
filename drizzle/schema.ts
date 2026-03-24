@@ -167,6 +167,8 @@ export const users = pgTable("users", {
   preferredCategories: json("preferredCategories").$type<string[]>(),
   /** Worker's preferred city / area (legacy single city) */
   preferredCity: varchar("preferredCity", { length: 100 }),
+  /** Google Maps place_id for the worker's preferred city — canonical city identifier */
+  preferredCityPlaceId: varchar("preferredCityPlaceId", { length: 100 }),
   /** Worker's preferred cities (JSON array of city IDs from the cities table) */
   preferredCities: json("preferredCities").$type<number[]>(),
   /** Worker's location mode for matching: city or radius */
@@ -297,6 +299,8 @@ export const jobs = pgTable("jobs", {
   category: varchar("category", { length: 64 }).notNull(),
   address: varchar("address", { length: 300 }).notNull(),
   city: varchar("city", { length: 100 }),
+  /** Google Maps place_id for the job's city — canonical city identifier for matching */
+  cityPlaceId: varchar("cityPlaceId", { length: 100 }),
   latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
   longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
   salary: numeric("salary", { precision: 10, scale: 2 }),

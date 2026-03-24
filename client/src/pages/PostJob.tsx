@@ -77,6 +77,7 @@ export default function PostJob() {
   const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("address");
   const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
   const [jobCity, setJobCity] = useState("");
+  const [jobCityPlaceId, setJobCityPlaceId] = useState<string | null>(null);
   const [jobDate, setJobDate] = useState("");
   const [jobDateTouched, setJobDateTouched] = useState(false);
   const [workStartTime, setWorkStartTime] = useState("");
@@ -443,6 +444,7 @@ export default function PostJob() {
       workEndTime: workEndTime || undefined,
       imageUrls: jobImages.length > 0 ? jobImages : undefined,
       minAge: minAge ?? undefined,
+      cityPlaceId: jobLocationMode === "city" ? (jobCityPlaceId ?? undefined) : undefined,
     };
     setPendingJobData(jobPayload);
     setShowOtpModal(true);
@@ -922,7 +924,7 @@ export default function PostJob() {
                             <CityAutocomplete
                               value={jobCity}
                               onChange={setJobCity}
-                              onSelect={(city) => { setJobCity(city); toast.success(`עיר נבחרה: ${city}`); }}
+                              onSelect={(city, _lat, _lng, placeId) => { setJobCity(city); if (placeId) setJobCityPlaceId(placeId); toast.success(`עיר נבחרה: ${city}`); }}
                               placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
                             />
                           </div>

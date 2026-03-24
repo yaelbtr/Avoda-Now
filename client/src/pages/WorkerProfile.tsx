@@ -167,6 +167,7 @@ export default function WorkerProfile() {
   const [preferenceText, setPreferenceText] = useState("");
   const [locationMode, setLocationMode] = useState<"city" | "radius">("city");
   const [preferredCity, setPreferredCity] = useState("");
+  const [preferredCityPlaceId, setPreferredCityPlaceId] = useState<string | null>(null);
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
   const [workerLatitude, setWorkerLatitude] = useState<string | null>(null);
   const [workerLongitude, setWorkerLongitude] = useState<string | null>(null);
@@ -280,6 +281,8 @@ export default function WorkerProfile() {
       if (newPrefText) setPreferenceText(prev => prev || newPrefText);
       setLocationMode(prev => prev || newLocMode);
       if (newCity) setPreferredCity(prev => prev || newCity);
+      const newCityPlaceId = (d as any).preferredCityPlaceId ?? null;
+      if (newCityPlaceId) setPreferredCityPlaceId(prev => prev ?? newCityPlaceId);
       setSearchRadiusKm(prev => prev !== 5 ? prev : newRadius);
       if (newDays.length) setPreferredDays(prev => prev.length ? prev : newDays);
       if (newSlots.length) setPreferredTimeSlots(prev => prev.length ? prev : newSlots);
@@ -354,6 +357,7 @@ export default function WorkerProfile() {
         phone: !user?.phone ? combinedPhone : undefined,
         locationMode,
         preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+        preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
         searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
         preferredCategories: selectedCategories,
         preferenceText: preferenceText.trim() || null,
@@ -398,6 +402,7 @@ export default function WorkerProfile() {
       preferenceText: preferenceText.trim() || null,
       locationMode,
       preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+      preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
       workerLatitude: locationMode === "radius" ? workerLatitude : null,
       workerLongitude: locationMode === "radius" ? workerLongitude : null,
@@ -793,6 +798,7 @@ export default function WorkerProfile() {
                               setWorkerLatitude(city.latitude);
                               setWorkerLongitude(city.longitude);
                             }
+                            if (city.placeId) setPreferredCityPlaceId(city.placeId);
                           }}
                         />
                       </div>
@@ -1630,6 +1636,7 @@ export default function WorkerProfile() {
                         setWorkerLatitude(city.latitude);
                         setWorkerLongitude(city.longitude);
                       }
+                      if (city.placeId) setPreferredCityPlaceId(city.placeId);
                     }}
                   />
                   {preferredCities.length >= 5 && (

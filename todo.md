@@ -3266,3 +3266,15 @@ Isolation guarantees:
 
 - [x] Fix: formatSalary() didn't handle Drizzle Decimal objects (PostgreSQL numeric) — salary showed "לא צוין" even when set. Fixed by using String(salary) conversion and accepting { toString() } type.
 - [x] Fix: salary not displayed — hourlyRate stored separately from salary, formatSalary updated to accept optional hourlyRate param; all components updated (JobCard, CarouselJobCard, SearchJobCard, JobBottomSheet, JobDetails, MyApplications, ActivityTicker, db.ts)
+
+## City Matching via Google Maps Place ID
+- [x] Add cityPlaceId column to jobs table (schema migration + direct SQL for collision workaround)
+- [x] Add preferredCityPlaceId column to users table (schema migration + direct SQL)
+- [x] CityAutocomplete: extended onSelect callback to pass placeId as 4th optional argument (backward-compatible)
+- [x] CityPicker: added resolvePlaceId() helper with module-level cache; onCitySelect now fires twice — immediately with lat/lng, then with placeId once resolved
+- [x] PostJob: added jobCityPlaceId state; CityAutocomplete onSelect captures placeId; payload includes cityPlaceId
+- [x] WorkerProfile: added preferredCityPlaceId state; both CityPicker onCitySelect callbacks capture placeId; all 3 mutation call sites (handleWizardSubmit, handleSave, phone-change path) send preferredCityPlaceId
+- [x] server/db.ts: updateWorkerProfile accepts preferredCityPlaceId; getWorkerLocationsByIds returns preferredCityPlaceId
+- [x] server/routers.ts: jobInputSchema includes cityPlaceId; both createJob calls pass cityPlaceId; completeSignup and updateProfile accept and forward preferredCityPlaceId
+- [x] Location guard (matchWorkers): placeId comparison as primary strategy; city-name text fallback for legacy data
+- [x] TypeScript clean, 918/918 unit tests passing

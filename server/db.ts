@@ -366,6 +366,7 @@ export async function updateWorkerProfile(
     preferredDays?: string[];
     preferredTimeSlots?: string[];
     preferredCities?: number[];
+    preferredCityPlaceId?: string | null;
     expectedHourlyRate?: number | null;
     availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
     signupCompleted?: boolean;
@@ -400,6 +401,7 @@ export async function updateWorkerProfile(
   if (data.preferredDays !== undefined) updateSet.preferredDays = data.preferredDays;
   if (data.preferredTimeSlots !== undefined) updateSet.preferredTimeSlots = data.preferredTimeSlots;
   if (data.preferredCities !== undefined) updateSet.preferredCities = data.preferredCities;
+  if (data.preferredCityPlaceId !== undefined) updateSet.preferredCityPlaceId = data.preferredCityPlaceId;
   if (data.expectedHourlyRate !== undefined) updateSet.expectedHourlyRate = data.expectedHourlyRate;
   if (data.availabilityStatus !== undefined) updateSet.availabilityStatus = data.availabilityStatus;
   if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
@@ -1740,6 +1742,7 @@ export async function getWorkerLocationsByIds(
 ): Promise<Map<number, {
   locationMode: string | null;
   preferredCity: string | null;
+  preferredCityPlaceId: string | null;
   preferredCities: number[] | null;
   workerLatitude: string | null;
   workerLongitude: string | null;
@@ -1748,6 +1751,7 @@ export async function getWorkerLocationsByIds(
   const result = new Map<number, {
     locationMode: string | null;
     preferredCity: string | null;
+    preferredCityPlaceId: string | null;
     preferredCities: number[] | null;
     workerLatitude: string | null;
     workerLongitude: string | null;
@@ -1761,6 +1765,7 @@ export async function getWorkerLocationsByIds(
       id: users.id,
       locationMode: users.locationMode,
       preferredCity: users.preferredCity,
+      preferredCityPlaceId: users.preferredCityPlaceId,
       preferredCities: users.preferredCities,
       workerLatitude: users.workerLatitude,
       workerLongitude: users.workerLongitude,
@@ -1772,6 +1777,7 @@ export async function getWorkerLocationsByIds(
     result.set(row.id, {
       locationMode: row.locationMode,
       preferredCity: row.preferredCity,
+      preferredCityPlaceId: row.preferredCityPlaceId,
       preferredCities: row.preferredCities,
       workerLatitude: row.workerLatitude,
       workerLongitude: row.workerLongitude,

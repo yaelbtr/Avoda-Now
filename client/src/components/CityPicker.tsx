@@ -2,6 +2,42 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Search, X, MapPin } from "lucide-react";
+import { ensureMapsLoaded } from "@/lib/mapsLoader";
+
+/// <reference types="@types/google.maps" />
+
+// ─── Module-level placeId cache (survives re-renders, cleared on page reload) ─
+const placeIdCache = new Map<string, string>(); // cityName → placeId
+
+/**
+ * Resolves a Hebrew city name to a Google Maps place_id.
+ * Uses AutocompleteService with a single prediction request.
+ * Result is cached in-memory so repeated calls for the same city are O(1).
+ */
+async function resolvePlaceId(cityName: string): Promise<string | null> {
+  const cached = placeIdCache.get(cityName);
+  if (cached !== undefined) return cached;
+  try {
+    await ensureMapsLoaded();
+    const svc = new google.maps.places.AutocompleteService();
+    return new Promise((resolve) => {
+      svc.getPlacePredictions(
+        { input: cityName, componentRestrictions: { country: "il" }, types: ["(cities)"], language: "he" },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions && predictions[0]) {
+            const id = predictions[0].place_id;
+            placeIdCache.set(cityName, id);
+            resolve(id);
+          } else {
+            resolve(null);
+          }
+        }
+      );
+    });
+  } catch {
+    return null;
+  }
+}
 
 interface CityPickerProps {
   /** Currently selected city IDs */
@@ -11,8 +47,8 @@ interface CityPickerProps {
   /** Max cities selectable (default: unlimited) */
   maxCities?: number;
   compact?: boolean;
-  /** Optional: called when a city is selected, with the city's lat/lng and name */
-  onCitySelect?: (city: { id: number; nameHe: string; latitude: string | null; longitude: string | null }) => void;
+  /** Optional: called when a city is selected, with the city's lat/lng, name, and Google Maps placeId */
+  onCitySelect?: (city: { id: number; nameHe: string; latitude: string | null; longitude: string | null; placeId?: string }) => void;
 }
 
 /**
@@ -103,10 +139,18 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
   const addCity = (id: number) => {
     if (maxCities && selectedCityIds.length >= maxCities) return;
     onChange([...selectedCityIds, id]);
-    // Notify caller with lat/lng so they can geocode without an extra API call
+    // Notify caller with lat/lng and placeId (resolved async, non-blocking)
     if (onCitySelect) {
       const city = allCities.find((c) => c.id === id);
-      if (city) onCitySelect({ id: city.id, nameHe: city.nameHe, latitude: city.latitude ?? null, longitude: city.longitude ?? null });
+      if (city) {
+        // Fire-and-forget placeId resolution — call onCitySelect immediately with what we have,
+        // then call again with placeId once resolved (callers should handle both calls).
+        const basePayload = { id: city.id, nameHe: city.nameHe, latitude: city.latitude ?? null, longitude: city.longitude ?? null };
+        onCitySelect(basePayload);
+        resolvePlaceId(city.nameHe).then((placeId) => {
+          if (placeId) onCitySelect({ ...basePayload, placeId });
+        });
+      }
     }
     setSearch("");
     setOpen(false);

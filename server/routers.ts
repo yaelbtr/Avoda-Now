@@ -664,6 +664,8 @@ const jobInputSchema = z.object({
   imageUrls: z.array(z.string().url()).max(5).optional(),
   /** Minimum worker age: null = no restriction, 16 = 16+, 18 = adults only */
   minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
+  /** Google Maps place_id for the job's city — canonical city identifier for matching */
+  cityPlaceId: z.string().max(100).optional(),
 });
 
 /** Rate limiter for job-publish OTP sends: max 3 per user per 10 minutes */
@@ -832,6 +834,7 @@ const jobsRouter = router({
         workEndTime: input.workEndTime ?? null,
         imageUrls: input.imageUrls ?? null,
         minAge: input.minAge ?? null,
+        cityPlaceId: input.cityPlaceId ?? null,
       });
       // Fire-and-forget: call external matching API to pre-compute matching workers
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
@@ -1059,6 +1062,8 @@ const jobsRouter = router({
         // passing them through unchecked.
         const workerLocations = await getWorkerLocationsByIds(notEngaged.map((w) => w.worker_id));
         const jobCity = (job.city ?? "").trim().toLowerCase();
+        // Access cityPlaceId from the job row (added via schema, present in select *)
+        const jobPlaceId = (job as Record<string, unknown>).cityPlaceId as string | null | undefined;
         const jobLat = job.latitude ? Number(job.latitude) : null;
         const jobLng = job.longitude ? Number(job.longitude) : null;
 
@@ -1096,11 +1101,27 @@ const jobsRouter = router({
             return distKm <= (loc.searchRadiusKm ?? 5);
           }
 
-          // city-mode (default): match by city name
-          if (!jobCity) return true; // no city on job → include all
+          // city-mode (default): prefer placeId comparison (canonical, locale-independent),
+          // fall back to city-name text comparison for workers/jobs that predate placeId.
+          if (!jobCity && !jobPlaceId) return true; // no city on job → include all
 
-          // Check preferredCities (array of city IDs) first — this is the canonical field
-          // set by CityPicker. Resolve IDs to Hebrew names and compare.
+          // ── Primary: placeId match ─────────────────────────────────────────────
+          // If both job and worker have a placeId, use it as the single source of truth.
+          if (jobPlaceId && loc.preferredCityPlaceId) {
+            const match = loc.preferredCityPlaceId === jobPlaceId;
+            if (!match) {
+              console.info(
+                `[LocationGuard] worker ${w.worker_id} placeId mismatch: worker=${loc.preferredCityPlaceId} job=${jobPlaceId} → excluded`
+              );
+            }
+            return match;
+          }
+
+          // ── Fallback: city-name text comparison ───────────────────────────────
+          // Used when either side lacks a placeId (legacy data or Maps API unavailable).
+          if (!jobCity) return true; // job has no city text either → include
+
+          // Check preferredCities (array of city IDs) first — canonical field from CityPicker.
           if (loc.preferredCities && loc.preferredCities.length > 0) {
             return loc.preferredCities.some((id) => {
               const name = cityNameMap.get(id);
@@ -1108,7 +1129,7 @@ const jobsRouter = router({
             });
           }
 
-          // Fallback: legacy preferredCity string field
+          // Last resort: legacy preferredCity string field
           if (!loc.preferredCity) return false; // worker has no city preference → exclude
           return loc.preferredCity.trim().toLowerCase() === jobCity;
         });
@@ -1635,6 +1656,7 @@ const jobsRouter = router({
         workEndTime: jobInput.workEndTime ?? null,
         imageUrls: jobInput.imageUrls ?? null,
         minAge: jobInput.minAge ?? null,
+        cityPlaceId: jobInput.cityPlaceId ?? null,
       });
 
       // Fire-and-forget: matching + alerts (same as jobs.create)
@@ -2085,6 +2107,7 @@ const userRouter = router({
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
         preferredCities: z.array(z.number().int()).optional(),
+        preferredCityPlaceId: z.string().max(100).nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -2126,6 +2149,7 @@ const userRouter = router({
           preferredDays: input.preferredDays,
           preferredTimeSlots: input.preferredTimeSlots,
           preferredCities: input.preferredCities,
+          preferredCityPlaceId: input.preferredCityPlaceId,
           signupCompleted: true,
         });
         void logEvent("info", "signup.complete", "Worker completed signup wizard", {
@@ -2173,6 +2197,7 @@ const userRouter = router({
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
         preferredCities: z.array(z.number().int()).optional(),
+        preferredCityPlaceId: z.string().max(100).nullable().optional(),
         email: z.string().email().max(320).nullable().optional(),
       })
     )
@@ -2252,6 +2277,7 @@ const userRouter = router({
         preferredDays: input.preferredDays,
         preferredTimeSlots: sanitizedTimeSlots,
         preferredCities: input.preferredCities,
+        preferredCityPlaceId: input.preferredCityPlaceId,
         // Only allow email update for non-Google users (Google users get email from OAuth)
         email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
       });

@@ -130,6 +130,7 @@ import {
   createJobOffer,
   respondToJobOffer,
   countActiveOffers,
+  getApplicantWorkerIdsForJob,
 } from "./db";
 import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -997,6 +998,10 @@ const jobsRouter = router({
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
+      // Pre-fetch workers already engaged with this job (any status) so we can
+      // exclude them from the results — single source of truth for this filter.
+      const engagedWorkerIds = await getApplicantWorkerIdsForJob(input.jobId);
+
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
       if (!MATCHING_API_URL) {
         // Fallback: use internal DB matching when no external API is configured
@@ -1011,12 +1016,14 @@ const jobsRouter = router({
         // Enrich with names and ratings in a single batch query
         const nameMap = await getWorkerNamesByIds(localWorkers.map((w) => w.id));
         return {
-          workers: localWorkers.map((w, i) => ({
-            worker_id: w.id,
-            score: 1 - i * 0.01,
-            name: nameMap.get(w.id)?.name ?? null,
-            rating: nameMap.get(w.id)?.workerRating ?? null,
-          })),
+          workers: localWorkers
+            .filter((w) => !engagedWorkerIds.has(w.id))
+            .map((w, i) => ({
+              worker_id: w.id,
+              score: 1 - i * 0.01,
+              name: nameMap.get(w.id)?.name ?? null,
+              rating: nameMap.get(w.id)?.workerRating ?? null,
+            })),
         };
       }
 
@@ -1035,7 +1042,10 @@ const jobsRouter = router({
         });
         if (!res.ok) throw new Error(`Matching API error: ${res.status}`);
         const data = await res.json() as { workers: { worker_id: number; score: number }[] };
-        return data;
+        // Filter out workers already engaged with this job
+        return {
+          workers: data.workers.filter((w) => !engagedWorkerIds.has(w.worker_id)),
+        };
       } catch (err) {
         console.warn("[MatchWorkers] External API call failed:", err);
         return { workers: [] as { worker_id: number; score: number }[] };

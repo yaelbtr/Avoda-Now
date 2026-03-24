@@ -1686,6 +1686,22 @@ export async function revealApplicationContact(id: number) {
     .where(eq(applications.id, id));
 }
 
+/**
+ * Returns the set of worker IDs that already have ANY application record
+ * (regardless of status) for the given job.
+ * Used to exclude these workers from the "matched workers" list so the
+ * employer doesn't see workers they've already engaged with.
+ */
+export async function getApplicantWorkerIdsForJob(jobId: number): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db
+    .select({ workerId: applications.workerId })
+    .from(applications)
+    .where(eq(applications.jobId, jobId));
+  return new Set(rows.map((r) => r.workerId));
+}
+
 /** Get all applications for a specific job (for employer view) */
 export async function getApplicationsForJob(jobId: number) {
   const db = await getDb();

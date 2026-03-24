@@ -110,3 +110,19 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
   { value: "evening",   label: "ערב",    sub: "16:00–22:00", start: "16:00", end: "22:00", icon: "🌆",  isNight: false },
   { value: "night",     label: "לילה",   sub: "22:00–06:00", start: "22:00", end: "06:00", icon: "🌙",  isNight: true  },
 ] as const;
+
+/**
+ * Normalizes an Israeli phone number to the E.164 format required by wa.me.
+ * Handles inputs like: "0559258668", "+972559258668", "972559258668", "055-925-8668"
+ * Returns a full number like "972559258668" (no + prefix, no dashes).
+ */
+export function normalizePhoneForWhatsApp(phone: string): string {
+  // Strip all non-digit characters
+  const digits = phone.replace(/\D/g, "");
+  // Already has country code 972
+  if (digits.startsWith("972")) return digits;
+  // Starts with leading 0 (Israeli local format)
+  if (digits.startsWith("0")) return "972" + digits.slice(1);
+  // Bare number without prefix — assume Israeli
+  return "972" + digits;
+}

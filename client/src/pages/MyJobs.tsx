@@ -27,6 +27,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
+import { normalizePhoneForWhatsApp } from "@shared/const";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Bell, BellOff } from "lucide-react";
@@ -249,7 +250,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
             {app.workerPhone && (
               <div className="flex gap-2 mt-2">
                 <a
-                  href={`https://wa.me/972${app.workerPhone.replace(/^0/, "")}`}
+                  href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-opacity hover:opacity-80"

@@ -501,42 +501,6 @@ export default function MyJobs() {
       {/* ── Content ── */}
       <div className="max-w-lg mx-auto px-4 pt-5 space-y-3">
 
-        {/* ── Active limit bar ── */}
-        <AnimatePresence>
-          {!isLoading && activeJobs.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3 }}
-              style={cardStyle}
-            >
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span style={{ color: "oklch(0.50 0.04 120)" }}>{activeJobs.length} מתוך 3</span>
-                <span className="font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>משרות פעילות</span>
-              </div>
-              <div className="rounded-full overflow-hidden" style={{ height: 6, background: "oklch(0.90 0.02 120)" }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(activeJobs.length / 3) * 100}%` }}
-                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-                  style={{
-                    height: "100%", borderRadius: "9999px",
-                    background: activeJobs.length >= 3
-                      ? "linear-gradient(90deg, oklch(0.65 0.22 25) 0%, oklch(0.60 0.22 15) 100%)"
-                      : "linear-gradient(90deg, oklch(0.50 0.14 85) 0%, oklch(0.55 0.20 160) 100%)",
-                  }}
-                />
-              </div>
-              {activeJobs.length >= 3 && (
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs mt-2"
-                  style={{ color: "oklch(0.55 0.22 25)" }}>
-                  הגעת למגבלה — סגור משרה כדי לפרסם חדשה.
-                </motion.p>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* ── Push notification prompt ── */}
         <AnimatePresence>

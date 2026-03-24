@@ -693,8 +693,51 @@ export default function MyJobs() {
                       </div>
                     </div>
 
-                  {/* Badges row: status + pending applicants */}
-                  <div className="flex flex-col items-end gap-1.5">
+                  {/* Top-right: status badge + icon action buttons */}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {/* Icon buttons row: View + Close/Reactivate */}
+                    <div className="flex items-center gap-1">
+                      {/* View icon button */}
+                      <motion.button
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => navigate(`/job/${job.id}`)}
+                        title="צפה במשרה"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                        style={{ background: "oklch(0.94 0.06 85 / 0.40)", border: "1px solid oklch(0.85 0.08 80)", color: "oklch(0.45 0.12 80)" }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </motion.button>
+
+                      {/* Close / Reactivate icon button */}
+                      {job.status === "active" ? (
+                        <motion.button
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.92 }}
+                          onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
+                          disabled={updateStatus.isPending}
+                          title="סגור משרה"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                          style={{ background: "oklch(0.96 0.01 120)", border: "1px solid oklch(0.88 0.02 120)", color: "oklch(0.45 0.04 120)", opacity: updateStatus.isPending ? 0.6 : 1 }}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </motion.button>
+                      ) : job.status === "closed" ? (
+                        <motion.button
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.92 }}
+                          onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
+                          disabled={updateStatus.isPending || activeJobs.length >= 3}
+                          title="הפעל מחדש"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                          style={{ background: "oklch(0.68 0.20 160 / 0.10)", border: "1px solid oklch(0.68 0.20 160 / 0.30)", color: "oklch(0.38 0.15 160)", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </motion.button>
+                      ) : null}
+                    </div>
+
+                    {/* Status badge */}
                     <div
                       className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
                       style={{ background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}
@@ -762,14 +805,6 @@ export default function MyJobs() {
 
                   {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap">
-                    {/* View */}
-                    <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
-                      onClick={() => navigate(`/job/${job.id}`)}
-                      style={{ background: "oklch(0.94 0.06 85 / 0.30)", border: "1px solid oklch(0.85 0.08 80)", color: "oklch(0.45 0.12 80)" }}>
-                      <Eye className="h-3.5 w-3.5" />
-                      צפה
-                    </AppButton>
-
                     {/* Applicants toggle */}
                     <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
                       onClick={() => toggleApplicants(job.id)}
@@ -798,27 +833,6 @@ export default function MyJobs() {
                         עובדים מתאימים
                       </AppButton>
                     )}
-
-                    {/* Close / Reactivate */}
-                    {job.status === "active" ? (
-                      <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
-                        onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
-                        disabled={updateStatus.isPending}
-                        style={{ background: "oklch(0.96 0.01 120)", border: "1px solid oklch(0.88 0.02 120)", color: "oklch(0.45 0.04 120)" }}>
-                        <XCircle className="h-3.5 w-3.5" />
-                        סגור משרה
-                      </AppButton>
-                    ) : job.status === "closed" ? (
-                      <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
-                        onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
-                        disabled={updateStatus.isPending || activeJobs.length >= 3}
-                        style={{ background: "oklch(0.68 0.20 160 / 0.08)", border: "1px solid oklch(0.68 0.20 160 / 0.25)", color: "oklch(0.38 0.15 160)" }}>
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        הפעל מחדש
-                      </AppButton>
-                    ) : null}
-
-
                   </div>
 
                   {/* ── Applicants Panel ── */}

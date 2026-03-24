@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, title, salary, \"salaryType\", \"startTime\", \"workersNeeded\" FROM jobs ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, title, salary, \"salaryType\", \"startTime\", \"workersNeeded\" FROM jobs ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "60004",
+      "title": "מלצר",
+      "salary": "70.00",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "60003",
+      "title": "מלצר",
+      "salary": "70.00",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "60002",
+      "title": "מלצר",
+      "salary": "70.00",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "60001",
+      "title": "מלצר",
+      "salary": "NULL",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "30003",
+      "title": "ביביסיטר",
+      "salary": "NULL",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "30002",
+      "title": "מנקה רחובות",
+      "salary": "NULL",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "30001",
+      "title": "שליח אוכל",
+      "salary": "300.00",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    },
+    {
+      "id": "1",
+      "title": "שליח אוכל",
+      "salary": "NULL",
+      "salaryType": "salaryType",
+      "startTime": "startTime",
+      "workersNeeded": "workersNeeded"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tsalary\tsalaryType\tstartTime\tworkersNeeded\n60004\tמלצר\t70.00\tsalaryType\tstartTime\tworkersNeeded\n60003\tמלצר\t70.00\tsalaryType\tstartTime\tworkersNeeded\n60002\tמלצר\t70.00\tsalaryType\tstartTime\tworkersNeeded\n60001\tמלצר\tNULL\tsalaryType\tstartTime\tworkersNeeded\n30003\tביביסיטר\tNULL\tsalaryType\tstartTime\tworkersNeeded\n30002\tמנקה רחובות\tNULL\tsalaryType\tstartTime\tworkersNeeded\n30001\tשליח אוכל\t300.00\tsalaryType\tstartTime\tworkersNeeded\n1\tשליח אוכל\tNULL\tsalaryType\tstartTime\tworkersNeeded\n",
+  "stderr": "",
+  "execution_time_ms": 1851
+}

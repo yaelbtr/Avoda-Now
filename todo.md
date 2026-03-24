@@ -3263,3 +3263,5 @@ Isolation guarantees:
 - [x] Fix MyJobs card: salary not displayed
 - [x] Fix MyJobs card: remove "גמיש" and "1 עובדים" from meta row
 - [x] Fix MyJobs card: "התנדבות" shown incorrectly (should only show when payType=volunteer)
+
+- [x] Fix: formatSalary() didn't handle Drizzle Decimal objects (PostgreSQL numeric) — salary showed "לא צוין" even when set. Fixed by using String(salary) conversion and accepting { toString() } type.

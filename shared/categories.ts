@@ -131,11 +131,12 @@ export function isJobToday(
  * - salary is null/empty and not volunteer → "" (empty, let caller show fallback)
  * - otherwise → "₪{amount} {type label}"
  */
-export function formatSalary(salary: string | null | undefined, salaryType: string): string {
-  if (salaryType === "volunteer") return "התנדבות";
-  if (!salary) return "";
-  const num = parseFloat(salary);
-  if (isNaN(num)) return "";
+// salary may be a string, number, or Drizzle Decimal object (PostgreSQL numeric)
+export function formatSalary(salary: string | number | null | undefined | { toString(): string }, salaryType: string): string {
+  if (salaryType === "התנדבות" || salaryType === "volunteer") return "התנדבות";
+  if (salary === null || salary === undefined || salary === "") return "";
+  const num = typeof salary === "number" ? salary : parseFloat(String(salary));
+  if (isNaN(num) || num <= 0) return "";
   const typeLabel = getSalaryTypeLabel(salaryType);
   return `₪${num.toLocaleString("he-IL")} ${typeLabel}`;
 }

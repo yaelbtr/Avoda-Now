@@ -585,6 +585,28 @@ export async function searchCities(query: string, limit = 10) {
     .limit(limit);
 }
 
+/**
+ * Resolve a batch of city IDs to their Hebrew names.
+ * Returns a Map<cityId, nameHe> for fast O(1) lookup.
+ * Used by the location guard to compare worker preferredCities (IDs) against job city name.
+ */
+export async function getCityNamesByIds(
+  cityIds: number[],
+): Promise<Map<number, string>> {
+  const result = new Map<number, string>();
+  if (cityIds.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({ id: cities.id, nameHe: cities.nameHe })
+    .from(cities)
+    .where(sql`${cities.id} = ANY(ARRAY[${sql.join(cityIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
+  for (const row of rows) {
+    result.set(row.id, row.nameHe);
+  }
+  return result;
+}
+
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────
 
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -1709,13 +1731,16 @@ export async function getApplicantWorkerIdsForJob(jobId: number): Promise<Set<nu
  * Used to apply a server-side location guard on external matching API results
  * so that city-mode workers from a different city are never returned.
  *
- * Returns a Map<userId, { locationMode, preferredCity, workerLatitude, workerLongitude, searchRadiusKm }>
+ * Returns a Map<userId, { locationMode, preferredCity, preferredCities, workerLatitude, workerLongitude, searchRadiusKm }>
+ * - preferredCity: legacy single-city string (may be empty)
+ * - preferredCities: JSON array of city IDs from the cities table (newer field, set by CityPicker)
  */
 export async function getWorkerLocationsByIds(
   workerIds: number[],
 ): Promise<Map<number, {
   locationMode: string | null;
   preferredCity: string | null;
+  preferredCities: number[] | null;
   workerLatitude: string | null;
   workerLongitude: string | null;
   searchRadiusKm: number | null;
@@ -1723,6 +1748,7 @@ export async function getWorkerLocationsByIds(
   const result = new Map<number, {
     locationMode: string | null;
     preferredCity: string | null;
+    preferredCities: number[] | null;
     workerLatitude: string | null;
     workerLongitude: string | null;
     searchRadiusKm: number | null;
@@ -1735,6 +1761,7 @@ export async function getWorkerLocationsByIds(
       id: users.id,
       locationMode: users.locationMode,
       preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
       workerLatitude: users.workerLatitude,
       workerLongitude: users.workerLongitude,
       searchRadiusKm: users.searchRadiusKm,
@@ -1745,6 +1772,7 @@ export async function getWorkerLocationsByIds(
     result.set(row.id, {
       locationMode: row.locationMode,
       preferredCity: row.preferredCity,
+      preferredCities: row.preferredCities,
       workerLatitude: row.workerLatitude,
       workerLongitude: row.workerLongitude,
       searchRadiusKm: row.searchRadiusKm,

@@ -132,6 +132,7 @@ import {
   countActiveOffers,
   getApplicantWorkerIdsForJob,
   getWorkerLocationsByIds,
+  getCityNamesByIds,
 } from "./db";
 import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -1052,19 +1053,37 @@ const jobsRouter = router({
         // preferred city or radius setting. We re-apply the same location rules
         // that the internal DB path uses, so city-mode workers from a different
         // city (e.g. Beer Sheva for a Bnei Brak job) are never returned.
+        //
+        // IMPORTANT: fail-closed for unknown workers — if a worker_id is not found
+        // in our DB (e.g. data not yet synced), we EXCLUDE them rather than
+        // passing them through unchecked.
         const workerLocations = await getWorkerLocationsByIds(notEngaged.map((w) => w.worker_id));
         const jobCity = (job.city ?? "").trim().toLowerCase();
         const jobLat = job.latitude ? Number(job.latitude) : null;
         const jobLng = job.longitude ? Number(job.longitude) : null;
 
+        // Collect all city IDs referenced by city-mode workers so we can resolve
+        // them to Hebrew names in a single batch query (O(n) not O(n²)).
+        const allCityIds = new Set<number>();
+        Array.from(workerLocations.values()).forEach((loc) => {
+          if (loc.locationMode !== "radius" && loc.preferredCities) {
+            loc.preferredCities.forEach((id) => allCityIds.add(id));
+          }
+        });
+        const cityNameMap = await getCityNamesByIds(Array.from(allCityIds));
+
         const locationFiltered = notEngaged.filter((w) => {
           const loc = workerLocations.get(w.worker_id);
-          if (!loc) return true; // unknown worker → include (fail-open)
+          // fail-closed: worker not found in our DB → exclude
+          if (!loc) {
+            console.info(`[LocationGuard] worker ${w.worker_id} not in local DB → excluded`);
+            return false;
+          }
 
           if (loc.locationMode === "radius") {
             // Radius-mode: check haversine distance against worker's searchRadiusKm
             if (jobLat == null || jobLng == null) return true; // no job coords → include
-            if (!loc.workerLatitude || !loc.workerLongitude) return true; // no worker coords → include
+            if (!loc.workerLatitude || !loc.workerLongitude) return false; // no worker coords → exclude
             const R = 6371;
             const dLat = ((jobLat - Number(loc.workerLatitude)) * Math.PI) / 180;
             const dLng = ((jobLng - Number(loc.workerLongitude)) * Math.PI) / 180;
@@ -1079,9 +1098,24 @@ const jobsRouter = router({
 
           // city-mode (default): match by city name
           if (!jobCity) return true; // no city on job → include all
-          if (!loc.preferredCity) return true; // worker has no city preference → include
+
+          // Check preferredCities (array of city IDs) first — this is the canonical field
+          // set by CityPicker. Resolve IDs to Hebrew names and compare.
+          if (loc.preferredCities && loc.preferredCities.length > 0) {
+            return loc.preferredCities.some((id) => {
+              const name = cityNameMap.get(id);
+              return name ? name.trim().toLowerCase() === jobCity : false;
+            });
+          }
+
+          // Fallback: legacy preferredCity string field
+          if (!loc.preferredCity) return false; // worker has no city preference → exclude
           return loc.preferredCity.trim().toLowerCase() === jobCity;
         });
+
+        console.info(
+          `[LocationGuard] job ${input.jobId} (${job.city}): ${notEngaged.length} → ${locationFiltered.length} workers after location filter`
+        );
 
         return { workers: locationFiltered };
       } catch (err) {

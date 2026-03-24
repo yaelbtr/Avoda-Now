@@ -125,9 +125,17 @@ export function isJobToday(
   return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
 }
 
+/**
+ * Formats a salary value for display.
+ * - salaryType="volunteer" → "התנדבות"
+ * - salary is null/empty and not volunteer → "" (empty, let caller show fallback)
+ * - otherwise → "₪{amount} {type label}"
+ */
 export function formatSalary(salary: string | null | undefined, salaryType: string): string {
-  if (!salary || salaryType === "volunteer") return "התנדבות";
+  if (salaryType === "volunteer") return "התנדבות";
+  if (!salary) return "";
   const num = parseFloat(salary);
+  if (isNaN(num)) return "";
   const typeLabel = getSalaryTypeLabel(salaryType);
   return `₪${num.toLocaleString("he-IL")} ${typeLabel}`;
 }

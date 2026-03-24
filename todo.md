@@ -3259,3 +3259,7 @@ Isolation guarantees:
 - [x] Redesign ApplicantCard to exactly match MyApplications card structure (motion.div, same tokens, same layout)
 
 - [x] Fix: console.error noise from expected 401 and 504 gateway errors — add isSilentError filter in main.tsx
+
+- [x] Fix MyJobs card: salary not displayed
+- [x] Fix MyJobs card: remove "גמיש" and "1 עובדים" from meta row
+- [x] Fix MyJobs card: "התנדבות" shown incorrectly (should only show when payType=volunteer)

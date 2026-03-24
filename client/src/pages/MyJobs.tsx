@@ -729,20 +729,26 @@ export default function MyJobs() {
                       <MapPin className="h-3 w-3" style={{ color: "oklch(0.55 0.14 80)" }} />
                       {job.address.split(",")[0]}
                     </span>
-                    <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                      <Clock className="h-3 w-3" style={{ color: "oklch(0.55 0.14 80)" }} />
-                      {getStartTimeLabel(job.startTime)}
-                    </span>
-                    <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                      <Users className="h-3 w-3" style={{ color: "oklch(0.55 0.14 80)" }} />
-                      {job.workersNeeded} עובדים
-                    </span>
+                    {/* Hide startTime when flexible — adds no actionable info */}
+                    {job.startTime !== "flexible" && (
+                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
+                        <Clock className="h-3 w-3" style={{ color: "oklch(0.55 0.14 80)" }} />
+                        {getStartTimeLabel(job.startTime)}
+                      </span>
+                    )}
+                    {/* Hide workersNeeded when 1 — default value, adds noise */}
+                    {job.workersNeeded > 1 && (
+                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
+                        <Users className="h-3 w-3" style={{ color: "oklch(0.55 0.14 80)" }} />
+                        {job.workersNeeded} עובדים
+                      </span>
+                    )}
                     <span
                       className="flex items-center gap-1 font-medium"
                       style={{ color: isVolunteer ? "oklch(0.38 0.15 160)" : "oklch(0.45 0.12 80)" }}
                     >
                       <DollarSign className="h-3 w-3" />
-                      {isVolunteer ? "התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
+                      {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType) || "לא צוין")}
                     </span>
                     {daysLeft !== null && job.status === "active" && (
                       <span

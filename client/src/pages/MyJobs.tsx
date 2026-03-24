@@ -214,53 +214,23 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                 {app.workerName?.charAt(0) ?? "?"}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    <span className="text-sm font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>
-                      {app.workerName ?? "עובד"}
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className="text-sm font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>
+                    {app.workerName ?? "עובד"}
+                  </span>
+                  {isAccepted && (
+                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                      style={{ background: "oklch(0.68 0.20 160 / 0.12)", color: "oklch(0.38 0.15 160)" }}>
+                      התקבל
                     </span>
-                    {isAccepted && (
-                      <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                        style={{ background: "oklch(0.68 0.20 160 / 0.12)", color: "oklch(0.38 0.15 160)" }}>
-                        התקבל
-                      </span>
-                    )}
-                    {isRejected && (
-                      <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                        style={{ background: "oklch(0.93 0.01 120)", color: "oklch(0.50 0.02 120)" }}>
-                        נדחה
-                      </span>
-                    )}
-                  </div>
-                  {/* Phone + WhatsApp icon buttons — always shown when phone available */}
-                  {app.workerPhone && (
-                    <div className="flex items-center gap-1 shrink-0">
-                      <a
-                        href={`tel:${app.workerPhone}`}
-                        title={app.workerPhone}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-opacity hover:opacity-70"
-                        style={{ background: "oklch(0.50 0.14 85 / 0.10)", border: "1px solid oklch(0.50 0.14 85 / 0.25)", color: "oklch(0.38 0.07 125.0)" }}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                      </a>
-                      <a
-                        href={`https://wa.me/972${app.workerPhone.replace(/^0/, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="WhatsApp"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-opacity hover:opacity-70"
-                        style={{ background: "oklch(0.68 0.20 160 / 0.10)", border: "1px solid oklch(0.68 0.20 160 / 0.25)", color: "oklch(0.38 0.15 160)" }}
-                      >
-                        <MessageCircle className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
+                  )}
+                  {isRejected && (
+                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                      style={{ background: "oklch(0.93 0.01 120)", color: "oklch(0.50 0.02 120)" }}>
+                      נדחה
+                    </span>
                   )}
                 </div>
-                {app.workerPhone && (
-                  <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.04 120)" }}>
-                    {app.workerPhone}
-                  </p>
-                )}
                 {app.workerPreferredCity && (
                   <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "oklch(0.55 0.03 120)" }}>
                     <MapPin className="inline h-2.5 w-2.5" />
@@ -274,6 +244,30 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                 )}
               </div>
             </div>
+
+            {/* WhatsApp + Phone call buttons — full width, always shown when phone available */}
+            {app.workerPhone && (
+              <div className="flex gap-2 mt-2">
+                <a
+                  href={`https://wa.me/972${app.workerPhone.replace(/^0/, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                  style={{ background: "oklch(0.68 0.20 160 / 0.12)", border: "1px solid oklch(0.68 0.20 160 / 0.30)", color: "oklch(0.32 0.14 160)" }}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  WhatsApp
+                </a>
+                <a
+                  href={`tel:${app.workerPhone}`}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                  style={{ background: "oklch(0.50 0.14 85 / 0.08)", border: "1px solid oklch(0.50 0.14 85 / 0.25)", color: "oklch(0.38 0.07 125.0)" }}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  {app.workerPhone}
+                </a>
+              </div>
+            )}
 
             {/* Actions (pending) */}
             {isPending && (

@@ -1452,6 +1452,7 @@ export async function getWorkersMatchingJob(
       phone: users.phone,
       name: users.name,
       preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
       preferredCategories: users.preferredCategories,
       locationMode: users.locationMode,
     })
@@ -1474,18 +1475,42 @@ export async function getWorkersMatchingJob(
     return Array.isArray(cats) && cats.includes(jobCategory);
   });
 
+  // Batch-resolve all city IDs referenced by city-mode workers so we can compare
+  // them against the job city name in O(n) rather than O(n²) per-worker queries.
+  const allCityIds = new Set<number>();
+  for (const r of categoryMatches) {
+    if (r.locationMode !== "radius") {
+      const ids = r.preferredCities as number[] | null;
+      if (Array.isArray(ids)) ids.forEach((id) => allCityIds.add(id));
+    }
+  }
+  const cityNameMap = await getCityNamesByIds(Array.from(allCityIds));
+
   // Filter city-mode workers by city match
+  const normalizedJobCity = (jobCity ?? "").trim().toLowerCase();
   const locationMatches = categoryMatches.filter((r) => {
     if (r.locationMode === "radius") {
       // Already filtered by ST_DWithin in the SQL query above
       return true;
     }
     // city-mode (default)
-    if (!jobCity) return true; // no city on job → include all city-mode workers
-    return (
-      !r.preferredCity ||
-      r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
-    );
+    if (!normalizedJobCity) return true; // no city on job → include all city-mode workers
+
+    // Primary: check preferredCities (array of city IDs from CityPicker)
+    const cityIds = r.preferredCities as number[] | null;
+    if (Array.isArray(cityIds) && cityIds.length > 0) {
+      return cityIds.some((id) => {
+        const name = cityNameMap.get(id);
+        return name ? name.trim().toLowerCase() === normalizedJobCity : false;
+      });
+    }
+
+    // Fallback: legacy preferredCity string field
+    // Workers with neither preferredCity nor preferredCities have no city preference
+    // recorded — include them rather than silently excluding (they may not have
+    // completed their profile yet).
+    if (!r.preferredCity) return true;
+    return r.preferredCity.trim().toLowerCase() === normalizedJobCity;
   });
 
   return locationMatches

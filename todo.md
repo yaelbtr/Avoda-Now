@@ -3278,3 +3278,8 @@ Isolation guarantees:
 - [x] server/routers.ts: jobInputSchema includes cityPlaceId; both createJob calls pass cityPlaceId; completeSignup and updateProfile accept and forward preferredCityPlaceId
 - [x] Location guard (matchWorkers): placeId comparison as primary strategy; city-name text fallback for legacy data
 - [x] TypeScript clean, 918/918 unit tests passing
+
+## Bug Fix: Workers from wrong cities appearing in matchWorkers (job 60012)
+- [x] Root cause: getWorkersMatchingJob (internal DB path) only checked legacy `preferredCity` string; workers using CityPicker store IDs in `preferredCities` array (not string), so they bypassed the city filter entirely
+- [x] Fix: Added `preferredCities` to SELECT; batch-resolved city IDs to Hebrew names via getCityNamesByIds (O(n) pattern); city filter now checks `preferredCities` array first, falls back to `preferredCity` string; workers with no city data at all are included (incomplete profile)
+- [x] TypeScript clean, 918/918 unit tests passing

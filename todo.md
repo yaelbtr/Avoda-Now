@@ -3319,3 +3319,6 @@ Isolation guarantees:
 ## Email OTP send failure fix
 - [x] Replace SendGrid call in emailOtp.ts sendEmailOtp with _core/email.ts sendEmail (Forge API)
 - [x] Remove @sendgrid/mail dependency from emailOtp.ts (keep sendWelcomeEmail in emailOtp.ts using sendEmail helper too)
+
+## Bug Fix: "הגדר התראות" button navigation blocked by overlay
+- [x] Fix FindJobsComingSoonOverlay to hide when not on /find-jobs route

@@ -18,13 +18,18 @@ import LoginModal from "@/components/LoginModal";
  * Admin bypass: users with role === 'admin' see null — full page access for testing.
  */
 export default function FindJobsComingSoonOverlay() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
 
   // Admins bypass the overlay entirely
   const isAdmin = isAuthenticated && user?.role === "admin";
   if (isAdmin) return null;
+
+  // Hide overlay when user has navigated away from /find-jobs
+  // (portal keeps the component mounted during exit animation)
+  const isFindJobsRoute = location.startsWith("/find-jobs");
+  if (!isFindJobsRoute) return null;
 
   const handleSetAlerts = () => {
     if (isAuthenticated) {

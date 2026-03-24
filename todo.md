@@ -3315,3 +3315,7 @@ Isolation guarantees:
 - [x] LoginModal: parse seconds from TOO_MANY_REQUESTS error, start sendCooldown with exact remaining time, show inline error banner
 - [x] LoginModal: same fix for sendEmailCode TOO_MANY_REQUESTS
 - [x] JobPublishOtpModal: same fix for sendPublishOtp TOO_MANY_REQUESTS
+
+## Email OTP send failure fix
+- [x] Replace SendGrid call in emailOtp.ts sendEmailOtp with _core/email.ts sendEmail (Forge API)
+- [x] Remove @sendgrid/mail dependency from emailOtp.ts (keep sendWelcomeEmail in emailOtp.ts using sendEmail helper too)

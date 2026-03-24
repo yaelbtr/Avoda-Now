@@ -10,8 +10,8 @@
  */
 
 import crypto from "crypto";
-import sgMail from "@sendgrid/mail";
 import { getDb } from "./db";
+import { sendEmail } from "./_core/email";
 import { emailVerifications, emailUnsubscribes } from "../drizzle/schema";
 import { eq, desc, and, gt } from "drizzle-orm";
 
@@ -37,20 +37,10 @@ export function hashEmailCode(code: string): string {
 
 // ─── SendGrid email sender ────────────────────────────────────────────────────
 
-/** Send a 6-digit OTP to the given email address via SendGrid. */
+/** Send a 6-digit OTP to the given email address via the Forge API. */
 export async function sendEmailOtp(to: string, code: string): Promise<void> {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "no-reply@avodanow.co.il";
-
-  if (!apiKey) {
-    throw new Error("SENDGRID_API_KEY is not configured");
-  }
-
-  sgMail.setApiKey(apiKey);
-
-  await sgMail.send({
+  const sent = await sendEmail({
     to,
-    from,
     subject: "קוד האימות שלך — AvodaNow",
     text: `קוד האימות שלך הוא: ${code}\n\nהקוד תקף ל-5 דקות.`,
     html: `
@@ -64,6 +54,10 @@ export async function sendEmailOtp(to: string, code: string): Promise<void> {
       </div>
     `,
   });
+
+  if (!sent) {
+    throw new Error("Forge API email send returned false");
+  }
 }
 
 // ─── DB helpers ──────────────────────────────────────────────────────────────
@@ -252,14 +246,6 @@ export async function sendWelcomeEmail(params: {
   to: string;
   name: string;
 }): Promise<void> {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "no-reply@avodanow.co.il";
-
-  if (!apiKey) {
-    console.warn("[sendWelcomeEmail] SENDGRID_API_KEY not configured — skipping");
-    return;
-  }
-
   // Skip if user has unsubscribed from marketing emails
   const unsubscribed = await isEmailUnsubscribed(params.to);
   if (unsubscribed) {
@@ -267,15 +253,12 @@ export async function sendWelcomeEmail(params: {
     return;
   }
 
-  sgMail.setApiKey(apiKey);
-
   const firstName = params.name.split(" ")[0] || params.name;
   const unsubToken = await getOrCreateUnsubscribeToken(params.to);
   const unsubUrl = buildUnsubscribeUrl(unsubToken);
 
-  await sgMail.send({
+  const sent = await sendEmail({
     to: params.to,
-    from,
     subject: `ברוך הבא ל-AvodaNow, ${firstName}! 🎉`,
     text: `שלום ${firstName},\n\nברוך הבא ל-AvodaNow!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות AvodaNow\n\nלהסרה מרשימת התפוצה: ${unsubUrl}`,
     html: `
@@ -316,4 +299,19 @@ export async function sendWelcomeEmail(params: {
       </div>
     `,
   });
+
+  if (sent) {
+    console.log(`[sendWelcomeEmail] Welcome email sent to ${params.to}`);
+  } else {
+    console.warn(`[sendWelcomeEmail] Forge API returned false for ${params.to} — falling back to owner notification`);
+    try {
+      const { notifyOwner } = await import("./_core/notification");
+      await notifyOwner({
+        title: "משתמש חדש נרשם",
+        content: `שם: ${params.name}\nמייל: ${params.to}\n(שליחת מייל ברוך הבא נכשלה)`,
+      });
+    } catch {
+      // Ignore fallback errors
+    }
+  }
 }

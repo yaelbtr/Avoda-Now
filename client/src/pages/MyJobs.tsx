@@ -804,25 +804,6 @@ export default function MyJobs() {
 
                   {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap">
-                    {/* Applicants toggle */}
-                    <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
-                      onClick={() => toggleApplicants(job.id)}
-                      style={{
-                        background: applicantsExpanded ? "oklch(0.93 0.06 250 / 0.20)" : "oklch(0.96 0.01 122)",
-                        border: applicantsExpanded ? "1px solid oklch(0.72 0.14 250 / 0.50)" : "1px solid oklch(0.88 0.03 122)",
-                        color: applicantsExpanded ? "oklch(0.42 0.18 250)" : "oklch(0.40 0.04 120)",
-                      }}>
-                      <Users className="h-3.5 w-3.5" />
-                      מועמדים
-                      {pendingCount > 0 && (
-                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "oklch(0.60 0.22 25)", color: "white", minWidth: "1.2rem", textAlign: "center", lineHeight: 1 }}>
-                          {pendingCount}
-                        </span>
-                      )}
-                      {applicantsExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    </AppButton>
-
                     {/* Matched workers */}
                     {job.status === "active" && (
                       <AppButton variant="outline" size="sm" className="gap-1.5 text-xs"
@@ -834,26 +815,46 @@ export default function MyJobs() {
                     )}
                   </div>
 
-                  {/* ── Applicants Panel ── */}
-                  <AnimatePresence>
-                    {applicantsExpanded && (
+                  {/* ── Applicants section — always visible, collapsible ── */}
+                  <div style={{ marginTop: "0.75rem", borderTop: "1px solid oklch(0.90 0.02 122)" }}>
+                    {/* Section header with collapse toggle */}
+                    <button
+                      onClick={() => toggleApplicants(job.id)}
+                      className="flex items-center justify-between w-full pt-2.5 pb-1"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" style={{ color: "oklch(0.55 0.14 80)" }} />
+                        <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.04 120)" }}>מועמדים</span>
+                        {pendingCount > 0 && (
+                          <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: "oklch(0.60 0.22 25)", color: "white", minWidth: "1.2rem", textAlign: "center", lineHeight: 1 }}>
+                            {pendingCount}
+                          </span>
+                        )}
+                      </div>
                       <motion.div
-                        key="applicants"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25 }}
-                        style={{ overflow: "hidden" }}
+                        animate={{ rotate: applicantsExpanded ? 0 : 180 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid oklch(0.90 0.02 122)" }}>
-                          <p className="text-xs font-semibold mb-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                            מועמדים למשרה
-                          </p>
-                          <ApplicantsPanel jobId={job.id} />
-                        </div>
+                        <ChevronUp className="h-3.5 w-3.5" style={{ color: "oklch(0.55 0.04 120)" }} />
                       </motion.div>
-                    )}
-                  </AnimatePresence>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {applicantsExpanded && (
+                        <motion.div
+                          key="applicants"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <ApplicantsPanel jobId={job.id} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               );
             })}

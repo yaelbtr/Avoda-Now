@@ -327,16 +327,16 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               </div>
             )}
 
-            {/* Actions (pending) — 3-column grid: reject | accept | whatsapp */}
+            {/* Actions (pending) — 2-column: accept (LEFT=dark green) | reject (RIGHT=grey) — RTL order */}
             {isPending && (
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                {/* Reject — muted surface */}
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                {/* RIGHT cell (first in DOM = right in RTL): Reject — grey */}
                 <button
-                  className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95 hover:bg-[#efeeea]"
+                  className="flex items-center justify-center gap-1.5 font-semibold text-sm py-3 rounded-xl transition-all active:scale-95"
                   disabled={isMutating}
                   onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
                   style={{
-                    background: "#f4f4f0",
+                    background: "#f0ede6",
                     color: "#46483d",
                     opacity: isMutating ? 0.6 : 1,
                   }}
@@ -344,36 +344,20 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                   <UserX className="h-4 w-4" />
                   דחה
                 </button>
-                {/* Accept — primary brand gradient */}
+                {/* LEFT cell (second in DOM = left in RTL): Accept — dark olive green */}
                 <button
-                  className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95"
+                  className="flex items-center justify-center gap-1.5 font-semibold text-sm py-3 rounded-xl transition-all active:scale-95"
                   disabled={isMutating}
                   onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
                   style={{
-                    background: "linear-gradient(135deg, #313b15 0%, #48522a 100%)",
+                    background: "#313b15",
                     color: "#ffffff",
-                    boxShadow: "0 2px 8px rgba(49,59,21,0.25)",
                     opacity: isMutating ? 0.6 : 1,
                   }}
                 >
                   <UserCheck className="h-4 w-4" />
                   קבל
                 </button>
-                {/* WhatsApp — only shown when phone is available */}
-                {app.workerPhone ? (
-                  <a
-                    href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95"
-                    style={{ background: "rgba(37,211,102,0.10)", color: "#075E54" }}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </a>
-                ) : (
-                  <div className="rounded-xl" style={{ background: "#f4f4f0" }} />
-                )}
               </div>
             )}
           </motion.div>
@@ -728,24 +712,46 @@ export default function MyJobs() {
                     ...(isExpiringSoon ? { borderColor: "oklch(0.60 0.22 25 / 0.35)" } : {}),
                   }}
                 >
-                  {/* ── Hero header ── */}
-                  {/* Layout: title+status on the right, action buttons on the left (RTL) */}
-                  <div className="flex items-start justify-between gap-3 mb-5">
-                    {/* Action buttons — rendered first in DOM but visually on left in RTL */}
-                    <div className="flex flex-col items-center gap-1.5 shrink-0 order-last" style={{ marginInlineStart: "auto" }}>
-                      {/* Edit button — pencil, rounded, surface-container-low bg */}
+                  {/* ── Hero header — exact match to design reference ── */}
+                  {/* RTL: title+status block on RIGHT, action buttons stacked on LEFT */}
+                  <div className="flex items-start gap-3 mb-4">
+                    {/* Title + status — fills available space, right-aligned */}
+                    <div className="flex-1 min-w-0 text-right">
+                      <h3
+                        className="font-bold text-xl leading-snug mb-1"
+                        style={{ color: "#1a2010", fontFamily: "Heebo, sans-serif" }}
+                      >
+                        {job.title}
+                      </h3>
+                      {/* Status: dot on LEFT of text (RTL = dot appears after text visually) */}
+                      <div className="flex items-center justify-end gap-1.5">
+                        <span className="text-sm font-medium" style={{ color: "#46483d" }}>
+                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
+                        </span>
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{
+                            background: job.status === "active" ? "#22c55e" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action buttons — stacked column on the LEFT (RTL end) */}
+                    <div className="flex flex-col items-center gap-2 shrink-0">
+                      {/* Edit — pencil icon, fully rounded circle */}
                       <motion.button
                         whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.92 }}
                         onClick={() => navigate(`/job/${job.id}`)}
                         title="ערוך משרה"
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:bg-[#efeeea]"
-                        style={{ background: "#f4f4f0", color: "#46483d" }}
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                        style={{ background: "#f0ede6", color: "#46483d" }}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </motion.button>
 
-                      {/* Status toggle */}
+                      {/* Close / Reopen — X or check icon, fully rounded circle */}
                       {job.status === "active" ? (
                         <motion.button
                           whileHover={{ scale: 1.08 }}
@@ -753,10 +759,10 @@ export default function MyJobs() {
                           onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
                           disabled={updateStatus.isPending}
                           title="סגור משרה"
-                          className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:bg-[#efeeea]"
-                          style={{ background: "#f4f4f0", color: "#46483d", opacity: updateStatus.isPending ? 0.6 : 1 }}
+                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                          style={{ background: "#f0ede6", color: "#46483d", opacity: updateStatus.isPending ? 0.6 : 1 }}
                         >
-                          <XCircle className="h-4 w-4" />
+                          <XCircle className="h-3.5 w-3.5" />
                         </motion.button>
                       ) : job.status === "closed" ? (
                         <motion.button
@@ -765,153 +771,118 @@ export default function MyJobs() {
                           onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
                           disabled={updateStatus.isPending || activeJobs.length >= 3}
                           title="הפעל מחדש"
-                          className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all"
-                          style={{ background: "rgba(16,185,129,0.10)", color: "#065f46", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
+                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                          style={{ background: "rgba(34,197,94,0.12)", color: "#15803d", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-3.5 w-3.5" />
                         </motion.button>
                       ) : null}
                     </div>
-
-                    {/* Title + status dot */}
-                    <div className="flex-1 min-w-0">
-                      <h3
-                        className="font-extrabold text-2xl leading-tight tracking-tight mb-2"
-                        style={{ color: "#313b15", fontFamily: "Manrope, sans-serif" }}
-                      >
-                        {job.title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{
-                            background: job.status === "active" ? "#10b981" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
-                          }}
-                        />
-                        <span className="text-sm font-semibold" style={{ color: "#46483d" }}>
-                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* ── Meta chips 2×2 grid ── */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Salary chip — primary-fixed/40 bg (ירקרק) */}
+                  {/* ── Chips row 1: salary (ירקרק) + location (אפור) ── */}
+                  <div className="flex gap-2 mb-2">
+                    {/* Salary — ירקרק background */}
                     <div
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                      style={{ background: "rgba(220,232,179,0.40)", color: "#161e00" }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
+                      style={{ background: "#dce8b3", color: "#161e00" }}
                     >
-                      <DollarSign className="h-4 w-4 shrink-0" style={{ color: isVolunteer ? "#065f46" : "#414b23" }} />
-                      <span className="text-sm font-bold truncate">
+                      <DollarSign className="h-3.5 w-3.5 shrink-0" style={{ color: "#414b23" }} />
+                      <span className="text-sm font-semibold truncate">
                         {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
                       </span>
                     </div>
-                    {/* Location chip */}
+                    {/* Location — neutral grey */}
                     <div
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                      style={{ background: "#f4f4f0", color: "#46483d" }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
+                      style={{ background: "#f0ede6", color: "#46483d" }}
                     >
-                      <MapPin className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                      <span className="text-sm font-bold truncate">{job.address.split(",")[0]}</span>
+                      <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
+                      <span className="text-sm font-semibold truncate">{job.address.split(",")[0]}</span>
                     </div>
-                    {/* Date / time chip */}
-                    {job.startTime !== "flexible" ? (
-                      <div
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                        style={{ background: "#f4f4f0", color: "#46483d" }}
-                      >
-                        <Clock className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                        <span className="text-sm font-bold truncate">{getStartTimeLabel(job.startTime)}</span>
-                      </div>
-                    ) : (
-                      <div
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                        style={{ background: "#f4f4f0", color: "#46483d" }}
-                      >
-                        <Clock className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                        <span className="text-sm font-bold truncate">שעות גמישות</span>
-                      </div>
-                    )}
-                    {/* Expiry chip — urgent red when ≤1 day, else neutral */}
+                  </div>
+
+                  {/* ── Chips row 2: expiry (red/neutral) + time ── */}
+                  <div className="flex gap-2 mb-4">
+                    {/* Expiry chip */}
                     {daysLeft !== null && job.status === "active" ? (
                       <div
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
                         style={{
-                          background: isExpiringSoon ? "rgba(239,68,68,0.08)" : "#f4f4f0",
+                          background: isExpiringSoon ? "rgba(239,68,68,0.10)" : "#f0ede6",
                           color: isExpiringSoon ? "#b91c1c" : "#46483d",
                         }}
                       >
-                        {isExpiringSoon ? (
-                          <Zap className="h-4 w-4 shrink-0" style={{ color: "#b91c1c" }} />
-                        ) : (
-                          <Clock className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                        )}
-                        <span className="text-sm font-bold">
+                        <Zap className="h-3.5 w-3.5 shrink-0" style={{ color: isExpiringSoon ? "#b91c1c" : "#795900" }} />
+                        <span className="text-sm font-semibold">
                           {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
                         </span>
                       </div>
                     ) : (
                       <div
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-                        style={{ background: "#f4f4f0", color: "#46483d" }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
+                        style={{ background: "#f0ede6", color: "#46483d" }}
                       >
-                        <Users className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                        <span className="text-sm font-bold">{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
+                        <Users className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
+                        <span className="text-sm font-semibold">{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
                       </div>
                     )}
-                  </div>
-
-                  {/* ── Analytics bento row ── */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Pending / waiting */}
-                    <motion.div
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.05 }}
-                      className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
-                      style={{
-                        background: isCapReached ? "rgba(16,185,129,0.12)" : "#dce8b3",
-                        border: isCapReached ? "1px solid rgba(16,185,129,0.20)" : "1px solid rgba(72,82,42,0.10)",
-                      }}
-                    >
-                      <span
-                        className="text-3xl font-extrabold leading-none"
-                        style={{ color: isCapReached ? "#065f46" : "#161e00", fontFamily: "Manrope, sans-serif" }}
-                      >
-                        {isCapReached ? `${acceptedCount}/${MAX_ACCEPTED_CANDIDATES}` : pendingCount}
-                      </span>
-                      <span
-                        className="text-[10px] font-bold mt-1 uppercase tracking-wider"
-                        style={{ color: isCapReached ? "#065f46" : "#414b23" }}
-                      >
-                        {isCapReached ? "התקבלו" : "ממתינים לתשובה"}
-                      </span>
-                    </motion.div>
-                    {/* Total applicants */}
+                    {/* Time chip */}
                     <div
-                      className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
-                      style={{ background: "#f4f4f0" }}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
+                      style={{ background: "#f0ede6", color: "#46483d" }}
                     >
-                      <span
-                        className="text-3xl font-extrabold leading-none"
-                        style={{ color: "#313b15", fontFamily: "Manrope, sans-serif" }}
-                      >
-                        {totalApplicationCount}
-                      </span>
-                      <span className="text-[10px] font-bold mt-1 uppercase tracking-wider" style={{ color: "#46483d" }}>
-                        מועמדים סה&quot;כ
+                      <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
+                      <span className="text-sm font-semibold truncate">
+                        {job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}
                       </span>
                     </div>
                   </div>
 
-                  {/* Matched workers — text link */}
+                  {/* ── Analytics bento (RTL order) ──
+                       In RTL grid: first child = RIGHT, second child = LEFT
+                       Design: RIGHT = grey total | LEFT = ירקרק accepted
+                  */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {/* RIGHT cell (first in DOM = right in RTL): grey — מועמדים סה"כ */}
+                    <div
+                      className="flex flex-col items-center justify-center py-5 rounded-2xl text-center"
+                      style={{ background: "#f0ede6" }}
+                    >
+                      <span
+                        className="text-3xl font-bold leading-none"
+                        style={{ color: "#313b15", fontFamily: "Heebo, sans-serif" }}
+                      >
+                        {totalApplicationCount}
+                      </span>
+                      <span className="text-xs font-medium mt-1.5" style={{ color: "#6b7280" }}>
+                        מועמדים סה&quot;כ
+                      </span>
+                    </div>
+                    {/* LEFT cell (second in DOM = left in RTL): ירקרק — התקבלו */}
+                    <div
+                      className="flex flex-col items-center justify-center py-5 rounded-2xl text-center"
+                      style={{ background: "#c8e6c9" }}
+                    >
+                      <span
+                        className="text-3xl font-bold leading-none"
+                        style={{ color: "#1b5e20", fontFamily: "Heebo, sans-serif" }}
+                      >
+                        {acceptedCount}/{MAX_ACCEPTED_CANDIDATES}
+                      </span>
+                      <span className="text-xs font-medium mt-1.5" style={{ color: "#2e7d32" }}>
+                        התקבלו
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Matched workers link — right-aligned, arrow left */}
                   {job.status === "active" && (
-                    <div className="flex justify-start mb-1">
+                    <div className="flex justify-end mb-1">
                       <button
                         onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
-                        className="flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"
-                        style={{ color: "oklch(0.38 0.12 85)" }}
+                        className="flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-70"
+                        style={{ color: "#4a5d23" }}
                       >
                         <Sparkles className="h-3 w-3" />
                         עובדים מתאימים ←

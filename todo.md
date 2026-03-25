@@ -3484,8 +3484,9 @@ Isolation guarantees:
 - [ ] 2x2 chip grid: salary (primary-fixed bg), location, shift time, date
 
 ## MyJobs Card Design Improvements (Mar 2026)
-- [x] Hero header: title right (Manrope extrabold 2xl), edit + close buttons top-left column
-- [x] Status dot: green dot + "משרה פעילה" label below title
-- [x] Chips 2×2 grid: salary (ירקרק bg), location, time, expiry/workers
-- [x] Analytics bento: pending (ירקרק) + total (אפרפר), 3xl numbers
-- [x] Applicant cards: 3-column action row (reject | accept | WhatsApp)
+- [x] Hero header: title right (Heebo bold), edit + close buttons stacked top-left as rounded-full circles
+- [x] Status dot: green dot on RIGHT of "משרה פעילה" text (RTL: dot appears after text)
+- [x] Chips 2 rows × 2 cols: row1 = salary (ירקרק #dce8b3) + location (grey); row2 = expiry (red/neutral) + time (grey)
+- [x] Analytics bento RTL: RIGHT=grey total | LEFT=ירקרק accepted (3/3)
+- [x] Applicant cards: 2-column action row (reject grey RIGHT | accept dark-green LEFT)
+- [x] Matched workers link: right-aligned with ← arrow

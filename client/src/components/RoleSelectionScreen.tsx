@@ -482,7 +482,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     ]}
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
-                    privacyBadge="מספר הטלפון שלכם יישאר חסוי"
+                    privacyBadge="אתם בוחרים למי הטלפון שלכם יוצג"
                     privacyBadgeTooltip="הטלפון שלך נחשף רק כשאתה מאשר הצעת עבודה"
                     buttonLabel="מצא עבודה עכשיו"
                     loading={loading === "worker"}

@@ -51,6 +51,8 @@ interface MatchedWorker {
   isMinor?: boolean;
   locationMissingGps?: boolean;
   profilePhoto?: string | null;
+  /** Worker's current availability status — used to show the green dot */
+  availabilityStatus?: string | null;
 }
 
 // ─── Worker Card ──────────────────────────────────────────────────────────────
@@ -100,7 +102,7 @@ function WorkerMatchCard({
       style={{ background: "white", border: `1px solid ${C_BORDER}` }}
       onClick={() => onCardClick(worker.worker_id)}
     >
-      {/* Avatar — profile photo if available, letter-avatar fallback */}
+      {/* Avatar — profile photo if available, letter-avatar fallback + availability dot */}
       <div className="relative flex-shrink-0">
         {worker.profilePhoto ? (
           <img
@@ -122,6 +124,14 @@ function WorkerMatchCard({
               <User className="h-6 w-6" style={{ color: C_DARK }} />
             )}
           </div>
+        )}
+        {/* Green pulsing dot — shown when worker is currently available */}
+        {worker.availabilityStatus === "available_now" && (
+          <span
+            className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
+            style={{ border: "2px solid white" }}
+            title="עובד זמין עכשיו"
+          />
         )}
       </div>
 

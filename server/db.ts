@@ -3604,13 +3604,13 @@ export async function updateEmployerProfile(
  */
 export async function getWorkerNamesByIds(
   ids: number[],
-): Promise<Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null }>> {
-  const result = new Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null }>();
+): Promise<Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null; availabilityStatus: string | null }>> {
+  const result = new Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null; availabilityStatus: string | null }>();
   if (ids.length === 0) return result;
   const db = await getDb();
   if (!db) return result;
   const rows = await db
-    .select({ id: users.id, name: users.name, workerRating: users.workerRating, profilePhoto: users.profilePhoto })
+    .select({ id: users.id, name: users.name, workerRating: users.workerRating, profilePhoto: users.profilePhoto, availabilityStatus: users.availabilityStatus })
     .from(users)
     .where(inArray(users.id, ids));
   for (const row of rows) {
@@ -3618,6 +3618,7 @@ export async function getWorkerNamesByIds(
       name: row.name,
       workerRating: row.workerRating != null ? parseFloat(row.workerRating) : null,
       profilePhoto: row.profilePhoto ?? null,
+      availabilityStatus: row.availabilityStatus ?? null,
     });
   }
   return result;

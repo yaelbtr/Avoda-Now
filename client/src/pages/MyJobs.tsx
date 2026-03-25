@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import BrandLoader from "@/components/BrandLoader";
 import {
-  Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
+  Briefcase, PlusCircle, Trash2, CheckCircle, CheckCircle2, XCircle,
   Clock, MapPin, Users, DollarSign, Eye, Zap,
   ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX, Sparkles,
   ChevronRight, Pencil,
@@ -839,38 +839,39 @@ export default function MyJobs() {
                     </div>
                   </div>
 
-                  {/* ── Analytics bento (RTL order) ──
-                       In RTL grid: first child = RIGHT, second child = LEFT
-                       Design: RIGHT = grey total | LEFT = ירקרק accepted
-                  */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {/* RIGHT cell (first in DOM = right in RTL): grey — מועמדים סה"כ */}
+                  {/* ── Analytics bento — same style as HomeEmployer StatsRow ── */}
+                  <div className="grid grid-cols-2 gap-2 mb-3" dir="rtl">
+                    {/* RIGHT (first in RTL DOM): מועמדים סה"כ */}
                     <div
-                      className="flex flex-col items-center justify-center py-5 rounded-2xl text-center"
-                      style={{ background: "#f0ede6" }}
+                      className="flex flex-col items-center justify-center gap-1 py-3 rounded-[14px] text-center"
+                      style={{
+                        background: "oklch(0.97 0.02 122)",
+                        border: "1px solid oklch(0.88 0.05 122)",
+                        boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
+                      }}
                     >
-                      <span
-                        className="text-3xl font-bold leading-none"
-                        style={{ color: "#313b15", fontFamily: "Heebo, sans-serif" }}
-                      >
+                      <Users style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
                         {totalApplicationCount}
                       </span>
-                      <span className="text-xs font-medium mt-1.5" style={{ color: "#6b7280" }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
                         מועמדים סה&quot;כ
                       </span>
                     </div>
-                    {/* LEFT cell (second in DOM = left in RTL): ירקרק — התקבלו */}
+                    {/* LEFT (second in RTL DOM): התקבלו */}
                     <div
-                      className="flex flex-col items-center justify-center py-5 rounded-2xl text-center"
-                      style={{ background: "#c8e6c9" }}
+                      className="flex flex-col items-center justify-center gap-1 py-3 rounded-[14px] text-center"
+                      style={{
+                        background: "oklch(0.97 0.02 122)",
+                        border: "1px solid oklch(0.88 0.05 122)",
+                        boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
+                      }}
                     >
-                      <span
-                        className="text-3xl font-bold leading-none"
-                        style={{ color: "#1b5e20", fontFamily: "Heebo, sans-serif" }}
-                      >
+                      <CheckCircle2 style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
                         {acceptedCount}/{MAX_ACCEPTED_CANDIDATES}
                       </span>
-                      <span className="text-xs font-medium mt-1.5" style={{ color: "#2e7d32" }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
                         התקבלו
                       </span>
                     </div>

@@ -50,6 +50,7 @@ interface MatchedWorker {
   rating?: number;
   isMinor?: boolean;
   locationMissingGps?: boolean;
+  profilePhoto?: string | null;
 }
 
 // ─── Worker Card ──────────────────────────────────────────────────────────────
@@ -99,12 +100,29 @@ function WorkerMatchCard({
       style={{ background: "white", border: `1px solid ${C_BORDER}` }}
       onClick={() => onCardClick(worker.worker_id)}
     >
-      {/* Avatar */}
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: C_LIGHT_GREEN }}
-      >
-        <User className="h-6 w-6" style={{ color: C_DARK }} />
+      {/* Avatar — profile photo if available, letter-avatar fallback */}
+      <div className="relative flex-shrink-0">
+        {worker.profilePhoto ? (
+          <img
+            src={worker.profilePhoto}
+            alt={worker.name ?? "עובד"}
+            className="w-12 h-12 rounded-xl object-cover"
+            style={{ border: `1px solid ${C_BORDER}` }}
+          />
+        ) : (
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ background: C_LIGHT_GREEN }}
+          >
+            {worker.name ? (
+              <span className="text-base font-bold" style={{ color: C_DARK }}>
+                {worker.name.charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <User className="h-6 w-6" style={{ color: C_DARK }} />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Info */}

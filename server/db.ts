@@ -3572,19 +3572,20 @@ export async function updateEmployerProfile(
  */
 export async function getWorkerNamesByIds(
   ids: number[],
-): Promise<Map<number, { name: string | null; workerRating: number | null }>> {
-  const result = new Map<number, { name: string | null; workerRating: number | null }>(); // workerRating is numeric → string in Drizzle, parsed below
+): Promise<Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null }>> {
+  const result = new Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null }>();
   if (ids.length === 0) return result;
   const db = await getDb();
   if (!db) return result;
   const rows = await db
-    .select({ id: users.id, name: users.name, workerRating: users.workerRating })
+    .select({ id: users.id, name: users.name, workerRating: users.workerRating, profilePhoto: users.profilePhoto })
     .from(users)
     .where(inArray(users.id, ids));
   for (const row of rows) {
     result.set(row.id, {
       name: row.name,
       workerRating: row.workerRating != null ? parseFloat(row.workerRating) : null,
+      profilePhoto: row.profilePhoto ?? null,
     });
   }
   return result;

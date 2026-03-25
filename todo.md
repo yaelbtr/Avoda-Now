@@ -3433,3 +3433,8 @@ Isolation guarantees:
 ## Universal Status Banner in MyApplications
 - [x] Show a contextual status explanation banner for every application status in MyApplications (worker view), using workerLabel + workerTooltip from APPLICATION_STATUS_LABELS
 - [x] Remove the old offered_accepted-specific conditional block and replace with a single unified banner component
+
+## Profile Photo in WorkerMatchCard
+- [x] Add profilePhoto field to matchWorkers query (server/routers.ts or server/db.ts)
+- [x] Add profilePhoto to MatchedWorker interface in MatchedWorkers page
+- [x] Render profile photo in WorkerMatchCard avatar area (with letter-avatar fallback)

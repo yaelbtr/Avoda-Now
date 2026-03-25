@@ -1021,7 +1021,7 @@ const jobsRouter = router({
           job.latitude ? Number(job.latitude) : null,
           job.longitude ? Number(job.longitude) : null,
         );
-        // Enrich with names and ratings in a single batch query
+        // Enrich with names, ratings, and profile photos in a single batch query
         const nameMap = await getWorkerNamesByIds(localWorkers.map((w) => w.id));
         return {
           workers: localWorkers
@@ -1031,6 +1031,7 @@ const jobsRouter = router({
               score: 1 - i * 0.01,
               name: nameMap.get(w.id)?.name ?? null,
               rating: nameMap.get(w.id)?.workerRating ?? null,
+              profilePhoto: nameMap.get(w.id)?.profilePhoto ?? null,
               locationMissingGps: false, // internal path already filters these out
             })),
         };
@@ -1170,7 +1171,16 @@ const jobsRouter = router({
           `[LocationGuard] job ${input.jobId} (${job.city}): ${notEngaged.length} → ${locationFiltered.length} workers after location filter`
         );
 
-        return { workers: locationFiltered };
+        // Enrich with names, ratings, and profile photos in a single batch query
+        const photoMap = await getWorkerNamesByIds(locationFiltered.map((w) => w.worker_id));
+        const enrichedFiltered = locationFiltered.map((w) => ({
+          ...w,
+          name: photoMap.get(w.worker_id)?.name ?? null,
+          rating: photoMap.get(w.worker_id)?.workerRating ?? null,
+          profilePhoto: photoMap.get(w.worker_id)?.profilePhoto ?? null,
+        }));
+
+        return { workers: enrichedFiltered };
       } catch (err) {
         console.warn("[MatchWorkers] External API call failed:", err);
         return { workers: [] as { worker_id: number; score: number }[] };

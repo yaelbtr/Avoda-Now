@@ -3524,3 +3524,6 @@ Isolation guarantees:
 
 ## MyJobs — Matched Workers Button Animation
 - [x] Add subtle pulse/glow animation to "הצג עובדים מתאימים" button to draw user attention
+
+## MyJobs — Swipe Gesture on Applicant Cards
+- [ ] Swipe right = accept, swipe left = reject, with dynamic bg color feedback and snap-back animation

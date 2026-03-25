@@ -320,38 +320,24 @@ function ApplicantCard({
 
       {/* ── Accepted: contact buttons + rate ── */}
       {isAccepted && app.contactRevealed && phone && (
-        <div className="flex gap-2 mt-3">
-          <a href={`tel:${phone}`} className="flex-1">
-            <button
-              className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-              style={{
-                background: "oklch(0.55 0.18 240 / 0.10)",
-                border: "1.5px solid oklch(0.55 0.18 240 / 0.35)",
-                color: "oklch(0.38 0.18 240)",
-              }}
-            >
-              <Phone className="h-3.5 w-3.5" />
-              {phone}
-            </button>
+        <div className="flex items-center gap-4 mt-3">
+          <a
+            href={`tel:${phone}`}
+            className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+            style={{ color: "oklch(0.38 0.18 240)" }}
+          >
+            <Phone className="h-3.5 w-3.5" />
+            {phone}
           </a>
           <a
             href={`https://wa.me/${phone.replace(/\D/g, "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1"
+            className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+            style={{ color: "oklch(0.40 0.18 145)" }}
           >
-            <button
-              className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-              style={{
-                background: "oklch(0.52 0.18 145)",
-                border: "none",
-                color: "white",
-                boxShadow: "0 2px 8px oklch(0.52 0.18 145 / 0.30)",
-              }}
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              WhatsApp
-            </button>
+            <MessageCircle className="h-3.5 w-3.5" />
+            WhatsApp
           </a>
           {app.workerId && (
             <button
@@ -395,38 +381,24 @@ function ApplicantCard({
             </p>
           </div>
           {phone && (
-            <div className="flex gap-2">
-              <a href={`tel:${phone}`} className="flex-1">
-                <button
-                  className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-                  style={{
-                    background: "oklch(0.55 0.18 240 / 0.10)",
-                    border: "1.5px solid oklch(0.55 0.18 240 / 0.35)",
-                    color: "oklch(0.38 0.18 240)",
-                  }}
-                >
-                  <Phone className="h-3.5 w-3.5" />
-                  {phone}
-                </button>
+            <div className="flex items-center gap-4">
+              <a
+                href={`tel:${phone}`}
+                className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+                style={{ color: "oklch(0.38 0.18 240)" }}
+              >
+                <Phone className="h-3.5 w-3.5" />
+                {phone}
               </a>
               <a
                 href={`https://wa.me/${phone.replace(/\D/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1"
+                className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+                style={{ color: "oklch(0.40 0.18 145)" }}
               >
-                <button
-                  className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
-                  style={{
-                    background: "oklch(0.52 0.18 145)",
-                    border: "none",
-                    color: "white",
-                    boxShadow: "0 2px 8px oklch(0.52 0.18 145 / 0.30)",
-                  }}
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  WhatsApp
-                </button>
+                <MessageCircle className="h-3.5 w-3.5" />
+                WhatsApp
               </a>
             </div>
           )}

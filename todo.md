@@ -3458,3 +3458,6 @@ Isolation guarantees:
 - [x] Reject button: red/muted destructive outline
 - [x] WhatsApp button: WhatsApp green brand color (filled)
 - [x] Phone button: blue outline distinct from accept/reject
+
+## Phone/WhatsApp Link Style in JobApplications
+- [x] Phone and WhatsApp buttons styled as inline text links (underline, no background/border)

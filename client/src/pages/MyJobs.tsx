@@ -708,10 +708,20 @@ export default function MyJobs() {
                   transition={{ duration: 0.35, delay: i * 0.05 }}
                   layout
                   style={{
-                    ...cardStyle,
+                    background: "transparent",
+                    border: "1px solid oklch(0.92 0.02 100)",
+                    borderRadius: "1rem",
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
+                    overflow: "hidden",
                     ...(isExpiringSoon ? { borderColor: "oklch(0.60 0.22 25 / 0.35)" } : {}),
                   }}
                 >
+                  {/* ── Job details section (header + chips + analytics) ── */}
+                  <div style={{
+                    background: "oklch(0.97 0.012 100)",
+                    borderBottom: "1px solid oklch(0.92 0.02 100)",
+                    padding: "1.25rem",
+                  }}>
                   {/* ── Hero header — matches HomeEmployer job card style ── */}
                   {/* RTL layout: briefcase icon RIGHT, title+status CENTER, action buttons LEFT */}
                   <div className="flex items-center gap-3 mb-3" dir="rtl">
@@ -905,9 +915,10 @@ export default function MyJobs() {
                       </button>
                     </div>
                   )}
+                  </div>{/* end job details section */}
 
                   {/* ── Applicants section — only shown when there are applicants ── */}
-                  {totalApplicationCount > 0 && (<div style={{ marginTop: "1rem", borderTop: "1px solid rgba(199,199,186,0.18)" }}>
+                  {totalApplicationCount > 0 && (<div style={{ padding: "0 1.25rem 1.25rem" }}>
                     {/* Section header with collapse toggle */}
                     <button
                       onClick={() => toggleApplicants(job.id)}

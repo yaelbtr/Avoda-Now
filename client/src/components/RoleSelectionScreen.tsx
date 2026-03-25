@@ -135,8 +135,9 @@ function RoleCard({
               backdropFilter: "blur(8px)",
               boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
             }}
-            animate={{ y: hovered ? -2 : 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 6, scale: 0.9 }}
+            animate={{ opacity: 1, y: hovered ? -2 : 0, scale: 1 }}
+            transition={{ opacity: { duration: 0.4, delay: 0.35 }, y: { duration: 0.3 }, scale: { duration: 0.4, delay: 0.35, type: "spring", stiffness: 300, damping: 20 } }}
             title={privacyBadgeTooltip}
           >
             <Shield className="h-3 w-3" />

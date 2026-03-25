@@ -68,8 +68,8 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 
 // ── Card style — AvodaNow design system ──────────────────────────────────────
 const cardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid rgba(199,199,186,0.18)",
+  background: "oklch(0.97 0.012 100)",
+  borderBottom: "1px solid oklch(0.92 0.02 100)",
   borderRadius: "1rem",
   boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
   padding: "1.25rem",

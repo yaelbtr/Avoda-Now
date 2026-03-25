@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { MapPin, Phone, Users, Clock, MessageCircle, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer } from "lucide-react";
+import { MapPin, Users, Clock, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer, Briefcase } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
-import { C_WHATSAPP } from "@/lib/colors";
 import { useCountdown } from "@/hooks/useCountdown";
 
 function relativeTime(date: Date | string): string {
@@ -60,6 +60,7 @@ function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | strin
 }
 
 export default function AvailableWorkers() {
+  const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { userMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
@@ -121,20 +122,6 @@ export default function AvailableWorkers() {
 
   const workers = workersQuery.data ?? [];
 
-  const contactWorker = (phone: string | null, name: string) => {
-    if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
-    if (!phone) return;
-    const clean = phone.replace(/\D/g, "");
-    const intl = clean.startsWith("0") ? "972" + clean.slice(1) : clean;
-    const text = encodeURIComponent(`שלום ${name}, ראיתי שאתה/את פנוי/ה לעבוד עכשיו. יש לי עבודה מתאימה — אפשר לדבר?`);
-    window.open(`https://wa.me/${intl}?text=${text}`, "_blank");
-  };
-
-  const callWorker = (phone: string | null) => {
-    if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
-    if (!phone) return;
-    window.location.href = `tel:${phone}`;
-  };
 
   const calcDistance = (workerLat: string, workerLng: string) => {
     if (!userLat || !userLng) return null;
@@ -156,7 +143,7 @@ export default function AvailableWorkers() {
           עובדים זמינים עכשיו
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          אנשים שסימנו שהם פנויים לעבוד — ניתן ליצור איתם קשר ישירות
+          אנשים שסימנו שהם פנויים לעבוד  עכשיו
         </p>
       </div>
 
@@ -276,40 +263,25 @@ export default function AvailableWorkers() {
                     </div>
                   </div>
 
-                  {/* Contact buttons */}
+                  {/* Contact via job posting — phone numbers are not exposed directly.
+                      To contact a worker, the employer must post a job and accept their application. */}
                   <div className="flex gap-2 mt-3">
-                    {isAuthenticated && worker.userPhone ? (
-                      <>
-                        <AppButton
-                          size="sm"
-                          className="flex-1 gap-1.5 text-xs"
-                          style={{ backgroundColor: C_WHATSAPP }}
-                          onClick={() => contactWorker(worker.userPhone, worker.userName ?? "עובד")}
-                        >
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          WhatsApp
-                        </AppButton>
-                        <AppButton
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-1.5 text-xs"
-                          onClick={() => callWorker(worker.userPhone)}
-                        >
-                          <Phone className="h-3.5 w-3.5" />
-                          התקשר
-                        </AppButton>
-                      </>
-                    ) : (
-                      <AppButton
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 gap-1.5 text-xs border-dashed text-muted-foreground"
-                        onClick={() => setLoginOpen(true)}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        התחבר לראות פרטי קשר
-                      </AppButton>
-                    )}
+                    <AppButton
+                      size="sm"
+                      className="flex-1 gap-1.5 text-xs"
+                      onClick={() => {
+                        if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
+                        navigate("/post-job");
+                      }}
+                      style={{
+                        background: "oklch(0.35 0.08 122)",
+                        color: "white",
+                        border: "1px solid oklch(0.28 0.06 122)",
+                      }}
+                    >
+                      <Briefcase className="h-3.5 w-3.5" />
+                      פרסם משרה לקשר
+                    </AppButton>
                   </div>
                 </div>
               );

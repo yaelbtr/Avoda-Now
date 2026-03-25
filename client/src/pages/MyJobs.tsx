@@ -804,36 +804,28 @@ export default function MyJobs() {
                     </div>
                   </div>
 
-                  {/* ── Chips — styled like the "הכל" button from HomeEmployer ── */}
-                  <div className="flex flex-wrap gap-1.5 mb-4" dir="rtl">
+                  {/* ── Chips — 2×2 grid, equal width, same layout as analytics bento ── */}
+                  <div className="grid grid-cols-2 gap-2 mb-4" dir="rtl">
                     {/* Salary chip */}
                     <span
-                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
                       style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
                       <DollarSign className="h-3 w-3 shrink-0" />
-                      {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
+                      <span className="truncate">{isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}</span>
                     </span>
                     {/* Location chip */}
                     <span
-                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
                       style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
                       <MapPin className="h-3 w-3 shrink-0" />
-                      {job.address.split(",")[0]}
+                      <span className="truncate">{job.address.split(",")[0]}</span>
                     </span>
-                    {/* Time chip */}
-                    <span
-                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
-                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
-                    >
-                      <Clock className="h-3 w-3 shrink-0" />
-                      {job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}
-                    </span>
-                    {/* Expiry chip — red when expiring soon */}
-                    {daysLeft !== null && job.status === "active" && (
+                    {/* Expiry chip — red when expiring soon, otherwise workers count */}
+                    {daysLeft !== null && job.status === "active" ? (
                       <span
-                        className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                        className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
                         style={{
                           color: isExpiringSoon ? "#b91c1c" : "#4F583B",
                           backgroundColor: isExpiringSoon ? "rgba(239,68,68,0.10)" : "rgba(79,88,59,0.10)",
@@ -841,9 +833,25 @@ export default function MyJobs() {
                         }}
                       >
                         <Zap className="h-3 w-3 shrink-0" />
-                        {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
+                        <span>{daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}</span>
+                      </span>
+                    ) : (
+                      <span
+                        className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                        style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                      >
+                        <Users className="h-3 w-3 shrink-0" />
+                        <span>{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
                       </span>
                     )}
+                    {/* Time chip */}
+                    <span
+                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                    >
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}</span>
+                    </span>
                   </div>
 
                   {/* ── Analytics bento — same style as HomeEmployer StatsRow ── */}

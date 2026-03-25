@@ -3497,3 +3497,6 @@ Isolation guarantees:
 ## MyJobs Card — Match HomeEmployer Style
 - [x] Card header: pencil + eye buttons left, briefcase right, status badge + title + city inline (like HomeEmployer)
 - [x] Chips (address, salary, time, expiry): styled like the "הכל" filter button from HomeEmployer
+
+## MyJobs Card — Chips 2x2 Grid
+- [x] Chips layout: 2x2 grid (equal width columns), same layout as analytics bento squares

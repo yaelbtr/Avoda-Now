@@ -122,7 +122,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "קבל פניות ממעסיקים",
-    desc: "מעסיקים שמחפשים עובדים באזור שלך יכולים לראות שאתה זמין וליצור איתך קשר ישירות.",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך יכולים לראות שאתה זמין ולבחור בעובדים זמינים.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAStrMaRfZDifQeV-VACZz7ZypB1K8qO0mfWH-7GKp9zP5N0IFSgQpYT8gGJfOxyxssudU0ma8TE9HYWViNqn1eNoc7_qkfar8L0c38K28sRu-_lwd2DFueAtvndwsNLlxCicO5asK-g-NFLhaSWhOxM5Lx7tQalZGYbZlc-cGOJHfX0VMMQvGKi69yA7_YyxYFmg51eaSrjgIb2kEHbOcTexFsWld1x3UCbPcBhX92Us5OHKPCI2Wbzy1VcqYfh8U6aCD_3lOdng",
     reverse: true,
   },

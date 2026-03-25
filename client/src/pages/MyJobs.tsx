@@ -723,8 +723,8 @@ export default function MyJobs() {
                       >
                         {job.title}
                       </h3>
-                      {/* Status: dot RIGHT of text in RTL — dot is first in DOM so it renders on the right */}
-                      <div className="flex items-center justify-end gap-1.5" dir="rtl">
+                      {/* Status: dot RIGHT of text, entire row right-aligned */}
+                      <div className="flex items-center justify-start gap-1.5" dir="rtl">
                         <span
                           className="w-2 h-2 rounded-full shrink-0"
                           style={{

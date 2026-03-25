@@ -3464,3 +3464,6 @@ Isolation guarantees:
 
 ## Disable /jobs/:id/applications navigation
 - [x] Remove all links and navigate() calls pointing to /jobs/:id/applications
+
+## Click applicant card in MyJobs to open worker profile
+- [x] Applicant card in MyJobs opens worker profile on click (same pattern as JobApplications)

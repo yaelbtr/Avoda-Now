@@ -123,6 +123,7 @@ function MyJobCardSkeleton({ delay = 0 }: { delay?: number }) {
 // ── Applicants Panel ──────────────────────────────────────────────────────────
 type Applicant = {
   id: number;
+  workerId: number | null;
   workerName: string | null;
   workerBio: string | null;
   workerPreferredCity: string | null;
@@ -206,8 +207,12 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               opacity: isRejected ? 0.55 : 1,
             }}
           >
-            {/* Worker info row */}
-            <div className="flex items-start gap-2.5 mb-2">
+            {/* Worker info row — click to open public profile */}
+            <div
+              className="flex items-start gap-2.5 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => app.workerId && window.open(`/worker/${app.workerId}`, "_blank")}
+              title="צפה בפרופיל העובד"
+            >
               {/* Avatar: photo if available, else coloured letter-avatar */}
               {app.workerProfilePhoto ? (
                 <img

@@ -3408,3 +3408,6 @@ Isolation guarantees:
 
 ## UX: Hide initial offer banner after worker accepts
 - [x] Hide "המעסיק שלח לך הצעה" banner when contactRevealed=true in MyApplications
+
+## Refactor: Unify acceptance confirmation message with offered_accepted tooltip
+- [x] Use APPLICATION_STATUS_LABELS offered_accepted tooltip text in MyApplications acceptance block

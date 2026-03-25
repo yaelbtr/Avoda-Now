@@ -16,6 +16,7 @@ import {
   Gift,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
+import { APPLICATION_STATUS_LABELS } from "@shared/const";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
@@ -829,16 +830,19 @@ export default function MyApplications() {
                     )}
 
                     {/* Offered + contactRevealed: worker accepted the offer, waiting for employer to call */}
-                    {isOffered && app.contactRevealed && (
-                      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "oklch(0.45 0.18 260 / 0.08)", border: "1px solid oklch(0.45 0.18 260 / 0.20)" }}>
-                        <p className="text-xs font-bold" style={{ color: "oklch(0.45 0.18 260)" }}>
-                          ✓ אישרת את ההצעה!
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 260)" }}>
-                          המעסיק קיבל את הטלפון שלך ויצור איתך קשר בקרוב.
-                        </p>
-                      </div>
-                    )}
+                    {isOffered && app.contactRevealed && (() => {
+                      const cfg = APPLICATION_STATUS_LABELS["offered_accepted"];
+                      return (
+                        <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: `${cfg.bg}`, border: `1px solid ${cfg.color}33` }}>
+                          <p className="text-xs font-bold" style={{ color: cfg.color }}>
+                            ✓ {cfg.label}
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 260)" }}>
+                            {cfg.workerTooltip}
+                          </p>
+                        </div>
+                      );
+                    })()}
 
                     {/* View job link + share */}
                     <div className="mt-2 flex items-center gap-2 text-left">

@@ -131,15 +131,15 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
  */
 export const APPLICATION_STATUS_LABELS: Record<
   string,
-  { label: string; color: string; bg: string; tooltip: string }
+  { label: string; color: string; bg: string; tooltip: string; workerTooltip?: string }
 > = {
-  pending:        { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)",  tooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה" },
-  viewed:         { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)",  tooltip: "צפית בבקשה, המעסיק טרם החליט אם לקבל או לדחות" },
-  accepted:       { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "המעסיק קיבל את העובד ופרטי הקשר נחשפו" },
-  rejected:       { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)",        tooltip: "המעסיק דחה את בקשת העובד" },
-  offered:        { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)", tooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה" },
-  offer_rejected: { label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)",  tooltip: "העובד דחה את הצעת העבודה ששלחת" },
-  offered_accepted:{ label: "העובד אישר",           color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "העובד אישר את הצעת העבודה ופרטי הקשר נחשפו" },
+  pending:          { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)",  tooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",                  workerTooltip: "הגשת בקשה למשרה זו" },
+  viewed:           { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)",  tooltip: "צפית בבקשה, המעסיק טרם החליט אם לקבל או לדחות",        workerTooltip: "המעסיק צפה בבקשה שלך וטרם הגיב" },
+  accepted:         { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "המעסיק קיבל את העובד ופרטי הקשר נחשפו",                workerTooltip: "התקבלת! המעסיק יצור איתך קשר בקרוב" },
+  rejected:         { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)",        tooltip: "המעסיק דחה את בקשת העובד",                             workerTooltip: "בקשתך לא התקבלה הפעם" },
+  offered:          { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)", tooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",           workerTooltip: "קיבלת הצעת עבודה — אשר או דחה" },
+  offer_rejected:   { label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)",  tooltip: "העובד דחה את הצעת העבודה ששלחת",                       workerTooltip: "דחית את הצעת העבודה" },
+  offered_accepted: { label: "העובד אישר",           color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "העובד אישר את הצעת העבודה ופרטי הקשר נחשפו",           workerTooltip: "אישרת את ההצעה! המעסיק קיבל את הטלפון שלך ויצור איתך קשר בקרוב" },
 };
 
 /**

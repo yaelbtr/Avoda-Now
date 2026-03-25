@@ -391,14 +391,11 @@ export default function MyJobs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // Auto-expand applicants section for jobs that have any applicants (runs once on data load)
+  // Auto-expand applicants panel only for the first job (runs once on data load)
   useEffect(() => {
     if (!myJobs || autoExpandDone) return;
-    const jobsWithApplicants = myJobs
-      .filter((j) => ((j as { totalApplicationCount?: number }).totalApplicationCount ?? 0) > 0)
-      .map((j) => j.id);
-    if (jobsWithApplicants.length > 0) {
-      setExpandedApplicants(new Set(jobsWithApplicants));
+    if (myJobs.length > 0) {
+      setExpandedApplicants(new Set([myJobs[0].id]));
     }
     setAutoExpandDone(true);
   }, [myJobs, autoExpandDone]);

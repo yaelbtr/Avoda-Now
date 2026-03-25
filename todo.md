@@ -3470,3 +3470,6 @@ Isolation guarantees:
 
 ## Worker profile bottom sheet in MyJobs
 - [x] Open worker profile as bottom sheet modal (not new tab) when clicking applicant card in MyJobs
+
+## First job applicants panel open by default in MyJobs
+- [x] First job card in MyJobs has applicants panel expanded by default

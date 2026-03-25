@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   Phone, PhoneCall, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
-  User, Mail,
+  User, Mail, Shield,
 } from "lucide-react";
 import { IsraeliPhoneInput, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { AppInput, AppLabel } from "@/components/ui";
@@ -1587,6 +1587,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
               {/* Phone */}
               <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
+              <p className="text-[11px] flex items-center gap-1 -mt-1" style={{ color: '#b08a2a' }} dir="rtl">
+                <Shield className="h-3 w-3 flex-shrink-0" />
+                הטלפון שלך נחשף רק כשאתה מאשר הצעת עבודה — אף פעם לא יוצג למעסיק ללא אישורך.
+              </p>
 
               {/* Email — read-only when pre-filled from Google account */}
               <AppInput

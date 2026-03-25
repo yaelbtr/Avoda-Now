@@ -36,6 +36,7 @@ interface RoleCardProps {
   badge: string;
   badgeIcon: React.ReactNode;
   privacyBadge?: string;
+  privacyBadgeTooltip?: string;
   buttonLabel: string;
   loading: boolean;
   disabled: boolean;
@@ -54,6 +55,7 @@ function RoleCard({
   badge,
   badgeIcon,
   privacyBadge,
+  privacyBadgeTooltip,
   buttonLabel,
   loading,
   disabled,
@@ -135,6 +137,7 @@ function RoleCard({
             }}
             animate={{ y: hovered ? -2 : 0 }}
             transition={{ duration: 0.3 }}
+            title={privacyBadgeTooltip}
           >
             <Shield className="h-3 w-3" />
             {privacyBadge}
@@ -480,6 +483,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
                     privacyBadge="מספר הטלפון שלכם יישאר חסוי"
+                    privacyBadgeTooltip="הטלפון שלך נחשף רק כשאתה מאשר הצעת עבודה"
                     buttonLabel="מצא עבודה עכשיו"
                     loading={loading === "worker"}
                     disabled={!!loading}
@@ -501,6 +505,8 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       : ["פרסום משרה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
                     badge={employerLock ? "בקרוב" : "עובדים זמינים"}
                     badgeIcon={<Users className="h-3 w-3" />}
+                    privacyBadge="פרטי העובד נחשפים רק לאחר אישורו"
+                    privacyBadgeTooltip="מספר הטלפון של העובד נחשף רק לאחר שהוא מאשר את הצעת העבודה שלך"
                     buttonLabel={employerLock ? "בקרוב..." : "פרסם משרה"}
                     loading={loading === "employer"}
                     disabled={!!loading || employerLock}

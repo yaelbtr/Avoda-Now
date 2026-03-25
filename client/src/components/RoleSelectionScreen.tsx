@@ -484,19 +484,19 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="employer"
                     image={EMPLOYER_IMG}
                     icon={<Briefcase className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title={employerLock ? "פרסום משרה — בקרוב" : "מחפש עובדים?"}
+                    title={employerLock ? "פרסום מודעה — בקרוב" : "מחפש עובדים?"}
                     subtitle="למעסיקים"
                     description={employerLock
                       ? "בשלב זה הפלטפורמה פתוחה לעובדים בלבד. אפשרות פרסום משרות תיפתח בקרוב."
-                      : "פרסם משרה והתחבר לעובדים המחפשים עבודה באזור שלך."}
+                      : "פרסם מודעה והתחבר לעובדים המחפשים עבודה באזור שלך."}
                     features={employerLock
                       ? ["פרסום מהיר וקל", "גישה לעובדים זמינים באזורך", "ניהול מלא של המשרות שלך"]
-                      : ["פרסום משרה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
+                      : ["פרסום מודעה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
                     badge={employerLock ? "בקרוב" : "עובדים זמינים"}
                     badgeIcon={<Users className="h-3 w-3" />}
                     privacyBadge="הטלפון שלכם נשאר חסוי"
                     privacyBadgeTooltip="מספר הטלפון של העובד נחשף רק לאחר שהוא מאשר את הצעת העבודה שלך"
-                    buttonLabel={employerLock ? "בקרוב..." : "פרסם משרה"}
+                    buttonLabel={employerLock ? "בקרוב..." : "פרסם מודעה"}
                     loading={loading === "employer"}
                     disabled={!!loading || employerLock}
                     onSelect={() => handleSelect("employer")}

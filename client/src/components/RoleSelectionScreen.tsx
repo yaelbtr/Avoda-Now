@@ -35,6 +35,7 @@ interface RoleCardProps {
   features: string[];
   badge: string;
   badgeIcon: React.ReactNode;
+  privacyBadge?: string;
   buttonLabel: string;
   loading: boolean;
   disabled: boolean;
@@ -52,6 +53,7 @@ function RoleCard({
   features,
   badge,
   badgeIcon,
+  privacyBadge,
   buttonLabel,
   loading,
   disabled,
@@ -121,6 +123,23 @@ function RoleCard({
             background: "linear-gradient(to bottom, oklch(0 0 0 / 0.0) 30%, oklch(0 0 0 / 0.55) 100%)",
           }}
         />
+        {/* Privacy badge — shown at bottom-left */}
+        {privacyBadge && (
+          <motion.div
+            className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
+            style={{
+              background: "oklch(1 0 0 / 0.92)",
+              color: '#f6b83d',
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
+            }}
+            animate={{ y: hovered ? -2 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Shield className="h-3 w-3" />
+            {privacyBadge}
+          </motion.div>
+        )}
         {/* Badge overlay — hidden when badge is empty */}
         {badge && (
           <motion.div
@@ -460,6 +479,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     ]}
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
+                    privacyBadge="מספר הטלפון שלכם יישאר חסוי"
                     buttonLabel="מצא עבודה עכשיו"
                     loading={loading === "worker"}
                     disabled={!!loading}

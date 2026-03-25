@@ -62,13 +62,13 @@ const HOW_IT_WORKS_EMPLOYER = [
 ];
 
 /* ── Stats row ────────────────────────────────────────────────────── */
-function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number }) {
+function StatsRow({ activeJobs, workers, registeredWorkers }: { activeJobs: number; workers: number; registeredWorkers: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
   const animJobs = useCountUp(activeJobs, 1200, inView);
-  const animWorkers = useCountUp(workers, 1000, inView);
+  const animRegistered = useCountUp(registeredWorkers, 1000, inView);
   const stats = [
-    { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "1+", icon: Users },
+    { label: "עובדים רשומים", value: registeredWorkers > 0 ? `${animRegistered}+` : "1+", icon: Users },
     { label: "זמין תמיד", value: "24/7", icon: Clock },
   ];
   return (
@@ -192,6 +192,9 @@ export default function HomeEmployer() {
     { staleTime: 60_000 }
   );
 
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60_000 });
+  const registeredWorkers = heroStatsQuery.data?.registeredWorkers ?? 0;
+
   const myJobs = myJobsQuery.data ?? [];
   const workers = workersQuery.data ?? [];
   const activeJobs = myJobs.filter((j) => j.status === "active").length;
@@ -263,7 +266,7 @@ export default function HomeEmployer() {
 
       {/* Mobile Stats + CTA */}
       <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
-        <StatsRow activeJobs={activeJobs} workers={workers.length} />
+        <StatsRow activeJobs={activeJobs} workers={workers.length} registeredWorkers={registeredWorkers} />
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
           className="w-full flex flex-col gap-3"
@@ -289,22 +292,6 @@ export default function HomeEmployer() {
             >
               <ChevronLeft size={16} style={{ opacity: 0.9 }} />
             </motion.span>
-          </motion.button>
-          <motion.button
-            onClick={() => navigate("/available-workers")}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
-            style={{
-              background: "white",
-              border: "1px solid oklch(0.89 0.05 84.0)",
-              color: "oklch(0.35 0.08 122)",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Users size={14} />
-            עובדים זמינים עכשיו
           </motion.button>
         </motion.div>
       </div>
@@ -375,7 +362,7 @@ export default function HomeEmployer() {
             ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
           </motion.p>
 
-          <StatsRow activeJobs={activeJobs} workers={workers.length} />
+          <StatsRow activeJobs={activeJobs} workers={workers.length} registeredWorkers={registeredWorkers} />
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
@@ -434,7 +421,7 @@ export default function HomeEmployer() {
       </section>
 
       {/* ── Pending Applications Banner ─────────────────────────────── */}
-      {isAuthenticated && myJobs.length > 0 && (
+      {isAuthenticated && activeJobs > 0 && (
         <motion.button
           dir="rtl"
           onClick={() => navigate("/my-jobs")}
@@ -508,7 +495,7 @@ export default function HomeEmployer() {
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
               <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום משרה</span>
             </div>
-            {isAuthenticated && myJobs.length > 0 && (
+            {isAuthenticated && activeJobs > 0 && (
               <button
                 onClick={() => navigate("/my-jobs")}
                 className="text-[12px] font-semibold px-3 py-1 rounded-full"

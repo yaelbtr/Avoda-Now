@@ -3467,3 +3467,6 @@ Isolation guarantees:
 
 ## Click applicant card in MyJobs to open worker profile
 - [x] Applicant card in MyJobs opens worker profile on click (same pattern as JobApplications)
+
+## Worker profile bottom sheet in MyJobs
+- [x] Open worker profile as bottom sheet modal (not new tab) when clicking applicant card in MyJobs

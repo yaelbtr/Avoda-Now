@@ -32,6 +32,10 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Bell, BellOff } from "lucide-react";
+import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
+import { useWorkerProfile } from "@/hooks/useWorkerProfile";
+import { useCategories } from "@/hooks/useCategories";
+import { SHIFT_PRESETS } from "@shared/const";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; dot?: string }> = {
@@ -120,6 +124,49 @@ function MyJobCardSkeleton({ delay = 0 }: { delay?: number }) {
   );
 }
 
+// ── Worker Profile Bottom Sheet ─────────────────────────────────────────────
+const DAYS_LABELS = [
+  { value: "sunday",    label: "א׳" },
+  { value: "monday",    label: "ב׳" },
+  { value: "tuesday",   label: "ג׳" },
+  { value: "wednesday", label: "ד׳" },
+  { value: "thursday",  label: "ה׳" },
+  { value: "friday",    label: "ש׳" },
+  { value: "saturday",  label: "שבת" },
+];
+
+function WorkerProfileSheet({ workerId, onClose }: { workerId: number | null; onClose: () => void }) {
+  const { categories: dbCategories } = useCategories();
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
+  const { profile } = useWorkerProfile(workerId);
+  const categoryLabels = dbCategories.map((c) => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
+  const cityNames = profile?.preferredCities
+    ? (citiesQuery.data ?? []).filter((c) => (profile.preferredCities as number[]).includes(c.id)).map((c) => c.nameHe)
+    : [];
+  return (
+    <WorkerProfilePreviewModal
+      open={workerId != null}
+      onClose={onClose}
+      name={profile?.name ?? ""}
+      photo={profile?.profilePhoto ?? null}
+      bio={profile?.workerBio ?? ""}
+      categories={(profile?.preferredCategories as string[] | null) ?? []}
+      categoryLabels={categoryLabels}
+      preferredDays={(profile?.preferredDays as string[] | null) ?? []}
+      preferredTimeSlots={(profile?.preferredTimeSlots as string[] | null) ?? []}
+      dayLabels={DAYS_LABELS}
+      timeSlotLabels={SHIFT_PRESETS}
+      locationMode={(profile?.locationMode as "city" | "radius") ?? "city"}
+      preferredCities={(profile?.preferredCities as number[] | null) ?? []}
+      cityNames={cityNames}
+      searchRadiusKm={profile?.searchRadiusKm ?? 5}
+      workerRating={profile?.workerRating ?? null}
+      completedJobsCount={profile?.completedJobsCount ?? 0}
+      availabilityStatus={(profile?.availabilityStatus as "available_now" | "available_today" | "available_hours" | "not_available" | null) ?? null}
+    />
+  );
+}
+
 // ── Applicants Panel ──────────────────────────────────────────────────────────
 type Applicant = {
   id: number;
@@ -139,6 +186,7 @@ type Applicant = {
 function ApplicantsPanel({ jobId }: { jobId: number }) {
   const utils = trpc.useUtils();
   const { data: applicants, isLoading } = trpc.jobs.getApplications.useQuery({ jobId });
+  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
 
   const updateStatus = trpc.jobs.updateApplicationStatus.useMutation({
     onSuccess: (data, vars) => {
@@ -210,7 +258,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
             {/* Worker info row — click to open public profile */}
             <div
               className="flex items-start gap-2.5 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => app.workerId && window.open(`/worker/${app.workerId}`, "_blank")}
+              onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
               title="צפה בפרופיל העובד"
             >
               {/* Avatar: photo if available, else coloured letter-avatar */}
@@ -299,6 +347,10 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
         );
       })}
 
+      <WorkerProfileSheet
+        workerId={selectedWorkerId}
+        onClose={() => setSelectedWorkerId(null)}
+      />
     </div>
   );
 }

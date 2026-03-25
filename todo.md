@@ -3506,3 +3506,6 @@ Isolation guarantees:
 
 ## MyJobs — Applicant Card StatusBadge Position
 - [x] Move StatusBadge below worker name (separate line, not inline)
+
+## MyJobs — Applicant Card Action Buttons Layout
+- [x] Action buttons: horizontal row — reject LEFT of accept (not stacked vertically)

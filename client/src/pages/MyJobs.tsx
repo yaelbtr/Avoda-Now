@@ -313,25 +313,10 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
             </div>
 
             {/* Action buttons — right side (last in RTL DOM = left visually) */}
-            <div className="flex flex-col gap-1.5 shrink-0">
+            <div className="flex flex-row gap-1.5 shrink-0">
               {isPending ? (
                 <>
-                  {/* Accept */}
-                  <button
-                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                    disabled={isMutating}
-                    onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
-                    style={{
-                      background: "oklch(0.35 0.08 122)",
-                      border: "1px solid oklch(0.28 0.06 122)",
-                      color: "white",
-                      opacity: isMutating ? 0.6 : 1,
-                    }}
-                    title="קבל"
-                  >
-                    <UserCheck className="h-3.5 w-3.5" />
-                  </button>
-                  {/* Reject */}
+                  {/* Reject — LEFT (second in DOM = left in LTR flex) */}
                   <button
                     className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
                     disabled={isMutating}
@@ -345,6 +330,21 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                     title="דחה"
                   >
                     <UserX className="h-3.5 w-3.5" />
+                  </button>
+                  {/* Accept — RIGHT (first in DOM = right in LTR flex) */}
+                  <button
+                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                    disabled={isMutating}
+                    onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
+                    style={{
+                      background: "oklch(0.35 0.08 122)",
+                      border: "1px solid oklch(0.28 0.06 122)",
+                      color: "white",
+                      opacity: isMutating ? 0.6 : 1,
+                    }}
+                    title="קבל"
+                  >
+                    <UserCheck className="h-3.5 w-3.5" />
                   </button>
                 </>
               ) : app.workerPhone ? (

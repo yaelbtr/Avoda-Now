@@ -11,7 +11,7 @@ import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil,
-  Star, Clock, MapPin, Bell, BellOff,
+  Star, Clock, MapPin, Bell, BellOff, Search,
 } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
@@ -39,20 +39,23 @@ function useCountUp(endValue: number, duration: number, triggered: boolean) {
 /* ── How it works steps ───────────────────────────────────────────── */
 const HOW_IT_WORKS_EMPLOYER = [
   {
-    step: "1", title: "פרסם צורך", icon: Plus,
-    desc: "ניקיון, אירוע, תיקון ועוד — פרסם בדיוק מה אתה צריך",
+    step: "01",
+    title: "פרסם משרה או בחר עובד זמין",
+    desc: "פרסם משרה בקטגוריה הרצויה, או גלוש לרשימת העובדים הזמינים באזורך ושלח הצעה ישירות.",
     imgUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&q=80",
     reverse: false,
   },
   {
-    step: "2", title: "קבל פניות", icon: Phone,
-    desc: "עובדים זמינים באזורך רואים את הצורך ופונים אליך ישירות — תוך דקות",
+    step: "02",
+    title: "שלח הצעת עבודה לעובד",
+    desc: "בחר עובד מהרשימה ושלח לו הצעת עבודה — העובד מחליט אם לאשר.",
     imgUrl: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=200&q=80",
     reverse: true,
   },
   {
-    step: "3", title: "בחר עובד", icon: CheckCircle2,
-    desc: "סגור ישיר בוואטסאפ או בטלפון — העובד מגיע ומתחיל את העבודה",
+    step: "03",
+    title: "קבל אישור וצור קשר",
+    desc: "לאחר שהעובד מאשר את ההצעה, תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.",
     imgUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=200&q=80",
     reverse: false,
   },
@@ -864,6 +867,85 @@ export default function HomeEmployer() {
           </div>
         </section>
       )}
+
+      {/* ── How it works ─────────────────────────────────────────────────────────── */}
+      <section
+        className="relative z-10 mx-6 mb-12 rounded-[28px] p-7 max-w-lg"
+        style={{
+          background: "white",
+          boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+          border: "none",
+          marginTop: "8px",
+        }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-7">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
+            <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
+            <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>קליט עובדים זמניים בשלושה צעדים פשוטים</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 mb-8">
+          {HOW_IT_WORKS_EMPLOYER.map(({ step, title, desc, imgUrl, reverse }, idx) => (
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: reverse ? -24 : 24, y: 12 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
+              whileHover={{ y: -3, boxShadow: "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)" }}
+              whileTap={{ scale: 0.98 }}
+              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
+              style={{
+                background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
+                border: "1px solid oklch(0.89 0.05 84.0)",
+              }}
+            >
+              <div
+                className="flex-shrink-0 w-24 h-20 text-center text-[72px] font-black leading-none select-none flex items-center justify-center"
+                style={{
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  backgroundImage: `url("${imgUrl}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.85)",
+                } as React.CSSProperties}
+              >
+                {step}
+              </div>
+              <div className="flex-1 text-right">
+                <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
+                <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="text-center text-[12px] font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
+          התשלום מתבצע ישירות בינך לבין העובד — ללא עמלות.
+        </p>
+
+        <motion.button
+          onClick={() => navigate("/post-job")}
+          whileHover={{ scale: 1.01, backgroundColor: "oklch(0.96 0.02 122.3)" }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center justify-center gap-3 px-10 py-3.5 rounded-2xl text-[14px] font-bold transition-all"
+          style={{
+            background: "white",
+            color: "oklch(0.35 0.08 122)",
+            border: "1.5px solid oklch(0.82 0.06 122 / 0.5)",
+            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.08)",
+          }}
+        >
+          <Search className="h-4 w-4" style={{ color: "oklch(0.35 0.08 122)" }} />
+          פרסם משרה עכשיו
+        </motion.button>
+      </section>
 
       {/* ── Worker CTA banner (mirrors HomeWorker's employer banner) ── */}
       <section

@@ -3493,3 +3493,7 @@ Isolation guarantees:
 
 ## MyJobs Card — Status Dot Fix
 - [x] Status dot: move to RIGHT of "משרה פעילה" text (RTL: dot visually before text, i.e. dot is first in DOM)
+
+## MyJobs Card — Match HomeEmployer Style
+- [x] Card header: pencil + eye buttons left, briefcase right, status badge + title + city inline (like HomeEmployer)
+- [x] Chips (address, salary, time, expiry): styled like the "הכל" filter button from HomeEmployer

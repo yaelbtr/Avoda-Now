@@ -712,131 +712,138 @@ export default function MyJobs() {
                     ...(isExpiringSoon ? { borderColor: "oklch(0.60 0.22 25 / 0.35)" } : {}),
                   }}
                 >
-                  {/* ── Hero header — exact match to design reference ── */}
-                  {/* RTL: title+status block on RIGHT, action buttons stacked on LEFT */}
-                  <div className="flex items-start gap-3 mb-4">
-                    {/* Title + status — fills available space, right-aligned */}
-                    <div className="flex-1 min-w-0 text-right">
-                      <h3
-                        className="font-bold text-xl leading-snug mb-1"
-                        style={{ color: "#1a2010", fontFamily: "Heebo, sans-serif" }}
-                      >
-                        {job.title}
-                      </h3>
-                      {/* Status: dot RIGHT of text, entire row right-aligned */}
-                      <div className="flex items-center justify-start gap-1.5" dir="rtl">
+                  {/* ── Hero header — matches HomeEmployer job card style ── */}
+                  {/* RTL layout: briefcase icon RIGHT, title+status CENTER, action buttons LEFT */}
+                  <div className="flex items-center gap-3 mb-3" dir="rtl">
+                    {/* Briefcase icon — right side (first in RTL DOM) */}
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: job.status === "active"
+                          ? "oklch(0.92 0.08 145 / 0.25)"
+                          : job.status === "closed"
+                          ? "oklch(0.93 0.02 100 / 0.5)"
+                          : "oklch(0.93 0.08 30 / 0.25)",
+                        border: `1px solid ${job.status === "active" ? "oklch(0.80 0.12 145 / 0.3)" : job.status === "closed" ? "oklch(0.75 0.02 100 / 0.3)" : "oklch(0.75 0.10 30 / 0.3)"}`,
+                      }}
+                    >
+                      <Briefcase
+                        className="h-4 w-4"
+                        style={{ color: job.status === "active" ? "oklch(0.38 0.15 145)" : job.status === "closed" ? "oklch(0.50 0.02 100)" : "oklch(0.45 0.12 30)" }}
+                      />
+                    </div>
+
+                    {/* Title + status — fills available space */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5" dir="rtl">
+                        <p className="font-bold text-[15px] truncate" style={{ color: "oklch(0.22 0.06 122)" }}>{job.title}</p>
                         <span
-                          className="w-2 h-2 rounded-full shrink-0"
+                          className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
                           style={{
-                            background: job.status === "active" ? "#22c55e" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
+                            background: job.status === "active" ? "oklch(0.90 0.10 145)" : job.status === "closed" ? "oklch(0.91 0.02 100)" : "oklch(0.93 0.08 30)",
+                            color: job.status === "active" ? "oklch(0.30 0.15 145)" : job.status === "closed" ? "oklch(0.42 0.02 100)" : "oklch(0.40 0.12 30)",
                           }}
-                        />
-                        <span className="text-sm font-medium" style={{ color: "#46483d" }}>
-                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
+                        >
+                          {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : "פג תוקף"}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
+                        {job.city && (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={9} />{job.city}
+                          </span>
+                        )}
+                        {job.salary && (
+                          <span className="flex items-center gap-1">
+                            <Clock size={9} />₪{job.salary}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Action buttons — stacked column on the LEFT (RTL end) */}
-                    <div className="flex flex-col items-center gap-2 shrink-0">
-                      {/* Edit — pencil icon, fully rounded circle */}
-                      <motion.button
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.92 }}
+                    {/* Action buttons — left side (last in RTL DOM) */}
+                    <div className="flex gap-1.5 shrink-0">
+                      <button
                         onClick={() => navigate(`/job/${job.id}`)}
-                        title="ערוך משרה"
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                        style={{ background: "#f0ede6", color: "#46483d" }}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="צפייה"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/edit-job/${job.id}`)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="עריכה"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                      </motion.button>
-
-                      {/* Close / Reopen — X or check icon, fully rounded circle */}
+                      </button>
+                      {/* Close/Reopen */}
                       {job.status === "active" ? (
-                        <motion.button
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.92 }}
+                        <button
                           onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
                           disabled={updateStatus.isPending}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                          style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)", opacity: updateStatus.isPending ? 0.6 : 1 }}
                           title="סגור משרה"
-                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                          style={{ background: "#f0ede6", color: "#46483d", opacity: updateStatus.isPending ? 0.6 : 1 }}
                         >
                           <XCircle className="h-3.5 w-3.5" />
-                        </motion.button>
+                        </button>
                       ) : job.status === "closed" ? (
-                        <motion.button
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.92 }}
+                        <button
                           onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
                           disabled={updateStatus.isPending || activeJobs.length >= 3}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                          style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", color: "#15803d", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
                           title="הפעל מחדש"
-                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                          style={{ background: "rgba(34,197,94,0.12)", color: "#15803d", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
                         >
                           <CheckCircle className="h-3.5 w-3.5" />
-                        </motion.button>
+                        </button>
                       ) : null}
                     </div>
                   </div>
 
-                  {/* ── Chips row 1: salary (ירקרק) + location (אפור) ── */}
-                  <div className="flex gap-2 mb-2">
-                    {/* Salary — ירקרק background */}
-                    <div
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
-                      style={{ background: "#dce8b3", color: "#161e00" }}
+                  {/* ── Chips — styled like the "הכל" button from HomeEmployer ── */}
+                  <div className="flex flex-wrap gap-1.5 mb-4" dir="rtl">
+                    {/* Salary chip */}
+                    <span
+                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
-                      <DollarSign className="h-3.5 w-3.5 shrink-0" style={{ color: "#414b23" }} />
-                      <span className="text-sm font-semibold truncate">
-                        {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
-                      </span>
-                    </div>
-                    {/* Location — neutral grey */}
-                    <div
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
-                      style={{ background: "#f0ede6", color: "#46483d" }}
+                      <DollarSign className="h-3 w-3 shrink-0" />
+                      {isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
+                    </span>
+                    {/* Location chip */}
+                    <span
+                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
-                      <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
-                      <span className="text-sm font-semibold truncate">{job.address.split(",")[0]}</span>
-                    </div>
-                  </div>
-
-                  {/* ── Chips row 2: expiry (red/neutral) + time ── */}
-                  <div className="flex gap-2 mb-4">
-                    {/* Expiry chip */}
-                    {daysLeft !== null && job.status === "active" ? (
-                      <div
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {job.address.split(",")[0]}
+                    </span>
+                    {/* Time chip */}
+                    <span
+                      className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                    >
+                      <Clock className="h-3 w-3 shrink-0" />
+                      {job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}
+                    </span>
+                    {/* Expiry chip — red when expiring soon */}
+                    {daysLeft !== null && job.status === "active" && (
+                      <span
+                        className="flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
                         style={{
-                          background: isExpiringSoon ? "rgba(239,68,68,0.10)" : "#f0ede6",
-                          color: isExpiringSoon ? "#b91c1c" : "#46483d",
+                          color: isExpiringSoon ? "#b91c1c" : "#4F583B",
+                          backgroundColor: isExpiringSoon ? "rgba(239,68,68,0.10)" : "rgba(79,88,59,0.10)",
+                          border: isExpiringSoon ? "1px solid rgba(239,68,68,0.25)" : "1px solid rgba(79,88,59,0.18)",
                         }}
                       >
-                        <Zap className="h-3.5 w-3.5 shrink-0" style={{ color: isExpiringSoon ? "#b91c1c" : "#795900" }} />
-                        <span className="text-sm font-semibold">
-                          {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
-                        style={{ background: "#f0ede6", color: "#46483d" }}
-                      >
-                        <Users className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
-                        <span className="text-sm font-semibold">{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
-                      </div>
-                    )}
-                    {/* Time chip */}
-                    <div
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl flex-1 min-w-0"
-                      style={{ background: "#f0ede6", color: "#46483d" }}
-                    >
-                      <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "#795900" }} />
-                      <span className="text-sm font-semibold truncate">
-                        {job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}
+                        <Zap className="h-3 w-3 shrink-0" />
+                        {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
                       </span>
-                    </div>
+                    )}
                   </div>
 
                   {/* ── Analytics bento — same style as HomeEmployer StatsRow ── */}

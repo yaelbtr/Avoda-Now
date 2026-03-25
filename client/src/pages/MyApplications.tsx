@@ -697,6 +697,7 @@ export default function MyApplications() {
                       <StatusBadge
                         status={app.status}
                         effectiveStatus={app.status === "offered" && app.contactRevealed ? "offered_accepted" : undefined}
+                        perspective="worker"
                         className="shrink-0"
                       />
                     </div>
@@ -835,7 +836,7 @@ export default function MyApplications() {
                       return (
                         <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: `${cfg.bg}`, border: `1px solid ${cfg.color}33` }}>
                           <p className="text-xs font-bold" style={{ color: cfg.color }}>
-                            ✓ {cfg.label}
+                            ✓ {cfg.workerLabel}
                           </p>
                           <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 260)" }}>
                             {cfg.workerTooltip}

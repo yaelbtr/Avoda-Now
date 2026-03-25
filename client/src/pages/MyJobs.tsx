@@ -233,7 +233,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                     {app.workerName ?? "עובד"}
                   </span>
                   {/* Status badge — Radix Tooltip via shared StatusBadge */}
-                  <StatusBadge status={app.status} className="px-1.5 py-0.5" />
+                  <StatusBadge status={app.status} perspective="employer" className="px-1.5 py-0.5" />
                 </div>
                 {app.workerPreferredCity && (
                   <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "oklch(0.55 0.03 120)" }}>

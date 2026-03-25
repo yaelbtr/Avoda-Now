@@ -241,6 +241,7 @@ function ApplicantCard({
         <StatusBadge
           status={app.status}
           effectiveStatus={effectiveStatus}
+          perspective="employer"
           className="px-2.5 py-1 font-semibold shrink-0"
         />
       </div>

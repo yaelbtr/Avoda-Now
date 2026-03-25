@@ -6,8 +6,8 @@
  * native `title` attribute which is invisible on touch devices.
  *
  * Usage:
- *   <StatusBadge status="offered" />
- *   <StatusBadge status={app.status} effectiveStatus="offered_accepted" className="text-xs" />
+ *   <StatusBadge status="offered" perspective="employer" />
+ *   <StatusBadge status={app.status} effectiveStatus="offered_accepted" perspective="worker" className="text-xs" />
  */
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,12 +25,17 @@ interface StatusBadgeProps {
    * the raw DB value (e.g. "offered" + contactRevealed → "offered_accepted").
    */
   effectiveStatus?: string;
+  /**
+   * Whose perspective to use for label and tooltip text.
+   * Defaults to "employer" for backward compatibility.
+   */
+  perspective?: "worker" | "employer";
   className?: string;
 }
 
-export function StatusBadge({ status, effectiveStatus, className }: StatusBadgeProps) {
+export function StatusBadge({ status, effectiveStatus, perspective = "employer", className }: StatusBadgeProps) {
   const key = effectiveStatus ?? status;
-  const cfg = getApplicationStatusLabel(key);
+  const cfg = getApplicationStatusLabel(key, perspective);
 
   return (
     <Tooltip>

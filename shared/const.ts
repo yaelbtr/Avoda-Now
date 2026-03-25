@@ -124,36 +124,106 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
  * Single source of truth — do not duplicate in individual components.
  *
  * Fields:
- *  - label   : Short badge text
- *  - color   : Text/icon color (OKLCH)
- *  - bg      : Badge background (OKLCH)
- *  - tooltip : Longer description shown as title attribute on the badge
+ *  - workerLabel    : Short badge text from the worker's perspective
+ *  - employerLabel  : Short badge text from the employer's perspective
+ *  - color          : Text/icon color (OKLCH)
+ *  - bg             : Badge background (OKLCH)
+ *  - workerTooltip  : Longer description for the worker
+ *  - employerTooltip: Longer description for the employer
  */
 export const APPLICATION_STATUS_LABELS: Record<
   string,
-  { label: string; color: string; bg: string; tooltip: string; workerTooltip?: string }
+  {
+    workerLabel: string;
+    employerLabel: string;
+    color: string;
+    bg: string;
+    workerTooltip: string;
+    employerTooltip: string;
+  }
 > = {
-  pending:          { label: "הגיש בקשה",          color: "oklch(0.38 0.07 125.0)",  bg: "oklch(0.50 0.14 85 / 0.08)",  tooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",                  workerTooltip: "הגשת בקשה למשרה זו" },
-  viewed:           { label: "נצפה, ממתין לתשובה",  color: "oklch(0.50 0.14 80)",     bg: "oklch(0.50 0.14 80 / 0.08)",  tooltip: "צפית בבקשה, המעסיק טרם החליט אם לקבל או לדחות",        workerTooltip: "המעסיק צפה בבקשה שלך וטרם הגיב" },
-  accepted:         { label: "התקבל",               color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "המעסיק קיבל את העובד ופרטי הקשר נחשפו",                workerTooltip: "התקבלת! המעסיק יצור איתך קשר בקרוב" },
-  rejected:         { label: "נדחה",                color: "oklch(0.50 0.02 120)",    bg: "oklch(0.93 0.01 120)",        tooltip: "המעסיק דחה את בקשת העובד",                             workerTooltip: "בקשתך לא התקבלה הפעם" },
-  offered:          { label: "ממתין לתשובת עובד",   color: "oklch(0.45 0.16 260)",    bg: "oklch(0.45 0.16 260 / 0.08)", tooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",           workerTooltip: "קיבלת הצעת עבודה — אשר או דחה" },
-  offer_rejected:   { label: "עובד דחה הצעה",       color: "oklch(0.55 0.18 30)",     bg: "oklch(0.55 0.18 30 / 0.08)",  tooltip: "העובד דחה את הצעת העבודה ששלחת",                       workerTooltip: "דחית את הצעת העבודה" },
-  offered_accepted: { label: "העובד אישר",           color: "oklch(0.38 0.15 160)",    bg: "oklch(0.68 0.20 160 / 0.10)", tooltip: "העובד אישר את הצעת העבודה ופרטי הקשר נחשפו",           workerTooltip: "אישרת את ההצעה! המעסיק קיבל את הטלפון שלך ויצור איתך קשר בקרוב" },
+  pending: {
+    workerLabel:    "הגשתי בקשה",
+    employerLabel:  "הגיש בקשה",
+    color: "oklch(0.38 0.07 125.0)",
+    bg:    "oklch(0.50 0.14 85 / 0.08)",
+    workerTooltip:   "הגשת בקשה למשרה זו — המעסיק טרם צפה בה",
+    employerTooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",
+  },
+  viewed: {
+    workerLabel:    "נצפה, ממתין לתשובה",
+    employerLabel:  "נצפה, טרם החליט",
+    color: "oklch(0.50 0.14 80)",
+    bg:    "oklch(0.50 0.14 80 / 0.08)",
+    workerTooltip:   "המעסיק צפה בבקשה שלך וטרם הגיב",
+    employerTooltip: "צפית בבקשה, המעסיק טרם החליט אם לקבל או לדחות",
+  },
+  accepted: {
+    workerLabel:    "התקבלתי",
+    employerLabel:  "התקבל",
+    color: "oklch(0.38 0.15 160)",
+    bg:    "oklch(0.68 0.20 160 / 0.10)",
+    workerTooltip:   "התקבלת! המעסיק יצור איתך קשר בקרוב",
+    employerTooltip: "המעסיק קיבל את העובד ופרטי הקשר נחשפו",
+  },
+  rejected: {
+    workerLabel:    "בקשתי נדחתה",
+    employerLabel:  "נדחה",
+    color: "oklch(0.50 0.02 120)",
+    bg:    "oklch(0.93 0.01 120)",
+    workerTooltip:   "בקשתך לא התקבלה הפעם",
+    employerTooltip: "דחית את בקשת העובד",
+  },
+  offered: {
+    workerLabel:    "קיבלתי הצעה",
+    employerLabel:  "ממתין לתשובת עובד",
+    color: "oklch(0.45 0.16 260)",
+    bg:    "oklch(0.45 0.16 260 / 0.08)",
+    workerTooltip:   "קיבלת הצעת עבודה — אשר או דחה",
+    employerTooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",
+  },
+  offer_rejected: {
+    workerLabel:    "דחיתי את ההצעה",
+    employerLabel:  "עובד דחה הצעה",
+    color: "oklch(0.55 0.18 30)",
+    bg:    "oklch(0.55 0.18 30 / 0.08)",
+    workerTooltip:   "דחית את הצעת העבודה",
+    employerTooltip: "העובד דחה את הצעת העבודה ששלחת",
+  },
+  offered_accepted: {
+    workerLabel:    "אישרתי את ההצעה",
+    employerLabel:  "העובד אישר",
+    color: "oklch(0.38 0.15 160)",
+    bg:    "oklch(0.68 0.20 160 / 0.10)",
+    workerTooltip:   "אישרת את ההצעה! המעסיק קיבל את הטלפון שלך ויצור איתך קשר בקרוב",
+    employerTooltip: "העובד אישר את הצעת העבודה ופרטי הקשר נחשפו",
+  },
 };
 
 /**
- * Returns the Hebrew label config for an application status, with a safe fallback.
+ * Returns the Hebrew label config for an application status.
+ * Pass `perspective` to get the correct label/tooltip for the viewer's role.
+ * Defaults to "employer" for backward compatibility.
  */
-export function getApplicationStatusLabel(status: string) {
-  return (
-    APPLICATION_STATUS_LABELS[status] ?? {
+export function getApplicationStatusLabel(
+  status: string,
+  perspective: "worker" | "employer" = "employer"
+) {
+  const entry = APPLICATION_STATUS_LABELS[status];
+  if (!entry) {
+    return {
       label: status,
       color: "oklch(0.50 0.02 120)",
       bg: "oklch(0.93 0.01 120)",
       tooltip: status,
-    }
-  );
+    };
+  }
+  return {
+    label:   perspective === "worker" ? entry.workerLabel   : entry.employerLabel,
+    color:   entry.color,
+    bg:      entry.bg,
+    tooltip: perspective === "worker" ? entry.workerTooltip : entry.employerTooltip,
+  };
 }
 
 /**

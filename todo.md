@@ -3411,3 +3411,21 @@ Isolation guarantees:
 
 ## Refactor: Unify acceptance confirmation message with offered_accepted tooltip
 - [x] Use APPLICATION_STATUS_LABELS offered_accepted tooltip text in MyApplications acceptance block
+
+## Refactor: APPLICATION_STATUS_LABELS 4-field schema
+- [ ] Add workerLabel, employerLabel, workerTooltip, employerTooltip to all entries
+- [ ] Update getApplicationStatusLabel to accept perspective param
+- [ ] Update StatusBadge to accept perspective prop and use correct label/tooltip
+- [ ] Update MyApplications to pass perspective="worker"
+- [ ] Update JobApplications to pass perspective="employer"
+- [ ] Update MyJobs to pass perspective="employer"
+- [ ] Update applicationStatus.test.ts for new schema
+
+## APPLICATION_STATUS_LABELS 4-Field Perspective Refactor
+- [x] Restructure APPLICATION_STATUS_LABELS in shared/const.ts: replace single label/tooltip with workerLabel, employerLabel, workerTooltip, employerTooltip per status
+- [x] Update getApplicationStatusLabel() to accept perspective ("worker"|"employer", default "employer") and return resolved label+tooltip for that perspective
+- [x] Update StatusBadge component to accept and pass perspective prop to getApplicationStatusLabel
+- [x] Update MyApplications: pass perspective="worker" to StatusBadge; use cfg.workerLabel in acceptance confirmation block
+- [x] Update JobApplications: pass perspective="employer" to StatusBadge
+- [x] Update MyJobs: pass perspective="employer" to StatusBadge
+- [x] Rewrite applicationStatus.test.ts: 22 tests covering both perspectives, symmetry checks, and all known statuses

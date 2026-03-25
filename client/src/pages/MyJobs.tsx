@@ -249,23 +249,23 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               </div>
             </div>
 
-            {/* WhatsApp + Phone call buttons — full width, always shown when phone available */}
+            {/* WhatsApp + Phone call links — inline text style */}
             {app.workerPhone && (
-              <div className="flex gap-2 mt-2">
+              <div className="flex items-center gap-4 mt-2">
                 <a
                   href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ background: "oklch(0.68 0.20 160 / 0.12)", border: "1px solid oklch(0.68 0.20 160 / 0.30)", color: "oklch(0.32 0.14 160)" }}
+                  className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+                  style={{ color: "oklch(0.40 0.18 145)" }}
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   WhatsApp
                 </a>
                 <a
                   href={`tel:${app.workerPhone}`}
-                  className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ background: "oklch(0.50 0.14 85 / 0.08)", border: "1px solid oklch(0.50 0.14 85 / 0.25)", color: "oklch(0.38 0.07 125.0)" }}
+                  className="flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
+                  style={{ color: "oklch(0.38 0.18 240)" }}
                 >
                   <Phone className="h-3.5 w-3.5" />
                   {app.workerPhone}

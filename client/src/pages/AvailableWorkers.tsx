@@ -360,10 +360,34 @@ export default function AvailableWorkers() {
 
   const effectiveLat = userLat ?? savedLat ?? 31.7683;
   const effectiveLng = userLng ?? savedLng ?? 35.2137;
+  // Track last-updated timestamp for the "updated X seconds ago" indicator
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
+  const [secondsAgo, setSecondsAgo] = useState(0);
+
   const workersQuery = trpc.workers.nearby.useQuery(
     { lat: effectiveLat, lng: effectiveLng, radiusKm, limit: 50, minWorkerAge },
-    { enabled: true, refetchInterval: 60000 }
+    {
+      enabled: true,
+      refetchInterval: 60_000,
+      refetchIntervalInBackground: false, // pause polling when tab is not visible
+    }
   );
+
+  // Update lastUpdatedAt whenever fresh data arrives (tRPC v11 — no onSuccess callback)
+  useEffect(() => {
+    if (workersQuery.data !== undefined) {
+      setLastUpdatedAt(new Date());
+    }
+  }, [workersQuery.dataUpdatedAt]);
+
+  // Tick every second to update "updated X seconds ago" display
+  useEffect(() => {
+    if (!lastUpdatedAt) return;
+    const interval = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastUpdatedAt.getTime()) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lastUpdatedAt]);
 
   const allWorkers = workersQuery.data ?? [];
 
@@ -607,6 +631,23 @@ export default function AvailableWorkers() {
             })}
           </div>
         </>
+      )}
+
+      {/* Last-updated timestamp indicator */}
+      {lastUpdatedAt && (
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>
+            {secondsAgo < 5
+              ? "עודכן זה עתה"
+              : secondsAgo < 60
+              ? `עודכן לפני ${secondsAgo} שניות`
+              : `עודכן לפני ${Math.floor(secondsAgo / 60)} דקות`}
+          </span>
+          {workersQuery.isFetching && (
+            <Loader2 className="h-3 w-3 animate-spin ml-1" />
+          )}
+        </div>
       )}
 
       {/* Info notice */}

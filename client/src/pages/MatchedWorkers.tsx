@@ -295,7 +295,7 @@ export default function MatchedWorkers() {
   // without re-running the full matching algorithm.
   const availabilityQuery = trpc.user.getWorkersAvailabilityStatus.useQuery(
     { workerIds },
-    { enabled: workerIds.length > 0, refetchInterval: 60_000, staleTime: 30_000 }
+    { enabled: workerIds.length > 0, refetchInterval: 60_000, staleTime: 30_000, refetchIntervalInBackground: false }
   );
 
   const enrichedWorkers: MatchedWorker[] | null = matchedWorkers

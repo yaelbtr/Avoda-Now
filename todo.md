@@ -3509,3 +3509,6 @@ Isolation guarantees:
 
 ## MyJobs — Applicant Card Action Buttons Layout
 - [x] Action buttons: horizontal row — reject LEFT of accept (not stacked vertically)
+
+## MyJobs — Phone Reveal Button
+- [x] Replace inline phone number with phone icon button that reveals number on click (like WhatsApp button)

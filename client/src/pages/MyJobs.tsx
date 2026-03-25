@@ -187,6 +187,16 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
   const utils = trpc.useUtils();
   const { data: applicants, isLoading } = trpc.jobs.getApplications.useQuery({ jobId });
   const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
+  const [revealedPhoneIds, setRevealedPhoneIds] = useState<Set<number>>(new Set());
+
+  const togglePhone = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRevealedPhoneIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
 
   const updateStatus = trpc.jobs.updateApplicationStatus.useMutation({
     onSuccess: (data, vars) => {
@@ -295,14 +305,16 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                   </span>
                 )}
                 {app.workerPhone && (
-                  <a
-                    href={`tel:${app.workerPhone}`}
-                    className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-                    style={{ color: "oklch(0.38 0.18 240)" }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Phone size={9} />{app.workerPhone}
-                  </a>
+                  revealedPhoneIds.has(app.id) ? (
+                    <a
+                      href={`tel:${app.workerPhone}`}
+                      className="flex items-center gap-1 hover:opacity-70 transition-opacity font-medium"
+                      style={{ color: "oklch(0.38 0.18 240)" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Phone size={9} />{app.workerPhone}
+                    </a>
+                  ) : null
                 )}
               </div>
               {app.message && (
@@ -347,18 +359,40 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
                     <UserCheck className="h-3.5 w-3.5" />
                   </button>
                 </>
-              ) : app.workerPhone ? (
-                <a
-                  href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                  style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.40 0.18 145)" }}
-                  title="WhatsApp"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                </a>
-              ) : null}
+              ) : (
+                <>
+                  {/* Phone reveal button */}
+                  {app.workerPhone && (
+                    <button
+                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                      onClick={(e) => togglePhone(app.id, e)}
+                      style={{
+                        background: revealedPhoneIds.has(app.id)
+                          ? "oklch(0.38 0.18 240)"
+                          : "oklch(0.96 0.02 91.6)",
+                        border: "1px solid oklch(0.89 0.05 84.0)",
+                        color: revealedPhoneIds.has(app.id) ? "white" : "oklch(0.38 0.18 240)",
+                      }}
+                      title={revealedPhoneIds.has(app.id) ? app.workerPhone : "הצג מספר טלפון"}
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  {/* WhatsApp button */}
+                  {app.workerPhone && (
+                    <a
+                      href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                      style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.40 0.18 145)" }}
+                      title="WhatsApp"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </>
+              )}
             </div>
           </motion.div>
         );

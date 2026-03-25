@@ -739,18 +739,7 @@ export default function MyJobs() {
                           {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : "פג תוקף"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
-                        {job.city && (
-                          <span className="flex items-center gap-1">
-                            <MapPin size={9} />{job.city}
-                          </span>
-                        )}
-                        {job.salary && (
-                          <span className="flex items-center gap-1">
-                            <Clock size={9} />₪{job.salary}
-                          </span>
-                        )}
-                      </div>
+
                     </div>
 
                     {/* Action buttons — left side (last in RTL DOM) */}

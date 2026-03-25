@@ -3473,3 +3473,6 @@ Isolation guarantees:
 
 ## First job applicants panel open by default in MyJobs
 - [x] First job card in MyJobs has applicants panel expanded by default
+
+## Redesign MyJobs job card per design files
+- [x] Redesign job card in MyJobs to match uploaded design files (design-only, no behavior changes)

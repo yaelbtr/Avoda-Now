@@ -2958,6 +2958,22 @@ const userRouter = router({
     }),
 
   /**
+   * Returns a map of workerId → availabilityStatus for a batch of workers.
+   * Used for real-time availability dot refresh without re-running the matching algorithm.
+   */
+  getWorkersAvailabilityStatus: protectedProcedure
+    .input(z.object({ workerIds: z.array(z.number().int()).max(200) }))
+    .query(async ({ input }) => {
+      if (input.workerIds.length === 0) return {} as Record<number, string | null>;
+      const nameMap = await getWorkerNamesByIds(input.workerIds);
+      const result: Record<number, string | null> = {};
+      for (const id of input.workerIds) {
+        result[id] = nameMap.get(id)?.availabilityStatus ?? null;
+      }
+      return result;
+    }),
+
+  /**
    * Check if a specific job is accessible to the current worker based on age.
    * Returns { accessible: true } or { accessible: false, reason }.
    */

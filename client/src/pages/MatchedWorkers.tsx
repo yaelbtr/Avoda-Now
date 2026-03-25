@@ -290,11 +290,23 @@ export default function MatchedWorkers() {
     { workerIds },
     { enabled: workerIds.length > 0, staleTime: 5 * 60 * 1000 }
   );
+
+  // Real-time availability refresh — polls every 60s so green dots stay accurate
+  // without re-running the full matching algorithm.
+  const availabilityQuery = trpc.user.getWorkersAvailabilityStatus.useQuery(
+    { workerIds },
+    { enabled: workerIds.length > 0, refetchInterval: 60_000, staleTime: 30_000 }
+  );
+
   const enrichedWorkers: MatchedWorker[] | null = matchedWorkers
     ? matchedWorkers.map((w) => ({
         ...w,
         isMinor: minorStatusQuery.data?.[w.worker_id] ?? false,
         locationMissingGps: w.locationMissingGps ?? false,
+        // Prefer live availability data from the polling query; fall back to initial match result
+        availabilityStatus: availabilityQuery.data?.[w.worker_id] !== undefined
+          ? availabilityQuery.data[w.worker_id]
+          : w.availabilityStatus,
       }))
     : null;
 

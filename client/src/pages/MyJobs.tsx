@@ -249,7 +249,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
             key={app.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-3.5 flex items-center gap-3"
+            className="rounded-2xl p-3.5 flex flex-col gap-0"
             style={{
               background: isAccepted ? "oklch(0.97 0.04 145 / 0.4)" : "white",
               border: isAccepted
@@ -259,141 +259,146 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               opacity: isRejected ? 0.5 : 1,
             }}
           >
-            {/* Avatar: photo if available, else coloured letter-avatar — click to open profile */}
-            <div
-              className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
-              title="צפה בפרופיל העובד"
-            >
-              {app.workerProfilePhoto ? (
-                <img
-                  src={app.workerProfilePhoto}
-                  alt={app.workerName ?? "עובד"}
-                  className="w-10 h-10 rounded-xl object-cover"
-                  style={{ border: "1px solid oklch(0.91 0.04 91.6)" }}
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold"
-                  style={{
-                    background: isAccepted ? "oklch(0.92 0.08 145 / 0.25)" : "oklch(0.92 0.05 122 / 0.20)",
-                    border: `1px solid ${isAccepted ? "oklch(0.80 0.12 145 / 0.3)" : "oklch(0.80 0.08 122 / 0.25)"}`,
-                    color: isAccepted ? "oklch(0.38 0.15 145)" : "oklch(0.38 0.08 122)",
-                  }}
-                >
-                  {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
-                </div>
-              )}
-            </div>
+            {/* Top row: avatar + info + action buttons */}
+            <div className="flex items-center gap-3 w-full">
+              {/* Avatar — click to open profile */}
+              <div
+                className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
+                title="צפה בפרופיל העובד"
+              >
+                {app.workerProfilePhoto ? (
+                  <img
+                    src={app.workerProfilePhoto}
+                    alt={app.workerName ?? "עובד"}
+                    className="w-10 h-10 rounded-xl object-cover"
+                    style={{ border: "1px solid oklch(0.91 0.04 91.6)" }}
+                  />
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold"
+                    style={{
+                      background: isAccepted ? "oklch(0.92 0.08 145 / 0.25)" : "oklch(0.92 0.05 122 / 0.20)",
+                      border: `1px solid ${isAccepted ? "oklch(0.80 0.12 145 / 0.3)" : "oklch(0.80 0.08 122 / 0.25)"}`,
+                      color: isAccepted ? "oklch(0.38 0.15 145)" : "oklch(0.38 0.08 122)",
+                    }}
+                  >
+                    {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
+                  </div>
+                )}
+              </div>
 
-            {/* Name + city + message — fills space */}
-            <div
-              className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
-              title="צפה בפרופיל העובד"
-            >
-              <p className="font-bold text-[12px] truncate mb-0.5" dir="rtl" style={{ color: '#171f01' }}>
-                {app.workerName ?? "עובד"}
-              </p>
-              <div className="mb-1" dir="rtl">
-                <StatusBadge status={app.status} perspective="employer" className="px-1 py-0.5 text-[10px]" />
-              </div>
-              <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
-                {app.workerPreferredCity && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={9} />{app.workerPreferredCity}
-                  </span>
-                )}
-                {app.workerPhone && (
-                  revealedPhoneIds.has(app.id) ? (
-                    <a
-                      href={`tel:${app.workerPhone}`}
-                      className="flex items-center gap-1 hover:opacity-70 transition-opacity font-medium"
-                      style={{ color: "oklch(0.38 0.18 240)" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Phone size={9} />{app.workerPhone}
-                    </a>
-                  ) : null
-                )}
-              </div>
-              {app.message && (
-                <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: "oklch(0.50 0.04 100)" }}>
-                  &ldquo;{app.message}&rdquo;
+              {/* Name + badge + city + message — fills space */}
+              <div
+                className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
+                title="צפה בפרופיל העובד"
+              >
+                <p className="font-bold text-[12px] truncate mb-0.5" dir="rtl" style={{ color: '#171f01' }}>
+                  {app.workerName ?? "עובד"}
                 </p>
-              )}
-            </div>
+                <div className="mb-1" dir="rtl">
+                  <StatusBadge status={app.status} perspective="employer" className="px-1 py-0.5 text-[10px]" />
+                </div>
+                <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
+                  {app.workerPreferredCity && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={9} />{app.workerPreferredCity}
+                    </span>
+                  )}
+                </div>
+                {app.message && (
+                  <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: "oklch(0.50 0.04 100)" }}>
+                    &ldquo;{app.message}&rdquo;
+                  </p>
+                )}
+              </div>
 
-            {/* Action buttons — right side (last in RTL DOM = left visually) */}
-            <div className="flex flex-row gap-1.5 shrink-0">
-              {isPending ? (
-                <>
-                  {/* Reject — LEFT (second in DOM = left in LTR flex) */}
-                  <button
-                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                    disabled={isMutating}
-                    onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
-                    style={{
-                      background: "oklch(0.96 0.02 91.6)",
-                      border: "1px solid oklch(0.89 0.05 84.0)",
-                      color: "oklch(0.45 0.08 122)",
-                      opacity: isMutating ? 0.6 : 1,
-                    }}
-                    title="דחה"
-                  >
-                    <UserX className="h-3.5 w-3.5" />
-                  </button>
-                  {/* Accept — RIGHT (first in DOM = right in LTR flex) */}
-                  <button
-                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                    disabled={isMutating}
-                    onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
-                    style={{
-                      background: "oklch(0.35 0.08 122)",
-                      border: "1px solid oklch(0.28 0.06 122)",
-                      color: "white",
-                      opacity: isMutating ? 0.6 : 1,
-                    }}
-                    title="קבל"
-                  >
-                    <UserCheck className="h-3.5 w-3.5" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  {/* Phone reveal button */}
-                  {app.workerPhone && (
+              {/* Action buttons — right side */}
+              <div className="flex flex-row gap-1.5 shrink-0">
+                {isPending ? (
+                  <>
+                    {/* Reject */}
                     <button
                       className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                      onClick={(e) => togglePhone(app.id, e)}
+                      disabled={isMutating}
+                      onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
                       style={{
-                        background: revealedPhoneIds.has(app.id)
-                          ? "oklch(0.38 0.18 240)"
-                          : "oklch(0.96 0.02 91.6)",
+                        background: "oklch(0.96 0.02 91.6)",
                         border: "1px solid oklch(0.89 0.05 84.0)",
-                        color: revealedPhoneIds.has(app.id) ? "white" : "oklch(0.38 0.18 240)",
+                        color: "oklch(0.45 0.08 122)",
+                        opacity: isMutating ? 0.6 : 1,
                       }}
-                      title={revealedPhoneIds.has(app.id) ? app.workerPhone : "הצג מספר טלפון"}
+                      title="דחה"
                     >
-                      <Phone className="h-3.5 w-3.5" />
+                      <UserX className="h-3.5 w-3.5" />
                     </button>
-                  )}
-                  {/* WhatsApp button */}
-                  {app.workerPhone && (
-                    <a
-                      href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                      style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.40 0.18 145)" }}
-                      title="WhatsApp"
+                    {/* Accept */}
+                    <button
+                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                      disabled={isMutating}
+                      onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
+                      style={{
+                        background: "oklch(0.35 0.08 122)",
+                        border: "1px solid oklch(0.28 0.06 122)",
+                        color: "white",
+                        opacity: isMutating ? 0.6 : 1,
+                      }}
+                      title="קבל"
                     >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                    </a>
-                  )}
-                </>
-              )}
+                      <UserCheck className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Phone reveal button */}
+                    {app.workerPhone && (
+                      <button
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                        onClick={(e) => togglePhone(app.id, e)}
+                        style={{
+                          background: revealedPhoneIds.has(app.id)
+                            ? "oklch(0.38 0.18 240)"
+                            : "oklch(0.96 0.02 91.6)",
+                          border: "1px solid oklch(0.89 0.05 84.0)",
+                          color: revealedPhoneIds.has(app.id) ? "white" : "oklch(0.38 0.18 240)",
+                        }}
+                        title={revealedPhoneIds.has(app.id) ? app.workerPhone : "הצג מספר טלפון"}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {/* WhatsApp button */}
+                    {app.workerPhone && (
+                      <a
+                        href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.40 0.18 145)" }}
+                        title="WhatsApp"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* Phone number reveal row — shown below buttons when toggled */}
+            {!isPending && app.workerPhone && revealedPhoneIds.has(app.id) && (
+              <div className="w-full pt-2 mt-1" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }} dir="rtl">
+                <a
+                  href={`tel:${app.workerPhone}`}
+                  className="flex items-center gap-1.5 text-[12px] font-medium hover:opacity-70 transition-opacity"
+                  style={{ color: "oklch(0.38 0.18 240)" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone size={11} />{app.workerPhone}
+                </a>
+              </div>
+            )}
           </motion.div>
         );
       })}

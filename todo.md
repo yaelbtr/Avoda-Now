@@ -3512,3 +3512,6 @@ Isolation guarantees:
 
 ## MyJobs — Phone Reveal Button
 - [x] Replace inline phone number with phone icon button that reveals number on click (like WhatsApp button)
+
+## MyJobs — Phone Number Position
+- [x] Show revealed phone number below action buttons row (not inline in details row)

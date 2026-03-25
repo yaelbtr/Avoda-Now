@@ -184,6 +184,8 @@ type Applicant = {
   createdAt: Date;
   /** CDN URL of the worker's profile photo, null if not set */
   workerProfilePhoto?: string | null;
+  /** Worker's current availability status — used to show the green dot */
+  workerAvailabilityStatus?: string | null;
 };
 
 // ── SwipeableApplicantCard ─────────────────────────────────────────────
@@ -289,9 +291,9 @@ function SwipeableApplicantCard({
       >
         {/* Top row: avatar + info + action buttons */}
         <div className="flex items-center gap-3 w-full">
-          {/* Avatar */}
+          {/* Avatar with optional availability dot */}
           <div
-            className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => app.workerId && onViewProfile(app.workerId)}
             title="צפה בפרופיל העובד"
           >
@@ -313,6 +315,14 @@ function SwipeableApplicantCard({
               >
                 {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
               </div>
+            )}
+            {/* Green pulsing dot — shown when worker is currently available */}
+            {app.workerAvailabilityStatus === "available_now" && (
+              <span
+                className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
+                style={{ border: "2px solid white" }}
+                title="עובד זמין עכשיו"
+              />
             )}
           </div>
 

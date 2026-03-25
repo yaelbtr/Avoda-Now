@@ -674,13 +674,14 @@ export async function expireOldJobs() {
   if (!db) return;
   const now = new Date();
   // Expire jobs past their expiresAt.
-  // NOTE: Drizzle ORM 0.44.x omits ::enum_type casts in prepared statements,
-  // causing "invalid input value for enum" errors. Use sql`` with explicit casts.
+  // NOTE: Use Drizzle native string values (not sql`` casts) for enum columns.
+  // The sql cast approach (e.g. 'expired'::job_status) fails when the enum type
+  // name differs between environments. Drizzle handles the binding correctly.
   await db
     .update(jobs)
     .set({
-      status: sql`'expired'::job_status`,
-      closedReason: sql`'expired'::closed_reason`,
+      status: "expired",
+      closedReason: "expired",
     })
     .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, now)));
   // Auto-hide jobs with no reminder response: created > 9h ago, reminderSentAt set
@@ -688,8 +689,8 @@ export async function expireOldJobs() {
   await db
     .update(jobs)
     .set({
-      status: sql`'expired'::job_status`,
-      closedReason: sql`'expired'::closed_reason`,
+      status: "expired",
+      closedReason: "expired",
     })
     .where(
       and(
@@ -808,9 +809,9 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
   const conditions: any[] = [
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
     // Exclude jobs that were auto-closed because the candidate cap was reached.
-    // Use sql cast because Drizzle sends the literal as text and Postgres needs an explicit
-    // cast to the closed_reason enum when comparing with <> ($n::closed_reason).
-    or(isNull(jobs.closedReason), sql`${jobs.closedReason} <> 'cap_reached'::closed_reason`)!,
+    // Cast the column to text to avoid relying on the internal enum type name,
+    // which may differ across environments (e.g. 'closed_reason' vs schema-qualified).
+    or(isNull(jobs.closedReason), sql`${jobs.closedReason}::text <> 'cap_reached'`)!,
   ];
 
   // ── Mode-specific conditions ────────────────────────────────────────────────
@@ -1160,7 +1161,7 @@ export async function markJobFilled(jobId: number, userId: number) {
   if (!db) throw new Error("Database not available");
   await db
     .update(jobs)
-    .set({ status: sql`'closed'::job_status`, closedReason: sql`'found_worker'::closed_reason` })
+    .set({ status: "closed", closedReason: "found_worker" })
     .where(and(eq(jobs.id, jobId), eq(jobs.postedBy, userId)));
 }
 /** Send reminder for a job (mark reminderSentAt) */
@@ -1655,8 +1656,8 @@ export async function autoCloseJobIfCapReached(
   await db
     .update(jobs)
     .set({
-      status: sql`'closed'::job_status`,
-      closedReason: sql`'cap_reached'::closed_reason`,
+      status: "closed",
+      closedReason: "cap_reached",
       updatedAt: new Date(),
     })
     .where(and(eq(jobs.id, jobId), eq(jobs.status, "active")));

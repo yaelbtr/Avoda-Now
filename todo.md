@@ -3397,3 +3397,7 @@ Isolation guarantees:
 ## Refactor: StatusBadge in MyApplications
 - [x] Replace local STATUS_CONFIG in MyApplications with shared StatusBadge component
 - [x] Remove unused imports from MyApplications after refactor
+
+## Bug: queryJobs cap_reached enum cast fails
+- [x] Find actual PostgreSQL enum type name for closedReason
+- [x] Fix sql cast in queryJobs to use correct type name or use text comparison

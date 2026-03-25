@@ -1,0 +1,8 @@
+{
+  "query": "SELECT t.typname, e.enumlabel\nFROM pg_type t\nJOIN pg_enum e ON t.oid = e.enumtypid\nWHERE t.typname ILIKE '%closed%' OR t.typname ILIKE '%reason%'\nORDER BY t.typname, e.enumsortorder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT t.typname, e.enumlabel\nFROM pg_type t\nJOIN pg_enum e ON t.oid = e.enumtypid\nWHERE t.typname ILIKE '%closed%' OR t.typname ILIKE '%reason%'\nORDER BY t.typname, e.enumsortorder;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'resblbsesextzwj6tlp8wj.pg_type' doesn't exist"
+  ]
+}

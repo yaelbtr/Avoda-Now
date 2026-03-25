@@ -3500,3 +3500,6 @@ Isolation guarantees:
 
 ## MyJobs Card — Chips 2x2 Grid
 - [x] Chips layout: 2x2 grid (equal width columns), same layout as analytics bento squares
+
+## MyJobs — Applicant Card Redesign
+- [x] Applicant cards: match HomeEmployer job card style (white bg, subtle border, action buttons left, name+badge right, details below)

@@ -3503,3 +3503,6 @@ Isolation guarantees:
 
 ## MyJobs — Applicant Card Redesign
 - [x] Applicant cards: match HomeEmployer job card style (white bg, subtle border, action buttons left, name+badge right, details below)
+
+## MyJobs — Applicant Card StatusBadge Position
+- [x] Move StatusBadge below worker name (separate line, not inline)

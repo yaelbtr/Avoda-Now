@@ -282,11 +282,11 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               onClick={() => app.workerId && setSelectedWorkerId(app.workerId)}
               title="צפה בפרופיל העובד"
             >
-              <div className="flex items-center gap-2 mb-0.5" dir="rtl">
-                <p className="font-bold text-[13px] truncate" style={{ color: "oklch(0.22 0.06 122)" }}>
-                  {app.workerName ?? "עובד"}
-                </p>
-                <StatusBadge status={app.status} perspective="employer" className="px-1.5 py-0.5 shrink-0" />
+              <p className="font-bold text-[13px] truncate mb-0.5" dir="rtl" style={{ color: "oklch(0.22 0.06 122)" }}>
+                {app.workerName ?? "עובד"}
+              </p>
+              <div className="mb-1" dir="rtl">
+                <StatusBadge status={app.status} perspective="employer" className="px-1.5 py-0.5" />
               </div>
               <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
                 {app.workerPreferredCity && (

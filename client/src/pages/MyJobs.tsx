@@ -388,7 +388,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
 
             {/* Phone number reveal row — shown below buttons when toggled */}
             {!isPending && app.workerPhone && revealedPhoneIds.has(app.id) && (
-              <div className="w-full pt-2 mt-1" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }} dir="rtl">
+              <div className="w-full pt-2 mt-1 flex justify-start" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }}>
                 <a
                   href={`tel:${app.workerPhone}`}
                   className="flex items-center gap-1.5 text-[12px] font-medium hover:opacity-70 transition-opacity"

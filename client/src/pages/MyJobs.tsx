@@ -725,24 +725,6 @@ export default function MyJobs() {
                   {/* ── Hero header — matches HomeEmployer job card style ── */}
                   {/* RTL layout: briefcase icon RIGHT, title+status CENTER, action buttons LEFT */}
                   <div className="flex items-center gap-3 mb-3" dir="rtl">
-                    {/* Briefcase icon — right side (first in RTL DOM) */}
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{
-                        background: job.status === "active"
-                          ? "oklch(0.92 0.08 145 / 0.25)"
-                          : job.status === "closed"
-                          ? "oklch(0.93 0.02 100 / 0.5)"
-                          : "oklch(0.93 0.08 30 / 0.25)",
-                        border: `1px solid ${job.status === "active" ? "oklch(0.80 0.12 145 / 0.3)" : job.status === "closed" ? "oklch(0.75 0.02 100 / 0.3)" : "oklch(0.75 0.10 30 / 0.3)"}`,
-                      }}
-                    >
-                      <Briefcase
-                        className="h-4 w-4"
-                        style={{ color: job.status === "active" ? "oklch(0.38 0.15 145)" : job.status === "closed" ? "oklch(0.50 0.02 100)" : "oklch(0.45 0.12 30)" }}
-                      />
-                    </div>
-
                     {/* Title + status — fills available space */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5" dir="rtl">
@@ -818,7 +800,7 @@ export default function MyJobs() {
                   <div className="grid grid-cols-2 gap-2 mb-4" dir="rtl">
                     {/* Salary chip */}
                     <span
-                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                       style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
                       <DollarSign className="h-3 w-3 shrink-0" />
@@ -826,7 +808,7 @@ export default function MyJobs() {
                     </span>
                     {/* Location chip */}
                     <span
-                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                       style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
                       <MapPin className="h-3 w-3 shrink-0" />
@@ -835,7 +817,7 @@ export default function MyJobs() {
                     {/* Expiry chip — red when expiring soon, otherwise workers count */}
                     {daysLeft !== null && job.status === "active" ? (
                       <span
-                        className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                        className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                         style={{
                           color: isExpiringSoon ? "#b91c1c" : "#4F583B",
                           backgroundColor: isExpiringSoon ? "rgba(239,68,68,0.10)" : "rgba(79,88,59,0.10)",
@@ -847,7 +829,7 @@ export default function MyJobs() {
                       </span>
                     ) : (
                       <span
-                        className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                        className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                         style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                       >
                         <Users className="h-3 w-3 shrink-0" />
@@ -856,7 +838,7 @@ export default function MyJobs() {
                     )}
                     {/* Time chip */}
                     <span
-                      className="flex items-center justify-center gap-1.5 text-[12px] font-bold px-3 py-2 rounded-full"
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                       style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                     >
                       <Clock className="h-3 w-3 shrink-0" />
@@ -868,35 +850,35 @@ export default function MyJobs() {
                   <div className="grid grid-cols-2 gap-2 mb-3" dir="rtl">
                     {/* RIGHT (first in RTL DOM): מועמדים סה"כ */}
                     <div
-                      className="flex flex-col items-center justify-center gap-1 py-3 rounded-[14px] text-center"
+                      className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-[14px] text-center"
                       style={{
                         background: "oklch(0.97 0.02 122)",
                         border: "1px solid oklch(0.88 0.05 122)",
                         boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
                       }}
                     >
-                      <Users style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
+                      <Users style={{ width: 14, height: 14, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
                         {totalApplicationCount}
                       </span>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
                         מועמדים סה&quot;כ
                       </span>
                     </div>
                     {/* LEFT (second in RTL DOM): התקבלו */}
                     <div
-                      className="flex flex-col items-center justify-center gap-1 py-3 rounded-[14px] text-center"
+                      className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-[14px] text-center"
                       style={{
                         background: "oklch(0.97 0.02 122)",
                         border: "1px solid oklch(0.88 0.05 122)",
                         boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
                       }}
                     >
-                      <CheckCircle2 style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 17, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
                         {acceptedCount}/{MAX_ACCEPTED_CANDIDATES}
                       </span>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
                         התקבלו
                       </span>
                     </div>

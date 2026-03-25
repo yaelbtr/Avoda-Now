@@ -40,8 +40,8 @@ function useCountUp(endValue: number, duration: number, triggered: boolean) {
 const HOW_IT_WORKS_EMPLOYER = [
   {
     step: "01",
-    title: "פרסם משרה",
-    desc: "פרסם משרה בקטגוריה הרצויה.",
+    title: "פרסם מודעה",
+    desc: "פרסם מודעה בקטגוריה הרצויה.",
     imgUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&q=80",
     reverse: false,
   },
@@ -127,7 +127,7 @@ export default function HomeEmployer() {
 
   useSEO({
     title: "מעסיקים — קבל עובדים תוך דקות",
-    description: "הפלטפורמה לעבודות זמניות בישראל. פרסם משרה וקבל עובדים זמינים באזורך ישירות ללא עמלות.",
+    description: "הפלטפורמה לעבודות זמניות בישראל. פרסם מודעה וקבל עובדים זמינים באזורך ישירות ללא עמלות.",
     canonical: "/",
   });
 
@@ -162,7 +162,7 @@ export default function HomeEmployer() {
   const requireLogin = (msg: string) => { saveReturnPath(); setLoginMessage(msg); setLoginOpen(true); };
 
   const handlePostJob = () => {
-    if (!isAuthenticated) { requireLogin("כדי לפרסם משרה יש להתחבר למערכת"); return; }
+    if (!isAuthenticated) { requireLogin("כדי לפרסם מודעה יש להתחבר למערכת"); return; }
     navigate("/post-job");
   };
 
@@ -284,7 +284,7 @@ export default function HomeEmployer() {
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Zap size={15} />
-            פרסם צורך עכשיו
+            פרסם עכשיו
             <motion.span
               animate={{ x: [0, -5, 0] }}
               transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
@@ -469,7 +469,7 @@ export default function HomeEmployer() {
               )}
             </div>
             <p className="text-[11px] font-medium mt-0.5" style={{ color: "oklch(0.85 0.06 80 / 0.75)" }}>
-              {pendingCount > 0 ? `${pendingCount} מועמדויות ממתינות לסקירה` : "לחץ לניהול המשרות ומועמדויות"}
+              {pendingCount > 0 ? `${pendingCount} מועמדויות ממתינות לסקירה` : "לחץ לניהול המודעות ומועמדויות"}
             </p>
           </div>
           <ChevronLeft className="h-4 w-4 flex-shrink-0" style={{ color: "oklch(0.85 0.08 80 / 0.70)", transform: "rotate(180deg)" }} />
@@ -493,7 +493,7 @@ export default function HomeEmployer() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
-              <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום משרה</span>
+              <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום מודעה</span>
             </div>
             {isAuthenticated && activeJobs > 0 && (
               <button
@@ -501,7 +501,7 @@ export default function HomeEmployer() {
                 className="text-[12px] font-semibold px-3 py-1 rounded-full"
                 style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
               >
-                המשרות שלי
+                המודעות שלי
               </button>
             )}
           </div>
@@ -524,9 +524,9 @@ export default function HomeEmployer() {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 text-right">
-              <p className="text-[15px] font-black text-white leading-tight">פרסם משרה דחופה</p>
+              <p className="text-[15px] font-black text-white leading-tight">פרסם מודעה דחופה</p>
               <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
-                עובדים יפנו אליך תוך דקות — ללא עמלות
+                עובדים זמינים יפנו אליך תוך דקות
               </p>
             </div>
             <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
@@ -567,7 +567,7 @@ export default function HomeEmployer() {
                   <Briefcase className="h-4 w-4" style={{ color: "var(--amber)" }} />
                 </div>
                 <div>
-                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>המשרות שלי</p>
+                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>המודעות שלי</p>
                   <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>ניהול ומועמדויות</p>
                 </div>
               </button>
@@ -692,7 +692,7 @@ export default function HomeEmployer() {
           >
             <div className="flex items-center gap-2">
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
-              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המשרות שלי</h2>
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המודעות שלי</h2>
             </div>
             <button
               onClick={() => navigate("/my-jobs")}
@@ -718,8 +718,8 @@ export default function HomeEmployer() {
                 >
                   <Briefcase className="h-7 w-7" style={{ color: "oklch(0.45 0.08 122)" }} />
                 </div>
-                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת משרות</p>
-                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ראשונה וקבל מועמדים תוך דקות</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת מודעות</p>
+                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם מודעה ראשונה וקבל מועמדים תוך דקות</p>
                 <motion.button
                   onClick={handlePostJob}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl font-bold text-[13px]"
@@ -732,7 +732,7 @@ export default function HomeEmployer() {
                   whileTap={{ scale: 0.97 }}
                 >
                   <Plus size={14} />
-                  פרסם משרה ראשונה
+                  פרסם מודעה ראשונה
                 </motion.button>
               </div>
             ) : (
@@ -846,7 +846,7 @@ export default function HomeEmployer() {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   <Plus size={14} />
-                  פרסם משרה חדשה
+                  פרסם מודעה חדשה
                 </motion.button>
               </div>
             )}
@@ -870,7 +870,7 @@ export default function HomeEmployer() {
           </div>
           <div>
             <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
-            <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>קליט עובדים זמניים בשלושה צעדים פשוטים</p>
+            <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>מצא עובדים זמניים בשלושה צעדים פשוטים</p>
           </div>
         </div>
 
@@ -913,7 +913,7 @@ export default function HomeEmployer() {
         </div>
 
         <p className="text-center text-[12px] font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
-          התשלום מתבצע ישירות בינך לבין העובד — ללא עמלות.
+          התשלום מתבצע ישירות בינך לבין העובד.
         </p>
 
         <motion.button
@@ -929,7 +929,7 @@ export default function HomeEmployer() {
           }}
         >
           <Search className="h-4 w-4" style={{ color: "oklch(0.35 0.08 122)" }} />
-          פרסם משרה עכשיו
+          פרסם מודעה עכשיו
         </motion.button>
       </section>
 

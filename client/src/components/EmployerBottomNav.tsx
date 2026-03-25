@@ -5,8 +5,8 @@ import { useUserMode } from "@/contexts/UserModeContext";
 
 const NAV_ITEMS = [
   { href: "/",                  label: "מסך הבית",      icon: Home },
-  { href: "/post-job",          label: "פרסם משרה",     icon: PlusSquare },
-  { href: "/my-jobs",           label: "המשרות שלי",    icon: Briefcase },
+  { href: "/post-job",          label: "פרסם מודעה",     icon: PlusSquare },
+  { href: "/my-jobs",           label: "המודעות שלי",    icon: Briefcase },
   { href: "/available-workers", label: "עובדים זמינים", icon: Users },
 ] as const;
 

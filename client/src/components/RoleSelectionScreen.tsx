@@ -130,10 +130,13 @@ function RoleCard({
           <motion.div
             className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
             style={{
-              background: "oklch(1 0 0 / 0.92)",
+              background: "oklch(1 0 0 / 0.15)",
               color: '#f6b83d',
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
+              backdropFilter: "blur(12px) saturate(180%)",
+              WebkitBackdropFilter: "blur(12px) saturate(180%)",
+              border: "1px solid oklch(1 0 0 / 0.35)",
+              boxShadow: "0 2px 12px oklch(0 0 0 / 0.18), inset 0 1px 0 oklch(1 0 0 / 0.25)",
+              textShadow: "0 1px 2px oklch(0 0 0 / 0.3)",
             }}
             initial={{ opacity: 0, y: 6, scale: 0.9 }}
             animate={{ opacity: 1, y: hovered ? -2 : 0, scale: 1 }}

@@ -56,7 +56,7 @@ type FormData = z.infer<typeof schema>;
 type TabId = "details" | "location" | "conditions" | "publish";
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
-  { id: "details",    label: "פרטי משרה",  icon: FileText  },
+  { id: "details",    label: "פרטי מודעה",  icon: FileText  },
   { id: "location",   label: "מיקום ושעות", icon: Clock     },
   { id: "conditions", label: "תנאים",       icon: Banknote  },
   { id: "publish",    label: "פרסום",       icon: Send      },
@@ -98,8 +98,8 @@ export default function PostJob() {
   const [showDraftBanner, setShowDraftBanner] = useState(false);
 
   useSEO({
-    title: "פרסום משרה",
-    description: "פרסם משרה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
+    title: "פרסום מודעה",
+    description: "פרסם מודעה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
     canonical: "/post-job",
     noIndex: true,
   });
@@ -339,7 +339,7 @@ export default function PostJob() {
       const matchedUrl = `/matched-workers?jobId=${job?.id}`;
       toast.success(
         <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
-          המשרה פורסמה!
+          המודעה פורסמה!
           <a
             href={matchedUrl}
             style={{ color: "#4a5d23", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}
@@ -414,7 +414,7 @@ export default function PostJob() {
     }
     if (!legalAllConfirmed) {
       setLegalCheckboxError(true);
-      toast.error("יש לאשר את התנאים לפני פרסום המשרה");
+      toast.error("יש לאשר את התנאים לפני פרסום המודעה");
       return;
     }
     setLegalCheckboxError(false);
@@ -457,12 +457,12 @@ export default function PostJob() {
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Shield className="h-8 w-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה</h2>
-        <p className="text-muted-foreground mb-6">כדי לפרסם משרה יש להתחבר למערכת עם מספר טלפון</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה</h2>
+        <p className="text-muted-foreground mb-6">כדי לפרסם מודעה יש להתחבר למערכת עם מספר טלפון</p>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setLoginOpen(true)}>
           <Shield className="h-5 w-5" />התחבר למערכת
         </AppButton>
-        <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message="כדי לפרסם משרה יש להתחבר למערכת" />
+        <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message="כדי לפרסם מודעה יש להתחבר למערכת" />
       </div>
     );
   }
@@ -473,10 +473,10 @@ export default function PostJob() {
         <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-amber-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — בקרוב</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — בקרוב</h2>
         <p className="text-muted-foreground mb-4">
           בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
-          אפשרות פרסום משרות למעסיקים תיפתח בקרוב.
+          אפשרות פרסום מודעות למעסיקים תיפתח בקרוב.
         </p>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>חפש עבודה</AppButton>
       </div>
@@ -489,12 +489,12 @@ export default function PostJob() {
         <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-orange-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — למעסיקים</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — למעסיקים</h2>
         <p className="text-muted-foreground mb-6">
-          אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם משרה, עבור למצב מעסיק.
+          אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם מודעה, עבור למצב מעסיק.
         </p>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setUserMode("employer")}>
-          <Briefcase className="h-5 w-5" />עבור למצב מעסיק ופרסם משרה
+          <Briefcase className="h-5 w-5" />עבור למצב מעסיק ופרסם מודעה
         </AppButton>
         <p className="text-xs text-muted-foreground mt-4">תוכל לחזור למצב עובד בכל עת מהתפריט</p>
       </div>
@@ -523,13 +523,13 @@ export default function PostJob() {
               <CheckCircle2 className="h-10 w-10 text-white" />
             </motion.div>
             <motion.h2 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="text-3xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>
-              🎉 המשרה פורסמה!
+              🎉 המודעה פורסמה!
             </motion.h2>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="text-base mb-1" style={{ color: TEXT_MID }}>
               עובדים יוכלו לראות אותה עכשיו
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="text-sm" style={{ color: TEXT_FAINT }}>
-              מעביר אותך לדף המשרה...
+              מעביר אותך לדף המודעה...
             </motion.p>
             <motion.div className="mt-6 rounded-full overflow-hidden" style={{ height: 4, background: C_DARK_CARD }}>
               <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ delay: 0.5, duration: 2.0, ease: "linear" }} style={{ height: "100%", borderRadius: "9999px", background: `linear-gradient(90deg, ${SUCCESS} 0%, ${BRAND} 100%)` }} />
@@ -576,7 +576,7 @@ export default function PostJob() {
           : !!(currentSalary && parseFloat(currentSalary) > 0);
         if (!hasSalary) {
           setSalaryError(true);
-          toast.error("אנא הזן שכר למשרה");
+          toast.error("אנא הזן שכר למודעה");
           return;
         }
       }
@@ -660,7 +660,7 @@ export default function PostJob() {
           {isDuplicate && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center gap-3 text-sm">
               <Copy className="h-4 w-4 text-blue-500 shrink-0" />
-              <span className="text-blue-700">הטופס מולא מראש עם פרטי המשרה הקודמת. ערוך ופרסם.</span>
+              <span className="text-blue-700">הטופס מולא מראש עם פרטי המודעה הקודמת. ערוך ופרסם.</span>
             </div>
           )}
 
@@ -737,12 +737,12 @@ export default function PostJob() {
                   <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
                     <h2 className="font-bold text-foreground text-right flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" />
-                      פרטי המשרה
+                      פרטי המודעה
                     </h2>
 
                     <AppInput
                       id="title"
-                      label="כותרת המשרה"
+                      label="כותרת המודעה"
                       required
                       placeholder="לדוגמה: שליח/ה דחופ/ת"
                       dir="rtl"
@@ -767,7 +767,7 @@ export default function PostJob() {
                       >
                         <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                         <span className="font-medium">
-                          משרה זו לא תוצג לעובדים מתחת לגיל 18
+                          מודעה זו לא תוצג לעובדים מתחת לגיל 18
                           {categoryBlocksMinors && hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: קטגוריה מוגבלת לקטינים + שעת סיום לאחר 22:00</span>}
                           {categoryBlocksMinors && !hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: קטגוריה זו אינה מותרת לעבודת קטינים</span>}
                           {!categoryBlocksMinors && hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: שעת סיום לאחר 22:00 (חוק עבודת נוער)</span>}
@@ -777,9 +777,9 @@ export default function PostJob() {
 
                     <AppTextarea
                       id="description"
-                      label="תיאור המשרה"
+                      label="תיאור המודעה"
                       required
-                      placeholder="תאר את המשרה, דרישות, שעות עבודה וכל מידע רלוונט…"
+                      placeholder="תאר את המודעה, דרישות, שעות עבודה וכל מידע רלוונט…"
                       rows={4}
                       dir="rtl"
                       {...register("description")}
@@ -862,7 +862,7 @@ export default function PostJob() {
                                 : "bg-background text-muted-foreground hover:bg-muted"
                             }`}
                           >
-                            {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המשרה"}
+                            {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המודעה"}
                             {addressDone && (
                               <span
                                 className="flex items-center justify-center rounded-full shrink-0"
@@ -1105,7 +1105,7 @@ export default function PostJob() {
                             <circle cx="7" cy="9.5" r="0.65" fill="currentColor" />
                           </svg>
                           <span>
-                            משרה זו לא תוצג לעובדים מתחת לגיל 18 בשל חוק עבודת נוער.
+                            מודעה זו לא תוצג לעובדים מתחת לגיל 18 בשל חוק עבודת נוער.
                             {" "}
                             <a
                               href="https://www.gov.il/he/departments/guides/working_youth"
@@ -1502,7 +1502,7 @@ export default function PostJob() {
             const matchedUrl = jobId ? `/matched-workers?jobId=${jobId}` : "/my-jobs";
             toast.success(
               <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
-                המשרה פורסמה!
+                המודעה פורסמה!
                 {jobId && (
                   <a
                     href={matchedUrl}

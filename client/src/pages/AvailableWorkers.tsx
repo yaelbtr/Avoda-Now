@@ -77,7 +77,7 @@ function JobPickerDropdown({ workerId, activeJobs, offeredJobIds, onClose, onOff
   const sendOffer = trpc.jobs.sendJobOffer.useMutation({
     onSuccess: (data, vars) => {
       if (data.alreadyExists) {
-        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
+        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור מודעה זו.");
       } else {
         toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
         onOfferSent(vars.jobId);
@@ -101,7 +101,7 @@ function JobPickerDropdown({ workerId, activeJobs, offeredJobIds, onClose, onOff
       }}
     >
       <p className="text-[11px] font-semibold px-3 pt-2.5 pb-1.5" style={{ color: "oklch(0.45 0.06 122)" }}>
-        בחר משרה לשליחת הצעה:
+        בחר מודעה לשליחת הצעה:
       </p>
       {activeJobs.map((job) => {
         const alreadyOffered = offeredJobIds.has(job.id);
@@ -115,7 +115,7 @@ function JobPickerDropdown({ workerId, activeJobs, offeredJobIds, onClose, onOff
           >
             <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
             <span className="flex-1 text-[12px] font-medium truncate" style={{ color: "#171f01" }}>
-              {job.title ?? job.category ?? `משרה #${job.id}`}
+              {job.title ?? job.category ?? `מודעה #${job.id}`}
             </span>
             {alreadyOffered ? (
               <span
@@ -166,7 +166,7 @@ function WorkerContactSection({
   const sendOffer = trpc.jobs.sendJobOffer.useMutation({
     onSuccess: (data, vars) => {
       if (data.alreadyExists) {
-        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
+        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור מודעה זו.");
       } else {
         toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
         onOfferSent(workerId, vars.jobId);
@@ -188,7 +188,7 @@ function WorkerContactSection({
 
     if (activeJobs.length === 1) {
       if (offeredJobIds.has(activeJobs[0].id)) {
-        toast.info("כבר שלחת הצעה לעובד זה עבור המשרה הפעילה שלך.");
+        toast.info("כבר שלחת הצעה לעובד זה עבור המודעה הפעילה שלך.");
         return;
       }
       sendOffer.mutate({ jobId: activeJobs[0].id, workerId, origin: window.location.origin });
@@ -202,11 +202,11 @@ function WorkerContactSection({
   const noJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length === 0;
 
   const btnLabel = noJobs
-    ? "פרסם משרה לקשר"
+    ? "פרסם מודעה לקשר"
     : isSending
     ? "שולח..."
     : allJobsOffered
-    ? "הצעה נשלחה לכל המשרות"
+    ? "הצעה נשלחה לכל המודעות"
     : "שלח בקשה לעובד";
 
   const BtnIcon = noJobs ? Briefcase : isSending ? Loader2 : allJobsOffered ? CheckCircle2 : Send;
@@ -221,7 +221,7 @@ function WorkerContactSection({
           style={{ color: "oklch(0.42 0.14 145)" }}
         >
           <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-          הצעה נשלחה לחלק מהמשרות
+          הצעה נשלחה לחלק מהמודעות
         </div>
       )}
 
@@ -486,7 +486,7 @@ export default function AvailableWorkers() {
           <div className="flex items-center gap-2 text-sm" style={{ color: "oklch(0.38 0.12 145)" }}>
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>
-              <strong>{activeJobs.length}</strong> {activeJobs.length === 1 ? "משרה פעילה" : "משרות פעילות"}
+              <strong>{activeJobs.length}</strong> {activeJobs.length === 1 ? "מודעה פעילה" : "מודעות פעילות"}
             </span>
           </div>
 

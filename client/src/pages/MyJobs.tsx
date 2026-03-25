@@ -538,8 +538,8 @@ export default function MyJobs() {
   const [autoExpandDone, setAutoExpandDone] = useState(false);
 
   useSEO({
-    title: "המשרות שלי",
-    description: "נהל את המשרות שפרסמת וצפה במועמדים.",
+    title: "המודעות שלי",
+    description: "נהל את המודעות שפרסמת וצפה במועמדים.",
     canonical: "/my-jobs",
     noIndex: true,
   });
@@ -584,7 +584,7 @@ export default function MyJobs() {
   });
 
   const deleteJob = trpc.jobs.delete.useMutation({
-    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); setDeleteId(null); toast.success("המשרה נמחקה"); },
+    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); setDeleteId(null); toast.success("המודעה נמחקה"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -618,10 +618,10 @@ export default function MyJobs() {
           <Briefcase className="h-8 w-8" style={{ color: "oklch(0.38 0.07 125.0)" }} />
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2" style={{ color: "oklch(0.20 0.04 120)" }}>ניהול משרות — בקרוב</h2>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "oklch(0.20 0.04 120)" }}>ניהול מודעות — בקרוב</h2>
           <p className="text-sm" style={{ color: "oklch(0.50 0.04 120)" }}>
             בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
-            אפשרות ניהול משרות למעסיקים תיפתח בקרוב.
+            אפשרות ניהול מודעות למעסיקים תיפתח בקרוב.
           </p>
         </div>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>
@@ -670,10 +670,10 @@ export default function MyJobs() {
                 className="text-xl font-black leading-tight"
                 style={{ color: "white", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}
               >
-                המשרות שלי
+                המודעות שלי
               </h1>
               <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 3px rgba(0,0,0,0.30)" }}>
-                {isLoading ? "טוען..." : `${activeJobs.length}/3 משרות פעילות`}
+                {isLoading ? "טוען..." : `${activeJobs.length}/3 מודעות פעילות`}
               </p>
             </div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
@@ -697,7 +697,7 @@ export default function MyJobs() {
                 <span className="text-xl font-black" style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
                   {myJobs.length}
                 </span>
-                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>משרות סה"כ</span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>מודעות סה"כ</span>
               </div>
               <div style={{ width: 1, height: 32, background: "oklch(1 0 0 / 0.20)" }} />
               <div className="flex flex-col items-center gap-0.5">
@@ -825,12 +825,12 @@ export default function MyJobs() {
             </motion.div>
             <p className="font-bold text-lg mb-1" style={{ color: "oklch(0.20 0.04 120)" }}>אין לך משרות עדיין</p>
             <p className="text-sm mb-6" style={{ color: "oklch(0.50 0.04 120)" }}>
-              פרסם את המשרה הראשונה שלך ומצא עובדים תוך דקות
+              פרסם את המודעה הראשונה שלך ומצא עובדים תוך דקות
             </p>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
               <AppButton variant="brand" className="gap-2" onClick={() => navigate("/post-job")}>
                 <PlusCircle className="h-4 w-4" />
-                פרסם את המשרה הראשונה שלך
+                פרסם את המודעה הראשונה שלך
               </AppButton>
             </motion.div>
           </motion.div>
@@ -921,7 +921,7 @@ export default function MyJobs() {
                           disabled={updateStatus.isPending}
                           className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
                           style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)", opacity: updateStatus.isPending ? 0.6 : 1 }}
-                          title="סגור משרה"
+                          title="סגור מודעה"
                         >
                           <XCircle className="h-3.5 w-3.5" />
                         </button>
@@ -1109,9 +1109,9 @@ export default function MyJobs() {
       <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>מחיקת משרה</AlertDialogTitle>
+            <AlertDialogTitle>מחיקת מודעה</AlertDialogTitle>
             <AlertDialogDescription>
-              האם אתה בטוח שברצונך למחוק את המשרה? פעולה זו אינה ניתנת לביטול.
+              האם אתה בטוח שברצונך למחוק את המודעה? פעולה זו אינה ניתנת לביטול.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 sm:flex-row" dir="rtl">

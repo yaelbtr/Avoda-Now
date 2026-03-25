@@ -40,15 +40,15 @@ function useCountUp(endValue: number, duration: number, triggered: boolean) {
 const HOW_IT_WORKS_EMPLOYER = [
   {
     step: "01",
-    title: "פרסם משרה או בחר עובד זמין",
-    desc: "פרסם משרה בקטגוריה הרצויה, או גלוש לרשימת העובדים הזמינים באזורך ושלח הצעה ישירות.",
+    title: "פרסם משרה",
+    desc: "פרסם משרה בקטגוריה הרצויה.",
     imgUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&q=80",
     reverse: false,
   },
   {
     step: "02",
-    title: "שלח הצעת עבודה לעובד",
-    desc: "בחר עובד מהרשימה ושלח לו הצעת עבודה — העובד מחליט אם לאשר.",
+    title: "קבל הצעות מעובדים או בחר בעצמך",
+    desc: "המערכת תסנן עבורך עובדים מתאימים, תוכל לבחור עובד או לקבל הצעות מעובדים.",
     imgUrl: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=200&q=80",
     reverse: true,
   },

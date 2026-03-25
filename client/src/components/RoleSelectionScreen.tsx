@@ -127,7 +127,7 @@ function RoleCard({
             className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
             style={{
               background: "oklch(1 0 0 / 0.92)",
-              color: C_BRAND,
+              color: '#f6b83d',
               backdropFilter: "blur(8px)",
               boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
             }}

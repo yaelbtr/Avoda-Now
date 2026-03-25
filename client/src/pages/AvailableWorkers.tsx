@@ -6,11 +6,12 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { MapPin, Users, Clock, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer, Briefcase } from "lucide-react";
+import { MapPin, Users, Clock, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer, Briefcase, Send, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
 import { useCountdown } from "@/hooks/useCountdown";
+import { AnimatePresence, motion } from "framer-motion";
 
 function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -30,16 +31,15 @@ function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | strin
   const countdown = useCountdown(availableUntil);
   if (!countdown) return null;
 
-  // Determine urgency: < 30 minutes remaining → amber, < 10 min → red
   const msLeft = availableUntil ? new Date(availableUntil).getTime() - Date.now() : 0;
   const isUrgent = msLeft < 30 * 60_000;
   const isCritical = msLeft < 10 * 60_000;
 
   const color = isCritical
-    ? "oklch(0.55 0.20 25)"   // red
+    ? "oklch(0.55 0.20 25)"
     : isUrgent
-    ? "oklch(0.60 0.18 60)"   // amber
-    : "oklch(0.42 0.18 150)"; // green
+    ? "oklch(0.60 0.18 60)"
+    : "oklch(0.42 0.18 150)";
 
   const bg = isCritical
     ? "oklch(0.97 0.04 25)"
@@ -59,6 +59,189 @@ function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | strin
   );
 }
 
+// ── Job picker for sending an offer ──────────────────────────────────────────
+type ActiveJob = {
+  id: number;
+  title: string | null;
+  category: string | null;
+  status: string;
+};
+
+type JobPickerProps = {
+  workerId: number;
+  activeJobs: ActiveJob[];
+  onClose: () => void;
+};
+
+function JobPickerDropdown({ workerId, activeJobs, onClose }: JobPickerProps) {
+  const sendOffer = trpc.jobs.sendJobOffer.useMutation({
+    onSuccess: (data) => {
+      if (data.alreadyExists) {
+        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
+      } else {
+        toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
+      }
+      onClose();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="mt-2 rounded-xl overflow-hidden"
+      style={{
+        border: "1px solid oklch(0.88 0.05 122)",
+        background: "white",
+        boxShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)",
+      }}
+    >
+      <p className="text-[11px] font-semibold px-3 pt-2.5 pb-1.5" style={{ color: "oklch(0.45 0.06 122)" }}>
+        בחר משרה לשליחת הצעה:
+      </p>
+      {activeJobs.map((job) => (
+        <button
+          key={job.id}
+          disabled={sendOffer.isPending}
+          onClick={() =>
+            sendOffer.mutate({
+              jobId: job.id,
+              workerId,
+              origin: window.location.origin,
+            })
+          }
+          className="w-full flex items-center gap-2 px-3 py-2.5 text-right hover:bg-[oklch(0.97_0.012_100)] transition-colors disabled:opacity-60"
+          style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}
+        >
+          <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+          <span className="flex-1 text-[12px] font-medium truncate" style={{ color: "#171f01" }}>
+            {job.title ?? job.category ?? `משרה #${job.id}`}
+          </span>
+          {sendOffer.isPending && sendOffer.variables?.jobId === job.id ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+          ) : (
+            <Send className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+          )}
+        </button>
+      ))}
+    </motion.div>
+  );
+}
+
+// ── Contact section per worker card ──────────────────────────────────────────
+type ContactSectionProps = {
+  workerId: number;
+  isAuthenticated: boolean;
+  isEmployer: boolean;
+  activeJobs: ActiveJob[];
+  jobsLoading: boolean;
+  onLoginRequired: () => void;
+};
+
+function WorkerContactSection({
+  workerId,
+  isAuthenticated,
+  isEmployer,
+  activeJobs,
+  jobsLoading,
+  onLoginRequired,
+}: ContactSectionProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const sendOffer = trpc.jobs.sendJobOffer.useMutation({
+    onSuccess: (data) => {
+      if (data.alreadyExists) {
+        toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
+      } else {
+        toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
+      }
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const [, navigate] = useLocation();
+
+  const handleClick = () => {
+    if (!isAuthenticated) { saveReturnPath(); onLoginRequired(); return; }
+    if (!isEmployer) {
+      toast.info("רק מעסיקים יכולים לשלוח הצעות עבודה.");
+      return;
+    }
+    if (jobsLoading) return;
+
+    if (activeJobs.length === 0) {
+      // No active jobs → redirect to post job
+      navigate("/post-job");
+      return;
+    }
+
+    if (activeJobs.length === 1) {
+      // Exactly one active job → send offer immediately
+      sendOffer.mutate({
+        jobId: activeJobs[0].id,
+        workerId,
+        origin: window.location.origin,
+      });
+      return;
+    }
+
+    // Multiple active jobs → toggle picker
+    setPickerOpen((v) => !v);
+  };
+
+  const isSending = sendOffer.isPending;
+  const noJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length === 0;
+  const multipleJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length > 1;
+
+  const btnLabel = noJobs
+    ? "פרסם משרה לקשר"
+    : isSending
+    ? "שולח..."
+    : "שלח בקשה לעובד";
+
+  const BtnIcon = noJobs ? Briefcase : isSending ? Loader2 : Send;
+
+  return (
+    <div className="mt-3">
+      <AppButton
+        size="sm"
+        className="w-full gap-1.5 text-xs"
+        disabled={isSending || jobsLoading}
+        onClick={handleClick}
+        style={{
+          background: noJobs ? "oklch(0.55 0.04 100)" : "oklch(0.35 0.08 122)",
+          color: "white",
+          border: `1px solid ${noJobs ? "oklch(0.48 0.04 100)" : "oklch(0.28 0.06 122)"}`,
+          opacity: jobsLoading ? 0.7 : 1,
+        }}
+      >
+        <BtnIcon className={`h-3.5 w-3.5 ${isSending ? "animate-spin" : ""}`} />
+        {btnLabel}
+        {multipleJobs && !isSending && (
+          pickerOpen
+            ? <ChevronUp className="h-3.5 w-3.5 mr-auto" />
+            : <ChevronDown className="h-3.5 w-3.5 mr-auto" />
+        )}
+      </AppButton>
+
+      {/* Job picker dropdown for multiple active jobs */}
+      <AnimatePresence>
+        {pickerOpen && multipleJobs && (
+          <JobPickerDropdown
+            workerId={workerId}
+            activeJobs={activeJobs}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function AvailableWorkers() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
@@ -78,26 +261,33 @@ export default function AvailableWorkers() {
     }
   }, []);
 
-  // Fetch employer profile to get minWorkerAge preference.
-  // Only enabled when the user is authenticated and in employer mode.
   const isEmployer = isAuthenticated && userMode === "employer";
+
+  // Employer profile (for minWorkerAge, saved location)
   const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
     enabled: isEmployer,
     staleTime: 60_000,
   });
   const minWorkerAge = isEmployer ? (employerProfileQuery.data?.minWorkerAge ?? null) : null;
-  // Initialize radiusKm from employer's saved preference (user can still change it manually)
   const savedRadiusKm = isEmployer ? (employerProfileQuery.data?.workerSearchRadiusKm ?? null) : null;
   useEffect(() => {
     if (savedRadiusKm !== null) setRadiusKm(savedRadiusKm);
   }, [savedRadiusKm]);
-  // Use employer's saved search coordinates as fallback (preferred over Jerusalem default)
   const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
     ? parseFloat(employerProfileQuery.data.workerSearchLatitude)
     : null;
   const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
     ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
     : null;
+
+  // Employer's active jobs (only fetched when authenticated employer)
+  const myJobsQuery = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
+    enabled: isEmployer,
+    staleTime: 30_000,
+  });
+  const activeJobs: ActiveJob[] = (myJobsQuery.data ?? []).filter(
+    (j) => j.status === "active"
+  );
 
   const getLocation = () => {
     setLocating(true);
@@ -112,7 +302,6 @@ export default function AvailableWorkers() {
     );
   };
 
-  // Priority: live GPS > employer saved location > Jerusalem default
   const effectiveLat = userLat ?? savedLat ?? 31.7683;
   const effectiveLng = userLng ?? savedLng ?? 35.2137;
   const workersQuery = trpc.workers.nearby.useQuery(
@@ -121,7 +310,6 @@ export default function AvailableWorkers() {
   );
 
   const workers = workersQuery.data ?? [];
-
 
   const calcDistance = (workerLat: string, workerLng: string) => {
     if (!userLat || !userLng) return null;
@@ -143,7 +331,7 @@ export default function AvailableWorkers() {
           עובדים זמינים עכשיו
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          אנשים שסימנו שהם פנויים לעבוד  עכשיו
+          אנשים שסימנו שהם פנויים לעבוד עכשיו
         </p>
       </div>
 
@@ -185,12 +373,29 @@ export default function AvailableWorkers() {
         )}
       </div>
 
-      {/* Age filter indicator — shown only when employer has set a minWorkerAge */}
+      {/* Age filter indicator */}
       {minWorkerAge && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2 text-sm text-amber-800">
           <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
           <span>
             מסנן גיל פעיל: מוצגים רק עובדים בני <strong>{minWorkerAge}+</strong> (לפי הגדרות הפרופיל שלך)
+          </span>
+        </div>
+      )}
+
+      {/* Active jobs summary banner — shown only to employers with active jobs */}
+      {isEmployer && !myJobsQuery.isLoading && activeJobs.length > 0 && (
+        <div
+          className="rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2 text-sm"
+          style={{
+            background: "oklch(0.97 0.04 145 / 0.35)",
+            border: "1px solid oklch(0.85 0.08 145 / 0.4)",
+            color: "oklch(0.38 0.12 145)",
+          }}
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>
+            יש לך <strong>{activeJobs.length}</strong> {activeJobs.length === 1 ? "משרה פעילה" : "משרות פעילות"} — תוכל לשלוח הצעות עבודה ישירות לעובדים
           </span>
         </div>
       )}
@@ -244,7 +449,6 @@ export default function AvailableWorkers() {
                             {relativeTime(worker.createdAt)}
                           </span>
                         </div>
-                        {/* Live countdown badge */}
                         {worker.availableUntil && (
                           <div className="mt-1">
                             <WorkerCountdownBadge availableUntil={worker.availableUntil} />
@@ -263,26 +467,15 @@ export default function AvailableWorkers() {
                     </div>
                   </div>
 
-                  {/* Contact via job posting — phone numbers are not exposed directly.
-                      To contact a worker, the employer must post a job and accept their application. */}
-                  <div className="flex gap-2 mt-3">
-                    <AppButton
-                      size="sm"
-                      className="flex-1 gap-1.5 text-xs"
-                      onClick={() => {
-                        if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
-                        navigate("/post-job");
-                      }}
-                      style={{
-                        background: "oklch(0.35 0.08 122)",
-                        color: "white",
-                        border: "1px solid oklch(0.28 0.06 122)",
-                      }}
-                    >
-                      <Briefcase className="h-3.5 w-3.5" />
-                      פרסם משרה לקשר
-                    </AppButton>
-                  </div>
+                  {/* Smart contact section */}
+                  <WorkerContactSection
+                    workerId={worker.id}
+                    isAuthenticated={isAuthenticated}
+                    isEmployer={isEmployer}
+                    activeJobs={activeJobs}
+                    jobsLoading={myJobsQuery.isLoading}
+                    onLoginRequired={() => setLoginOpen(true)}
+                  />
                 </div>
               );
             })}
@@ -299,7 +492,7 @@ export default function AvailableWorkers() {
         </div>
       </div>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message="כדי ליצור קשר עם עובדים יש להתחבר למערכת" />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message="כדי לשלוח הצעות עבודה יש להתחבר למערכת" />
     </div>
   );
 }

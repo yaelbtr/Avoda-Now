@@ -3518,3 +3518,6 @@ Isolation guarantees:
 
 ## MyJobs — Phone Reveal Animation
 - [x] Add slide-down animation (AnimatePresence + motion.div) to phone number reveal row
+
+## MyJobs — Matched Workers Button
+- [x] Center the "הצג עובדים מתאימים" button (text already updated by visual editor)

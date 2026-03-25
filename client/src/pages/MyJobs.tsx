@@ -923,16 +923,16 @@ export default function MyJobs() {
                     </div>
                   </div>
 
-                  {/* Matched workers link — right-aligned, arrow left */}
+                  {/* Matched workers link — centered */}
                   {job.status === "active" && (
-                    <div className="flex justify-end mb-1">
+                    <div className="flex justify-center mb-1">
                       <button
                         onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
                         className="flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-70"
                         style={{ color: "#4a5d23" }}
                       >
                         <Sparkles className="h-3 w-3" />
-                        עובדים מתאימים ←
+                        הצג עובדים מתאימים
                       </button>
                     </div>
                   )}

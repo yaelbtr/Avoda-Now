@@ -290,10 +290,10 @@ function ApplicantCard({
               onClick={() => onAccept(app.id)}
               className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-bold transition-all"
               style={{
-                background: "oklch(0.38 0.07 125.0)",
+                background: "oklch(0.52 0.18 145)",
                 color: "white",
                 border: "none",
-                boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.28)",
+                boxShadow: "0 2px 10px oklch(0.52 0.18 145 / 0.35)",
                 opacity: isPending ? 0.7 : 1,
               }}
             >
@@ -306,9 +306,9 @@ function ApplicantCard({
             onClick={() => onReject(app.id)}
             className="flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all"
             style={{
-              background: "oklch(0.93 0.02 91.6)",
-              color: "oklch(0.50 0.04 100)",
-              border: "1px solid oklch(0.85 0.03 91.6)",
+              background: "oklch(0.97 0.01 20)",
+              color: "oklch(0.48 0.20 22)",
+              border: "1.5px solid oklch(0.75 0.16 22 / 0.45)",
               opacity: isPending ? 0.7 : 1,
             }}
           >
@@ -325,9 +325,9 @@ function ApplicantCard({
             <button
               className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
               style={{
-                background: "oklch(0.38 0.07 125.0 / 0.08)",
-                border: "1px solid oklch(0.38 0.07 125.0 / 0.20)",
-                color: "oklch(0.38 0.07 125.0)",
+                background: "oklch(0.55 0.18 240 / 0.10)",
+                border: "1.5px solid oklch(0.55 0.18 240 / 0.35)",
+                color: "oklch(0.38 0.18 240)",
               }}
             >
               <Phone className="h-3.5 w-3.5" />
@@ -343,9 +343,10 @@ function ApplicantCard({
             <button
               className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
               style={{
-                background: "oklch(0.65 0.22 160 / 0.08)",
-                border: "1px solid oklch(0.65 0.22 160 / 0.20)",
-                color: "oklch(0.52 0.22 150)",
+                background: "oklch(0.52 0.18 145)",
+                border: "none",
+                color: "white",
+                boxShadow: "0 2px 8px oklch(0.52 0.18 145 / 0.30)",
               }}
             >
               <MessageCircle className="h-3.5 w-3.5" />
@@ -399,9 +400,9 @@ function ApplicantCard({
                 <button
                   className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
                   style={{
-                    background: "oklch(0.38 0.07 125.0 / 0.08)",
-                    border: "1px solid oklch(0.38 0.07 125.0 / 0.20)",
-                    color: "oklch(0.38 0.07 125.0)",
+                    background: "oklch(0.55 0.18 240 / 0.10)",
+                    border: "1.5px solid oklch(0.55 0.18 240 / 0.35)",
+                    color: "oklch(0.38 0.18 240)",
                   }}
                 >
                   <Phone className="h-3.5 w-3.5" />
@@ -417,9 +418,10 @@ function ApplicantCard({
                 <button
                   className="w-full flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-xl font-semibold transition-all"
                   style={{
-                    background: "oklch(0.65 0.22 160 / 0.08)",
-                    border: "1px solid oklch(0.65 0.22 160 / 0.20)",
-                    color: "oklch(0.52 0.22 150)",
+                    background: "oklch(0.52 0.18 145)",
+                    border: "none",
+                    color: "white",
+                    boxShadow: "0 2px 8px oklch(0.52 0.18 145 / 0.30)",
                   }}
                 >
                   <MessageCircle className="h-3.5 w-3.5" />

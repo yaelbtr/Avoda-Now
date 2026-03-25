@@ -3452,3 +3452,9 @@ Isolation guarantees:
 - [x] Add acceptedCount per job to getMyJobs query (batch via countAcceptedCandidates or subquery)
 - [x] Add acceptedCount to Job type in MyJobs page
 - [x] Render X/3 counter badge on job card in MyJobs
+
+## Button Visual Differentiation in JobApplications
+- [x] Accept button: green filled (primary action)
+- [x] Reject button: red/muted destructive outline
+- [x] WhatsApp button: WhatsApp green brand color (filled)
+- [x] Phone button: blue outline distinct from accept/reject

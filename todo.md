@@ -3461,3 +3461,6 @@ Isolation guarantees:
 
 ## Phone/WhatsApp Link Style in JobApplications
 - [x] Phone and WhatsApp buttons styled as inline text links (underline, no background/border)
+
+## Disable /jobs/:id/applications navigation
+- [x] Remove all links and navigate() calls pointing to /jobs/:id/applications

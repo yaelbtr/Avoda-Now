@@ -293,11 +293,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
           </motion.div>
         );
       })}
-      <div className="pt-2 text-center">
-        <a href={`/jobs/${jobId}/applications`} className="text-xs underline" style={{ color: "oklch(0.50 0.14 85)" }}>
-          צפה בכל המועמדים בדף מלא →
-        </a>
-      </div>
+
     </div>
   );
 }

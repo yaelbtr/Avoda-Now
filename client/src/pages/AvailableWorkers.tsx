@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,12 +6,18 @@ import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
-import { MapPin, Users, Clock, AlertCircle, LocateFixed, Loader2, ShieldCheck, Timer, Briefcase, Send, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import {
+  MapPin, Users, Clock, AlertCircle, LocateFixed, Loader2,
+  ShieldCheck, Timer, Briefcase, Send, ChevronDown, ChevronUp,
+  CheckCircle2, EyeOff, Eye,
+} from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { formatDistance } from "@shared/categories";
 import { toast } from "sonner";
 import { useCountdown } from "@/hooks/useCountdown";
 import { AnimatePresence, motion } from "framer-motion";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function relativeTime(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
@@ -22,11 +28,8 @@ function relativeTime(date: Date | string): string {
   return `זמין מלפני ${hrs === 1 ? "שעה" : hrs + " שעות"}`;
 }
 
-/**
- * Live countdown badge for a worker card.
- * Shows "נשאר HH:MM:SS" ticking every second.
- * Renders nothing once the time has expired.
- */
+// ── WorkerCountdownBadge ──────────────────────────────────────────────────────
+
 function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | string | null | undefined }) {
   const countdown = useCountdown(availableUntil);
   if (!countdown) return null;
@@ -35,17 +38,8 @@ function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | strin
   const isUrgent = msLeft < 30 * 60_000;
   const isCritical = msLeft < 10 * 60_000;
 
-  const color = isCritical
-    ? "oklch(0.55 0.20 25)"
-    : isUrgent
-    ? "oklch(0.60 0.18 60)"
-    : "oklch(0.42 0.18 150)";
-
-  const bg = isCritical
-    ? "oklch(0.97 0.04 25)"
-    : isUrgent
-    ? "oklch(0.97 0.04 60)"
-    : "oklch(0.97 0.04 150)";
+  const color = isCritical ? "oklch(0.55 0.20 25)" : isUrgent ? "oklch(0.60 0.18 60)" : "oklch(0.42 0.18 150)";
+  const bg = isCritical ? "oklch(0.97 0.04 25)" : isUrgent ? "oklch(0.97 0.04 60)" : "oklch(0.97 0.04 150)";
 
   return (
     <span
@@ -59,7 +53,8 @@ function WorkerCountdownBadge({ availableUntil }: { availableUntil: Date | strin
   );
 }
 
-// ── Job picker for sending an offer ──────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 type ActiveJob = {
   id: number;
   title: string | null;
@@ -67,19 +62,25 @@ type ActiveJob = {
   status: string;
 };
 
+// ── JobPickerDropdown ─────────────────────────────────────────────────────────
+
 type JobPickerProps = {
   workerId: number;
   activeJobs: ActiveJob[];
+  /** jobIds already offered to this worker */
+  offeredJobIds: Set<number>;
   onClose: () => void;
+  onOfferSent: (jobId: number) => void;
 };
 
-function JobPickerDropdown({ workerId, activeJobs, onClose }: JobPickerProps) {
+function JobPickerDropdown({ workerId, activeJobs, offeredJobIds, onClose, onOfferSent }: JobPickerProps) {
   const sendOffer = trpc.jobs.sendJobOffer.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data, vars) => {
       if (data.alreadyExists) {
         toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
       } else {
         toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
+        onOfferSent(vars.jobId);
       }
       onClose();
     },
@@ -102,43 +103,51 @@ function JobPickerDropdown({ workerId, activeJobs, onClose }: JobPickerProps) {
       <p className="text-[11px] font-semibold px-3 pt-2.5 pb-1.5" style={{ color: "oklch(0.45 0.06 122)" }}>
         בחר משרה לשליחת הצעה:
       </p>
-      {activeJobs.map((job) => (
-        <button
-          key={job.id}
-          disabled={sendOffer.isPending}
-          onClick={() =>
-            sendOffer.mutate({
-              jobId: job.id,
-              workerId,
-              origin: window.location.origin,
-            })
-          }
-          className="w-full flex items-center gap-2 px-3 py-2.5 text-right hover:bg-[oklch(0.97_0.012_100)] transition-colors disabled:opacity-60"
-          style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}
-        >
-          <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
-          <span className="flex-1 text-[12px] font-medium truncate" style={{ color: "#171f01" }}>
-            {job.title ?? job.category ?? `משרה #${job.id}`}
-          </span>
-          {sendOffer.isPending && sendOffer.variables?.jobId === job.id ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
-          ) : (
-            <Send className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
-          )}
-        </button>
-      ))}
+      {activeJobs.map((job) => {
+        const alreadyOffered = offeredJobIds.has(job.id);
+        return (
+          <button
+            key={job.id}
+            disabled={sendOffer.isPending || alreadyOffered}
+            onClick={() => sendOffer.mutate({ jobId: job.id, workerId, origin: window.location.origin })}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-right hover:bg-[oklch(0.97_0.012_100)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }}
+          >
+            <Briefcase className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+            <span className="flex-1 text-[12px] font-medium truncate" style={{ color: "#171f01" }}>
+              {job.title ?? job.category ?? `משרה #${job.id}`}
+            </span>
+            {alreadyOffered ? (
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0"
+                style={{ background: "oklch(0.94 0.06 145 / 0.4)", color: "oklch(0.38 0.15 145)" }}
+              >
+                נשלחה
+              </span>
+            ) : sendOffer.isPending && sendOffer.variables?.jobId === job.id ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+            ) : (
+              <Send className="h-3.5 w-3.5 shrink-0" style={{ color: "oklch(0.42 0.10 122)" }} />
+            )}
+          </button>
+        );
+      })}
     </motion.div>
   );
 }
 
-// ── Contact section per worker card ──────────────────────────────────────────
+// ── WorkerContactSection ──────────────────────────────────────────────────────
+
 type ContactSectionProps = {
   workerId: number;
   isAuthenticated: boolean;
   isEmployer: boolean;
   activeJobs: ActiveJob[];
   jobsLoading: boolean;
+  /** jobIds already offered to this worker (from getOfferedWorkerIds) */
+  offeredJobIds: Set<number>;
   onLoginRequired: () => void;
+  onOfferSent: (workerId: number, jobId: number) => void;
 };
 
 function WorkerContactSection({
@@ -147,80 +156,99 @@ function WorkerContactSection({
   isEmployer,
   activeJobs,
   jobsLoading,
+  offeredJobIds,
   onLoginRequired,
+  onOfferSent,
 }: ContactSectionProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [, navigate] = useLocation();
 
   const sendOffer = trpc.jobs.sendJobOffer.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data, vars) => {
       if (data.alreadyExists) {
         toast.info("הצעת עבודה כבר נשלחה לעובד זה עבור משרה זו.");
       } else {
         toast.success("הצעת העבודה נשלחה לעובד! הוא יקבל התראה.");
+        onOfferSent(workerId, vars.jobId);
       }
     },
     onError: (e) => toast.error(e.message),
   });
 
-  const [, navigate] = useLocation();
+  // All active jobs already offered to this worker
+  const allJobsOffered = activeJobs.length > 0 && activeJobs.every((j) => offeredJobIds.has(j.id));
+  const someJobsOffered = activeJobs.some((j) => offeredJobIds.has(j.id));
 
   const handleClick = () => {
     if (!isAuthenticated) { saveReturnPath(); onLoginRequired(); return; }
-    if (!isEmployer) {
-      toast.info("רק מעסיקים יכולים לשלוח הצעות עבודה.");
-      return;
-    }
+    if (!isEmployer) { toast.info("רק מעסיקים יכולים לשלוח הצעות עבודה."); return; }
     if (jobsLoading) return;
 
-    if (activeJobs.length === 0) {
-      // No active jobs → redirect to post job
-      navigate("/post-job");
-      return;
-    }
+    if (activeJobs.length === 0) { navigate("/post-job"); return; }
 
     if (activeJobs.length === 1) {
-      // Exactly one active job → send offer immediately
-      sendOffer.mutate({
-        jobId: activeJobs[0].id,
-        workerId,
-        origin: window.location.origin,
-      });
+      if (offeredJobIds.has(activeJobs[0].id)) {
+        toast.info("כבר שלחת הצעה לעובד זה עבור המשרה הפעילה שלך.");
+        return;
+      }
+      sendOffer.mutate({ jobId: activeJobs[0].id, workerId, origin: window.location.origin });
       return;
     }
 
-    // Multiple active jobs → toggle picker
     setPickerOpen((v) => !v);
   };
 
   const isSending = sendOffer.isPending;
   const noJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length === 0;
-  const multipleJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length > 1;
 
   const btnLabel = noJobs
     ? "פרסם משרה לקשר"
     : isSending
     ? "שולח..."
+    : allJobsOffered
+    ? "הצעה נשלחה לכל המשרות"
     : "שלח בקשה לעובד";
 
-  const BtnIcon = noJobs ? Briefcase : isSending ? Loader2 : Send;
+  const BtnIcon = noJobs ? Briefcase : isSending ? Loader2 : allJobsOffered ? CheckCircle2 : Send;
+  const multipleJobs = isAuthenticated && isEmployer && !jobsLoading && activeJobs.length > 1;
 
   return (
     <div className="mt-3">
+      {/* Offered badge — shown when at least one job was already offered */}
+      {!noJobs && someJobsOffered && !allJobsOffered && (
+        <div
+          className="flex items-center gap-1.5 mb-1.5 text-[11px] font-medium"
+          style={{ color: "oklch(0.42 0.14 145)" }}
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          הצעה נשלחה לחלק מהמשרות
+        </div>
+      )}
+
       <AppButton
         size="sm"
         className="w-full gap-1.5 text-xs"
-        disabled={isSending || jobsLoading}
+        disabled={isSending || jobsLoading || allJobsOffered}
         onClick={handleClick}
         style={{
-          background: noJobs ? "oklch(0.55 0.04 100)" : "oklch(0.35 0.08 122)",
-          color: "white",
-          border: `1px solid ${noJobs ? "oklch(0.48 0.04 100)" : "oklch(0.28 0.06 122)"}`,
+          background: allJobsOffered
+            ? "oklch(0.94 0.06 145 / 0.5)"
+            : noJobs
+            ? "oklch(0.55 0.04 100)"
+            : "oklch(0.35 0.08 122)",
+          color: allJobsOffered ? "oklch(0.38 0.15 145)" : "white",
+          border: allJobsOffered
+            ? "1px solid oklch(0.80 0.12 145 / 0.4)"
+            : noJobs
+            ? "1px solid oklch(0.48 0.04 100)"
+            : "1px solid oklch(0.28 0.06 122)",
           opacity: jobsLoading ? 0.7 : 1,
+          cursor: allJobsOffered ? "default" : undefined,
         }}
       >
         <BtnIcon className={`h-3.5 w-3.5 ${isSending ? "animate-spin" : ""}`} />
         {btnLabel}
-        {multipleJobs && !isSending && (
+        {multipleJobs && !isSending && !allJobsOffered && (
           pickerOpen
             ? <ChevronUp className="h-3.5 w-3.5 mr-auto" />
             : <ChevronDown className="h-3.5 w-3.5 mr-auto" />
@@ -229,11 +257,13 @@ function WorkerContactSection({
 
       {/* Job picker dropdown for multiple active jobs */}
       <AnimatePresence>
-        {pickerOpen && multipleJobs && (
+        {pickerOpen && multipleJobs && !allJobsOffered && (
           <JobPickerDropdown
             workerId={workerId}
             activeJobs={activeJobs}
+            offeredJobIds={offeredJobIds}
             onClose={() => setPickerOpen(false)}
+            onOfferSent={(jobId) => onOfferSent(workerId, jobId)}
           />
         )}
       </AnimatePresence>
@@ -242,8 +272,8 @@ function WorkerContactSection({
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+
 export default function AvailableWorkers() {
-  const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { userMode } = useUserMode();
   const [loginOpen, setLoginOpen] = useState(false);
@@ -251,6 +281,10 @@ export default function AvailableWorkers() {
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
   const [radiusKm, setRadiusKm] = useState(20);
+  const [hideOffered, setHideOffered] = useState(false);
+
+  // Optimistic local state: track newly sent offers without waiting for refetch
+  const [localOfferedMap, setLocalOfferedMap] = useState<Record<number, number[]>>({});
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -263,7 +297,7 @@ export default function AvailableWorkers() {
 
   const isEmployer = isAuthenticated && userMode === "employer";
 
-  // Employer profile (for minWorkerAge, saved location)
+  // Employer profile
   const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
     enabled: isEmployer,
     staleTime: 60_000,
@@ -274,20 +308,42 @@ export default function AvailableWorkers() {
     if (savedRadiusKm !== null) setRadiusKm(savedRadiusKm);
   }, [savedRadiusKm]);
   const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
-    ? parseFloat(employerProfileQuery.data.workerSearchLatitude)
-    : null;
+    ? parseFloat(employerProfileQuery.data.workerSearchLatitude) : null;
   const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
-    ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
-    : null;
+    ? parseFloat(employerProfileQuery.data.workerSearchLongitude) : null;
 
-  // Employer's active jobs (only fetched when authenticated employer)
+  // Employer's active jobs
   const myJobsQuery = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
     enabled: isEmployer,
     staleTime: 30_000,
   });
-  const activeJobs: ActiveJob[] = (myJobsQuery.data ?? []).filter(
-    (j) => j.status === "active"
-  );
+  const activeJobs: ActiveJob[] = (myJobsQuery.data ?? []).filter((j) => j.status === "active");
+
+  // Offered worker IDs (from server)
+  const offeredQuery = trpc.jobs.getOfferedWorkerIds.useQuery(undefined, {
+    enabled: isEmployer,
+    staleTime: 30_000,
+  });
+
+  // Merge server data with optimistic local state
+  const offeredMap: Record<number, number[]> = useMemo(() => {
+    const base: Record<number, number[]> = { ...(offeredQuery.data ?? {}) };
+    Object.entries(localOfferedMap).forEach(([wid, jids]) => {
+      const widNum = Number(wid);
+      const existing = new Set(base[widNum] ?? []);
+      jids.forEach((jid) => existing.add(jid));
+      base[widNum] = Array.from(existing);
+    });
+    return base;
+  }, [offeredQuery.data, localOfferedMap]);
+
+  const handleOfferSent = (workerId: number, jobId: number) => {
+    setLocalOfferedMap((prev) => {
+      const existing = new Set(prev[workerId] ?? []);
+      existing.add(jobId);
+      return { ...prev, [workerId]: Array.from(existing) };
+    });
+  };
 
   const getLocation = () => {
     setLocating(true);
@@ -309,7 +365,18 @@ export default function AvailableWorkers() {
     { enabled: true, refetchInterval: 60000 }
   );
 
-  const workers = workersQuery.data ?? [];
+  const allWorkers = workersQuery.data ?? [];
+
+  // Filter: hide workers that received offers for ALL active jobs
+  const workers = useMemo(() => {
+    if (!hideOffered || activeJobs.length === 0) return allWorkers;
+    return allWorkers.filter((w) => {
+      const offeredJobIds = new Set(offeredMap[w.id] ?? []);
+      return !activeJobs.every((j) => offeredJobIds.has(j.id));
+    });
+  }, [allWorkers, hideOffered, offeredMap, activeJobs]);
+
+  const hiddenCount = allWorkers.length - workers.length;
 
   const calcDistance = (workerLat: string, workerLng: string) => {
     if (!userLat || !userLng) return null;
@@ -383,20 +450,36 @@ export default function AvailableWorkers() {
         </div>
       )}
 
-      {/* Active jobs summary banner — shown only to employers with active jobs */}
+      {/* Active jobs summary + hide-offered toggle */}
       {isEmployer && !myJobsQuery.isLoading && activeJobs.length > 0 && (
         <div
-          className="rounded-xl px-4 py-2.5 mb-4 flex items-center gap-2 text-sm"
+          className="rounded-xl px-4 py-2.5 mb-4 flex items-center justify-between gap-2"
           style={{
             background: "oklch(0.97 0.04 145 / 0.35)",
             border: "1px solid oklch(0.85 0.08 145 / 0.4)",
-            color: "oklch(0.38 0.12 145)",
           }}
         >
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>
-            יש לך <strong>{activeJobs.length}</strong> {activeJobs.length === 1 ? "משרה פעילה" : "משרות פעילות"} — תוכל לשלוח הצעות עבודה ישירות לעובדים
-          </span>
+          <div className="flex items-center gap-2 text-sm" style={{ color: "oklch(0.38 0.12 145)" }}>
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span>
+              <strong>{activeJobs.length}</strong> {activeJobs.length === 1 ? "משרה פעילה" : "משרות פעילות"}
+            </span>
+          </div>
+
+          {/* Hide-offered toggle */}
+          <button
+            onClick={() => setHideOffered((v) => !v)}
+            className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg transition-all hover:scale-105 active:scale-95"
+            style={{
+              background: hideOffered ? "oklch(0.38 0.12 145)" : "oklch(0.92 0.06 145 / 0.4)",
+              color: hideOffered ? "white" : "oklch(0.38 0.12 145)",
+              border: `1px solid ${hideOffered ? "oklch(0.30 0.10 145)" : "oklch(0.80 0.10 145 / 0.5)"}`,
+            }}
+            title={hideOffered ? "הצג גם עובדים שקיבלו הצעה" : "הסתר עובדים שכבר קיבלו הצעה"}
+          >
+            {hideOffered ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            {hideOffered ? "הצג הכל" : "הסתר שנשלחו"}
+          </button>
         </div>
       )}
 
@@ -408,32 +491,73 @@ export default function AvailableWorkers() {
       ) : workers.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium text-foreground">אין עובדים זמינים באזור כרגע</p>
+          <p className="font-medium text-foreground">
+            {hideOffered && hiddenCount > 0
+              ? "כל העובדים הזמינים כבר קיבלו הצעה"
+              : "אין עובדים זמינים באזור כרגע"}
+          </p>
           <p className="text-sm mt-1">
-            {minWorkerAge
+            {hideOffered && hiddenCount > 0
+              ? <button className="underline" onClick={() => setHideOffered(false)}>לחץ להצגת כולם ({hiddenCount})</button>
+              : minWorkerAge
               ? `לא נמצאו עובדים בני ${minWorkerAge}+ בטווח ${radiusKm} ק"מ. נסה להרחיב את הרדיוס.`
               : `נסה להרחיב את הרדיוס או לחזור מאוחר יותר`}
           </p>
         </div>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground mb-3">
-            נמצאו <strong className="text-foreground">{workers.length}</strong> עובדים זמינים בטווח {radiusKm} ק"מ
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-muted-foreground">
+              נמצאו <strong className="text-foreground">{workers.length}</strong> עובדים זמינים בטווח {radiusKm} ק"מ
+              {hideOffered && hiddenCount > 0 && (
+                <span className="text-xs mr-1" style={{ color: "oklch(0.55 0.06 100)" }}>
+                  ({hiddenCount} מוסתרים)
+                </span>
+              )}
+            </p>
+          </div>
           <div className="space-y-3">
             {workers.map((worker) => {
               const dist = calcDistance(worker.latitude, worker.longitude);
+              const offeredJobIds = new Set<number>(offeredMap[worker.id] ?? []);
+              const hasAnyOffer = offeredJobIds.size > 0;
+
               return (
-                <div key={worker.id} className="bg-card rounded-xl border border-border p-4 shadow-sm">
+                <div
+                  key={worker.id}
+                  className="bg-card rounded-xl border p-4 shadow-sm transition-all"
+                  style={{
+                    borderColor: hasAnyOffer
+                      ? "oklch(0.85 0.08 145 / 0.5)"
+                      : "oklch(0.91 0.04 91.6)",
+                    background: hasAnyOffer ? "oklch(0.98 0.02 145 / 0.3)" : undefined,
+                  }}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary shrink-0">
                         {worker.userName?.charAt(0) ?? "?"}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">
-                          {worker.userName ?? "עובד"}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-foreground">
+                            {worker.userName ?? "עובד"}
+                          </p>
+                          {/* "Offer sent" badge */}
+                          {hasAnyOffer && (
+                            <span
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{
+                                background: "oklch(0.92 0.08 145 / 0.4)",
+                                color: "oklch(0.38 0.15 145)",
+                                border: "1px solid oklch(0.80 0.12 145 / 0.3)",
+                              }}
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                              הצעה נשלחה
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
                           {worker.city && (
                             <span className="flex items-center gap-1">
@@ -474,7 +598,9 @@ export default function AvailableWorkers() {
                     isEmployer={isEmployer}
                     activeJobs={activeJobs}
                     jobsLoading={myJobsQuery.isLoading}
+                    offeredJobIds={offeredJobIds}
                     onLoginRequired={() => setLoginOpen(true)}
+                    onOfferSent={handleOfferSent}
                   />
                 </div>
               );

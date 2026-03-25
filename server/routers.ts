@@ -136,6 +136,7 @@ import {
   getApplicantWorkerIdsForJob,
   getWorkerLocationsByIds,
   getCityNamesByIds,
+  getOfferedWorkerIdsForEmployer,
 } from "./db";
 import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
@@ -955,6 +956,20 @@ const jobsRouter = router({
     await markEmployerApplicationsViewed(ctx.user.id);
     return { success: true };
   }),
+  /**
+   * Returns a map of workerId → jobIds[] for all active offers the employer has sent.
+   * Used in AvailableWorkers to show "offer already sent" badges and filter out offered workers.
+   */
+  getOfferedWorkerIds: protectedProcedure.query(async ({ ctx }) => {
+    const map = await getOfferedWorkerIdsForEmployer(ctx.user.id);
+    // Serialize Map → plain object { workerId: jobId[] } for tRPC transport
+    const result: Record<number, number[]> = {};
+    Array.from(map.entries()).forEach(([workerId, jobIds]) => {
+      result[workerId] = Array.from(jobIds);
+    });
+    return result;
+  }),
+
   /** Worker's own applications with job info and status */
   myApplications: protectedProcedure.query(async ({ ctx }) => {
     const apps = await getMyApplications(ctx.user.id);

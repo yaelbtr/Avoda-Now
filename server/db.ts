@@ -3621,3 +3621,42 @@ export async function getWorkerNamesByIds(
   }
   return result;
 }
+
+/**
+ * Returns a map of workerId → Set<jobId> for all active offers sent by this employer.
+ * "Active offer" = application status is 'offered' or 'accepted' (worker already accepted).
+ * Used in AvailableWorkers to show "offer already sent" badges and filter.
+ */
+export async function getOfferedWorkerIdsForEmployer(
+  employerId: number,
+): Promise<Map<number, Set<number>>> {
+  const db = await getDb();
+  const result = new Map<number, Set<number>>();
+  if (!db) return result;
+
+  // Get all active jobs for this employer
+  const myJobs = await db
+    .select({ id: jobs.id })
+    .from(jobs)
+    .where(and(eq(jobs.postedBy, employerId), eq(jobs.status, "active")));
+
+  if (myJobs.length === 0) return result;
+  const jobIds = myJobs.map((j) => j.id);
+
+  // Get all applications for those jobs where the employer sent an offer
+  const rows = await db
+    .select({ workerId: applications.workerId, jobId: applications.jobId })
+    .from(applications)
+    .where(
+      and(
+        inArray(applications.jobId, jobIds),
+        inArray(applications.status, ["offered", "accepted", "offer_rejected"]),
+      )
+    );
+
+  for (const row of rows) {
+    if (!result.has(row.workerId)) result.set(row.workerId, new Set());
+    result.get(row.workerId)!.add(row.jobId);
+  }
+  return result;
+}

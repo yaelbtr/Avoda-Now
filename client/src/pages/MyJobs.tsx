@@ -926,14 +926,28 @@ export default function MyJobs() {
                   {/* Matched workers link — centered */}
                   {job.status === "active" && (
                     <div className="flex justify-center mb-1">
-                      <button
+                      <motion.button
                         onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
-                        className="flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-70"
-                        style={{ color: "#4a5d23" }}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+                        style={{
+                          color: "#4a5d23",
+                          background: "oklch(0.94 0.06 122 / 0.5)",
+                          border: "1px solid oklch(0.82 0.08 122 / 0.6)",
+                        }}
+                        animate={{
+                          boxShadow: [
+                            "0 0 0px 0px oklch(0.7 0.15 122 / 0)",
+                            "0 0 6px 3px oklch(0.7 0.15 122 / 0.25)",
+                            "0 0 0px 0px oklch(0.7 0.15 122 / 0)",
+                          ],
+                        }}
+                        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                        whileHover={{ scale: 1.04, opacity: 0.85 }}
+                        whileTap={{ scale: 0.97 }}
                       >
                         <Sparkles className="h-3 w-3" />
                         הצג עובדים מתאימים
-                      </button>
+                      </motion.button>
                     </div>
                   )}
                   </div>{/* end job details section */}

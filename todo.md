@@ -3521,3 +3521,6 @@ Isolation guarantees:
 
 ## MyJobs — Matched Workers Button
 - [x] Center the "הצג עובדים מתאימים" button (text already updated by visual editor)
+
+## MyJobs — Matched Workers Button Animation
+- [x] Add subtle pulse/glow animation to "הצג עובדים מתאימים" button to draw user attention

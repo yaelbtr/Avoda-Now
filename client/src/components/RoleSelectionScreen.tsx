@@ -143,23 +143,7 @@ function RoleCard({
             {privacyBadge}
           </motion.div>
         )}
-        {/* Badge overlay — hidden when badge is empty */}
-        {badge && (
-          <motion.div
-            className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
-            style={{
-              background: "oklch(1 0 0 / 0.92)",
-              color: '#f6b83d',
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
-            }}
-            animate={{ y: hovered ? -2 : 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {badgeIcon}
-            {badge}
-          </motion.div>
-        )}
+
         {/* Subtitle chip */}
         <div
           className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"

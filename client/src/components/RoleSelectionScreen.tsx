@@ -140,6 +140,7 @@ function RoleCard({
             }}
             initial={{ opacity: 0, y: 6, scale: 0.9 }}
             animate={{ opacity: 1, y: hovered ? -2 : 0, scale: 1 }}
+            whileHover={{ scale: 1.08 }}
             transition={{ opacity: { duration: 0.4, delay: 0.35 }, y: { duration: 0.3 }, scale: { duration: 0.4, delay: 0.35, type: "spring", stiffness: 300, damping: 20 } }}
             title={privacyBadgeTooltip}
           >

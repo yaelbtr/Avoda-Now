@@ -128,8 +128,8 @@ const HOW_IT_WORKS = [
   },
   {
     step: "03",
-    title: "עבוד וקבל תשלום",
-    desc: "סגור פרטים עם המעסיק, בצע את העבודה וקבל תשלום ישירות ממנו.",
+    title: "אשר את ההצעה וקבל פרטי קשר",
+    desc: "באישור ההצעה מתגלים פרטי הקשר של המעסיק — תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.",
     imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmsOM6ool_591rxa3QrTQJ_siNP3M919Xa5n12iJHU9-myKDCxxkIXJLVpXND4AON1Q8eRBnMPtrBeggN_C4S0lJ5lumxRI4XROt9rXnjP5Krt1MAn8P4EnpBkn24bwAgR163Pw2pImLomXOGNpz-MCOZ8aI6DDwDbqiFoOBi2D-UsT1OV5mTJyv3BKGljWdOH2cGAdggVOjFgQ0oQ8lCPYfY4Fgpq2UzIf2KqNukQ6Z4NgQAXUPUyrHbEzkXWFccR4AfTBcUzbw",
     reverse: false,
   },

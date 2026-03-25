@@ -24,7 +24,7 @@ import {
   Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
   Clock, MapPin, Users, DollarSign, Eye, Zap,
   ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX, Sparkles,
-  ChevronRight,
+  ChevronRight, Pencil,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
 import { normalizePhoneForWhatsApp, MAX_ACCEPTED_CANDIDATES } from "@shared/const";
@@ -327,42 +327,53 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               </div>
             )}
 
-            {/* Actions (pending) */}
+            {/* Actions (pending) — 3-column grid: reject | accept | whatsapp */}
             {isPending && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {/* Accept — primary brand */}
-                <AppButton
-                  size="sm"
-                  className="gap-1.5 text-sm font-bold py-2.5 rounded-xl"
-                  disabled={isMutating}
-                  onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
-                  style={{
-                    background: "linear-gradient(135deg, #4a5d23 0%, #5c7329 100%)",
-                    color: "#ffffff",
-                    border: "none",
-                    boxShadow: "0 2px 8px rgba(74,93,35,0.30)",
-                    opacity: isMutating ? 0.6 : 1,
-                  }}
-                >
-                  <UserCheck className="h-4 w-4" />
-                  קבל
-                </AppButton>
+              <div className="grid grid-cols-3 gap-2 mt-2">
                 {/* Reject — muted surface */}
-                <AppButton
-                  size="sm"
-                  className="gap-1.5 text-sm font-bold py-2.5 rounded-xl"
+                <button
+                  className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95 hover:bg-[#efeeea]"
                   disabled={isMutating}
                   onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
                   style={{
                     background: "#f4f4f0",
                     color: "#46483d",
-                    border: "1px solid rgba(199,199,186,0.30)",
                     opacity: isMutating ? 0.6 : 1,
                   }}
                 >
                   <UserX className="h-4 w-4" />
                   דחה
-                </AppButton>
+                </button>
+                {/* Accept — primary brand gradient */}
+                <button
+                  className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95"
+                  disabled={isMutating}
+                  onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
+                  style={{
+                    background: "linear-gradient(135deg, #313b15 0%, #48522a 100%)",
+                    color: "#ffffff",
+                    boxShadow: "0 2px 8px rgba(49,59,21,0.25)",
+                    opacity: isMutating ? 0.6 : 1,
+                  }}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  קבל
+                </button>
+                {/* WhatsApp — only shown when phone is available */}
+                {app.workerPhone ? (
+                  <a
+                    href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1 font-bold text-xs py-3 rounded-xl transition-all active:scale-95"
+                    style={{ background: "rgba(37,211,102,0.10)", color: "#075E54" }}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
+                ) : (
+                  <div className="rounded-xl" style={{ background: "#f4f4f0" }} />
+                )}
               </div>
             )}
           </motion.div>
@@ -718,43 +729,23 @@ export default function MyJobs() {
                   }}
                 >
                   {/* ── Hero header ── */}
+                  {/* Layout: title+status on the right, action buttons on the left (RTL) */}
                   <div className="flex items-start justify-between gap-3 mb-5">
-                    <div className="min-w-0">
-                      <h3
-                        className="font-extrabold text-xl leading-tight tracking-tight truncate mb-1"
-                        style={{ color: "#313b15", fontFamily: "Manrope, sans-serif" }}
-                      >
-                        {job.title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        {/* Animated status dot */}
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{
-                            background: job.status === "active" ? "#10b981" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
-                            boxShadow: job.status === "active" ? "0 0 0 0 #10b98140" : "none",
-                            animation: job.status === "active" ? "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" : "none",
-                          }}
-                        />
-                        <span className="text-sm font-semibold" style={{ color: "#46483d" }}>
-                          {statusCfg.label}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Action buttons — rendered first in DOM but visually on left in RTL */}
+                    <div className="flex flex-col items-center gap-1.5 shrink-0 order-last" style={{ marginInlineStart: "auto" }}>
+                      {/* Edit button — pencil, rounded, surface-container-low bg */}
                       <motion.button
                         whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.92 }}
                         onClick={() => navigate(`/job/${job.id}`)}
-                        title="צפה במשרה"
-                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+                        title="ערוך משרה"
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:bg-[#efeeea]"
                         style={{ background: "#f4f4f0", color: "#46483d" }}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" />
                       </motion.button>
 
+                      {/* Status toggle */}
                       {job.status === "active" ? (
                         <motion.button
                           whileHover={{ scale: 1.08 }}
@@ -762,7 +753,7 @@ export default function MyJobs() {
                           onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
                           disabled={updateStatus.isPending}
                           title="סגור משרה"
-                          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:bg-[#efeeea]"
                           style={{ background: "#f4f4f0", color: "#46483d", opacity: updateStatus.isPending ? 0.6 : 1 }}
                         >
                           <XCircle className="h-4 w-4" />
@@ -774,64 +765,42 @@ export default function MyJobs() {
                           onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
                           disabled={updateStatus.isPending || activeJobs.length >= 3}
                           title="הפעל מחדש"
-                          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all"
                           style={{ background: "rgba(16,185,129,0.10)", color: "#065f46", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
                         >
                           <CheckCircle className="h-4 w-4" />
                         </motion.button>
                       ) : null}
                     </div>
-                  </div>
 
-                  {/* ── Analytics bento row ── */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Total applicants */}
-                    <div
-                      className="flex flex-col items-center justify-center py-3 px-2 rounded-2xl text-center"
-                      style={{ background: "#f4f4f0", border: "1px solid rgba(199,199,186,0.08)" }}
-                    >
-                      <span
-                        className="text-2xl font-extrabold leading-none"
+                    {/* Title + status dot */}
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className="font-extrabold text-2xl leading-tight tracking-tight mb-2"
                         style={{ color: "#313b15", fontFamily: "Manrope, sans-serif" }}
                       >
-                        {totalApplicationCount}
-                      </span>
-                      <span className="text-[10px] font-bold mt-1 uppercase tracking-wider" style={{ color: "#46483d" }}>
-                        מועמדים סה&quot;כ
-                      </span>
+                        {job.title}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            background: job.status === "active" ? "#10b981" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
+                          }}
+                        />
+                        <span className="text-sm font-semibold" style={{ color: "#46483d" }}>
+                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
+                        </span>
+                      </div>
                     </div>
-                    {/* Pending applicants */}
-                    <motion.div
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-                      className="flex flex-col items-center justify-center py-3 px-2 rounded-2xl text-center"
-                      style={{
-                        background: isCapReached ? "rgba(16,185,129,0.12)" : "#dce8b3",
-                        border: isCapReached ? "1px solid rgba(16,185,129,0.20)" : "1px solid rgba(72,82,42,0.12)",
-                      }}
-                    >
-                      <span
-                        className="text-2xl font-extrabold leading-none"
-                        style={{ color: isCapReached ? "#065f46" : "#161e00", fontFamily: "Manrope, sans-serif" }}
-                      >
-                        {isCapReached ? `${acceptedCount}/${MAX_ACCEPTED_CANDIDATES}` : pendingCount}
-                      </span>
-                      <span
-                        className="text-[10px] font-bold mt-1 uppercase tracking-wider"
-                        style={{ color: isCapReached ? "#065f46" : "#414b23" }}
-                      >
-                        {isCapReached ? "התקבלו" : "ממתינים לתשובה"}
-                      </span>
-                    </motion.div>
                   </div>
 
-                  {/* ── Meta chips grid ── */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {/* Salary chip */}
+                  {/* ── Meta chips 2×2 grid ── */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Salary chip — primary-fixed/40 bg (ירקרק) */}
                     <div
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
-                      style={{ background: "rgba(220,232,179,0.50)", color: "#161e00" }}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                      style={{ background: "rgba(220,232,179,0.40)", color: "#161e00" }}
                     >
                       <DollarSign className="h-4 w-4 shrink-0" style={{ color: isVolunteer ? "#065f46" : "#414b23" }} />
                       <span className="text-sm font-bold truncate">
@@ -840,26 +809,34 @@ export default function MyJobs() {
                     </div>
                     {/* Location chip */}
                     <div
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                       style={{ background: "#f4f4f0", color: "#46483d" }}
                     >
                       <MapPin className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
                       <span className="text-sm font-bold truncate">{job.address.split(",")[0]}</span>
                     </div>
-                    {/* Time chip */}
-                    {job.startTime !== "flexible" && (
+                    {/* Date / time chip */}
+                    {job.startTime !== "flexible" ? (
                       <div
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                         style={{ background: "#f4f4f0", color: "#46483d" }}
                       >
                         <Clock className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
                         <span className="text-sm font-bold truncate">{getStartTimeLabel(job.startTime)}</span>
                       </div>
+                    ) : (
+                      <div
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                        style={{ background: "#f4f4f0", color: "#46483d" }}
+                      >
+                        <Clock className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
+                        <span className="text-sm font-bold truncate">שעות גמישות</span>
+                      </div>
                     )}
-                    {/* Expiry / workers chip */}
+                    {/* Expiry chip — urgent red when ≤1 day, else neutral */}
                     {daysLeft !== null && job.status === "active" ? (
                       <div
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                         style={{
                           background: isExpiringSoon ? "rgba(239,68,68,0.08)" : "#f4f4f0",
                           color: isExpiringSoon ? "#b91c1c" : "#46483d",
@@ -874,20 +851,63 @@ export default function MyJobs() {
                           {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
                         </span>
                       </div>
-                    ) : job.workersNeeded > 1 ? (
+                    ) : (
                       <div
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                         style={{ background: "#f4f4f0", color: "#46483d" }}
                       >
                         <Users className="h-4 w-4 shrink-0" style={{ color: "#795900" }} />
-                        <span className="text-sm font-bold">{job.workersNeeded} עובדים</span>
+                        <span className="text-sm font-bold">{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
                       </div>
-                    ) : null}
+                    )}
                   </div>
 
-                  {/* Matched workers — text link aligned to the left */}
+                  {/* ── Analytics bento row ── */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Pending / waiting */}
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.05 }}
+                      className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
+                      style={{
+                        background: isCapReached ? "rgba(16,185,129,0.12)" : "#dce8b3",
+                        border: isCapReached ? "1px solid rgba(16,185,129,0.20)" : "1px solid rgba(72,82,42,0.10)",
+                      }}
+                    >
+                      <span
+                        className="text-3xl font-extrabold leading-none"
+                        style={{ color: isCapReached ? "#065f46" : "#161e00", fontFamily: "Manrope, sans-serif" }}
+                      >
+                        {isCapReached ? `${acceptedCount}/${MAX_ACCEPTED_CANDIDATES}` : pendingCount}
+                      </span>
+                      <span
+                        className="text-[10px] font-bold mt-1 uppercase tracking-wider"
+                        style={{ color: isCapReached ? "#065f46" : "#414b23" }}
+                      >
+                        {isCapReached ? "התקבלו" : "ממתינים לתשובה"}
+                      </span>
+                    </motion.div>
+                    {/* Total applicants */}
+                    <div
+                      className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
+                      style={{ background: "#f4f4f0" }}
+                    >
+                      <span
+                        className="text-3xl font-extrabold leading-none"
+                        style={{ color: "#313b15", fontFamily: "Manrope, sans-serif" }}
+                      >
+                        {totalApplicationCount}
+                      </span>
+                      <span className="text-[10px] font-bold mt-1 uppercase tracking-wider" style={{ color: "#46483d" }}>
+                        מועמדים סה&quot;כ
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Matched workers — text link */}
                   {job.status === "active" && (
-                    <div className="flex justify-start">
+                    <div className="flex justify-start mb-1">
                       <button
                         onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
                         className="flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-70"

@@ -3476,3 +3476,16 @@ Isolation guarantees:
 
 ## Redesign MyJobs job card per design files
 - [x] Redesign job card in MyJobs to match uploaded design files (design-only, no behavior changes)
+
+## Redesign MyJobs job card top section
+- [ ] Round edit button in top-left corner (pencil icon, surface-container-low bg)
+- [ ] Large bold Manrope title, right-aligned
+- [ ] Green status dot + "משרה פעילה" label below title
+- [ ] 2x2 chip grid: salary (primary-fixed bg), location, shift time, date
+
+## MyJobs Card Design Improvements (Mar 2026)
+- [x] Hero header: title right (Manrope extrabold 2xl), edit + close buttons top-left column
+- [x] Status dot: green dot + "משרה פעילה" label below title
+- [x] Chips 2×2 grid: salary (ירקרק bg), location, time, expiry/workers
+- [x] Analytics bento: pending (ירקרק) + total (אפרפר), 3xl numbers
+- [x] Applicant cards: 3-column action row (reject | accept | WhatsApp)

@@ -3401,3 +3401,7 @@ Isolation guarantees:
 ## Bug: queryJobs cap_reached enum cast fails
 - [x] Find actual PostgreSQL enum type name for closedReason
 - [x] Fix sql cast in queryJobs to use correct type name or use text comparison
+
+## Bug: MyApplications contradictory status badge
+- [x] Find what status value is passed to StatusBadge vs what drives the card body
+- [x] Fix StatusBadge to show effective status (offered_accepted when worker accepted)

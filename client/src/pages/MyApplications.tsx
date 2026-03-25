@@ -690,8 +690,14 @@ export default function MyApplications() {
                           </p>
                         )}
                       </div>
-                      {/* Status badge — uses shared StatusBadge for consistent display */}
-                      <StatusBadge status={app.status} className="shrink-0" />
+                      {/* Status badge — uses shared StatusBadge for consistent display.
+                           When status=offered AND contactRevealed=true the worker has accepted,
+                           so we pass effectiveStatus='offered_accepted' to override the label. */}
+                      <StatusBadge
+                        status={app.status}
+                        effectiveStatus={app.status === "offered" && app.contactRevealed ? "offered_accepted" : undefined}
+                        className="shrink-0"
+                      />
                     </div>
 
                     {/* Meta row */}

@@ -489,7 +489,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                       : ["פרסום משרה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
                     badge={employerLock ? "בקרוב" : "עובדים זמינים"}
                     badgeIcon={<Users className="h-3 w-3" />}
-                    privacyBadge="פרטי העובד נחשפים רק לאחר אישורו"
+                    privacyBadge="הטלפון שלכם נשאר חסוי"
                     privacyBadgeTooltip="מספר הטלפון של העובד נחשף רק לאחר שהוא מאשר את הצעת העבודה שלך"
                     buttonLabel={employerLock ? "בקרוב..." : "פרסם משרה"}
                     loading={loading === "employer"}

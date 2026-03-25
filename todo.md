@@ -3405,3 +3405,6 @@ Isolation guarantees:
 ## Bug: MyApplications contradictory status badge
 - [x] Find what status value is passed to StatusBadge vs what drives the card body
 - [x] Fix StatusBadge to show effective status (offered_accepted when worker accepted)
+
+## UX: Hide initial offer banner after worker accepts
+- [x] Hide "המעסיק שלח לך הצעה" banner when contactRevealed=true in MyApplications

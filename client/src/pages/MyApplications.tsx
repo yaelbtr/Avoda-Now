@@ -637,8 +637,8 @@ export default function MyApplications() {
                       opacity: (isRejected || isOfferRejected) ? 0.70 : 1,
                     }}
                   >
-                    {/* Offered banner */}
-                    {isOffered && (
+                    {/* Offered banner — only shown before the worker accepts (contactRevealed=false) */}
+                    {isOffered && !app.contactRevealed && (
                       <div
                         className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-semibold"
                         style={{

@@ -3,8 +3,7 @@
  * When false, FindJobs shows a translucent "coming soon" overlay and
  * blocks all user interaction. Single source of truth for this gate.
  */
-export const FIND_JOBS_OPEN = false;
-
+export const FIND_JOBS_OPEN = true;
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 /**

@@ -68,9 +68,8 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
   const animJobs = useCountUp(activeJobs, 1200, inView);
   const animWorkers = useCountUp(workers, 1000, inView);
   const stats = [
-    { label: "ללא עמלות", value: "100%", icon: CheckCircle2 },
     { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "1+", icon: Users },
-    { label: "משרות פעילות", value: activeJobs > 0 ? String(animJobs) : "0", icon: Briefcase },
+    { label: "זמין תמיד", value: "24/7", icon: Clock },
   ];
   return (
     <motion.div

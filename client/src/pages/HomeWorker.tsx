@@ -379,25 +379,27 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               ].join(" "),
             }}
           />
-          {/* Badge — top center, above head */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-            style={{
-              transform: "translateX(-50%)",
-              background: "oklch(1 0 0 / 0.14)",
-              border: "1px solid oklch(1 0 0 / 0.30)",
-              boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <span className="animate-pulse">
-              <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
-            </span>
-            <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
-              {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
-            </span>
-          </motion.div>
+          {/* Badge — top center, above head — only shown when 10+ active jobs */}
+          {(activeJobCount === null || activeJobCount >= 10) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+              className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+              style={{
+                transform: "translateX(-50%)",
+                background: "oklch(1 0 0 / 0.14)",
+                border: "1px solid oklch(1 0 0 / 0.30)",
+                boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <span className="animate-pulse">
+                <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+              </span>
+              <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
+                {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
+              </span>
+            </motion.div>
+          )}
           {/* White headline — above the worker's head */}
           <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "18%" }}>
             <motion.h1

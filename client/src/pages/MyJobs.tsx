@@ -723,17 +723,17 @@ export default function MyJobs() {
                       >
                         {job.title}
                       </h3>
-                      {/* Status: dot on LEFT of text (RTL = dot appears after text visually) */}
-                      <div className="flex items-center justify-end gap-1.5">
-                        <span className="text-sm font-medium" style={{ color: "#46483d" }}>
-                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
-                        </span>
+                      {/* Status: dot RIGHT of text in RTL — dot is first in DOM so it renders on the right */}
+                      <div className="flex items-center justify-end gap-1.5" dir="rtl">
                         <span
                           className="w-2 h-2 rounded-full shrink-0"
                           style={{
                             background: job.status === "active" ? "#22c55e" : job.status === "closed" ? "#9ca3af" : "#f59e0b",
                           }}
                         />
+                        <span className="text-sm font-medium" style={{ color: "#46483d" }}>
+                          {job.status === "active" ? "משרה פעילה" : statusCfg.label}
+                        </span>
                       </div>
                     </div>
 

@@ -3490,3 +3490,6 @@ Isolation guarantees:
 - [x] Analytics bento RTL: RIGHT=grey total | LEFT=ירקרק accepted (3/3)
 - [x] Applicant cards: 2-column action row (reject grey RIGHT | accept dark-green LEFT)
 - [x] Matched workers link: right-aligned with ← arrow
+
+## MyJobs Card — Status Dot Fix
+- [x] Status dot: move to RIGHT of "משרה פעילה" text (RTL: dot visually before text, i.e. dot is first in DOM)

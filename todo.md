@@ -3429,3 +3429,7 @@ Isolation guarantees:
 - [x] Update JobApplications: pass perspective="employer" to StatusBadge
 - [x] Update MyJobs: pass perspective="employer" to StatusBadge
 - [x] Rewrite applicationStatus.test.ts: 22 tests covering both perspectives, symmetry checks, and all known statuses
+
+## Universal Status Banner in MyApplications
+- [x] Show a contextual status explanation banner for every application status in MyApplications (worker view), using workerLabel + workerTooltip from APPLICATION_STATUS_LABELS
+- [x] Remove the old offered_accepted-specific conditional block and replace with a single unified banner component

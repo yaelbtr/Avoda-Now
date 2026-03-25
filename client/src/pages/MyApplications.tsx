@@ -772,12 +772,7 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Accepted but contact not yet revealed */}
-                    {isAccepted && !app.contactRevealed && (
-                      <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.52 0.22 150)" }}>
-                        ✓ התקבלת! המעסיק ייצור איתך קשר בקרוב.
-                      </p>
-                    )}
+                    {/* Accepted but contact not yet revealed — covered by the universal banner below */}
 
                     {/* Job closed due to cap_reached: show banner instead of accept/reject buttons */}
                     {isOffered && !app.contactRevealed && app.jobClosedReason === "cap_reached" && (
@@ -830,15 +825,32 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Offered + contactRevealed: worker accepted the offer, waiting for employer to call */}
-                    {isOffered && app.contactRevealed && (() => {
-                      const cfg = APPLICATION_STATUS_LABELS["offered_accepted"];
+                    {/* Universal status banner — shown for every status using worker-perspective text */}
+                    {(() => {
+                      // Determine the effective status key (offered+contactRevealed → offered_accepted)
+                      const effectiveKey =
+                        app.status === "offered" && app.contactRevealed
+                          ? "offered_accepted"
+                          : app.status;
+                      // Skip the banner when a richer dedicated UI is already rendered above:
+                      // • offered + !contactRevealed + open job → accept/reject buttons
+                      // • offered + !contactRevealed + cap_reached → cap_reached block
+                      // • accepted + contactRevealed + phone → call/WhatsApp buttons
+                      const skipBanner =
+                        (app.status === "offered" && !app.contactRevealed) ||
+                        (app.status === "accepted" && app.contactRevealed && !!app.workerPhone);
+                      if (skipBanner) return null;
+                      const cfg = APPLICATION_STATUS_LABELS[effectiveKey];
+                      if (!cfg) return null;
                       return (
-                        <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: `${cfg.bg}`, border: `1px solid ${cfg.color}33` }}>
+                        <div
+                          className="mt-3 rounded-xl px-3 py-2.5"
+                          style={{ background: cfg.bg, border: `1px solid ${cfg.color}33` }}
+                        >
                           <p className="text-xs font-bold" style={{ color: cfg.color }}>
-                            ✓ {cfg.workerLabel}
+                            {cfg.workerLabel}
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 260)" }}>
+                          <p className="text-xs mt-0.5" style={{ color: cfg.color, opacity: 0.75 }}>
                             {cfg.workerTooltip}
                           </p>
                         </div>

@@ -3393,3 +3393,7 @@ Isolation guarantees:
 - [x] Find the button handler in the worker home page
 - [x] Find the employer-locked gate logic and ensure it only applies to employers/non-workers
 - [x] Fix routing so workers navigate directly to FindJobs without the lock
+
+## Refactor: StatusBadge in MyApplications
+- [x] Replace local STATUS_CONFIG in MyApplications with shared StatusBadge component
+- [x] Remove unused imports from MyApplications after refactor

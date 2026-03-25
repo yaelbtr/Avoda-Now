@@ -10,12 +10,13 @@ import BrandLoader from "@/components/BrandLoader";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
-  HourglassIcon, ChevronRight, Phone, MessageCircle,
+  ChevronRight, Phone, MessageCircle,
   Bell, BellOff, Bookmark, BookmarkX, Flame,
   Search, ChevronLeft, ArrowUpDown, Loader2, Send, Share2,
-  Gift, ThumbsDown,
+  Gift,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
+import { StatusBadge } from "@/components/StatusBadge";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
@@ -23,51 +24,7 @@ import { JobCard } from "@/components/JobCard";
 import JobCardSkeleton from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 
-// ── Status config ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; bg: string; color: string; border: string }> = {
-  pending: {
-    label: "ממתין",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.75 0.12 76.7 / 0.12)",
-    color: "oklch(0.65 0.13 76.7)",
-    border: "oklch(0.75 0.12 76.7 / 0.30)",
-  },
-  viewed: {
-    label: "נצפה",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.50 0.07 125.0 / 0.12)",
-    color: "oklch(0.38 0.07 125.0)",
-    border: "oklch(0.50 0.07 125.0 / 0.30)",
-  },
-  accepted: {
-    label: "התקבלת!",
-    icon: <CheckCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.65 0.22 160 / 0.12)",
-    color: "oklch(0.52 0.22 150)",
-    border: "oklch(0.65 0.22 160 / 0.30)",
-  },
-  rejected: {
-    label: "לא התקבלת",
-    icon: <XCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  },
-  offered: {
-    label: "הצעת עבודה!",
-    icon: <Gift className="h-3.5 w-3.5" />,
-    bg: "oklch(0.55 0.18 260 / 0.10)",
-    color: "oklch(0.45 0.18 260)",
-    border: "oklch(0.55 0.18 260 / 0.30)",
-  },
-  offer_rejected: {
-    label: "דחיתי הצעה",
-    icon: <ThumbsDown className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  },
-};
+// STATUS_CONFIG removed — using shared StatusBadge component instead
 
 type MyApplication = {
   id: number;
@@ -645,7 +602,6 @@ export default function MyApplications() {
             {/* Application cards */}
             <AnimatePresence>
               {!isLoading && filtered.map((app: MyApplication, idx: number) => {
-                const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.pending;
                 const isAccepted = app.status === "accepted";
                 const isRejected = app.status === "rejected";
                 const isOffered = app.status === "offered";
@@ -734,18 +690,8 @@ export default function MyApplications() {
                           </p>
                         )}
                       </div>
-                      {/* Status badge */}
-                      <span
-                        className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold shrink-0"
-                        style={{
-                          background: cfg.bg,
-                          color: cfg.color,
-                          border: `1px solid ${cfg.border}`,
-                        }}
-                      >
-                        {cfg.icon}
-                        {cfg.label}
-                      </span>
+                      {/* Status badge — uses shared StatusBadge for consistent display */}
+                      <StatusBadge status={app.status} className="shrink-0" />
                     </div>
 
                     {/* Meta row */}

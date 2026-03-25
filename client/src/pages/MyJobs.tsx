@@ -27,7 +27,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
-import { normalizePhoneForWhatsApp } from "@shared/const";
+import { normalizePhoneForWhatsApp, MAX_ACCEPTED_CANDIDATES } from "@shared/const";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -629,6 +629,8 @@ export default function MyJobs() {
               const applicantsExpanded = expandedApplicants.has(job.id);
               const pendingCount = (job as { pendingCount?: number }).pendingCount ?? 0;
               const totalApplicationCount = (job as { totalApplicationCount?: number }).totalApplicationCount ?? 0;
+              const acceptedCount = (job as { acceptedCount?: number }).acceptedCount ?? 0;
+              const isCapReached = acceptedCount >= MAX_ACCEPTED_CANDIDATES;
 
               return (
                 <motion.div
@@ -736,6 +738,27 @@ export default function MyJobs() {
                         {pendingCount} חדש{pendingCount > 1 ? "ים" : ""}
                       </motion.div>
                     )}
+                    {/* Accepted-candidate counter — always visible so employer tracks capacity */}
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.15 }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{
+                        background: isCapReached
+                          ? "oklch(0.65 0.22 160 / 0.15)"
+                          : "oklch(0.38 0.07 125.0 / 0.08)",
+                        border: isCapReached
+                          ? "1px solid oklch(0.65 0.22 160 / 0.35)"
+                          : "1px solid oklch(0.38 0.07 125.0 / 0.20)",
+                        color: isCapReached
+                          ? "oklch(0.40 0.18 155)"
+                          : "oklch(0.38 0.07 125.0)",
+                      }}
+                    >
+                      <UserCheck className="h-3 w-3" />
+                      {acceptedCount}/{MAX_ACCEPTED_CANDIDATES} התקבלו
+                    </motion.div>
                   </div>
 
                   {/* Meta row */}

@@ -3447,3 +3447,8 @@ Isolation guarantees:
 ## Bug: Wrong status label in JobApplications when offered+contactRevealed
 - [x] Root cause found: revealApplicationContact was setting status="viewed" unconditionally, overwriting "offered" status when employer revealed contact via direct link
 - [x] Fixed revealApplicationContact in db.ts: only advances to "viewed" when current status is pending/viewed; preserves offered/accepted/rejected statuses
+
+## Candidate Counter on MyJobs Card
+- [x] Add acceptedCount per job to getMyJobs query (batch via countAcceptedCandidates or subquery)
+- [x] Add acceptedCount to Job type in MyJobs page
+- [x] Render X/3 counter badge on job card in MyJobs

@@ -1090,12 +1090,28 @@ export async function getMyJobsWithPendingCounts(userId: number) {
     .from(applications)
     .where(inArray(applications.jobId, jobIds))
     .groupBy(applications.jobId);
+  // Accepted-candidate count: status='accepted' OR (status='offered' AND contactRevealed=true)
+  const acceptedCounts = await db
+    .select({ jobId: applications.jobId, acceptedCount: count() })
+    .from(applications)
+    .where(
+      and(
+        inArray(applications.jobId, jobIds),
+        or(
+          eq(applications.status, "accepted"),
+          and(eq(applications.status, "offered"), eq(applications.contactRevealed, true))
+        )!
+      )
+    )
+    .groupBy(applications.jobId);
   const pendingMap = new Map(pendingCounts.map((c) => [c.jobId, c.pendingCount]));
   const totalMap = new Map(totalCounts.map((c) => [c.jobId, c.totalCount]));
+  const acceptedMap = new Map(acceptedCounts.map((c) => [c.jobId, c.acceptedCount]));
   return myJobsList.map((j) => ({
     ...j,
     pendingCount: pendingMap.get(j.id) ?? 0,
     totalApplicationCount: totalMap.get(j.id) ?? 0,
+    acceptedCount: acceptedMap.get(j.id) ?? 0,
   }));
 }
 /**

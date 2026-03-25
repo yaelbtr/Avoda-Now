@@ -386,19 +386,30 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
               </div>
             </div>
 
-            {/* Phone number reveal row — shown below buttons when toggled */}
-            {!isPending && app.workerPhone && revealedPhoneIds.has(app.id) && (
-              <div className="w-full pt-2 mt-1 flex justify-start" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }}>
-                <a
-                  href={`tel:${app.workerPhone}`}
-                  className="flex items-center gap-1.5 text-[12px] font-medium hover:opacity-70 transition-opacity"
-                  style={{ color: "oklch(0.38 0.18 240)" }}
-                  onClick={(e) => e.stopPropagation()}
+            {/* Phone number reveal row — animated slide-down */}
+            <AnimatePresence initial={false}>
+              {!isPending && app.workerPhone && revealedPhoneIds.has(app.id) && (
+                <motion.div
+                  key="phone-reveal"
+                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                  animate={{ height: "auto", opacity: 1, marginTop: 4 }}
+                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  style={{ overflow: "hidden" }}
                 >
-                  <Phone size={11} />{app.workerPhone}
-                </a>
-              </div>
-            )}
+                  <div className="w-full pt-2 flex justify-start" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }}>
+                    <a
+                      href={`tel:${app.workerPhone}`}
+                      className="flex items-center gap-1.5 text-[12px] font-medium hover:opacity-70 transition-opacity"
+                      style={{ color: "oklch(0.38 0.18 240)" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Phone size={11} />{app.workerPhone}
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         );
       })}

@@ -3515,3 +3515,6 @@ Isolation guarantees:
 
 ## MyJobs — Phone Number Position
 - [x] Show revealed phone number below action buttons row (not inline in details row)
+
+## MyJobs — Phone Reveal Animation
+- [x] Add slide-down animation (AnimatePresence + motion.div) to phone number reveal row

@@ -1,0 +1,13 @@
+{
+  "query": "\nSELECT a.id, a.status, a.\"contactRevealed\", a.\"revealedAt\", u.name as worker_name, u.phone as worker_phone\nFROM applications a\nJOIN users u ON u.id = a.\"workerId\"\nWHERE a.status = 'offered'\nORDER BY a.\"createdAt\" DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \nSELECT a.id, a.status, a.\"contactRevealed\", a.\"revealedAt\", u.name as worker_name, u.phone as worker_phone\nFROM applications a\nJOIN users u ON u.id = a.\"workerId\"\nWHERE a.status = 'offered'\nORDER BY a.\"createdAt\" DESC\nLIMIT 20;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 2: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near \"\"contactRevealed\", a.\"revealedAt\", u.name as worker_name, u.phone as worker_phone",
+    "FROM applications a",
+    "JOIN users u ON u.id = a.\"workerId\"",
+    "WHERE a.status = 'offered'",
+    "ORDER BY a.\"createdAt\" DESC",
+    "LIMIT 20\""
+  ]
+}

@@ -3438,3 +3438,12 @@ Isolation guarantees:
 - [x] Add profilePhoto field to matchWorkers query (server/routers.ts or server/db.ts)
 - [x] Add profilePhoto to MatchedWorker interface in MatchedWorkers page
 - [x] Render profile photo in WorkerMatchCard avatar area (with letter-avatar fallback)
+
+## Employer Photo in MyApplications Card
+- [ ] Add employerPhoto to getMyApplications DB query (JOIN on postedBy user)
+- [ ] Add employerPhoto to MyApplication type in MyApplications.tsx
+- [ ] Render employer photo (with initial-avatar fallback) next to employer name in the card
+
+## Bug: Wrong status label in JobApplications when offered+contactRevealed
+- [x] Root cause found: revealApplicationContact was setting status="viewed" unconditionally, overwriting "offered" status when employer revealed contact via direct link
+- [x] Fixed revealApplicationContact in db.ts: only advances to "viewed" when current status is pending/viewed; preserves offered/accepted/rejected statuses

@@ -1,0 +1,8 @@
+{
+  "query": "SELECT a.id, a.status, a.contact_revealed, u.name as worker_name FROM applications a JOIN users u ON u.id = a.worker_id WHERE u.name LIKE '%נחמה%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT a.id, a.status, a.contact_revealed, u.name as worker_name FROM applications a JOIN users u ON u.id = a.worker_id WHERE u.name LIKE '%נחמה%' LIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'a.worker_id' in 'on clause'"
+  ]
+}

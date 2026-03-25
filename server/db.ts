@@ -1122,6 +1122,7 @@ export async function getMyApplications(workerId: number) {
       jobClosedReason: jobs.closedReason,
       employerName: users.name,
       employerPhone: users.phone,
+      employerPhoto: users.profilePhoto,
       jobPostedBy: jobs.postedBy,
     })
     .from(applications)
@@ -1791,18 +1792,32 @@ export async function getApplicationById(id: number) {
     .limit(1);
   return result[0] ?? null;
 }
-/** Mark an application's contact as revealed by the employer */
+/**
+ * Mark an application's contact as revealed by the employer.
+ *
+ * Only advances status to "viewed" when the current status is "pending" or "viewed".
+ * Statuses like "offered", "accepted", "rejected", "offer_rejected" are preserved
+ * so that a direct-link reveal (e.g. from a WhatsApp notification) does not
+ * overwrite a more meaningful status and cause wrong badge labels in the UI.
+ */
 export async function revealApplicationContact(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // Step 1: always mark contact as revealed
   await db
     .update(applications)
-    .set({
-      contactRevealed: true,
-      revealedAt: new Date(),
-      status: "viewed",
-    })
+    .set({ contactRevealed: true, revealedAt: new Date() })
     .where(eq(applications.id, id));
+  // Step 2: only advance to "viewed" if the application is still in an early state
+  await db
+    .update(applications)
+    .set({ status: "viewed" })
+    .where(
+      and(
+        eq(applications.id, id),
+        inArray(applications.status, ["pending", "viewed"]),
+      )
+    );
 }
 
 /**

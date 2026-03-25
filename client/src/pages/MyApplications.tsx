@@ -44,6 +44,7 @@ type MyApplication = {
   jobClosedReason?: string | null;
   employerName: string | null;
   employerPhone?: string | null;
+  employerPhoto?: string | null;
   jobPostedBy?: number | null;
   workerPhone?: string | null;
 };

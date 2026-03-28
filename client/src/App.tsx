@@ -52,6 +52,7 @@ import AdminRegionsPage from "./pages/AdminRegionsPage";
 import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
+import KeywordLandingPage from "./pages/KeywordLandingPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import SkipToContent from "./components/SkipToContent";
 import ReConsentModal from "./components/ReConsentModal";
@@ -329,6 +330,14 @@ function Router() {
                 <Route path="/faq/:slug" component={FAQPage} />
                 <Route path="/best/:slug" component={BestJobsPage} />
                 <Route path="/work/:slug" component={WorkerLandingPage} />
+                {/* Hebrew keyword SEO landing pages */}
+                <Route path="/עבודה-זמנית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עבודה-מיידית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עבודות-מזדמנות">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עבודה-עונתית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עבודה-לסטודנטים">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עבודה-לנוער">{() => <KeywordLandingPage />}</Route>
+                <Route path="/משרות-זמניות">{() => <KeywordLandingPage />}</Route>
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/my-referrals" component={MyReferrals} />

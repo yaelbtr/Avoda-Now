@@ -241,6 +241,7 @@ export default function JobDetails() {
           createdAt: job.createdAt,
           expiresAt: job.expiresAt,
           isUrgent: job.isUrgent,
+          hourlyRate: job.hourlyRate,
         }
       : null
   );

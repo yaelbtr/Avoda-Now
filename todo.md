@@ -3527,3 +3527,16 @@ Isolation guarantees:
 
 ## MyJobs — Swipe Gesture on Applicant Cards
 - [ ] Swipe right = accept, swipe left = reject, with dynamic bg color feedback and snap-back animation
+
+## SEO — קידום אורגני (Mar 28 2026)
+- [x] JobPosting JSON-LD — תיקון employmentType ל-TEMPORARY בכל המשרות
+- [x] JobPosting JSON-LD — הוספת hourlyRate כ-baseSalary כאשר salary לא מוגדר
+- [x] דף Landing ייעודי /עבודה-זמנית עם H1, intro 150+ מילים, FAQ Schema, ItemList Schema
+- [x] דף Landing ייעודי /עבודה-מיידית
+- [x] דף Landing ייעודי /עבודות-מזדמנות
+- [x] דף Landing ייעודי /עבודה-עונתית
+- [x] דף Landing ייעודי /עבודה-לסטודנטים
+- [x] דף Landing ייעודי /עבודה-לנוער
+- [x] דף Landing ייעודי /משרות-זמניות
+- [x] Sitemap.xml — הוספת כל דפי ה-keyword landing בעדיפות 0.9
+- [ ] דפי עיר פרוגרמטיים /עבודה-זמנית/:עיר (שלב עתידי)

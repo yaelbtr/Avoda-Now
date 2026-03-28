@@ -253,6 +253,19 @@ async function startServer() {
     for (const slug of BEST_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/best/${slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
+    // Hebrew keyword SEO landing pages — priority 0.9 (just below homepage)
+    const KEYWORD_SLUGS = [
+      "עבודה-זמנית",
+      "עבודה-מיידית",
+      "עבודות-מזדמנות",
+      "עבודה-עונתית",
+      "עבודה-לסטודנטים",
+      "עבודה-לנוער",
+      "משרות-זמניות",
+    ];
+    for (const slug of KEYWORD_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/${encodeURIComponent(slug)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`);
+    }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
     _sitemapCache = { xml, ts: Date.now() };

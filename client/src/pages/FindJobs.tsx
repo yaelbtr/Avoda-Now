@@ -1043,8 +1043,7 @@ export default function FindJobs() {
         {/* Hero background image — same treatment as MyApplications */}
         <img
           src={HERO_IMG}
-          alt=""
-          aria-hidden="true"
+          alt="עובד מחפש עבודה זמנית בישראל"
           loading="eager"
           fetchPriority="high"
           decoding="async"

@@ -3545,3 +3545,14 @@ Isolation guarantees:
 - [x] Homepage: הוסף useSEO עם title 30-60 תווים + keywords meta tag
 - [x] HomeWorker: הוסף alt text לתמונה ריקה (not-found-bg)
 - [x] HomeEmployer: הוסף alt text לשתי תמונות הרו (aria-hidden → alt תיאורי)
+
+## SEO — alt text בדפים נוספים (Mar 29 2026)
+- [ ] RoleSelectionScreen: preload image — hidden, decorative (aria-hidden כבר קיים)
+- [ ] AdminRegionDetailPage: profile photo של עובד — alt עם שם העובד
+- [ ] FindJobs: hero background image — alt תיאורי
+- [ ] MyApplications: hero background image — alt תיאורי
+
+## SEO - alt text fixes (Mar 29 2026)
+- [x] AdminRegionDetailPage: worker profile photo alt
+- [x] FindJobs: hero background image alt
+- [x] MyApplications: hero background image alt

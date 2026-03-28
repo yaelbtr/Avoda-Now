@@ -255,8 +255,7 @@ export default function MyApplications() {
         {/* Hero background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/man-on-sofa_4ff4d4d8.png"
-          alt=""
-          aria-hidden="true"
+          alt="עובד צעיר מעיין בהגשות שלו למשרות זמניות"
           loading="lazy"
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"

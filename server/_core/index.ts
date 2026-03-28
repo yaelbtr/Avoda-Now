@@ -278,6 +278,12 @@ async function startServer() {
       "פתח-תקווה",
       "חולון",
       "הרצליה",
+      "רמת-גן",
+      "בני-ברק",
+      "מודיעין",
+      "אשקלון",
+      "רחובות",
+      "עפולה",
     ];
     for (const city of CITY_LANDING_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/עבודה-זמנית/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);

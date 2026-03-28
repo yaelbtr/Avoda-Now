@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useOrganizationSchema, useWebSiteSchema, useLocalBusinessSchema } from "@/hooks/useStructuredData";
+import { useSEO } from "@/hooks/useSEO";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
 import HomeWorker from "./HomeWorker";
@@ -63,6 +64,13 @@ export default function Home() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
 
+  // Page-level SEO: title (30-60 chars), description, keywords
+  useSEO({
+    title: "AvodaNow — עבודות זמניות בישראל",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. מעסיקים — פרסם משרה ומצא עובדים זמינים קרוב אליך.",
+    keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
+    canonical: "/",
+  });
   // JSON-LD schemas for Google Rich Results
   useOrganizationSchema();
   useWebSiteSchema();

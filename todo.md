@@ -3540,3 +3540,8 @@ Isolation guarantees:
 - [x] דף Landing ייעודי /משרות-זמניות
 - [x] Sitemap.xml — הוספת כל דפי ה-keyword landing בעדיפות 0.9
 - [ ] דפי עיר פרוגרמטיים /עבודה-זמנית/:עיר (שלב עתידי)
+
+## SEO — תיקוני דף הבית (Mar 29 2026)
+- [x] Homepage: הוסף useSEO עם title 30-60 תווים + keywords meta tag
+- [x] HomeWorker: הוסף alt text לתמונה ריקה (not-found-bg)
+- [x] HomeEmployer: הוסף alt text לשתי תמונות הרו (aria-hidden → alt תיאורי)

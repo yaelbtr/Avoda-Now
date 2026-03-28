@@ -170,8 +170,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     navigate("/find-jobs");
   };
   useSEO({
-    title: "דף הבית",
-    description: "הפלטפורמה לעבודות זמניות בישראל. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
+    title: "AvodaNow — עבודות זמניות בישראל",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
+    keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
   });
 
@@ -1320,7 +1321,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div style={{ position: "relative", height: 280, overflow: "hidden" }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
-            alt=""
+            alt="אין משרות זמינות באזור זה כרגע"
             loading="lazy"
             decoding="async"
             style={{

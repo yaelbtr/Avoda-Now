@@ -3556,3 +3556,9 @@ Isolation guarantees:
 - [x] AdminRegionDetailPage: worker profile photo alt
 - [x] FindJobs: hero background image alt
 - [x] MyApplications: hero background image alt
+
+## SEO - City landing pages (Mar 29 2026)
+- [x] Create cityLandingData.ts with data for 10 cities
+- [x] Create CityLandingPage.tsx component (reuses KeywordLandingPage pattern)
+- [x] Register /עבודה-זמנית/:city routes in App.tsx
+- [x] Add city URLs to sitemap

@@ -266,6 +266,22 @@ async function startServer() {
     for (const slug of KEYWORD_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/${encodeURIComponent(slug)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`);
     }
+    // City-specific keyword landing pages: /עבודה-זמנית/:city — priority 0.8
+    const CITY_LANDING_SLUGS = [
+      "תל-אביב",
+      "חיפה",
+      "ירושלים",
+      "ראשון-לציון",
+      "באר-שבע",
+      "נתניה",
+      "אשדוד",
+      "פתח-תקווה",
+      "חולון",
+      "הרצליה",
+    ];
+    for (const city of CITY_LANDING_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/עבודה-זמנית/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);
+    }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
     _sitemapCache = { xml, ts: Date.now() };

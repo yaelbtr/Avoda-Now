@@ -53,6 +53,7 @@ import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
 import MyReferrals from "./pages/MyReferrals";
 import PassoverLandingPage from "./pages/PassoverLandingPage";
 import KeywordLandingPage from "./pages/KeywordLandingPage";
+import CityLandingPage from "./pages/CityLandingPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import SkipToContent from "./components/SkipToContent";
 import ReConsentModal from "./components/ReConsentModal";
@@ -331,6 +332,8 @@ function Router() {
                 <Route path="/best/:slug" component={BestJobsPage} />
                 <Route path="/work/:slug" component={WorkerLandingPage} />
                 {/* Hebrew keyword SEO landing pages */}
+                {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
+                <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>
                 <Route path="/עבודה-זמנית">{() => <KeywordLandingPage />}</Route>
                 <Route path="/עבודה-מיידית">{() => <KeywordLandingPage />}</Route>
                 <Route path="/עבודות-מזדמנות">{() => <KeywordLandingPage />}</Route>

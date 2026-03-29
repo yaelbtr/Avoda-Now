@@ -3562,3 +3562,7 @@ Isolation guarantees:
 - [x] Create CityLandingPage.tsx component (reuses KeywordLandingPage pattern)
 - [x] Register /עבודה-זמנית/:city routes in App.tsx
 - [x] Add city URLs to sitemap
+
+## SEO — קטגוריית שירותי בית בדף הבית
+
+- [x] הוסף סקשן "שירותי בית וניקיון" בדף הבית עם קישורים ל-5 דפי ה-keyword החדשים

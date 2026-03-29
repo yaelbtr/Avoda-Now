@@ -1403,7 +1403,47 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}
+      {/* ── שירותי בית וניקיון — SEO internal links ─────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10"
+        style={{
+          background: "oklch(0.98 0.008 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 16px 24px",
+        }}
+      >
+        <div className="max-w-lg mx-auto">
+          <p className="text-[13px] font-black mb-3" style={{ color: "var(--brand)" }}>🧹 שירותי בית וניקיון</p>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { label: "מנקה לבית", href: "/מנקה-לבית" },
+              { label: "עוזרת בית", href: "/עוזרת-בית" },
+              { label: "דרושה מנקה מהיום", href: "/דרושה-מנקה-מהיום" },
+              { label: "כמה עולה עוזרת בית?", href: "/כמה-עולה-עוזרת-בית" },
+              { label: "מנקה לבית חד פעמי", href: "/מנקה-לבית-חד-פעמי" },
+            ] as const).map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex items-center gap-1 rounded-full text-[12px] font-semibold px-3 py-1.5 transition-all"
+                style={{
+                  background: "oklch(0.93 0.03 122)",
+                  color: "var(--brand)",
+                  border: "1px solid oklch(0.87 0.05 122)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.88 0.06 122)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.03 122)"; }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Employer CTA ────────────────────────────────────────────────────────────────────────────────── */}
       <section
         dir="rtl"
         className="relative z-10 cursor-pointer"
@@ -1411,8 +1451,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           background: "linear-gradient(160deg, oklch(0.91 0.04 91.6) 0%, oklch(0.94 0.025 122.3) 100%)",
           borderTop: "1px solid oklch(0.85 0.06 84.0 / 0.5)",
         }}
-        onClick={resetUserMode}
-        onMouseEnter={(e) => {
+        onClick={resetUserMode}   onMouseEnter={(e) => {
           const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
           if (bar) bar.style.borderRightWidth = '8px';
           const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');

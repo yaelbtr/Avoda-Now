@@ -216,7 +216,8 @@ export default defineConfig({
               id.includes("/react-resizable-panels/") ||
               id.includes("/wouter/") ||
               id.includes("/embla-carousel-react/") ||
-              id.includes("/react-window/")
+              id.includes("/react-window/") ||
+              id.includes("/next-themes/")
             ) {
               return "vendor-ui";
             }

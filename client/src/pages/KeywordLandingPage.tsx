@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { ChevronRight, ChevronDown, ChevronUp, Briefcase, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useSEO } from "@/hooks/useSEO";
@@ -145,7 +145,11 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function KeywordLandingPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug: slugParam } = useParams<{ slug: string }>();
+  const [location] = useLocation();
+  // Routes are registered as exact paths (e.g. /מנקה-לבית) so useParams returns undefined.
+  // Fall back to deriving the slug from the URL pathname directly.
+  const slug = slugParam ?? decodeURIComponent(location.replace(/^\//, "").split("/")[0]);
   const page = getKeywordLandingPage(slug ?? "");
   const { isAuthenticated } = useAuth();
   const authQuery = useAuthQuery();

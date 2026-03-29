@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useWorkerJobs } from "@/contexts/WorkerJobsContext";
 import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -148,7 +149,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [nearbyRadius, setNearbyRadius] = useState(5);
+  // nearbyRadius and setLocation are managed by the shared WorkerJobsContext
+  const {
+    urgentJobs: urgentJobsFromCtx,
+    todayJobs: todayJobsFromCtx,
+    nearbyJobs: nearbyJobsFromCtx,
+    latestJobs: latestJobsFromCtx,
+    isLoading: dashboardLoading,
+    isFallback: nearbyIsFallback,
+    nearbyRadius,
+    setNearbyRadius,
+    setLocation: setWorkerLocation,
+  } = useWorkerJobs();
   const [showMap, setShowMap] = useState(false);
   const [geoRequested, setGeoRequested] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -187,11 +199,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); },
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLng(pos.coords.longitude);
+          // Propagate location to the shared service so the nearby panel fetches
+          setWorkerLocation(pos.coords.latitude, pos.coords.longitude);
+        },
         () => {}
       );
     }
-  }, []);
+  }, [setWorkerLocation]);
 
   useEffect(() => {
     autoScrollRef.current = setInterval(() => {
@@ -221,13 +238,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
-  const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
-  const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
-  const nearbyQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: nearbyRadius, limit: 8 },
-    { enabled: !!userLat }
-  );
-  const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
+  // ── Job data now comes from the shared WorkerJobsContext (single server call) ──
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
   // Age-gate: fetch birth date info to warn minors about late availability
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
@@ -296,13 +307,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     onError: (e) => toast.error(e.message),
   });
 
-  const urgentJobs = urgentQuery.data ?? [];
-  const todayJobs = todayQuery.data ?? [];
-  // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
+  // Derive panel arrays from the shared context (client-side only, O(1))
   type JobItem = { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const jobs = (userLat ? ((nearbyQuery.data as any)?.jobs ?? []) : ((latestQuery.data as any)?.jobs ?? [])) as JobItem[];
-  const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
+  const urgentJobs = urgentJobsFromCtx as unknown as JobItem[];
+  const todayJobs = todayJobsFromCtx as unknown as JobItem[];
+  const jobs = (userLat ? nearbyJobsFromCtx : latestJobsFromCtx) as unknown as JobItem[];
+  const isLoading = dashboardLoading;
   const isAvailable = !!workerStatusQuery.data;
   // availableUntil is a Date returned by the server via superjson
   const availableUntil = (workerStatusQuery.data as { availableUntil?: Date } | null)?.availableUntil ?? null;
@@ -641,7 +651,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       </section>
 
       {/* ── Today Jobs Banner ──────────────────────────────────────────────────── */}
-      {(todayQuery.isLoading || (todayJobs.length > 0)) && (
+      {(dashboardLoading || (todayJobs.length > 0)) && (
         <motion.button
           dir="rtl"
           onClick={() => navigate("/find-jobs?filter=today")}
@@ -672,7 +682,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </div>
           {/* Text */}
           <div className="flex-1 min-w-0">
-            {todayQuery.isLoading ? (
+            {dashboardLoading ? (
               <div className="flex flex-col gap-1.5">
                 <div className="h-3.5 w-40 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.18)" }} />
                 <div className="h-2.5 w-24 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.12)" }} />
@@ -990,7 +1000,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       )}
 
       {/* ── Urgent / Today carousel ───────────────────────────────────────────────────────────────────── */}
-      {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
+      {(allCarouselJobs.length > 0 || dashboardLoading) && (
         <section className="mb-10 relative z-10">
           <motion.div
             className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
@@ -1012,7 +1022,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </button>
           </motion.div>
 
-          {(urgentQuery.isLoading || todayQuery.isLoading) ? (
+          {dashboardLoading ? (
             <div className="px-6"><CarouselSkeletonRow count={3} /></div>
           ) : (
             <div className="relative" style={{ overflow: "hidden" }}>

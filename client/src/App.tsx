@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserModeProvider, useUserMode } from "./contexts/UserModeContext";
+import { WorkerJobsProvider } from "./contexts/WorkerJobsContext";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import EmployerBottomNav from "./components/EmployerBottomNav";
@@ -422,13 +423,15 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <UserModeProvider>
-              <Toaster position="top-center" dir="rtl" />
-              <ReferralCapture />
-              <ReferralSourceCapture />
-              <PostGoogleRegistration />
-              <IdleLogoutManager />
-              <Router />
-              <CookieConsentBanner />
+              <WorkerJobsProvider>
+                <Toaster position="top-center" dir="rtl" />
+                <ReferralCapture />
+                <ReferralSourceCapture />
+                <PostGoogleRegistration />
+                <IdleLogoutManager />
+                <Router />
+                <CookieConsentBanner />
+              </WorkerJobsProvider>
             </UserModeProvider>
           </AuthProvider>
         </TooltipProvider>

@@ -3722,3 +3722,15 @@ Isolation guarantees:
 ## Performance Improvements Round 3 (2026-03-29)
 - [x] Convert How-It-Works images from JPG to WebP: step1 384KB→34KB (91%), step2 206KB→5KB (98%), step3 331KB→18KB (95%)
 - [x] Defer analytics: verified requestIdleCallback already implemented in CookieConsentBanner.tsx with Safari fallback
+
+## Performance Improvements Round 4 (2026-03-29)
+- [x] loading="lazy": N/A — How-It-Works images are CSS background-image on fixed-size divs, not <img> tags. background-image does not block LCP.
+- [x] width/height CLS: N/A — divs have fixed Tailwind classes (w-24 h-20), no layout shift on image load.
+
+## HomeWorker Performance — Shared Jobs Service (2026-03-29)
+- [x] Audit all tRPC calls in HomeWorker (urgent, today, nearby, latest) — 4 parallel calls identified
+- [x] Create unified jobs.getWorkerDashboard procedure: parallel Promise.all for urgent+today+latest, conditional nearby
+- [x] Create WorkerJobsContext: staleTime=3min, gcTime=10min, stable refs, setLocation propagates to shared query
+- [x] Refactor HomeWorker: 4 queries replaced by useWorkerJobs() hook, client-side panel derivation O(1)
+- [x] WorkerJobsProvider mounted in App.tsx inside UserModeProvider
+- [x] Vitest: 6 tests pass for worker.dashboard.test.ts

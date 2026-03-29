@@ -1026,6 +1026,77 @@ const jobsRouter = router({
     }),
 
   /**
+   * Single-shot dashboard query for the worker home screen.
+   * Replaces 4 parallel calls (listUrgent, listToday, list, search) with one
+   * round-trip. The client filters/maps the result per panel — no duplicate
+   * server logic, no extra DB connections.
+   *
+   * Input:
+   *   lat/lng  — worker's current location (optional; nearby panel is skipped when absent)
+   *   radiusKm — search radius for nearby panel (default 10)
+   *
+   * Returns:
+   *   urgent  — up to 4 urgent jobs
+   *   today   — up to 4 jobs starting today
+   *   nearby  — up to 8 jobs near the worker (empty array when lat/lng absent)
+   *   latest  — up to 6 most-recent active jobs
+   *   isFallback — true when nearby fell back to 100 km radius
+   */
+  getWorkerDashboard: publicProcedure
+    .input(
+      z.object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        radiusKm: z.number().min(1).max(200).default(10),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      // Resolve worker age once — reused across all sub-queries
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+
+      const stripPhone = <T extends { contactPhone?: unknown }>(j: T) => ({ ...j, contactPhone: null });
+
+      // Run all non-geo queries in parallel — single DB connection pool burst
+      const [urgentRows, todayRows, latestResult] = await Promise.all([
+        getUrgentJobs(4, undefined, workerAge),
+        getTodayJobs(4, undefined, workerAge),
+        getActiveJobs(6, undefined, undefined, undefined, 0, undefined, undefined, undefined, workerAge),
+      ]);
+
+      // Nearby query is conditional on having a valid location
+      let nearbyJobs: Array<Record<string, unknown> & { distance: number }> = [];
+      let isFallback = false;
+      if (input.lat !== undefined && input.lng !== undefined) {
+        let { rows, total } = await getJobsNearLocation(
+          input.lat, input.lng, input.radiusKm,
+          undefined, 8, undefined, undefined, 0, undefined, undefined, undefined, workerAge
+        );
+        // Expand to 100 km when no results found in the requested radius
+        if (total === 0) {
+          const fallback = await getJobsNearLocation(
+            input.lat, input.lng, 100,
+            undefined, 8, undefined, undefined, 0, undefined, undefined, undefined, workerAge
+          );
+          if (fallback.total > 0) {
+            rows = fallback.rows;
+            isFallback = true;
+          }
+        }
+        nearbyJobs = rows as Array<Record<string, unknown> & { distance: number }>;
+      }
+
+      return {
+        urgent: urgentRows.map(stripPhone),
+        today: todayRows.map(stripPhone),
+        latest: (latestResult.rows as (typeof urgentRows[0])[]).map(stripPhone),
+        nearby: nearbyJobs.map(j => ({ ...j, contactPhone: null })),
+        isFallback,
+      };
+    }),
+
+  /**
    * Call external matching API to get workers matching a job.
    * Returns worker IDs with scores from the external backend.
    */

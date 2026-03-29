@@ -56,6 +56,15 @@ function HomeGuest() {
           </div>
         </div>
       </section>
+      {/* SEO: H2 introduces the two main user paths — required for on-page keyword structure */}
+      <section className="bg-background py-6 px-4 text-center">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
+          מצא עבודה זמנית קרוב אליך — או פרסם משרה ומצא עובדים עכשיו
+        </h2>
+        <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+          AvodaNow מחברת בין עובדים פנויים למעסיקים בכל רחבי ישראל, ללא עמלות ובלי בירוקרטיה.
+        </p>
+      </section>
       <ActivityTicker />
       <LiveStats />
     </div>

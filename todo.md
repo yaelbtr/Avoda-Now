@@ -3694,3 +3694,8 @@ Isolation guarantees:
 - [x] object-src: 'none' — no plugins
 - [x] upgrade-insecure-requests — force HTTPS sub-resources
 - [x] 20 vitest tests passing (csp.test.ts)
+
+## SEO Fixes — Homepage (/)
+- [x] Fix static <title> in index.html to 30-60 chars (was 7 chars before JS ran)
+- [x] Add <meta name="keywords"> to index.html static HTML (not only via JS)
+- [x] Add H2 heading to HomeGuest component for on-page keyword structure

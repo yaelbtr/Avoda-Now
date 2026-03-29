@@ -357,6 +357,7 @@ export default function Admin() {
               { value: "employer-lock", icon: <Lock className="w-4 h-4" />, label: "נעילת מעסיקים" },
               { value: "birthdate-audit", icon: <Calendar className="w-4 h-4" />, label: "ביקורת גיל" },
               { value: "system-logs", icon: <FileText className="w-4 h-4" />, label: "לוגים" },
+              { value: "referral-links", icon: <Share2 className="w-4 h-4" />, label: "קישורי קמפיין" },
             ].map((item) => (
               <button
                 key={item.value}

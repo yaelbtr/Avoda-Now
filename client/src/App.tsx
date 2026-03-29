@@ -270,7 +270,7 @@ function PostGoogleRegistration() {
 }
 
 function Router() {
-  const { needsRoleSelection, setUserMode, userMode } = useUserMode();
+  const { needsRoleSelection, setUserMode, setLocalModeOnly, userMode } = useUserMode();
   const [location, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
 
@@ -303,7 +303,15 @@ function Router() {
   const showRoleSelection = !isAdminRoute && (needsRoleSelection || (isRootPath && !hasRole));
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
-    setUserMode(mode);
+    // RoleSelectionScreen already sent the setMode mutation for authenticated users.
+    // Use setLocalModeOnly to update local state without firing a second mutation,
+    // which could race with the first and cause the server to return a stale mode.
+    // For guests, setUserMode is fine (no mutation involved).
+    if (isAuthenticated) {
+      setLocalModeOnly(mode);
+    } else {
+      setUserMode(mode);
+    }
     if (location !== "/" && location !== "") {
       navigate("/");
     }

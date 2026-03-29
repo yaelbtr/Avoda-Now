@@ -3747,3 +3747,8 @@ Isolation guarantees:
 - [x] Fix: moved route to /api/r/:code (guaranteed to reach Express server via Manus proxy)
 - [x] Updated Admin.tsx: fullUrl, preview text, and instructions now use /api/r/:code
 - [x] Verified: localhost:3000/api/r/hering returns HTTP 302 → /?ref=hering
+
+## Bug Fix — Role Selection Redirects to Wrong Page (2026-03-29)
+- [x] Root cause: double mutation race — RoleSelectionScreen sent setMode("worker"), then handleRoleSelected called setUserMode("worker") which fired a second mutation; modeQuery.refetch() returned stale "employer" from server and overwrote the new mode
+- [x] Fix: handleRoleSelected now calls setLocalModeOnly (no server mutation) for authenticated users; guests still use setUserMode
+- [x] TypeScript: 0 errors

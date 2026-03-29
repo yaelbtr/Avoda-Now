@@ -1709,7 +1709,7 @@ export default function Admin() {
                         value={newLinkForm.code}
                         onChange={(e) => setNewLinkForm(f => ({ ...f, code: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "-") }))}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">ייצור URL: /r/{newLinkForm.code || "code"}</p>
+                      <p className="text-xs text-muted-foreground mt-1">ייצור URL: /api/r/{newLinkForm.code || "code"}</p>
                     </div>
                     <div>
                       <AppLabel>תווית (לתצוגה בלבד)</AppLabel>
@@ -1762,7 +1762,7 @@ export default function Admin() {
                         </thead>
                         <tbody>
                           {referralLinkStatsQuery.data.map((row) => {
-                            const fullUrl = `https://avodanow.co.il/r/${row.code}`;
+                            const fullUrl = `https://avodanow.co.il/api/r/${row.code}`;
                             const convRate = row.clicks > 0 ? ((row.registrations / row.clicks) * 100).toFixed(1) : "0.0";
                             return (
                               <tr key={row.id} className="border-b hover:bg-muted/20 transition-colors">
@@ -1823,7 +1823,7 @@ export default function Admin() {
                   <p className="text-sm font-medium mb-2">איך זה עובד?</p>
                   <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                     <li>צור קישור עם קוד ייחודי לכל קמפיין (למשל: facebook-jan-2026)</li>
-                    <li>שתף את הקישור https://avodanow.co.il/r/קוד בפוסטים / וואצאפ / אימייל</li>
+                    <li>שתף את הקישור https://avodanow.co.il/api/r/קוד בפוסטים / וואצאפ / אימייל</li>
                     <li>כל קליק נספר אוטומטית והמשתמש מופנה לדף הבית</li>
                     <li>אם המשתמש נרשם, הקישור נזכה בהרשמה</li>
                   </ol>

@@ -3741,3 +3741,9 @@ Isolation guarantees:
 - [x] Refactor HomeWorker: removed savedIdsQuery + saveMutation + unsaveMutation, now uses context savedIds + toggleSave
 - [x] Refactor FindJobs: removed savedIdsQuery + saveMutationFj + unsaveMutationFj, now uses context savedIds + toggleSave
 - [x] Vitest: 9 tests pass for worker.savedJobs.test.ts (optimistic save/unsave/rollback/auth-guard)
+
+## Bug Fix — /r/:code Referral Redirect 404 (2026-03-29)
+- [x] Root cause: /r/:code intercepted by express.static middleware before Express routes in production
+- [x] Fix: moved route to /api/r/:code (guaranteed to reach Express server via Manus proxy)
+- [x] Updated Admin.tsx: fullUrl, preview text, and instructions now use /api/r/:code
+- [x] Verified: localhost:3000/api/r/hering returns HTTP 302 → /?ref=hering

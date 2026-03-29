@@ -409,8 +409,11 @@ async function startServer() {
     res.send(content);
   });
 
-  // ── Referral link click tracker: /r/:code → redirect to homepage ─────────────
-  app.get("/r/:code", async (req, res) => {
+  // ── Referral link click tracker: /api/r/:code → redirect to homepage ──────────
+  // NOTE: Must be under /api/ so the Manus proxy routes it to the Express server.
+  // A bare /r/:code path is intercepted by the static-file middleware before
+  // reaching Express, causing a 200 SPA response instead of a 302 redirect.
+  app.get("/api/r/:code", async (req, res) => {
     const { code } = req.params;
     try {
       const { incrementReferralLinkClicks } = await import("../adminDb");

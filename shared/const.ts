@@ -12,6 +12,13 @@ export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
  * Consumed once by PostGoogleRegistration after the OAuth callback.
  */
 export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
+/**
+ * localStorage key for persisting the UTM/referral source captured at first visit.
+ * Set once on landing (fbclid → "facebook", gclid → "google", utm_source → raw value).
+ * Read at OTP verification time and sent to the server as `referralSource`.
+ * Cleared after successful registration.
+ */
+export const REFERRAL_SOURCE_KEY = "avodanow_referral_source";
 export const AXIOS_TIMEOUT_MS = 30_000;
 /** Max support reports per IP/user per hour to prevent abuse */
 export const SUPPORT_REPORT_RATE_LIMIT = 5;

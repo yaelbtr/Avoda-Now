@@ -47,6 +47,8 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Share2,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -126,6 +128,7 @@ export default function Admin() {
 
   // Queries
   const statsQuery = trpc.admin.stats.useQuery(undefined, { enabled: !!user && user.role === "admin" });
+  const referralStatsQuery = trpc.admin.referralStats.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "stats" });
   const jobsQuery = trpc.admin.listJobs.useQuery(
     { status: jobStatusFilter === "all" ? undefined : jobStatusFilter, limit: 100 },
     { enabled: !!user && user.role === "admin" && activeTab === "jobs" }
@@ -432,6 +435,57 @@ export default function Admin() {
                 <StatCard title="משתמשים חדשים היום" value={stats.newUsersToday} icon={UserCheck} color="bg-teal-100 text-teal-600" />
               </div>
             ) : null}
+
+            {/* ─── Referral Source Card ─── */}
+            {referralStatsQuery.data && (() => {
+              const rs = referralStatsQuery.data;
+              const pct = (n: number) => rs.total > 0 ? Math.round((n / rs.total) * 100) : 0;
+              return (
+                <Card className="mt-4">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-blue-500" />
+                      מקורות הרשמה
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div className="rounded-lg bg-blue-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-blue-700">{rs.facebook}</div>
+                        <div className="text-xs text-blue-600 mt-1">📘 פייסבוק</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.facebook)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-red-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-red-700">{rs.google}</div>
+                        <div className="text-xs text-red-600 mt-1">🔍 גוגל</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.google)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-green-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-green-700">{rs.organic}</div>
+                        <div className="text-xs text-green-600 mt-1"><Globe className="inline w-3 h-3" /> אורגני</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.organic)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-gray-700">{rs.other}</div>
+                        <div className="text-xs text-gray-600 mt-1">🔗 אחר</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.other)}%</div>
+                      </div>
+                    </div>
+                    {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic" && b.count > 0).length > 0 && (
+                      <div className="border-t pt-3">
+                        <p className="text-xs text-muted-foreground mb-2">מקורות נוספים:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic").map(b => (
+                            <Badge key={b.source} variant="outline" className="text-xs">{b.source}: {b.count}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-3 border-t pt-2">סה"כ נרשמים עם מקור מעקב: {rs.total.toLocaleString()}</p>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </TabsContent>
 
           {/* ─── Jobs Tab ─── */}

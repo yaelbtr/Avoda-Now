@@ -3574,3 +3574,10 @@ Isolation guarantees:
 ## SEO — קישורים פנימיים בין דפי keyword
 
 - [x] הוסף relatedLinks צולבים בין כל 12 דפי ה-keyword (עבודה זמנית, ניקיון, עיר)
+
+## פאנל ניהול — מקורות הרשמה (fbclid)
+- [x] הוספת עמודת referralSource לטבלת users
+- [x] שמירת fbclid/gclid/utm_source ב-localStorage בכניסה לאתר
+- [x] העברת referralSource בעת הרשמה ל-verifyOtp
+- [x] שמירת referralSource ב-DB בעת יצירת משתמש
+- [x] כרטיסיית 'מקורות הרשמה' בפאנל הניהול

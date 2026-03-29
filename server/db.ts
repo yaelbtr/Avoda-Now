@@ -194,7 +194,9 @@ export async function createUserByPhone(
   email?: string,
   termsAccepted?: boolean,
   /** Pass normalizeIsraeliPhone to enable cross-format duplicate detection */
-  normalizePhone?: (p: string) => string
+  normalizePhone?: (p: string) => string,
+  /** UTM/referral source: "facebook", "google", "organic", or raw utm_source */
+  referralSource?: string
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -216,6 +218,7 @@ export async function createUserByPhone(
     loginMethod: "phone_otp",
     lastSignedIn: new Date(),
     termsAcceptedAt: termsAccepted ? new Date() : null,
+    referralSource: referralSource ?? null,
   });
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];

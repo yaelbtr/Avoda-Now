@@ -157,6 +157,7 @@ import {
   adminGetBirthdateChanges,
   adminGetReportedJobs,
   adminGetStats,
+  adminGetReferralStats,
   adminRejectJob,
   adminSetJobStatus,
   adminSetUserRole,
@@ -349,6 +350,8 @@ const authRouter = router({
         name: z.string().max(100).optional(),
         email: z.string().email().max(320).optional(),
         termsAccepted: z.boolean().optional(),
+        /** UTM/referral source captured from URL params at first visit (e.g. "facebook", "google") */
+        referralSource: z.string().max(64).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -426,7 +429,7 @@ const authRouter = router({
           });
         }
         try {
-          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone);
+          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone, input.referralSource);
           void logEvent("info", "signup.user_created", "New user created via phone OTP", {
             phone,
             userId: user?.id,
@@ -1816,6 +1819,9 @@ const jobsRouter = router({
 const adminRouter = router({
   /** Dashboard statistics */
   stats: adminProcedure.query(async () => adminGetStats()),
+
+  /** Registration source breakdown (fbclid / gclid / utm_source) */
+  referralStats: adminProcedure.query(async () => adminGetReferralStats()),
 
   /** All jobs with optional status filter */
   listJobs: adminProcedure

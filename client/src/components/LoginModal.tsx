@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, KeyboardEvent, ClipboardEvent } from "react";
 import { trpc } from "@/lib/trpc";
+import { REFERRAL_SOURCE_KEY } from "@shared/const";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -304,6 +305,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       if ((data as any).isNewUser && data.user?.id) {
         const consentTypes = ["terms", "privacy", "age_18"] as const;
         consentTypes.forEach((ct) => recordConsent.mutate({ consentType: ct }));
+        // Clear referral source after successful registration — it has been saved to DB
+        localStorage.removeItem(REFERRAL_SOURCE_KEY);
       }
       if (data.user?.userMode) {
         setStep("success");
@@ -442,6 +445,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       phone: normalizedPhone || phone,
       code,
       ...(reg ? { name: reg.name, email: reg.email || undefined, termsAccepted: true } : {}),
+      // Pass referral source only for new registrations; cleared from localStorage after success
+      referralSource: reg ? (localStorage.getItem(REFERRAL_SOURCE_KEY) ?? undefined) : undefined,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verifyOtp, verifyEmailCode, normalizedPhone, phone, isEmailOtpFlow, loginEmail, phoneVal]);

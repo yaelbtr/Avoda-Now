@@ -266,6 +266,12 @@ export const users = pgTable("users", {
    * Values: 16 | 18 (null = no restriction).
    */
   minWorkerAge: integer("minWorkerAge"),
+  /**
+   * UTM / referral source captured at first visit and saved at registration.
+   * Values: "facebook" (fbclid), "google" (gclid), "organic", or raw utm_source.
+   * Set once at signup — never overwritten on subsequent logins.
+   */
+  referralSource: varchar("referralSource", { length: 64 }),
 });
 
 export type User = typeof users.$inferSelect;

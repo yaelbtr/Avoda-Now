@@ -105,7 +105,7 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
     setMeta("og:type", "article");
     setMeta("og:site_name", "AvodaNow");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-    return () => { document.title = "AvodaNow | מצא עבודה או עובדים עכשיו"; };
+    return () => { document.title = "AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
   }, [title, description, jobId]);
   return null;
 }

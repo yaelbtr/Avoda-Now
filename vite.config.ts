@@ -181,7 +181,7 @@ export default defineConfig({
          *  - "vendor-trpc"    : tRPC + TanStack Query (data layer)
          *  - "vendor-ui"      : Radix UI primitives (many small packages)
          *  - "vendor-charts"  : recharts (only loaded if chart.tsx is used)
-         *  - "vendor-misc"    : remaining third-party libs
+         *  - "vendor-lib"     : remaining third-party libs (renamed from vendor-misc to bust CDN cache)
          */
         manualChunks(id: string) {
           if (id.includes("node_modules")) {
@@ -204,7 +204,7 @@ export default defineConfig({
             // Radix UI primitives + ALL React-dependent UI packages
             // CRITICAL: any package that calls React.createContext() at module
             // evaluation time MUST be in vendor-ui (or vendor-react), NOT in
-            // vendor-misc. Loading vendor-misc before React is initialized causes
+            // vendor-lib. Loading vendor-lib before React is initialized causes
             // "Cannot read properties of undefined (reading 'createContext')".
             if (
               id.includes("/@radix-ui/") ||
@@ -237,10 +237,11 @@ export default defineConfig({
             if (id.includes("/lucide-react/")) {
               return "vendor-icons";
             }
-            // All other node_modules → misc vendor chunk
-            // vendor-misc must NOT contain any package that calls
-            // React.createContext() at module evaluation time.
-            return "vendor-misc";
+            // All other node_modules → lib vendor chunk
+            // vendor-lib must NOT contain any package that calls
+            // React.createContext() or accesses lucide icons at module
+            // evaluation time. See vendor-ui block above.
+            return "vendor-lib";
           }
         },
       },

@@ -341,6 +341,11 @@ function Router() {
                 <Route path="/עבודה-לסטודנטים">{() => <KeywordLandingPage />}</Route>
                 <Route path="/עבודה-לנוער">{() => <KeywordLandingPage />}</Route>
                 <Route path="/משרות-זמניות">{() => <KeywordLandingPage />}</Route>
+                <Route path="/מנקה-לבית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/עוזרת-בית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/דרושה-מנקה-מהיום">{() => <KeywordLandingPage />}</Route>
+                <Route path="/כמה-עולה-עוזרת-בית">{() => <KeywordLandingPage />}</Route>
+                <Route path="/מנקה-לבית-חד-פעמי">{() => <KeywordLandingPage />}</Route>
                 <Route path="/my-applications" component={MyApplications} />
                 <Route path="/matched-workers" component={MatchedWorkers} />
                 <Route path="/my-referrals" component={MyReferrals} />

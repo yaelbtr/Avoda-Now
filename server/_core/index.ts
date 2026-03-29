@@ -262,6 +262,11 @@ async function startServer() {
       "עבודה-לסטודנטים",
       "עבודה-לנוער",
       "משרות-זמניות",
+      "מנקה-לבית",
+      "עוזרת-בית",
+      "דרושה-מנקה-מהיום",
+      "כמה-עולה-עוזרת-בית",
+      "מנקה-לבית-חד-פעמי",
     ];
     for (const slug of KEYWORD_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/${encodeURIComponent(slug)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`);

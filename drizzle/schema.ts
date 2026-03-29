@@ -272,6 +272,10 @@ export const users = pgTable("users", {
    * Set once at signup — never overwritten on subsequent logins.
    */
   referralSource: varchar("referralSource", { length: 64 }),
+  /** utm_campaign value captured on first visit (e.g. "summer_promo") */
+  utmCampaign: varchar("utmCampaign", { length: 128 }),
+  /** utm_medium value captured on first visit (e.g. "cpc", "social") */
+  utmMedium: varchar("utmMedium", { length: 64 }),
 });
 
 export type User = typeof users.$inferSelect;

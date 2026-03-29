@@ -19,6 +19,10 @@ export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
  * Cleared after successful registration.
  */
 export const REFERRAL_SOURCE_KEY = "avodanow_referral_source";
+/** localStorage key for utm_campaign captured on first visit (e.g. "summer_promo"). Cleared after registration. */
+export const UTM_CAMPAIGN_KEY = "avodanow_utm_campaign";
+/** localStorage key for utm_medium captured on first visit (e.g. "cpc", "social"). Cleared after registration. */
+export const UTM_MEDIUM_KEY = "avodanow_utm_medium";
 export const AXIOS_TIMEOUT_MS = 30_000;
 /** Max support reports per IP/user per hour to prevent abuse */
 export const SUPPORT_REPORT_RATE_LIMIT = 5;

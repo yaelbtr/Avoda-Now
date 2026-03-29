@@ -2,7 +2,7 @@
  * Admin-only database query helpers.
  * All functions here are called only from adminProcedure-protected routes.
  */
-import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, or, sql } from "drizzle-orm";
 import {
   BirthdateChange, Job,
   applications, birthdateChanges, jobReports, jobs,
@@ -315,26 +315,49 @@ export async function adminGetStats() {
 }
 
 /**
- * Returns registration counts grouped by referralSource.
+ * Returns registration counts grouped by referralSource, utmCampaign, and utmMedium.
  * Used in the admin panel "מקורות הרשמה" card.
  */
 export async function adminGetReferralStats() {
   const db = await getDb();
-  if (!db) return { total: 0, facebook: 0, google: 0, organic: 0, other: 0, breakdown: [] as { source: string; count: number }[] };
+  if (!db) return {
+    total: 0, facebook: 0, google: 0, organic: 0, other: 0,
+    breakdown: [] as { source: string; count: number }[],
+    campaignBreakdown: [] as { campaign: string; count: number }[],
+    mediumBreakdown: [] as { medium: string; count: number }[],
+  };
 
-  const rows = await db
+  // Group by referralSource
+  const sourceRows = await db
     .select({ source: users.referralSource, cnt: count() })
     .from(users)
     .groupBy(users.referralSource);
-
-  const breakdown = rows.map(r => ({ source: r.source ?? "organic", count: Number(r.cnt) }));
+  const breakdown = sourceRows.map(r => ({ source: r.source ?? "organic", count: Number(r.cnt) }));
   const facebook = breakdown.find(r => r.source === "facebook")?.count ?? 0;
   const google   = breakdown.find(r => r.source === "google")?.count ?? 0;
   const organic  = breakdown.filter(r => r.source === "organic" || !r.source).reduce((s, r) => s + r.count, 0);
   const other    = breakdown.filter(r => r.source !== "facebook" && r.source !== "google" && r.source !== "organic" && !!r.source).reduce((s, r) => s + r.count, 0);
   const total    = breakdown.reduce((s, r) => s + r.count, 0);
 
-  return { total, facebook, google, organic, other, breakdown };
+  // Group by utmCampaign (exclude nulls), sorted by count desc
+  const campaignRows = await db
+    .select({ campaign: users.utmCampaign, cnt: count() })
+    .from(users)
+    .where(isNotNull(users.utmCampaign))
+    .groupBy(users.utmCampaign)
+    .orderBy(desc(count()));
+  const campaignBreakdown = campaignRows.map(r => ({ campaign: r.campaign!, count: Number(r.cnt) }));
+
+  // Group by utmMedium (exclude nulls), sorted by count desc
+  const mediumRows = await db
+    .select({ medium: users.utmMedium, cnt: count() })
+    .from(users)
+    .where(isNotNull(users.utmMedium))
+    .groupBy(users.utmMedium)
+    .orderBy(desc(count()));
+  const mediumBreakdown = mediumRows.map(r => ({ medium: r.medium!, count: Number(r.cnt) }));
+
+  return { total, facebook, google, organic, other, breakdown, campaignBreakdown, mediumBreakdown };
 }
 
 // ─── Applications Admin ───────────────────────────────────────────────────────

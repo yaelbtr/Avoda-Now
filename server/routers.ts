@@ -352,6 +352,10 @@ const authRouter = router({
         termsAccepted: z.boolean().optional(),
         /** UTM/referral source captured from URL params at first visit (e.g. "facebook", "google") */
         referralSource: z.string().max(64).optional(),
+        /** utm_campaign value captured at first visit (e.g. "summer_promo") */
+        utmCampaign: z.string().max(128).optional(),
+        /** utm_medium value captured at first visit (e.g. "cpc", "social", "email") */
+        utmMedium: z.string().max(64).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -429,7 +433,7 @@ const authRouter = router({
           });
         }
         try {
-          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone, input.referralSource);
+          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone, input.referralSource, input.utmCampaign, input.utmMedium);
           void logEvent("info", "signup.user_created", "New user created via phone OTP", {
             phone,
             userId: user?.id,

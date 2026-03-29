@@ -481,6 +481,36 @@ export default function Admin() {
                         </div>
                       </div>
                     )}
+
+                    {/* utm_campaign breakdown */}
+                    {rs.campaignBreakdown && rs.campaignBreakdown.length > 0 && (
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-xs font-medium mb-2">📣 קמפיינים (utm_campaign):</p>
+                        <div className="space-y-1">
+                          {rs.campaignBreakdown.map(c => (
+                            <div key={c.campaign} className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground font-mono truncate max-w-[60%]">{c.campaign}</span>
+                              <span className="font-semibold">{c.count} <span className="text-muted-foreground font-normal">({rs.total > 0 ? Math.round((c.count / rs.total) * 100) : 0}%)</span></span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* utm_medium breakdown */}
+                    {rs.mediumBreakdown && rs.mediumBreakdown.length > 0 && (
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-xs font-medium mb-2">📡 מדיה (utm_medium):</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rs.mediumBreakdown.map(m => (
+                            <Badge key={m.medium} variant="secondary" className="text-xs gap-1">
+                              {m.medium} <span className="font-bold">{m.count}</span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <p className="text-xs text-muted-foreground mt-3 border-t pt-2">סה"כ נרשמים עם מקור מעקב: {rs.total.toLocaleString()}</p>
                   </CardContent>
                 </Card>

@@ -61,7 +61,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
-import { PENDING_GOOGLE_REG_KEY, FIND_JOBS_OPEN, REFERRAL_SOURCE_KEY } from "@shared/const";
+import { PENDING_GOOGLE_REG_KEY, FIND_JOBS_OPEN, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
 import { createPortal } from "react-dom";
 import FindJobsComingSoonOverlay from "./components/FindJobsComingSoonOverlay";
 import CookieConsentBanner from "./components/CookieConsentBanner";
@@ -71,20 +71,37 @@ const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
 
 /**
- * Captures UTM/referral source params on first visit and stores in localStorage.
- * Priority: fbclid → "facebook", gclid → "google", utm_source → raw value, else "organic".
- * Stored once — never overwritten on subsequent visits.
+ * Captures UTM/referral params on first visit and stores in localStorage.
+ * Each key is captured independently and never overwritten on subsequent visits.
+ *
+ * referralSource: fbclid → "facebook", gclid → "google", utm_source → raw value
+ * utmCampaign   : utm_campaign raw value (e.g. "summer_promo")
+ * utmMedium     : utm_medium raw value (e.g. "cpc", "social", "email")
+ *
+ * All three are read at OTP verification and sent to the server for attribution.
+ * Cleared from localStorage after successful new-user registration.
  */
 function ReferralSourceCapture() {
   useEffect(() => {
-    // Only capture once — never overwrite an existing value
-    if (localStorage.getItem(REFERRAL_SOURCE_KEY)) return;
     const params = new URLSearchParams(window.location.search);
-    let source: string | null = null;
-    if (params.has("fbclid")) source = "facebook";
-    else if (params.has("gclid")) source = "google";
-    else if (params.get("utm_source")) source = params.get("utm_source")!.slice(0, 64);
-    if (source) localStorage.setItem(REFERRAL_SOURCE_KEY, source);
+    // Capture referral source once — never overwrite
+    if (!localStorage.getItem(REFERRAL_SOURCE_KEY)) {
+      let source: string | null = null;
+      if (params.has("fbclid")) source = "facebook";
+      else if (params.has("gclid")) source = "google";
+      else if (params.get("utm_source")) source = params.get("utm_source")!.slice(0, 64);
+      if (source) localStorage.setItem(REFERRAL_SOURCE_KEY, source);
+    }
+    // Capture utm_campaign once — never overwrite
+    if (!localStorage.getItem(UTM_CAMPAIGN_KEY)) {
+      const campaign = params.get("utm_campaign");
+      if (campaign) localStorage.setItem(UTM_CAMPAIGN_KEY, campaign.slice(0, 128));
+    }
+    // Capture utm_medium once — never overwrite
+    if (!localStorage.getItem(UTM_MEDIUM_KEY)) {
+      const medium = params.get("utm_medium");
+      if (medium) localStorage.setItem(UTM_MEDIUM_KEY, medium.slice(0, 64));
+    }
   }, []);
   return null;
 }

@@ -3581,3 +3581,10 @@ Isolation guarantees:
 - [x] העברת referralSource בעת הרשמה ל-verifyOtp
 - [x] שמירת referralSource ב-DB בעת יצירת משתמש
 - [x] כרטיסיית 'מקורות הרשמה' בפאנל הניהול
+
+## SEO — הרחבת מעקב UTM
+
+- [x] הוסף עמודות utmCampaign ו-utmMedium לטבלת users
+- [x] שמור utm_campaign ו-utm_medium ב-localStorage בכניסה ראשונה
+- [x] העבר utm_campaign ו-utm_medium ב-verifyOtp ושמור ב-DB
+- [x] הצג פירוט קמפיינים ומדיה בכרטיסיית "מקורות הרשמה" בפאנל הניהול

@@ -1,5 +1,9 @@
 # Job-Now TODO
 
+## Bug Fix — Hydration Mismatch
+- [x] החזרת createRoot במקום hydrateRoot (אין SSR אמיתי, hydrateRoot גורם למחיקת ה-SSR shell)
+- [x] העברת SSR shell מחוץ ל-#root כדי שלא יהיה conflict עם React render
+
 ## Phase 1: Database & Schema
 - [ ] Jobs table: title, description, category, location (lat/lng), address, salary, contactPhone, contactName, postedBy, status, createdAt
 - [ ] OTP table: phone, code, expiresAt, used

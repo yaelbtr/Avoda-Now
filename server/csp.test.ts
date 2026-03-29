@@ -157,4 +157,39 @@ describe("buildCspDirectives — Content-Security-Policy builder", () => {
     const { formAction } = buildCspDirectives();
     expect(formAction).toEqual(["'self'"]);
   });
+
+  // ── 15. dev=true adds HMR relaxations ───────────────────────────────────
+  it("adds 'unsafe-inline' and 'unsafe-eval' to script-src in dev mode", () => {
+    const { scriptSrc } = buildCspDirectives(undefined, true);
+    expect(scriptSrc).toContain("'unsafe-inline'");
+    expect(scriptSrc).toContain("'unsafe-eval'");
+  });
+
+  it("adds ws: and wss: to connect-src in dev mode for Vite HMR", () => {
+    const { connectSrc } = buildCspDirectives(undefined, true);
+    expect(connectSrc).toContain("ws:");
+    expect(connectSrc).toContain("wss:");
+  });
+
+  it("does NOT add 'unsafe-eval' to script-src in production mode", () => {
+    const { scriptSrc } = buildCspDirectives(undefined, false);
+    expect(scriptSrc).not.toContain("'unsafe-eval'");
+  });
+
+  it("does NOT add ws: or wss: to connect-src in production mode", () => {
+    const { connectSrc } = buildCspDirectives(undefined, false);
+    expect(connectSrc).not.toContain("ws:");
+    expect(connectSrc).not.toContain("wss:");
+  });
+
+  // ── 16. upgrade-insecure-requests is absent in dev mode ─────────────────
+  it("omits upgrade-insecure-requests in dev mode (localhost is HTTP)", () => {
+    const directives = buildCspDirectives(undefined, true);
+    expect(directives.upgradeInsecureRequests).toBeUndefined();
+  });
+
+  it("includes upgrade-insecure-requests in production mode", () => {
+    const directives = buildCspDirectives(undefined, false);
+    expect(directives.upgradeInsecureRequests).toBeDefined();
+  });
 });

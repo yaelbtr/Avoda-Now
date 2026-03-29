@@ -59,31 +59,30 @@ export const corsMiddleware = cors({
 });
 
 // ── Helmet security headers ──────────────────────────────────────────────────
-// CSP is enabled in production; in development Vite HMR requires a relaxed policy.
+// CSP is enabled in ALL environments.
+// In development, extra Vite HMR directives are added to avoid blocking hot-reload.
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
  * buildCspDirectives — returns a complete, nonce-aware CSP directive map.
  *
  * Design decisions:
- *  - 'unsafe-inline' is REMOVED from script-src; replaced by nonce-based allowance.
- *    The SSR shell inline <script> tags in index.html must carry the matching nonce.
- *  - 'unsafe-inline' is kept in style-src because Tailwind CSS-in-JS and Radix UI
- *    inject inline styles at runtime; removing it would break the UI.
- *  - img-src uses specific CDN hostnames instead of 'https:' wildcard to reduce
- *    the attack surface for content injection.
- *  - connect-src covers: tRPC API (self), Manus Forge proxy (Maps + LLM),
- *    Manus OAuth, Umami analytics, and browser Push endpoint (dynamic, so 'https:').
- *  - worker-src 'self' blob: covers the /sw.js service worker and dynamic workers.
- *  - frame-src 'none' prevents clickjacking via iframes.
- *  - upgrade-insecure-requests forces HTTP→HTTPS for all sub-resources.
+ *  - 'unsafe-inline' is REMOVED from script-src in production; replaced by nonce + 'strict-dynamic'.
+ *  - 'unsafe-inline' is kept in style-src (Tailwind + Radix UI inject inline styles at runtime).
+ *  - img-src uses explicit CDN hostnames instead of 'https:' wildcard.
+ *  - connect-src covers: tRPC (self), Forge proxy (Maps/LLM), OAuth, Umami, Push.
+ *  - worker-src 'self' blob: covers /sw.js service worker.
+ *  - frame-src / object-src: 'none' — clickjacking + plugin protection.
  *
- * @param nonce - A per-request cryptographic nonce (base64). When provided, it is
- *                added to script-src so the SSR shell inline scripts are allowed.
- *                When omitted (e.g. for API-only responses), script-src uses
- *                'strict-dynamic' only.
+ * @param nonce - Per-request cryptographic nonce (base64). Injected into script-src
+ *                alongside 'strict-dynamic' to allow SSR shell inline scripts.
+ * @param dev   - When true, adds Vite HMR relaxations: 'unsafe-inline', 'unsafe-eval',
+ *                ws:, wss:. NEVER set in production.
  */
-export function buildCspDirectives(nonce?: string): Record<string, string[]> {
+export function buildCspDirectives(
+  nonce?: string,
+  dev = false
+): Record<string, string[]> {
   const scriptSrc: string[] = [
     "'self'",
     // Manus Forge proxy serves the Google Maps JS SDK
@@ -93,7 +92,6 @@ export function buildCspDirectives(nonce?: string): Record<string, string[]> {
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
     // Umami analytics (injected dynamically only after cookie consent)
-    // Allow any subdomain of manus.space for Umami self-hosted instances
     "https://*.manus.space",
   ];
 
@@ -101,6 +99,33 @@ export function buildCspDirectives(nonce?: string): Record<string, string[]> {
     // Nonce allows the specific inline <script> tags in index.html (SSR shell).
     // 'strict-dynamic' propagates trust to scripts loaded by the nonce-allowed script.
     scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'");
+  }
+
+  if (dev) {
+    // Vite HMR injects inline scripts and uses eval() for hot-module replacement.
+    // These are only safe in a local development environment — NEVER in production.
+    scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");
+  }
+
+  const connectSrc: string[] = [
+    "'self'",
+    // Manus Forge proxy: Maps API + LLM
+    "https://forge.butterfly-effect.dev",
+    "https://forge.manus.im",
+    // Manus OAuth backend
+    "https://api.manus.im",
+    // Google Maps API (direct calls from Maps SDK)
+    "https://maps.googleapis.com",
+    // Umami analytics beacon
+    "https://*.manus.space",
+    // Browser Web Push subscriptions (endpoint is dynamic per browser)
+    "https:",
+  ];
+
+  if (dev) {
+    // Vite HMR uses WebSocket on the same host for hot-reload.
+    // wss: covers the encrypted WebSocket used by the Vite dev server.
+    connectSrc.push("ws:", "wss:");
   }
 
   return {
@@ -148,20 +173,7 @@ export function buildCspDirectives(nonce?: string): Record<string, string[]> {
     ],
 
     // XHR / fetch / WebSocket connections
-    connectSrc: [
-      "'self'",
-      // Manus Forge proxy: Maps API + LLM
-      "https://forge.butterfly-effect.dev",
-      "https://forge.manus.im",
-      // Manus OAuth backend
-      "https://api.manus.im",
-      // Google Maps API (direct calls from Maps SDK)
-      "https://maps.googleapis.com",
-      // Umami analytics beacon
-      "https://*.manus.space",
-      // Browser Web Push subscriptions (endpoint is dynamic per browser)
-      "https:",
-    ],
+    connectSrc,
 
     // Service Worker and dynamic workers
     workerSrc: ["'self'", "blob:"],
@@ -181,17 +193,18 @@ export function buildCspDirectives(nonce?: string): Record<string, string[]> {
     // Form submissions only to same origin
     formAction: ["'self'"],
 
-    // Force all HTTP sub-resources to HTTPS
-    upgradeInsecureRequests: [],
+    // Force all HTTP sub-resources to HTTPS (skipped in dev — localhost is HTTP)
+    ...(dev ? {} : { upgradeInsecureRequests: [] }),
   };
 }
 
 export const securityHeaders = helmet({
-  // In production: full CSP without nonce (nonce is injected per-request in serveStatic).
-  // In development: disabled to allow Vite HMR websocket and hot module replacement.
-  contentSecurityPolicy: isProduction
-    ? { directives: buildCspDirectives() }
-    : false,
+  // CSP is active in ALL environments.
+  // Production: strict nonce-based policy (nonce injected per-request in serveStatic).
+  // Development: same policy + Vite HMR relaxations (unsafe-inline, unsafe-eval, ws:).
+  contentSecurityPolicy: {
+    directives: buildCspDirectives(undefined, !isProduction),
+  },
   // Required for Google Maps (COEP would block cross-origin map tiles)
   crossOriginEmbedderPolicy: false,
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },

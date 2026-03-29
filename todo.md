@@ -3718,3 +3718,7 @@ Isolation guarantees:
 - [x] Code splitting: verified html2canvas already split (202KB chunk), recharts tree-shaken (not in bundle), code splitting already optimal
 - [x] CDN upload: moved 3 How-It-Works images from lh3.googleusercontent.com to CloudFront (step1/2/3 now on d2xsxph8kpxj0f.cloudfront.net)
 - [x] SSR/Pre-render: verified SSR shell already exists in index.html (navbar + hero + CTA + skeleton cards for FindJobs/AvailableWorkers)
+
+## Performance Improvements Round 3 (2026-03-29)
+- [x] Convert How-It-Works images from JPG to WebP: step1 384KB→34KB (91%), step2 206KB→5KB (98%), step3 331KB→18KB (95%)
+- [x] Defer analytics: verified requestIdleCallback already implemented in CookieConsentBanner.tsx with Safari fallback

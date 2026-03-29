@@ -3647,3 +3647,20 @@ Isolation guarantees:
 - [ ] Fix 8: Font optimization — font-display: swap, preload 1 weight, remove unused weights
 - [ ] Fix 9: Server — gzip/brotli, Cache-Control immutable for static assets
 - [ ] Fix 10: Validate targets — FCP < 2.5s, LCP < 4s, Performance 70-85+
+
+## Admin Notifications Panel
+- [ ] Extend DB: add notification_logs table (per-worker delivery tracking: jobId, workerId, channel, status, sentAt, errorMsg)
+- [ ] tRPC procedures: admin.getNotificationBatches, admin.getNotificationLogs (admin-only)
+- [ ] AdminNotifications page: job list with notification stats (total sent, success, failed)
+- [ ] Per-job expandable table: worker name, channel (SMS/Push), status, timestamp
+- [ ] Register /admin/notifications route in App.tsx
+- [ ] Add to admin sidebar navigation
+
+## Admin Notification Tracking (2026-03-29)
+- [x] DB: notification_logs table (batchId, jobId, workerId, channel, status, errorMsg, phone, sentAt)
+- [x] DB: notification_channel enum (sms, push) and notification_status enum (sent, failed, skipped)
+- [x] Server: db.ts — insertNotificationLog, getNotificationLogsForJob, getNotificationBatchSummaryForJob, getJobsWithNotificationStats helpers
+- [x] Server: adminDb.ts — re-exports notification log helpers for admin router
+- [x] Server: routers.ts — admin.getJobsWithNotificationStats, admin.getNotificationLogsForJob, admin.getNotificationBatchSummaryForJob procedures
+- [x] Frontend: AdminNotificationTracking.tsx — per-job tracking component with expandable per-worker log table
+- [x] Frontend: Admin.tsx — added "מעקב הודעות" tab (mobile + desktop) wired to AdminNotificationTrackingTab

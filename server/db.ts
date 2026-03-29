@@ -41,6 +41,9 @@ import {
   BirthdateChange,
   systemLogs,
   SystemLog,
+  notificationLogs,
+  NotificationLog,
+  InsertNotificationLog,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
@@ -3670,4 +3673,135 @@ export async function getOfferedWorkerIdsForEmployer(
     result.get(row.workerId)!.add(row.jobId);
   }
   return result;
+}
+
+// ─── Notification Logs ────────────────────────────────────────────────────────
+
+/**
+ * Insert a single notification log entry.
+ * Called from the notification dispatch script/procedure after each SMS/push attempt.
+ */
+export async function insertNotificationLog(data: {
+  batchId: number | null;
+  jobId: number;
+  workerId: number;
+  channel: "sms" | "push";
+  status: "sent" | "failed" | "skipped";
+  errorMsg?: string;
+  phone?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notificationLogs).values({
+    batchId: data.batchId,
+    jobId: data.jobId,
+    workerId: data.workerId,
+    channel: data.channel,
+    status: data.status,
+    errorMsg: data.errorMsg ?? null,
+    phone: data.phone ?? null,
+  });
+}
+
+/**
+ * Fetch all notification logs for a given job, joined with worker name + phone.
+ * Returns rows ordered by sentAt DESC.
+ */
+export async function getNotificationLogsForJob(jobId: number): Promise<
+  Array<{
+    id: number;
+    batchId: number | null;
+    workerId: number;
+    workerName: string | null;
+    workerPhone: string | null;
+    channel: "sms" | "push";
+    status: "sent" | "failed" | "skipped";
+    errorMsg: string | null;
+    phone: string | null;
+    sentAt: Date;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: notificationLogs.id,
+      batchId: notificationLogs.batchId,
+      workerId: notificationLogs.workerId,
+      workerName: users.name,
+      workerPhone: users.phone,
+      channel: notificationLogs.channel,
+      status: notificationLogs.status,
+      errorMsg: notificationLogs.errorMsg,
+      phone: notificationLogs.phone,
+      sentAt: notificationLogs.sentAt,
+    })
+    .from(notificationLogs)
+    .leftJoin(users, eq(notificationLogs.workerId, users.id))
+    .where(eq(notificationLogs.jobId, jobId))
+    .orderBy(desc(notificationLogs.sentAt));
+  return rows;
+}
+
+/**
+ * Aggregate summary per batch for a job.
+ * Returns one row per batch with total sent/failed/skipped counts.
+ */
+export async function getNotificationBatchSummaryForJob(jobId: number): Promise<
+  Array<{
+    batchId: number | null;
+    channel: "sms" | "push";
+    status: "sent" | "failed" | "skipped";
+    total: number;
+    createdAt: Date | null;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      batchId: notificationLogs.batchId,
+      channel: notificationLogs.channel,
+      status: notificationLogs.status,
+      total: count(notificationLogs.id),
+      createdAt: notificationBatches.createdAt,
+    })
+    .from(notificationLogs)
+    .leftJoin(notificationBatches, eq(notificationLogs.batchId, notificationBatches.id))
+    .where(eq(notificationLogs.jobId, jobId))
+    .groupBy(notificationLogs.batchId, notificationLogs.channel, notificationLogs.status, notificationBatches.createdAt)
+    .orderBy(desc(notificationBatches.createdAt));
+  return rows;
+}
+
+/**
+ * Get all jobs that have at least one notification log, with aggregate counts.
+ * Used for the admin notification overview list.
+ */
+export async function getJobsWithNotificationStats(): Promise<
+  Array<{
+    jobId: number;
+    jobTitle: string | null;
+    totalSent: number;
+    totalFailed: number;
+    totalSkipped: number;
+    lastSentAt: Date | null;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      jobId: notificationLogs.jobId,
+      jobTitle: jobs.title,
+      totalSent: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'sent')`,
+      totalFailed: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'failed')`,
+      totalSkipped: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'skipped')`,
+      lastSentAt: sql<Date>`MAX(${notificationLogs.sentAt})`,
+    })
+    .from(notificationLogs)
+    .leftJoin(jobs, eq(notificationLogs.jobId, jobs.id))
+    .groupBy(notificationLogs.jobId, jobs.title)
+    .orderBy(sql`MAX(${notificationLogs.sentAt}) DESC`);
+  return rows;
 }

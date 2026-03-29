@@ -172,6 +172,9 @@ import {
   adminCreateUser,
   adminUpdateUser,
   adminDeleteUser,
+  getJobsWithNotificationStats,
+  getNotificationLogsForJob,
+  getNotificationBatchSummaryForJob,
 } from "./adminDb";
 import {
   isValidIsraeliPhone,
@@ -2097,6 +2100,23 @@ const adminRouter = router({
         offset: input.offset,
       });
     }),
+
+  // ─── Notification Logs ──────────────────────────────────────────────────────
+
+  /** List all jobs that have notification logs, with aggregate sent/failed/skipped counts */
+  getJobsWithNotificationStats: adminProcedure.query(async () =>
+    getJobsWithNotificationStats()
+  ),
+
+  /** Per-worker notification logs for a specific job */
+  getNotificationLogsForJob: adminProcedure
+    .input(z.object({ jobId: z.number().int().positive() }))
+    .query(async ({ input }) => getNotificationLogsForJob(input.jobId)),
+
+  /** Batch-level summary (sent/failed/skipped per batch) for a specific job */
+  getNotificationBatchSummaryForJob: adminProcedure
+    .input(z.object({ jobId: z.number().int().positive() }))
+    .query(async ({ input }) => getNotificationBatchSummaryForJob(input.jobId)),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
 

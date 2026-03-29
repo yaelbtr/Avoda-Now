@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AdminCategoriesTab } from "./AdminCategories";
 import { AdminRegionsTab } from "./AdminRegions";
+import { AdminNotificationTrackingTab } from "./AdminNotificationTracking";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppSelect, AppTextarea, AppLabel } from "@/components/ui";
@@ -349,6 +350,7 @@ export default function Admin() {
               { value: "users", icon: <Users className="w-4 h-4" />, label: "משתמשים" },
               { value: "applications", icon: <Briefcase className="w-4 h-4" />, label: "מועמדויות" },
               { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
+              { value: "notif-tracking", icon: <Bell className="w-4 h-4" />, label: "מעקב הודעות" },
               { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
               { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
               { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
@@ -407,6 +409,10 @@ export default function Admin() {
             <TabsTrigger value="batches" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               הודעות מקובצות
+            </TabsTrigger>
+            <TabsTrigger value="notif-tracking" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              מעקב הודעות
             </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
@@ -1675,6 +1681,11 @@ export default function Admin() {
                 </p>
               )}
             </div>
+          </TabsContent>
+
+          {/* ─── Notification Tracking Tab ─── */}
+          <TabsContent value="notif-tracking">
+            <AdminNotificationTrackingTab />
           </TabsContent>
 
           {/* ─── Referral Links Tab ─── */}

@@ -1,0 +1,19 @@
+{
+  "query": "\n-- Overview of users and their location data\nSELECT \n  COUNT(*) as total_users,\n  COUNT(CASE WHEN role = 'user' THEN 1 END) as workers,\n  COUNT(CASE WHEN role = 'employer' THEN 1 END) as employers,\n  COUNT(CASE WHEN \"workerLocation\" IS NOT NULL THEN 1 END) as has_worker_location,\n  COUNT(CASE WHEN \"preferredCity\" IS NOT NULL THEN 1 END) as has_preferred_city,\n  COUNT(CASE WHEN \"workerSearchCity\" IS NOT NULL THEN 1 END) as has_worker_search_city,\n  COUNT(CASE WHEN \"workerLatitude\" IS NOT NULL THEN 1 END) as has_lat\nFROM users\nWHERE status = 'active';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \n-- Overview of users and their location data\nSELECT \n  COUNT(*) as total_users,\n  COUNT(CASE WHEN role = 'user' THEN 1 END) as workers,\n  COUNT(CASE WHEN role = 'employer' THEN 1 END) as employers,\n  COUNT(CASE WHEN \"workerLocation\" IS NOT NULL THEN 1 END) as has_worker_location,\n  COUNT(CASE WHEN \"preferredCity\" IS NOT NULL THEN 1 END) as has_preferred_city,\n  COUNT(CASE WHEN \"workerSearchCity\" IS NOT NULL THEN 1 END) as has_worker_search_city,\n  COUNT(CASE WHEN \"workerLatitude\" IS NOT NULL THEN 1 END) as has_lat\nFROM users\nWHERE status = 'active';\n",
+  "rows": [
+    {
+      "total_users": "4",
+      "workers": "1",
+      "employers": "0",
+      "has_worker_location": "4",
+      "has_preferred_city": "4",
+      "has_worker_search_city": "4",
+      "has_lat": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_users\tworkers\temployers\thas_worker_location\thas_preferred_city\thas_worker_search_city\thas_lat\n4\t1\t0\t4\t4\t4\t4\n",
+  "stderr": "",
+  "execution_time_ms": 1559
+}

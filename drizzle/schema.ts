@@ -866,3 +866,45 @@ export const referralLinks = pgTable(
 );
 export type ReferralLink = typeof referralLinks.$inferSelect;
 export type InsertReferralLink = typeof referralLinks.$inferInsert;
+
+// ─── Notification Logs ────────────────────────────────────────────────────────
+/**
+ * notification_logs — per-worker delivery record for every notification dispatch.
+ * One row per worker per batch. Enables the admin panel to show exactly who was
+ * notified, via which channel, and whether delivery succeeded.
+ *
+ * channel: "sms" | "push"
+ * status:  "sent" | "failed" | "skipped"
+ * errorMsg: populated only on failure (e.g. "Twilio error 21211", "no subscription")
+ */
+export const notificationChannelEnum = pgEnum("notification_channel", ["sms", "push"]);
+export const notificationStatusEnum = pgEnum("notification_status", ["sent", "failed", "skipped"]);
+
+export const notificationLogs = pgTable(
+  "notification_logs",
+  {
+    id: serial("id").primaryKey(),
+    /** The notification batch this log belongs to */
+    batchId: integer("batch_id").references(() => notificationBatches.id, { onDelete: "set null" }),
+    /** The job this notification was about */
+    jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    /** The worker who received (or should have received) the notification */
+    workerId: integer("worker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** Delivery channel */
+    channel: notificationChannelEnum("channel").notNull(),
+    /** Delivery outcome */
+    status: notificationStatusEnum("status").notNull(),
+    /** Error detail when status = 'failed' */
+    errorMsg: text("error_msg"),
+    /** Phone number used for SMS (E.164), null for push */
+    phone: varchar("phone", { length: 20 }),
+    sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("notif_logs_job_idx").on(t.jobId),
+    index("notif_logs_worker_idx").on(t.workerId),
+    index("notif_logs_batch_idx").on(t.batchId),
+  ]
+);
+export type NotificationLog = typeof notificationLogs.$inferSelect;
+export type InsertNotificationLog = typeof notificationLogs.$inferInsert;

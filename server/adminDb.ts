@@ -644,3 +644,10 @@ export async function adminGetReferralLinkStats() {
         : 0,
   }));
 }
+
+// ─── Notification Log helpers (re-exported from db.ts for admin router) ───────
+export {
+  getJobsWithNotificationStats,
+  getNotificationLogsForJob,
+  getNotificationBatchSummaryForJob,
+} from "./db";

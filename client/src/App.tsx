@@ -20,7 +20,7 @@ import SkipToContent from "./components/SkipToContent";
 import ReConsentModal from "./components/ReConsentModal";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { IdleLogoutManager } from "./components/IdleLogoutManager";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { trpc } from "./lib/trpc";
 import { PENDING_GOOGLE_REG_KEY, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
@@ -289,6 +289,27 @@ function Router() {
   const [location, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
 
+  // Detect campaign/referral entry on first render only.
+  // When a user arrives via a campaign link (?ref=, ?utm_*, ?fbclid, ?gclid),
+  // we force the role selection screen regardless of any cached role in
+  // localStorage or sessionStorage — the user must explicitly choose their role.
+  // We use a local flag (not resetUserMode) to avoid sending a server mutation
+  // that would permanently clear the user's saved role in the database.
+  const isCampaignEntry = useMemo(() => {
+    const p = new URLSearchParams(window.location.search);
+    return (
+      p.has("ref") ||
+      p.has("fbclid") ||
+      p.has("gclid") ||
+      p.has("utm_source") ||
+      p.has("utm_campaign")
+    );
+  }, []); // stable — URL params don't change after mount
+
+  // campaignRoleSelected: becomes true once the user explicitly picks a role
+  // during this campaign-link session, so the flag stops overriding showRoleSelection.
+  const [campaignRoleSelected, setCampaignRoleSelected] = useState(false);
+
   // Maintenance mode gate: show MaintenancePage to all non-admin users
   const maintenanceQuery = trpc.maintenance.status.useQuery(undefined, {
     // Poll every 60 seconds so the page auto-unblocks when admin turns off maintenance
@@ -299,7 +320,6 @@ function Router() {
   const isTestUser = user?.role === "test";
   const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
-
   // Maintenance gate: non-blocking — render the page immediately.
   // Only redirect to MaintenancePage once we have a confirmed active=true response.
   // Errors and loading states are treated as "not in maintenance" to avoid
@@ -307,15 +327,19 @@ function Router() {
   if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
     return <MaintenancePage />;
   }
-
   // Show RoleSelectionScreen when:
   // 1. Authenticated user has no role yet (needsRoleSelection), OR
-  // 2. Guest is on the root path AND has no saved session role
+  // 2. Guest is on the root path AND has no saved session role, OR
+  // 3. Campaign entry: user arrived via a campaign link and hasn't chosen a role yet
   // Exception: admins and test users navigating to /admin routes bypass role selection
   const isRootPath = location === "/" || location === "";
   const hasRole = userMode !== null;
   const isAdminRoute = location.startsWith("/admin");
-  const showRoleSelection = !isAdminRoute && (needsRoleSelection || (isRootPath && !hasRole));
+  const showRoleSelection =
+    !isAdminRoute &&
+    (needsRoleSelection ||
+      (isRootPath && !hasRole) ||
+      (isCampaignEntry && !campaignRoleSelected));
 
   const handleRoleSelected = (mode: "worker" | "employer") => {
     // RoleSelectionScreen already sent the setMode mutation for authenticated users.
@@ -327,6 +351,8 @@ function Router() {
     } else {
       setUserMode(mode);
     }
+    // Mark campaign role as selected so showRoleSelection stops overriding
+    if (isCampaignEntry) setCampaignRoleSelected(true);
     if (location !== "/" && location !== "") {
       navigate("/");
     }

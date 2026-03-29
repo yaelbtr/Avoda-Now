@@ -201,8 +201,23 @@ export default defineConfig({
             ) {
               return "vendor-trpc";
             }
-            // Radix UI primitives
-            if (id.includes("/@radix-ui/")) {
+            // Radix UI primitives + ALL React-dependent UI packages
+            // CRITICAL: any package that calls React.createContext() at module
+            // evaluation time MUST be in vendor-ui (or vendor-react), NOT in
+            // vendor-misc. Loading vendor-misc before React is initialized causes
+            // "Cannot read properties of undefined (reading 'createContext')".
+            if (
+              id.includes("/@radix-ui/") ||
+              id.includes("/cmdk/") ||
+              id.includes("/vaul/") ||
+              id.includes("/sonner/") ||
+              id.includes("/streamdown/") ||
+              id.includes("/input-otp/") ||
+              id.includes("/react-resizable-panels/") ||
+              id.includes("/wouter/") ||
+              id.includes("/embla-carousel-react/") ||
+              id.includes("/react-window/")
+            ) {
               return "vendor-ui";
             }
             // Recharts + D3 (only loaded when chart.tsx is used)
@@ -221,11 +236,9 @@ export default defineConfig({
             if (id.includes("/lucide-react/")) {
               return "vendor-icons";
             }
-            // react-window — virtualization for FindJobs large list
-            if (id.includes("/react-window/")) {
-              return "vendor-virtualize";
-            }
             // All other node_modules → misc vendor chunk
+            // vendor-misc must NOT contain any package that calls
+            // React.createContext() at module evaluation time.
             return "vendor-misc";
           }
         },

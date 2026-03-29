@@ -201,7 +201,7 @@ export default function HomeEmployer() {
   const activeJobs = myJobs.filter((j) => j.status === "active").length;
 
   return (
-    <div dir="rtl" className="min-h-screen" style={{ background: "var(--page-bg)" }}>
+    <div dir="rtl" data-testid="home-employer" className="min-h-screen" style={{ background: "var(--page-bg)" }}>
 
       {/* ── MOBILE Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden md:hidden" style={{ minHeight: "480px" }}>

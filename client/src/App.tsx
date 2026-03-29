@@ -109,6 +109,21 @@ const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
 function ReferralSourceCapture() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+
+    // When arriving via any campaign/referral entry point, clear the cached
+    // guest role so the role selection screen is always shown — the user must
+    // explicitly choose their role instead of being silently routed to a
+    // previously cached one from sessionStorage.
+    const isFromCampaign =
+      params.has("ref") ||
+      params.has("fbclid") ||
+      params.has("gclid") ||
+      params.has("utm_source") ||
+      params.has("utm_campaign");
+    if (isFromCampaign) {
+      try { sessionStorage.removeItem("avoda_now_guest_role"); } catch {}
+    }
+
     // Capture referral source once — never overwrite
     if (!localStorage.getItem(REFERRAL_SOURCE_KEY)) {
       let source: string | null = null;

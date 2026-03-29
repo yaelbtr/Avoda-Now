@@ -3752,3 +3752,11 @@ Isolation guarantees:
 - [x] Root cause: double mutation race — RoleSelectionScreen sent setMode("worker"), then handleRoleSelected called setUserMode("worker") which fired a second mutation; modeQuery.refetch() returned stale "employer" from server and overwrote the new mode
 - [x] Fix: handleRoleSelected now calls setLocalModeOnly (no server mutation) for authenticated users; guests still use setUserMode
 - [x] TypeScript: 0 errors
+
+## E2E Tests — Playwright Role Selection (2026-03-29)
+- [ ] Install Playwright and configure for local dev server
+- [ ] Test: guest selects worker role → HomeWorker shown
+- [ ] Test: guest selects employer role → HomeEmployer shown
+- [ ] Test: authenticated user selects worker → HomeWorker shown (no double mutation)
+- [ ] Test: authenticated user switches employer→worker across sessions → HomeWorker shown
+- [x] Bug: campaign/referral link (?ref=) bypasses role selection — guest role from sessionStorage causes direct navigation to HomeWorker without showing role selection screen

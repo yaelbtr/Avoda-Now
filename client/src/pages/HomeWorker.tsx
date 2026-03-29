@@ -358,7 +358,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const carouselTotal = allCarouselJobs.length;
 
   return (
-    <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
+    <div dir="rtl" data-testid="home-worker" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 

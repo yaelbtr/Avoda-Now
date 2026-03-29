@@ -46,6 +46,7 @@ interface RoleCardProps {
 }
 
 function RoleCard({
+  role,
   image,
   icon,
   title,
@@ -73,6 +74,7 @@ function RoleCard({
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onSelect}
+      data-testid={`role-card-${role}`}
       className="group relative rounded-2xl overflow-hidden cursor-pointer"
       style={{
         background: "white",
@@ -195,6 +197,7 @@ function RoleCard({
         {/* CTA Button */}
         <motion.button
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
+          data-testid={`role-select-${role}`}
           disabled={disabled}
           className="w-full py-3 rounded-xl font-black text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 text-[14px]"
           style={{

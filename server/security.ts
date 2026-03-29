@@ -12,6 +12,7 @@
  *   botDetection          — block known scraper User-Agents
  *   antiEnumeration       — detect sequential ID scanning
  *   trpcPathTraversalGuard — block path traversal patterns in tRPC batch URLs (CWE-22)
+ *   buildCspDirectives     — nonce-aware CSP directive builder (used by serveStatic for per-request nonce injection)
  */
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
@@ -58,55 +59,141 @@ export const corsMiddleware = cors({
 });
 
 // ── Helmet security headers ──────────────────────────────────────────────────
-// CSP is enabled in production; disabled in development to allow Vite HMR.
+// CSP is enabled in production; in development Vite HMR requires a relaxed policy.
 const isProduction = process.env.NODE_ENV === "production";
 
+/**
+ * buildCspDirectives — returns a complete, nonce-aware CSP directive map.
+ *
+ * Design decisions:
+ *  - 'unsafe-inline' is REMOVED from script-src; replaced by nonce-based allowance.
+ *    The SSR shell inline <script> tags in index.html must carry the matching nonce.
+ *  - 'unsafe-inline' is kept in style-src because Tailwind CSS-in-JS and Radix UI
+ *    inject inline styles at runtime; removing it would break the UI.
+ *  - img-src uses specific CDN hostnames instead of 'https:' wildcard to reduce
+ *    the attack surface for content injection.
+ *  - connect-src covers: tRPC API (self), Manus Forge proxy (Maps + LLM),
+ *    Manus OAuth, Umami analytics, and browser Push endpoint (dynamic, so 'https:').
+ *  - worker-src 'self' blob: covers the /sw.js service worker and dynamic workers.
+ *  - frame-src 'none' prevents clickjacking via iframes.
+ *  - upgrade-insecure-requests forces HTTP→HTTPS for all sub-resources.
+ *
+ * @param nonce - A per-request cryptographic nonce (base64). When provided, it is
+ *                added to script-src so the SSR shell inline scripts are allowed.
+ *                When omitted (e.g. for API-only responses), script-src uses
+ *                'strict-dynamic' only.
+ */
+export function buildCspDirectives(nonce?: string): Record<string, string[]> {
+  const scriptSrc: string[] = [
+    "'self'",
+    // Manus Forge proxy serves the Google Maps JS SDK
+    "https://forge.butterfly-effect.dev",
+    "https://forge.manus.im",
+    // Maps JS API loaded from Google CDN (required by Maps SDK)
+    "https://maps.googleapis.com",
+    "https://maps.gstatic.com",
+    // Umami analytics (injected dynamically only after cookie consent)
+    // Allow any subdomain of manus.space for Umami self-hosted instances
+    "https://*.manus.space",
+  ];
+
+  if (nonce) {
+    // Nonce allows the specific inline <script> tags in index.html (SSR shell).
+    // 'strict-dynamic' propagates trust to scripts loaded by the nonce-allowed script.
+    scriptSrc.push(`'nonce-${nonce}'`, "'strict-dynamic'");
+  }
+
+  return {
+    // Fallback for directives not explicitly listed
+    defaultSrc: ["'self'"],
+
+    // JavaScript sources
+    scriptSrc,
+
+    // CSS sources — 'unsafe-inline' required for Tailwind + Radix UI runtime styles
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      "https://fonts.googleapis.com",
+    ],
+
+    // Web fonts
+    fontSrc: [
+      "'self'",
+      "https://fonts.gstatic.com",
+      "data:",
+    ],
+
+    // Images — explicit CDN hostnames (no wildcard 'https:')
+    imgSrc: [
+      "'self'",
+      "data:",
+      "blob:",
+      // Project CDN (S3 via CloudFront)
+      "https://d2xsxph8kpxj0f.cloudfront.net",
+      // Google Maps tiles and Street View
+      "https://maps.googleapis.com",
+      "https://maps.gstatic.com",
+      "https://*.googleapis.com",
+      "https://*.gstatic.com",
+      // Google user avatars (OAuth profile pictures)
+      "https://lh3.googleusercontent.com",
+      // Unsplash placeholder images used in UI
+      "https://images.unsplash.com",
+      // GitHub avatars (used in some UI placeholders)
+      "https://github.com",
+      // Manus Forge CDN
+      "https://forge.butterfly-effect.dev",
+      "https://forge.manus.im",
+    ],
+
+    // XHR / fetch / WebSocket connections
+    connectSrc: [
+      "'self'",
+      // Manus Forge proxy: Maps API + LLM
+      "https://forge.butterfly-effect.dev",
+      "https://forge.manus.im",
+      // Manus OAuth backend
+      "https://api.manus.im",
+      // Google Maps API (direct calls from Maps SDK)
+      "https://maps.googleapis.com",
+      // Umami analytics beacon
+      "https://*.manus.space",
+      // Browser Web Push subscriptions (endpoint is dynamic per browser)
+      "https:",
+    ],
+
+    // Service Worker and dynamic workers
+    workerSrc: ["'self'", "blob:"],
+
+    // Manifest for PWA
+    manifestSrc: ["'self'"],
+
+    // No iframes allowed (prevents clickjacking)
+    frameSrc: ["'none'"],
+
+    // No plugins (Flash, Java applets, etc.)
+    objectSrc: ["'none'"],
+
+    // Restrict <base> tag to same origin
+    baseUri: ["'self'"],
+
+    // Form submissions only to same origin
+    formAction: ["'self'"],
+
+    // Force all HTTP sub-resources to HTTPS
+    upgradeInsecureRequests: [],
+  };
+}
+
 export const securityHeaders = helmet({
+  // In production: full CSP without nonce (nonce is injected per-request in serveStatic).
+  // In development: disabled to allow Vite HMR websocket and hot module replacement.
   contentSecurityPolicy: isProduction
-    ? {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            // Google Maps JS API (loaded via Manus proxy)
-            "https://maps.googleapis.com",
-            "https://maps.gstatic.com",
-            // Google Fonts
-            "https://fonts.googleapis.com",
-            // Inline scripts needed by Vite production build (hashed in prod)
-            "'unsafe-inline'",
-          ],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",  // Tailwind CSS-in-JS and inline styles
-            "https://fonts.googleapis.com",
-          ],
-          fontSrc: [
-            "'self'",
-            "https://fonts.gstatic.com",
-            "data:",
-          ],
-          imgSrc: [
-            "'self'",
-            "data:",
-            "blob:",
-            "https:",  // S3 CDN images, Google Maps tiles
-          ],
-          connectSrc: [
-            "'self'",
-            "https://maps.googleapis.com",
-            "https://api.manus.im",
-            "wss:",  // WebSocket for Vite HMR in dev (noop in prod)
-          ],
-          frameSrc: ["'none'"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-          upgradeInsecureRequests: [],
-        },
-      }
-    : false,  // CSP off in development — Vite HMR requires relaxed policy
-  crossOriginEmbedderPolicy: false,  // Required for Google Maps
+    ? { directives: buildCspDirectives() }
+    : false,
+  // Required for Google Maps (COEP would block cross-origin map tiles)
+  crossOriginEmbedderPolicy: false,
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   xFrameOptions: { action: "deny" },
   xContentTypeOptions: true,

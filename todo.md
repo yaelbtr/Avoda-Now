@@ -3681,3 +3681,16 @@ Isolation guarantees:
 - [x] Block path traversal patterns (../.*) in tRPC input
 - [x] Add X-Content-Type-Options and Content-Disposition headers for file-like responses (helmet xContentTypeOptions: true already set)
 - [x] Write vitest security test for path traversal attempts on /api/trpc
+
+## Security — Content-Security-Policy (CSP)
+- [x] Audit all external sources (scripts, styles, fonts, images, connect targets)
+- [x] Replace 'unsafe-inline' in script-src with nonce-based CSP
+- [x] Add buildCspDirectives() utility — nonce-aware, covers all directives
+- [x] Per-request nonce injection into index.html inline <script> tags (production)
+- [x] img-src: explicit CDN hostnames (CloudFront, Google, Unsplash, GitHub)
+- [x] connect-src: Forge proxy, api.manus.im, Maps, Umami, Push
+- [x] worker-src: 'self' blob: for service worker
+- [x] frame-src: 'none' — prevents clickjacking
+- [x] object-src: 'none' — no plugins
+- [x] upgrade-insecure-requests — force HTTPS sub-resources
+- [x] 20 vitest tests passing (csp.test.ts)

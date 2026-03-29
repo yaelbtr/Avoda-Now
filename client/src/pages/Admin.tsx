@@ -234,6 +234,23 @@ export default function Admin() {
     onError: (e) => toast.error(e.message),
   });
 
+  // Referral link manager
+  const [newLinkForm, setNewLinkForm] = useState({ code: "", label: "", source: "" });
+  const referralLinksQuery = trpc.admin.listReferralLinks.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "referral-links" });
+  const referralLinkStatsQuery = trpc.admin.referralLinkStats.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "referral-links" });
+  const createReferralLink = trpc.admin.createReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); utils.admin.referralLinkStats.invalidate(); setNewLinkForm({ code: "", label: "", source: "" }); toast.success("הקישור נוצר בהצלחה"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const toggleReferralLink = trpc.admin.toggleReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); toast.success("הסטטוס עודכן"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteReferralLink = trpc.admin.deleteReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); utils.admin.referralLinkStats.invalidate(); toast.success("הקישור נמחק"); },
+    onError: (e) => toast.error(e.message),
+  });
+
   // Employer lock
   const employerLockQuery = trpc.admin.getEmployerLock.useQuery(
     undefined,
@@ -414,6 +431,10 @@ export default function Admin() {
             <TabsTrigger value="system-logs" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               לוגים
+            </TabsTrigger>
+            <TabsTrigger value="referral-links" className="flex items-center gap-2">
+              <Share2 className="w-4 h-4" />
+              קישורי מעקב
             </TabsTrigger>
           </TabsList>
 
@@ -1653,6 +1674,150 @@ export default function Admin() {
                   סה&quot;כ {logsQuery.data.total} רשומות
                 </p>
               )}
+            </div>
+          </TabsContent>
+
+          {/* ─── Referral Links Tab ─── */}
+          <TabsContent value="referral-links">
+            <div className="space-y-6" dir="rtl">
+              <div>
+                <h2 className="text-lg font-semibold">קישורי מעקב</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">צור קישורים ייחודיים לכל קמפיין ועקוב קליקים והרשמות בזמן אמת.</p>
+              </div>
+
+              {/* Create new link form */}
+              <Card>
+                <CardHeader><CardTitle className="text-base">צור קישור חדש</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <AppLabel>שם קוד (באנגלית, בלי רווחים)</AppLabel>
+                      <AppInput
+                        dir="ltr"
+                        placeholder="facebook-jan-2026"
+                        value={newLinkForm.code}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, code: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "-") }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">ייצור URL: /r/{newLinkForm.code || "code"}</p>
+                    </div>
+                    <div>
+                      <AppLabel>תווית (לתצוגה בלבד)</AppLabel>
+                      <AppInput
+                        placeholder="פייסבוק ינואר 2026"
+                        value={newLinkForm.label}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, label: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <AppLabel>מקור (utm_source)</AppLabel>
+                      <AppInput
+                        dir="ltr"
+                        placeholder="facebook / whatsapp / email"
+                        value={newLinkForm.source}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, source: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <AppButton
+                    className="mt-3"
+                    disabled={!newLinkForm.code || !newLinkForm.label || !newLinkForm.source || createReferralLink.isPending}
+                    onClick={() => createReferralLink.mutate(newLinkForm)}
+                  >
+                    {createReferralLink.isPending ? "יוצר..." : "צור קישור"}
+                  </AppButton>
+                </CardContent>
+              </Card>
+
+              {/* Stats table */}
+              {referralLinkStatsQuery.isLoading ? (
+                <div className="space-y-2">{[...Array(3)].map((_, i) => <Card key={i}><CardContent className="pt-4"><div className="h-12 bg-muted animate-pulse rounded" /></CardContent></Card>)}</div>
+              ) : referralLinkStatsQuery.data && referralLinkStatsQuery.data.length > 0 ? (
+                <Card>
+                  <CardHeader><CardTitle className="text-base">סטטיסטיקות קישורים</CardTitle></CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/40 text-right">
+                            <th className="px-4 py-2.5 font-medium">תווית</th>
+                            <th className="px-4 py-2.5 font-medium">קוד</th>
+                            <th className="px-4 py-2.5 font-medium">מקור</th>
+                            <th className="px-4 py-2.5 font-medium text-center">קליקים</th>
+                            <th className="px-4 py-2.5 font-medium text-center">נרשמים</th>
+                            <th className="px-4 py-2.5 font-medium text-center">המרה</th>
+                            <th className="px-4 py-2.5 font-medium text-center">סטטוס</th>
+                            <th className="px-4 py-2.5 font-medium text-center">פעולות</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {referralLinkStatsQuery.data.map((row) => {
+                            const fullUrl = `https://avodanow.co.il/r/${row.code}`;
+                            const convRate = row.clicks > 0 ? ((row.registrations / row.clicks) * 100).toFixed(1) : "0.0";
+                            return (
+                              <tr key={row.id} className="border-b hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3 font-medium">{row.label}</td>
+                                <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">{row.code}</td>
+                                <td className="px-4 py-3"><Badge variant="secondary">{row.source}</Badge></td>
+                                <td className="px-4 py-3 text-center font-semibold">{row.clicks}</td>
+                                <td className="px-4 py-3 text-center font-semibold text-green-600">{row.registrations}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className={`font-semibold ${parseFloat(convRate) >= 10 ? "text-green-600" : parseFloat(convRate) >= 3 ? "text-yellow-600" : "text-muted-foreground"}`}>
+                                    {convRate}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <Badge variant={row.isActive ? "default" : "secondary"}>{row.isActive ? "פעיל" : "מושבת"}</Badge>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2 justify-center">
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => { navigator.clipboard.writeText(fullUrl); toast.success("הקישור הועתק"); }}
+                                    >
+                                      העתק
+                                    </AppButton>
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => toggleReferralLink.mutate({ id: row.id, isActive: !row.isActive })}
+                                    >
+                                      {row.isActive ? "בטל" : "הפעל"}
+                                    </AppButton>
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                      onClick={() => confirm("מחיקת קישור", `האם למחוק את הקישור "${row.label}"? הנתונים לא ישוחזרו.`, () => deleteReferralLink.mutate({ id: row.id }))}
+                                    >
+                                      מחק
+                                    </AppButton>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : referralLinkStatsQuery.isFetched ? (
+                <Card><CardContent className="py-10 text-center text-muted-foreground">אין קישורים עדיין. צור קישור ראשון למעלה.</CardContent></Card>
+              ) : null}
+
+              {/* How it works */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <p className="text-sm font-medium mb-2">איך זה עובד?</p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>צור קישור עם קוד ייחודי לכל קמפיין (למשל: facebook-jan-2026)</li>
+                    <li>שתף את הקישור https://avodanow.co.il/r/קוד בפוסטים / וואצאפ / אימייל</li>
+                    <li>כל קליק נספר אוטומטית והמשתמש מופנה לדף הבית</li>
+                    <li>אם המשתמש נרשם, הקישור נזכה בהרשמה</li>
+                  </ol>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 

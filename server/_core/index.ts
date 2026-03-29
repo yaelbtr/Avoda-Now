@@ -393,6 +393,20 @@ async function startServer() {
     res.send(content);
   });
 
+  // ── Referral link click tracker: /r/:code → redirect to homepage ─────────────
+  app.get("/r/:code", async (req, res) => {
+    const { code } = req.params;
+    try {
+      const { incrementReferralLinkClicks } = await import("../adminDb");
+      await incrementReferralLinkClicks(code);
+    } catch (err) {
+      console.error("[referral] click increment failed:", err);
+    }
+    // Redirect to homepage; pass ?ref=<code> so the frontend can write
+    // referralSource to localStorage for registration attribution.
+    res.redirect(302, `/?ref=${encodeURIComponent(code)}`);
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

@@ -2,13 +2,14 @@
  * Admin-only database query helpers.
  * All functions here are called only from adminProcedure-protected routes.
  */
-import { and, count, desc, eq, gte, isNotNull, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, or, sql, asc } from "drizzle-orm";
 import {
   BirthdateChange, Job,
   applications, birthdateChanges, jobReports, jobs,
   notificationBatches, phoneChangeLogs, users,
   pushSubscriptions, savedJobs, workerRatings,
   workerAvailability, legalAcknowledgements,
+  referralLinks, type ReferralLink,
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
@@ -563,4 +564,83 @@ export async function adminClearForcedLogout(userId: number): Promise<void> {
     .update(users)
     .set({ forcedLogoutAt: null })
     .where(eq(users.id, userId));
+}
+
+// ─── Referral Links Admin ─────────────────────────────────────────────────────
+
+/** List all referral links ordered by creation date (newest first). */
+export async function adminListReferralLinks(): Promise<ReferralLink[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(referralLinks).orderBy(desc(referralLinks.createdAt));
+}
+
+/** Create a new referral link. code must be unique. */
+export async function adminCreateReferralLink(
+  data: { code: string; label: string; source: string }
+): Promise<ReferralLink> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [row] = await db
+    .insert(referralLinks)
+    .values({ code: data.code, label: data.label, source: data.source })
+    .returning();
+  return row;
+}
+
+/** Toggle the isActive flag of a referral link. */
+export async function adminToggleReferralLink(id: number, isActive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(referralLinks).set({ isActive }).where(eq(referralLinks.id, id));
+}
+
+/** Delete a referral link permanently. */
+export async function adminDeleteReferralLink(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(referralLinks).where(eq(referralLinks.id, id));
+}
+
+/**
+ * Atomically increment the click counter for a referral link by code.
+ * Returns the updated row, or null if the code does not exist / is inactive.
+ */
+export async function incrementReferralLinkClicks(
+  code: string
+): Promise<ReferralLink | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .update(referralLinks)
+    .set({ clicks: sql`${referralLinks.clicks} + 1` })
+    .where(and(eq(referralLinks.code, code), eq(referralLinks.isActive, true)))
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Return per-link stats: clicks + registrations attributed to each source.
+ * A registration is attributed when users.referralSource matches the link's source.
+ */
+export async function adminGetReferralLinkStats() {
+  const db = await getDb();
+  if (!db) return [];
+  const links = await db.select().from(referralLinks).orderBy(desc(referralLinks.createdAt));
+  if (links.length === 0) return [];
+  // Count registrations per source in one query
+  const regRows = await db
+    .select({ source: users.referralSource, total: count() })
+    .from(users)
+    .where(isNotNull(users.referralSource))
+    .groupBy(users.referralSource);
+  const regMap = new Map(regRows.map((r) => [r.source, Number(r.total)]));
+  return links.map((link) => ({
+    ...link,
+    registrations: regMap.get(link.source) ?? 0,
+    conversionRate:
+      link.clicks > 0
+        ? Math.round(((regMap.get(link.source) ?? 0) / link.clicks) * 100)
+        : 0,
+  }));
 }

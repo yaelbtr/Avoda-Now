@@ -3588,3 +3588,9 @@ Isolation guarantees:
 - [x] שמור utm_campaign ו-utm_medium ב-localStorage בכניסה ראשונה
 - [x] העבר utm_campaign ו-utm_medium ב-verifyOtp ושמור ב-DB
 - [x] הצג פירוט קמפיינים ומדיה בכרטיסיית "מקורות הרשמה" בפאנל הניהול
+## פאנל ניהול — מנהל קישורי מעקב
+- [x] הוסף טבלת referral_links ל-DB
+- [x] endpoint /r/:code לספירת קליקים והפניה לדף הבית
+- [x] tRPC procedures: createReferralLink, listReferralLinks, toggleReferralLink, deleteReferralLink, referralLinkStats
+- [x] כרטיסיית 'קישורי מעקב' בפאנל הניהול עם יצירה, רשימה, סטטיסטיקות, העתקה ומחיקה
+- [x] ?ref= capture ב-App.tsx לשיוך נרשמים לקישורי מעקב

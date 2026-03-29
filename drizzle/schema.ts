@@ -835,3 +835,34 @@ export const emailUnsubscribes = pgTable(
 );
 export type EmailUnsubscribe = typeof emailUnsubscribes.$inferSelect;
 export type InsertEmailUnsubscribe = typeof emailUnsubscribes.$inferInsert;
+
+/**
+ * referral_links — admin-managed trackable referral links.
+ * Each link has a unique short code (e.g. "fb-jan26") that redirects to the
+ * homepage while recording a click. When a user registers after clicking the
+ * link (referralSource matches the code), the registration is attributed.
+ *
+ * - code: short unique identifier used in the URL (/r/:code)
+ * - label: human-readable name for the admin panel (e.g. "פייסבוק ינואר 2026")
+ * - source: the referralSource value written to users.referralSource on registration
+ * - clicks: incremented atomically on every visit to /r/:code
+ * - isActive: soft-disable without deleting
+ */
+export const referralLinks = pgTable(
+  "referral_links",
+  {
+    id: serial("id").primaryKey(),
+    code: varchar("code", { length: 64 }).notNull().unique(),
+    label: varchar("label", { length: 128 }).notNull(),
+    source: varchar("source", { length: 64 }).notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("referral_links_code_idx").on(t.code),
+    index("referral_links_source_idx").on(t.source),
+  ]
+);
+export type ReferralLink = typeof referralLinks.$inferSelect;
+export type InsertReferralLink = typeof referralLinks.$inferInsert;

@@ -87,7 +87,10 @@ function ReferralSourceCapture() {
     // Capture referral source once — never overwrite
     if (!localStorage.getItem(REFERRAL_SOURCE_KEY)) {
       let source: string | null = null;
-      if (params.has("fbclid")) source = "facebook";
+      // ?ref=<code> from managed referral links (/r/:code redirect) takes highest priority
+      const refCode = params.get("ref");
+      if (refCode) source = refCode.slice(0, 64);
+      else if (params.has("fbclid")) source = "facebook";
       else if (params.has("gclid")) source = "google";
       else if (params.get("utm_source")) source = params.get("utm_source")!.slice(0, 64);
       if (source) localStorage.setItem(REFERRAL_SOURCE_KEY, source);

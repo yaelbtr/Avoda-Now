@@ -158,6 +158,11 @@ import {
   adminGetReportedJobs,
   adminGetStats,
   adminGetReferralStats,
+  adminListReferralLinks,
+  adminCreateReferralLink,
+  adminToggleReferralLink,
+  adminDeleteReferralLink,
+  adminGetReferralLinkStats,
   adminRejectJob,
   adminSetJobStatus,
   adminSetUserRole,
@@ -1826,6 +1831,31 @@ const adminRouter = router({
 
   /** Registration source breakdown (fbclid / gclid / utm_source) */
   referralStats: adminProcedure.query(async () => adminGetReferralStats()),
+
+  /** List all managed referral links */
+  listReferralLinks: adminProcedure.query(async () => adminListReferralLinks()),
+
+  /** Per-link stats: clicks + registrations + conversion rate */
+  referralLinkStats: adminProcedure.query(async () => adminGetReferralLinkStats()),
+
+  /** Create a new trackable referral link */
+  createReferralLink: adminProcedure
+    .input(z.object({
+      code: z.string().min(2).max(64).regex(/^[a-zA-Z0-9_-]+$/, "Code must be alphanumeric with - or _"),
+      label: z.string().min(1).max(128),
+      source: z.string().min(1).max(64),
+    }))
+    .mutation(async ({ input }) => adminCreateReferralLink(input)),
+
+  /** Toggle active/inactive for a referral link */
+  toggleReferralLink: adminProcedure
+    .input(z.object({ id: z.number(), isActive: z.boolean() }))
+    .mutation(async ({ input }) => adminToggleReferralLink(input.id, input.isActive)),
+
+  /** Delete a referral link permanently */
+  deleteReferralLink: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => adminDeleteReferralLink(input.id)),
 
   /** All jobs with optional status filter */
   listJobs: adminProcedure

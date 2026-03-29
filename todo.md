@@ -3713,3 +3713,8 @@ Isolation guarantees:
 - [x] Fix color contrast: text-[10px] elements in HomeWorker oklch(0.58) → oklch(0.42) for 4.5:1 ratio
 - [x] Fix heading order: H3 "איך זה עובד" → H2 in HomeWorker.tsx
 - [ ] Fix bfcache: cache-control:no-store on main HTML prevents bfcache (platform constraint, not fixable)
+
+## Performance Improvements Round 2 (2026-03-29)
+- [x] Code splitting: verified html2canvas already split (202KB chunk), recharts tree-shaken (not in bundle), code splitting already optimal
+- [x] CDN upload: moved 3 How-It-Works images from lh3.googleusercontent.com to CloudFront (step1/2/3 now on d2xsxph8kpxj0f.cloudfront.net)
+- [x] SSR/Pre-render: verified SSR shell already exists in index.html (navbar + hero + CTA + skeleton cards for FindJobs/AvailableWorkers)

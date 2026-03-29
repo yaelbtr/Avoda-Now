@@ -53,7 +53,56 @@
   </head>
 
   <body dir="rtl">
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        SSR shell: static hero text rendered in raw HTML before JS hydration.
+        Ensures LCP text is visible immediately on first HTML parse (Step 1 of skill).
+        React removes this element on mount via the #ssr-shell id.
+      -->
+      <div id="ssr-shell" style="
+        position:fixed;inset:0;z-index:9999;
+        background:oklch(0.97 0.01 84.0);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Heebo',system-ui,sans-serif;
+        direction:rtl;
+      ">
+        <div style="text-align:center;padding:2rem;max-width:400px">
+          <div style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:oklch(0.25 0.05 84.0);line-height:1.2;margin-bottom:0.75rem">
+            מצא עבודה או עובדים עכשיו
+          </div>
+          <div style="font-size:1rem;color:oklch(0.45 0.04 84.0);margin-bottom:1.5rem;line-height:1.5">
+            הפלטפורמה לעבודות זמניות בישראל
+          </div>
+          <div style="
+            display:inline-flex;align-items:center;gap:0.5rem;
+            padding:0.75rem 2rem;
+            background:oklch(0.35 0.1 84.0);color:#fff;
+            border-radius:9999px;font-size:1rem;font-weight:600;
+          ">
+            <span style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:ssr-spin 0.8s linear infinite"></span>
+            טוען...
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      @keyframes ssr-spin { to { transform: rotate(360deg); } }
+    </style>
+    <script>
+      // Remove SSR shell as soon as React mounts to avoid flash
+      (function() {
+        var observer = new MutationObserver(function() {
+          var shell = document.getElementById('ssr-shell');
+          if (shell && document.getElementById('root').children.length > 1) {
+            shell.style.opacity = '0';
+            shell.style.transition = 'opacity 0.2s';
+            setTimeout(function() { shell && shell.remove(); }, 200);
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('root'), { childList: true, subtree: false });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Analytics script is injected dynamically by CookieConsentBanner only when analyticsConsent=true -->
   </body>

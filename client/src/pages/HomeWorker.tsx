@@ -22,6 +22,7 @@ import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSk
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import BelowFold from "@/components/BelowFold";
 import { toast } from "sonner";
 import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -1369,7 +1370,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Region Landing Pages CTA ─────────────────────────────────────────── */}
+      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      <BelowFold minHeight="120px" rootMargin="400px 0px">
       <section
         dir="rtl"
         className="relative z-10 px-5 py-8"
@@ -1494,7 +1496,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Info Dialog ──────────────────────────────────────────────────── */}
+        </BelowFold>
+
+      {/* ── Info Dialog ──────────────────────────────────────────── */}
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader>

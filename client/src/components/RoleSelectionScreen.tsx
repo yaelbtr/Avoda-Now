@@ -103,12 +103,14 @@ function RoleCard({
             }}
           />
         </motion.div>
-        {/* Preload image to trigger fade-in once loaded */}
+        {/* Preload image to trigger fade-in once loaded — fetchPriority=high for LCP */}
         <img
           src={image}
           alt=""
           aria-hidden="true"
           className="hidden"
+          fetchPriority="high"
+          decoding="async"
           onLoad={() => setImageLoaded(true)}
         />
         <motion.div

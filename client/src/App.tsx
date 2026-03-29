@@ -299,18 +299,10 @@ function Router() {
   const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
 
-  // While the maintenance check is in-flight (first load only, no cached data),
-  // show a minimal full-screen loader so the page never flashes blank.
-  // Once we have any data (or an error), we proceed normally — errors are treated
-  // as "not in maintenance" to avoid blocking the app on DB issues.
-  if (maintenanceQuery.isLoading && !maintenanceQuery.data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-
+  // Maintenance gate: non-blocking — render the page immediately.
+  // Only redirect to MaintenancePage once we have a confirmed active=true response.
+  // Errors and loading states are treated as "not in maintenance" to avoid
+  // blocking the initial render on a DB round-trip (Step 4 of perf skill).
   if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
     return <MaintenancePage />;
   }

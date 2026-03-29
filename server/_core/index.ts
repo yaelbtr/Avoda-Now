@@ -50,8 +50,18 @@ async function startServer() {
   // ── Trust proxy: required for accurate IP detection behind load balancers ───
   app.set("trust proxy", 1);
 
-  // ── Compression: gzip/brotli for all text responses (JSON, HTML, XML) ──────
-  app.use(compression({ threshold: 1024 })); // only compress responses > 1KB
+  // ── Compression: gzip for text responses (JSON, HTML, CSS, JS, XML, SVG) ────
+  // Step 9 (perf skill): level 6 = best speed/size trade-off for Node.js.
+  // threshold: 1024 bytes — skip tiny responses where overhead exceeds savings.
+  // filter: only compress text-based content types to avoid double-compressing images.
+  app.use(compression({
+    threshold: 1024,
+    level: 6,
+    filter: (req, res) => {
+      const type = (res.getHeader("Content-Type") as string | undefined) ?? "";
+      return /text|json|javascript|xml|svg/.test(type);
+    },
+  }));
 
   // ── CORS: restrict cross-origin requests to allowed origins ─────────────────────
   app.use(corsMiddleware);

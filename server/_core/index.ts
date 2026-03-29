@@ -17,6 +17,7 @@ import {
   otpRateLimit,
   botDetection,
   antiEnumeration,
+  trpcPathTraversalGuard,
 } from "../security";
 import { makeRequest } from "./map";
 import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
@@ -81,6 +82,11 @@ async function startServer() {
   app.use("/api/trpc", express.urlencoded({ limit: "5mb", extended: true }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // ── Path Traversal Guard (CWE-22): must be first on /api/trpc ───────────────
+  // Blocks traversal sequences in procedure names and input params before any
+  // other middleware processes the request. Fixes OWASP ZAP High finding.
+  app.use("/api/trpc", trpcPathTraversalGuard);
 
   // ── Global rate limit: 60 req/min per IP ─────────────────────────────────
   app.use("/api/trpc", globalRateLimit);

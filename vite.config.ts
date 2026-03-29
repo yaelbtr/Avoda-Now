@@ -221,6 +221,10 @@ export default defineConfig({
             if (id.includes("/lucide-react/")) {
               return "vendor-icons";
             }
+            // react-window — virtualization for FindJobs large list
+            if (id.includes("/react-window/")) {
+              return "vendor-virtualize";
+            }
             // All other node_modules → misc vendor chunk
             return "vendor-misc";
           }

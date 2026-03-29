@@ -83,9 +83,10 @@
           + '<div style="width:32px;height:32px;border-radius:50%;background:oklch(0.35 0.08 84.0)"></div>'
           + '</nav>';
 
-        // Skeleton card factory
-        function skeletonCard() {
-          return '<div style="background:#fff;border-radius:12px;padding:1rem;margin-bottom:0.75rem;box-shadow:0 1px 4px rgba(0,0,0,0.07)">'
+        // Skeleton card factory — shimmer animation for perceived performance
+        function skeletonCard(delay) {
+          var d = delay || 0;
+          return '<div style="background:#fff;border-radius:12px;padding:1rem;margin-bottom:0.75rem;box-shadow:0 1px 4px rgba(0,0,0,0.07);animation:ssr-fade-in 0.3s ease both;animation-delay:' + d + 'ms">'
             + '<div style="display:flex;gap:0.75rem;align-items:flex-start">'
             + '<div style="width:44px;height:44px;border-radius:8px;background:' + SKELETON_BG + ';flex-shrink:0"></div>'
             + '<div style="flex:1">'
@@ -116,7 +117,7 @@
             + '</div>'
             + '</div>'
             + '<div style="max-width:640px;margin:0 auto;padding:1rem 1.25rem">'
-            + skeletonCard() + skeletonCard() + skeletonCard() + skeletonCard() + skeletonCard()
+            + skeletonCard(0) + skeletonCard(60) + skeletonCard(120) + skeletonCard(180) + skeletonCard(240)
             + '</div>';
         } else if (path === '/available-workers' || path.startsWith('/available-workers')) {
           // AvailableWorkers shell
@@ -157,6 +158,11 @@
     <div id="root"></div>
     <style>
       @keyframes ssr-spin { to { transform: rotate(360deg); } }
+      @keyframes ssr-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes ssr-shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
     </style>
     <script>
       // Remove SSR shell once React mounts into #root.

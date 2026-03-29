@@ -3664,3 +3664,20 @@ Isolation guarantees:
 - [x] Server: routers.ts — admin.getJobsWithNotificationStats, admin.getNotificationLogsForJob, admin.getNotificationBatchSummaryForJob procedures
 - [x] Frontend: AdminNotificationTracking.tsx — per-job tracking component with expandable per-worker log table
 - [x] Frontend: Admin.tsx — added "מעקב הודעות" tab (mobile + desktop) wired to AdminNotificationTrackingTab
+
+## FindJobs Performance Optimization (2026-03-29)
+- [ ] SSR shell: add 5 skeleton cards below filters for /find-jobs in index.html
+- [ ] FindJobs: defer birthDateInfoQuery, myApplicationsQuery, savedIdsQuery until after first paint
+- [ ] FindJobs: defer QuickStats heroStats query (staleTime already set, add enabled: mounted flag)
+- [ ] FindJobs: remove auth-blocking render — never return null/spinner while authLoading
+- [ ] FindJobs: virtualize job list with react-window (FixedSizeList) for large result sets
+- [ ] FindJobs: lazy-load images with loading="lazy" on all non-hero job card images
+- [ ] FindJobs: split heavy filter panel into React.lazy sub-component
+- [ ] vite.config: ensure framer-motion is tree-shaken (already in vendor-motion chunk)
+- [ ] server: add Cache-Control headers for static assets (immutable, 1yr)
+
+## Security — Path Traversal CWE-22 (OWASP ZAP Finding)
+- [x] Add tRPC batch request middleware: validate procedure names against allowlist regex
+- [x] Block path traversal patterns (../.*) in tRPC input
+- [x] Add X-Content-Type-Options and Content-Disposition headers for file-like responses (helmet xContentTypeOptions: true already set)
+- [x] Write vitest security test for path traversal attempts on /api/trpc

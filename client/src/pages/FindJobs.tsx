@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo, startTransition } from "react";
+import { useState, useEffect, useRef, useMemo, startTransition, useCallback } from "react";
+import { List as VirtualList } from "react-window";
 import { createPortal } from "react-dom";
 import { getMobileRoot } from "@/lib/mobileRoot";
 import { FIND_JOBS_OPEN } from "@shared/const";
@@ -160,9 +161,11 @@ function QuickStats() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -20px 0px" });
 
-  // Fetch real counts for conditional display
+  // Deferred: only fetch heroStats when the component scrolls into view
+  // This avoids a network request during initial page load (above-the-fold optimization)
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // refresh every 5 min
+    enabled: inView,
   });
   const hs = heroStatsQuery.data;
 
@@ -437,6 +440,12 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function FindJobs() {
+  // ── Deferred mount flag: non-critical queries are disabled until after first paint ──
+  // This prevents birthDateInfoQuery, myApplicationsQuery, savedIdsQuery from
+  // blocking the initial render. They fire in the next event loop tick.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
   const { categories: dbCategories, isLoading: catsLoading } = useCategories();
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
@@ -445,8 +454,10 @@ export default function FindJobs() {
   const authQuery = useAuthQuery();
 
   // Determine if the current user is a minor so we can hide restricted categories
+  // Deferred: only runs after first paint (isMounted) to avoid blocking FCP
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
     ...authQuery({ staleTime: 5 * 60 * 1000 }),
+    enabled: isMounted && isAuthenticated,
   });
   const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
   // Categories visible in the filter panel — hide allowedForMinors=false for minors
@@ -651,7 +662,11 @@ export default function FindJobs() {
   const [noIndexReady, setNoIndexReady] = useState(false);
   useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical, noIndex: noIndexReady });
 
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
+  // Deferred: profileQuery fires after first paint — profile data is non-critical for initial render
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, {
+    ...authQuery({ staleTime: 5 * 60 * 1000 }),
+    enabled: isMounted,
+  });
   // Use sessionStorage so the "auto-open filter" only fires once per browser session,
   // not on every remount (e.g. navigating away and back via the bottom nav).
   const FILTER_INIT_KEY = "fj_filter_initialized";
@@ -680,23 +695,33 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPath]);
 
+  // Perf fix: never block render on auth state.
+  // Open filter panel after mount once auth + profile are resolved.
+  // Uses isMounted so this never runs during SSR shell phase.
   useEffect(() => {
+    if (!isMounted) return;
     if (filterInitialized.current) return;
+    // If auth is still loading, wait — but do NOT block the page render
     if (authLoading) return;
     const markInitialized = () => {
       filterInitialized.current = true;
       try { sessionStorage.setItem(FILTER_INIT_KEY, "1"); } catch {}
     };
     if (!isAuthenticated) { markInitialized(); setFilterOpen(true); return; }
+    // Profile query is deferred (enabled: isMounted) — wait for it to resolve
     if (profileQuery.isLoading) return;
     const profile = profileQuery.data;
     const hasProfile = (profile?.preferredCategories && profile.preferredCategories.length > 0) || !!profile?.preferredCity;
     markInitialized();
     if (!hasProfile) setFilterOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
+  }, [isMounted, authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
-  const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  // Deferred: city list is only needed when filter panel opens — not on initial render
+  const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    enabled: isMounted,
+  });
   const popularCities = activeCitiesQuery.data ?? [];
 
   useEffect(() => {
@@ -794,7 +819,12 @@ export default function FindJobs() {
     { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
+  // Deferred: savedIds and myApplications are non-critical for initial render.
+  // They fire after first paint so the job list skeleton appears immediately.
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, {
+    ...authQuery(),
+    enabled: isMounted && isAuthenticated,
+  });
   // Step 7 (perf skill): memoize Sets so they are not rebuilt on every render.
   const savedIds = useMemo(
     () => new Set(savedIdsQuery.data?.ids ?? []),
@@ -803,7 +833,10 @@ export default function FindJobs() {
   const utilsFj = trpc.useUtils();
   const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
-  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, authQuery());
+  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, {
+    ...authQuery(),
+    enabled: isMounted && isAuthenticated,
+  });
   const appliedJobIdsFj = useMemo(
     () => new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId)),
     [myAppsQueryFj.data]
@@ -1555,29 +1588,57 @@ export default function FindJobs() {
               <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
             </div>
           )}
-          <motion.div
-            initial="hidden" animate="visible"
-            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-            className="space-y-4"
-          >
-            {pagedJobs.map(job => {
-              const j = job as unknown as JobCardJob & { distance?: number };
-              return (
-                <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
-                  <JobCard
-                    job={j}
-                    isSaved={savedIds.has(j.id)}
-                    isApplied={appliedJobIdsFj.has(j.id)}
-                    onSaveToggle={handleSaveToggle}
-                    onApply={handleApplyFjWrapped}
-                    onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
-                    onCategoryClick={handleCategoryFromCard}
-                    activeCategories={selectedCategories}
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          {/* Virtualize when list is large (>15 jobs) to avoid rendering all DOM nodes at once.
+              Below threshold: use staggered motion.div for visual polish.
+              Above threshold: use react-window List (v2 API) for O(1) DOM nodes regardless of list size. */}
+          {pagedJobs.length > 15 ? (
+            <VirtualList
+              rowCount={pagedJobs.length}
+              rowHeight={196}
+              rowProps={{}}
+              rowComponent={({ index, style }) => {
+                const j = pagedJobs[index] as unknown as JobCardJob & { distance?: number };
+                return (
+                  <div style={{ ...style, paddingBottom: 16 }}>
+                    <JobCard
+                      job={j}
+                      isSaved={savedIds.has(j.id)}
+                      isApplied={appliedJobIdsFj.has(j.id)}
+                      onSaveToggle={handleSaveToggle}
+                      onApply={handleApplyFjWrapped}
+                      onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                      onCategoryClick={handleCategoryFromCard}
+                      activeCategories={selectedCategories}
+                    />
+                  </div>
+                );
+              }}
+            />
+          ) : (
+            <motion.div
+              initial="hidden" animate="visible"
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+              className="space-y-4"
+            >
+              {pagedJobs.map(job => {
+                const j = job as unknown as JobCardJob & { distance?: number };
+                return (
+                  <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
+                    <JobCard
+                      job={j}
+                      isSaved={savedIds.has(j.id)}
+                      isApplied={appliedJobIdsFj.has(j.id)}
+                      onSaveToggle={handleSaveToggle}
+                      onApply={handleApplyFjWrapped}
+                      onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                      onCategoryClick={handleCategoryFromCard}
+                      activeCategories={selectedCategories}
+                    />
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
           </>
         )}
         </div>{/* end job list wrapper */}

@@ -1,15 +1,17 @@
 /**
  * Security middleware for Job-Now
- * Protects against: scraping, bot abuse, API enumeration, data theft, XSS, and CORS abuse.
+ * Protects against: scraping, bot abuse, API enumeration, data theft, XSS, CORS abuse,
+ * and path traversal (CWE-22) on tRPC batch endpoints.
  *
  * Exports:
- *   securityHeaders  — Helmet with CSP (enabled in production)
- *   corsMiddleware   — CORS restricted to allowed origins
- *   globalRateLimit  — 60 req/min per IP
- *   jobsListRateLimit — 20 req/min per IP (anti-scraping)
- *   otpRateLimit     — 5 req/hour per IP
- *   botDetection     — block known scraper User-Agents
- *   antiEnumeration  — detect sequential ID scanning
+ *   securityHeaders       — Helmet with CSP (enabled in production)
+ *   corsMiddleware        — CORS restricted to allowed origins
+ *   globalRateLimit       — 60 req/min per IP
+ *   jobsListRateLimit     — 20 req/min per IP (anti-scraping)
+ *   otpRateLimit          — 5 req/hour per IP
+ *   botDetection          — block known scraper User-Agents
+ *   antiEnumeration       — detect sequential ID scanning
+ *   trpcPathTraversalGuard — block path traversal patterns in tRPC batch URLs (CWE-22)
  */
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
@@ -325,4 +327,89 @@ export function createInMemoryRateLimiter(maxRequests: number, windowMs: number)
       store.delete(key);
     },
   };
+}
+
+// ── tRPC Path Traversal Guard (CWE-22) ───────────────────────────────────────
+/**
+ * Blocks path traversal attempts on the tRPC batch endpoint.
+ *
+ * OWASP ZAP flags tRPC batch URLs like:
+ *   /api/trpc/platform.settings,categories.list,live.heroStats?batch=1&input=...
+ * because the procedure path looks like a file path with directory separators.
+ *
+ * This middleware validates:
+ *  1. Procedure names in the URL path only contain safe characters
+ *     (letters, digits, dots, commas, underscores, hyphens).
+ *  2. The raw URL does not contain path traversal sequences
+ *     (../, ..\, %2F%2E%2E, null bytes, encoded variants).
+ *  3. The `input` query parameter, when present, does not contain
+ *     traversal sequences after URL-decoding.
+ *
+ * Legitimate tRPC procedure names match: /^[a-zA-Z0-9._,\-]+$/
+ * Any deviation is rejected with 400 Bad Request.
+ */
+
+/** Patterns that indicate a path traversal attempt. */
+const PATH_TRAVERSAL_PATTERNS: RegExp[] = [
+  /\.\.[/\\]/,           // ../  or ..\
+  /\.\.[/\\]?$/,         // .. at end of segment
+  /%2e%2e[%2f%5c]/i,     // URL-encoded ../
+  /%252e%252e/i,          // double-encoded ..
+  /\0/,                   // null byte
+  /%00/i,                 // URL-encoded null byte
+  /[/\\]{2,}/,            // double slashes (path confusion)
+];
+
+/** Allowlist regex for tRPC procedure names in the URL path segment. */
+const TRPC_PROCEDURE_ALLOWLIST = /^[a-zA-Z0-9._,\-]+$/;
+
+/**
+ * Express middleware that guards /api/trpc/* against CWE-22 path traversal.
+ * Must be registered BEFORE the tRPC express middleware.
+ */
+export function trpcPathTraversalGuard(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const rawUrl = req.url ?? "";
+
+  // 1. Check raw URL for traversal sequences (catches encoded variants too)
+  for (const pattern of PATH_TRAVERSAL_PATTERNS) {
+    if (pattern.test(rawUrl)) {
+      res.status(400).json({ error: "Bad Request", code: "INVALID_PATH" });
+      return;
+    }
+  }
+
+  // 2. Validate the procedure name segment (everything after /api/trpc/)
+  //    req.path in Express strips the mount prefix, so for /api/trpc/jobs.list
+  //    req.path is /jobs.list — strip the leading slash.
+  const procedurePath = req.path.replace(/^\//, "");
+  if (procedurePath && !TRPC_PROCEDURE_ALLOWLIST.test(procedurePath)) {
+    res.status(400).json({ error: "Bad Request", code: "INVALID_PROCEDURE" });
+    return;
+  }
+
+  // 3. Check decoded `input` query param for traversal sequences
+  const rawInput =
+    typeof req.query.input === "string" ? req.query.input : "";
+  if (rawInput) {
+    let decoded = rawInput;
+    try {
+      decoded = decodeURIComponent(rawInput);
+    } catch {
+      // malformed encoding — treat as suspicious
+      res.status(400).json({ error: "Bad Request", code: "INVALID_INPUT_ENCODING" });
+      return;
+    }
+    for (const pattern of PATH_TRAVERSAL_PATTERNS) {
+      if (pattern.test(decoded)) {
+        res.status(400).json({ error: "Bad Request", code: "INVALID_INPUT" });
+        return;
+      }
+    }
+  }
+
+  next();
 }

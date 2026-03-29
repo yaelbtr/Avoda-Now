@@ -3618,3 +3618,20 @@ Isolation guarantees:
 - [ ] Step 8: Expand BelowFold to HomeEmployer SEO sections
 - [ ] Step 9: Reduce Google Fonts weights — only load critical weights
 - [ ] Step 9: Preload critical woff2 font file directly
+
+## Available Workers Page — Performance Fix
+- [ ] Fix 1: Immediate shell render — header + title + skeleton cards without waiting for API
+- [ ] Fix 2: Async worker fetch after initial paint (defer trpc query)
+- [ ] Fix 3: List virtualization with react-window for >20 workers
+- [ ] Fix 4: Lazy load worker images + smaller thumbnails
+- [ ] Fix 5: Verify AvailableWorkers is a separate lazy chunk (no dashboard logic)
+- [ ] Fix 6: SSR prerender shell for /available-workers in index.html
+
+## Available Workers Page — Performance Fixes
+- [x] Fix 1: Immediate shell render (header + skeleton cards, no BrandLoader blocking)
+- [x] Fix 2: Workers fetched async after paint (skeleton while loading)
+- [x] Fix 3: Progressive rendering with IntersectionObserver sentinel (PAGE_SIZE=15, load more on scroll)
+- [x] Fix 4: Avatar uses initials only (profilePhoto not in nearby API response)
+- [x] Fix 5: Route already lazy-loaded in App.tsx (verified)
+- [x] Fix 6: SSR prerender shell in index.html for /available-workers
+- [x] Bug: Removed react-window dependency (v2 API incompatible), replaced with native progressive rendering

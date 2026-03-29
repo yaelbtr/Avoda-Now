@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
@@ -233,13 +233,21 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
   const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
-  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  // Step 7 (perf skill): memoize Sets — new Set() on every render creates O(n) work
+  // and causes downstream useMemo/useCallback dependencies to invalidate unnecessarily.
+  const savedIds = useMemo(
+    () => new Set(savedIdsQuery.data?.ids ?? []),
+    [savedIdsQuery.data]
+  );
   const utils = trpc.useUtils();
   const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   // Applied job IDs (from myApplications)
   const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
-  const appliedJobIds = new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const appliedJobIds = useMemo(
+    () => new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId)),
+    [myApplicationsQuery.data]
+  );
   const applyMutation = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
     onError: (e: { message: string }) => toast.error(e.message),
@@ -338,10 +346,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
-  const allCarouselJobs = [
+  // Step 7 (perf skill): memoize carousel job list — filter+map on every render is O(n²)
+  // due to the .some() inner loop. Recompute only when urgentJobs or todayJobs change.
+  const allCarouselJobs = useMemo(() => [
     ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
     ...todayJobs.filter((j) => !urgentJobs.some((u) => u.id === j.id)).map((j) => ({ job: j, badge: "today" as const })),
-  ];
+  ], [urgentJobs, todayJobs]);
   const carouselTotal = allCarouselJobs.length;
 
   return (

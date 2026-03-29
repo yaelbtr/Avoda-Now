@@ -3602,3 +3602,15 @@ Isolation guarantees:
 - [x] הסרת imports לא בשימוש מ-App.tsx (FindJobsComingSoonOverlay, createPortal, JobsToday, FIND_JOBS_OPEN)
 - [x] בדיקת ספריות כבדות — recharts dead code (רק ב-chart.tsx, לא בשימוש), embla-carousel רק ב-ComponentShowcase
 - [x] TypeScript 0 errors לאחר כל השינויים
+
+## React Performance Optimization Skill — Full Execution (11 Steps)
+
+- [ ] Step 1: Full SSR with renderToString for all entry pages (Home, FindJobs, JobDetails, Login)
+- [ ] Step 2: Bundle visualizer — verify no cross-chunk contamination
+- [ ] Step 5+7: useMemo for FindJobs sort/filter pipeline + Set constructions in HomeWorker/FindJobs
+- [ ] Step 5+7: startTransition for FindJobs search input
+- [ ] Step 7: useMemo for allCarouselJobs in HomeWorker
+- [ ] Step 8: Upgrade createRoot → hydrateRoot in main.tsx
+- [ ] Step 8: Expand BelowFold to HomeEmployer SEO sections
+- [ ] Step 9: Reduce Google Fonts weights — only load critical weights
+- [ ] Step 9: Preload critical woff2 font file directly

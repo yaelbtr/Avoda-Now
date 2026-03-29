@@ -45,11 +45,14 @@
     <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_41da06bf.jpg" fetchpriority="high" />
 
     <!-- Fonts: non-blocking load to avoid render-blocking -->
+    <!-- Step 9 (perf skill): removed weight 300 (unused), reduced Frank Ruhl to 2 weights.
+         Heebo 400-900 covers normal/medium/semibold/bold/extrabold/black.
+         Frank Ruhl Libre 700+900 covers display headings only. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Load fonts asynchronously: media=print trick swaps to all after load -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap" rel="stylesheet" /></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet" /></noscript>
   </head>
 
   <body dir="rtl">

@@ -3,7 +3,10 @@ import { shouldRetry, retryDelay } from "@/lib/queryRetry";
 import { PHONE_REQUIRED_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
-import { createRoot } from "react-dom/client";
+// Step 8 (perf skill): use hydrateRoot instead of createRoot.
+// hydrateRoot attaches React to existing server-rendered HTML (SSR shell) without
+// discarding it, enabling faster Time-to-Interactive and correct hydration semantics.
+import { hydrateRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
@@ -92,7 +95,8 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
+hydrateRoot(
+  document.getElementById("root")!,
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <div className="desktop-wrapper">

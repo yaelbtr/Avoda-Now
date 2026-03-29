@@ -16,6 +16,7 @@ import {
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 import { CarouselSkeletonRow } from "@/components/JobCardSkeleton";
+import BelowFold from "@/components/BelowFold";
 
 // Hook: counts UP from 0 to endValue over duration ms when triggered
 function useCountUp(endValue: number, duration: number, triggered: boolean) {
@@ -930,10 +931,10 @@ export default function HomeEmployer() {
         </section>
       )}
 
-
-      {/* ── שירותי בית וניקיון — SEO internal links ─────────────────────────── */}
-      <section
-        dir="rtl"
+      {/* Step 8 (perf skill): defer below-fold SEO sections until browser is idle */}
+      <BelowFold minHeight="200px" rootMargin="400px 0px">
+      {/* SEO internal links */}
+      <section dir="rtl"
         className="relative z-10"
         style={{
           background: "oklch(0.98 0.008 100)",
@@ -1022,6 +1023,8 @@ export default function HomeEmployer() {
           </div>
         </div>
       </section>
+
+      </BelowFold>
 
             <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { getMobileRoot } from "@/lib/mobileRoot";
 import { FIND_JOBS_OPEN } from "@shared/const";
@@ -482,8 +482,10 @@ export default function FindJobs() {
   const [showCityInput, setShowCityInput] = useState(false);
   const [searchText, setSearchText] = useState(""); // raw input — bound to <input>
   const [debouncedSearchText, setDebouncedSearchText] = useState(""); // debounced — used for filtering
+  // Step 7 (perf skill): wrap debounced update in startTransition so typing stays urgent
+  // and the filter re-computation (O(n log n)) is deferred as a non-urgent update.
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearchText(searchText), 200);
+    const id = setTimeout(() => startTransition(() => setDebouncedSearchText(searchText)), 200);
     return () => clearTimeout(id);
   }, [searchText]);
   const [showUrgentToday, setShowUrgentToday] = useState(
@@ -793,12 +795,19 @@ export default function FindJobs() {
     { enabled: showUrgentToday }
   );
   const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
-  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  // Step 7 (perf skill): memoize Sets so they are not rebuilt on every render.
+  const savedIds = useMemo(
+    () => new Set(savedIdsQuery.data?.ids ?? []),
+    [savedIdsQuery.data]
+  );
   const utilsFj = trpc.useUtils();
   const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, authQuery());
-   const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const appliedJobIdsFj = useMemo(
+    () => new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId)),
+    [myAppsQueryFj.data]
+  );
   const {
     apply: applyWithAgeGateFj,
     isPending: isApplyPendingFj,
@@ -877,7 +886,6 @@ export default function FindJobs() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeQueryData]);
-  let jobs: AnyJob[] = accumulatedJobs;
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
   const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
   const isQueryError = userLat ? searchQuery.isError : listQuery.isError;
@@ -885,67 +893,74 @@ export default function FindJobs() {
   const showSkeleton = isLoading;
   const showRefetchOverlay = !isLoading && isFetching;
 
-  if (debouncedSearchText.trim()) {
-    const q = debouncedSearchText.toLowerCase();
-    jobs = jobs.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q) || j.address.toLowerCase().includes(q));
-  }
-  if (showUrgentToday) {
-    const now = Date.now();
-    const in24h = now + 24 * 60 * 60 * 1000;
-    const todayJobIds = new Set((todayQuery.data ?? []).map(j => j.id));
-    jobs = jobs.filter(j => {
-      const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
-      const isToday = todayJobIds.has(j.id);
-      const startDt = (j as { startDateTime?: string | null }).startDateTime;
-      const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
-      return isUrgentJob || isToday || startsWithin24h;
-    });
-  }
-  if (selectedTimeSlots.length > 0) {
-    const slotRanges: Record<string, [number, number]> = { morning: [6, 12], afternoon: [12, 17], evening: [17, 22], night: [22, 30] };
-    jobs = jobs.filter(j => {
-      const wh = (j as { workingHours?: string | null }).workingHours;
-      if (!wh) return false;
-      const match = wh.match(/(\d{1,2}):(\d{2})/);
-      if (!match) return false;
-      const startHour = parseInt(match[1], 10);
-      return selectedTimeSlots.some(slot => {
-        const [from, to] = slotRanges[slot];
-        if (slot === "night") return startHour >= 22 || startHour < 6;
-        return startHour >= from && startHour < to;
+  // Step 5+7 (perf skill): memoize the full sort/filter pipeline.
+  // Without useMemo this runs O(n log n) on every render — including unrelated state changes
+  // like opening a modal, hovering a button, or toggling a filter panel.
+  const jobs = useMemo(() => {
+    let result: AnyJob[] = accumulatedJobs;
+    if (debouncedSearchText.trim()) {
+      const q = debouncedSearchText.toLowerCase();
+      result = result.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q) || j.address.toLowerCase().includes(q));
+    }
+    if (showUrgentToday) {
+      const now = Date.now();
+      const in24h = now + 24 * 60 * 60 * 1000;
+      const todayJobIds = new Set((todayQuery.data ?? []).map(j => j.id));
+      result = result.filter(j => {
+        const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
+        const isToday = todayJobIds.has(j.id);
+        const startDt = (j as { startDateTime?: string | null }).startDateTime;
+        const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
+        return isUrgentJob || isToday || startsWithin24h;
       });
+    }
+    if (selectedTimeSlots.length > 0) {
+      const slotRanges: Record<string, [number, number]> = { morning: [6, 12], afternoon: [12, 17], evening: [17, 22], night: [22, 30] };
+      result = result.filter(j => {
+        const wh = (j as { workingHours?: string | null }).workingHours;
+        if (!wh) return false;
+        const match = wh.match(/(\d{1,2}):(\d{2})/);
+        if (!match) return false;
+        const startHour = parseInt(match[1], 10);
+        return selectedTimeSlots.some(slot => {
+          const [from, to] = slotRanges[slot];
+          if (slot === "night") return startHour >= 22 || startHour < 6;
+          return startHour >= from && startHour < to;
+        });
+      });
+    }
+    // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
+    return [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortBy === "salary") {
+        const aSal = (a as { salary?: number | null }).salary ?? 0;
+        const bSal = (b as { salary?: number | null }).salary ?? 0;
+        return (aSal - bSal) * dir;
+      }
+      if (sortBy === "date") {
+        const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
+        const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
+        const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
+        const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
+        return (aDate - bDate) * dir;
+      }
+      if (sortBy === "distance" && userLat) {
+        const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+        const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+        return (aDist - bDist) * dir;
+      }
+      // default: distance first (if available), then urgent
+      if (userLat) {
+        const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+        const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+        if (aDist !== bDist) return aDist - bDist;
+      }
+      const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+      const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+      return bUrgent - aUrgent;
     });
-  }
-  // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
-  jobs = [...jobs].sort((a, b) => {
-    const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "salary") {
-      const aSal = (a as { salary?: number | null }).salary ?? 0;
-      const bSal = (b as { salary?: number | null }).salary ?? 0;
-      return (aSal - bSal) * dir; // desc=high first, asc=low first
-    }
-    if (sortBy === "date") {
-      const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
-      const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
-      const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
-      const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
-      return (aDate - bDate) * dir; // desc=newest first, asc=oldest first
-    }
-    if (sortBy === "distance" && userLat) {
-      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
-      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
-      return (aDist - bDist) * dir; // desc=far first, asc=near first
-    }
-    // default: distance first (if available), then urgent
-    if (userLat) {
-      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
-      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
-      if (aDist !== bDist) return aDist - bDist;
-    }
-    const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
-    const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
-    return bUrgent - aUrgent;
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accumulatedJobs, debouncedSearchText, showUrgentToday, todayQuery.data, selectedTimeSlots, sortBy, sortDir, userLat]);
 
    useEffect(() => {
     if (!isLoading && userLat && jobs.length === 0 && radiusKm < 50 && !autoExpandedRadius) setAutoExpandedRadius(true);

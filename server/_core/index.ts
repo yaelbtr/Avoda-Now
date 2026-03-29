@@ -450,6 +450,19 @@ async function startServer() {
   // ── DB health check: verify all schema tables exist before accepting traffic ──
   await assertDbHealth();
 
+  // ── DB warm-up: establish the connection pool before the first HTTP request ──
+  // getDb() is lazy — without this, the very first request pays the full TCP +
+  // SSL handshake cost (~2-3 s on Neon), which shows up as TTFB 3.3 s in
+  // Lighthouse. Pre-connecting here moves that cost to startup time so all
+  // subsequent requests hit an already-open connection.
+  try {
+    const { getDb } = await import("../db");
+    await getDb();
+    console.log("[DB] Connection pool warmed up");
+  } catch (err) {
+    console.warn("[DB] Warm-up failed (server will still start):", err);
+  }
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     // Seed regions on first startup

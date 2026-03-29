@@ -21,7 +21,6 @@ import CookieConsentBanner from "./components/CookieConsentBanner";
 import { IdleLogoutManager } from "./components/IdleLogoutManager";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
-import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
 import { PENDING_GOOGLE_REG_KEY, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
 
@@ -203,20 +202,6 @@ function ReferralCapture() {
     });
   }, [isAuthenticated, user, applyRef]);
 
-  return null;
-}
-
-/**
- * Invisible component that preloads the Google Maps script in the background
- * as soon as the user is authenticated. This ensures the script is already
- * cached when the user navigates to /post-job or any map-enabled page.
- */
-function MapsPreloader() {
-  const { isAuthenticated } = useAuth();
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    ensureMapsLoaded().catch(() => {});
-  }, [isAuthenticated]);
   return null;
 }
 
@@ -438,7 +423,6 @@ function App() {
           <AuthProvider>
             <UserModeProvider>
               <Toaster position="top-center" dir="rtl" />
-              <MapsPreloader />
               <ReferralCapture />
               <ReferralSourceCapture />
               <PostGoogleRegistration />

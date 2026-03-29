@@ -42,8 +42,10 @@
     <link rel="dns-prefetch" href="https://api.manus.im" />
 
     <!-- Preload LCP images (RoleSelectionScreen hero cards) from project CDN -->
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker_3978d496.jpg" fetchpriority="high" />
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_41da06bf.jpg" fetchpriority="high" />
+    <!-- Using v2 images: role-worker-v2 (33KB) and role-employer_f597 (37KB) -->
+    <!-- Old images were 309KB and 358KB JPGs — replaced with 10x smaller versions -->
+    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker-v2_eb503874.jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_f5973684.jpg" fetchpriority="high" />
 
     <!-- Fonts: non-blocking load to avoid render-blocking -->
     <!-- Step 9 (perf skill): removed weight 300 (unused), reduced Frank Ruhl to 2 weights.

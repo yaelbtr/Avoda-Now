@@ -3705,3 +3705,11 @@ Isolation guarantees:
 - [x] Eliminated cross-chunk dependency ordering issue (createContext/Activity crash)
 - [x] Build verified: vendor chunk has 0 Activity from lucide, vendor-react loads first
 - [x] FINAL FIX: Removed manualChunks entirely — Vite auto-chunking is self-contained, no cross-chunk imports
+
+## Lighthouse Performance Fixes (2026-03-29) — Score 31/100
+- [x] Fix TTFB 3.3s: DB warm-up in startServer() before first request + index.html cached in memory
+- [x] Fix unused JS: removed MapsPreloader from App.tsx — Maps SDK loads on-demand per page
+- [x] Fix large hero images: updated preload links in index.html from 309KB/358KB JPGs to 33KB/37KB v2 images
+- [x] Fix color contrast: text-[10px] elements in HomeWorker oklch(0.58) → oklch(0.42) for 4.5:1 ratio
+- [x] Fix heading order: H3 "איך זה עובד" → H2 in HomeWorker.tsx
+- [ ] Fix bfcache: cache-control:no-store on main HTML prevents bfcache (platform constraint, not fixable)

@@ -91,6 +91,18 @@ export function serveStatic(app: Express) {
   const isProduction = process.env.NODE_ENV === "production";
   const indexHtmlPath = path.resolve(distPath, "index.html");
 
+  // Cache the index.html template in memory so we don't hit the disk on every
+  // request. The file never changes at runtime (it's a build artifact), so
+  // reading it once at startup is safe. This eliminates the ~1-5 ms fs.readFileSync
+  // overhead per request and reduces TTFB for the HTML response.
+  let _cachedIndexHtml: string | null = null;
+  function getIndexHtml(): string {
+    if (!_cachedIndexHtml) {
+      _cachedIndexHtml = fs.readFileSync(indexHtmlPath, "utf-8");
+    }
+    return _cachedIndexHtml;
+  }
+
   app.use("*", (_req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 
@@ -101,7 +113,7 @@ export function serveStatic(app: Express) {
     }
 
     try {
-      let html = fs.readFileSync(indexHtmlPath, "utf-8");
+      let html = getIndexHtml();
 
       // Generate a cryptographically random nonce for this request.
       // nanoid(24) gives ~143 bits of entropy — well above the 128-bit minimum.

@@ -714,7 +714,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
           </div>
           <div>
-            <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
+            <h2 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h2>
             <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>מצא עבודה זמנית בשלושה צעדים פשוטים</p>
           </div>
         </div>
@@ -916,7 +916,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>
                 זהה מיקום
               </p>
-              <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>עבודות בסביבה</p>
+              <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>עבודות בסביבה</p>
             </div>
           </button>
 
@@ -934,7 +934,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
               <div>
                 <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>העדפות</p>
-                <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>התאמה אישית</p>
+                <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>התאמה אישית</p>
               </div>
             </button>
           )}

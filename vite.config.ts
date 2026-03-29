@@ -167,81 +167,34 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    // Increase the warning threshold slightly — we split aggressively with manualChunks
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
         /**
-         * manualChunks: group vendor libs into stable named chunks so browsers
-         * can cache them independently of app code changes.
+         * manualChunks: SIMPLIFIED to 2 named chunks.
          *
          * Strategy:
-         *  - "vendor-react"   : React + ReactDOM (largest, most stable)
-         *  - "vendor-motion"  : framer-motion (heavy animation lib)
-         *  - "vendor-trpc"    : tRPC + TanStack Query (data layer)
-         *  - "vendor-ui"      : Radix UI primitives (many small packages)
-         *  - "vendor-charts"  : recharts (only loaded if chart.tsx is used)
-         *  - "vendor-lib"     : remaining third-party libs (renamed from vendor-misc to bust CDN cache)
+         *  - "vendor-react" : React + ReactDOM only (guaranteed to load first)
+         *  - "vendor"       : ALL other node_modules (loads after vendor-react)
+         *
+         * Why simplified: complex multi-chunk splitting (vendor-ui, vendor-lib,
+         * vendor-motion, etc.) caused non-deterministic chunk load ordering in
+         * production CDN. With only 2 chunks, vendor-react ALWAYS loads before
+         * vendor, so React.createContext() is always available when any library
+         * that depends on it initialises.
          */
         manualChunks(id: string) {
           if (id.includes("node_modules")) {
-            // React core — most stable, cached longest
-            if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("/react-is/")) {
+            // React core — must be loaded before every other library
+            if (
+              id.includes("/react/") ||
+              id.includes("/react-dom/") ||
+              id.includes("/react-is/")
+            ) {
               return "vendor-react";
             }
-            // framer-motion — heavy animation lib (~80KB min)
-            if (id.includes("/framer-motion/")) {
-              return "vendor-motion";
-            }
-            // tRPC + TanStack Query — data layer
-            if (
-              id.includes("/@trpc/") ||
-              id.includes("/@tanstack/") ||
-              id.includes("/superjson/")
-            ) {
-              return "vendor-trpc";
-            }
-            // Radix UI primitives + ALL React-dependent UI packages
-            // CRITICAL: any package that calls React.createContext() at module
-            // evaluation time MUST be in vendor-ui (or vendor-react), NOT in
-            // vendor-lib. Loading vendor-lib before React is initialized causes
-            // "Cannot read properties of undefined (reading 'createContext')".
-            if (
-              id.includes("/@radix-ui/") ||
-              id.includes("/cmdk/") ||
-              id.includes("/vaul/") ||
-              id.includes("/sonner/") ||
-              id.includes("/streamdown/") ||
-              id.includes("/input-otp/") ||
-              id.includes("/react-resizable-panels/") ||
-              id.includes("/wouter/") ||
-              id.includes("/embla-carousel-react/") ||
-              id.includes("/react-window/") ||
-              id.includes("/next-themes/")
-            ) {
-              return "vendor-ui";
-            }
-            // Recharts + D3 (only loaded when chart.tsx is used)
-            if (id.includes("/recharts/") || id.includes("/d3-") || id.includes("/victory-")) {
-              return "vendor-charts";
-            }
-            // Zod + validation
-            if (id.includes("/zod/") || id.includes("/@hookform/") || id.includes("/react-hook-form/")) {
-              return "vendor-forms";
-            }
-            // Date utilities
-            if (id.includes("/date-fns/") || id.includes("/react-day-picker/")) {
-              return "vendor-dates";
-            }
-            // Lucide icons
-            if (id.includes("/lucide-react/")) {
-              return "vendor-icons";
-            }
-            // All other node_modules → lib vendor chunk
-            // vendor-lib must NOT contain any package that calls
-            // React.createContext() or accesses lucide icons at module
-            // evaluation time. See vendor-ui block above.
-            return "vendor-lib";
+            // All other third-party packages in one stable chunk
+            return "vendor";
           }
         },
       },

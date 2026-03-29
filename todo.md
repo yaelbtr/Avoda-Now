@@ -3699,3 +3699,8 @@ Isolation guarantees:
 - [x] Fix static <title> in index.html to 30-60 chars (was 7 chars before JS ran)
 - [x] Add <meta name="keywords"> to index.html static HTML (not only via JS)
 - [x] Add H2 heading to HomeGuest component for on-page keyword structure
+
+## Critical Production Fix — Vite Chunk Loading (2026-03-29)
+- [x] Simplified manualChunks to 2 chunks only: vendor-react + vendor
+- [x] Eliminated cross-chunk dependency ordering issue (createContext/Activity crash)
+- [x] Build verified: vendor chunk has 0 Activity from lucide, vendor-react loads first

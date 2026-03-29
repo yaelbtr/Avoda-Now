@@ -3594,3 +3594,11 @@ Isolation guarantees:
 - [x] tRPC procedures: createReferralLink, listReferralLinks, toggleReferralLink, deleteReferralLink, referralLinkStats
 - [x] כרטיסיית 'קישורי מעקב' בפאנל הניהול עם יצירה, רשימה, סטטיסטיקות, העתקה ומחיקה
 - [x] ?ref= capture ב-App.tsx לשיוך נרשמים לקישורי מעקב
+
+## ביצועים — אופטימיזציית Initial Load
+
+- [x] Lazy loading לכל ה-routes הלא-קריטיים (42 דפים → dynamic import)
+- [x] Vite build config: manualChunks — vendor-react, vendor-motion, vendor-trpc, vendor-ui, vendor-forms, vendor-dates, vendor-icons, vendor-misc
+- [x] הסרת imports לא בשימוש מ-App.tsx (FindJobsComingSoonOverlay, createPortal, JobsToday, FIND_JOBS_OPEN)
+- [x] בדיקת ספריות כבדות — recharts dead code (רק ב-chart.tsx, לא בשימוש), embla-carousel רק ב-ComponentShowcase
+- [x] TypeScript 0 errors לאחר כל השינויים

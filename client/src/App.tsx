@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import { AnimatePresence } from "framer-motion";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -16,56 +15,82 @@ import GenderDisclaimer from "./components/GenderDisclaimer";
 import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import PageTransition from "./components/PageTransition";
-import Home from "./pages/Home";
-import FindJobs from "./pages/FindJobs";
-import JobDetails from "./pages/JobDetails";
-import PostJob from "./pages/PostJob";
-import MyJobs from "./pages/MyJobs";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Cookies from "./pages/Cookies";
-import JobPostingPolicy from "./pages/JobPostingPolicy";
-import SafetyPolicy from "./pages/SafetyPolicy";
-import UserContentPolicy from "./pages/UserContentPolicy";
-import ReviewsPolicy from "./pages/ReviewsPolicy";
-import Legal from "./pages/Legal";
-import Accessibility from "./pages/Accessibility";
-import Unsubscribe from "./pages/Unsubscribe";
-import Admin from "./pages/Admin";
-import JobsToday from "./pages/JobsToday";
-import AvailableWorkers from "./pages/AvailableWorkers";
-import WorkerProfile from "./pages/WorkerProfile";
-import EmployerProfile from "./pages/EmployerProfile";
-import PublicWorkerProfile from "./pages/PublicWorkerProfile";
-import ApplicationView from "./pages/ApplicationView";
-import JobApplications from "./pages/JobApplications";
-import MyApplications from "./pages/MyApplications";
-import MatchedWorkers from "./pages/MatchedWorkers";
-import JobsLanding from "./pages/JobsLanding";
-import GuideHub from "./pages/GuideHub";
-import GuidePage from "./pages/GuidePage";
-import GuideTopicPage from "./pages/GuideTopicPage";
-import FAQPage from "./pages/FAQPage";
-import BestJobsPage from "./pages/BestJobsPage";
-import WorkerLandingPage from "./pages/WorkerLandingPage";
-import AdminRegionsPage from "./pages/AdminRegionsPage";
-import AdminRegionDetailPage from "./pages/AdminRegionDetailPage";
-import MyReferrals from "./pages/MyReferrals";
-import PassoverLandingPage from "./pages/PassoverLandingPage";
-import KeywordLandingPage from "./pages/KeywordLandingPage";
-import CityLandingPage from "./pages/CityLandingPage";
-import MaintenancePage from "./pages/MaintenancePage";
 import SkipToContent from "./components/SkipToContent";
 import ReConsentModal from "./components/ReConsentModal";
+import CookieConsentBanner from "./components/CookieConsentBanner";
+import { IdleLogoutManager } from "./components/IdleLogoutManager";
 import { useEffect, useRef } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { trpc } from "./lib/trpc";
-import { PENDING_GOOGLE_REG_KEY, FIND_JOBS_OPEN, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
-import { createPortal } from "react-dom";
-import FindJobsComingSoonOverlay from "./components/FindJobsComingSoonOverlay";
-import CookieConsentBanner from "./components/CookieConsentBanner";
-import { IdleLogoutManager } from "./components/IdleLogoutManager";
+import { PENDING_GOOGLE_REG_KEY, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
+
+// ─── Critical pages (loaded eagerly — needed on first paint) ─────────────────
+import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
+import MaintenancePage from "./pages/MaintenancePage";
+
+// ─── Lazy-loaded pages (code-split into separate chunks) ─────────────────────
+// Core user flows
+const FindJobs = lazy(() => import("./pages/FindJobs"));
+const JobDetails = lazy(() => import("./pages/JobDetails"));
+const PostJob = lazy(() => import("./pages/PostJob"));
+const MyJobs = lazy(() => import("./pages/MyJobs"));
+
+// Profile pages
+const WorkerProfile = lazy(() => import("./pages/WorkerProfile"));
+const EmployerProfile = lazy(() => import("./pages/EmployerProfile"));
+const PublicWorkerProfile = lazy(() => import("./pages/PublicWorkerProfile"));
+
+// Application flow
+const ApplicationView = lazy(() => import("./pages/ApplicationView"));
+const JobApplications = lazy(() => import("./pages/JobApplications"));
+const MyApplications = lazy(() => import("./pages/MyApplications"));
+const MatchedWorkers = lazy(() => import("./pages/MatchedWorkers"));
+
+// Discovery / SEO landing pages
+const JobsLanding = lazy(() => import("./pages/JobsLanding"));
+const KeywordLandingPage = lazy(() => import("./pages/KeywordLandingPage"));
+const CityLandingPage = lazy(() => import("./pages/CityLandingPage"));
+const PassoverLandingPage = lazy(() => import("./pages/PassoverLandingPage"));
+const WorkerLandingPage = lazy(() => import("./pages/WorkerLandingPage"));
+const BestJobsPage = lazy(() => import("./pages/BestJobsPage"));
+const AvailableWorkers = lazy(() => import("./pages/AvailableWorkers"));
+
+// Guide / FAQ
+const GuideHub = lazy(() => import("./pages/GuideHub"));
+const GuidePage = lazy(() => import("./pages/GuidePage"));
+const GuideTopicPage = lazy(() => import("./pages/GuideTopicPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+
+// Legal / static pages (rarely visited, no rush to load)
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Cookies = lazy(() => import("./pages/Cookies"));
+const JobPostingPolicy = lazy(() => import("./pages/JobPostingPolicy"));
+const SafetyPolicy = lazy(() => import("./pages/SafetyPolicy"));
+const UserContentPolicy = lazy(() => import("./pages/UserContentPolicy"));
+const ReviewsPolicy = lazy(() => import("./pages/ReviewsPolicy"));
+const Legal = lazy(() => import("./pages/Legal"));
+const Accessibility = lazy(() => import("./pages/Accessibility"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+
+// Admin panel (heavy, admin-only)
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminRegionsPage = lazy(() => import("./pages/AdminRegionsPage"));
+const AdminRegionDetailPage = lazy(() => import("./pages/AdminRegionDetailPage"));
+
+// Misc
+const MyReferrals = lazy(() => import("./pages/MyReferrals"));
+
+// ─── Shared route-level loading fallback ─────────────────────────────────────
+function PageLoader() {
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
@@ -120,8 +145,11 @@ function NumericJobRedirect({ params }: { params?: { id?: string } }) {
     return null;
   }
   // Non-numeric: fall through to JobsLanding
-  const JobsLandingFallback = JobsLanding as React.ComponentType;
-  return <JobsLandingFallback />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <JobsLanding />
+    </Suspense>
+  );
 }
 
 /**
@@ -324,76 +352,78 @@ function Router() {
             />
           ) : (
             <PageTransition key={routeKey} routeKey={routeKey}>
-              <Switch>
-                <Route path="/" component={Home} />
-                <Route path="/find-jobs" component={FindJobs} />
-                <Route path="/job/:id" component={JobDetails} />
-                <Route path="/post-job" component={PostJob} />
-                <Route path="/my-jobs" component={MyJobs} />
-                <Route path="/terms" component={Terms} />
-                <Route path="/privacy" component={Privacy} />
-                <Route path="/cookies" component={Cookies} />
-                <Route path="/job-posting-policy" component={JobPostingPolicy} />
-                <Route path="/safety-policy" component={SafetyPolicy} />
-                <Route path="/user-content-policy" component={UserContentPolicy} />
-                <Route path="/reviews-policy" component={ReviewsPolicy} />
-                <Route path="/legal" component={Legal} />
-                <Route path="/accessibility" component={Accessibility} />
-                <Route path="/unsubscribe" component={Unsubscribe} />
-                <Route path="/admin" component={Admin} />
-                <Route path="/admin/regions" component={AdminRegionsPage} />
-                <Route path="/admin/regions/:id" component={AdminRegionDetailPage} />
-                <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
-                <Route path="/available-workers" component={AvailableWorkers} />
-                <Route path="/worker-profile" component={WorkerProfile} />
-                <Route path="/employer-profile" component={EmployerProfile} />
-                <Route path="/worker/:id" component={PublicWorkerProfile} />
-                <Route path="/applications/:id" component={ApplicationView} />
-                <Route path="/jobs/:id/applications" component={JobApplications} />
-                <Route path="/jobs/today/:city" component={JobsLanding} />
-                <Route path="/jobs/today" component={JobsLanding} />
-                <Route path="/jobs/evening/:city" component={JobsLanding} />
-                <Route path="/jobs/evening" component={JobsLanding} />
-                <Route path="/jobs/weekend/:city" component={JobsLanding} />
-                <Route path="/jobs/weekend" component={JobsLanding} />
-                <Route path="/jobs/immediate/:city" component={JobsLanding} />
-                <Route path="/jobs/immediate" component={JobsLanding} />
-                <Route path="/jobs/ניקיון-לפסח" component={PassoverLandingPage} />
-                <Route path="/jobs/מנקה-לפסח" component={PassoverLandingPage} />
-                <Route path="/jobs/:category/:city" component={JobsLanding} />
-                {/* Redirect /jobs/:id (numeric job ID) → /job/:id to fix browser-back from /jobs/:id/applications */}
-                <Route path="/jobs/:id" component={NumericJobRedirect} />
-                <Route path="/jobs/:slug" component={JobsLanding} />
-                <Route path="/guide/temporary-jobs/:category" component={GuidePage} />
-                <Route path="/guide/temporary-jobs" component={GuideHub} />
-                <Route path="/guide/:topic" component={GuideTopicPage} />
-                <Route path="/faq/:slug" component={FAQPage} />
-                <Route path="/best/:slug" component={BestJobsPage} />
-                <Route path="/work/:slug" component={WorkerLandingPage} />
-                {/* Hebrew keyword SEO landing pages */}
-                {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
-                <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>
-                <Route path="/עבודה-זמנית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עבודה-מיידית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עבודות-מזדמנות">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עבודה-עונתית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עבודה-לסטודנטים">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עבודה-לנוער">{() => <KeywordLandingPage />}</Route>
-                <Route path="/משרות-זמניות">{() => <KeywordLandingPage />}</Route>
-                <Route path="/מנקה-לבית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/עוזרת-בית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/דרושה-מנקה-מהיום">{() => <KeywordLandingPage />}</Route>
-                <Route path="/כמה-עולה-עוזרת-בית">{() => <KeywordLandingPage />}</Route>
-                <Route path="/מנקה-לבית-חד-פעמי">{() => <KeywordLandingPage />}</Route>
-                <Route path="/my-applications" component={MyApplications} />
-                <Route path="/matched-workers" component={MatchedWorkers} />
-                <Route path="/my-referrals" component={MyReferrals} />
-                <Route path="/profile">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
-                <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
-                <Route path="/worker-preferences">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
-                <Route path="/404" component={NotFound} />
-                <Route component={NotFound} />
-              </Switch>
+              <Suspense fallback={<PageLoader />}>
+                <Switch>
+                  <Route path="/" component={Home} />
+                  <Route path="/find-jobs" component={FindJobs} />
+                  <Route path="/job/:id" component={JobDetails} />
+                  <Route path="/post-job" component={PostJob} />
+                  <Route path="/my-jobs" component={MyJobs} />
+                  <Route path="/terms" component={Terms} />
+                  <Route path="/privacy" component={Privacy} />
+                  <Route path="/cookies" component={Cookies} />
+                  <Route path="/job-posting-policy" component={JobPostingPolicy} />
+                  <Route path="/safety-policy" component={SafetyPolicy} />
+                  <Route path="/user-content-policy" component={UserContentPolicy} />
+                  <Route path="/reviews-policy" component={ReviewsPolicy} />
+                  <Route path="/legal" component={Legal} />
+                  <Route path="/accessibility" component={Accessibility} />
+                  <Route path="/unsubscribe" component={Unsubscribe} />
+                  <Route path="/admin" component={Admin} />
+                  <Route path="/admin/regions" component={AdminRegionsPage} />
+                  <Route path="/admin/regions/:id" component={AdminRegionDetailPage} />
+                  <Route path="/jobs-today">{() => { window.location.replace("/find-jobs?filter=today"); return null; }}</Route>
+                  <Route path="/available-workers" component={AvailableWorkers} />
+                  <Route path="/worker-profile" component={WorkerProfile} />
+                  <Route path="/employer-profile" component={EmployerProfile} />
+                  <Route path="/worker/:id" component={PublicWorkerProfile} />
+                  <Route path="/applications/:id" component={ApplicationView} />
+                  <Route path="/jobs/:id/applications" component={JobApplications} />
+                  <Route path="/jobs/today/:city" component={JobsLanding} />
+                  <Route path="/jobs/today" component={JobsLanding} />
+                  <Route path="/jobs/evening/:city" component={JobsLanding} />
+                  <Route path="/jobs/evening" component={JobsLanding} />
+                  <Route path="/jobs/weekend/:city" component={JobsLanding} />
+                  <Route path="/jobs/weekend" component={JobsLanding} />
+                  <Route path="/jobs/immediate/:city" component={JobsLanding} />
+                  <Route path="/jobs/immediate" component={JobsLanding} />
+                  <Route path="/jobs/ניקיון-לפסח" component={PassoverLandingPage} />
+                  <Route path="/jobs/מנקה-לפסח" component={PassoverLandingPage} />
+                  <Route path="/jobs/:category/:city" component={JobsLanding} />
+                  {/* Redirect /jobs/:id (numeric job ID) → /job/:id to fix browser-back from /jobs/:id/applications */}
+                  <Route path="/jobs/:id" component={NumericJobRedirect} />
+                  <Route path="/jobs/:slug" component={JobsLanding} />
+                  <Route path="/guide/temporary-jobs/:category" component={GuidePage} />
+                  <Route path="/guide/temporary-jobs" component={GuideHub} />
+                  <Route path="/guide/:topic" component={GuideTopicPage} />
+                  <Route path="/faq/:slug" component={FAQPage} />
+                  <Route path="/best/:slug" component={BestJobsPage} />
+                  <Route path="/work/:slug" component={WorkerLandingPage} />
+                  {/* Hebrew keyword SEO landing pages */}
+                  {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
+                  <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>
+                  <Route path="/עבודה-זמנית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-מיידית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודות-מזדמנות">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-עונתית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לסטודנטים">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לנוער">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/משרות-זמניות">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/מנקה-לבית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עוזרת-בית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/דרושה-מנקה-מהיום">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/כמה-עולה-עוזרת-בית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/מנקה-לבית-חד-פעמי">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/my-applications" component={MyApplications} />
+                  <Route path="/matched-workers" component={MatchedWorkers} />
+                  <Route path="/my-referrals" component={MyReferrals} />
+                  <Route path="/profile">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
+                  <Route path="/worker-signup">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
+                  <Route path="/worker-preferences">{() => { window.location.replace("/worker-profile"); return null; }}</Route>
+                  <Route path="/404" component={NotFound} />
+                  <Route component={NotFound} />
+                </Switch>
+              </Suspense>
             </PageTransition>
           )}
         </AnimatePresence>

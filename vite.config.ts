@@ -167,6 +167,66 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Increase the warning threshold slightly — we split aggressively with manualChunks
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        /**
+         * manualChunks: group vendor libs into stable named chunks so browsers
+         * can cache them independently of app code changes.
+         *
+         * Strategy:
+         *  - "vendor-react"   : React + ReactDOM (largest, most stable)
+         *  - "vendor-motion"  : framer-motion (heavy animation lib)
+         *  - "vendor-trpc"    : tRPC + TanStack Query (data layer)
+         *  - "vendor-ui"      : Radix UI primitives (many small packages)
+         *  - "vendor-charts"  : recharts (only loaded if chart.tsx is used)
+         *  - "vendor-misc"    : remaining third-party libs
+         */
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            // React core — most stable, cached longest
+            if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("/react-is/")) {
+              return "vendor-react";
+            }
+            // framer-motion — heavy animation lib (~80KB min)
+            if (id.includes("/framer-motion/")) {
+              return "vendor-motion";
+            }
+            // tRPC + TanStack Query — data layer
+            if (
+              id.includes("/@trpc/") ||
+              id.includes("/@tanstack/") ||
+              id.includes("/superjson/")
+            ) {
+              return "vendor-trpc";
+            }
+            // Radix UI primitives
+            if (id.includes("/@radix-ui/")) {
+              return "vendor-ui";
+            }
+            // Recharts + D3 (only loaded when chart.tsx is used)
+            if (id.includes("/recharts/") || id.includes("/d3-") || id.includes("/victory-")) {
+              return "vendor-charts";
+            }
+            // Zod + validation
+            if (id.includes("/zod/") || id.includes("/@hookform/") || id.includes("/react-hook-form/")) {
+              return "vendor-forms";
+            }
+            // Date utilities
+            if (id.includes("/date-fns/") || id.includes("/react-day-picker/")) {
+              return "vendor-dates";
+            }
+            // Lucide icons
+            if (id.includes("/lucide-react/")) {
+              return "vendor-icons";
+            }
+            // All other node_modules → misc vendor chunk
+            return "vendor-misc";
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

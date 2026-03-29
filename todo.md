@@ -3704,3 +3704,4 @@ Isolation guarantees:
 - [x] Simplified manualChunks to 2 chunks only: vendor-react + vendor
 - [x] Eliminated cross-chunk dependency ordering issue (createContext/Activity crash)
 - [x] Build verified: vendor chunk has 0 Activity from lucide, vendor-react loads first
+- [x] FINAL FIX: Removed manualChunks entirely — Vite auto-chunking is self-contained, no cross-chunk imports

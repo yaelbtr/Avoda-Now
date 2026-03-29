@@ -170,33 +170,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        /**
-         * manualChunks: SIMPLIFIED to 2 named chunks.
-         *
-         * Strategy:
-         *  - "vendor-react" : React + ReactDOM only (guaranteed to load first)
-         *  - "vendor"       : ALL other node_modules (loads after vendor-react)
-         *
-         * Why simplified: complex multi-chunk splitting (vendor-ui, vendor-lib,
-         * vendor-motion, etc.) caused non-deterministic chunk load ordering in
-         * production CDN. With only 2 chunks, vendor-react ALWAYS loads before
-         * vendor, so React.createContext() is always available when any library
-         * that depends on it initialises.
-         */
-        manualChunks(id: string) {
-          if (id.includes("node_modules")) {
-            // React core — must be loaded before every other library
-            if (
-              id.includes("/react/") ||
-              id.includes("/react-dom/") ||
-              id.includes("/react-is/")
-            ) {
-              return "vendor-react";
-            }
-            // All other third-party packages in one stable chunk
-            return "vendor";
-          }
-        },
+        // No manualChunks — let Rollup/Vite manage the entire chunk graph.
+        // Any attempt to manually split vendor chunks caused circular import
+        // ordering in production: the "vendor-react" chunk imported from
+        // "vendor" because Rollup placed shared Radix/TanStack helpers there,
+        // making vendor load BEFORE vendor-react and crashing with
+        // "Cannot read properties of undefined (reading 'createContext')".
+        // Vite's automatic chunking respects the import graph and is safe.
       },
     },
   },

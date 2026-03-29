@@ -3635,3 +3635,15 @@ Isolation guarantees:
 - [x] Fix 5: Route already lazy-loaded in App.tsx (verified)
 - [x] Fix 6: SSR prerender shell in index.html for /available-workers
 - [x] Bug: Removed react-window dependency (v2 API incompatible), replaced with native progressive rendering
+
+## Critical Performance Fixes (FCP < 2.5s, LCP < 4s)
+- [ ] Fix 1: SSR shell — full hero HTML (title + hero text + CTA) in index.html before JS loads
+- [ ] Fix 2: Initial JS bundle < 250KB — verify code splitting, remove heavy imports from critical path
+- [ ] Fix 3: Remove all render-blocking patterns (auth checks, API calls, global state init)
+- [ ] Fix 4: Defer all third-party scripts after window.onload / requestIdleCallback
+- [ ] Fix 5: Hydrate only visible components first, delay heavy components
+- [ ] Fix 6: LCP element — preload hero image/text, WebP/AVIF conversion if image
+- [ ] Fix 7: Above-fold isolation — initial render: header + hero + CTA only
+- [ ] Fix 8: Font optimization — font-display: swap, preload 1 weight, remove unused weights
+- [ ] Fix 9: Server — gzip/brotli, Cache-Control immutable for static assets
+- [ ] Fix 10: Validate targets — FCP < 2.5s, LCP < 4s, Performance 70-85+

@@ -3734,3 +3734,10 @@ Isolation guarantees:
 - [x] Refactor HomeWorker: 4 queries replaced by useWorkerJobs() hook, client-side panel derivation O(1)
 - [x] WorkerJobsProvider mounted in App.tsx inside UserModeProvider
 - [x] Vitest: 6 tests pass for worker.dashboard.test.ts
+
+## WorkerJobsContext Expansion — FindJobs + SavedJobs (2026-03-29)
+- [x] Audit: savedIdsQuery duplicated in HomeWorker + FindJobs; search/list queries in FindJobs are filter-dependent (not shareable)
+- [x] Extend WorkerJobsContext: savedIds (staleTime=5min), optimistic save/unsave with onMutate/onError/onSettled pattern
+- [x] Refactor HomeWorker: removed savedIdsQuery + saveMutation + unsaveMutation, now uses context savedIds + toggleSave
+- [x] Refactor FindJobs: removed savedIdsQuery + saveMutationFj + unsaveMutationFj, now uses context savedIds + toggleSave
+- [x] Vitest: 9 tests pass for worker.savedJobs.test.ts (optimistic save/unsave/rollback/auth-guard)

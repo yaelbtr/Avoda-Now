@@ -1,17 +1,17 @@
 /**
- * WorkerJobsContext — Shared Worker Dashboard Data Service
+ * WorkerJobsContext — Shared Worker Data Service
  *
- * Single source of truth for all job panels on the worker home screen.
- * Replaces 4 parallel tRPC calls (listUrgent, listToday, list, search) with
- * one unified query: jobs.getWorkerDashboard.
+ * Single source of truth for:
+ *  1. All job panels on the worker home screen (urgent, today, nearby, latest)
+ *  2. Saved job IDs — shared between HomeWorker and FindJobs so a save/unsave
+ *     in either page is immediately reflected everywhere without a second network call.
  *
  * Design decisions:
- * - staleTime: 3 min  → data stays fresh across page navigation without refetch
- * - gcTime: 10 min    → TanStack Query keeps the cache alive for 10 min after
- *                        the last consumer unmounts (survives route transitions)
- * - The context exposes the raw query result + derived panel arrays so consumers
- *   never re-derive the same data independently (DRY principle).
- * - Geo input is stabilised with useMemo to prevent infinite query re-triggers.
+ * - jobs.getWorkerDashboard: staleTime=3min, gcTime=10min — survives page navigation
+ * - savedIds: staleTime=5min, gcTime=15min — auth-gated, only fetches when logged in
+ * - Optimistic save/unsave: updates the local Set immediately, rolls back on error
+ * - Geo input is stabilised with useMemo to prevent infinite query re-triggers
+ * - DRY: save/unsave mutations defined once here, consumed by HomeWorker + FindJobs
  */
 
 import React, {
@@ -19,13 +19,14 @@ import React, {
   useContext,
   useMemo,
   useState,
-  useEffect,
+  useCallback,
 } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-// Mirror the server-side return shape (contactPhone is always null for workers)
 export type DashboardJob = {
   id: number;
   title: string;
@@ -45,33 +46,31 @@ export type DashboardJob = {
   longitude: string | null;
   jobLocationMode: string | null;
   minAge: number | null;
-  [key: string]: unknown; // allow extra columns without breaking
+  [key: string]: unknown;
 };
 
 export type NearbyJob = DashboardJob & { distance: number };
 
 export interface WorkerJobsState {
-  /** True while the initial fetch is in-flight */
+  // ── Dashboard panels ────────────────────────────────────────────────────────
   isLoading: boolean;
-  /** Non-null when the query failed */
   error: Error | null;
-  /** Up to 4 urgent jobs */
   urgentJobs: DashboardJob[];
-  /** Up to 4 jobs starting today */
   todayJobs: DashboardJob[];
-  /** Up to 8 jobs near the worker's location */
   nearbyJobs: NearbyJob[];
-  /** Up to 6 most-recent active jobs */
   latestJobs: DashboardJob[];
-  /** True when nearby fell back to 100 km radius */
   isFallback: boolean;
-  /** Update the worker's current location (triggers a single re-fetch) */
-  setLocation: (lat: number, lng: number) => void;
-  /** Radius used for the nearby panel (km) */
   nearbyRadius: number;
   setNearbyRadius: (r: number) => void;
-  /** Force an immediate refetch (e.g. after availability change) */
+  setLocation: (lat: number, lng: number) => void;
   refetch: () => void;
+
+  // ── Saved jobs (shared between HomeWorker + FindJobs) ───────────────────────
+  /** Memoised Set of saved job IDs — O(1) lookup */
+  savedIds: Set<number>;
+  isSavedLoading: boolean;
+  /** Toggle save state optimistically. Requires authentication. */
+  toggleSave: (jobId: number, currentlySaved: boolean, onLoginRequired?: (msg: string) => void) => void;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -81,52 +80,136 @@ const WorkerJobsContext = createContext<WorkerJobsState | null>(null);
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function WorkerJobsProvider({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+
+  // ── Geo state ──────────────────────────────────────────────────────────────
   const [lat, setLat] = useState<number | undefined>(undefined);
   const [lng, setLng] = useState<number | undefined>(undefined);
   const [nearbyRadius, setNearbyRadius] = useState(10);
 
-  // Stabilise the query input — new object on every render would cause infinite
-  // re-fetches (see template Common Pitfalls: unstable references).
-  const queryInput = useMemo(
+  // Stabilise query input — new object on every render would cause infinite re-fetches
+  const dashboardInput = useMemo(
     () => ({ lat, lng, radiusKm: nearbyRadius }),
     [lat, lng, nearbyRadius]
   );
 
-  const query = trpc.jobs.getWorkerDashboard.useQuery(queryInput, {
-    // 3 minutes: data stays valid across page navigation without a new network call
+  // ── Dashboard query ────────────────────────────────────────────────────────
+  const dashboardQuery = trpc.jobs.getWorkerDashboard.useQuery(dashboardInput, {
     staleTime: 3 * 60 * 1000,
-    // 10 minutes: keep the cache alive after the last consumer unmounts so that
-    // navigating away and back is instant
     gcTime: 10 * 60 * 1000,
-    // Never throw to an error boundary — surface errors via context instead
     throwOnError: false,
-    // Retry once on failure before surfacing the error
     retry: 1,
   });
 
-  const setLocation = useMemo(
-    () => (newLat: number, newLng: number) => {
-      setLat(newLat);
-      setLng(newLng);
-    },
-    []
+  // ── Saved IDs query (auth-gated) ───────────────────────────────────────────
+  const utils = trpc.useUtils();
+
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    throwOnError: false,
+  });
+
+  // Memoised Set — O(1) lookup, stable reference when data hasn't changed
+  const savedIds = useMemo(
+    () => new Set<number>(savedIdsQuery.data?.ids ?? []),
+    [savedIdsQuery.data]
   );
 
+  // ── Save mutation (optimistic) ─────────────────────────────────────────────
+  const saveMutation = trpc.savedJobs.save.useMutation({
+    onMutate: async ({ jobId }) => {
+      await utils.savedJobs.getSavedIds.cancel();
+      const prev = utils.savedJobs.getSavedIds.getData();
+      utils.savedJobs.getSavedIds.setData(undefined, (old) => ({
+        ids: [...(old?.ids ?? []), jobId],
+      }));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.savedJobs.getSavedIds.setData(undefined, ctx.prev);
+      toast.error("שגיאה בשמירת המשרה");
+    },
+    onSettled: () => {
+      utils.savedJobs.getSavedIds.invalidate();
+    },
+  });
+
+  // ── Unsave mutation (optimistic) ───────────────────────────────────────────
+  const unsaveMutation = trpc.savedJobs.unsave.useMutation({
+    onMutate: async ({ jobId }) => {
+      await utils.savedJobs.getSavedIds.cancel();
+      const prev = utils.savedJobs.getSavedIds.getData();
+      utils.savedJobs.getSavedIds.setData(undefined, (old) => ({
+        ids: (old?.ids ?? []).filter((id) => id !== jobId),
+      }));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) utils.savedJobs.getSavedIds.setData(undefined, ctx.prev);
+      toast.error("שגיאה בהסרת המשרה");
+    },
+    onSettled: () => {
+      utils.savedJobs.getSavedIds.invalidate();
+    },
+  });
+
+  // ── Stable toggleSave callback ─────────────────────────────────────────────
+  const toggleSave = useCallback(
+    (
+      jobId: number,
+      currentlySaved: boolean,
+      onLoginRequired?: (msg: string) => void
+    ) => {
+      if (!isAuthenticated) {
+        onLoginRequired?.("כדי לשמור משרות יש להתחבר למערכת");
+        return;
+      }
+      if (currentlySaved) {
+        unsaveMutation.mutate({ jobId });
+      } else {
+        saveMutation.mutate({ jobId });
+      }
+    },
+    [isAuthenticated, saveMutation, unsaveMutation]
+  );
+
+  // ── Stable setLocation ─────────────────────────────────────────────────────
+  const setLocation = useCallback((newLat: number, newLng: number) => {
+    setLat(newLat);
+    setLng(newLng);
+  }, []);
+
+  // ── Context value (memoised to prevent unnecessary re-renders) ─────────────
   const value = useMemo<WorkerJobsState>(
     () => ({
-      isLoading: query.isLoading,
-      error: query.error as Error | null,
-      urgentJobs: (query.data?.urgent ?? []) as DashboardJob[],
-      todayJobs: (query.data?.today ?? []) as DashboardJob[],
-      nearbyJobs: (query.data?.nearby ?? []) as NearbyJob[],
-      latestJobs: (query.data?.latest ?? []) as DashboardJob[],
-      isFallback: query.data?.isFallback ?? false,
-      setLocation,
+      isLoading: dashboardQuery.isLoading,
+      error: dashboardQuery.error as Error | null,
+      urgentJobs: (dashboardQuery.data?.urgent ?? []) as DashboardJob[],
+      todayJobs: (dashboardQuery.data?.today ?? []) as DashboardJob[],
+      nearbyJobs: (dashboardQuery.data?.nearby ?? []) as NearbyJob[],
+      latestJobs: (dashboardQuery.data?.latest ?? []) as DashboardJob[],
+      isFallback: dashboardQuery.data?.isFallback ?? false,
       nearbyRadius,
       setNearbyRadius,
-      refetch: query.refetch,
+      setLocation,
+      refetch: dashboardQuery.refetch,
+      savedIds,
+      isSavedLoading: savedIdsQuery.isLoading,
+      toggleSave,
     }),
-    [query.isLoading, query.error, query.data, setLocation, nearbyRadius, query.refetch]
+    [
+      dashboardQuery.isLoading,
+      dashboardQuery.error,
+      dashboardQuery.data,
+      dashboardQuery.refetch,
+      nearbyRadius,
+      setLocation,
+      savedIds,
+      savedIdsQuery.isLoading,
+      toggleSave,
+    ]
   );
 
   return (
@@ -139,8 +222,7 @@ export function WorkerJobsProvider({ children }: { children: React.ReactNode }) 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 /**
- * useWorkerJobs — consume the shared worker dashboard data service.
- *
+ * useWorkerJobs — consume the shared worker data service.
  * Must be used inside <WorkerJobsProvider>.
  * Returns stable references — safe to use as useEffect/useMemo dependencies.
  */

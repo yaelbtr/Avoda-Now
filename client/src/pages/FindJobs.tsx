@@ -8,6 +8,7 @@ import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useWorkerJobs } from "@/contexts/WorkerJobsContext";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
@@ -819,20 +820,9 @@ export default function FindJobs() {
     { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
-  // Deferred: savedIds and myApplications are non-critical for initial render.
-  // They fire after first paint so the job list skeleton appears immediately.
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, {
-    ...authQuery(),
-    enabled: isMounted && isAuthenticated,
-  });
-  // Step 7 (perf skill): memoize Sets so they are not rebuilt on every render.
-  const savedIds = useMemo(
-    () => new Set(savedIdsQuery.data?.ids ?? []),
-    [savedIdsQuery.data]
-  );
+  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with HomeWorker)
+  const { savedIds, toggleSave } = useWorkerJobs();
   const utilsFj = trpc.useUtils();
-  const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
-  const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
   const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, {
     ...authQuery(),
     enabled: isMounted && isAuthenticated,
@@ -856,8 +846,7 @@ export default function FindJobs() {
     applyWithAgeGateFj({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
-    if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
-    if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
+    toggleSave(jobId, !save, requireLogin);
   };
 
   /** Add a category to the active filter when the user clicks a category pill on a job card.

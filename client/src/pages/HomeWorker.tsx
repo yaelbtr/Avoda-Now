@@ -160,6 +160,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     nearbyRadius,
     setNearbyRadius,
     setLocation: setWorkerLocation,
+    savedIds,
+    toggleSave,
   } = useWorkerJobs();
   const [showMap, setShowMap] = useState(false);
   const [geoRequested, setGeoRequested] = useState(false);
@@ -243,16 +245,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   // Age-gate: fetch birth date info to warn minors about late availability
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
-  // Step 7 (perf skill): memoize Sets — new Set() on every render creates O(n) work
-  // and causes downstream useMemo/useCallback dependencies to invalidate unnecessarily.
-  const savedIds = useMemo(
-    () => new Set(savedIdsQuery.data?.ids ?? []),
-    [savedIdsQuery.data]
-  );
+  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with FindJobs)
   const utils = trpc.useUtils();
-  const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
-  const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   // Applied job IDs (from myApplications)
   const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
   const appliedJobIds = useMemo(
@@ -268,8 +262,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     applyMutation.mutate({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
-    if (!isAuthenticated) { onLoginRequired("כדי לשמור משרות יש להתחבר למערכת"); return; }
-    if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
+    toggleSave(jobId, !save, onLoginRequired);
   };
   const setAvailableMutation = trpc.workers.setAvailable.useMutation({
     onSuccess: () => {

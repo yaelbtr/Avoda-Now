@@ -3762,3 +3762,4 @@ Isolation guarantees:
 - [x] Bug: campaign/referral link (?ref=) bypasses role selection — guest role from sessionStorage causes direct navigation to HomeWorker without showing role selection screen
 - [x] Bug (still open): campaign link still navigates immediately to worker home — fixed with local campaignRoleSelected flag in Router that forces showRoleSelection without touching server state
 - [x] Feature: add mobile button in Admin panel for referral links management tab
+- [x] Copy: change "צריך עובד לבית?" to "צריך עובד זמני לבית או לעסק?" in HomeEmployer.tsx

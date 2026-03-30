@@ -249,7 +249,7 @@ export default function HomeEmployer() {
             className="text-[32px] leading-[1.15] font-black mb-2"
             style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
           >
-            צריך עובד לבית?<br />
+            צריך עובד זמני לבית או לעסק?<br />
             <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>קבל אחד תוך דקות</span>
           </motion.h1>
 

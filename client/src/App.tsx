@@ -44,6 +44,7 @@ const PublicWorkerProfile = lazy(() => import("./pages/PublicWorkerProfile"));
 
 // Application flow
 const ApplicationView = lazy(() => import("./pages/ApplicationView"));
+const AdminApplicationView = lazy(() => import("./pages/AdminApplicationView"));
 const JobApplications = lazy(() => import("./pages/JobApplications"));
 const MyApplications = lazy(() => import("./pages/MyApplications"));
 const MatchedWorkers = lazy(() => import("./pages/MatchedWorkers"));
@@ -418,6 +419,7 @@ function Router() {
                   <Route path="/employer-profile" component={EmployerProfile} />
                   <Route path="/worker/:id" component={PublicWorkerProfile} />
                   <Route path="/applications/:id" component={ApplicationView} />
+                  <Route path="/admin/applications/:id" component={AdminApplicationView} />
                   <Route path="/jobs/:id/applications" component={JobApplications} />
                   <Route path="/jobs/today/:city" component={JobsLanding} />
                   <Route path="/jobs/today" component={JobsLanding} />

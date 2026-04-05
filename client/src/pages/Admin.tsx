@@ -1203,7 +1203,7 @@ export default function Admin() {
                             <AppButton
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(`/applications/${app.id}`, "_blank")}
+                              onClick={() => window.open(`/admin/applications/${app.id}`, "_blank")}
                             >
                               <Eye className="w-4 h-4 ml-1" />
                               צפה

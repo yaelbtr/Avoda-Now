@@ -3788,3 +3788,4 @@ Isolation guarantees:
 - [x] UX: add "מאמרים קשורים" section to HomeWorker and HomeEmployer
 - [x] Admin: הוסף טאב "מעסיקים" עם טבלת משתמשים שמצב=employer + סטטיסטיקות משרות
 - [x] Bug: כפתור "צפה" בטאב מועמדויות בפאנל ניהול גורם ל-React error #310 (unstable query input)
+- [x] Admin: הוסף מסלול /admin/applications/:id לצפייה בפרטי מועמדות מלאים ללא הגבלת תפקיד

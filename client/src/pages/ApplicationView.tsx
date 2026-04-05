@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getLoginUrl } from "@/const";
 
 const OLIVE = "#4F583B";
@@ -46,19 +46,22 @@ export default function ApplicationView() {
   const [contactRevealed, setContactRevealed] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
 
+  // ── ALL hooks must be called unconditionally before any early returns ──────
   const appQuery = trpc.jobs.getApplication.useQuery(
     { id: applicationId },
     {
-      ...authQuery({ enabled: !!applicationId && !isNaN(applicationId) }),
+      ...authQuery({ enabled: !!applicationId && !isNaN(applicationId) && isAuthenticated }),
     }
   );
 
-  // Sync reveal state from server when data first loads
-  const serverData = appQuery.data;
-  if (serverData && serverData.contactRevealed && serverData.workerPhone && !contactRevealed) {
-    setContactRevealed(true);
-    setRevealedPhone(serverData.workerPhone);
-  }
+  // Sync reveal state from server when data first loads — MUST be in useEffect
+  useEffect(() => {
+    const serverData = appQuery.data;
+    if (serverData?.contactRevealed && serverData.workerPhone && !contactRevealed) {
+      setContactRevealed(true);
+      setRevealedPhone(serverData.workerPhone);
+    }
+  }, [appQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const revealMutation = trpc.jobs.revealContact.useMutation({
     onSuccess: (data) => {
@@ -71,6 +74,9 @@ export default function ApplicationView() {
       toast.error(err.message ?? "שגיאה בחשיפת פרטי הקשר");
     },
   });
+
+  // useCategories must be called unconditionally (hooks rule)
+  const { categories: dbCategories } = useCategories();
 
   const handleReveal = () => {
     revealMutation.mutate({ id: applicationId });
@@ -91,6 +97,8 @@ export default function ApplicationView() {
     );
     window.open(`https://wa.me/${intl}?text=${text}`, "_blank");
   };
+
+  // ── Early returns (after all hooks) ───────────────────────────────────────
 
   // ── Not authenticated ──────────────────────────────────────────────────────
   if (!isAuthenticated) {
@@ -156,7 +164,7 @@ export default function ApplicationView() {
     );
   }
 
-  const { categories: dbCategories } = useCategories();
+  // ── Render ─────────────────────────────────────────────────────────────────
   const app = appQuery.data!;
   const workerCategorySlugs = (app.workerPreferredCategories as string[] | null) ?? [];
   const matchedCategories = dbCategories.filter((c) => workerCategorySlugs.includes(c.slug));
@@ -172,7 +180,6 @@ export default function ApplicationView() {
     minute: "2-digit",
   });
 
-  // Sync reveal state from server (already revealed on a previous visit)
   const isAlreadyRevealed = contactRevealed || (app.contactRevealed && !!app.workerPhone);
   const displayPhone = revealedPhone ?? (app.contactRevealed ? app.workerPhone : null);
 

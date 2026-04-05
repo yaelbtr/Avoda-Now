@@ -3787,3 +3787,4 @@ Isolation guarantees:
 - [x] SEO: register urgent and price intent routes (/category/city-בדחיפות, /category/city-מחיר)
 - [x] UX: add "מאמרים קשורים" section to HomeWorker and HomeEmployer
 - [x] Admin: הוסף טאב "מעסיקים" עם טבלת משתמשים שמצב=employer + סטטיסטיקות משרות
+- [x] Bug: כפתור "צפה" בטאב מועמדויות בפאנל ניהול גורם ל-React error #310 (unstable query input)

@@ -81,6 +81,7 @@ import {
   toggleCategoryActive,
   deleteCategory,
   seedCategoriesIfEmpty,
+  syncMissingCategories,
   getRegions,
   getActiveRegionCities,
   getRegionBySlug,
@@ -3334,6 +3335,14 @@ const categoriesRouter = router({
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await seedCategoriesIfEmpty();
       return { success: true };
+    }),
+
+  /** Sync any seed categories missing from the DB (admin only, safe on live DB) */
+  syncMissing: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const inserted = await syncMissingCategories();
+      return { inserted, count: inserted.length };
     }),
 });
 

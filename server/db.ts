@@ -2549,6 +2549,53 @@ export async function seedCategoriesIfEmpty() {
   }
 }
 
+/**
+ * Inserts any seed categories that are missing from the DB (by slug).
+ * Safe to run on a live DB — uses ON CONFLICT DO NOTHING.
+ * Returns the list of newly inserted slugs.
+ */
+export async function syncMissingCategories(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const seed = [
+    { slug: "cleaning",          name: "ניקיון",              icon: "🧹", groupName: "home",    sortOrder: 1 },
+    { slug: "events",            name: "אירועים",             icon: "🎉", groupName: "events",  sortOrder: 2 },
+    { slug: "gardening",         name: "גינון",               icon: "🌿", groupName: "home",    sortOrder: 3 },
+    { slug: "repairs",           name: "תיקונים כלליים",      icon: "🔧", groupName: "home",    sortOrder: 4 },
+    { slug: "plumbing",          name: "אינסטלציה",           icon: "🚿", groupName: "home",    sortOrder: 5 },
+    { slug: "electricity",       name: "חשמל",                icon: "⚡", groupName: "home",    sortOrder: 6 },
+    { slug: "moving",            name: "הובלות",              icon: "📦", groupName: "home",    sortOrder: 7 },
+    { slug: "dog_walker",        name: "דוגווקר",             icon: "🐕", groupName: "home",    sortOrder: 8 },
+    { slug: "childcare",         name: "טיפול בילדים",        icon: "👶", groupName: "care",    sortOrder: 9 },
+    { slug: "eldercare",         name: "טיפול בקשישים",       icon: "🧓", groupName: "care",    sortOrder: 10 },
+    { slug: "catering",          name: "קייטרינג ובישול",     icon: "🍳", groupName: "events",  sortOrder: 11 },
+    { slug: "serving",           name: "הגשה ושירות",         icon: "🍽️", groupName: "events",  sortOrder: 12 },
+    { slug: "security",          name: "אבטחה",               icon: "🛡️", groupName: "general", sortOrder: 13 },
+    { slug: "delivery",          name: "שליחויות",            icon: "🚴", groupName: "general", sortOrder: 14 },
+    { slug: "retail",            name: "קמעונאות",            icon: "🛍️", groupName: "general", sortOrder: 15 },
+    { slug: "warehouse",         name: "מחסן",                icon: "🏭", groupName: "general", sortOrder: 16 },
+    { slug: "agriculture",       name: "חקלאות",              icon: "🌾", groupName: "general", sortOrder: 17 },
+    { slug: "emergency_support", name: "סיוע בחירום",      icon: "🆘", groupName: "special", sortOrder: 18 },
+    { slug: "volunteer",         name: "התנדבות",             icon: "💚", groupName: "special", sortOrder: 19 },
+    { slug: "other",             name: "אחר",                icon: "💼", groupName: "general", sortOrder: 99 },
+  ];
+
+  // Fetch existing slugs in one query
+  const existing = await db.select({ slug: categoriesTable.slug }).from(categoriesTable);
+  const existingSlugs = new Set(existing.map((r) => r.slug));
+
+  const missing = seed.filter((s) => !existingSlugs.has(s.slug));
+  if (missing.length === 0) return [];
+
+  for (const cat of missing) {
+    await db.insert(categoriesTable)
+      .values({ ...cat, isActive: true })
+      .onConflictDoNothing();
+  }
+  return missing.map((c) => c.slug);
+}
+
 // ─── Worker Reviews ────────────────────────────────────────────────────────────
 /**
  * Get all reviews for a worker, with employer name and photo.

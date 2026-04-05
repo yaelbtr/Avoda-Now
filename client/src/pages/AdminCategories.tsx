@@ -122,6 +122,19 @@ export function AdminCategoriesTab() {
     onError: (e) => toast.error(e.message),
   });
 
+  const syncMut = trpc.categories.syncMissing.useMutation({
+    onSuccess: (res) => {
+      if (res.count === 0) {
+        toast.success("כל הקטגוריות כבר קיימות ב-DB");
+      } else {
+        toast.success(`נוספו ${res.count} קטגוריות חסרות: ${res.inserted.join(", ")}`);
+        utils.categories.adminList.invalidate();
+        utils.categories.list.invalidate();
+      }
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   function openCreate() {
     setEditingId(null);
     setForm({ ...EMPTY_FORM });
@@ -167,6 +180,16 @@ export function AdminCategoriesTab() {
           <Badge variant="secondary">{cats.length} קטגוריות</Badge>
         </div>
         <div className="flex gap-2">
+          <AppButton
+            variant="outline"
+            size="sm"
+            onClick={() => syncMut.mutate()}
+            disabled={syncMut.isPending}
+            title="מוסיף קטגוריות חדשות מה-seed שחסרות ב-DB"
+          >
+            <RefreshCw className="h-4 w-4 ml-1" />
+            סנכרן קטגוריות חסרות
+          </AppButton>
           <AppButton
             variant="outline"
             size="sm"

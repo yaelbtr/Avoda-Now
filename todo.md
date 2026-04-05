@@ -3775,3 +3775,4 @@ Isolation guarantees:
 - [x] AEO: add Moving category pages (questions, location, compare, category page)
 - [x] DB: add dog_walker to JOB_CATEGORY_SLUGS enum + push migration (moving already existed)
 - [ ] UI: add Dog Walker and Moving filters + specialized fields in search/post-job UI
+- [x] Admin: add "סנכרן קטגוריות חסרות" button that runs INSERT ON CONFLICT DO NOTHING for all seed categories

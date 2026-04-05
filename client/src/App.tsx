@@ -63,6 +63,17 @@ const GuidePage = lazy(() => import("./pages/GuidePage"));
 const GuideTopicPage = lazy(() => import("./pages/GuideTopicPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 
+// AEO / SEO content pages
+const QuestionPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.QuestionPage })));
+const QuestionsHub = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.QuestionsHub })));
+const ComparePage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.ComparePage })));
+const CompareHub = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.CompareHub })));
+const AudiencePage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.AudiencePage })));
+const AudienceHub = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.AudienceHub })));
+const AboutPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.AboutPage })));
+const FAQGeneralPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.FAQGeneralPage })));
+const ReviewsPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.ReviewsPage })));
+
 // Legal / static pages (rarely visited, no rush to load)
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -426,6 +437,16 @@ function Router() {
                   <Route path="/faq/:slug" component={FAQPage} />
                   <Route path="/best/:slug" component={BestJobsPage} />
                   <Route path="/work/:slug" component={WorkerLandingPage} />
+                  {/* AEO / SEO content pages */}
+                  <Route path="/questions" component={QuestionsHub} />
+                  <Route path="/questions/:slug" component={QuestionPage} />
+                  <Route path="/compare" component={CompareHub} />
+                  <Route path="/compare/:slug" component={ComparePage} />
+                  <Route path="/for" component={AudienceHub} />
+                  <Route path="/for/:slug" component={AudiencePage} />
+                  <Route path="/about" component={AboutPage} />
+                  <Route path="/faq-general" component={FAQGeneralPage} />
+                  <Route path="/reviews" component={ReviewsPage} />
                   {/* Hebrew keyword SEO landing pages */}
                   {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
                   <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>

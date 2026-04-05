@@ -3763,3 +3763,7 @@ Isolation guarantees:
 - [x] Bug (still open): campaign link still navigates immediately to worker home — fixed with local campaignRoleSelected flag in Router that forces showRoleSelection without touching server state
 - [x] Feature: add mobile button in Admin panel for referral links management tab
 - [x] Copy: change "צריך עובד לבית?" to "צריך עובד זמני לבית או לעסק?" in HomeEmployer.tsx
+- [x] AEO: create static content data file (30+ pages: questions, compare, guides, audience, trust)
+- [x] AEO: build ContentPage template component with AEO structure and schema.org JSON-LD
+- [x] AEO: build Compare, Audience, About, FAQ, Reviews page components
+- [x] AEO: register all /questions/, /compare/, /guide/, /for/, /about, /faq-general, /reviews routes in App.tsx

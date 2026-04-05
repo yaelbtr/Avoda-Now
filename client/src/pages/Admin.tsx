@@ -50,6 +50,7 @@ import {
   ChevronUp,
   Share2,
   Globe,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -117,6 +118,11 @@ export default function Admin() {
 
   // User management modals
   const [userSearch, setUserSearch] = useState("");
+  const [employerSearch, setEmployerSearch] = useState("");
+  const employersQuery = trpc.admin.listEmployers.useQuery(
+    {},
+    { enabled: !!user && user.role === "admin" && activeTab === "employers" }
+  );
   const [editUserModal, setEditUserModal] = useState<{
     open: boolean;
     user: { id: number; name: string | null; phone: string | null; role: string; status: string } | null;
@@ -348,6 +354,7 @@ export default function Admin() {
               { value: "jobs", icon: <Briefcase className="w-4 h-4" />, label: "משרות", badge: stats?.underReviewJobs },
               { value: "reports", icon: <Flag className="w-4 h-4" />, label: "דיווחים", badge: stats?.underReviewJobs },
               { value: "users", icon: <Users className="w-4 h-4" />, label: "משתמשים" },
+              { value: "employers", icon: <Building2 className="w-4 h-4" />, label: "מעסיקים" },
               { value: "applications", icon: <Briefcase className="w-4 h-4" />, label: "מועמדויות" },
               { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
               { value: "notif-tracking", icon: <Bell className="w-4 h-4" />, label: "מעקב הודעות" },
@@ -402,6 +409,10 @@ export default function Admin() {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               משתמשים
+            </TabsTrigger>
+            <TabsTrigger value="employers" className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              מעסיקים
             </TabsTrigger>
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <Briefcase className="w-4 h-4" />
@@ -1011,6 +1022,120 @@ export default function Admin() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+          </TabsContent>
+
+          {/* ─── Employers Tab ─── */}
+          <TabsContent value="employers">
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <h2 className="text-lg font-semibold">מעסיקים ({employersQuery.data?.length ?? 0})</h2>
+              <div className="flex items-center gap-2">
+                <AppInput
+                  placeholder="חיפוש שם / טלפון..."
+                  value={employerSearch}
+                  onChange={(e) => setEmployerSearch(e.target.value)}
+                  dir="rtl"
+                  wrapperClassName="w-48"
+                />
+                <AppButton variant="secondary" size="sm" onClick={() => utils.admin.listEmployers.invalidate()}>
+                  רענן
+                </AppButton>
+              </div>
+            </div>
+            {employersQuery.isLoading ? (
+              <div className="space-y-2">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-10 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-border">
+                <table className="w-full text-sm" dir="rtl">
+                  <thead>
+                    <tr className="bg-muted/60 text-muted-foreground text-xs">
+                      <th className="text-right px-3 py-2.5 font-semibold">שם</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">טלפון</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">סטטוס</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">סה"כ משרות</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">משרות פעילות</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">הצטרף</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">כניסה אחרונה</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">פעולות</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(employersQuery.data ?? [])
+                      .filter(e =>
+                        !employerSearch ||
+                        (e.name ?? "").includes(employerSearch) ||
+                        (e.phone ?? "").includes(employerSearch)
+                      )
+                      .map((e, idx) => (
+                        <tr
+                          key={e.id}
+                          className={`border-t border-border transition-colors hover:bg-muted/30 ${
+                            e.status === "suspended" ? "bg-red-50/40 opacity-80" : idx % 2 === 0 ? "" : "bg-muted/10"
+                          }`}
+                        >
+                          <td className="px-3 py-2.5 font-medium">{e.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{e.phone ?? "—"}</td>
+                          <td className="px-3 py-2.5">
+                            {e.status === "suspended"
+                              ? <Badge variant="destructive" className="text-xs">חסום</Badge>
+                              : <Badge variant="outline" className="text-xs text-green-700 border-green-300">פעיל</Badge>
+                            }
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <span className={`font-semibold text-sm ${
+                              e.totalJobs > 0 ? "text-primary" : "text-muted-foreground"
+                            }`}>{e.totalJobs}</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            {e.activeJobs > 0
+                              ? <Badge variant="outline" className="text-xs text-green-700 border-green-300">{e.activeJobs} פעילות</Badge>
+                              : <span className="text-muted-foreground text-xs">0</span>
+                            }
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(e.createdAt).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(e.lastSignedIn).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5">
+                            <div className="flex items-center gap-1.5">
+                              {e.status === "suspended" ? (
+                                <button
+                                  title="בטל חסימה"
+                                  className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                  onClick={() => confirm("ביטול חסימה", `לבטל חסימה מהמעסיק ${e.phone}?`, () => unblockUser.mutate({ userId: e.id }))}
+                                >
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  title="חסום"
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                                  onClick={() => confirm("חסימת מעסיק", `לחסום את המעסיק ${e.phone}?`, () => blockUser.mutate({ userId: e.id }))}
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <button
+                                title="מחק"
+                                className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                                onClick={() => confirm("מחיקת מעסיק", `למחוק לצמיתות את המעסיק ${e.phone}? פעולה זו בלתי הפיכה!`, () => deleteUserMutation.mutate({ userId: e.id }))}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {(employersQuery.data ?? []).filter(e =>
+                  !employerSearch || (e.name ?? "").includes(employerSearch) || (e.phone ?? "").includes(employerSearch)
+                ).length === 0 && (
+                  <div className="text-center py-10 text-muted-foreground">לא נמצאו מעסיקים</div>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           {/* ─── Applications Tab ─── */}

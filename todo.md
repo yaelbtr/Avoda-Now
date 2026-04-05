@@ -3786,3 +3786,4 @@ Isolation guarantees:
 - [x] SEO: add /sitemap.xml Express route generating all 230+ URLs (AEO + programmatic)
 - [x] SEO: register urgent and price intent routes (/category/city-בדחיפות, /category/city-מחיר)
 - [x] UX: add "מאמרים קשורים" section to HomeWorker and HomeEmployer
+- [x] Admin: הוסף טאב "מעסיקים" עם טבלת משתמשים שמצב=employer + סטטיסטיקות משרות

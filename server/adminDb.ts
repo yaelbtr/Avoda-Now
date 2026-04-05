@@ -651,3 +651,40 @@ export {
   getNotificationLogsForJob,
   getNotificationBatchSummaryForJob,
 } from "./db";
+
+// ─── Employers Admin ──────────────────────────────────────────────────────────
+/**
+ * Returns all users whose userMode = 'employer', enriched with job-posting stats.
+ * Uses a LEFT JOIN + GROUP BY so users with 0 jobs are still included.
+ */
+export async function adminGetAllEmployers(limit = 300) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+
+  const rows = await db
+    .select({
+      id: users.id,
+      phone: users.phone,
+      name: users.name,
+      role: users.role,
+      status: users.status,
+      createdAt: users.createdAt,
+      lastSignedIn: users.lastSignedIn,
+      totalJobs: count(jobs.id),
+      activeJobs: sql<number>`SUM(CASE WHEN ${jobs.status} = 'active' AND (${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now}) THEN 1 ELSE 0 END)`,
+    })
+    .from(users)
+    .leftJoin(jobs, eq(jobs.postedBy, users.id))
+    .where(eq(users.userMode, "employer"))
+    .groupBy(users.id)
+    .orderBy(desc(users.createdAt))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    ...r,
+    totalJobs: Number(r.totalJobs),
+    activeJobs: Number(r.activeJobs ?? 0),
+  }));
+}

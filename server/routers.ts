@@ -154,6 +154,7 @@ import {
   adminGetAllJobs,
   adminGetAllReports,
   adminGetAllUsers,
+  adminGetAllEmployers,
   adminGetBatchById,
   adminGetBirthdateChanges,
   adminGetReportedJobs,
@@ -1971,8 +1972,11 @@ const adminRouter = router({
   /** All users */
   listUsers: adminProcedure
     .input(z.object({ limit: z.number().optional() }))
-    .query(async ({ input }) => adminGetAllUsers(input.limit ?? 200)),
-
+     .query(async ({ input }) => adminGetAllUsers(input.limit ?? 200)),
+  /** List all employer-mode users with job stats */
+  listEmployers: adminProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllEmployers(input.limit ?? 300)),
   /** Block a user */
   blockUser: adminProcedure
     .input(z.object({ userId: z.number() }))
@@ -2063,13 +2067,11 @@ const adminRouter = router({
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input }) => adminGetAllApplications(input.limit ?? 300)),
 
-  // ── Notification Batches Admin ────────────────────────────────────────────
-
-  /** All notification batches with job title */
+  // ── Notification Batches Admin ───────────────────────────────────────
+  /** All notification batches */
   listBatches: adminProcedure
     .input(z.object({ limit: z.number().optional() }))
-    .query(async ({ input }) => adminGetAllBatches(input.limit ?? 300)),
-
+    .query(async ({ input }) => adminGetAllBatches(input.limit ?? 200)),
   /** Force-flush a pending batch immediately */
   flushBatch: adminProcedure
     .input(z.object({ batchId: z.number() }))

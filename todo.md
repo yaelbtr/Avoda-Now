@@ -3767,3 +3767,7 @@ Isolation guarantees:
 - [x] AEO: build ContentPage template component with AEO structure and schema.org JSON-LD
 - [x] AEO: build Compare, Audience, About, FAQ, Reviews page components
 - [x] AEO: register all /questions/, /compare/, /guide/, /for/, /about, /faq-general, /reviews routes in App.tsx
+- [x] AEO: expand aeoContent.ts to 33 pages (questions, location, compare, guides, audience)
+- [ ] AEO: add AI content generator in Admin panel (generateContentPage)
+- [ ] AEO: add internal linking section (3 related links per page) to AEOPage template
+- [ ] AEO: add live available workers widget inside content pages

@@ -3791,3 +3791,4 @@ Isolation guarantees:
 - [x] Admin: הוסף מסלול /admin/applications/:id לצפייה בפרטי מועמדות מלאים ללא הגבלת תפקיד
 - [x] Admin: בטבלת משרות — hover על שורה מציג popover עם רשימת מועמדים (שם, טלפון, סטטוס)
 - [x] Error Handling: טבלת error_logs בDB, interceptor ב-tRPC, הודעות גנריות למשתמש, טאב לוגים בפאנל ניהול
+- [x] Admin: טאב "לוגים כלליים" — כל system_logs (לא רק OTP/auth), פילטר לפי רמה/event/תאריך, expand לstack trace

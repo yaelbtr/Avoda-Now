@@ -268,7 +268,8 @@ export default function Admin() {
 
   // System Logs state
   const [logsPhoneFilter, setLogsPhoneFilter] = useState("");
-  const [logsLevelFilter, setLogsLevelFilter] = useState<"" | "info" | "warn" | "error">("error");
+  const [logsLevelFilter, setLogsLevelFilter] = useState<"" | "info" | "warn" | "error">("");
+  const [logsEventFilter, setLogsEventFilter] = useState("");
   const [logsOffset, setLogsOffset] = useState(0);
   const LOGS_PAGE_SIZE = 50;
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
@@ -276,6 +277,7 @@ export default function Admin() {
     {
       phone: logsPhoneFilter.trim() || undefined,
       level: logsLevelFilter || undefined,
+      event: logsEventFilter.trim() || undefined,
       limit: LOGS_PAGE_SIZE,
       offset: logsOffset,
     },
@@ -1747,9 +1749,9 @@ export default function Admin() {
             <div className="space-y-4" dir="rtl">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold">לוג אירועים ושגיאות</h2>
+                  <h2 className="text-lg font-semibold">לוגים כלליים</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    רשומים מהשרת לאיתור בעיות הרשמה והתחברות. ניתן לסנן לפי מספר טלפון.
+                    כל אירועי המערכת — שגיאות שרת, אזהרות, ואירועי מידע. לחץ על שורה לפרטים מלאים וstack trace.
                   </p>
                 </div>
                 <AppButton
@@ -1761,14 +1763,64 @@ export default function Admin() {
                 </AppButton>
               </div>
 
+              {/* Summary badges */}
+              {logsQuery.data && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border">
+                    סה&quot;כ {logsQuery.data.total} רשומות
+                  </span>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                    onClick={() => { setLogsLevelFilter("error"); setLogsOffset(0); }}
+                  >
+                    <AlertCircle className="w-3 h-3" /> הצג שגיאות בלבד
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("trpc."); setLogsOffset(0); }}
+                  >
+                    שגיאות API
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("otp."); setLogsOffset(0); }}
+                  >
+                    אירועי OTP
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("signup."); setLogsOffset(0); }}
+                  >
+                    הרשמות
+                  </button>
+                  {(logsLevelFilter || logsEventFilter || logsPhoneFilter) && (
+                    <button
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border hover:bg-muted/80 transition-colors"
+                      onClick={() => { setLogsLevelFilter(""); setLogsEventFilter(""); setLogsPhoneFilter(""); setLogsOffset(0); }}
+                    >
+                      נקה פילטרים ×
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Filters */}
               <div className="flex flex-wrap gap-3 items-end">
-                <div className="flex-1 min-w-[180px]">
+                <div className="flex-1 min-w-[160px]">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">חיפוש לפי טלפון</label>
                   <AppInput
                     placeholder="לדוגמא: 0559258668"
                     value={logsPhoneFilter}
                     onChange={(e) => { setLogsPhoneFilter(e.target.value); setLogsOffset(0); }}
+                    dir="ltr"
+                  />
+                </div>
+                <div className="flex-1 min-w-[160px]">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">חיפוש לפי אירוע</label>
+                  <AppInput
+                    placeholder="לדוגמא: trpc. / otp. / signup."
+                    value={logsEventFilter}
+                    onChange={(e) => { setLogsEventFilter(e.target.value); setLogsOffset(0); }}
                     dir="ltr"
                   />
                 </div>

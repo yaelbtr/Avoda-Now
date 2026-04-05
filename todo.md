@@ -3779,3 +3779,7 @@ Isolation guarantees:
 - [x] AEO: add 7 new pages (cleaning-urgent, babysitter-urgent, courier-urgent, dog-walker-price, moving-price, avodanow-vs-yad2, hire-in-hour)
 - [x] AEO: add relatedLinks to all 51 pages (full internal link network — 0 pages missing)
 - [x] AEO: relatedLinks on all 51 pages + RelatedArticles sidebar already in AEOPage template
+- [x] Programmatic SEO: build content generation engine (generatePage, generateFAQ, generateMeta) for 180 category×city×intent combinations
+- [x] Programmatic SEO: build ProgrammaticPage component with static content + live WorkersList widget
+- [x] Programmatic SEO: uses existing workers.nearby tRPC procedure with city coordinates
+- [x] Programmatic SEO: register all /:category/:city routes in App.tsx (6 categories × 10 cities via ProgrammaticPageWrapper)

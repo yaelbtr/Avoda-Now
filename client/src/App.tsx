@@ -74,6 +74,8 @@ const AboutPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m
 const FAQGeneralPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.FAQGeneralPage })));
 const ReviewsPage = lazy(() => import("./pages/AEORoutes").then(m => ({ default: m.ReviewsPage })));
 
+// Programmatic SEO pages (category × city × intent)
+const ProgrammaticPageWrapper = lazy(() => import("./pages/ProgrammaticPageWrapper"));
 // Legal / static pages (rarely visited, no rush to load)
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -447,6 +449,13 @@ function Router() {
                   <Route path="/about" component={AboutPage} />
                   <Route path="/faq-general" component={FAQGeneralPage} />
                   <Route path="/reviews" component={ReviewsPage} />
+                  {/* Programmatic SEO: /category/city[-intent] — 6 categories × 10 cities × 3 intents */}
+                  <Route path="/cleaning/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="cleaning" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  <Route path="/dog-walker/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="dog_walker" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  <Route path="/moving/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="moving" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  <Route path="/babysitter/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="babysitter" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  <Route path="/delivery/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="delivery" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  <Route path="/events/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="events" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
                   {/* Hebrew keyword SEO landing pages */}
                   {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
                   <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>

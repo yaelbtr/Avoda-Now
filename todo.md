@@ -3771,3 +3771,7 @@ Isolation guarantees:
 - [ ] AEO: add AI content generator in Admin panel (generateContentPage)
 - [ ] AEO: add internal linking section (3 related links per page) to AEOPage template
 - [ ] AEO: add live available workers widget inside content pages
+- [x] AEO: add Dog Walker category pages (questions, location, compare, category page)
+- [x] AEO: add Moving category pages (questions, location, compare, category page)
+- [x] DB: add dog_walker to JOB_CATEGORY_SLUGS enum + push migration (moving already existed)
+- [ ] UI: add Dog Walker and Moving filters + specialized fields in search/post-job UI

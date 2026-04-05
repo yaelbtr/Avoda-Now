@@ -68,6 +68,7 @@ export const JOB_CATEGORY_SLUGS = [
   "electricity",
   "plumbing",
   "moving",
+  "dog_walker",
   "other",
 ] as const;
 export type JobCategory = typeof JOB_CATEGORY_SLUGS[number];

@@ -310,6 +310,38 @@ async function startServer() {
       urls.push(`<url><loc>${baseUrl}/עבודה-זמנית/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);
     }
 
+    // ── AEO content pages (/questions/, /compare/, /guide/, /for/, /about, /faq-general, /reviews)
+    const AEO_SLUGS = [
+      // questions
+      "questions/איך-למצוא-עובד-זמני","questions/כמה-עולה-עובד-זמני","questions/איך-למצוא-מנקה-לבית","questions/כמה-עולה-מנקה-לבית",
+      "questions/איך-למצוא-בייביסיטר","questions/כמה-עולה-בייביסיטר","questions/איך-למצוא-שליח","questions/כמה-עולה-עובד-אבטחה",
+      "questions/כמה-עולה-עובד-מטבח","questions/כמה-עולה-עובד-חקלאי",
+      "questions/איך-למצוא-דוגווקר","questions/כמה-עולה-דוגווקר","questions/דוגווקר-בדחיפות","questions/דוגווקר-לפי-שעות",
+      "questions/איך-למצוא-מוביל","questions/כמה-עולה-הובלה","questions/הובלה-בדחיפות",
+      "questions/עובד-ניקיון-בדחיפות","questions/בייביסיטר-בדחיפות","questions/שליח-בדחיפות",
+      // compare
+      "compare/אוודאנאו-מול-פייסבוק","compare/אוודאנאו-מול-חברה","compare/אוודאנאו-מול-יד-2","compare/אוודאנאו-מול-וואטסאפ",
+      // guide
+      "guide/איך-לגייס-עובד-תוך-שעה","guide/איך-לפרסם-משרה","guide/איך-לבחור-עובד-אמין","guide/טעויות-נפוצות",
+      // for (audience)
+      "for/מעסיקים","for/פרטיים","for/סטודנטים","for/נוער",
+      // trust
+      "about","faq-general","reviews",
+    ];
+    for (const slug of AEO_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`);
+    }
+    // ── Programmatic SEO pages: /category/city, /category/city-בדחיפות, /category/city-מחיר
+    const PROG_CATEGORIES = ["cleaning","dog-walker","moving","babysitter","delivery","events"];
+    const PROG_CITIES_SLUGS = ["תל-%D7%90ביב","ירושלים","חיפה","ראשון-%D7%9Cציון","פתח-%D7%AAקווה","אשדוד","נתניה","באר-%D7%A9בע","בני-%D7%91רק","רמת-%D7%92ן"];
+    const PROG_INTENTS = ["", "-בדחיפות", "-מחיר"];
+    for (const cat of PROG_CATEGORIES) {
+      for (const city of PROG_CITIES_SLUGS) {
+        for (const intent of PROG_INTENTS) {
+          urls.push(`<url><loc>${baseUrl}/${cat}/${city}${intent}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>${intent === "" ? "0.8" : "0.7"}</priority></url>`);
+        }
+      }
+    }
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
     _sitemapCache = { xml, ts: Date.now() };
     res.setHeader("Content-Type", "application/xml");

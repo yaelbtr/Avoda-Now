@@ -1700,6 +1700,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         layoutId={bottomSheetJob ? `carousel-card-${bottomSheetJob.id}` : undefined}
       />
 
+      {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
+      <section dir="rtl" className="px-4 py-6 border-t border-gray-100">
+        <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים שימושיים</h2>
+        <ul className="flex flex-col gap-2">
+          <li><a href="/questions/איך-למצוא-עובד-זמני" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך למצוא עובד זמני בישראל?</a></li>
+          <li><a href="/guide/איך-לגייס-עובד-תוך-שעה" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לגייס עובד תוך שעה?</a></li>
+          <li><a href="/for/סטודנטים" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">עבודות זמניות לסטודנטים</a></li>
+          <li><a href="/for/נוער" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">עבודות זמניות לנוער</a></li>
+        </ul>
+      </section>
+
     </div>
   );
 }

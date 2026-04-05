@@ -3783,3 +3783,6 @@ Isolation guarantees:
 - [x] Programmatic SEO: build ProgrammaticPage component with static content + live WorkersList widget
 - [x] Programmatic SEO: uses existing workers.nearby tRPC procedure with city coordinates
 - [x] Programmatic SEO: register all /:category/:city routes in App.tsx (6 categories × 10 cities via ProgrammaticPageWrapper)
+- [x] SEO: add /sitemap.xml Express route generating all 230+ URLs (AEO + programmatic)
+- [x] SEO: register urgent and price intent routes (/category/city-בדחיפות, /category/city-מחיר)
+- [x] UX: add "מאמרים קשורים" section to HomeWorker and HomeEmployer

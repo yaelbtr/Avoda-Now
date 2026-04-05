@@ -449,13 +449,15 @@ function Router() {
                   <Route path="/about" component={AboutPage} />
                   <Route path="/faq-general" component={FAQGeneralPage} />
                   <Route path="/reviews" component={ReviewsPage} />
-                  {/* Programmatic SEO: /category/city[-intent] — 6 categories × 10 cities × 3 intents */}
-                  <Route path="/cleaning/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="cleaning" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
-                  <Route path="/dog-walker/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="dog_walker" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
-                  <Route path="/moving/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="moving" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
-                  <Route path="/babysitter/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="babysitter" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
-                  <Route path="/delivery/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="delivery" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
-                  <Route path="/events/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="events" citySlug={p.city ?? ""} intent="how_to" /></Suspense>}</Route>
+                  {/* Programmatic SEO: /category/city[-intent] — 6 categories × 10 cities × 3 intents
+                      Single route per category; ProgrammaticPageWrapper parses intent from the city slug suffix:
+                      no suffix → how_to | -בדחיפות → urgent | -מחיר → price */}
+                  <Route path="/cleaning/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="cleaning" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
+                  <Route path="/dog-walker/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="dog_walker" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
+                  <Route path="/moving/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="moving" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
+                  <Route path="/babysitter/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="babysitter" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
+                  <Route path="/delivery/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="delivery" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
+                  <Route path="/events/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="events" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
                   {/* Hebrew keyword SEO landing pages */}
                   {/* City-specific: MUST be before /עבודה-זמנית to avoid path conflict */}
                   <Route path="/עבודה-זמנית/:city">{() => <CityLandingPage />}</Route>

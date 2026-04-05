@@ -1026,6 +1026,17 @@ export default function HomeEmployer() {
 
       </BelowFold>
 
+      {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
+      <section dir="rtl" className="px-4 py-6 border-t border-gray-100">
+        <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים למעסיקים</h2>
+        <ul className="flex flex-col gap-2">
+          <li><a href="/guide/איך-לפרסם-משרה" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לפרסם משרה שתגיע לעובדים הנכונים?</a></li>
+          <li><a href="/guide/איך-לבחור-עובד-אמין" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לבחור עובד אמין לעבודה זמנית?</a></li>
+          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו מול קבוצות פייסבוק — מה יותר יעיל?</a></li>
+          <li><a href="/for/מעסיקים" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו למעסיקים — כל מה שצריך לדעת</a></li>
+        </ul>
+      </section>
+
             <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
 
     </div>

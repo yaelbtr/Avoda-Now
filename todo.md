@@ -3776,3 +3776,6 @@ Isolation guarantees:
 - [x] DB: add dog_walker to JOB_CATEGORY_SLUGS enum + push migration (moving already existed)
 - [ ] UI: add Dog Walker and Moving filters + specialized fields in search/post-job UI
 - [x] Admin: add "סנכרן קטגוריות חסרות" button that runs INSERT ON CONFLICT DO NOTHING for all seed categories
+- [x] AEO: add 7 new pages (cleaning-urgent, babysitter-urgent, courier-urgent, dog-walker-price, moving-price, avodanow-vs-yad2, hire-in-hour)
+- [x] AEO: add relatedLinks to all 51 pages (full internal link network — 0 pages missing)
+- [x] AEO: relatedLinks on all 51 pages + RelatedArticles sidebar already in AEOPage template

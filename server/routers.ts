@@ -2067,6 +2067,22 @@ const adminRouter = router({
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input }) => adminGetAllApplications(input.limit ?? 300)),
 
+  /** Admin: get all applicants for a specific job (name, phone, status) */
+  getJobApplicants: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .query(async ({ input }) => {
+      const rows = await getApplicationsForJob(input.jobId);
+      return rows.map((r) => ({
+        id: r.id,
+        workerId: r.workerId,
+        workerName: r.workerName,
+        workerPhone: r.workerPhone,
+        status: r.status,
+        contactRevealed: r.contactRevealed,
+        createdAt: r.createdAt,
+      }));
+    }),
+
   // ── Notification Batches Admin ───────────────────────────────────────
   /** All notification batches */
   listBatches: adminProcedure

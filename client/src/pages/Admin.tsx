@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
@@ -51,10 +52,111 @@ import {
   Share2,
   Globe,
   Building2,
+  UserRound,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+
+// ─── Application status labels (reused in popover) ─────────────────────────
+const APP_STATUS_LABELS: Record<string, string> = {
+  pending: "ממתין",
+  viewed: "נצפה",
+  offered: "הוצע",
+  accepted: "התקבל",
+  rejected: "נדחה",
+  offer_rejected: "ההצעה נדחתה",
+  withdrawn: "בוטל",
+};
+
+const APP_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  viewed: "bg-blue-100 text-blue-800",
+  offered: "bg-purple-100 text-purple-800",
+  accepted: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
+  offer_rejected: "bg-orange-100 text-orange-800",
+  withdrawn: "bg-gray-100 text-gray-700",
+};
+
+/**
+ * Lazy-loaded popover showing all applicants for a job.
+ * Data is fetched only when the popover is opened.
+ */
+function JobApplicantsPopover({ jobId, applicantCount }: { jobId: number; applicantCount: number }) {
+  const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const query = trpc.admin.getJobApplicants.useQuery(
+    { jobId },
+    { enabled: open && !!user && user.role === "admin" }
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <AppButton
+          variant="outline"
+          size="sm"
+          className="gap-1 text-xs"
+          onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        >
+          <UserRound className="w-3.5 h-3.5" />
+          {applicantCount}
+        </AppButton>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-80 p-0"
+        align="end"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-4 py-3 border-b">
+          <p className="font-semibold text-sm">מועמדים ({applicantCount})</p>
+        </div>
+        {query.isLoading && (
+          <div className="flex justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {query.error && (
+          <p className="text-sm text-destructive px-4 py-3">{query.error.message}</p>
+        )}
+        {query.data && query.data.length === 0 && (
+          <p className="text-sm text-muted-foreground px-4 py-4 text-center">אין מועמדים עדיין</p>
+        )}
+        {query.data && query.data.length > 0 && (
+          <div className="max-h-72 overflow-y-auto divide-y">
+            {query.data.map((app) => (
+              <div
+                key={app.id}
+                className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-muted/40 cursor-pointer"
+                onClick={() => window.open(`/admin/applications/${app.id}`, "_blank")}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{app.workerName ?? "עובד"}</p>
+                  {app.workerPhone && (
+                    <a
+                      href={`tel:${app.workerPhone}`}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      dir="ltr"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {app.workerPhone}
+                    </a>
+                  )}
+                </div>
+                <Badge className={`text-xs shrink-0 ${APP_STATUS_COLORS[app.status] ?? "bg-gray-100 text-gray-700"}`}>
+                  {APP_STATUS_LABELS[app.status] ?? app.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   delivery: "משלוחים",
@@ -610,6 +712,7 @@ export default function Admin() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          <JobApplicantsPopover jobId={job.id} applicantCount={job.applicantCount} />
                           <Link href={`/job/${job.id}`}>
                             <AppButton variant="secondary" size="sm">
                               <Eye className="w-4 h-4" />

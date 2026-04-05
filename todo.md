@@ -3789,3 +3789,4 @@ Isolation guarantees:
 - [x] Admin: הוסף טאב "מעסיקים" עם טבלת משתמשים שמצב=employer + סטטיסטיקות משרות
 - [x] Bug: כפתור "צפה" בטאב מועמדויות בפאנל ניהול גורם ל-React error #310 (unstable query input)
 - [x] Admin: הוסף מסלול /admin/applications/:id לצפייה בפרטי מועמדות מלאים ללא הגבלת תפקיד
+- [x] Admin: בטבלת משרות — hover על שורה מציג popover עם רשימת מועמדים (שם, טלפון, סטטוס)

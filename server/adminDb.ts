@@ -38,9 +38,12 @@ export async function adminGetAllJobs(limit = 100, status?: string) {
       createdAt: jobs.createdAt,
       salary: jobs.salary,
       salaryType: jobs.salaryType,
+      applicantCount: count(applications.id),
     })
     .from(jobs)
+    .leftJoin(applications, eq(applications.jobId, jobs.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .groupBy(jobs.id)
     .orderBy(desc(jobs.createdAt))
     .limit(limit);
 }

@@ -20,7 +20,7 @@ import {
   trpcPathTraversalGuard,
 } from "../security";
 import { makeRequest } from "./map";
-import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty, logEvent } from "../db";
 import { sendSms } from "../sms";
 import { scheduleDailyBackup } from "../backup";
 import { assertDbHealth } from "../dbHealthCheck";
@@ -466,6 +466,24 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError({ error, path, ctx }) {
+        // Only log unexpected server errors — skip client errors (BAD_REQUEST,
+        // UNAUTHORIZED, FORBIDDEN, NOT_FOUND) which are expected business-logic
+        // rejections and should not pollute the error log.
+        const clientCodes = new Set(["BAD_REQUEST", "UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "CONFLICT", "PRECONDITION_FAILED", "METHOD_NOT_SUPPORTED", "TIMEOUT", "TOO_MANY_REQUESTS"]);
+        if (!clientCodes.has(error.code)) {
+          const user = (ctx as { user?: { id?: number; phone?: string } } | undefined)?.user;
+          logEvent("error", `trpc.${path ?? "unknown"}`, error.message, {
+            userId: user?.id,
+            phone: user?.phone,
+            meta: {
+              code: error.code,
+              path,
+              stack: error.stack?.split("\n").slice(0, 8).join("\n"),
+            },
+          }).catch(() => {});
+        }
+      },
     })
   );
   // development mode uses Vite, production mode uses static files

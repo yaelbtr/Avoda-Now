@@ -3790,3 +3790,4 @@ Isolation guarantees:
 - [x] Bug: כפתור "צפה" בטאב מועמדויות בפאנל ניהול גורם ל-React error #310 (unstable query input)
 - [x] Admin: הוסף מסלול /admin/applications/:id לצפייה בפרטי מועמדות מלאים ללא הגבלת תפקיד
 - [x] Admin: בטבלת משרות — hover על שורה מציג popover עם רשימת מועמדים (שם, טלפון, סטטוס)
+- [x] Error Handling: טבלת error_logs בDB, interceptor ב-tRPC, הודעות גנריות למשתמש, טאב לוגים בפאנל ניהול

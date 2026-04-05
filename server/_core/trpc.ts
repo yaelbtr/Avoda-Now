@@ -8,8 +8,17 @@ const t = initTRPC.context<TrpcContext>().create({
   errorFormatter({ shape, error }) {
     // Pass cause data (e.g. regionId/regionName) through to the client
     const causeData = error.cause && typeof error.cause === "object" && !(error.cause instanceof Error) ? error.cause as Record<string, unknown> : {};
+
+    // For unexpected server errors, replace the raw message with a generic one.
+    // The real error is captured in system_logs via the onError handler.
+    const isInternalError = error.code === "INTERNAL_SERVER_ERROR";
+    const safeMessage = isInternalError
+      ? "אירעה שגיאה בלתי צפויה. נסה שוב מאוחר או פנה לתמיכה."
+      : shape.message;
+
     return {
       ...shape,
+      message: safeMessage,
       data: {
         ...shape.data,
         ...causeData,

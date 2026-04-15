@@ -70,6 +70,10 @@ export function serveStatic(app: Express) {
     })
   );
 
+  app.use("/assets/*", (_req, res) => {
+    res.status(404).end();
+  });
+
   // Everything else (favicon, manifest, etc.) — cache for 1 day, except HTML
   app.use(
     express.static(distPath, {
@@ -81,6 +85,14 @@ export function serveStatic(app: Express) {
       },
     })
   );
+
+  app.use((req, res, next) => {
+    if (path.extname(req.path)) {
+      res.status(404).end();
+      return;
+    }
+    next();
+  });
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {

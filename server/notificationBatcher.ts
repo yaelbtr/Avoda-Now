@@ -14,6 +14,7 @@
  * double-send even if two Node processes race.
  */
 
+import { ENV } from "./_core/env";
 import {
   getPendingBatchForJob,
   createNotificationBatch,
@@ -37,7 +38,7 @@ const batchTimers = new Map<number, ReturnType<typeof setTimeout>>();
 function buildSmsBody(
   jobId: number,
   count: number,
-  origin = "https://avodanow.co.il"
+  origin = ENV.appBaseUrl
 ): string {
   const plural = count === 1 ? "עובד חדש הגיש מועמדות" : `${count} עובדים חדשים הגישו מועמדות`;
   return (

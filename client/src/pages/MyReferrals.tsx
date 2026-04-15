@@ -49,7 +49,7 @@ export default function MyReferrals() {
         </div>
         <p className="text-lg font-semibold text-gray-900">יש להתחבר כדי לראות את ההפניות שלך</p>
         <a
-          href={getLoginUrl()}
+          href={getLoginUrl("/my-referrals")}
           className="px-6 py-2.5 rounded-xl font-semibold text-white"
           style={{ background: "oklch(0.55 0.14 84)" }}
         >

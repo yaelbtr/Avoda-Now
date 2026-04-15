@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { saveSnapshot, restoreSnapshot, subscribeToNewJobs, computeFilterKey } from "@/services/jobsStore";
+import type { CachedJob } from "@/services/jobsStore";
 import { createPortal } from "react-dom";
 import { getMobileRoot } from "@/lib/mobileRoot";
 import { FIND_JOBS_OPEN } from "@shared/const";
@@ -468,6 +470,21 @@ export default function FindJobs() {
     ? [resolvedCategory]
     : (_savedFilters?.selectedCategories ?? []);
 
+  // ── Snapshot restore: שחזור רשימת המשרות מהניווט הקודם ──────────────────
+  // מחשבים filter key ראשוני (לפני שה-state מוגדר) על בסיס URL + localStorage
+  const _locationCacheOnMount = loadCachedLocation();
+  const _initialFilterKey = computeFilterKey({
+    categories: initialCategories,
+    cities: initialCities,
+    geoMode: !!_locationCacheOnMount,
+    lat: _locationCacheOnMount?.lat,
+    lng: _locationCacheOnMount?.lng,
+    radiusKm: 10,
+    dateFilter: null,
+    days: [],
+  });
+  const _snap = restoreSnapshot(_initialFilterKey);
+
   const [category, setCategory] = useState(resolvedCategory); // legacy — kept for SEO/URL/SmartEmptyState
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories); // multi-category (primary)
   const [radiusKm, setRadiusKm] = useState(10);
@@ -609,13 +626,13 @@ export default function FindJobs() {
     ro.observe(el);
     return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
   }, []);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(_snap?.page ?? 1);
   const PAGE_SIZE = 10;
   // AnyJob type — defined here so it can be used in state declarations below
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
-  // Accumulated jobs across pages for infinite scroll
-  const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>([]);
+  // Accumulated jobs across pages for infinite scroll — משוחזר מה-snapshot אם קיים
+  const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>((_snap?.jobs as AnyJob[]) ?? []);
   // pendingReset: when true, the next activeQueryData change will replace (not append) the list.
   // This avoids the stale-data race where setAccumulatedJobs([]) runs before the new query
   // response arrives, causing the old (stale) activeQueryData to re-populate the list and then
@@ -631,6 +648,19 @@ export default function FindJobs() {
   // Keep selectedCity in sync with selectedCities[0] for SEO/URL/legacy usage
   // Computed: whether current filters match saved filters (for UI indicator)
   const hasSavedFilters = (selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
+
+  // ── Filter key — מזהה ייחודי של הפילטרים הפעילים ──────────────────────────
+  const activeFilterKey = useMemo(() => computeFilterKey({
+    categories: selectedCategories,
+    cities: selectedCities,
+    geoMode: !!userLat,
+    lat: userLat,
+    lng: userLng,
+    radiusKm,
+    dateFilter,
+    days: selectedDays,
+  }), [selectedCategories, selectedCities, userLat, userLng, radiusKm, dateFilter, selectedDays]);
+
   const [, navigate] = useLocation();
   const cityInputRef = useRef<HTMLInputElement>(null);
 
@@ -977,6 +1007,23 @@ export default function FindJobs() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategories, selectedCities, selectedTimeSlots, selectedDays, sortBy]);
+  // ── שמירת snapshot בכל עדכון של רשימת המשרות ──────────────────────────────
+  useEffect(() => {
+    if (accumulatedJobs.length > 0) {
+      saveSnapshot(activeFilterKey, accumulatedJobs as CachedJob[], serverTotal, currentPage);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilterKey, accumulatedJobs, serverTotal, currentPage]);
+
+  // ── מנוי ל-SSE: הוספת משרות חדשות לראש הרשימה ──────────────────────────────
+  useEffect(() => {
+    return subscribeToNewJobs((job) => {
+      setAccumulatedJobs(prev =>
+        prev.some(j => j.id === job.id) ? prev : [job as AnyJob, ...prev]
+      );
+    });
+  }, []);
+
   // Infinite scroll: load next page when sentinel enters viewport
   const hasMore = accumulatedJobs.length < serverTotal && !isQueryError;
   // eslint-disable-next-line react-hooks/rules-of-hooks

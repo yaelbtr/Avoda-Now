@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { popReturnPath } from "@/const";
-import { AppButton, AppLogo, BrandName } from "@/components/ui";
+import { getGoogleLoginUrl, isOAuthLoginEnabled, popReturnPath } from "@/const";
+import { AppButton, AppLogo, BrandName, GoogleAuthButton } from "@/components/ui";
 import { toast } from "sonner";
 import {
   Phone, PhoneCall, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
@@ -134,6 +134,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [, navigate] = useLocation();
 
   const { categories: dbCategories } = useCategories();
+  const googleLoginEnabled = isOAuthLoginEnabled();
 
   // ── Timer helpers ────────────────────────────────────────────────────────────
   const startResendTimer = useCallback(() => {
@@ -208,6 +209,31 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   useEffect(() => {
     if (step === "otp") setTimeout(() => inputRefs.current[0]?.focus(), 120);
   }, [step]);
+
+  useEffect(() => {
+    if (open && message) {
+      setActiveTab("login");
+      setStep("phone");
+    }
+  }, [open, message]);
+
+  const redirectToRegistrationCompletion = (options?: { email?: string }) => {
+    setDigits(Array(OTP_LENGTH).fill(""));
+    setActiveTab("register");
+    setStep("phone");
+    setDuplicateError(null);
+    setNotFoundError(null);
+    setChannelEmailError(null);
+    setLoginEmailError(null);
+    setShowEmailLogin(false);
+    setIsEmailOtpFlow(false);
+    if (options?.email) {
+      setRegEmail(options.email);
+      setEmailError(null);
+    }
+  };
+
+  const isIncompleteAccountError = (code: string | undefined) => code === "FORBIDDEN";
 
   // Pre-fill email (and name) from Google account when register tab is active
   useEffect(() => {
@@ -301,8 +327,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       }
     },
     onError: (e) => {
+      if (isIncompleteAccountError(e.data?.code)) {
+        redirectToRegistrationCompletion();
+        return;
+      }
       // FORBIDDEN = existing user without termsAcceptedAt → must register
-      if (e.data?.code === "FORBIDDEN") {
+      if ((e.data?.code as string | undefined) === "FORBIDDEN") {
         setDigits(Array(OTP_LENGTH).fill(""));
         setActiveTab("register");
         setStep("phone");
@@ -360,6 +390,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       }
     },
     onError: (e) => {
+      if (isIncompleteAccountError(e.data?.code)) {
+        redirectToRegistrationCompletion({ email: loginEmail.trim() || undefined });
+        return;
+      }
       toast.error(e.message);
       setDigits(Array(OTP_LENGTH).fill(""));
       setTimeout(() => inputRefs.current[0]?.focus(), 60);
@@ -411,6 +445,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       verifyEmailCode.mutate({
         email: loginEmail,
         code,
+        ...(reg ? { termsAccepted: true } : {}),
         ...(reg?.name ? { name: reg.name } : {}),
         ...(phoneForServer ? { phone: phoneForServer } : {}),
       });
@@ -553,6 +588,12 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
   const isOtpComplete = digits.every(d => d !== "");
   const displayPhone = formatPhoneDisplay(normalizedPhone || phone);
+
+  const handleGoogleLogin = () => {
+    if (!googleLoginEnabled) return;
+    const returnPath = window.location.pathname + window.location.search;
+    window.location.assign(getGoogleLoginUrl(returnPath));
+  };
 
   if (!open) return null;
 
@@ -770,6 +811,18 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
             {/* Content */}
             <div className="w-full space-y-4 px-5 pt-3 pb-5" dir="rtl">
+              {message && (
+                <div
+                  className="rounded-lg border p-3 text-sm"
+                  style={{
+                    borderColor: "oklch(0.72 0.15 80.8 / 0.6)",
+                    background: "oklch(0.82 0.15 80.8 / 0.12)",
+                    color: "oklch(0.40 0.12 60)",
+                  }}
+                >
+                  {message}
+                </div>
+              )}
               {/* Subtitle */}
               <p className="text-sm text-center" style={{ color: "#6b7280" }}>
                 הכנס את מספר הטלפון שלך לקבלת קוד אימות
@@ -878,6 +931,23 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                       בטל
                     </button>
                   </div>
+                )}
+                {googleLoginEnabled && (
+                  <>
+                    <div className="flex items-center gap-3 my-1">
+                      <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
+                      <span className="text-xs" style={{ color: "#9a9a8a" }}>או</span>
+                      <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
+                    </div>
+
+                    <GoogleAuthButton
+                      label="כניסה עם Google"
+                      onClick={handleGoogleLogin}
+                    />
+                    <p className="text-xs text-center" style={{ color: "#6b7280" }}>
+                      מיועד למשתמשים קיימים בלבד
+                    </p>
+                  </>
                 )}
               </div>
 

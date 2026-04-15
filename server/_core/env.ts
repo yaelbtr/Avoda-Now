@@ -1,5 +1,29 @@
+function normalizeBaseUrl(value: string | undefined): string {
+  const fallback = "http://localhost:3000";
+  const raw = value?.trim() || fallback;
+  return raw.replace(/\/+$/, "");
+}
+
+function toOrigin(baseUrl: string): string {
+  try {
+    return new URL(baseUrl).origin;
+  } catch {
+    return "";
+  }
+}
+
+function resolveAppId(value: string | undefined): string {
+  const trimmed = value?.trim();
+  if (trimmed) return trimmed;
+  return process.env.NODE_ENV === "development" ? "local-dev-app" : "";
+}
+
+const appBaseUrl = normalizeBaseUrl(process.env.APP_BASE_URL);
+
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
+  appId: resolveAppId(process.env.VITE_APP_ID),
+  appBaseUrl,
+  appOrigin: toOrigin(appBaseUrl),
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",

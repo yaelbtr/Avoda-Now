@@ -5,6 +5,7 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { ENV } from "./env";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -19,6 +20,7 @@ import {
 } from "../security";
 import { makeRequest } from "./map";
 import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
+import { addClient, removeClient } from "../jobsSSE";
 import { sendSms } from "../sms";
 import { scheduleDailyBackup } from "../backup";
 import { assertDbHealth } from "../dbHealthCheck";
@@ -45,6 +47,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  app.get("/healthz", (_req, res) => {
+    res.status(200).json({ ok: true });
+  });
 
   // ── Trust proxy: required for accurate IP detection behind load balancers ───
   app.set("trust proxy", 1);
@@ -86,6 +92,20 @@ async function startServer() {
 
   // ── OTP endpoint rate limit: 5 req/hour per IP ───────────────────────────
   app.use("/api/trpc/auth.sendOtp", otpRateLimit);
+
+  // ── SSE: סטרים של משרות חדשות לקליינט ───────────────────────────────────────
+  app.get("/api/jobs/stream", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    addClient(res);
+    res.write(": connected\n\n");
+    const ping = setInterval(() => res.write(": ping\n\n"), 30_000);
+    req.on("close", () => {
+      clearInterval(ping);
+      removeClient(res);
+    });
+  });
 
   // ── Geocode proxy for city search ──────────────────────────────────────────
   app.get("/api/maps/geocode", async (req, res) => {
@@ -139,7 +159,7 @@ async function startServer() {
       return res.send(_sitemapCache.xml);
     }
 
-    const baseUrl = "https://avodanow.co.il";
+    const baseUrl = ENV.appBaseUrl;
     const todayStr = new Date().toISOString().split("T")[0];
 
     // Static pages
@@ -245,7 +265,7 @@ async function startServer() {
       return res.send(_rssCache.xml);
     }
 
-    const baseUrl = "https://avodanow.co.il";
+    const baseUrl = ENV.appBaseUrl;
     const buildDate = new Date().toUTCString();
 
     try {
@@ -318,7 +338,7 @@ async function startServer() {
       "Disallow: /api/",
       "Disallow: /dashboard",
       "",
-      "Sitemap: https://avodanow.co.il/sitemap.xml",
+      `Sitemap: ${ENV.appBaseUrl}/sitemap.xml`,
     ].join("\n");
     res.setHeader("Content-Type", "text/plain");
     res.setHeader("Cache-Control", "public, max-age=86400");
@@ -335,30 +355,49 @@ async function startServer() {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
-  if (process.env.NODE_ENV === "development") {
+  // כשמריצים סרבר בנפרד (STANDALONE_SERVER=true) Vite רץ בתהליך נפרד — אין צורך בstatic
+  const isStandalone = process.env.STANDALONE_SERVER === "true";
+  if (isStandalone) {
+    // לא מגישים כלום — Vite על 5173 מטפל בקלינט
+  } else if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  const port = process.env.PORT || 3000;
+  const preferredPort = Number(port);
+  const useViteHmrServer = process.env.NODE_ENV === "development" && !isStandalone;
+  let listenPort = preferredPort;
 
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+  // בסביבת dev עם Vite/HMR מותר לחפש פורט פנוי, אבל ב-Render
+  // ובסביבות production חייבים להאזין בדיוק ל-PORT שהפלטפורמה מזריקה.
+  if (useViteHmrServer) {
+    listenPort = process.env.STANDALONE_SERVER === "true"
+      ? preferredPort
+      : await findAvailablePort(preferredPort);
+
+    if (listenPort !== preferredPort) {
+      console.log(`Port ${preferredPort} is busy, using port ${listenPort} instead`);
+    }
   }
 
   // ── DB health check: verify all schema tables exist before accepting traffic ──
   await assertDbHealth();
 
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  const onListen = () => {
+    console.log(`Server running on http://localhost:${listenPort}/`);
     // Seed regions on first startup
     seedRegionsIfEmpty().catch((err) => console.warn("[Regions] Seed failed:", err));
     // Schedule daily database backup at 02:00 UTC
     scheduleDailyBackup();
-  });
+  };
+
+  if (useViteHmrServer) {
+    server.listen(listenPort, onListen);
+  } else {
+    app.listen(port, onListen);
+  }
 }
 
 startServer().catch(console.error);
@@ -374,7 +413,8 @@ setInterval(async () => {
         `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.
 ` +
         `להארכת הזמינות כנס ל: https://job-now.manus.space`;
-      const result = await sendSms(worker.phone, msg);
+      const normalizedMsg = msg.replace("https://job-now.manus.space", ENV.appBaseUrl);
+      const result = await sendSms(worker.phone, normalizedMsg);
       if (result.success) {
         await markAvailabilityReminderSent(worker.availabilityId);
         console.log(`[Reminder] Sent expiry SMS to worker ${worker.userId}`);

@@ -12,6 +12,7 @@
 import crypto from "crypto";
 import sgMail from "@sendgrid/mail";
 import { getDb } from "./db";
+import { ENV } from "./_core/env";
 import { emailVerifications, emailUnsubscribes } from "../drizzle/schema";
 import { eq, desc, and, gt } from "drizzle-orm";
 
@@ -197,8 +198,7 @@ export async function getOrCreateUnsubscribeToken(email: string): Promise<string
  * Uses the production domain by default; falls back to localhost in dev.
  */
 export function buildUnsubscribeUrl(token: string): string {
-  const base = process.env.APP_BASE_URL ?? "https://avodanow.co.il";
-  return `${base}/unsubscribe?token=${token}`;
+  return `${ENV.appBaseUrl}/unsubscribe?token=${token}`;
 }
 
 /**
@@ -300,7 +300,7 @@ export async function sendWelcomeEmail(params: {
         </div>
 
         <div style="text-align: center; margin-bottom: 24px;">
-          <a href="https://avodanow.co.il/worker-profile"
+          <a href="${ENV.appBaseUrl}/worker-profile"
              style="display: inline-block; background: #2d4a1e; color: #ffffff; text-decoration: none;
                     padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold;">
             כניסה לפרופיל שלי

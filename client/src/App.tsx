@@ -61,6 +61,7 @@ import { createPortal } from "react-dom";
 import FindJobsComingSoonOverlay from "./components/FindJobsComingSoonOverlay";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { IdleLogoutManager } from "./components/IdleLogoutManager";
+import { useJobsStream } from "./hooks/useJobsStream";
 
 const REFERRAL_KEY = "avodanow_ref";
 const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
@@ -124,6 +125,12 @@ function ReferralCapture() {
  * as soon as the user is authenticated. This ensures the script is already
  * cached when the user navigates to /post-job or any map-enabled page.
  */
+/** מפעיל את חיבור ה-SSE לקבלת משרות חדשות בזמן אמת */
+function JobsStreamProvider() {
+  useJobsStream();
+  return null;
+}
+
 function MapsPreloader() {
   const { isAuthenticated } = useAuth();
   useEffect(() => {
@@ -342,6 +349,7 @@ function App() {
               <ReferralCapture />
               <PostGoogleRegistration />
               <IdleLogoutManager />
+              <JobsStreamProvider />
               <Router />
               <CookieConsentBanner />
             </UserModeProvider>

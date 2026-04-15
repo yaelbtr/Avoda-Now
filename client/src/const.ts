@@ -29,22 +29,98 @@ export const popReturnPath = (): string | null => {
   return p;
 };
 
-// Generate login URL at runtime so redirect URI reflects the current origin.
-export const getLoginUrl = (provider?: string) => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
-  const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
+type AuthEnv = {
+  VITE_ENABLE_OAUTH_LOGIN?: string;
+  VITE_OAUTH_PORTAL_URL?: string;
+  VITE_APP_ID?: string;
+};
 
-  const url = new URL(`${oauthPortalUrl}/app-auth`);
-  url.searchParams.set("appId", appId);
-  url.searchParams.set("redirectUri", redirectUri);
+function normalizeReturnPath(returnPath?: string | null): string | null {
+  const raw = returnPath?.trim();
+  if (!raw || raw === "/") return null;
+  if (raw.startsWith("/")) return raw;
+  if (raw.startsWith("?") || raw.startsWith("#")) return `/${raw}`;
+  return `/${raw}`;
+}
+
+export function isOAuthLoginEnabled(
+  env: AuthEnv = import.meta.env as AuthEnv
+): boolean {
+  return (
+    env.VITE_ENABLE_OAUTH_LOGIN === "true" &&
+    Boolean(env.VITE_OAUTH_PORTAL_URL) &&
+    Boolean(env.VITE_APP_ID)
+  );
+}
+
+export function buildLocalLoginUrl(options: {
+  currentOrigin: string;
+  returnPath?: string | null;
+}): string {
+  const url = new URL("/", options.currentOrigin);
+  url.searchParams.set("auth", "login");
+  const normalizedReturnPath = normalizeReturnPath(options.returnPath);
+  if (normalizedReturnPath) {
+    url.searchParams.set("returnTo", normalizedReturnPath);
+  }
+  return url.toString();
+}
+
+export function buildOAuthLoginUrl(options: {
+  currentOrigin: string;
+  oauthPortalUrl: string;
+  appId: string;
+  provider?: string;
+  returnPath?: string | null;
+}): string {
+  const redirectUri = new URL("/api/oauth/callback", options.currentOrigin);
+  const normalizedReturnPath = normalizeReturnPath(options.returnPath);
+  if (normalizedReturnPath) {
+    redirectUri.searchParams.set("returnTo", normalizedReturnPath);
+  }
+  const state = btoa(redirectUri.toString());
+
+  const url = new URL("/app-auth", options.oauthPortalUrl);
+  url.searchParams.set("appId", options.appId);
+  url.searchParams.set("redirectUri", redirectUri.toString());
   url.searchParams.set("state", state);
   url.searchParams.set("type", "signIn");
-  if (provider) url.searchParams.set("provider", provider);
+  if (options.provider) url.searchParams.set("provider", options.provider);
 
   return url.toString();
+}
+
+function getCurrentOrigin(): string {
+  if (typeof window !== "undefined") return window.location.origin;
+  return "http://localhost:3000";
+}
+
+export const getLoginUrl = (returnPath?: string) => {
+  const currentOrigin = getCurrentOrigin();
+  if (!isOAuthLoginEnabled()) {
+    return buildLocalLoginUrl({ currentOrigin, returnPath });
+  }
+
+  return buildOAuthLoginUrl({
+    currentOrigin,
+    oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
+    appId: import.meta.env.VITE_APP_ID,
+    returnPath,
+  });
 };
 
 /** Shorthand: login URL that pre-selects the Google provider */
-export const getGoogleLoginUrl = () => getLoginUrl("google");
+export const getGoogleLoginUrl = (returnPath?: string) => {
+  const currentOrigin = getCurrentOrigin();
+  if (!isOAuthLoginEnabled()) {
+    return buildLocalLoginUrl({ currentOrigin, returnPath });
+  }
+
+  return buildOAuthLoginUrl({
+    currentOrigin,
+    oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
+    appId: import.meta.env.VITE_APP_ID,
+    provider: "google",
+    returnPath,
+  });
+};

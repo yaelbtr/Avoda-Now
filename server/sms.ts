@@ -1,3 +1,5 @@
+import { ENV } from "./_core/env";
+
 /**
  * Plain SMS sender using Twilio Messages API.
  *
@@ -33,7 +35,7 @@ export interface SmsSendResult {
  */
 export async function sendSms(to: string, body: string): Promise<SmsSendResult> {
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER) {
-    console.warn("[SMS] Twilio credentials not fully configured — skipping SMS");
+    console.warn("[SMS] Twilio credentials not fully configured - skipping SMS");
     return { success: false, error: "SMS service not configured" };
   }
 
@@ -78,16 +80,16 @@ export async function sendJobAlerts(
 ): Promise<number> {
   if (workers.length === 0) return 0;
 
-  const urgentPrefix = job.isUrgent ? "🔴 דחוף! " : "";
+  const urgentPrefix = job.isUrgent ? "דחוף! " : "";
   const cityPart = job.city ? ` ב${job.city}` : "";
   const message =
-    `${urgentPrefix}משרה חדשה ב-Job-Now תואמת לפרופיל שלך:\n` +
+    `${urgentPrefix}משרה חדשה ב-Job-Now שמתאימה לפרופיל שלך:\n` +
     `${job.title}${cityPart}\n` +
-    `לצפייה: https://job-now.manus.space/jobs/${job.id}\n` +
+    `לצפייה: ${ENV.appBaseUrl}/jobs/${job.id}\n` +
     `להסרה מהתראות: עדכן קטגוריות בפרופיל שלך`;
 
   let sent = 0;
-  // Send in parallel, cap at 20 concurrent
+  // Send in parallel, cap at 20 concurrent.
   const chunks: Array<typeof workers> = [];
   for (let i = 0; i < workers.length; i += 20) {
     chunks.push(workers.slice(i, i + 20));

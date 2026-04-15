@@ -279,10 +279,47 @@ class TwilioVerifyProvider implements SmsProvider {
   }
 }
 
-// ─── Export active provider ───────────────────────────────────────────────────
-// To switch providers: replace `new TwilioVerifyProvider()` with another implementation.
+// ─── Dev bypass provider ──────────────────────────────────────────────────────
+// בסביבת dev ללא קרדנשיאלים של Twilio — קוד 123456 תמיד מתקבל
 
-export const smsProvider: SmsProvider = new TwilioVerifyProvider();
+const DEV_OTP_CODE = "123456";
+
+class DevBypassProvider implements SmsProvider {
+  async sendOtp(phone: string): Promise<OtpSendResult> {
+    console.log(`[DEV] OTP לטלפון ${phone}: ${DEV_OTP_CODE}`);
+    return { success: true };
+  }
+  async verifyOtp(_phone: string, code: string): Promise<OtpVerifyResult> {
+    return { success: true, approved: code === DEV_OTP_CODE };
+  }
+  async sendOtpVoice(phone: string): Promise<OtpSendResult> {
+    return this.sendOtp(phone);
+  }
+  async sendOtpToEmail(email: string): Promise<OtpSendResult> {
+    console.log(`[DEV] OTP למייל ${email}: ${DEV_OTP_CODE}`);
+    return { success: true };
+  }
+  async verifyEmailOtp(_email: string, code: string): Promise<OtpVerifyResult> {
+    return { success: true, approved: code === DEV_OTP_CODE };
+  }
+  async sendOtpWhatsApp(phone: string): Promise<OtpSendResult> {
+    return this.sendOtp(phone);
+  }
+}
+
+// ─── Export active provider ───────────────────────────────────────────────────
+
+const hasTwilioCredentials =
+  !!process.env.TWILIO_ACCOUNT_SID &&
+  !!process.env.TWILIO_AUTH_TOKEN &&
+  !!process.env.TWILIO_VERIFY_SERVICE_SID;
+
+const isDevMode = process.env.NODE_ENV !== "production";
+
+export const smsProvider: SmsProvider =
+  isDevMode && !hasTwilioCredentials
+    ? new DevBypassProvider()
+    : new TwilioVerifyProvider();
 
 // ─── Phone number utilities ───────────────────────────────────────────────────
 

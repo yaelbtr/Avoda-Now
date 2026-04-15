@@ -1,6 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { MapView } from "@/components/Map";
-import { useLocation } from "wouter";
 
 type Job = {
   id: number;
@@ -22,18 +21,12 @@ interface NearbyJobsMapProps {
 }
 
 export default function NearbyJobsMap({ jobs, userLat, userLng }: NearbyJobsMapProps) {
-  const [, navigate] = useLocation();
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const mapRef = useRef<google.maps.Map | null>(null);
 
   const handleMapReady = (map: google.maps.Map) => {
-    mapRef.current = map;
-
-    // Clear existing markers
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((marker) => marker.setMap(null));
     markersRef.current = [];
 
-    // User location marker (blue dot)
     const userMarker = new google.maps.Marker({
       position: { lat: userLat, lng: userLng },
       map,
@@ -50,9 +43,9 @@ export default function NearbyJobsMap({ jobs, userLat, userLng }: NearbyJobsMapP
     });
     markersRef.current.push(userMarker);
 
-    // Job markers
     jobs.forEach((job) => {
       if (!job.latitude || !job.longitude) return;
+
       const lat = typeof job.latitude === "string" ? parseFloat(job.latitude) : job.latitude;
       const lng = typeof job.longitude === "string" ? parseFloat(job.longitude) : job.longitude;
       if (isNaN(lat) || isNaN(lng)) return;
@@ -85,8 +78,7 @@ export default function NearbyJobsMap({ jobs, userLat, userLng }: NearbyJobsMapP
             ${distText ? `<br/><span style="color:#6b7280;font-size:11px;">${distText}</span>` : ""}
             ${salaryText ? `<br/><span style="color:#16a34a;font-size:11px;">${salaryText}</span>` : ""}
             <br/>
-            <a href="/jobs/${job.id}" onclick="event.preventDefault(); window.dispatchEvent(new CustomEvent('navigateToJob', {detail: ${job.id}}))" 
-               style="color:#2563eb;font-size:11px;text-decoration:underline;">לפרטים ←</a>
+            <a href="/jobs/${job.id}" style="color:#2563eb;font-size:11px;text-decoration:underline;">לפרטים ←</a>
           </div>
         `,
       });
@@ -98,30 +90,23 @@ export default function NearbyJobsMap({ jobs, userLat, userLng }: NearbyJobsMapP
       markersRef.current.push(marker);
     });
 
-    // Fit bounds to show all markers
-    if (jobs.some((j) => j.latitude && j.longitude)) {
+    if (jobs.some((job) => job.latitude && job.longitude)) {
       const bounds = new google.maps.LatLngBounds();
       bounds.extend({ lat: userLat, lng: userLng });
-      jobs.forEach((j) => {
-        if (j.latitude && j.longitude) {
-          const jlat = typeof j.latitude === "string" ? parseFloat(j.latitude) : j.latitude;
-          const jlng = typeof j.longitude === "string" ? parseFloat(j.longitude) : j.longitude;
-          if (!isNaN(jlat) && !isNaN(jlng)) bounds.extend({ lat: jlat, lng: jlng });
-        }
+
+      jobs.forEach((job) => {
+        if (!job.latitude || !job.longitude) return;
+
+        const lat = typeof job.latitude === "string" ? parseFloat(job.latitude) : job.latitude;
+        const lng = typeof job.longitude === "string" ? parseFloat(job.longitude) : job.longitude;
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        bounds.extend({ lat, lng });
       });
+
       map.fitBounds(bounds, 40);
     }
   };
-
-  // Handle navigate-to-job events from info window links
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const jobId = (e as CustomEvent<number>).detail;
-      navigate(`/jobs/${jobId}`);
-    };
-    window.addEventListener("navigateToJob", handler);
-    return () => window.removeEventListener("navigateToJob", handler);
-  }, [navigate]);
 
   return (
     <div className="rounded-xl overflow-hidden border border-border" style={{ height: 340 }}>

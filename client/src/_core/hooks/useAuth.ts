@@ -10,8 +10,7 @@ type UseAuthOptions = {
 };
 
 export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
-    options ?? {};
+  const { redirectOnUnauthenticated = false, redirectPath } = options ?? {};
   const utils = trpc.useUtils();
   const [location, navigate] = useLocation();
 
@@ -73,9 +72,15 @@ export function useAuth(options?: UseAuthOptions) {
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
+    const target = redirectPath ?? getLoginUrl(
+      window.location.pathname + window.location.search
+    );
+    const targetUrl = new URL(target, window.location.origin);
+    const current = `${window.location.pathname}${window.location.search}`;
+    const next = `${targetUrl.pathname}${targetUrl.search}`;
+    if (current === next) return;
 
-    window.location.href = redirectPath
+    window.location.href = targetUrl.toString();
   }, [
     redirectOnUnauthenticated,
     redirectPath,

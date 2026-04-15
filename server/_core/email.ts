@@ -1,5 +1,5 @@
 /**
- * Email helper – sends transactional emails via the Manus Forge API.
+ * Email helper - sends transactional emails via the Manus Forge API.
  *
  * The Forge API exposes a `SendEmail` endpoint under the same base URL
  * used by notifications and other built-in services.
@@ -31,7 +31,7 @@ const buildEmailEndpoint = (baseUrl: string): string => {
 
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
-    console.warn("[Email] Forge API not configured – skipping email send.");
+    console.warn("[Email] Forge API not configured - skipping email send.");
     return false;
   }
 
@@ -71,7 +71,7 @@ export async function sendEmail(payload: EmailPayload): Promise<boolean> {
 
 /**
  * Sends a Hebrew welcome email to a newly registered user.
- * Non-blocking – failure is logged but does not throw.
+ * Non-blocking - failure is logged but does not throw.
  */
 export async function sendWelcomeEmail(params: {
   name: string;
@@ -79,6 +79,7 @@ export async function sendWelcomeEmail(params: {
 }): Promise<void> {
   const { name, email } = params;
   const displayName = name || "משתמש יקר";
+  const baseUrl = ENV.appBaseUrl;
 
   const html = `
 <!DOCTYPE html>
@@ -105,33 +106,33 @@ export async function sendWelcomeEmail(params: {
 <body>
   <div class="wrapper">
     <div class="header">
-      <h1>AvodaNow – עבודה עכשיו</h1>
+      <h1>AvodaNow - עבודה עכשיו</h1>
       <p>פלטפורמת העבודה הזמנית המובילה בישראל</p>
     </div>
     <div class="body">
       <h2>ברוכים הבאים, ${displayName}!</h2>
       <p>
-        שמחים שהצטרפת ל-AvodaNow – המקום שבו מוצאים עבודה זמנית ומתנדבים
+        שמחים שהצטרפת ל-AvodaNow - המקום שבו מוצאים עבודה זמנית ומתנדבים
         בקרבת מקום, בקלות ובמהירות.
       </p>
       <p>
         עכשיו תוכל/י לחפש משרות קרובות אליך, להגיש מועמדות בלחיצה אחת,
         ולהתחבר למעסיקים ישירות דרך WhatsApp.
       </p>
-      <a class="cta" href="https://avodanow.co.il/find-jobs">מצא/י עבודה עכשיו</a>
+      <a class="cta" href="${baseUrl}/find-jobs">מצא/י עבודה עכשיו</a>
       <p style="font-size:13px; color:#888;">
         לשאלות ותמיכה ניתן לפנות אלינו בכתובת
         <a href="mailto:info@avodanow.co.il" style="color:#4a5c3f;">info@avodanow.co.il</a>
       </p>
     </div>
     <div class="footer">
-      <p>AvodaNow &copy; ${new Date().getFullYear()} – כל הזכויות שמורות</p>
+      <p>AvodaNow &copy; ${new Date().getFullYear()} - כל הזכויות שמורות</p>
       <p>
-        <a href="https://avodanow.co.il/terms">תנאי שימוש</a>
+        <a href="${baseUrl}/terms">תנאי שימוש</a>
         &nbsp;|&nbsp;
-        <a href="https://avodanow.co.il/privacy">מדיניות פרטיות</a>
+        <a href="${baseUrl}/privacy">מדיניות פרטיות</a>
         &nbsp;|&nbsp;
-        <a href="https://avodanow.co.il/accessibility">נגישות</a>
+        <a href="${baseUrl}/accessibility">נגישות</a>
       </p>
     </div>
   </div>
@@ -141,15 +142,15 @@ export async function sendWelcomeEmail(params: {
 
   const sent = await sendEmail({
     to: email,
-    subject: `ברוכים הבאים ל-AvodaNow, ${displayName}! 🎉`,
+    subject: `ברוכים הבאים ל-AvodaNow, ${displayName}!`,
     html,
   });
 
   if (sent) {
     console.log(`[Email] Welcome email sent to ${email}`);
   } else {
-    console.warn(`[Email] Welcome email failed for ${email} – falling back to owner notification`);
-    // Non-blocking fallback: notify owner so no registration is silently lost
+    console.warn(`[Email] Welcome email failed for ${email} - falling back to owner notification`);
+    // Non-blocking fallback: notify owner so no registration is silently lost.
     try {
       const { notifyOwner } = await import("./notification");
       await notifyOwner({
@@ -157,7 +158,7 @@ export async function sendWelcomeEmail(params: {
         content: `שם: ${name}\nמייל: ${email}\n(שליחת מייל ברוך הבא נכשלה)`,
       });
     } catch {
-      // Ignore fallback errors
+      // Ignore fallback errors.
     }
   }
 }

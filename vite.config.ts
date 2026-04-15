@@ -151,6 +151,7 @@ function vitePluginManusDebugCollector(): Plugin {
 }
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || "http://localhost:3001";
 
 export default defineConfig({
   plugins,
@@ -182,6 +183,10 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
+    },
+    // פרוקסי לבקשות API לסרבר הנפרד בסביבת dev
+    proxy: {
+      "/api": apiProxyTarget,
     },
   },
 });

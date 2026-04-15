@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
 import MobileDrawer from "./MobileDrawer";
 import { AppButton } from "@/components/ui";
+import { saveReturnPath } from "@/const";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +35,24 @@ import {
 const HEADER_DIVIDER = "oklch(0.42 0.07 124.9)";
 const ACTIVE_BG = "oklch(0.42 0.07 124.9)";
 
+function resolveLoginMessage(authError: string | null): string | undefined {
+  switch (authError) {
+    case "google_existing_only":
+      return "כניסה עם Google זמינה רק למשתמשים קיימים שכבר השלימו מייל, טלפון ואישורי שימוש.";
+    case "google_email_required":
+      return "לא התקבלה כתובת מייל מחשבון Google. אפשר להתחבר עם מייל או SMS.";
+    default:
+      return undefined;
+  }
+}
+
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme, switchable } = useTheme();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMessage, setLoginMessage] = useState<string | undefined>();
   const [reportOpen, setReportOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // Auto-show profile completion for Google users with no phone
@@ -63,6 +76,36 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
   const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("auth") !== "login") return;
+
+    const returnTo = url.searchParams.get("returnTo");
+    if (returnTo?.startsWith("/")) {
+      saveReturnPath(returnTo);
+    }
+
+    setLoginMessage(resolveLoginMessage(url.searchParams.get("authError")));
+    setLoginOpen(true);
+
+    url.searchParams.delete("auth");
+    url.searchParams.delete("returnTo");
+    url.searchParams.delete("authError");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [location]);
+
+  const openLogin = (message?: string) => {
+    setLoginMessage(message);
+    setLoginOpen(true);
+  };
+
+  const closeLogin = () => {
+    setLoginOpen(false);
+    setLoginMessage(undefined);
+  };
 
   // Glass effect on scroll
   useEffect(() => {
@@ -247,7 +290,7 @@ export default function Navbar() {
                 <motion.button
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => setLoginOpen(true)}
+                  onClick={() => openLogin()}
                   className="w-9 h-9 flex items-center justify-center rounded-xl"
                   style={{
                     background: "transparent",
@@ -612,7 +655,7 @@ export default function Navbar() {
                   )}
                   <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
                     <button
-                      onClick={() => setLoginOpen(true)}
+                      onClick={() => openLogin()}
                       className="px-4 py-2 rounded-xl text-sm font-bold transition-all"
                       style={{
                         background: "linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%)",
@@ -636,11 +679,11 @@ export default function Navbar() {
       <MobileDrawer
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        onLoginOpen={() => setLoginOpen(true)}
+        onLoginOpen={() => openLogin()}
         onReportOpen={() => setReportOpen(true)}
       />
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={closeLogin} message={loginMessage} />
       <ReportProblemModal open={reportOpen} onClose={() => setReportOpen(false)} />
       <CompleteProfileModal
         open={completeProfileOpen}

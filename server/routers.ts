@@ -31,6 +31,7 @@ import {
   resetRateLimit,
   updateJob,
   updateJobStatus,
+  setUserTermsAcceptedAt,
   updateUserLastSignedIn,
   getLiveStats,
   getActivityFeed,
@@ -248,7 +249,9 @@ const authRouter = router({
           const emailUser = await getUserByEmail(input.email);
           if (emailUser) {
             // Provide a context-aware message based on how the existing account was created
-            const isGoogleAccount = emailUser.loginMethod === "google";
+            const isGoogleAccount =
+              emailUser.loginMethod === "google" ||
+              emailUser.loginMethod === "google_oauth";
             const message = isGoogleAccount
               ? "המייל כבר קשור לחשבון קיים שנפתח באמצעות Google. אנא התחבר עם Google במקום."
               : "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.";
@@ -526,7 +529,9 @@ const authRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+   debugger
       const email = input.email.toLowerCase().trim();
+      const completedTermsNow = input.termsAccepted === true;
 
       const result = await verifyEmailOtp(email, input.code);
 
@@ -550,10 +555,61 @@ const authRouter = router({
       // result === "ok" — find or create user by email
       let user = await getUserByEmail(email);
       const isNewUser = !user;
+      const consentTypes = ["terms", "privacy", "age_18"] as const;
+      const ip = getClientIp(ctx.req);
+      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
+
+      const persistRegistrationFields = async (userId: number) => {
+        if (!input.name && !input.phone) return;
+
+        let normalizedPhone: string | undefined;
+        let phoneParts: { phonePrefix?: string; phoneNumber?: string } = {};
+        if (input.phone) {
+          try {
+            normalizedPhone = normalizeIsraeliPhone(input.phone);
+            const split = splitIsraeliE164Phone(normalizedPhone);
+            if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
+          } catch {
+            // invalid phone ג€” skip silently, user can update in profile
+          }
+        }
+
+        await updateWorkerProfile(userId, {
+          ...(input.name ? { name: input.name } : {}),
+          ...(normalizedPhone ? { phone: normalizedPhone, ...phoneParts } : {}),
+        });
+      };
+
+      const recordCoreConsents = async (userId: number) => {
+        await Promise.all(
+          consentTypes.map((ct) =>
+            recordUserConsent(userId, ct, {
+              ipAddress: ip,
+              userAgent: ua,
+              documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
+            })
+          )
+        );
+      };
+
+      if (!user && !completedTermsNow) {
+        void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
+        });
+      }
 
       if (!user) {
+        if (false && !completedTermsNow) {
+          void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "׳™׳© ׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳© ׳׳₪׳ ׳™ ׳”׳”׳¨׳©׳׳”.",
+          });
+        }
         // New user — create account
-        user = await createUserByEmail(email); // email-only user with correct loginMethod
+        user = await createUserByEmail(email, true); // email-only user with accepted terms
         void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
 
         // Immediately persist name and phone if provided during registration
@@ -576,12 +632,43 @@ const authRouter = router({
         }
 
         // Send welcome email immediately — email is known at this point
+        await recordCoreConsents(user.id);
         sendWelcomeEmailOtp({ to: email, name: input.name ?? "" })
           .catch((err) => console.warn("[verifyEmailCode] sendWelcomeEmail error:", err));
       } else {
+        if (!user.termsAcceptedAt && !completedTermsNow) {
+          void logEvent("warn", "email_otp.verify.incomplete_account", "Email OTP login blocked for incomplete account", {
+            userId: user.id,
+            meta: { email },
+          });
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "חשבון זה לא הושלם. יש להשלים הרשמה ולאשר את תנאי השימוש.",
+          });
+        }
+
+        if (!user.termsAcceptedAt) {
+          if (false && !completedTermsNow) {
+            void logEvent("warn", "email_otp.verify.incomplete_account", "Email OTP login blocked for incomplete account", {
+              userId: user?.id,
+              meta: { email },
+            });
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "׳—׳©׳‘׳•׳ ׳ ׳׳ ׳”׳•׳©׳׳. ׳™׳© ׳׳”׳™׳¨׳©׳ ׳•׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳©.",
+            });
+          }
+
+          await setUserTermsAcceptedAt(user.id);
+          await persistRegistrationFields(user.id);
+          await recordCoreConsents(user.id);
+        }
+
         await updateUserLastSignedIn(user.id);
         void logEvent("info", "email_otp.verify.login", "User logged in via email OTP", { userId: user.id, meta: { email } });
       }
+
+      user = await getUserByEmail(email) ?? user;
 
       // Create session (same format as phone OTP)
       const token = await sdk.signSession(
@@ -655,6 +742,33 @@ const jobInputSchema = z.object({
   minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
 });
 
+// ── helpers: resolve effective filter values for jobs.list / jobs.search ──────
+
+/** מחזיר את קטגוריות ה-UI אם קיימות, אחרת את העדפות הפרופיל של המשתמש */
+function resolveEffectiveCategories(
+  uiCategories: string[] | undefined,
+  user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
+): string[] | undefined {
+  if (uiCategories?.length) return uiCategories;
+  const prefs = user?.preferredCategories as string[] | undefined;
+  return prefs?.length ? prefs : undefined;
+}
+
+/** מחזיר את ערי ה-UI אם קיימות, אחרת ממיר את IDs מהפרופיל לשמות עברי */
+async function resolveEffectiveCities(
+  uiCities: string[] | undefined,
+  user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
+): Promise<string[] | undefined> {
+  if (uiCities?.length) return uiCities;
+  const cityIds = user?.preferredCities as number[] | undefined;
+  if (!cityIds?.length) return undefined;
+  const allCities = await getCities();
+  const resolved = allCities.filter(c => cityIds.includes(c.id)).map(c => c.nameHe);
+  return resolved.length ? resolved : undefined;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const jobsRouter = router({
   list: publicProcedure
     .input(z.object({
@@ -677,7 +791,10 @@ const jobsRouter = router({
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories, workerAge);
+      // פילטר UI גובר על preferences; אם אין פילטר UI — משתמש בהעדפות הפרופיל
+      const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
+      const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
+      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, effectiveCities, effectiveCategories, workerAge);
       return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
     }),
 
@@ -707,11 +824,14 @@ const jobsRouter = router({
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
-      let { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, input.cities, input.categories, workerAge);
+      // פילטר UI גובר על preferences; אם אין פילטר UI — משתמש בהעדפות הפרופיל
+      const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
+      const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
+      let { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, effectiveCities, effectiveCategories, workerAge);
       // Fallback: when no jobs found in user's radius, expand to 100 km and show nearest jobs.
       // Only applies to page 1 (no point falling back on subsequent pages).
       let isFallback = false;
-      if (total === 0 && input.page === 1 && !input.dateFilter && !input.city && !(input.cities?.length) && !input.category && !(input.categories?.length)) {
+      if (total === 0 && input.page === 1 && !input.dateFilter && !input.city && !effectiveCities?.length && !input.category && !effectiveCategories?.length) {
         const fallback = await getJobsNearLocation(input.lat, input.lng, 100, undefined, limit, undefined, undefined, 0, undefined, undefined, undefined, workerAge);
         if (fallback.total > 0) {
           rows = fallback.rows;
@@ -819,6 +939,32 @@ const jobsRouter = router({
         imageUrls: input.imageUrls ?? null,
         minAge: input.minAge ?? null,
       });
+      // שידור המשרה החדשה לכל הלקוחות המחוברים ל-SSE
+      const { emitNewJob } = await import("./jobsSSE");
+      emitNewJob({
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        category: job.category,
+        address: job.address,
+        city: job.city,
+        salary: job.salary,
+        salaryType: job.salaryType,
+        contactPhone: null,
+        businessName: job.businessName,
+        startTime: job.startTime,
+        startDateTime: job.startDateTime,
+        isUrgent: job.isUrgent,
+        workersNeeded: job.workersNeeded,
+        createdAt: job.createdAt,
+        expiresAt: job.expiresAt,
+        latitude: job.latitude,
+        longitude: job.longitude,
+        workingHours: job.workingHours,
+        jobDate: job.jobDate,
+        images: job.imageUrls,
+      });
+
       // Fire-and-forget: call external matching API to pre-compute matching workers
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
       if (MATCHING_API_URL) {

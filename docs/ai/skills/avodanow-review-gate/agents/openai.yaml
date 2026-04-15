@@ -1,0 +1,3 @@
+interface:
+  display_name: "AvodaNow Review Gate"
+  short_description: "Review AvodaNow changes for regressions and gaps"

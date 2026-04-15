@@ -33,7 +33,9 @@ import {
   C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
 } from "@/lib/colors";
 
-const SITE_URL = "https://job-now.manus.space";
+const SITE_URL = typeof window !== "undefined"
+  ? window.location.origin.replace(/\/+$/, "")
+  : "";
 
 const WhatsAppIcon = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
   const cls = size === "lg" ? "h-5 w-5" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";

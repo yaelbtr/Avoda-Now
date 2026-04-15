@@ -15,14 +15,18 @@ import cors from "cors";
 import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { ENV } from "./_core/env";
 
 // ── Allowed CORS origins ──────────────────────────────────────────────────────
 // Single source of truth for all allowed origins.
 // Add new domains here when deploying to new environments.
 const ALLOWED_ORIGINS = [
-  "https://avodanow.co.il",
-  "https://www.avodanow.co.il",
-  "https://job-now.manus.space",
+  ...Array.from(new Set([
+    "https://avodanow.co.il",
+    "https://www.avodanow.co.il",
+    // "https://job-now.manus.space",
+    ENV.appOrigin,
+  ])).filter(Boolean),
   "https://jobboard-resblbse.manus.space",
   // Dev: allow localhost on any port
   /^http:\/\/localhost:\d+$/,

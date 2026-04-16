@@ -27,6 +27,10 @@ describe("SendGrid credentials", () => {
       console.warn("Skipping — SENDGRID_API_KEY not set");
       return;
     }
+    if (process.env.CI) {
+      console.warn("Skipping live SendGrid API call in CI environment");
+      return;
+    }
 
     // Call /v3/user/profile — lightweight, read-only, requires valid auth
     const res = await fetch("https://api.sendgrid.com/v3/user/profile", {

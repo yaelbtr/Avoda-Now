@@ -64,30 +64,6 @@ import { IdleLogoutManager } from "./components/IdleLogoutManager";
 import { useJobsStream } from "./hooks/useJobsStream";
 
 const REFERRAL_KEY = "avodanow_ref";
-const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
-
-/**
- * Sets the manus bypass flag ONLY when running on the Manus sandbox/dev
- * domain (*.manus.computer). On any production domain (avodanow.co.il,
- * *.manus.space, etc.) the flag is explicitly cleared so that stale values
- * from previous dev sessions never leak through to real users.
- */
-(function initManusMaintenanceBypass() {
-  try {
-    const hostname = window.location.hostname || "";
-    // Only the internal sandbox preview domain gets the bypass
-    const isSandbox = hostname.endsWith(".manus.computer");
-    if (isSandbox) {
-      localStorage.setItem(MANUS_BYPASS_KEY, "1");
-    } else {
-      // Explicitly remove any stale bypass key on production
-      localStorage.removeItem(MANUS_BYPASS_KEY);
-    }
-  } catch (_) { /* localStorage may be unavailable in some environments */ }
-})();
-
-// Kept as a no-op component so the JSX reference below still compiles
-function ManusMaintenanceBypass() { return null; }
 
 /** Captures ?ref=userId from the URL and stores it in localStorage. */
 function ReferralCapture() {
@@ -216,7 +192,6 @@ function Router() {
   });
   const isAdmin = user?.role === "admin";
   const isTestUser = user?.role === "test";
-  const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
 
   // While the maintenance check is in-flight (first load only, no cached data),
@@ -231,7 +206,7 @@ function Router() {
     );
   }
 
-  if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
+  if (isMaintenanceActive && !isAdmin && !isTestUser) {
     return <MaintenancePage />;
   }
 

@@ -424,9 +424,8 @@ setInterval(async () => {
       const msg =
         `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.
 ` +
-        `להארכת הזמינות כנס ל: https://job-now.manus.space`;
-      const normalizedMsg = msg.replace("https://job-now.manus.space", ENV.appBaseUrl);
-      const result = await sendSms(worker.phone, normalizedMsg);
+        `להארכת הזמינות כנס ל: ${ENV.appBaseUrl}`;
+      const result = await sendSms(worker.phone, msg);
       if (result.success) {
         await markAvailabilityReminderSent(worker.availabilityId);
         console.log(`[Reminder] Sent expiry SMS to worker ${worker.userId}`);

@@ -17,23 +17,6 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./_core/env";
 
-function getRequestOrigin(req: Request): string {
-  const forwardedProto = req.headers["x-forwarded-proto"];
-  const forwardedHost = req.headers["x-forwarded-host"];
-  const host = forwardedHost || req.headers.host;
-
-  const proto =
-    typeof forwardedProto === "string"
-      ? forwardedProto.split(",")[0].trim()
-      : req.protocol;
-
-  const resolvedHost =
-    typeof host === "string" ? host.split(",")[0].trim() : "";
-
-  if (!resolvedHost) return "";
-  return `${proto}://${resolvedHost}`;
-}
-
 // ── Allowed CORS origins ──────────────────────────────────────────────────────
 // Single source of truth for all allowed origins.
 // Add new domains here when deploying to new environments.
@@ -42,16 +25,11 @@ const ALLOWED_ORIGINS = [
     "https://avodanow.co.il",
     "https://www.avodanow.co.il",
     "https://avoda-now.onrender.com",
-    // "https://job-now.manus.space",
     ENV.appOrigin,
   ])).filter(Boolean),
-  "https://jobboard-resblbse.manus.space",
   // Dev: allow localhost on any port
   /^http:\/\/localhost:\d+$/,
   /^http:\/\/127\.0\.0\.1:\d+$/,
-  // Manus sandbox preview domains (dev/staging)
-  /^https:\/\/[a-z0-9-]+\.sg1\.manus\.computer$/,
-  /^https:\/\/[a-z0-9-]+\.manus\.space$/,
 ];
 
 /**
@@ -88,7 +66,7 @@ export const securityHeaders = helmet({
           defaultSrc: ["'self'"],
           scriptSrc: [
             "'self'",
-            // Google Maps JS API (loaded via Manus proxy)
+            // Google Maps JS API
             "https://maps.googleapis.com",
             "https://maps.gstatic.com",
             // Google Fonts
@@ -115,7 +93,6 @@ export const securityHeaders = helmet({
           connectSrc: [
             "'self'",
             "https://maps.googleapis.com",
-            "https://api.manus.im",
             "wss:",  // WebSocket for Vite HMR in dev (noop in prod)
           ],
           frameSrc: ["'none'"],

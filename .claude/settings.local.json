@@ -3,7 +3,10 @@
     "allow": [
       "Bash(node -e \"const p=require\\('c:/Users/User/Desktop/עבודה -עכשיו/AvodaNow/node_modules/tsx/package.json'\\); console.log\\(JSON.stringify\\(p.exports['./esm'],null,2\\)\\)\")",
       "Bash(xargs grep:*)",
-      "Bash(pnpm check:*)"
+      "Bash(pnpm check:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

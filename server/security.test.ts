@@ -277,13 +277,11 @@ describe("CORS allowed origin patterns", () => {
   const allowedPatterns = [
     /^http:\/\/localhost:\d+$/,
     /^http:\/\/127\.0\.0\.1:\d+$/,
-    /^https:\/\/[a-z0-9-]+\.sg1\.manus\.computer$/,
-    /^https:\/\/[a-z0-9-]+\.manus\.space$/,
   ];
   const exactAllowed = [
     "https://avodanow.co.il",
     "https://www.avodanow.co.il",
-    "https://job-now.manus.space",
+    "https://avoda-now.onrender.com",
   ];
 
   function isOriginAllowed(origin: string): boolean {
@@ -296,14 +294,10 @@ describe("CORS allowed origin patterns", () => {
     expect(isOriginAllowed("http://localhost:5173")).toBe(true);
   });
 
-  it("allows manus.computer sandbox origins", () => {
-    expect(isOriginAllowed("https://3000-it9q7auge2n1pje7u4mxp-a0378726.sg1.manus.computer")).toBe(true);
-  });
-
   it("allows production domains", () => {
     expect(isOriginAllowed("https://avodanow.co.il")).toBe(true);
     expect(isOriginAllowed("https://www.avodanow.co.il")).toBe(true);
-    expect(isOriginAllowed("https://job-now.manus.space")).toBe(true);
+    expect(isOriginAllowed("https://avoda-now.onrender.com")).toBe(true);
   });
 
   it("blocks unknown external origins", () => {

@@ -82,6 +82,11 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
 
+      - name: Seed test DB
+        run: pnpm db:seed:test
+        env:
+          TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
+
       - name: Run tests
         run: pnpm test && pnpm test:integration
         env:

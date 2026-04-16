@@ -17,6 +17,23 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./_core/env";
 
+function getRequestOrigin(req: Request): string {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host = forwardedHost || req.headers.host;
+
+  const proto =
+    typeof forwardedProto === "string"
+      ? forwardedProto.split(",")[0].trim()
+      : req.protocol;
+
+  const resolvedHost =
+    typeof host === "string" ? host.split(",")[0].trim() : "";
+
+  if (!resolvedHost) return "";
+  return `${proto}://${resolvedHost}`;
+}
+
 // ── Allowed CORS origins ──────────────────────────────────────────────────────
 // Single source of truth for all allowed origins.
 // Add new domains here when deploying to new environments.
@@ -24,6 +41,7 @@ const ALLOWED_ORIGINS = [
   ...Array.from(new Set([
     "https://avodanow.co.il",
     "https://www.avodanow.co.il",
+    "https://avoda-now.onrender.com",
     // "https://job-now.manus.space",
     ENV.appOrigin,
   ])).filter(Boolean),

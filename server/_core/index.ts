@@ -56,7 +56,19 @@ async function startServer() {
   app.set("trust proxy", 1);
 
   // ── Compression: gzip/brotli for all text responses (JSON, HTML, XML) ──────
-  app.use(compression({ threshold: 1024 })); // only compress responses > 1KB
+  app.use(
+    compression({
+      threshold: 1024,
+      filter: (req, res) => {
+        // קבצי assets של Vite כבר ממוזערים ונטענים דרך CDN/Cache,
+        // ולכן עדיף לא לדחוס אותם שוב על השרת.
+        if (req.path.startsWith("/assets/")) {
+          return false;
+        }
+        return compression.filter(req, res);
+      },
+    })
+  ); // only compress responses > 1KB
 
   // ── CORS: restrict cross-origin requests to allowed origins ─────────────────────
   app.use(corsMiddleware);

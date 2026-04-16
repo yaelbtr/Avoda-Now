@@ -44,6 +44,11 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
+import {
+  matchWorkerToJob,
+  type JobMatchingTarget,
+  type WorkerMatchingProfile,
+} from "./jobMatching";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _db: ReturnType<typeof drizzle<any>> | null = null;
@@ -1280,25 +1285,93 @@ export async function getActivityFeed(limit = 20) {
 
 // ─── Worker Notifications ─────────────────────────────────────────────────────
 
+export type JobAlertNotificationPrefs = "both" | "push_only" | "sms_only" | "none";
+
+function normalizeCityName(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toLowerCase();
+  return normalized ? normalized : null;
+}
+
+async function resolveJobMatchingTarget(job: {
+  category?: string | null;
+  city?: string | null;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+  startTime?: string | null;
+  startDateTime?: Date | string | null;
+  jobDate?: string | null;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
+  minAge?: number | null;
+}): Promise<JobMatchingTarget> {
+  const normalizedJobCity = normalizeCityName(job.city);
+  let cityId: number | null = null;
+
+  if (normalizedJobCity) {
+    const allCities = await getCities();
+    const matchedCity = allCities.find((city) => {
+      const hebrewName = normalizeCityName(city.nameHe);
+      const englishName = normalizeCityName(city.nameEn);
+      return hebrewName === normalizedJobCity || englishName === normalizedJobCity;
+    });
+    cityId = matchedCity?.id ?? null;
+  }
+
+  const category = job.category ? await getCategoryBySlug(job.category) : null;
+
+  return {
+    category: job.category ?? null,
+    city: job.city ?? null,
+    cityId,
+    latitude: job.latitude ?? null,
+    longitude: job.longitude ?? null,
+    startTime: job.startTime ?? null,
+    startDateTime: job.startDateTime ?? null,
+    jobDate: job.jobDate ?? null,
+    workStartTime: job.workStartTime ?? null,
+    workEndTime: job.workEndTime ?? null,
+    minAge: job.minAge ?? null,
+    categoryAllowedForMinors: category?.allowedForMinors ?? null,
+  };
+}
+
+export function matchesJobAlertLocation(
+  worker: WorkerMatchingProfile,
+  job: JobMatchingTarget,
+): boolean {
+  return matchWorkerToJob(worker, job).matches;
+}
+
 /**
- * Find workers who have set a preferredCategory matching the given job category,
- * and optionally a preferredCity matching the job city.
- * Returns up to `limit` workers that have a phone number (required for SMS).
- *
- * Matching rules:
- *  - Category: worker's preferredCategories JSON array contains the job category
- *  - City: worker's preferredCity equals the job city (case-insensitive), OR job city is null
- *  - Worker must have a phone number to receive the SMS
- *  - Excludes the job poster themselves
+ * Find workers whose saved profile matches the given job
+ * and whose location preferences match the new job.
+ * Excludes the job poster themselves.
  */
 export async function getWorkersMatchingJob(
-  jobCategory: string,
-  jobCity: string | null | undefined,
+  job: {
+    category: string;
+    city?: string | null;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
+    startTime?: string | null;
+    startDateTime?: Date | string | null;
+    jobDate?: string | null;
+    workStartTime?: string | null;
+    workEndTime?: string | null;
+    minAge?: number | null;
+  },
   excludeUserId: number,
-  limit = 100
-): Promise<Array<{ id: number; phone: string; name: string | null; preferredCity: string | null }>> {
+  limit = 100,
+): Promise<Array<{
+  id: number;
+  phone: string | null;
+  name: string | null;
+  preferredCity: string | null;
+  notificationPrefs: JobAlertNotificationPrefs;
+}>> {
   const db = await getDb();
   if (!db) return [];
+  const matchingJob = await resolveJobMatchingTarget(job);
 
   const rows = await db
     .select({
@@ -1306,44 +1379,157 @@ export async function getWorkersMatchingJob(
       phone: users.phone,
       name: users.name,
       preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
       preferredCategories: users.preferredCategories,
+      locationMode: users.locationMode,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
+      notificationPrefs: users.notificationPrefs,
+      preferredDays: users.preferredDays,
+      preferredTimeSlots: users.preferredTimeSlots,
+      birthDate: users.birthDate,
     })
     .from(users)
     .where(
       and(
         eq(users.userMode, "worker"),
         eq(users.status, "active"),
-        sql`${users.phone} IS NOT NULL`,
-        sql`${users.preferredCategories} IS NOT NULL`,
+        ne(users.notificationPrefs, "none"),
         sql`${users.id} != ${excludeUserId}`
       )
     )
-    .limit(500); // fetch a wider set, then filter in JS for JSON array matching
+    .limit(500);
 
-  // Filter by category match (JSON array contains jobCategory)
-  const categoryMatches = rows.filter((r) => {
-    const cats = r.preferredCategories as string[] | null;
-    return Array.isArray(cats) && cats.includes(jobCategory);
-  });
+  const matchingWorkers = rows.filter((worker) => matchWorkerToJob(worker, matchingJob).matches);
 
-  // Filter by city match if job has a city
-  const cityMatches = jobCity
-    ? categoryMatches.filter(
-        (r) =>
-          !r.preferredCity ||
-          r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
-      )
-    : categoryMatches;
-
-  return cityMatches
-    .filter((r) => !!r.phone)
+  return matchingWorkers
     .slice(0, limit)
-    .map((r) => ({ id: r.id, phone: r.phone!, name: r.name, preferredCity: r.preferredCity }));
+    .map((r) => ({
+      id: r.id,
+      phone: r.phone,
+      name: r.name,
+      preferredCity: r.preferredCity,
+      notificationPrefs: r.notificationPrefs,
+    }));
 }
 
 /** Get workers whose availability expires in the next 25–35 minutes and haven't been reminded yet.
  *  Used by the expiry reminder job to send a "30 min left" SMS.
  */
+export async function getMatchedWorkersForJob(
+  jobId: number,
+  employerId: number,
+  limit = 50,
+): Promise<Array<{
+  worker_id: number;
+  score: number;
+  name: string | null;
+  distance: number | null;
+  rating: number | null;
+  completedJobsCount: number;
+  availabilityStatus: "available_now" | "available_today" | "available_hours" | "not_available" | null;
+  preferredCategories: string[];
+  categoryCount: number;
+}>> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const job = await getJobById(jobId);
+  if (!job) return [];
+
+  const matchingJob = await resolveJobMatchingTarget(job);
+  const jobCategory = job.category ?? null;
+
+  const getAvailabilityRank = (
+    availabilityStatus: "available_now" | "available_today" | "available_hours" | "not_available" | null,
+  ): number => {
+    switch (availabilityStatus) {
+      case "available_now":
+        return 4;
+      case "available_today":
+        return 3;
+      case "available_hours":
+        return 2;
+      case "not_available":
+        return 1;
+      default:
+        return 0;
+    }
+  };
+
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      preferredCategories: users.preferredCategories,
+      preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
+      locationMode: users.locationMode,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
+      preferredDays: users.preferredDays,
+      preferredTimeSlots: users.preferredTimeSlots,
+      birthDate: users.birthDate,
+      workerRating: users.workerRating,
+      completedJobsCount: users.completedJobsCount,
+      availabilityStatus: users.availabilityStatus,
+    })
+    .from(users)
+    .where(
+      and(
+        eq(users.userMode, "worker"),
+        eq(users.status, "active"),
+        sql`${users.id} != ${employerId}`
+      )
+    )
+    .limit(500);
+
+  return rows
+    .map((worker) => {
+      const match = matchWorkerToJob(worker, matchingJob);
+      const preferredCategories = Array.isArray(worker.preferredCategories)
+        ? worker.preferredCategories
+        : [];
+      return {
+        worker_id: worker.id,
+        name: worker.name,
+        score: match.score,
+        distance: match.distanceKm != null ? Number(match.distanceKm.toFixed(2)) : null,
+        rating: worker.workerRating != null ? Number(worker.workerRating) : null,
+        completedJobsCount: worker.completedJobsCount ?? 0,
+        availabilityStatus: worker.availabilityStatus ?? null,
+        preferredCategories,
+        categoryCount: preferredCategories.length,
+        categorySpecificity: jobCategory && preferredCategories.includes(jobCategory)
+          ? preferredCategories.length
+          : Number.MAX_SAFE_INTEGER,
+        availabilityRank: getAvailabilityRank(worker.availabilityStatus ?? null),
+        matches: match.matches,
+      };
+    })
+    .filter((worker) => worker.matches)
+    .sort((a, b) => {
+      if (a.categorySpecificity !== b.categorySpecificity) {
+        return a.categorySpecificity - b.categorySpecificity;
+      }
+      if (b.availabilityRank !== a.availabilityRank) {
+        return b.availabilityRank - a.availabilityRank;
+      }
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.distance == null && b.distance != null) return 1;
+      if (a.distance != null && b.distance == null) return -1;
+      if (a.distance != null && b.distance != null && a.distance !== b.distance) {
+        return a.distance - b.distance;
+      }
+      if ((b.rating ?? 0) !== (a.rating ?? 0)) return (b.rating ?? 0) - (a.rating ?? 0);
+      return b.completedJobsCount - a.completedJobsCount;
+    })
+    .slice(0, limit)
+    .map(({ matches: _matches, categorySpecificity: _categorySpecificity, availabilityRank: _availabilityRank, ...worker }) => worker);
+}
+
 export async function getWorkersWithExpiringAvailability(): Promise<
   Array<{ userId: number; phone: string; name: string | null; availableUntil: Date; availabilityId: number }>
 > {

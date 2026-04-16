@@ -54,6 +54,7 @@ vi.mock("./db", () => ({
 }));
 
 import * as db from "./db";
+import * as sms from "./sms";
 import * as webPush from "./webPush";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -153,6 +154,30 @@ describe("push notifications — job creation fan-out", () => {
     expect(webPush.sendJobPushNotifications).toHaveBeenCalledOnce();
     const [, jobMeta] = vi.mocked(webPush.sendJobPushNotifications).mock.calls[0];
     expect(jobMeta.isUrgent).toBe(true);
+  });
+  it("routes SMS and Push by notificationPrefs", async () => {
+    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(0);
+    vi.mocked(db.createJob).mockResolvedValue({ id: 80, title: baseJobInput.title, city: "Tel Aviv" } as never);
+    vi.mocked(db.getWorkersMatchingJob).mockResolvedValue([
+      { id: 10, phone: "0501111111", name: "Worker A", preferredCity: null, notificationPrefs: "both" },
+      { id: 11, phone: "0502222222", name: "Worker B", preferredCity: null, notificationPrefs: "sms_only" },
+      { id: 12, phone: null, name: "Worker C", preferredCity: null, notificationPrefs: "push_only" },
+      { id: 13, phone: "0504444444", name: "Worker D", preferredCity: null, notificationPrefs: "none" },
+    ] as never);
+
+    const caller = appRouter.createCaller(makeCtx());
+    await caller.jobs.create(baseJobInput);
+
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(sms.sendJobAlerts).toHaveBeenCalledOnce();
+    expect(vi.mocked(sms.sendJobAlerts).mock.calls[0][0]).toEqual([
+      { id: 10, phone: "0501111111", name: "Worker A" },
+      { id: 11, phone: "0502222222", name: "Worker B" },
+    ]);
+
+    expect(webPush.sendJobPushNotifications).toHaveBeenCalledOnce();
+    expect(vi.mocked(webPush.sendJobPushNotifications).mock.calls[0][0]).toEqual([10, 12]);
   });
 });
 

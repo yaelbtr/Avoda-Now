@@ -42,6 +42,7 @@ import {
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
+  getMatchedWorkersForJob,
   getMyJobsWithPendingCounts,
   getMyApplications,
   createApplication,
@@ -127,6 +128,7 @@ import {
 } from "./db";
 import { sendJobAlerts } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
+import { matchWorkerToJob, type WorkerMatchingProfile } from "./jobMatching";
 import {
   adminApproveJob,
   adminBlockUser,
@@ -767,6 +769,84 @@ async function resolveEffectiveCities(
   return resolved.length ? resolved : undefined;
 }
 
+function normalizeMatchingCity(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toLowerCase();
+  return normalized ? normalized : null;
+}
+
+async function buildWorkerMatchingProfile(userId: number): Promise<WorkerMatchingProfile | null> {
+  const [profile, birthDate] = await Promise.all([
+    getWorkerProfile(userId),
+    getWorkerBirthDate(userId),
+  ]);
+
+  if (!profile) return null;
+
+  return {
+    preferredCategories: profile.preferredCategories,
+    preferredCity: profile.preferredCity,
+    preferredCities: profile.preferredCities,
+    locationMode: profile.locationMode,
+    workerLatitude: profile.workerLatitude,
+    workerLongitude: profile.workerLongitude,
+    searchRadiusKm: profile.searchRadiusKm,
+    preferredDays: profile.preferredDays,
+    preferredTimeSlots: profile.preferredTimeSlots,
+    birthDate,
+  };
+}
+
+async function filterJobsByWorkerProfile<T extends Record<string, unknown>>(
+  userId: number,
+  rows: T[],
+): Promise<T[]> {
+  const [workerProfile, categories, cities] = await Promise.all([
+    buildWorkerMatchingProfile(userId),
+    getAllCategories(),
+    getCities(),
+  ]);
+
+  if (!workerProfile) return rows;
+
+  const categoryAllowedMap = new Map(
+    categories.map((category) => [category.slug, category.allowedForMinors] as const)
+  );
+  const cityIdMap = new Map<string, number>();
+
+  for (const city of cities) {
+    const hebrewName = normalizeMatchingCity(city.nameHe);
+    const englishName = normalizeMatchingCity(city.nameEn);
+    if (hebrewName) cityIdMap.set(hebrewName, city.id);
+    if (englishName) cityIdMap.set(englishName, city.id);
+  }
+
+  return rows.filter((row) =>
+    matchWorkerToJob(workerProfile, {
+      category: typeof row.category === "string" ? row.category : null,
+      city: typeof row.city === "string" ? row.city : null,
+      cityId:
+        typeof row.city === "string"
+          ? cityIdMap.get(normalizeMatchingCity(row.city) ?? "") ?? null
+          : null,
+      latitude: typeof row.latitude === "string" || typeof row.latitude === "number" ? row.latitude : null,
+      longitude: typeof row.longitude === "string" || typeof row.longitude === "number" ? row.longitude : null,
+      startTime: typeof row.startTime === "string" ? row.startTime : null,
+      startDateTime:
+        typeof row.startDateTime === "string" || row.startDateTime instanceof Date
+          ? row.startDateTime
+          : null,
+      jobDate: typeof row.jobDate === "string" ? row.jobDate : null,
+      workStartTime: typeof row.workStartTime === "string" ? row.workStartTime : null,
+      workEndTime: typeof row.workEndTime === "string" ? row.workEndTime : null,
+      minAge: typeof row.minAge === "number" ? row.minAge : null,
+      categoryAllowedForMinors:
+        typeof row.category === "string"
+          ? categoryAllowedMap.get(row.category) ?? null
+          : null,
+    }).matches
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const jobsRouter = router({
@@ -787,6 +867,7 @@ const jobsRouter = router({
     .query(async ({ input, ctx }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
+      const shouldApplyWorkerProfileFilter = !!(ctx.user && await getWorkerProfile(ctx.user.id));
       // Auto-filter by worker age when the caller is an authenticated worker
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
@@ -794,8 +875,31 @@ const jobsRouter = router({
       // פילטר UI גובר על preferences; אם אין פילטר UI — משתמש בהעדפות הפרופיל
       const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
       const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
-      const { rows, total } = await getActiveJobs(limit, input.category, input.city, input.dateFilter, offset, input.dayOfWeek, effectiveCities, effectiveCategories, workerAge);
-      return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit };
+      const broadLimit = shouldApplyWorkerProfileFilter ? 500 : limit;
+      const broadOffset = shouldApplyWorkerProfileFilter ? 0 : offset;
+      const { rows, total } = await getActiveJobs(
+        broadLimit,
+        input.category,
+        input.city,
+        input.dateFilter,
+        broadOffset,
+        input.dayOfWeek,
+        effectiveCities,
+        effectiveCategories,
+        workerAge
+      );
+      const filteredRows = shouldApplyWorkerProfileFilter && ctx.user
+        ? await filterJobsByWorkerProfile(ctx.user.id, rows)
+        : rows;
+      const pagedRows = shouldApplyWorkerProfileFilter
+        ? filteredRows.slice(offset, offset + limit)
+        : filteredRows;
+      return {
+        jobs: pagedRows.map((job) => ({ ...job, contactPhone: null })),
+        total: shouldApplyWorkerProfileFilter ? filteredRows.length : total,
+        page: input.page,
+        limit,
+      };
     }),
 
   search: publicProcedure
@@ -820,6 +924,7 @@ const jobsRouter = router({
     .query(async ({ input, ctx }) => {
       const limit = input.limit ?? 10;
       const offset = (input.page - 1) * limit;
+      const shouldApplyWorkerProfileFilter = !!(ctx.user && await getWorkerProfile(ctx.user.id));
       // Auto-filter by worker age when the caller is an authenticated worker
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
@@ -827,19 +932,59 @@ const jobsRouter = router({
       // פילטר UI גובר על preferences; אם אין פילטר UI — משתמש בהעדפות הפרופיל
       const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
       const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
-      let { rows, total } = await getJobsNearLocation(input.lat, input.lng, input.radiusKm, input.category, limit, input.city, input.dateFilter, offset, input.dayOfWeek, effectiveCities, effectiveCategories, workerAge);
+      const broadLimit = shouldApplyWorkerProfileFilter ? 500 : limit;
+      const broadOffset = shouldApplyWorkerProfileFilter ? 0 : offset;
+      let { rows, total } = await getJobsNearLocation(
+        input.lat,
+        input.lng,
+        input.radiusKm,
+        input.category,
+        broadLimit,
+        input.city,
+        input.dateFilter,
+        broadOffset,
+        input.dayOfWeek,
+        effectiveCities,
+        effectiveCategories,
+        workerAge
+      );
       // Fallback: when no jobs found in user's radius, expand to 100 km and show nearest jobs.
       // Only applies to page 1 (no point falling back on subsequent pages).
       let isFallback = false;
       if (total === 0 && input.page === 1 && !input.dateFilter && !input.city && !effectiveCities?.length && !input.category && !effectiveCategories?.length) {
-        const fallback = await getJobsNearLocation(input.lat, input.lng, 100, undefined, limit, undefined, undefined, 0, undefined, undefined, undefined, workerAge);
+        const fallback = await getJobsNearLocation(
+          input.lat,
+          input.lng,
+          100,
+          undefined,
+          broadLimit,
+          undefined,
+          undefined,
+          0,
+          undefined,
+          undefined,
+          undefined,
+          workerAge
+        );
         if (fallback.total > 0) {
           rows = fallback.rows;
           total = fallback.total;
           isFallback = true;
         }
       }
-      return { jobs: rows.map(j => ({ ...j, contactPhone: null })), total, page: input.page, limit, isFallback };
+      const filteredRows = shouldApplyWorkerProfileFilter && ctx.user
+        ? await filterJobsByWorkerProfile(ctx.user.id, rows)
+        : rows;
+      const pagedRows = shouldApplyWorkerProfileFilter
+        ? filteredRows.slice(offset, offset + limit)
+        : filteredRows;
+      return {
+        jobs: pagedRows.map((job) => ({ ...job, contactPhone: null })),
+        total: shouldApplyWorkerProfileFilter ? filteredRows.length : total,
+        page: input.page,
+        limit,
+        isFallback,
+      };
     }),
 
   getById: publicProcedure
@@ -983,15 +1128,39 @@ const jobsRouter = router({
       }
       // Fire-and-forget: notify matching workers via SMS + Web Push (does not block the response)
       const jobMeta = { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id };
-      getWorkersMatchingJob(input.category, city, ctx.user.id)
+      getWorkersMatchingJob({
+        category: input.category,
+        city,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        startTime: input.startTime,
+        startDateTime: input.startDateTime ?? null,
+        jobDate: input.jobDate ?? null,
+        workStartTime: input.workStartTime ?? null,
+        workEndTime: input.workEndTime ?? null,
+        minAge: input.minAge ?? null,
+      }, ctx.user.id, 100)
         .then(async (workers) => {
           // SMS alerts
-          const smsSent = await sendJobAlerts(workers, jobMeta);
-          if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} matching workers for job #${job.id}`);
+          const smsWorkers = workers
+            .filter((worker) => {
+              const prefs = worker.notificationPrefs ?? "both";
+              return worker.phone && (prefs === "both" || prefs === "sms_only");
+            })
+            .map((worker) => ({ id: worker.id, phone: worker.phone!, name: worker.name }));
+          if (smsWorkers.length > 0) {
+            const smsSent = await sendJobAlerts(smsWorkers, jobMeta);
+            if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} matching workers for job #${job.id}`);
+          }
           // Web Push notifications — fan-out to all matching workers who have subscriptions
-          const workerIds = workers.map((w) => w.id);
-          if (workerIds.length > 0) {
-            const pushSent = await sendJobPushNotifications(workerIds, jobMeta);
+          const pushWorkerIds = workers
+            .filter((worker) => {
+              const prefs = worker.notificationPrefs ?? "both";
+              return prefs === "both" || prefs === "push_only";
+            })
+            .map((worker) => worker.id);
+          if (pushWorkerIds.length > 0) {
+            const pushSent = await sendJobPushNotifications(pushWorkerIds, jobMeta);
             if (pushSent > 0) console.log(`[JobAlert] Sent Push to ${pushSent} matching workers for job #${job.id}`);
           }
         })
@@ -1100,8 +1269,9 @@ const jobsRouter = router({
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
       const jobs = await getTodayJobs(input.limit ?? 50, input.category, workerAge);
+      const filteredJobs = ctx.user ? await filterJobsByWorkerProfile(ctx.user.id, jobs) : jobs;
       // Never expose contactPhone to workers or unauthenticated users
-      return jobs.map(j => ({ ...j, contactPhone: null }));
+      return filteredJobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   /** Urgent jobs (isUrgent=true), sorted by newest */
@@ -1112,8 +1282,9 @@ const jobsRouter = router({
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
       const jobs = await getUrgentJobs(input.limit ?? 20, undefined, workerAge);
+      const filteredJobs = ctx.user ? await filterJobsByWorkerProfile(ctx.user.id, jobs) : jobs;
       // Never expose contactPhone to workers or unauthenticated users
-      return jobs.map(j => ({ ...j, contactPhone: null }));
+      return filteredJobs.map(j => ({ ...j, contactPhone: null }));
     }),
 
   /**
@@ -1127,32 +1298,8 @@ const jobsRouter = router({
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
-      const MATCHING_API_URL = process.env.MATCHING_API_URL;
-      if (!MATCHING_API_URL) {
-        // Return empty list if no external API configured yet
-        return { workers: [] as { worker_id: number; score: number }[] };
-      }
-
-      try {
-        const res = await fetch(`${MATCHING_API_URL}/match-workers`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            job_id: job.id,
-            job_description: job.description,
-            latitude: job.latitude,
-            longitude: job.longitude,
-            city: job.city,
-            location_mode: job.jobLocationMode ?? "radius",
-          }),
-        });
-        if (!res.ok) throw new Error(`Matching API error: ${res.status}`);
-        const data = await res.json() as { workers: { worker_id: number; score: number }[] };
-        return data;
-      } catch (err) {
-        console.warn("[MatchWorkers] External API call failed:", err);
-        return { workers: [] as { worker_id: number; score: number }[] };
-      }
+      const workers = await getMatchedWorkersForJob(input.jobId, ctx.user.id);
+      return { workers };
     }),
 
   /**

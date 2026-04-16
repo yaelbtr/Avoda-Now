@@ -34,7 +34,17 @@ interface MatchedWorker {
   distance?: number;
   rating?: number;
   isMinor?: boolean;
+  availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
+  preferredCategories?: string[];
+  categoryCount?: number;
 }
+
+const AVAILABILITY_MAP: Record<string, { label: string; color: string; bg: string }> = {
+  available_now: { label: "זמין עכשיו", color: "#166534", bg: "#dcfce7" },
+  available_today: { label: "זמין היום", color: "#92400e", bg: "#fef3c7" },
+  available_hours: { label: "זמין בשעות", color: "#1e40af", bg: "#dbeafe" },
+  not_available: { label: "לא זמין", color: "#6b7280", bg: "#f3f4f6" },
+};
 
 // ─── Worker Card ──────────────────────────────────────────────────────────────
 
@@ -69,6 +79,15 @@ function WorkerMatchCard({
       : scorePercent >= 70
       ? "oklch(0.55 0.14 80)"
       : "oklch(0.55 0.10 50)";
+  const availability = worker.availabilityStatus
+    ? AVAILABILITY_MAP[worker.availabilityStatus]
+    : null;
+  const categoryBadge =
+    worker.categoryCount === 1
+      ? "רק הקטגוריה הזו"
+      : worker.categoryCount && worker.categoryCount > 1
+      ? `${worker.categoryCount} קטגוריות`
+      : null;
 
   return (
     <motion.div
@@ -108,6 +127,23 @@ function WorkerMatchCard({
           >
             התאמה {scorePercent}%
           </span>
+          {availability && (
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: availability.bg, color: availability.color }}
+            >
+              {availability.label}
+            </span>
+          )}
+          {categoryBadge && (
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: "#eef2ff", color: "#4338ca" }}
+              title={worker.preferredCategories?.join(", ") || undefined}
+            >
+              {categoryBadge}
+            </span>
+          )}
           {/* Distance */}
           {worker.distance != null && (
             <span className="text-xs flex items-center gap-0.5" style={{ color: "oklch(0.55 0.04 122)" }}>
@@ -356,8 +392,11 @@ export default function MatchedWorkers() {
                   <p className="font-bold mb-1" style={{ color: C_DARK }}>
                     לא נמצאו עובדים מתאימים כרגע
                   </p>
-                  <p className="text-xs mb-4" style={{ color: "oklch(0.55 0.04 122)" }}>
+                  {/*
                     ה-API החיצוני לא מוגדר עדיין, או שאין עובדים מתאימים
+                  */}
+                  <p className="text-xs mb-4" style={{ color: "oklch(0.55 0.04 122)" }}>
+                    {"\u05e0\u05e8\u05d0\u05d4 \u05e9\u05db\u05e8\u05d2\u05e2 \u05d0\u05d9\u05df \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd \u05e9\u05d4\u05e4\u05e8\u05d5\u05e4\u05d9\u05dc \u05e9\u05dc\u05d4\u05dd \u05de\u05ea\u05d0\u05d9\u05dd \u05dc\u05de\u05e9\u05e8\u05d4"}
                   </p>
                   <button
                     onClick={() => { setHasSearched(false); setMatchedWorkers(null); }}

@@ -6,6 +6,17 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
 
+function resolveDistPublicPath(): string {
+  const candidates = [
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(import.meta.dirname, "public"),
+    path.resolve(import.meta.dirname, "../..", "dist", "public"),
+  ];
+
+  const match = candidates.find((candidate) => fs.existsSync(candidate));
+  return match ?? candidates[0];
+}
+
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
@@ -48,14 +59,13 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath =
-    process.env.NODE_ENV === "development"
-      ? path.resolve(import.meta.dirname, "../..", "dist", "public")
-      : path.resolve(import.meta.dirname, "public");
+  const distPath = resolveDistPublicPath();
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
     );
+  } else {
+    console.log(`[Static] Serving client from ${distPath}`);
   }
 
   // Hashed Vite assets (JS/CSS bundles with content hash) — safe to cache for 1 year

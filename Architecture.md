@@ -239,18 +239,18 @@ Primary identity table. Phone number is the primary auth identifier (E.164). Wor
 | `workerLatitude` | `numeric(10,7)` | GPS for radius matching |
 | `workerLongitude` | `numeric(10,7)` | GPS for radius matching |
 | `searchRadiusKm` | `integer` | default `5` |
-| `preferenceText` | `text` | Free-text for AI matching |
+| `preferenceText` | `text` | Reserved for future free-text matching; currently ignored by the production matcher |
 | `preferredDays` | `json[]` | e.g. `["sunday","monday"]` |
 | `preferredTimeSlots` | `json[]` | e.g. `["morning","evening"]` |
 | `workerBio` | `text` | |
 | `profilePhoto` | `text` | S3 URL |
 | `expectedHourlyRate` | `numeric(8,2)` | ILS |
-| `availabilityStatus` | `availability_status` | |
+| `availabilityStatus` | `availability_status` | Used for employer ranking/display; not part of hard matching |
 | `workerRating` | `numeric(3,2)` | Rolling average (1.0–5.0) |
 | `completedJobsCount` | `integer` | default `0` |
 | `signupCompleted` | `boolean` | default `false` |
 | `regionId` | `integer` | FK → `regions.id` |
-| `notificationPrefs` | `notification_prefs` | default `both` |
+| `notificationPrefs` | `notification_prefs` | Controls alert delivery channel after a worker already matches a job; default `both` |
 | `referredBy` | `integer` | FK → `users.id` |
 | `termsAcceptedAt` | `timestamptz` | |
 | `createdAt` / `updatedAt` / `lastSignedIn` | `timestamptz` | |
@@ -593,7 +593,7 @@ Access levels: **public** = no auth required · **protected** = authenticated us
 | `markApplicationsViewed` | protected | Mark all applications as viewed |
 | `myApplications` | protected | Worker's applied jobs |
 | `unreadApplicationsCount` | protected | Unread applications badge count |
-| `matchWorkers` | protected | AI-matched workers for a job |
+| `matchWorkers` | protected | Profile-matched and ranked workers for a job |
 | `sendJobOffer` | protected | Send job offer SMS to a worker |
 | `markFilled` | protected | Mark job as filled |
 | `report` | public | Report a job (abuse/spam) |
@@ -822,7 +822,7 @@ All routes are defined in `client/src/App.tsx` using [wouter](https://github.com
 | `/my-jobs` | `MyJobs` | Employer | Employer's posted jobs |
 | `/jobs/:id/applications` | `JobApplications` | Employer | Applicants for a job |
 | `/applications/:id` | `ApplicationView` | Employer | Single application detail |
-| `/matched-workers` | `MatchedWorkers` | Employer | AI-matched workers |
+| `/matched-workers` | `MatchedWorkers` | Employer | Profile-matched and ranked workers for a job |
 | `/available-workers` | `AvailableWorkers` | Employer | Workers available nearby |
 | `/my-applications` | `MyApplications` | Worker | Application history |
 | `/worker-profile` | `WorkerProfile` | Worker | Profile edit + availability |
@@ -916,6 +916,55 @@ ST_Distance(
   ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
 ) AS distance_m
 ```
+
+### Unified Worker ↔ Job Matching
+
+Worker-to-job matching uses a single shared matcher in `server/jobMatching.ts`. This matcher is the source of truth for all profile-based matching flows.
+
+Current matching inputs come from the worker profile:
+- `preferredCategories`
+- `preferredCity` / `preferredCities`
+- `locationMode`
+- `workerLatitude` / `workerLongitude`
+- `searchRadiusKm`
+- `preferredDays`
+- `preferredTimeSlots`
+- `birthDate`
+
+Current matching inputs come from the job:
+- `category`
+- `city`
+- `latitude` / `longitude`
+- `startTime` / `startDateTime`
+- `jobDate`
+- `workStartTime` / `workEndTime`
+- `minAge`
+- category minor eligibility
+
+The same matcher is used for:
+- worker-facing job discovery (`jobs.list`, `jobs.search`, `jobs.listToday`, `jobs.listUrgent`)
+- worker job alerts sent when a matching job is published
+- employer-facing worker matching in `jobs.matchWorkers`
+
+This keeps worker-visible jobs, worker notifications, and employer-visible matched workers consistent with the same profile rules.
+
+Rules currently excluded from filtering:
+- `preferenceText` is ignored for now
+- `availabilityStatus` is not used as a hard filter
+
+Employer-facing worker ranking happens only after a worker already matches the job. The current ranking priorities are:
+1. category specificity: workers who selected only the searched category rank above workers who selected many categories
+2. `availabilityStatus`
+3. match score
+4. distance
+5. worker rating
+6. completed jobs count
+
+`notificationPrefs` does not affect whether a worker matches a job. It only controls the delivery channel after a match exists:
+- `both`
+- `sms_only`
+- `push_only`
+- `none`
 
 ### Notification Batching
 

@@ -317,6 +317,7 @@ export interface AppSelectProps
   options?: AppSelectOption[];
   placeholder?: string;
   wrapperClassName?: string;
+  children?: React.ReactNode;
 }
 
 export const AppSelect = forwardRef<HTMLSelectElement, AppSelectProps>(
@@ -391,6 +392,7 @@ export const AppSelect = forwardRef<HTMLSelectElement, AppSelectProps>(
                 {opt.label}
               </option>
             ))}
+            {rest.children as React.ReactNode}
           </select>
 
           {/* Chevron icon */}

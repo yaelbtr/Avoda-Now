@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useLocation, useSearch } from "wouter";
 import { AppButton, BrandName } from "@/components/ui";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
 import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
 import { normalizeDateInput } from "@shared/ageUtils";
+import { SHIFT_PRESETS } from "@shared/const";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -35,12 +37,7 @@ const DAYS = [
   { value: "saturday", label: "שבת" },
 ];
 
-const TIME_SLOTS = [
-  { value: "morning", label: "בוקר", sub: "06:00–12:00", icon: "🌅", isNight: false },
-  { value: "afternoon", label: "צהריים", sub: "12:00–17:00", icon: "☀️", isNight: false },
-  { value: "evening", label: "ערב", sub: "17:00–22:00", icon: "🏆", isNight: false },
-  { value: "night", label: "לילה", sub: "22:00–06:00", icon: "🌙", isNight: true },
-];
+// TIME_SLOTS replaced by SHIFT_PRESETS imported from @shared/const
 
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
 
@@ -77,6 +74,7 @@ function WizardProgress({ step, total }: { step: number; total: number }) {
 
 export default function WorkerProfile() {
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
 
   useSEO({
@@ -87,10 +85,10 @@ export default function WorkerProfile() {
   });
 
   const { categories: dbCategories } = useCategories();
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
-  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, { enabled: isAuthenticated });
-  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, { enabled: isAuthenticated });
+  const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, authQuery());
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery());
 
   // Map DB categories to the shape expected by the UI
   // Hide allowedForMinors=false categories when the worker is a minor (reuses birthDateInfoQuery above)
@@ -169,6 +167,7 @@ export default function WorkerProfile() {
   const [preferenceText, setPreferenceText] = useState("");
   const [locationMode, setLocationMode] = useState<"city" | "radius">("city");
   const [preferredCity, setPreferredCity] = useState("");
+  const [preferredCityPlaceId, setPreferredCityPlaceId] = useState<string | null>(null);
   const [searchRadiusKm, setSearchRadiusKm] = useState(5);
   const [workerLatitude, setWorkerLatitude] = useState<string | null>(null);
   const [workerLongitude, setWorkerLongitude] = useState<string | null>(null);
@@ -282,6 +281,8 @@ export default function WorkerProfile() {
       if (newPrefText) setPreferenceText(prev => prev || newPrefText);
       setLocationMode(prev => prev || newLocMode);
       if (newCity) setPreferredCity(prev => prev || newCity);
+      const newCityPlaceId = (d as any).preferredCityPlaceId ?? null;
+      if (newCityPlaceId) setPreferredCityPlaceId(prev => prev ?? newCityPlaceId);
       setSearchRadiusKm(prev => prev !== 5 ? prev : newRadius);
       if (newDays.length) setPreferredDays(prev => prev.length ? prev : newDays);
       if (newSlots.length) setPreferredTimeSlots(prev => prev.length ? prev : newSlots);
@@ -349,6 +350,10 @@ export default function WorkerProfile() {
     // Use isValidPhoneValue which handles both 2-digit (02/03) and 3-digit (050/054) prefixes
     const hasFullPhoneVal = isValidPhoneValue(phoneVal);
     const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
+    if (locationMode === "radius" && !workerLatitude) {
+      toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
+      return;
+    }
     try {
       await completeSignupMutation.mutateAsync({
         name: name.trim() || (user?.name ?? ""),
@@ -356,6 +361,7 @@ export default function WorkerProfile() {
         phone: !user?.phone ? combinedPhone : undefined,
         locationMode,
         preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+        preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
         searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
         preferredCategories: selectedCategories,
         preferenceText: preferenceText.trim() || null,
@@ -386,6 +392,10 @@ export default function WorkerProfile() {
       setPhoneChangeModalOpen(true);
       return;
     }
+    if (locationMode === "radius" && !workerLatitude) {
+      toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
+      return;
+    }
 
     // Build phone update payload for new users (no existing phone)
     const isPhoneOtp = user?.loginMethod === "phone_otp";
@@ -400,6 +410,7 @@ export default function WorkerProfile() {
       preferenceText: preferenceText.trim() || null,
       locationMode,
       preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+      preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
       searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
       workerLatitude: locationMode === "radius" ? workerLatitude : null,
       workerLongitude: locationMode === "radius" ? workerLongitude : null,
@@ -741,9 +752,9 @@ export default function WorkerProfile() {
                       </div>
                     </div>
                     {locationMode === "radius" && (
-                      <div className="mt-3">
+                      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                         <p className="text-xs text-muted-foreground mb-2">בחר רדיוס:</p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mb-3">
                           {[2, 5, 10, 20, 50].map((r) => (
                             <button
                               key={r}
@@ -759,6 +770,50 @@ export default function WorkerProfile() {
                             </button>
                           ))}
                         </div>
+                        {/* Geolocation button — required for radius mode */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!navigator.geolocation) {
+                              toast.error("הדפדפן שלך לא תומך באיתור מיקום");
+                              return;
+                            }
+                            setGeoLoading(true);
+                            navigator.geolocation.getCurrentPosition(
+                              (pos) => {
+                                setWorkerLatitude(String(pos.coords.latitude));
+                                setWorkerLongitude(String(pos.coords.longitude));
+                                setGeoLoading(false);
+                                toast.success("מיקום נשמר בהצלחה!");
+                              },
+                              () => {
+                                setGeoLoading(false);
+                                toast.error("לא ניתן לאתר את המיקום. אנא אפשר גישה למיקום בהגדרות הדפדפן.");
+                              },
+                              { timeout: 10000 }
+                            );
+                          }}
+                          disabled={geoLoading}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all disabled:opacity-60"
+                          style={{
+                            borderColor: workerLatitude ? "oklch(0.55 0.14 145)" : "oklch(0.75 0.12 30)",
+                            background: workerLatitude ? "oklch(0.97 0.03 145)" : "oklch(0.98 0.03 30)",
+                            color: workerLatitude ? "oklch(0.35 0.12 145)" : "oklch(0.35 0.10 30)",
+                          }}
+                        >
+                          {geoLoading ? (
+                            <><BrandLoader size="sm" /> מאתר...</>
+                          ) : workerLatitude ? (
+                            <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר — לחץ לעדכון</>
+                          ) : (
+                            <><Crosshair className="h-3.5 w-3.5" /> חובה: שתף את המיקום הנוכחי שלי</>
+                          )}
+                        </button>
+                        {!workerLatitude && (
+                          <p className="text-xs mt-1.5" style={{ color: "oklch(0.50 0.15 30)" }}>
+                            נדרש מיקום כדי להציג לך משרות לפי מרחק
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -790,6 +845,13 @@ export default function WorkerProfile() {
                           selectedCityIds={preferredCities}
                           onChange={setPreferredCities}
                           compact
+                          onCitySelect={(city) => {
+                            if (city.latitude && city.longitude) {
+                              setWorkerLatitude(city.latitude);
+                              setWorkerLongitude(city.longitude);
+                            }
+                            if (city.placeId) setPreferredCityPlaceId(city.placeId);
+                          }}
                         />
                       </div>
                     )}
@@ -806,8 +868,14 @@ export default function WorkerProfile() {
                   variant="brand"
                   size="xl"
                   className="flex-1"
-                  disabled={false}
-                  onClick={() => setWizardStep(3)}
+                  disabled={locationMode === "radius" && !workerLatitude}
+                  onClick={() => {
+                    if (locationMode === "radius" && !workerLatitude) {
+                      toast.error("חובה לשתף מיקום לפני המשך");
+                      return;
+                    }
+                    setWizardStep(3);
+                  }}
                 >
                   המשך
                   <ArrowLeft className="h-4 w-4" />
@@ -925,7 +993,7 @@ export default function WorkerProfile() {
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground mb-2">שעות עבודה:</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {TIME_SLOTS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
+                    {SHIFT_PRESETS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
                       const isSelected = preferredTimeSlots.includes(slot.value);
                       return (
                         <button
@@ -1179,13 +1247,16 @@ export default function WorkerProfile() {
         {(() => {
           const score = completionScore();
           if (score >= 100) return null;
-          const missingItems = [
-            !name.trim() && "שם מלא",
-            !profilePhoto && "תמונת פרופיל",
-            selectedCategories.length === 0 && "קטגוריות עבודה",
-            !preferredCity && preferredCities.length === 0 && "אזור מועדף",
-            !workerBio.trim() && "ביו קצר",
-          ].filter(Boolean) as string[];
+          // Each missing item knows which tab and optional section anchor to navigate to
+          type MissingItem = { label: string; tab: "details" | "work" | "schedule" | "settings"; sectionId?: string; highlight?: boolean };
+          const missingItems: MissingItem[] = ([
+            !name.trim() && { label: "שם מלא", tab: "details" as const },
+            !profilePhoto && { label: "תמונת פרופיל", tab: "details" as const },
+            selectedCategories.length === 0 && { label: "קטגוריות עבודה", tab: "work" as const },
+            !preferredCity && preferredCities.length === 0 && { label: "אזור מועדף", tab: "work" as const },
+            !workerBio.trim() && { label: "ביו קצר", tab: "details" as const },
+            !birthDateInfoQuery.data?.birthDate && { label: "תאריך לידה", tab: "details" as const, sectionId: "birthdate-section", highlight: true },
+          ] as (MissingItem | false)[]).filter(Boolean) as MissingItem[];
           return (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
@@ -1230,17 +1301,27 @@ export default function WorkerProfile() {
               {missingItems.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>חסר:</span>
-                  {missingItems.map(item => (
-                    <span
-                      key={item}
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  {missingItems.map(({ label, tab, sectionId, highlight }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab);
+                        if (sectionId) {
+                          setTimeout(() => {
+                            document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }, 120);
+                        }
+                      }}
+                      className="text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
-                        background: score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
-                        color: score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                        background: highlight ? "oklch(0.92 0.08 50)" : score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
+                        color: highlight ? "oklch(0.38 0.15 50)" : score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
+                        border: highlight ? "1px solid oklch(0.78 0.12 50)" : "none",
                       }}
                     >
-                      {item}
-                    </span>
+                      {highlight ? `👁 ${label}` : label}
+                    </button>
                   ))}
                 </div>
               )}
@@ -1292,14 +1373,7 @@ export default function WorkerProfile() {
             <div>
               <AppInput
                 id="email"
-                label={
-                  <>
-                    כתובת מייל
-                    {user?.email && (
-                      <span className="mr-2 text-xs text-green-600 font-normal">נלקח מחשבון Google</span>
-                    )}
-                  </>
-                }
+                label="כתובת מייל"
                 type="email"
                 placeholder="example@gmail.com"
                 value={email}
@@ -1376,10 +1450,12 @@ export default function WorkerProfile() {
         <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
 
           {/* ── Sub-section: תחומי עיסוק מועדפים ── */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSection("work-categories")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right"
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-categories")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
           >
             <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Briefcase className="h-3 w-3" style={{ color: "#4F583B" }} />
@@ -1394,7 +1470,7 @@ export default function WorkerProfile() {
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
               style={{ transform: openSections["work-categories"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
-          </button>
+          </div>
           <div
             style={{
               display: "grid",
@@ -1447,10 +1523,12 @@ export default function WorkerProfile() {
           <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} />
 
           {/* ── Sub-section: מצב חיפוש עבודה ── */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSection("work-location")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right"
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-location")}
+            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
           >
             <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
               <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
@@ -1474,7 +1552,7 @@ export default function WorkerProfile() {
               className="h-4 w-4 text-muted-foreground transition-transform duration-200"
               style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}
             />
-          </button>
+          </div>
           <div
             style={{
               display: "grid",
@@ -1483,7 +1561,7 @@ export default function WorkerProfile() {
             }}
           >
           <div className="overflow-hidden">
-          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
+          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }} onClick={(e) => e.stopPropagation()}>
             <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
               <button
                 type="button"
@@ -1610,6 +1688,14 @@ export default function WorkerProfile() {
                       }
                       setPreferredCities(ids);
                     }}
+                    onCitySelect={(city) => {
+                      // Save the first selected city's coordinates for future distance calculations
+                      if (city.latitude && city.longitude) {
+                        setWorkerLatitude(city.latitude);
+                        setWorkerLongitude(city.longitude);
+                      }
+                      if (city.placeId) setPreferredCityPlaceId(city.placeId);
+                    }}
                   />
                   {preferredCities.length >= 5 && (
                     <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.55 0.14 30)" }}>
@@ -1705,7 +1791,7 @@ export default function WorkerProfile() {
 
             <p className="text-xs font-medium text-muted-foreground mb-2">שעות עבודה:</p>
             <div className="grid grid-cols-2 gap-2">
-              {TIME_SLOTS.map((slot) => {
+              {SHIFT_PRESETS.map((slot) => {
                 const isSelected = preferredTimeSlots.includes(slot.value);
                 return (
                   <button
@@ -1819,14 +1905,14 @@ export default function WorkerProfile() {
           )}
         </div>
         {/* ── BirthDate Section ─────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        <div id="birthdate-section" className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
               <Calendar className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
             </div>
             <div>
               <h2 className="font-bold text-foreground text-sm">תאריך לידה</h2>
-              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות</p>
+              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות — משפיע על חשיפות אצל מעסיקים</p>
             </div>
           </div>
 
@@ -1849,9 +1935,12 @@ export default function WorkerProfile() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
-              <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "oklch(0.55 0.12 76.7)" }} />
-              <p className="text-xs" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר עדיין</p>
+            <div className="flex items-start gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.55 0.12 76.7)" }} />
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר</p>
+                <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 76.7)" }}>מעסיקים שהגדירו גיל מינימלי לא יוכלו לראות אותך ברשימת העובדים הזמינים. הוסף כדי להיות גלוי ליותר מעסיקים.</p>
+              </div>
             </div>
           )}
 
@@ -2049,7 +2138,7 @@ export default function WorkerProfile() {
         preferredDays={preferredDays}
         preferredTimeSlots={preferredTimeSlots}
         dayLabels={DAYS}
-        timeSlotLabels={TIME_SLOTS}
+        timeSlotLabels={SHIFT_PRESETS}
         locationMode={locationMode}
         preferredCities={preferredCities}
         cityNames={(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe)}

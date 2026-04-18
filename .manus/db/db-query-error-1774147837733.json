@@ -1,0 +1,8 @@
+{
+  "query": "SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'workerLocation';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'workerLocation';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'udt_name' in 'field list'"
+  ]
+}

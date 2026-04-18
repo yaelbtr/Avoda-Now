@@ -41,9 +41,13 @@ import {
   BirthdateChange,
   systemLogs,
   SystemLog,
+  notificationLogs,
+  NotificationLog,
+  InsertNotificationLog,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
+import { postgisLogger, logPostgisError } from "./logger";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _db: ReturnType<typeof drizzle<any>> | null = null;
@@ -60,6 +64,20 @@ export async function getDb() {
           ? { rejectUnauthorized: false }
           : false,
         max: 10,
+        // Keep connections alive and handle idle timeouts gracefully
+        idleTimeoutMillis: 30_000,            // release idle connections after 30s
+        connectionTimeoutMillis: 10_000,      // fail fast if can't connect in 10s
+        allowExitOnIdle: false,
+        keepAlive: true,                      // send TCP keepalive packets
+        keepAliveInitialDelayMillis: 10_000,  // start keepalive after 10s of inactivity
+      });
+      // Swallow pool-level errors (e.g. idle connection terminated by server)
+      // so they don't crash the process — individual queries will retry on next call
+      _pool.on("error", (err) => {
+        console.warn("[Database] Pool connection error (will reconnect):", err.message);
+        // Reset cached db so next getDb() call re-initialises if needed
+        _db = null;
+        _pool = null;
       });
       _db = drizzle(_pool);
     } catch (error) {
@@ -179,7 +197,13 @@ export async function createUserByPhone(
   email?: string,
   termsAccepted?: boolean,
   /** Pass normalizeIsraeliPhone to enable cross-format duplicate detection */
-  normalizePhone?: (p: string) => string
+  normalizePhone?: (p: string) => string,
+  /** UTM/referral source: "facebook", "google", "organic", or raw utm_source */
+  referralSource?: string,
+  /** utm_campaign value (e.g. "summer_promo") */
+  utmCampaign?: string,
+  /** utm_medium value (e.g. "cpc", "social", "email") */
+  utmMedium?: string
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -201,6 +225,9 @@ export async function createUserByPhone(
     loginMethod: "phone_otp",
     lastSignedIn: new Date(),
     termsAcceptedAt: termsAccepted ? new Date() : null,
+    referralSource: referralSource ?? null,
+    utmCampaign: utmCampaign ?? null,
+    utmMedium: utmMedium ?? null,
   });
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
@@ -324,6 +351,7 @@ export async function getWorkerProfile(id: number) {
       completedJobsCount: users.completedJobsCount,
       availabilityStatus: users.availabilityStatus,
       expectedHourlyRate: users.expectedHourlyRate,
+      notificationPrefs: users.notificationPrefs,
     })
     .from(users)
     .where(eq(users.id, id))
@@ -350,6 +378,7 @@ export async function updateWorkerProfile(
     preferredDays?: string[];
     preferredTimeSlots?: string[];
     preferredCities?: number[];
+    preferredCityPlaceId?: string | null;
     expectedHourlyRate?: number | null;
     availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
     signupCompleted?: boolean;
@@ -370,19 +399,36 @@ export async function updateWorkerProfile(
   if (data.locationMode !== undefined) updateSet.locationMode = data.locationMode;
   if (data.workerLatitude !== undefined) updateSet.workerLatitude = data.workerLatitude;
   if (data.workerLongitude !== undefined) updateSet.workerLongitude = data.workerLongitude;
+  // Auto-compute PostGIS geometry whenever lat/lng are provided together
+  const newLat = data.workerLatitude ?? undefined;
+  const newLng = data.workerLongitude ?? undefined;
+  if (newLat != null && newLng != null) {
+    updateSet.workerLocation = sql`ST_SetSRID(ST_MakePoint(${parseFloat(newLng)}::float8, ${parseFloat(newLat)}::float8), 4326)`;
+  } else if (data.workerLatitude === null || data.workerLongitude === null) {
+    updateSet.workerLocation = null;
+  }
   if (data.searchRadiusKm !== undefined) updateSet.searchRadiusKm = data.searchRadiusKm;
   if (data.preferenceText !== undefined) updateSet.preferenceText = data.preferenceText;
   if (data.workerTags !== undefined) updateSet.workerTags = data.workerTags;
   if (data.preferredDays !== undefined) updateSet.preferredDays = data.preferredDays;
   if (data.preferredTimeSlots !== undefined) updateSet.preferredTimeSlots = data.preferredTimeSlots;
   if (data.preferredCities !== undefined) updateSet.preferredCities = data.preferredCities;
+  if (data.preferredCityPlaceId !== undefined) updateSet.preferredCityPlaceId = data.preferredCityPlaceId;
   if (data.expectedHourlyRate !== undefined) updateSet.expectedHourlyRate = data.expectedHourlyRate;
   if (data.availabilityStatus !== undefined) updateSet.availabilityStatus = data.availabilityStatus;
   if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
   if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
   if (data.email !== undefined) updateSet.email = data.email;
   if (Object.keys(updateSet).length === 0) return;
-  await db.update(users).set(updateSet).where(eq(users.id, id));
+  try {
+    await db.update(users).set(updateSet).where(eq(users.id, id));
+  } catch (err) {
+    // Only log with spatial context when a PostGIS geometry update was attempted
+    if (newLat != null && newLng != null) {
+      logPostgisError("updateWorkerProfile", { lat: newLat, lng: newLng }, id, err);
+    }
+    throw err;
+  }
 }
 
 // ─── Phone Update ───────────────────────────────────────────────────────────
@@ -553,6 +599,28 @@ export async function searchCities(query: string, limit = 10) {
     .limit(limit);
 }
 
+/**
+ * Resolve a batch of city IDs to their Hebrew names.
+ * Returns a Map<cityId, nameHe> for fast O(1) lookup.
+ * Used by the location guard to compare worker preferredCities (IDs) against job city name.
+ */
+export async function getCityNamesByIds(
+  cityIds: number[],
+): Promise<Map<number, string>> {
+  const result = new Map<number, string>();
+  if (cityIds.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({ id: cities.id, nameHe: cities.nameHe })
+    .from(cities)
+    .where(sql`${cities.id} = ANY(ARRAY[${sql.join(cityIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
+  for (const row of rows) {
+    result.set(row.id, row.nameHe);
+  }
+  return result;
+}
+
 // ─── OTP Rate Limiting ────────────────────────────────────────────────────────
 
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -618,13 +686,14 @@ export async function expireOldJobs() {
   if (!db) return;
   const now = new Date();
   // Expire jobs past their expiresAt.
-  // NOTE: Drizzle ORM 0.44.x omits ::enum_type casts in prepared statements,
-  // causing "invalid input value for enum" errors. Use sql`` with explicit casts.
+  // NOTE: Use Drizzle native string values (not sql`` casts) for enum columns.
+  // The sql cast approach (e.g. 'expired'::job_status) fails when the enum type
+  // name differs between environments. Drizzle handles the binding correctly.
   await db
     .update(jobs)
     .set({
-      status: sql`'expired'::job_status`,
-      closedReason: sql`'expired'::closed_reason`,
+      status: "expired",
+      closedReason: "expired",
     })
     .where(and(eq(jobs.status, "active"), lte(jobs.expiresAt, now)));
   // Auto-hide jobs with no reminder response: created > 9h ago, reminderSentAt set
@@ -632,8 +701,8 @@ export async function expireOldJobs() {
   await db
     .update(jobs)
     .set({
-      status: sql`'expired'::job_status`,
-      closedReason: sql`'expired'::closed_reason`,
+      status: "expired",
+      closedReason: "expired",
     })
     .where(
       and(
@@ -751,6 +820,10 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const conditions: any[] = [
     or(eq(jobs.status, "active"), eq(jobs.status, "under_review"))!,
+    // Exclude jobs that were auto-closed because the candidate cap was reached.
+    // Cast the column to text to avoid relying on the internal enum type name,
+    // which may differ across environments (e.g. 'closed_reason' vs schema-qualified).
+    or(isNull(jobs.closedReason), sql`${jobs.closedReason}::text <> 'cap_reached'`)!,
   ];
 
   // ── Mode-specific conditions ────────────────────────────────────────────────
@@ -882,6 +955,29 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
     );
   }
 
+  // ── Minor late-hours filter ──────────────────────────────────────────────────
+  // Workers under 18 may not work past 22:00 (Israeli youth employment law).
+  // Exclude jobs where:
+  //   a) workEndTime > '22:00'  (late same-day shift), OR
+  //   b) workEndTime < workStartTime (overnight shift — end wraps past midnight)
+  // Jobs with no workEndTime set are always shown (no restriction).
+  if (workerAge != null && workerAge < 18) {
+    conditions.push(
+      or(
+        isNull(jobs.workEndTime),
+        and(
+          // Not a late end time
+          sql`${jobs.workEndTime} <= '22:00'`,
+          // Not an overnight shift (end >= start means same-day or no start time)
+          or(
+            isNull(jobs.workStartTime),
+            sql`${jobs.workEndTime} >= ${jobs.workStartTime}`
+          )!
+        )!
+      )!
+    );
+  }
+
   const whereClause = and(...conditions);
 
   // ── Execute query ───────────────────────────────────────────────────────────
@@ -890,7 +986,7 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
       id: jobs.id, title: jobs.title, description: jobs.description,
       category: jobs.category, address: jobs.address, city: jobs.city,
       latitude: jobs.latitude, longitude: jobs.longitude,
-      salary: jobs.salary, salaryType: jobs.salaryType,
+      salary: jobs.salary, salaryType: jobs.salaryType, hourlyRate: jobs.hourlyRate,
       contactPhone: jobs.contactPhone, contactName: jobs.contactName,
       businessName: jobs.businessName, workingHours: jobs.workingHours,
       startTime: jobs.startTime, startDateTime: jobs.startDateTime,
@@ -993,13 +1089,42 @@ export async function getMyJobsWithPendingCounts(userId: number) {
     .where(eq(jobs.postedBy, userId))
     .orderBy(desc(jobs.createdAt));
   if (myJobsList.length === 0) return [];
-  const counts = await db
+  const jobIds = myJobsList.map((j) => j.id);
+  // Pending-only count (for the "new" badge)
+  const pendingCounts = await db
     .select({ jobId: applications.jobId, pendingCount: count() })
     .from(applications)
-    .where(and(eq(applications.status, "pending"), inArray(applications.jobId, myJobsList.map((j) => j.id))))
+    .where(and(eq(applications.status, "pending"), inArray(applications.jobId, jobIds)))
     .groupBy(applications.jobId);
-  const countMap = new Map(counts.map((c) => [c.jobId, c.pendingCount]));
-  return myJobsList.map((j) => ({ ...j, pendingCount: countMap.get(j.id) ?? 0 }));
+  // Total applicant count across all statuses (for auto-expand)
+  const totalCounts = await db
+    .select({ jobId: applications.jobId, totalCount: count() })
+    .from(applications)
+    .where(inArray(applications.jobId, jobIds))
+    .groupBy(applications.jobId);
+  // Accepted-candidate count: status='accepted' OR (status='offered' AND contactRevealed=true)
+  const acceptedCounts = await db
+    .select({ jobId: applications.jobId, acceptedCount: count() })
+    .from(applications)
+    .where(
+      and(
+        inArray(applications.jobId, jobIds),
+        or(
+          eq(applications.status, "accepted"),
+          and(eq(applications.status, "offered"), eq(applications.contactRevealed, true))
+        )!
+      )
+    )
+    .groupBy(applications.jobId);
+  const pendingMap = new Map(pendingCounts.map((c) => [c.jobId, c.pendingCount]));
+  const totalMap = new Map(totalCounts.map((c) => [c.jobId, c.totalCount]));
+  const acceptedMap = new Map(acceptedCounts.map((c) => [c.jobId, c.acceptedCount]));
+  return myJobsList.map((j) => ({
+    ...j,
+    pendingCount: pendingMap.get(j.id) ?? 0,
+    totalApplicationCount: totalMap.get(j.id) ?? 0,
+    acceptedCount: acceptedMap.get(j.id) ?? 0,
+  }));
 }
 /**
  * Returns all applications submitted by a worker, with job info.
@@ -1020,8 +1145,13 @@ export async function getMyApplications(workerId: number) {
       jobCity: jobs.city,
       jobSalary: jobs.salary,
       jobSalaryType: jobs.salaryType,
+      jobHourlyRate: jobs.hourlyRate,
       jobStatus: jobs.status,
+      jobClosedReason: jobs.closedReason,
       employerName: users.name,
+      employerPhone: users.phone,
+      employerPhoto: users.profilePhoto,
+      jobPostedBy: jobs.postedBy,
     })
     .from(applications)
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
@@ -1060,7 +1190,7 @@ export async function markJobFilled(jobId: number, userId: number) {
   if (!db) throw new Error("Database not available");
   await db
     .update(jobs)
-    .set({ status: sql`'closed'::job_status`, closedReason: sql`'found_worker'::closed_reason` })
+    .set({ status: "closed", closedReason: "found_worker" })
     .where(and(eq(jobs.id, jobId), eq(jobs.postedBy, userId)));
 }
 /** Send reminder for a job (mark reminderSentAt) */
@@ -1082,12 +1212,33 @@ export async function getJobsNeedingReminder() {
 }
 
 // ─── Worker Availability ──────────────────────────────────────────────────────
-/** Set or update a worker's availability (upsert by userId) */
+/** Set or update a worker's availability (upsert by userId).
+ * Auto-computes PostGIS geometry from lat/lng so ST_DWithin queries work.
+ */
 export async function setWorkerAvailable(data: InsertWorkerAvailability) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(workerAvailability).where(eq(workerAvailability.userId, data.userId));
-  await db.insert(workerAvailability).values(data);
+  // Insert with geometry computed from lat/lng using raw SQL for PostGIS.
+  // $2/$3 are numeric (Drizzle schema), so we pass separate float8 params ($7/$8)
+  // for ST_MakePoint to avoid PostgreSQL's "inconsistent types" error when the
+  // same parameter is used both as numeric and as float8 in the same query.
+  if (data.latitude != null && data.longitude != null && _pool) {
+    const latFloat = parseFloat(String(data.latitude));
+    const lngFloat = parseFloat(String(data.longitude));
+    try {
+      await _pool.query(
+        `INSERT INTO worker_availability ("userId", latitude, longitude, city, note, "availableUntil", "createdAt", "updatedAt", location)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), ST_SetSRID(ST_MakePoint($7, $8), 4326))`,
+        [data.userId, data.latitude, data.longitude, data.city ?? null, data.note ?? null, data.availableUntil, lngFloat, latFloat]
+      );
+    } catch (err) {
+      logPostgisError("setWorkerAvailable", { lat: data.latitude, lng: data.longitude }, data.userId, err);
+      throw err; // re-throw so the tRPC caller returns a proper 500
+    }
+  } else {
+    await db.insert(workerAvailability).values(data);
+  }
 }
 /** Remove a worker's availability */
 export async function setWorkerUnavailable(userId: number) {
@@ -1107,8 +1258,11 @@ export async function getWorkerAvailability(userId: number) {
     .limit(1);
   return result[0] ?? null;
 }
-/** Get available workers near a location, sorted by distance */
-export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50) {
+/** Get available workers near a location, sorted by distance.
+ * @param minAge - optional minimum age (e.g. 16 or 18); workers without a
+ *   recorded birthDate are excluded when this filter is active.
+ */
+export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, limit = 50, minAge?: number | null) {
   const db = await getDb();
   if (!db) return [];
   const now = new Date();
@@ -1123,6 +1277,12 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
       2
     )
   `;
+  // Age filter: keep only workers whose birthDate is on or before the cutoff
+  // date (today minus minAge years). Workers with no birthDate are excluded
+  // when the filter is active, to avoid showing underage workers.
+  const ageCondition = minAge
+    ? sql`(${users.birthDate} IS NOT NULL AND ${users.birthDate}::date <= (CURRENT_DATE - (${minAge} * INTERVAL '1 year'))::date)`
+    : undefined;
   return db
     .select({
       id: workerAvailability.id,
@@ -1139,7 +1299,11 @@ export async function getNearbyWorkers(lat: number, lng: number, radiusKm = 20, 
     })
     .from(workerAvailability)
     .innerJoin(users, eq(workerAvailability.userId, users.id))
-    .where(and(gte(workerAvailability.availableUntil, now), sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`))
+    .where(and(
+      gte(workerAvailability.availableUntil, now),
+      sql`ST_DWithin(${workerAvailability.location}::geography, ${userPoint}, ${radiusMeters})`,
+      ...(ageCondition ? [ageCondition] : []),
+    ))
     .orderBy(distanceExpr)
     .limit(limit);
 }
@@ -1226,6 +1390,7 @@ export async function getActivityFeed(limit = 20) {
         city: jobs.city,
         salary: jobs.salary,
         salaryType: jobs.salaryType,
+        hourlyRate: jobs.hourlyRate,
         isUrgent: jobs.isUrgent,
         category: jobs.category,
         createdAt: jobs.createdAt,
@@ -1288,10 +1453,36 @@ export async function getWorkersMatchingJob(
   jobCategory: string,
   jobCity: string | null | undefined,
   excludeUserId: number,
-  limit = 100
+  limit = 100,
+  jobLat?: number | null,
+  jobLng?: number | null,
 ): Promise<Array<{ id: number; phone: string; name: string | null; preferredCity: string | null }>> {
   const db = await getDb();
   if (!db) return [];
+
+  // Build a PostGIS point for the job location (used for ST_DWithin on radius-mode workers)
+  const jobPoint = (jobLat != null && jobLng != null)
+    ? sql`ST_SetSRID(ST_MakePoint(${jobLng}::float8, ${jobLat}::float8), 4326)`
+    : null;
+
+  // Radius-mode filter: worker's workerLocation must be within their searchRadiusKm of the job.
+  // Workers with locationMode='radius' but no workerLocation (null) are included as a fallback
+  // because we cannot determine their distance — they should not be silently excluded.
+  // Falls back to including all radius-mode workers when the job has no coordinates.
+  const radiusCondition = jobPoint
+    ? sql`(
+        ${users.locationMode} != 'radius'
+        OR ${users.workerLocation} IS NULL
+        OR (
+          ${users.workerLocation} IS NOT NULL
+          AND ST_DWithin(
+            ${users.workerLocation}::geography,
+            ${jobPoint}::geography,
+            COALESCE(${users.searchRadiusKm}, 5) * 1000
+          )
+        )
+      )`
+    : sql`true`;
 
   const rows = await db
     .select({
@@ -1299,7 +1490,9 @@ export async function getWorkersMatchingJob(
       phone: users.phone,
       name: users.name,
       preferredCity: users.preferredCity,
+      preferredCities: users.preferredCities,
       preferredCategories: users.preferredCategories,
+      locationMode: users.locationMode,
     })
     .from(users)
     .where(
@@ -1308,7 +1501,8 @@ export async function getWorkersMatchingJob(
         eq(users.status, "active"),
         sql`${users.phone} IS NOT NULL`,
         sql`${users.preferredCategories} IS NOT NULL`,
-        sql`${users.id} != ${excludeUserId}`
+        sql`${users.id} != ${excludeUserId}`,
+        radiusCondition,
       )
     )
     .limit(500); // fetch a wider set, then filter in JS for JSON array matching
@@ -1319,16 +1513,45 @@ export async function getWorkersMatchingJob(
     return Array.isArray(cats) && cats.includes(jobCategory);
   });
 
-  // Filter by city match if job has a city
-  const cityMatches = jobCity
-    ? categoryMatches.filter(
-        (r) =>
-          !r.preferredCity ||
-          r.preferredCity.trim().toLowerCase() === jobCity.trim().toLowerCase()
-      )
-    : categoryMatches;
+  // Batch-resolve all city IDs referenced by city-mode workers so we can compare
+  // them against the job city name in O(n) rather than O(n²) per-worker queries.
+  const allCityIds = new Set<number>();
+  for (const r of categoryMatches) {
+    if (r.locationMode !== "radius") {
+      const ids = r.preferredCities as number[] | null;
+      if (Array.isArray(ids)) ids.forEach((id) => allCityIds.add(id));
+    }
+  }
+  const cityNameMap = await getCityNamesByIds(Array.from(allCityIds));
 
-  return cityMatches
+  // Filter city-mode workers by city match
+  const normalizedJobCity = (jobCity ?? "").trim().toLowerCase();
+  const locationMatches = categoryMatches.filter((r) => {
+    if (r.locationMode === "radius") {
+      // Already filtered by ST_DWithin in the SQL query above
+      return true;
+    }
+    // city-mode (default)
+    if (!normalizedJobCity) return true; // no city on job → include all city-mode workers
+
+    // Primary: check preferredCities (array of city IDs from CityPicker)
+    const cityIds = r.preferredCities as number[] | null;
+    if (Array.isArray(cityIds) && cityIds.length > 0) {
+      return cityIds.some((id) => {
+        const name = cityNameMap.get(id);
+        return name ? name.trim().toLowerCase() === normalizedJobCity : false;
+      });
+    }
+
+    // Fallback: legacy preferredCity string field
+    // Workers with neither preferredCity nor preferredCities have no city preference
+    // recorded — include them rather than silently excluding (they may not have
+    // completed their profile yet).
+    if (!r.preferredCity) return true;
+    return r.preferredCity.trim().toLowerCase() === normalizedJobCity;
+  });
+
+  return locationMatches
     .filter((r) => !!r.phone)
     .slice(0, limit)
     .map((r) => ({ id: r.id, phone: r.phone!, name: r.name, preferredCity: r.preferredCity }));
@@ -1408,6 +1631,119 @@ export async function createApplication(workerId: number, jobId: number, message
   await db.insert(applications).values({ workerId, jobId, message: message ?? null });
 }
 
+/**
+ * Count the number of active (status='offered') job offers for a given job.
+ * Used to enforce MAX_ACTIVE_OFFERS limit before creating a new offer.
+ */
+export async function countActiveOffers(jobId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .select({ cnt: count() })
+    .from(applications)
+    .where(and(eq(applications.jobId, jobId), eq(applications.status, "offered")));
+  return result[0]?.cnt ?? 0;
+}
+
+/**
+ * Count the number of workers who have accepted (or been accepted into) a job.
+ * Counts applications with status='accepted' OR (status='offered' AND contactRevealed=true).
+ * Used to enforce MAX_ACCEPTED_CANDIDATES cap.
+ */
+export async function countAcceptedCandidates(jobId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .select({ cnt: count() })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.jobId, jobId),
+        or(
+          eq(applications.status, "accepted"),
+          and(eq(applications.status, "offered"), eq(applications.contactRevealed, true))
+        )!
+      )
+    );
+  return result[0]?.cnt ?? 0;
+}
+
+/**
+ * Auto-close a job with closedReason='cap_reached' if MAX_ACCEPTED_CANDIDATES is met.
+ * Returns true if the job was closed, false if it was already closed or cap not yet reached.
+ * Also rejects all remaining 'offered' (not yet responded) applications for the job.
+ */
+export async function autoCloseJobIfCapReached(
+  jobId: number,
+  maxCandidates: number
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const accepted = await countAcceptedCandidates(jobId);
+  if (accepted < maxCandidates) return false;
+  // Close the job
+  await db
+    .update(jobs)
+    .set({
+      status: "closed",
+      closedReason: "cap_reached",
+      updatedAt: new Date(),
+    })
+    .where(and(eq(jobs.id, jobId), eq(jobs.status, "active")));
+  // Reject all remaining pending/offered applications that have not yet been accepted
+  await db
+    .update(applications)
+    .set({ status: "offer_rejected", updatedAt: new Date() })
+    .where(
+      and(
+        eq(applications.jobId, jobId),
+        eq(applications.status, "offered"),
+        eq(applications.contactRevealed, false)
+      )
+    );
+  return true;
+}
+
+/**
+ * Create a job offer record (employer proactively offers a job to a worker).
+ * Returns the new application row.
+ */
+export async function createJobOffer(workerId: number, jobId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const rows = await db
+    .insert(applications)
+    .values({ workerId, jobId, status: "offered", message: null })
+    .returning();
+  return rows[0];
+}
+
+/**
+ * Worker responds to a job offer:
+ * - accept: sets status to "accepted", reveals contact
+ * - reject: sets status to "offer_rejected"
+ */
+export async function respondToJobOffer(
+  applicationId: number,
+  action: "accept" | "reject"
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (action === "accept") {
+    // Keep status as "offered" — contactRevealed=true signals the worker accepted.
+    // This lets the employer distinguish offer-accepted from regular accepted applications.
+    await db
+      .update(applications)
+      .set({ contactRevealed: true, revealedAt: new Date() })
+      .where(eq(applications.id, applicationId));
+  } else {
+    await db
+      .update(applications)
+      .set({ status: "offer_rejected" })
+      .where(eq(applications.id, applicationId));
+  }
+}
+
 /** Get a worker's public profile by user ID (for employer to view after receiving application SMS) */
 export async function getPublicWorkerProfile(userId: number) {
   const db = await getDb();
@@ -1430,6 +1766,8 @@ export async function getPublicWorkerProfile(userId: number) {
       workerLongitude: users.workerLongitude,
       preferredDays: users.preferredDays,
       preferredTimeSlots: users.preferredTimeSlots,
+      locationMode: users.locationMode,
+      searchRadiusKm: users.searchRadiusKm,
       birthDate: users.birthDate,
     })
     .from(users)
@@ -1445,6 +1783,8 @@ export async function getPublicWorkerProfile(userId: number) {
 export async function getApplicationById(id: number) {
   const db = await getDb();
   if (!db) return null;
+  // Alias the users table so we can join it twice (worker + employer)
+  const employer = aliasedTable(users, "employer");
   const result = await db
     .select({
       id: applications.id,
@@ -1463,31 +1803,124 @@ export async function getApplicationById(id: number) {
       workerPreferredCategories: users.preferredCategories,
       workerTags: users.workerTags,
       workerCreatedAt: users.createdAt,
-       // Job info for authorization + minor eligibility
+      // Job info for authorization + minor eligibility
       jobPostedBy: jobs.postedBy,
       jobTitle: jobs.title,
       jobCategory: jobs.category,
       jobWorkEndTime: jobs.workEndTime,
+      // Employer info (for offer-accept notifications: send worker phone to employer)
+      employerPhone: employer.phone,
+      employerNotificationPrefs: employer.notificationPrefs,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
+    .leftJoin(employer, eq(jobs.postedBy, employer.id))
     .where(eq(applications.id, id))
     .limit(1);
   return result[0] ?? null;
 }
-/** Mark an application's contact as revealed by the employer */
+/**
+ * Mark an application's contact as revealed by the employer.
+ *
+ * Only advances status to "viewed" when the current status is "pending" or "viewed".
+ * Statuses like "offered", "accepted", "rejected", "offer_rejected" are preserved
+ * so that a direct-link reveal (e.g. from a WhatsApp notification) does not
+ * overwrite a more meaningful status and cause wrong badge labels in the UI.
+ */
 export async function revealApplicationContact(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // Step 1: always mark contact as revealed
   await db
     .update(applications)
-    .set({
-      contactRevealed: true,
-      revealedAt: new Date(),
-      status: "viewed",
-    })
+    .set({ contactRevealed: true, revealedAt: new Date() })
     .where(eq(applications.id, id));
+  // Step 2: only advance to "viewed" if the application is still in an early state
+  await db
+    .update(applications)
+    .set({ status: "viewed" })
+    .where(
+      and(
+        eq(applications.id, id),
+        inArray(applications.status, ["pending", "viewed"]),
+      )
+    );
+}
+
+/**
+ * Returns the set of worker IDs that already have ANY application record
+ * (regardless of status) for the given job.
+ * Used to exclude these workers from the "matched workers" list so the
+ * employer doesn't see workers they've already engaged with.
+ */
+export async function getApplicantWorkerIdsForJob(jobId: number): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+  const rows = await db
+    .select({ workerId: applications.workerId })
+    .from(applications)
+    .where(eq(applications.jobId, jobId));
+  return new Set(rows.map((r) => r.workerId));
+}
+
+/**
+ * Fetch location-relevant fields for a batch of worker IDs.
+ * Used to apply a server-side location guard on external matching API results
+ * so that city-mode workers from a different city are never returned.
+ *
+ * Returns a Map<userId, { locationMode, preferredCity, preferredCities, workerLatitude, workerLongitude, searchRadiusKm }>
+ * - preferredCity: legacy single-city string (may be empty)
+ * - preferredCities: JSON array of city IDs from the cities table (newer field, set by CityPicker)
+ */
+export async function getWorkerLocationsByIds(
+  workerIds: number[],
+): Promise<Map<number, {
+  locationMode: string | null;
+  preferredCity: string | null;
+  preferredCityPlaceId: string | null;
+  preferredCities: number[] | null;
+  workerLatitude: string | null;
+  workerLongitude: string | null;
+  searchRadiusKm: number | null;
+}>> {
+  const result = new Map<number, {
+    locationMode: string | null;
+    preferredCity: string | null;
+    preferredCityPlaceId: string | null;
+    preferredCities: number[] | null;
+    workerLatitude: string | null;
+    workerLongitude: string | null;
+    searchRadiusKm: number | null;
+  }>();
+  if (workerIds.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({
+      id: users.id,
+      locationMode: users.locationMode,
+      preferredCity: users.preferredCity,
+      preferredCityPlaceId: users.preferredCityPlaceId,
+      preferredCities: users.preferredCities,
+      workerLatitude: users.workerLatitude,
+      workerLongitude: users.workerLongitude,
+      searchRadiusKm: users.searchRadiusKm,
+    })
+    .from(users)
+    .where(sql`${users.id} = ANY(ARRAY[${sql.join(workerIds.map(id => sql`${id}`), sql`, `)}]::int[])`);
+  for (const row of rows) {
+    result.set(row.id, {
+      locationMode: row.locationMode,
+      preferredCity: row.preferredCity,
+      preferredCityPlaceId: row.preferredCityPlaceId,
+      preferredCities: row.preferredCities,
+      workerLatitude: row.workerLatitude,
+      workerLongitude: row.workerLongitude,
+      searchRadiusKm: row.searchRadiusKm,
+    });
+  }
+  return result;
 }
 
 /** Get all applications for a specific job (for employer view) */
@@ -1511,6 +1944,8 @@ export async function getApplicationsForJob(jobId: number) {
       workerTags: users.workerTags,
       workerRating: users.workerRating,
       completedJobsCount: users.completedJobsCount,
+      workerProfilePhoto: users.profilePhoto,
+      workerAvailabilityStatus: users.availabilityStatus,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
@@ -1561,6 +1996,7 @@ export async function getApplicationsForJobWithDistance(
       distanceKm: distanceExpr,
       workerRating: users.workerRating,
       completedJobsCount: users.completedJobsCount,
+      workerProfilePhoto: users.profilePhoto,
     })
     .from(applications)
     .innerJoin(users, eq(applications.workerId, users.id))
@@ -2093,10 +2529,11 @@ export async function seedCategoriesIfEmpty() {
     { slug: "plumbing",       name: "אינסטלציה",           icon: "🚿", groupName: "home",    sortOrder: 5 },
     { slug: "electricity",    name: "חשמל",                icon: "⚡", groupName: "home",    sortOrder: 6 },
     { slug: "moving",         name: "הובלות",              icon: "📦", groupName: "home",    sortOrder: 7 },
-    { slug: "childcare",      name: "טיפול בילדים",        icon: "👶", groupName: "care",    sortOrder: 8 },
-    { slug: "eldercare",      name: "טיפול בקשישים",       icon: "🧓", groupName: "care",    sortOrder: 9 },
-    { slug: "catering",       name: "קייטרינג ובישול",     icon: "🍳", groupName: "events",  sortOrder: 10 },
-    { slug: "serving",        name: "הגשה ושירות",         icon: "🍽️", groupName: "events",  sortOrder: 11 },
+    { slug: "dog_walker",     name: "דוגווקר",             icon: "🐕", groupName: "home",    sortOrder: 8 },
+    { slug: "childcare",      name: "טיפול בילדים",        icon: "👶", groupName: "care",    sortOrder: 9 },
+    { slug: "eldercare",      name: "טיפול בקשישים",       icon: "🧓", groupName: "care",    sortOrder: 10 },
+    { slug: "catering",       name: "קייטרינג ובישול",     icon: "🍳", groupName: "events",  sortOrder: 11 },
+    { slug: "serving",        name: "הגשה ושירות",         icon: "🍽️", groupName: "events",  sortOrder: 12 },
     { slug: "security",       name: "אבטחה",               icon: "🛡️", groupName: "general", sortOrder: 12 },
     { slug: "delivery",       name: "שליחויות",            icon: "🚴", groupName: "general", sortOrder: 13 },
     { slug: "retail",         name: "קמעונאות",            icon: "🛍️", groupName: "general", sortOrder: 14 },
@@ -2110,6 +2547,53 @@ export async function seedCategoriesIfEmpty() {
   for (const cat of seed) {
     await db.insert(categoriesTable).values({ ...cat, isActive: true });
   }
+}
+
+/**
+ * Inserts any seed categories that are missing from the DB (by slug).
+ * Safe to run on a live DB — uses ON CONFLICT DO NOTHING.
+ * Returns the list of newly inserted slugs.
+ */
+export async function syncMissingCategories(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const seed = [
+    { slug: "cleaning",          name: "ניקיון",              icon: "🧹", groupName: "home",    sortOrder: 1 },
+    { slug: "events",            name: "אירועים",             icon: "🎉", groupName: "events",  sortOrder: 2 },
+    { slug: "gardening",         name: "גינון",               icon: "🌿", groupName: "home",    sortOrder: 3 },
+    { slug: "repairs",           name: "תיקונים כלליים",      icon: "🔧", groupName: "home",    sortOrder: 4 },
+    { slug: "plumbing",          name: "אינסטלציה",           icon: "🚿", groupName: "home",    sortOrder: 5 },
+    { slug: "electricity",       name: "חשמל",                icon: "⚡", groupName: "home",    sortOrder: 6 },
+    { slug: "moving",            name: "הובלות",              icon: "📦", groupName: "home",    sortOrder: 7 },
+    { slug: "dog_walker",        name: "דוגווקר",             icon: "🐕", groupName: "home",    sortOrder: 8 },
+    { slug: "childcare",         name: "טיפול בילדים",        icon: "👶", groupName: "care",    sortOrder: 9 },
+    { slug: "eldercare",         name: "טיפול בקשישים",       icon: "🧓", groupName: "care",    sortOrder: 10 },
+    { slug: "catering",          name: "קייטרינג ובישול",     icon: "🍳", groupName: "events",  sortOrder: 11 },
+    { slug: "serving",           name: "הגשה ושירות",         icon: "🍽️", groupName: "events",  sortOrder: 12 },
+    { slug: "security",          name: "אבטחה",               icon: "🛡️", groupName: "general", sortOrder: 13 },
+    { slug: "delivery",          name: "שליחויות",            icon: "🚴", groupName: "general", sortOrder: 14 },
+    { slug: "retail",            name: "קמעונאות",            icon: "🛍️", groupName: "general", sortOrder: 15 },
+    { slug: "warehouse",         name: "מחסן",                icon: "🏭", groupName: "general", sortOrder: 16 },
+    { slug: "agriculture",       name: "חקלאות",              icon: "🌾", groupName: "general", sortOrder: 17 },
+    { slug: "emergency_support", name: "סיוע בחירום",      icon: "🆘", groupName: "special", sortOrder: 18 },
+    { slug: "volunteer",         name: "התנדבות",             icon: "💚", groupName: "special", sortOrder: 19 },
+    { slug: "other",             name: "אחר",                icon: "💼", groupName: "general", sortOrder: 99 },
+  ];
+
+  // Fetch existing slugs in one query
+  const existing = await db.select({ slug: categoriesTable.slug }).from(categoriesTable);
+  const existingSlugs = new Set(existing.map((r) => r.slug));
+
+  const missing = seed.filter((s) => !existingSlugs.has(s.slug));
+  if (missing.length === 0) return [];
+
+  for (const cat of missing) {
+    await db.insert(categoriesTable)
+      .values({ ...cat, isActive: true })
+      .onConflictDoNothing();
+  }
+  return missing.map((c) => c.slug);
 }
 
 // ─── Worker Reviews ────────────────────────────────────────────────────────────
@@ -3084,4 +3568,288 @@ export async function getLogs(params: {
   ]);
 
   return { rows, total: totalResult[0]?.count ?? 0 };
+}
+
+// ── Employer Profile ──────────────────────────────────────────────────────────
+
+export async function getEmployerProfile(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      phone: users.phone,
+      phonePrefix: users.phonePrefix,
+      phoneNumber: users.phoneNumber,
+      email: users.email,
+      profilePhoto: users.profilePhoto,
+      companyName: users.companyName,
+      employerBio: users.employerBio,
+      defaultJobCity: users.defaultJobCity,
+      defaultJobCityId: users.defaultJobCityId,
+      defaultJobLatitude: users.defaultJobLatitude,
+      defaultJobLongitude: users.defaultJobLongitude,
+      workerSearchCity: users.workerSearchCity,
+      workerSearchCityId: users.workerSearchCityId,
+      workerSearchRadiusKm: users.workerSearchRadiusKm,
+      workerSearchLatitude: users.workerSearchLatitude,
+      workerSearchLongitude: users.workerSearchLongitude,
+      workerSearchLocationMode: users.workerSearchLocationMode,
+      minWorkerAge: users.minWorkerAge,
+      notificationPrefs: users.notificationPrefs,
+      signupCompleted: users.signupCompleted,
+    })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function updateEmployerProfile(
+  id: number,
+  data: {
+    name?: string | null;
+    phone?: string | null;
+    phonePrefix?: string | null;
+    phoneNumber?: string | null;
+    email?: string | null;
+    profilePhoto?: string | null;
+    companyName?: string | null;
+    employerBio?: string | null;
+    defaultJobCity?: string | null;
+    defaultJobCityId?: number | null;
+    defaultJobLatitude?: string | null;
+    defaultJobLongitude?: string | null;
+    workerSearchCity?: string | null;
+    workerSearchCityId?: number | null;
+    workerSearchRadiusKm?: number | null;
+    workerSearchLatitude?: string | null;
+    workerSearchLongitude?: string | null;
+    workerSearchLocationMode?: "city" | "radius";
+    minWorkerAge?: number | null;
+    signupCompleted?: boolean;
+  }
+) {
+  const db = await getDb();
+  if (!db) return;
+  const updateSet: Record<string, unknown> = {};
+  if (data.name !== undefined) updateSet.name = data.name;
+  if (data.phone !== undefined) updateSet.phone = data.phone;
+  if (data.phonePrefix !== undefined) updateSet.phonePrefix = data.phonePrefix;
+  if (data.phoneNumber !== undefined) updateSet.phoneNumber = data.phoneNumber;
+  if (data.email !== undefined) updateSet.email = data.email;
+  if (data.profilePhoto !== undefined) updateSet.profilePhoto = data.profilePhoto;
+  if (data.companyName !== undefined) updateSet.companyName = data.companyName;
+  if (data.employerBio !== undefined) updateSet.employerBio = data.employerBio;
+  if (data.defaultJobCity !== undefined) updateSet.defaultJobCity = data.defaultJobCity;
+  if (data.defaultJobCityId !== undefined) updateSet.defaultJobCityId = data.defaultJobCityId;
+  if (data.defaultJobLatitude !== undefined) updateSet.defaultJobLatitude = data.defaultJobLatitude;
+  if (data.defaultJobLongitude !== undefined) updateSet.defaultJobLongitude = data.defaultJobLongitude;
+  if (data.workerSearchCity !== undefined) updateSet.workerSearchCity = data.workerSearchCity;
+  if (data.workerSearchCityId !== undefined) updateSet.workerSearchCityId = data.workerSearchCityId;
+  if (data.workerSearchRadiusKm !== undefined) updateSet.workerSearchRadiusKm = data.workerSearchRadiusKm;
+  if (data.workerSearchLatitude !== undefined) updateSet.workerSearchLatitude = data.workerSearchLatitude;
+  if (data.workerSearchLongitude !== undefined) updateSet.workerSearchLongitude = data.workerSearchLongitude;
+  if (data.workerSearchLocationMode !== undefined) updateSet.workerSearchLocationMode = data.workerSearchLocationMode;
+  if (data.minWorkerAge !== undefined) updateSet.minWorkerAge = data.minWorkerAge;
+  if (data.signupCompleted !== undefined) updateSet.signupCompleted = data.signupCompleted;
+  if (Object.keys(updateSet).length === 0) return;
+  await db.update(users).set({ ...updateSet, updatedAt: new Date() }).where(eq(users.id, id));
+}
+
+/**
+ * Fetch name and rating for a list of worker IDs in a single query.
+ * Used to enrich matchWorkers local fallback results without N+1 queries.
+ */
+export async function getWorkerNamesByIds(
+  ids: number[],
+): Promise<Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null; availabilityStatus: string | null }>> {
+  const result = new Map<number, { name: string | null; workerRating: number | null; profilePhoto: string | null; availabilityStatus: string | null }>();
+  if (ids.length === 0) return result;
+  const db = await getDb();
+  if (!db) return result;
+  const rows = await db
+    .select({ id: users.id, name: users.name, workerRating: users.workerRating, profilePhoto: users.profilePhoto, availabilityStatus: users.availabilityStatus })
+    .from(users)
+    .where(inArray(users.id, ids));
+  for (const row of rows) {
+    result.set(row.id, {
+      name: row.name,
+      workerRating: row.workerRating != null ? parseFloat(row.workerRating) : null,
+      profilePhoto: row.profilePhoto ?? null,
+      availabilityStatus: row.availabilityStatus ?? null,
+    });
+  }
+  return result;
+}
+
+/**
+ * Returns a map of workerId → Set<jobId> for all active offers sent by this employer.
+ * "Active offer" = application status is 'offered' or 'accepted' (worker already accepted).
+ * Used in AvailableWorkers to show "offer already sent" badges and filter.
+ */
+export async function getOfferedWorkerIdsForEmployer(
+  employerId: number,
+): Promise<Map<number, Set<number>>> {
+  const db = await getDb();
+  const result = new Map<number, Set<number>>();
+  if (!db) return result;
+
+  // Get all active jobs for this employer
+  const myJobs = await db
+    .select({ id: jobs.id })
+    .from(jobs)
+    .where(and(eq(jobs.postedBy, employerId), eq(jobs.status, "active")));
+
+  if (myJobs.length === 0) return result;
+  const jobIds = myJobs.map((j) => j.id);
+
+  // Get all applications for those jobs where the employer sent an offer
+  const rows = await db
+    .select({ workerId: applications.workerId, jobId: applications.jobId })
+    .from(applications)
+    .where(
+      and(
+        inArray(applications.jobId, jobIds),
+        inArray(applications.status, ["offered", "accepted", "offer_rejected"]),
+      )
+    );
+
+  for (const row of rows) {
+    if (!result.has(row.workerId)) result.set(row.workerId, new Set());
+    result.get(row.workerId)!.add(row.jobId);
+  }
+  return result;
+}
+
+// ─── Notification Logs ────────────────────────────────────────────────────────
+
+/**
+ * Insert a single notification log entry.
+ * Called from the notification dispatch script/procedure after each SMS/push attempt.
+ */
+export async function insertNotificationLog(data: {
+  batchId: number | null;
+  jobId: number;
+  workerId: number;
+  channel: "sms" | "push";
+  status: "sent" | "failed" | "skipped";
+  errorMsg?: string;
+  phone?: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(notificationLogs).values({
+    batchId: data.batchId,
+    jobId: data.jobId,
+    workerId: data.workerId,
+    channel: data.channel,
+    status: data.status,
+    errorMsg: data.errorMsg ?? null,
+    phone: data.phone ?? null,
+  });
+}
+
+/**
+ * Fetch all notification logs for a given job, joined with worker name + phone.
+ * Returns rows ordered by sentAt DESC.
+ */
+export async function getNotificationLogsForJob(jobId: number): Promise<
+  Array<{
+    id: number;
+    batchId: number | null;
+    workerId: number;
+    workerName: string | null;
+    workerPhone: string | null;
+    channel: "sms" | "push";
+    status: "sent" | "failed" | "skipped";
+    errorMsg: string | null;
+    phone: string | null;
+    sentAt: Date;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: notificationLogs.id,
+      batchId: notificationLogs.batchId,
+      workerId: notificationLogs.workerId,
+      workerName: users.name,
+      workerPhone: users.phone,
+      channel: notificationLogs.channel,
+      status: notificationLogs.status,
+      errorMsg: notificationLogs.errorMsg,
+      phone: notificationLogs.phone,
+      sentAt: notificationLogs.sentAt,
+    })
+    .from(notificationLogs)
+    .leftJoin(users, eq(notificationLogs.workerId, users.id))
+    .where(eq(notificationLogs.jobId, jobId))
+    .orderBy(desc(notificationLogs.sentAt));
+  return rows;
+}
+
+/**
+ * Aggregate summary per batch for a job.
+ * Returns one row per batch with total sent/failed/skipped counts.
+ */
+export async function getNotificationBatchSummaryForJob(jobId: number): Promise<
+  Array<{
+    batchId: number | null;
+    channel: "sms" | "push";
+    status: "sent" | "failed" | "skipped";
+    total: number;
+    createdAt: Date | null;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      batchId: notificationLogs.batchId,
+      channel: notificationLogs.channel,
+      status: notificationLogs.status,
+      total: count(notificationLogs.id),
+      createdAt: notificationBatches.createdAt,
+    })
+    .from(notificationLogs)
+    .leftJoin(notificationBatches, eq(notificationLogs.batchId, notificationBatches.id))
+    .where(eq(notificationLogs.jobId, jobId))
+    .groupBy(notificationLogs.batchId, notificationLogs.channel, notificationLogs.status, notificationBatches.createdAt)
+    .orderBy(desc(notificationBatches.createdAt));
+  return rows;
+}
+
+/**
+ * Get all jobs that have at least one notification log, with aggregate counts.
+ * Used for the admin notification overview list.
+ */
+export async function getJobsWithNotificationStats(): Promise<
+  Array<{
+    jobId: number;
+    jobTitle: string | null;
+    totalSent: number;
+    totalFailed: number;
+    totalSkipped: number;
+    lastSentAt: Date | null;
+  }>
+> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      jobId: notificationLogs.jobId,
+      jobTitle: jobs.title,
+      totalSent: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'sent')`,
+      totalFailed: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'failed')`,
+      totalSkipped: sql<number>`COUNT(*) FILTER (WHERE ${notificationLogs.status} = 'skipped')`,
+      lastSentAt: sql<Date>`MAX(${notificationLogs.sentAt})`,
+    })
+    .from(notificationLogs)
+    .leftJoin(jobs, eq(notificationLogs.jobId, jobs.id))
+    .groupBy(notificationLogs.jobId, jobs.title)
+    .orderBy(sql`MAX(${notificationLogs.sentAt}) DESC`);
+  return rows;
 }

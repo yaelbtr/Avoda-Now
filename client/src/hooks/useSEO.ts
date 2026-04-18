@@ -46,7 +46,7 @@ export function useSEO({
   useEffect(() => {
     const fullTitle = title
       ? `${title} | AvodaNow`
-      : "AvodaNow | מצא עבודה או עובדים עכשיו";
+      : "AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות";
     const fullDescription =
       description ?? "הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך ללא עמלות.";
     const fullOgImage = ogImage ?? DEFAULT_OG_IMAGE;

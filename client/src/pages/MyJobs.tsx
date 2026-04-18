@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { AppButton } from "@/components/ui";
@@ -20,26 +21,58 @@ import {
 } from "@/components/ui/alert-dialog";
 import BrandLoader from "@/components/BrandLoader";
 import {
-  Briefcase, PlusCircle, Trash2, CheckCircle, XCircle,
+  Briefcase, PlusCircle, Trash2, CheckCircle, CheckCircle2, XCircle,
   Clock, MapPin, Users, DollarSign, Eye, Zap,
   ChevronDown, ChevronUp, Phone, MessageCircle, UserCheck, UserX, Sparkles,
+  ChevronRight, Pencil,
 } from "lucide-react";
 import { getCategoryIcon, getCategoryLabel, formatSalary, getStartTimeLabel } from "@shared/categories";
+import { normalizePhoneForWhatsApp, MAX_ACCEPTED_CANDIDATES } from "@shared/const";
+import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
-import {
-  C_BRAND as BRAND, C_BRAND_SUBTLE, C_SUCCESS as SUCCESS,
-  C_WARNING as WARNING, C_DANGER, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
-  C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
-  C_TEXT_ON_DARK_FAINT as TEXT_FAINT, C_PAGE_BG_HEX,
-  C_AMBER, C_AMBER_LIGHT, C_HONEY,
-} from "@/lib/colors";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Bell, BellOff } from "lucide-react";
+import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
+import { useWorkerProfile } from "@/hooks/useWorkerProfile";
+import { useCategories } from "@/hooks/useCategories";
+import { SHIFT_PRESETS } from "@shared/const";
 
-// ── Card helpers ─────────────────────────────────────────────────────────────
-const glassCard: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid oklch(0.90 0.02 120)",
+// ── Status config ─────────────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; dot?: string }> = {
+  active: {
+    label: "פעיל",
+    bg: "oklch(0.94 0.08 160 / 0.15)",
+    color: "oklch(0.38 0.15 160)",
+    border: "oklch(0.75 0.12 160 / 0.40)",
+    dot: "oklch(0.55 0.20 160)",
+  },
+  closed: {
+    label: "סגור",
+    bg: "oklch(0.93 0.01 120 / 0.50)",
+    color: "oklch(0.45 0.02 120)",
+    border: "oklch(0.82 0.02 120)",
+  },
+  expired: {
+    label: "פג תוקף",
+    bg: "oklch(0.95 0.08 65 / 0.15)",
+    color: "oklch(0.50 0.18 65)",
+    border: "oklch(0.78 0.14 65 / 0.40)",
+  },
+  under_review: {
+    label: "בבדיקה",
+    bg: "oklch(0.93 0.06 250 / 0.15)",
+    color: "oklch(0.42 0.18 250)",
+    border: "oklch(0.72 0.14 250 / 0.40)",
+  },
+};
+
+// ── Card style — AvodaNow design system ──────────────────────────────────────
+const cardStyle: React.CSSProperties = {
+  background: "oklch(0.97 0.012 100)",
+  borderBottom: "1px solid oklch(0.92 0.02 100)",
   borderRadius: "1rem",
-  boxShadow: "0 2px 12px oklch(0.35 0.08 120 / 0.07)",
+  boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
+  padding: "1.25rem",
 };
 
 // ── Shimmer skeleton ──────────────────────────────────────────────────────────
@@ -61,14 +94,19 @@ function Shimmer({ width = "100%", height = 14, rounded = "0.5rem" }: {
   );
 }
 
-function MyJobCardSkeleton() {
+function MyJobCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
-    <div style={{ ...glassCard, padding: "1rem" }} dir="rtl">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3 }}
+      style={cardStyle}
+    >
       <div className="flex items-start gap-3 mb-3">
-        <Shimmer width={40} height={40} rounded="0.75rem" />
+        <Shimmer width={44} height={44} rounded="0.75rem" />
         <div className="flex-1 space-y-2">
-          <Shimmer width="60%" height={15} />
-          <Shimmer width="35%" height={11} />
+          <Shimmer width="55%" height={15} />
+          <Shimmer width="30%" height={11} />
         </div>
         <Shimmer width={56} height={22} rounded="9999px" />
       </div>
@@ -78,57 +116,64 @@ function MyJobCardSkeleton() {
         <Shimmer width={60} height={11} />
       </div>
       <div className="flex gap-2">
-        <Shimmer width={64} height={32} rounded="0.5rem" />
-        <Shimmer width={80} height={32} rounded="0.5rem" />
-        <Shimmer width={56} height={32} rounded="0.5rem" />
+        <Shimmer width={64} height={32} rounded="0.75rem" />
+        <Shimmer width={90} height={32} rounded="0.75rem" />
+        <Shimmer width={56} height={32} rounded="0.75rem" />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-// ── Animation variants ────────────────────────────────────────────────────────
-const listVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
-};
-const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.97 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35 } },
-  exit: { opacity: 0, x: -30, scale: 0.95, transition: { duration: 0.25 } },
-};
+// ── Worker Profile Bottom Sheet ─────────────────────────────────────────────
+const DAYS_LABELS = [
+  { value: "sunday",    label: "א׳" },
+  { value: "monday",    label: "ב׳" },
+  { value: "tuesday",   label: "ג׳" },
+  { value: "wednesday", label: "ד׳" },
+  { value: "thursday",  label: "ה׳" },
+  { value: "friday",    label: "ש׳" },
+  { value: "saturday",  label: "שבת" },
+];
 
-// ── Status config ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string; glow?: string }> = {
-  active: {
-    label: "פעיל",
-    bg: "oklch(0.94 0.08 160)",
-    color: "oklch(0.38 0.15 160)",
-    border: "oklch(0.75 0.12 160)",
-    glow: "0 0 8px oklch(0.68 0.20 160 / 0.2)",
-  },
-  closed: {
-    label: "סגור",
-    bg: "oklch(0.93 0.01 120)",
-    color: "oklch(0.45 0.02 120)",
-    border: "oklch(0.82 0.02 120)",
-  },
-  expired: {
-    label: "פג תוקף",
-    bg: "oklch(0.95 0.08 65)",
-    color: "oklch(0.50 0.18 65)",
-    border: "oklch(0.78 0.14 65)",
-  },
-  under_review: {
-    label: "בבדיקה",
-    bg: "oklch(0.93 0.06 250)",
-    color: "oklch(0.42 0.18 250)",
-    border: "oklch(0.72 0.14 250)",
-  },
-};
+function WorkerProfileSheet({ workerId, onClose }: { workerId: number | null; onClose: () => void }) {
+  const { categories: dbCategories } = useCategories();
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
+  const { profile } = useWorkerProfile(workerId);
+  const categoryLabels = dbCategories.map((c) => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
+  const cityNames = profile?.preferredCities
+    ? (citiesQuery.data ?? []).filter((c) => (profile.preferredCities as number[]).includes(c.id)).map((c) => c.nameHe)
+    : [];
+  return (
+    <WorkerProfilePreviewModal
+      open={workerId != null}
+      onClose={onClose}
+      name={profile?.name ?? ""}
+      photo={profile?.profilePhoto ?? null}
+      bio={profile?.workerBio ?? ""}
+      categories={(profile?.preferredCategories as string[] | null) ?? []}
+      categoryLabels={categoryLabels}
+      preferredDays={(profile?.preferredDays as string[] | null) ?? []}
+      preferredTimeSlots={(profile?.preferredTimeSlots as string[] | null) ?? []}
+      dayLabels={DAYS_LABELS}
+      timeSlotLabels={SHIFT_PRESETS}
+      locationMode={(profile?.locationMode as "city" | "radius") ?? "city"}
+      preferredCities={(profile?.preferredCities as number[] | null) ?? []}
+      cityNames={cityNames}
+      searchRadiusKm={profile?.searchRadiusKm ?? 5}
+      workerRating={profile?.workerRating ?? null}
+      completedJobsCount={profile?.completedJobsCount ?? 0}
+      availabilityStatus={(profile?.availabilityStatus as "available_now" | "available_today" | "available_hours" | "not_available" | null) ?? null}
+    />
+  );
+}
 
-// ── Applicants Panel ──────────────────────────────────────────────────────────
+// ── Applicants Panel ────────────────────────────────────────────────
+
+const SWIPE_THRESHOLD = 80; // px to trigger accept/reject
+
 type Applicant = {
   id: number;
+  workerId: number | null;
   workerName: string | null;
   workerBio: string | null;
   workerPreferredCity: string | null;
@@ -137,11 +182,285 @@ type Applicant = {
   contactRevealed: boolean;
   message: string | null;
   createdAt: Date;
+  /** CDN URL of the worker's profile photo, null if not set */
+  workerProfilePhoto?: string | null;
+  /** Worker's current availability status — used to show the green dot */
+  workerAvailabilityStatus?: string | null;
 };
+
+// ── SwipeableApplicantCard ─────────────────────────────────────────────
+type SwipeableApplicantCardProps = {
+  app: Applicant;
+  onAccept: () => void;
+  onReject: () => void;
+  isMutating: boolean;
+  onViewProfile: (id: number) => void;
+  revealedPhoneIds: Set<number>;
+  onTogglePhone: (id: number, e: React.MouseEvent) => void;
+};
+
+function SwipeableApplicantCard({
+  app,
+  onAccept,
+  onReject,
+  isMutating,
+  onViewProfile,
+  revealedPhoneIds,
+  onTogglePhone,
+}: SwipeableApplicantCardProps) {
+  const isPending = app.status === "pending" || app.status === "viewed";
+  const isAccepted = app.status === "accepted";
+  const isRejected = app.status === "rejected";
+
+  const x = useMotionValue(0);
+  // Background color: green on right swipe, red on left swipe
+  const cardBg = useTransform(
+    x,
+    [-SWIPE_THRESHOLD * 1.5, -SWIPE_THRESHOLD, 0, SWIPE_THRESHOLD, SWIPE_THRESHOLD * 1.5],
+    [
+      "oklch(0.95 0.06 25 / 0.5)",
+      "oklch(0.96 0.03 25 / 0.25)",
+      isAccepted ? "oklch(0.97 0.04 145 / 0.4)" : "white",
+      "oklch(0.96 0.03 145 / 0.25)",
+      "oklch(0.94 0.06 145 / 0.5)",
+    ]
+  );
+  // Hint icon opacity
+  const acceptOpacity = useTransform(x, [0, SWIPE_THRESHOLD * 0.5, SWIPE_THRESHOLD], [0, 0.4, 1]);
+  const rejectOpacity = useTransform(x, [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD * 0.5, 0], [1, 0.4, 0]);
+
+  const handleDragEnd = (_: unknown, info: { offset: { x: number } }) => {
+    if (!isPending) return;
+    if (info.offset.x > SWIPE_THRESHOLD) {
+      onAccept();
+    } else if (info.offset.x < -SWIPE_THRESHOLD) {
+      onReject();
+    }
+    // Always snap back (x resets via animate)
+    x.set(0);
+  };
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden", borderRadius: "1rem" }}>
+      {/* Background hint icons */}
+      {isPending && (
+        <>
+          {/* Accept hint — right side */}
+          <motion.div
+            style={{ opacity: acceptOpacity }}
+            className="absolute inset-y-0 right-3 flex items-center pointer-events-none"
+          >
+            <div className="flex items-center gap-1" style={{ color: "oklch(0.38 0.15 145)" }}>
+              <UserCheck size={18} />
+              <span className="text-xs font-bold">קבל</span>
+            </div>
+          </motion.div>
+          {/* Reject hint — left side */}
+          <motion.div
+            style={{ opacity: rejectOpacity }}
+            className="absolute inset-y-0 left-3 flex items-center pointer-events-none"
+          >
+            <div className="flex items-center gap-1" style={{ color: "oklch(0.45 0.18 25)" }}>
+              <span className="text-xs font-bold">דחה</span>
+              <UserX size={18} />
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      {/* Draggable card */}
+      <motion.div
+        drag={isPending ? "x" : false}
+        dragConstraints={{ left: -160, right: 160 }}
+        dragElastic={0.15}
+        onDragEnd={handleDragEnd}
+        animate={{ x: 0 }}
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        className="rounded-2xl p-3.5 flex flex-col gap-0 cursor-grab active:cursor-grabbing"
+        style={{
+          x,
+          background: cardBg,
+          border: isAccepted
+            ? "1px solid oklch(0.80 0.12 145 / 0.3)"
+            : "1px solid oklch(0.91 0.04 91.6)",
+          boxShadow: "0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+          opacity: isRejected ? 0.5 : 1,
+          touchAction: isPending ? "pan-y" : "auto",
+        }}
+      >
+        {/* Top row: avatar + info + action buttons */}
+        <div className="flex items-center gap-3 w-full">
+          {/* Avatar with optional availability dot */}
+          <div
+            className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => app.workerId && onViewProfile(app.workerId)}
+            title="צפה בפרופיל העובד"
+          >
+            {app.workerProfilePhoto ? (
+              <img
+                src={app.workerProfilePhoto}
+                alt={app.workerName ?? "עובד"}
+                className="w-10 h-10 rounded-xl object-cover"
+                style={{ border: "1px solid oklch(0.91 0.04 91.6)" }}
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-extrabold"
+                style={{
+                  background: isAccepted ? "oklch(0.92 0.08 145 / 0.25)" : "oklch(0.92 0.05 122 / 0.20)",
+                  border: `1px solid ${isAccepted ? "oklch(0.80 0.12 145 / 0.3)" : "oklch(0.80 0.08 122 / 0.25)"}`,
+                  color: isAccepted ? "oklch(0.38 0.15 145)" : "oklch(0.38 0.08 122)",
+                }}
+              >
+                {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
+              </div>
+            )}
+            {/* Green pulsing dot — shown when worker is currently available */}
+            {app.workerAvailabilityStatus === "available_now" && (
+              <span
+                className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
+                style={{ border: "2px solid white" }}
+                title="עובד זמין עכשיו"
+              />
+            )}
+          </div>
+
+          {/* Name + badge + city + message */}
+          <div
+            className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => app.workerId && onViewProfile(app.workerId)}
+            title="צפה בפרופיל העובד"
+          >
+            <p className="font-bold text-[12px] truncate mb-0.5" dir="rtl" style={{ color: '#171f01' }}>
+              {app.workerName ?? "עובד"}
+            </p>
+            <div className="mb-1" dir="rtl">
+              <StatusBadge status={app.status} perspective="employer" className="px-1 py-0.5 text-[10px]" />
+            </div>
+            <div className="flex items-center gap-2 text-[11px]" dir="rtl" style={{ color: "oklch(0.55 0.03 100)" }}>
+              {app.workerPreferredCity && (
+                <span className="flex items-center gap-1">
+                  <MapPin size={9} />{app.workerPreferredCity}
+                </span>
+              )}
+            </div>
+            {app.message && (
+              <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: "oklch(0.50 0.04 100)" }}>
+                &ldquo;{app.message}&rdquo;
+              </p>
+            )}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-row gap-1.5 shrink-0">
+            {isPending ? (
+              <>
+                <button
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                  disabled={isMutating}
+                  onClick={(e) => { e.stopPropagation(); onReject(); }}
+                  style={{
+                    background: "oklch(0.96 0.02 91.6)",
+                    border: "1px solid oklch(0.89 0.05 84.0)",
+                    color: "oklch(0.45 0.08 122)",
+                    opacity: isMutating ? 0.6 : 1,
+                  }}
+                  title="דחה"
+                >
+                  <UserX className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                  disabled={isMutating}
+                  onClick={(e) => { e.stopPropagation(); onAccept(); }}
+                  style={{
+                    background: "oklch(0.35 0.08 122)",
+                    border: "1px solid oklch(0.28 0.06 122)",
+                    color: "white",
+                    opacity: isMutating ? 0.6 : 1,
+                  }}
+                  title="קבל"
+                >
+                  <UserCheck className="h-3.5 w-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                {app.workerPhone && (
+                  <button
+                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                    onClick={(e) => onTogglePhone(app.id, e)}
+                    style={{
+                      background: revealedPhoneIds.has(app.id) ? "oklch(0.38 0.18 240)" : "oklch(0.96 0.02 91.6)",
+                      border: "1px solid oklch(0.89 0.05 84.0)",
+                      color: revealedPhoneIds.has(app.id) ? "white" : "oklch(0.38 0.18 240)",
+                    }}
+                    title={revealedPhoneIds.has(app.id) ? app.workerPhone! : "הצג מספר טלפון"}
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {app.workerPhone && (
+                  <a
+                    href={`https://wa.me/${normalizePhoneForWhatsApp(app.workerPhone)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                    style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.40 0.18 145)" }}
+                    title="WhatsApp"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Phone reveal row */}
+        <AnimatePresence initial={false}>
+          {!isPending && app.workerPhone && revealedPhoneIds.has(app.id) && (
+            <motion.div
+              key="phone-reveal"
+              initial={{ height: 0, opacity: 0, marginTop: 0 }}
+              animate={{ height: "auto", opacity: 1, marginTop: 4 }}
+              exit={{ height: 0, opacity: 0, marginTop: 0 }}
+              transition={{ duration: 0.22, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="w-full pt-2 flex justify-start" style={{ borderTop: "1px solid oklch(0.91 0.04 91.6)" }}>
+                <a
+                  href={`tel:${app.workerPhone}`}
+                  className="flex items-center gap-1.5 text-[12px] font-medium hover:opacity-70 transition-opacity"
+                  style={{ color: "oklch(0.38 0.18 240)" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone size={11} />{app.workerPhone}
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+}
 
 function ApplicantsPanel({ jobId }: { jobId: number }) {
   const utils = trpc.useUtils();
   const { data: applicants, isLoading } = trpc.jobs.getApplications.useQuery({ jobId });
+  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
+  const [revealedPhoneIds, setRevealedPhoneIds] = useState<Set<number>>(new Set());
+
+  const togglePhone = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRevealedPhoneIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
 
   const updateStatus = trpc.jobs.updateApplicationStatus.useMutation({
     onSuccess: (data, vars) => {
@@ -159,7 +478,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
     return (
       <div className="pt-3 space-y-2">
         {[0, 1].map((i) => (
-          <div key={i} style={{ background: "oklch(1 0 0 / 4%)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+          <div key={i} style={{ background: "oklch(0.96 0.01 122)", borderRadius: "0.75rem", padding: "0.75rem" }}>
             <div className="flex gap-3">
               <Shimmer width={32} height={32} rounded="50%" />
               <div className="flex-1 space-y-1.5">
@@ -176,7 +495,7 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
   if (!applicants || applicants.length === 0) {
     return (
       <div className="pt-3 text-center py-4">
-        <p className="text-xs" style={{ color: TEXT_FAINT }}>אין מועמדים עדיין</p>
+        <p className="text-xs" style={{ color: "oklch(0.55 0.03 120)" }}>אין מועמדים עדיין</p>
       </div>
     );
   }
@@ -184,214 +503,74 @@ function ApplicantsPanel({ jobId }: { jobId: number }) {
   return (
     <div className="pt-3 space-y-2">
       {applicants.map((app: Applicant) => {
-        const isPending = app.status === "pending" || app.status === "viewed";
-        const isAccepted = app.status === "accepted";
-        const isRejected = app.status === "rejected";
         const isMutating = updateStatus.isPending && updateStatus.variables?.id === app.id;
-
         return (
-          <motion.div
+          <SwipeableApplicantCard
             key={app.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              background: isAccepted
-                ? "oklch(0.68 0.20 160 / 0.08)"
-                : isRejected
-                  ? "oklch(1 0 0 / 0.02)"
-                  : "oklch(1 0 0 / 0.04)",
-              border: isAccepted
-                ? "1px solid oklch(0.68 0.20 160 / 0.25)"
-                : isRejected
-                  ? "1px solid oklch(1 0 0 / 0.06)"
-                  : "1px solid oklch(1 0 0 / 0.08)",
-              borderRadius: "0.75rem",
-              padding: "0.75rem",
-              opacity: isRejected ? 0.5 : 1,
-            }}
-          >
-            {/* Worker info row */}
-            <div className="flex items-start gap-2.5 mb-2">
-              {/* Avatar */}
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{
-                  background: isAccepted
-                    ? "oklch(0.68 0.20 160 / 0.2)"
-                    : "oklch(1 0 0 / 0.08)",
-                  color: isAccepted ? "oklch(0.68 0.20 160)" : TEXT_MID,
-                }}
-              >
-                {app.workerName?.charAt(0) ?? "?"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold" style={{ color: TEXT_BRIGHT }}>
-                    {app.workerName ?? "עובד"}
-                  </span>
-                  {/* Status badge */}
-                  {isAccepted && (
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style={{ background: "oklch(0.68 0.20 160 / 0.15)", color: "oklch(0.68 0.20 160)" }}
-                    >
-                      התקבל
-                    </span>
-                  )}
-                  {isRejected && (
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style={{ background: "oklch(1 0 0 / 0.06)", color: TEXT_FAINT }}
-                    >
-                      נדחה
-                    </span>
-                  )}
-                </div>
-                {app.workerPreferredCity && (
-                  <p className="text-xs mt-0.5" style={{ color: TEXT_FAINT }}>
-                    <MapPin className="inline h-2.5 w-2.5 ml-0.5" />
-                    {app.workerPreferredCity}
-                  </p>
-                )}
-                {app.message && (
-                  <p className="text-xs mt-1 line-clamp-2" style={{ color: TEXT_MID }}>
-                    "{app.message}"
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            {isPending && (
-              <div className="flex gap-2 mt-1">
-                <AppButton
-                  size="sm"
-                  className="gap-1.5 text-xs flex-1"
-                  disabled={isMutating}
-                  onClick={() => updateStatus.mutate({ id: app.id, action: "accept" })}
-                  style={{
-                    background: "oklch(0.68 0.20 160 / 0.15)",
-                    border: "1px solid oklch(0.68 0.20 160 / 0.3)",
-                    color: "oklch(0.68 0.20 160)",
-                  }}
-                >
-                  <UserCheck className="h-3.5 w-3.5" />
-                  קבל
-                </AppButton>
-                <AppButton
-                  size="sm"
-                  variant="ghost"
-                  className="gap-1.5 text-xs flex-1"
-                  disabled={isMutating}
-                  onClick={() => updateStatus.mutate({ id: app.id, action: "reject" })}
-                  style={{
-                    background: "oklch(1 0 0 / 0.03)",
-                    border: "1px solid oklch(1 0 0 / 0.08)",
-                    color: TEXT_FAINT,
-                  }}
-                >
-                  <UserX className="h-3.5 w-3.5" />
-                  דחה
-                </AppButton>
-              </div>
-            )}
-
-            {/* Contact buttons — only shown after acceptance */}
-            {isAccepted && app.contactRevealed && app.workerPhone && (
-              <div className="flex gap-2 mt-2">
-                <a
-                  href={`tel:${app.workerPhone}`}
-                  className="flex-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <AppButton
-                    size="sm"
-                    className="gap-1.5 text-xs w-full"
-                    style={{
-                      background: "oklch(0.55 0.22 260 / 0.15)",
-                      border: "1px solid oklch(0.55 0.22 260 / 0.3)",
-                      color: "oklch(0.70 0.18 260)",
-                    }}
-                  >
-                    <Phone className="h-3.5 w-3.5" />
-                    התקשר
-                  </AppButton>
-                </a>
-                <a
-                  href={`https://wa.me/${app.workerPhone.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <AppButton
-                    size="sm"
-                    className="gap-1.5 text-xs w-full"
-                    style={{
-                      background: "oklch(0.68 0.20 160 / 0.12)",
-                      border: "1px solid oklch(0.68 0.20 160 / 0.25)",
-                      color: "oklch(0.68 0.20 160)",
-                    }}
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    WhatsApp
-                  </AppButton>
-                </a>
-              </div>
-            )}
-          </motion.div>
+            app={app}
+            onAccept={() => updateStatus.mutate({ id: app.id, action: "accept" })}
+            onReject={() => updateStatus.mutate({ id: app.id, action: "reject" })}
+            isMutating={isMutating}
+            onViewProfile={(wid) => setSelectedWorkerId(wid)}
+            revealedPhoneIds={revealedPhoneIds}
+            onTogglePhone={togglePhone}
+          />
         );
       })}
-      {/* Link to full applicants page */}
-      <div className="pt-2 text-center">
-        <a
-          href={`/jobs/${jobId}/applications`}
-          className="text-xs underline"
-          style={{ color: "oklch(0.70 0.18 260)" }}
-        >
-          צפה בכל המועמדים בדף מלא →
-        </a>
-      </div>
+
+      <WorkerProfileSheet
+        workerId={selectedWorkerId}
+        onClose={() => setSelectedWorkerId(null)}
+      />
     </div>
   );
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
 export default function MyJobs() {
   const [, navigate] = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const authQuery = useAuthQuery();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [expandedApplicants, setExpandedApplicants] = useState<Set<number>>(new Set());
+  const [autoExpandDone, setAutoExpandDone] = useState(false);
 
   useSEO({
-    title: "המשרות שלי",
-    description: "נהל את המשרות שפרסמת וצפה במועמדים.",
+    title: "המודעות שלי",
+    description: "נהל את המודעות שפרסמת וצפה במועמדים.",
     canonical: "/my-jobs",
     noIndex: true,
   });
-  const [expandedApplicants, setExpandedApplicants] = useState<Set<number>>(new Set());
 
   const utils = trpc.useUtils();
 
   const { data: myJobs, isLoading } = trpc.jobs.myJobsWithPendingCounts.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
   });
+
   const markViewed = trpc.jobs.markApplicationsViewed.useMutation({
     onSuccess: () => {
-      // Invalidate the pending count so the badge on home page updates
       utils.jobs.totalPendingApplications.invalidate();
       utils.jobs.myJobsWithPendingCounts.invalidate();
     },
   });
-  // Mark all pending applications as viewed when employer opens this page
+
   useEffect(() => {
-    if (isAuthenticated) {
-      markViewed.mutate();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isAuthenticated) markViewed.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // ── Auto-open LoginModal when not authenticated (MUST be before any early return) ──
+  // Auto-expand applicants panel only for the first job (runs once on data load)
+  useEffect(() => {
+    if (!myJobs || autoExpandDone) return;
+    if (myJobs.length > 0) {
+      setExpandedApplicants(new Set([myJobs[0].id]));
+    }
+    setAutoExpandDone(true);
+  }, [myJobs, autoExpandDone]);
+
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       saveReturnPath();
@@ -405,41 +584,46 @@ export default function MyJobs() {
   });
 
   const deleteJob = trpc.jobs.delete.useMutation({
-    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); setDeleteId(null); toast.success("המשרה נמחקה"); },
+    onSuccess: () => { utils.jobs.myJobsWithPendingCounts.invalidate(); setDeleteId(null); toast.success("המודעה נמחקה"); },
     onError: (e) => toast.error(e.message),
   });
 
   const toggleApplicants = (jobId: number) => {
     setExpandedApplicants((prev) => {
       const next = new Set(prev);
-      if (next.has(jobId)) next.delete(jobId);
-      else next.add(jobId);
+      if (next.has(jobId)) next.delete(jobId); else next.add(jobId);
       return next;
     });
   };
 
-  // ── Auth loading ─────────────────────────────────────────────────────
+  const activeJobs = useMemo(() => myJobs?.filter((j) => j.status === "active") ?? [], [myJobs]);
+  const push = usePushNotifications();
+
+  // ── Auth loading ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: C_PAGE_BG_HEX }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--page-bg)" }}>
         <BrandLoader size="lg" label="טוען..." />
       </div>
     );
   }
 
-  // ── Employer lock: platform is in workers-only mode ──
+  // ── Employer lock ─────────────────────────────────────────────────────────
   if (employerLock) {
     return (
-      <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-          <Briefcase className="h-8 w-8 text-amber-600" />
+      <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center gap-5 px-6"
+        style={{ background: "var(--page-bg)" }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+          style={{ background: "oklch(0.38 0.07 125.0 / 0.10)" }}>
+          <Briefcase className="h-8 w-8" style={{ color: "oklch(0.38 0.07 125.0)" }} />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">ניהול משרות — בקרוב</h2>
-        <p className="text-muted-foreground mb-4">
-          בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.
-          <br />
-          אפשרות ניהול משרות למעסיקים תיפתח בקרוב.
-        </p>
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2" style={{ color: "oklch(0.20 0.04 120)" }}>ניהול מודעות — בקרוב</h2>
+          <p className="text-sm" style={{ color: "oklch(0.50 0.04 120)" }}>
+            בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
+            אפשרות ניהול מודעות למעסיקים תיפתח בקרוב.
+          </p>
+        </div>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>
           חפש עבודה
         </AppButton>
@@ -447,137 +631,183 @@ export default function MyJobs() {
     );
   }
 
-  // ── Not authenticated: render empty page + LoginModal (auto-opened by useEffect above) ──
+  // ── Not authenticated ─────────────────────────────────────────────────────
   if (!isAuthenticated) {
-    return (
-      <>
-        <LoginModal open={loginOpen} onClose={() => { setLoginOpen(false); navigate("/"); }} />
-      </>
-    );
+    return <LoginModal open={loginOpen} onClose={() => { setLoginOpen(false); navigate("/"); }} />;
   }
 
-  const activeJobs = myJobs?.filter((j) => j.status === "active") ?? [];
-
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen"
-      style={{ background: C_DARK_BG }}
-    >
-      {/* ── Floating background orbs ── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+    <div className="min-h-screen pb-20" style={{ background: "var(--page-bg)" }} dir="rtl">
+
+      {/* ── Page header banner (matches MyApplications) ── */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+        }}
+      >
+        {/* Subtle texture overlay */}
         <div
-          className="absolute rounded-full"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            width: 400, height: 400,
-            top: -80, right: -80,
-            background: `radial-gradient(circle, ${BRAND} / 0.06 0%, transparent 70%)`,
-            filter: "blur(40px)",
+            background: "linear-gradient(to left, oklch(0.28 0.06 122 / 0.0) 0%, oklch(0.28 0.06 122 / 0.25) 50%, oklch(0.28 0.06 122 / 0.60) 100%)",
           }}
         />
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 300, height: 300,
-            bottom: 100, left: -60,
-            background: `radial-gradient(circle, ${SUCCESS} / 0.05 0%, transparent 70%)`,
-            filter: "blur(40px)",
-          }}
-        />
+
+        <div className="relative z-10 max-w-lg mx-auto px-4 pt-5 pb-5">
+          {/* Back button + title */}
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center justify-center w-9 h-9 rounded-xl transition-all"
+              style={{ background: "oklch(1 0 0 / 0.18)", color: "white" }}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <div className="flex-1">
+              <h1
+                className="text-xl font-black leading-tight"
+                style={{ color: "white", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}
+              >
+                המודעות שלי
+              </h1>
+              <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.80)", textShadow: "0 1px 3px rgba(0,0,0,0.30)" }}>
+                {isLoading ? "טוען..." : `${activeJobs.length}/3 מודעות פעילות`}
+              </p>
+            </div>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <AppButton
+                variant="brand"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => navigate("/post-job")}
+                style={{ background: "oklch(1 0 0 / 0.18)", border: "1px solid oklch(1 0 0 / 0.30)", color: "white" }}
+              >
+                <PlusCircle className="h-4 w-4" />
+                פרסם משרה
+              </AppButton>
+            </motion.div>
+          </div>
+
+          {/* Stats row */}
+          {myJobs && (
+            <div className="flex items-center justify-center gap-5 pt-3" style={{ borderTop: "1px solid oklch(1 0 0 / 0.15)" }}>
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xl font-black" style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                  {myJobs.length}
+                </span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>מודעות סה"כ</span>
+              </div>
+              <div style={{ width: 1, height: 32, background: "oklch(1 0 0 / 0.20)" }} />
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xl font-black" style={{ color: "oklch(0.85 0.18 160)", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                  {activeJobs.length}
+                </span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>פעילות</span>
+              </div>
+              {myJobs.reduce((s, j) => s + ((j as { pendingCount?: number }).pendingCount ?? 0), 0) > 0 && (
+                <>
+                  <div style={{ width: 1, height: 32, background: "oklch(1 0 0 / 0.20)" }} />
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-xl font-black" style={{ color: "oklch(0.88 0.14 75)", textShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+                      {myJobs.reduce((s, j) => s + ((j as { pendingCount?: number }).pendingCount ?? 0), 0)}
+                    </span>
+                    <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.75)" }}>מועמדים חדשים</span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="relative max-w-2xl mx-auto px-4 py-8" style={{ zIndex: 1 }}>
+      {/* ── Content ── */}
+      <div className="max-w-lg mx-auto px-4 pt-5 space-y-3">
 
-        {/* ── Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex items-center justify-between mb-6"
-        >
-          <div>
-            <h1 className="text-2xl font-black" style={{ color: TEXT_BRIGHT }}>
-              המשרות שלי
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: TEXT_FAINT }}>
-              {isLoading ? "טוען..." : `${activeJobs.length}/3 משרות פעילות`}
-            </p>
-          </div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-            <AppButton
-              variant="brand"
-              size="sm"
-              className="gap-2"
-              onClick={() => navigate("/post-job")}
-            >
-              <PlusCircle className="h-4 w-4" />
-              פרסם משרה
-            </AppButton>
-          </motion.div>
-        </motion.div>
 
-        {/* ── Active limit bar ── */}
+        {/* ── Push notification prompt ── */}
         <AnimatePresence>
-          {!isLoading && activeJobs.length > 0 && (
+          {!isLoading && push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
             <motion.div
+              key="push-prompt"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3 }}
-              style={{ ...glassCard, padding: "1rem", marginBottom: "1.25rem" }}
+              style={{
+                ...cardStyle,
+                background: "oklch(0.97 0.04 85 / 0.50)",
+                border: "1px solid oklch(0.82 0.12 85 / 0.40)",
+              }}
             >
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span style={{ color: "oklch(0.50 0.04 120)" }}>{activeJobs.length} מתוך 3</span>
-                <span className="font-semibold" style={{ color: "oklch(0.20 0.04 120)" }}>משרות פעילות</span>
-              </div>
-              <div
-                className="rounded-full overflow-hidden"
-                style={{ height: 6, background: "oklch(0.90 0.02 120)" }}
-              >
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(activeJobs.length / 3) * 100}%` }}
-                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-                  style={{
-                    height: "100%",
-                    borderRadius: "9999px",
-                    background: activeJobs.length >= 3
-                      ? `linear-gradient(90deg, ${C_DANGER} 0%, oklch(0.65 0.22 15) 100%)`
-                      : `linear-gradient(90deg, ${BRAND} 0%, ${SUCCESS} 100%)`,
-                  }}
-                />
-              </div>
-              {activeJobs.length >= 3 && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-xs mt-2"
-                  style={{ color: C_DANGER }}
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
+                  style={{ background: "oklch(0.88 0.14 75 / 0.25)", color: "oklch(0.50 0.18 65)" }}
                 >
-                  הגעת למגבלה — סגור משרה כדי לפרסם חדשה.
-                </motion.p>
+                  <Bell className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: "oklch(0.25 0.05 120)" }}>קבל התראות על מועמדים חדשים</p>
+                  <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.04 120)" }}>נשלח לך התראה מיד כשמועמד מגיש בקשה</p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={push.subscribe}
+                  disabled={push.isLoading}
+                  className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: "oklch(0.50 0.18 65)",
+                    color: "white",
+                    opacity: push.isLoading ? 0.7 : 1,
+                  }}
+                >
+                  {push.isLoading ? "..." : "הפעל"}
+                </motion.button>
+              </div>
+              {push.error && (
+                <p className="text-xs mt-2" style={{ color: "oklch(0.55 0.22 25)" }}>{push.error}</p>
               )}
+            </motion.div>
+          )}
+          {!isLoading && push.isSubscribed && (
+            <motion.div
+              key="push-active"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+              style={{
+                background: "oklch(0.94 0.08 160 / 0.15)",
+                border: "1px solid oklch(0.75 0.12 160 / 0.30)",
+                color: "oklch(0.38 0.15 160)",
+              }}
+            >
+              <Bell className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">התראות פעילות — תקבל עדכון על כל מועמד חדש</span>
+              <button
+                onClick={push.unsubscribe}
+                className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                title="בטל התראות"
+              >
+                <BellOff className="h-3.5 w-3.5" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* ── Content ── */}
-        {isLoading ? (
-          /* Skeleton list */
+        {/* ── Loading skeletons ── */}
+        {isLoading && (
           <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07, duration: 0.3 }}
-              >
-                <MyJobCardSkeleton />
-              </motion.div>
-            ))}
+            {[0, 1, 2].map((i) => <MyJobCardSkeleton key={i} delay={i * 0.07} />)}
           </div>
-        ) : !myJobs || myJobs.length === 0 ? (
-          /* Empty state */
+        )}
+
+        {/* ── Empty state ── */}
+        {!isLoading && (!myJobs || myJobs.length === 0) && (
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -588,276 +818,272 @@ export default function MyJobs() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-              className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5"
-              style={{
-                background: `${BRAND}14`,
-                border: `1px solid ${BRAND}26`,
-              }}
+              className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5"
+              style={{ background: "oklch(0.38 0.07 125.0 / 0.08)", border: "1px solid oklch(0.38 0.07 125.0 / 0.12)" }}
             >
-              <Briefcase className="h-10 w-10" style={{ color: `${BRAND}66` }} />
+              <Briefcase className="h-10 w-10" style={{ color: "oklch(0.38 0.07 125.0)" }} />
             </motion.div>
-            <p className="font-bold text-lg mb-1" style={{ color: TEXT_BRIGHT }}>
-              אין לך משרות עדיין
-            </p>
-            <p className="text-sm mb-6" style={{ color: TEXT_FAINT }}>
-              פרסם את המשרה הראשונה שלך ומצא עובדים תוך דקות
+            <p className="font-bold text-lg mb-1" style={{ color: "oklch(0.20 0.04 120)" }}>אין לך משרות עדיין</p>
+            <p className="text-sm mb-6" style={{ color: "oklch(0.50 0.04 120)" }}>
+              פרסם את המודעה הראשונה שלך ומצא עובדים תוך דקות
             </p>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-              <AppButton
-                variant="brand"
-                className="gap-2"
-                onClick={() => navigate("/post-job")}
-              >
+              <AppButton variant="brand" className="gap-2" onClick={() => navigate("/post-job")}>
                 <PlusCircle className="h-4 w-4" />
-                פרסם את המשרה הראשונה שלך
+                פרסם את המודעה הראשונה שלך
               </AppButton>
             </motion.div>
           </motion.div>
-        ) : (
-          /* Job cards list */
-          <motion.div
-            variants={listVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-3"
-          >
-            <AnimatePresence mode="popLayout">
-              {myJobs.map((job) => {
-                const statusCfg = STATUS_CONFIG[job.status] ?? STATUS_CONFIG.active;
-                const isVolunteer = job.salaryType === "volunteer";
-                const expiresAt = job.expiresAt ? new Date(job.expiresAt) : null;
-                const daysLeft = expiresAt
-                  ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000))
-                  : null;
-                const isExpiringSoon = daysLeft !== null && daysLeft <= 1 && job.status === "active";
-                const applicantsExpanded = expandedApplicants.has(job.id);
+        )}
 
-                return (
-                  <motion.div
-                    key={job.id}
-                    variants={cardVariants}
-                    layout
-                    exit="exit"
-                    style={{
-                      ...glassCard,
-                      padding: "1rem",
-                      cursor: "default",
-                      ...(isExpiringSoon ? { borderColor: "oklch(0.60 0.22 25 / 0.3)" } : {}),
-                    }}
-                  >
-                    {/* Header row */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        {/* Category icon */}
-                        <div
-                          className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+        {/* ── Job cards ── */}
+        {!isLoading && myJobs && myJobs.length > 0 && (
+          <AnimatePresence mode="popLayout">
+            {myJobs.map((job, i) => {
+              const statusCfg = STATUS_CONFIG[job.status] ?? STATUS_CONFIG.active;
+              const isVolunteer = job.salaryType === "volunteer";
+              const expiresAt = job.expiresAt ? new Date(job.expiresAt) : null;
+              const daysLeft = expiresAt
+                ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000))
+                : null;
+              const isExpiringSoon = daysLeft !== null && daysLeft <= 1 && job.status === "active";
+              const applicantsExpanded = expandedApplicants.has(job.id);
+              const pendingCount = (job as { pendingCount?: number }).pendingCount ?? 0;
+              const totalApplicationCount = (job as { totalApplicationCount?: number }).totalApplicationCount ?? 0;
+              const acceptedCount = (job as { acceptedCount?: number }).acceptedCount ?? 0;
+              const isCapReached = acceptedCount >= MAX_ACCEPTED_CANDIDATES;
+
+              return (
+                <motion.div
+                  key={job.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -30, scale: 0.95, transition: { duration: 0.25 } }}
+                  transition={{ duration: 0.35, delay: i * 0.05 }}
+                  layout
+                  style={{
+                    background: "transparent",
+                    border: "1px solid oklch(0.92 0.02 100)",
+                    borderRadius: "1rem",
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
+                    overflow: "hidden",
+                    ...(isExpiringSoon ? { borderColor: "oklch(0.60 0.22 25 / 0.35)" } : {}),
+                  }}
+                >
+                  {/* ── Job details section (header + chips + analytics) ── */}
+                  <div style={{
+                    background: "oklch(0.97 0.012 100)",
+                    borderBottom: "1px solid oklch(0.92 0.02 100)",
+                    padding: "1.25rem",
+                  }}>
+                  {/* ── Hero header — matches HomeEmployer job card style ── */}
+                  {/* RTL layout: briefcase icon RIGHT, title+status CENTER, action buttons LEFT */}
+                  <div className="flex items-center gap-3 mb-3" dir="rtl">
+                    {/* Title + status — fills available space */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5" dir="rtl">
+                        <p className="font-bold text-[15px] truncate" style={{ color: "oklch(0.22 0.06 122)" }}>{job.title}</p>
+                        <span
+                          className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
                           style={{
-                            background: `linear-gradient(135deg, ${C_AMBER_LIGHT} 0%, ${C_HONEY} 100%)`,
-                            border: `1px solid ${C_HONEY}`,
+                            background: job.status === "active" ? "oklch(0.90 0.10 145)" : job.status === "closed" ? "oklch(0.91 0.02 100)" : "oklch(0.93 0.08 30)",
+                            color: job.status === "active" ? "oklch(0.30 0.15 145)" : job.status === "closed" ? "oklch(0.42 0.02 100)" : "oklch(0.40 0.12 30)",
                           }}
                         >
-                          {getCategoryIcon(job.category)}
-                        </div>
-                        <div className="min-w-0">
-                          <h3
-                            className="font-bold truncate"
-                            style={{ color: "oklch(0.20 0.04 120)" }}
-                          >
-                            {job.title}
-                          </h3>
-                          <p className="text-xs" style={{ color: "oklch(0.50 0.04 120)" }}>
-                            {getCategoryLabel(job.category)}
-                          </p>
-                        </div>
+                          {job.status === "active" ? "פעיל" : job.status === "closed" ? "סגור" : "פג תוקף"}
+                        </span>
                       </div>
 
-                      {/* Status badge */}
-                      <div
-                        className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
+                    </div>
+
+                    {/* Action buttons — left side (last in RTL DOM) */}
+                    <div className="flex gap-1.5 shrink-0">
+                      <button
+                        onClick={() => navigate(`/job/${job.id}`)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="צפייה"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/edit-job/${job.id}`)}
+                        className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                        style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)" }}
+                        title="עריכה"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      {/* Close/Reopen */}
+                      {job.status === "active" ? (
+                        <button
+                          onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
+                          disabled={updateStatus.isPending}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                          style={{ background: "oklch(0.96 0.02 91.6)", border: "1px solid oklch(0.89 0.05 84.0)", color: "oklch(0.45 0.08 122)", opacity: updateStatus.isPending ? 0.6 : 1 }}
+                          title="סגור מודעה"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                        </button>
+                      ) : job.status === "closed" ? (
+                        <button
+                          onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
+                          disabled={updateStatus.isPending || activeJobs.length >= 3}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                          style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", color: "#15803d", opacity: (updateStatus.isPending || activeJobs.length >= 3) ? 0.5 : 1 }}
+                          title="הפעל מחדש"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* ── Chips — 2×2 grid, equal width, same layout as analytics bento ── */}
+                  <div className="grid grid-cols-2 gap-2 mb-4" dir="rtl">
+                    {/* Salary chip */}
+                    <span
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                    >
+                      <DollarSign className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{isVolunteer ? "התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}</span>
+                    </span>
+                    {/* Location chip */}
+                    <span
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                    >
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{job.address.split(",")[0]}</span>
+                    </span>
+                    {/* Expiry chip — red when expiring soon, otherwise workers count */}
+                    {daysLeft !== null && job.status === "active" ? (
+                      <span
+                        className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
                         style={{
-                          background: statusCfg.bg,
-                          color: statusCfg.color,
-                          border: `1px solid ${statusCfg.border}`,
-                          boxShadow: statusCfg.glow,
+                          color: isExpiringSoon ? "#b91c1c" : "#4F583B",
+                          backgroundColor: isExpiringSoon ? "rgba(239,68,68,0.10)" : "rgba(79,88,59,0.10)",
+                          border: isExpiringSoon ? "1px solid rgba(239,68,68,0.25)" : "1px solid rgba(79,88,59,0.18)",
                         }}
                       >
-                        {job.status === "active" && (
-                          <span
-                            className="w-1.5 h-1.5 rounded-full"
-                            style={{ background: "oklch(0.68 0.20 160)", boxShadow: "0 0 4px oklch(0.68 0.20 160)" }}
-                          />
-                        )}
-                        {statusCfg.label}
-                      </div>
-                    </div>
-
-                    {/* Meta row */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs mb-3">
-                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                        <MapPin className="h-3 w-3" style={{ color: C_AMBER }} />
-                        {job.address.split(",")[0]}
+                        <Zap className="h-3 w-3 shrink-0" />
+                        <span>{daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}</span>
                       </span>
-                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                        <Clock className="h-3 w-3" style={{ color: C_AMBER }} />
-                        {getStartTimeLabel(job.startTime)}
-                      </span>
-                      <span className="flex items-center gap-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                        <Users className="h-3 w-3" style={{ color: C_AMBER }} />
-                        {job.workersNeeded} עובדים
-                      </span>
+                    ) : (
                       <span
-                        className="flex items-center gap-1 font-medium"
-                        style={{ color: isVolunteer ? "oklch(0.68 0.20 160)" : "oklch(0.88 0.14 75)" }}
+                        className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
+                        style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
                       >
-                        <DollarSign className="h-3 w-3" />
-                        {isVolunteer ? "התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
+                        <Users className="h-3 w-3 shrink-0" />
+                        <span>{job.workersNeeded > 1 ? `${job.workersNeeded} עובדים` : "עובד אחד"}</span>
                       </span>
-                      {daysLeft !== null && job.status === "active" && (
-                        <span
-                          className="flex items-center gap-1 font-bold"
-                          style={{ color: isExpiringSoon ? "oklch(0.65 0.22 25)" : C_AMBER }}
-                        >
-                          {isExpiringSoon && <Zap className="h-3 w-3" />}
-                          <Clock className="h-3 w-3" />
-                          {daysLeft === 0 ? "פג היום" : `${daysLeft} ימים נותרו`}
-                        </span>
-                      )}
+                    )}
+                    {/* Time chip */}
+                    <span
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
+                      style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+                    >
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{job.startTime === "flexible" ? "שעות גמישות" : getStartTimeLabel(job.startTime)}</span>
+                    </span>
+                  </div>
+
+                  {/* ── Analytics bento — same style as HomeEmployer StatsRow ── */}
+                  <div className="grid grid-cols-2 gap-2 mb-3" dir="rtl">
+                    {/* RIGHT (first in RTL DOM): מועמדים סה"כ */}
+                    <div
+                      className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-[14px] text-center"
+                      style={{
+                        background: "oklch(0.97 0.02 122)",
+                        border: "1px solid oklch(0.88 0.05 122)",
+                        boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
+                      }}
+                    >
+                      <Users style={{ width: 14, height: 14, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
+                        {totalApplicationCount}
+                      </span>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
+                        מועמדים סה&quot;כ
+                      </span>
                     </div>
-
-                    {/* Action buttons */}
-                    <div className="flex gap-2 flex-wrap">
-                      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                        <AppButton
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => navigate(`/job/${job.id}`)}
-                          style={{
-                            background: C_AMBER_LIGHT,
-                            border: `1px solid ${C_HONEY}`,
-                            color: C_AMBER,
-                          }}
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                          צפה
-                        </AppButton>
-                      </motion.div>
-
-                      {/* Applicants toggle button */}
-                      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                        <AppButton
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => toggleApplicants(job.id)}
-                          style={{
-                            background: applicantsExpanded
-                              ? "oklch(0.93 0.06 250)"
-                              : "oklch(0.95 0.01 120)",
-                            border: applicantsExpanded
-                              ? "1px solid oklch(0.72 0.14 250)"
-                              : "1px solid oklch(0.85 0.02 120)",
-                            color: applicantsExpanded
-                              ? "oklch(0.42 0.18 250)"
-                              : "oklch(0.40 0.04 120)",
-                          }}
-                        >
-                          <Users className="h-3.5 w-3.5" />
-                          מועמדים
-                          {(job as { pendingCount?: number }).pendingCount ? (
-                            <span
-                              className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                              style={{
-                                background: "oklch(0.60 0.22 25)",
-                                color: "white",
-                                minWidth: "1.2rem",
-                                textAlign: "center",
-                                lineHeight: 1,
-                              }}
-                            >
-                              {(job as { pendingCount?: number }).pendingCount}
-                            </span>
-                          ) : null}
-                          {applicantsExpanded
-                            ? <ChevronUp className="h-3 w-3" />
-                            : <ChevronDown className="h-3 w-3" />}
-                        </AppButton>
-                      </motion.div>
-
-                      {/* Matched Workers button */}
-                      {job.status === "active" && (
-                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                          <AppButton
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5 text-xs"
-                            onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
-                            style={{
-                              background: "oklch(0.93 0.05 122)",
-                              border: "1px solid oklch(0.75 0.10 122)",
-                              color: "oklch(0.35 0.08 122)",
-                            }}
-                          >
-                            <Sparkles className="h-3.5 w-3.5" />
-                            עובדים מתאימים
-                          </AppButton>
-                        </motion.div>
-                      )}
-
-                      {job.status === "active" ? (
-                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                          <AppButton
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5 text-xs"
-                            onClick={() => updateStatus.mutate({ id: job.id, status: "closed" })}
-                            disabled={updateStatus.isPending}
-                            style={{
-                              background: "oklch(0.95 0.01 120)",
-                            border: "1px solid oklch(0.85 0.02 120)",
-                            color: "oklch(0.45 0.04 120)",
-                            }}
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                            סגור משרה
-                          </AppButton>
-                        </motion.div>
-                      ) : job.status === "closed" ? (
-                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                          <AppButton
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5 text-xs"
-                            onClick={() => updateStatus.mutate({ id: job.id, status: "active" })}
-                            disabled={updateStatus.isPending || activeJobs.length >= 3}
-                            style={{
-                              background: "oklch(0.65 0.22 160 / 0.08)",
-                              border: "1px solid oklch(0.65 0.22 160 / 0.25)",
-                              color: "oklch(0.68 0.20 160)",
-                            }}
-                          >
-                            <CheckCircle className="h-3.5 w-3.5" />
-                            הפעל מחדש
-                          </AppButton>
-                        </motion.div>
-                      ) : null}
-
-                      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                        <AppButton
-                          variant="ghost"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => setDeleteId(job.id)}
-                          style={{ color: C_DANGER }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          מחק
-                        </AppButton>
-                      </motion.div>
+                    {/* LEFT (second in RTL DOM): התקבלו */}
+                    <div
+                      className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-[14px] text-center"
+                      style={{
+                        background: "oklch(0.97 0.02 122)",
+                        border: "1px solid oklch(0.88 0.05 122)",
+                        boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
+                      }}
+                    >
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1, color: "oklch(0.22 0.06 122)", letterSpacing: "-0.3px" }}>
+                        {acceptedCount}/{MAX_ACCEPTED_CANDIDATES}
+                      </span>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: "oklch(0.45 0.07 122)", textAlign: "center", lineHeight: 1.2 }}>
+                        התקבלו
+                      </span>
                     </div>
+                  </div>
 
-                    {/* ── Applicants Panel ── */}
-                    <AnimatePresence>
+                  {/* Matched workers link — centered */}
+                  {job.status === "active" && (
+                    <div className="flex justify-center mb-1">
+                      <motion.button
+                        onClick={() => navigate(`/matched-workers?jobId=${job.id}`)}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+                        style={{
+                          color: "#4a5d23",
+                          background: "oklch(0.94 0.06 122 / 0.5)",
+                          border: "1px solid oklch(0.82 0.08 122 / 0.6)",
+                        }}
+                        animate={{
+                          boxShadow: [
+                            "0 0 0px 0px oklch(0.7 0.15 122 / 0)",
+                            "0 0 6px 3px oklch(0.7 0.15 122 / 0.25)",
+                            "0 0 0px 0px oklch(0.7 0.15 122 / 0)",
+                          ],
+                        }}
+                        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                        whileHover={{ scale: 1.04, opacity: 0.85 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        הצג עובדים מתאימים
+                      </motion.button>
+                    </div>
+                  )}
+                  </div>{/* end job details section */}
+
+                  {/* ── Applicants section — only shown when there are applicants ── */}
+                  {totalApplicationCount > 0 && (<div style={{ padding: "0 1.25rem 1.25rem" }}>
+                    {/* Section header with collapse toggle */}
+                    <button
+                      onClick={() => toggleApplicants(job.id)}
+                      className="flex items-center justify-between w-full pt-3 pb-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" style={{ color: "#414b23" }} />
+                        <span className="text-sm font-bold" style={{ color: "#313b15" }}>מועמדים</span>
+                        {pendingCount > 0 && (
+                          <span
+                            className="text-xs font-extrabold px-2 py-0.5 rounded-full"
+                            style={{ background: "#dce8b3", color: "#161e00", minWidth: "1.4rem", textAlign: "center" }}
+                          >
+                            {pendingCount}
+                          </span>
+                        )}
+                      </div>
+                      <motion.div
+                        animate={{ rotate: applicantsExpanded ? 0 : 180 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronUp className="h-4 w-4" style={{ color: "#46483d" }} />
+                      </motion.div>
+                    </button>
+
+                    <AnimatePresence initial={false}>
                       {applicantsExpanded && (
                         <motion.div
                           key="applicants"
@@ -867,26 +1093,15 @@ export default function MyJobs() {
                           transition={{ duration: 0.25 }}
                           style={{ overflow: "hidden" }}
                         >
-                          <div
-                            style={{
-                              marginTop: "0.75rem",
-                              paddingTop: "0.75rem",
-                              borderTop: "1px solid oklch(0.88 0.02 120)",
-                            }}
-                          >
-                            <p className="text-xs font-semibold mb-1" style={{ color: "oklch(0.45 0.04 120)" }}>
-                              מועמדים למשרה
-                            </p>
-                            <ApplicantsPanel jobId={job.id} />
-                          </div>
+                          <ApplicantsPanel jobId={job.id} />
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                  </div>)}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
       </div>
 
@@ -894,9 +1109,9 @@ export default function MyJobs() {
       <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>מחיקת משרה</AlertDialogTitle>
+            <AlertDialogTitle>מחיקת מודעה</AlertDialogTitle>
             <AlertDialogDescription>
-              האם אתה בטוח שברצונך למחוק את המשרה? פעולה זו אינה ניתנת לביטול.
+              האם אתה בטוח שברצונך למחוק את המודעה? פעולה זו אינה ניתנת לביטול.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2 sm:flex-row" dir="rtl">

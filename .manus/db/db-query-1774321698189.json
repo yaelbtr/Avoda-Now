@@ -1,0 +1,166 @@
+{
+  "query": "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'jobs' ORDER BY ordinal_position;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'jobs' ORDER BY ordinal_position;",
+  "rows": [
+    {
+      "column_name": "id",
+      "data_type": "int"
+    },
+    {
+      "column_name": "title",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "description",
+      "data_type": "text"
+    },
+    {
+      "column_name": "category",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "address",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "latitude",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "longitude",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "salary",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "salaryType",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "contactPhone",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "contactName",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "businessName",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "workingHours",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "startTime",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "workersNeeded",
+      "data_type": "int"
+    },
+    {
+      "column_name": "postedBy",
+      "data_type": "int"
+    },
+    {
+      "column_name": "status",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "createdAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "updatedAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "city",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "activeDuration",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "expiresAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "reportCount",
+      "data_type": "int"
+    },
+    {
+      "column_name": "jobTags",
+      "data_type": "json"
+    },
+    {
+      "column_name": "startDateTime",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "isUrgent",
+      "data_type": "tinyint"
+    },
+    {
+      "column_name": "reminderSentAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "closedReason",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "isLocalBusiness",
+      "data_type": "tinyint"
+    },
+    {
+      "column_name": "showPhone",
+      "data_type": "tinyint"
+    },
+    {
+      "column_name": "jobLocationMode",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "jobSearchRadiusKm",
+      "data_type": "int"
+    },
+    {
+      "column_name": "hourlyRate",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "estimatedHours",
+      "data_type": "decimal"
+    },
+    {
+      "column_name": "jobDate",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "workStartTime",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "workEndTime",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "imageUrls",
+      "data_type": "json"
+    },
+    {
+      "column_name": "minAge",
+      "data_type": "int"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\tdata_type\nid\tint\ntitle\tvarchar\ndescription\ttext\ncategory\tenum\naddress\tvarchar\nlatitude\tdecimal\nlongitude\tdecimal\nsalary\tdecimal\nsalaryType\tenum\ncontactPhone\tvarchar\ncontactName\tvarchar\nbusinessName\tvarchar\nworkingHours\tvarchar\nstartTime\tenum\nworkersNeeded\tint\npostedBy\tint\nstatus\tenum\ncreatedAt\ttimestamp\nupdatedAt\ttimestamp\ncity\tvarchar\nactiveDuration\tenum\nexpiresAt\ttimestamp\nreportCount\tint\njobTags\tjson\nstartDateTime\ttimestamp\nisUrgent\ttinyint\nreminderSentAt\ttimestamp\nclosedReason\tenum\nisLocalBusiness\ttinyint\nshowPhone\ttinyint\njobLocationMode\tenum\njobSearchRadiusKm\tint\nhourlyRate\tdecimal\nestimatedHours\tdecimal\njobDate\tvarchar\nworkStartTime\tvarchar\nworkEndTime\tvarchar\nimageUrls\tjson\nminAge\tint\n",
+  "stderr": "",
+  "execution_time_ms": 1537
+}

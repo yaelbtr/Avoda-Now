@@ -12,7 +12,7 @@ interface PreviewProps {
   preferredDays: string[];
   preferredTimeSlots: string[];
   dayLabels: { value: string; label: string }[];
-  timeSlotLabels: { value: string; label: string; icon: string; sub: string }[];
+  timeSlotLabels: readonly { value: string; label: string; icon: string; sub: string; isNight?: boolean }[];
   locationMode: "city" | "radius";
   preferredCities: number[];
   cityNames?: string[];

@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Check what location fields exist and find workers near Bnei Brak\nSELECT id, name, email, phone, \n       \"workerLocation\", \"preferredCity\", \"workerSearchCity\",\n       \"workerLatitude\", \"workerLongitude\",\n       \"notificationPrefs\"\nFROM users\nWHERE role = 'user'\n  AND status = 'active'\n  AND (\n    \"preferredCity\" ILIKE '%בני%'\n    OR \"workerLocation\" ILIKE '%בני%'\n    OR \"workerSearchCity\" ILIKE '%בני%'\n    OR \"preferredCity\" ILIKE '%bnei%'\n    OR \"workerLocation\" ILIKE '%bnei%'\n  )\nLIMIT 50;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \n-- Check what location fields exist and find workers near Bnei Brak\nSELECT id, name, email, phone, \n       \"workerLocation\", \"preferredCity\", \"workerSearchCity\",\n       \"workerLatitude\", \"workerLongitude\",\n       \"notificationPrefs\"\nFROM users\nWHERE role = 'user'\n  AND status = 'active'\n  AND (\n    \"preferredCity\" ILIKE '%בני%'\n    OR \"workerLocation\" ILIKE '%בני%'\n    OR \"workerSearchCity\" ILIKE '%בני%'\n    OR \"preferredCity\" ILIKE '%bnei%'\n    OR \"workerLocation\" ILIKE '%bnei%'\n  )\nLIMIT 50;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1689
+}

@@ -15,16 +15,26 @@ import LoginModal from "@/components/LoginModal";
  * overlay is always visible even on browsers that don't support backdrop-filter
  * (older Android WebView, some iOS Safari versions). The blur is additive on top.
  *
- * Admin bypass: users with role === 'admin' see null — full page access for testing.
+ * Bypass rules:
+ * - Admin (role === 'admin'): full access for testing.
+ * - Worker (userMode === 'worker'): FindJobs is the worker's primary page — never blocked.
+ * - Employer / unauthenticated: shown when FIND_JOBS_OPEN is false.
  */
 export default function FindJobsComingSoonOverlay() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
 
-  // Admins bypass the overlay entirely
+  // Admins and workers bypass the overlay entirely.
+  // FindJobs is the worker's primary job-search page — the lock is for employers only.
   const isAdmin = isAuthenticated && user?.role === "admin";
-  if (isAdmin) return null;
+  const isWorker = isAuthenticated && user?.userMode === "worker";
+  if (isAdmin || isWorker) return null;
+
+  // Hide overlay when user has navigated away from /find-jobs
+  // (portal keeps the component mounted during exit animation)
+  const isFindJobsRoute = location.startsWith("/find-jobs");
+  if (!isFindJobsRoute) return null;
 
   const handleSetAlerts = () => {
     if (isAuthenticated) {

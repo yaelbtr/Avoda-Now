@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useWorkerJobs } from "@/contexts/WorkerJobsContext";
 import { AppButton } from "@/components/ui";
 import { JobCard } from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   Search, MapPin, ChevronLeft, Zap, Flame,
   Map, List, ArrowLeft, TrendingUp, Star,
@@ -21,9 +23,11 @@ import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSk
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import BelowFold from "@/components/BelowFold";
 import { toast } from "sonner";
 import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useCountdown } from "@/hooks/useCountdown";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
 function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
@@ -114,21 +118,21 @@ const HOW_IT_WORKS = [
     step: "01",
     title: "הגדר זמינות",
     desc: "לחץ על \"זמין עכשיו\" כדי שמעסיקים באזור שלך יוכלו לראות שאתה זמין לעבודה.",
-    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBamn2qup2cLZLS0F7g_ak0WLTInI6W80vxhpKaOVS5LvEDl1LbNhdRUjazjOJujODYDKCCm0wVmr68y6wo4HiA7bPMUmFZ4hEQMndLqGlbGLjfLqtiqyD2AMY9TidSzS_hPgu5Ur5Z2MBpFBvusjARNnk7FNagj5vM5F9-d-Okq_vbnvzcmYLSObdJ9OJMzZZWzrsgw3HIN_x9coQBlKMfGlWR0eNLV0mX2VSSizcok2morIGRV6Ge2fGy_kA6s1H6jaOUll8DcA",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step1_3045eee6.webp",
     reverse: false,
   },
   {
     step: "02",
-    title: "קבל פניות ממעסיקים",
-    desc: "מעסיקים שמחפשים עובדים באזור שלך יכולים לראות שאתה זמין וליצור איתך קשר ישירות.",
-    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAStrMaRfZDifQeV-VACZz7ZypB1K8qO0mfWH-7GKp9zP5N0IFSgQpYT8gGJfOxyxssudU0ma8TE9HYWViNqn1eNoc7_qkfar8L0c38K28sRu-_lwd2DFueAtvndwsNLlxCicO5asK-g-NFLhaSWhOxM5Lx7tQalZGYbZlc-cGOJHfX0VMMQvGKi69yA7_YyxYFmg51eaSrjgIb2kEHbOcTexFsWld1x3UCbPcBhX92Us5OHKPCI2Wbzy1VcqYfh8U6aCD_3lOdng",
+    title: "קבל הצעות עבודה ממעסיקים",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה — אתה מחליט אם לאשר.",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
     reverse: true,
   },
   {
     step: "03",
-    title: "עבוד וקבל תשלום",
-    desc: "סגור פרטים עם המעסיק, בצע את העבודה וקבל תשלום ישירות ממנו.",
-    imgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDmsOM6ool_591rxa3QrTQJ_siNP3M919Xa5n12iJHU9-myKDCxxkIXJLVpXND4AON1Q8eRBnMPtrBeggN_C4S0lJ5lumxRI4XROt9rXnjP5Krt1MAn8P4EnpBkn24bwAgR163Pw2pImLomXOGNpz-MCOZ8aI6DDwDbqiFoOBi2D-UsT1OV5mTJyv3BKGljWdOH2cGAdggVOjFgQ0oQ8lCPYfY4Fgpq2UzIf2KqNukQ6Z4NgQAXUPUyrHbEzkXWFccR4AfTBcUzbw",
+    title: "אשר את ההצעה בכדי שהמעסיק יוכל ליצור איתך קשר",
+    desc: "תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step3_76fe12ce.webp",
     reverse: false,
   },
 ];
@@ -141,15 +145,30 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { resetUserMode } = useUserMode();
+  const authQuery = useAuthQuery();
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [nearbyRadius, setNearbyRadius] = useState(5);
+  // nearbyRadius and setLocation are managed by the shared WorkerJobsContext
+  const {
+    urgentJobs: urgentJobsFromCtx,
+    todayJobs: todayJobsFromCtx,
+    nearbyJobs: nearbyJobsFromCtx,
+    latestJobs: latestJobsFromCtx,
+    isLoading: dashboardLoading,
+    isFallback: nearbyIsFallback,
+    nearbyRadius,
+    setNearbyRadius,
+    setLocation: setWorkerLocation,
+    savedIds,
+    toggleSave,
+  } = useWorkerJobs();
   const [showMap, setShowMap] = useState(false);
   const [geoRequested, setGeoRequested] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [durationOpen, setDurationOpen] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState<2 | 4 | 8>(4);
+  const [selectedDuration, setSelectedDuration] = useState<number>(4);
+  const [customHours, setCustomHours] = useState<string>("");
   const [quickAvailOpen, setQuickAvailOpen] = useState(false);
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
   const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
@@ -166,8 +185,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     navigate("/find-jobs");
   };
   useSEO({
-    title: "דף הבית",
-    description: "הפלטפורמה לעבודות זמניות בישראל. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
+    title: "AvodaNow — עבודות זמניות בישראל",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
+    keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
   });
 
@@ -181,11 +201,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); },
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLng(pos.coords.longitude);
+          // Propagate location to the shared service so the nearby panel fetches
+          setWorkerLocation(pos.coords.latitude, pos.coords.longitude);
+        },
         () => {}
       );
     }
-  }, []);
+  }, [setWorkerLocation]);
 
   useEffect(() => {
     autoScrollRef.current = setInterval(() => {
@@ -206,7 +231,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   }, []);
 
   // Redirect new workers who haven't completed signup yet
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated });
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
   useEffect(() => {
     if (profileQuery.data && profileQuery.data.signupCompleted === false) {
       navigate("/worker-profile");
@@ -215,28 +240,19 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
-  const urgentQuery = trpc.jobs.listUrgent.useQuery({ limit: 4 });
-  const todayQuery = trpc.jobs.listToday.useQuery({ limit: 4 });
-  const nearbyQuery = trpc.jobs.search.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: nearbyRadius, limit: 8 },
-    { enabled: !!userLat }
-  );
-  const latestQuery = trpc.jobs.list.useQuery({ limit: 6 });
-  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, { enabled: isAuthenticated });
+  // ── Job data now comes from the shared WorkerJobsContext (single server call) ──
+  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
   // Age-gate: fetch birth date info to warn minors about late availability
-  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-  });
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
-  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with FindJobs)
   const utils = trpc.useUtils();
-  const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
-  const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   // Applied job IDs (from myApplications)
-  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
-  const appliedJobIds = new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
+  const appliedJobIds = useMemo(
+    () => new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId)),
+    [myApplicationsQuery.data]
+  );
   const applyMutation = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
     onError: (e: { message: string }) => toast.error(e.message),
@@ -246,30 +262,54 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     applyMutation.mutate({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
-    if (!isAuthenticated) { onLoginRequired("כדי לשמור משרות יש להתחבר למערכת"); return; }
-    if (save) saveMutation.mutate({ jobId }); else unsaveMutation.mutate({ jobId });
+    toggleSave(jobId, !save, onLoginRequired);
   };
   const setAvailableMutation = trpc.workers.setAvailable.useMutation({
-    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
-    onError: () => setAvailabilityLoading(false),
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      const h = selectedDuration;
+      const label = h === 1 ? "שעה אחת" : h < 11 ? `${h} שעות` : `${h} שעות`;
+      toast.success(`✓ אתה מסומן כזמין ל-${label}`, {
+        description: "מעסיקים יכולים לראות אותך עכשיו",
+        duration: 4000,
+      });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
   });
   const setUnavailableMutation = trpc.workers.setUnavailable.useMutation({
-    onSuccess: () => { workerStatusQuery.refetch(); setAvailabilityLoading(false); },
-    onError: () => setAvailabilityLoading(false),
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      toast.success("סומנת כלא זמין", { duration: 3000 });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
   });
   const quickAvailMutation = trpc.user.quickUpdateAvailability.useMutation({
     onSuccess: () => { profileQuery.refetch(); toast.success("סטאטוס זמינות עודכן!"); setQuickAvailOpen(false); },
     onError: (e) => toast.error(e.message),
   });
 
-  const urgentJobs = urgentQuery.data ?? [];
-  const todayJobs = todayQuery.data ?? [];
-  // Extract jobs array from paginated response (jobs.list/jobs.search return { jobs, total, page, limit })
+  // Derive panel arrays from the shared context (client-side only, O(1))
   type JobItem = { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const jobs = (userLat ? ((nearbyQuery.data as any)?.jobs ?? []) : ((latestQuery.data as any)?.jobs ?? [])) as JobItem[];
-  const isLoading = userLat ? nearbyQuery.isLoading : latestQuery.isLoading;
+  const urgentJobs = urgentJobsFromCtx as unknown as JobItem[];
+  const todayJobs = todayJobsFromCtx as unknown as JobItem[];
+  const jobs = (userLat ? nearbyJobsFromCtx : latestJobsFromCtx) as unknown as JobItem[];
+  const isLoading = dashboardLoading;
   const isAvailable = !!workerStatusQuery.data;
+  // availableUntil is a Date returned by the server via superjson
+  const availableUntil = (workerStatusQuery.data as { availableUntil?: Date } | null)?.availableUntil ?? null;
+  const countdown = useCountdown(availableUntil);
 
   const requestGeo = () => {
     setGeoRequested(true);
@@ -291,7 +331,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
-  const confirmAvailability = (hours: 2 | 4 | 8) => {
+  const confirmAvailability = (hours: number) => {
     setSelectedDuration(hours);
     setDurationOpen(false);
     setAvailabilityLoading(true);
@@ -309,14 +349,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
-  const allCarouselJobs = [
+  // Step 7 (perf skill): memoize carousel job list — filter+map on every render is O(n²)
+  // due to the .some() inner loop. Recompute only when urgentJobs or todayJobs change.
+  const allCarouselJobs = useMemo(() => [
     ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
     ...todayJobs.filter((j) => !urgentJobs.some((u) => u.id === j.id)).map((j) => ({ job: j, badge: "today" as const })),
-  ];
+  ], [urgentJobs, todayJobs]);
   const carouselTotal = allCarouselJobs.length;
 
   return (
-    <div dir="rtl" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
+    <div dir="rtl" data-testid="home-worker" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 
@@ -352,25 +394,27 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               ].join(" "),
             }}
           />
-          {/* Badge — top center, above head */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-            style={{
-              transform: "translateX(-50%)",
-              background: "oklch(1 0 0 / 0.14)",
-              border: "1px solid oklch(1 0 0 / 0.30)",
-              boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <span className="animate-pulse">
-              <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
-            </span>
-            <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
-              {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
-            </span>
-          </motion.div>
+          {/* Badge — top center, above head — only shown when 10+ active jobs */}
+          {(activeJobCount === null || activeJobCount >= 10) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+              className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+              style={{
+                transform: "translateX(-50%)",
+                background: "oklch(1 0 0 / 0.14)",
+                border: "1px solid oklch(1 0 0 / 0.30)",
+                boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <span className="animate-pulse">
+                <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+              </span>
+              <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
+                {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
+              </span>
+            </motion.div>
+          )}
           {/* White headline — above the worker's head */}
           <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "18%" }}>
             <motion.h1
@@ -472,7 +516,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   whileTap={{ scale: 0.97 }}
                 >
                   <Zap size={14} />
-                  הגדר זמינות עכשיו
+                  {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent
@@ -581,7 +625,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               transition={{ type: "spring", stiffness: 420, damping: 22 }}
             >
               <Search size={15} />
-              הגדר זמינות עכשיו
+              {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
               <ChevronLeft size={15} style={{ opacity: 0.65 }} />
             </motion.button>
           </motion.div>
@@ -600,7 +644,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       </section>
 
       {/* ── Today Jobs Banner ──────────────────────────────────────────────────── */}
-      {(todayQuery.isLoading || (todayJobs.length > 0)) && (
+      {(dashboardLoading || (todayJobs.length > 0)) && (
         <motion.button
           dir="rtl"
           onClick={() => navigate("/find-jobs?filter=today")}
@@ -631,7 +675,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </div>
           {/* Text */}
           <div className="flex-1 min-w-0">
-            {todayQuery.isLoading ? (
+            {dashboardLoading ? (
               <div className="flex flex-col gap-1.5">
                 <div className="h-3.5 w-40 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.18)" }} />
                 <div className="h-2.5 w-24 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.12)" }} />
@@ -673,7 +717,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
           </div>
           <div>
-            <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
+            <h2 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h2>
             <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>מצא עבודה זמנית בשלושה צעדים פשוטים</p>
           </div>
         </div>
@@ -792,9 +836,20 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 }}
               />
             </div>
-            <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
-              {isAvailable ? "זמין כרגע" : "לא זמין"}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
+                {isAvailable ? "זמין כרגע" : "לא זמין"}
+              </span>
+              {isAvailable && countdown && (
+                <span
+                  className="text-[10px] font-mono font-bold tabular-nums"
+                  style={{ color: "oklch(0.42 0.16 150)", letterSpacing: "0.5px" }}
+                  title="זמן שנותר לזמינות"
+                >
+                  {countdown}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -830,7 +885,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               {isAvailable ? "סמן עצמך כלא זמין" : "סמן עצמך כזמין"}
             </p>
             <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
-              {isAvailable ? "הסר אותך מרשימת הזמינים" : "הופע בחיפושי מעסיקים באזורך"}
+              {isAvailable
+                ? countdown
+                  ? <span className="flex items-center gap-1.5">נשאר <span className="font-mono font-bold tabular-nums text-white">{countdown}</span></span>
+                  : "הסר אותך מרשימת הזמינים"
+                : "הופע בחיפושי מעסיקים באזורך"
+              }
             </p>
           </div>
           {availabilityLoading
@@ -859,7 +919,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>
                 זהה מיקום
               </p>
-              <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>עבודות בסביבה</p>
+              <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>עבודות בסביבה</p>
             </div>
           </button>
 
@@ -877,7 +937,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
               <div>
                 <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>העדפות</p>
-                <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>התאמה אישית</p>
+                <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>התאמה אישית</p>
               </div>
             </button>
           )}
@@ -933,7 +993,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       )}
 
       {/* ── Urgent / Today carousel ───────────────────────────────────────────────────────────────────── */}
-      {(allCarouselJobs.length > 0 || urgentQuery.isLoading || todayQuery.isLoading) && (
+      {(allCarouselJobs.length > 0 || dashboardLoading) && (
         <section className="mb-10 relative z-10">
           <motion.div
             className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
@@ -955,7 +1015,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             </button>
           </motion.div>
 
-          {(urgentQuery.isLoading || todayQuery.isLoading) ? (
+          {dashboardLoading ? (
             <div className="px-6"><CarouselSkeletonRow count={3} /></div>
           ) : (
             <div className="relative" style={{ overflow: "hidden" }}>
@@ -1275,7 +1335,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div style={{ position: "relative", height: 280, overflow: "hidden" }}>
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
-            alt=""
+            alt="אין משרות זמינות באזור זה כרגע"
             loading="lazy"
             decoding="async"
             style={{
@@ -1323,7 +1383,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Region Landing Pages CTA ─────────────────────────────────────────── */}
+      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      <BelowFold minHeight="120px" rootMargin="400px 0px">
       <section
         dir="rtl"
         className="relative z-10 px-5 py-8"
@@ -1357,7 +1418,47 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Employer CTA ─────────────────────────────────────────────────────────── */}
+      {/* ── שירותי בית וניקיון — SEO internal links ─────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10"
+        style={{
+          background: "oklch(0.98 0.008 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 16px 24px",
+        }}
+      >
+        <div className="max-w-lg mx-auto">
+          <p className="text-[13px] font-black mb-3" style={{ color: "var(--brand)" }}>🧹 שירותי בית וניקיון</p>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { label: "מנקה לבית", href: "/מנקה-לבית" },
+              { label: "עוזרת בית", href: "/עוזרת-בית" },
+              { label: "דרושה מנקה מהיום", href: "/דרושה-מנקה-מהיום" },
+              { label: "כמה עולה עוזרת בית?", href: "/כמה-עולה-עוזרת-בית" },
+              { label: "מנקה לבית חד פעמי", href: "/מנקה-לבית-חד-פעמי" },
+            ] as const).map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex items-center gap-1 rounded-full text-[12px] font-semibold px-3 py-1.5 transition-all"
+                style={{
+                  background: "oklch(0.93 0.03 122)",
+                  color: "var(--brand)",
+                  border: "1px solid oklch(0.87 0.05 122)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.88 0.06 122)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.03 122)"; }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Employer CTA ────────────────────────────────────────────────────────────────────────────────── */}
       <section
         dir="rtl"
         className="relative z-10 cursor-pointer"
@@ -1365,8 +1466,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           background: "linear-gradient(160deg, oklch(0.91 0.04 91.6) 0%, oklch(0.94 0.025 122.3) 100%)",
           borderTop: "1px solid oklch(0.85 0.06 84.0 / 0.5)",
         }}
-        onClick={resetUserMode}
-        onMouseEnter={(e) => {
+        onClick={resetUserMode}   onMouseEnter={(e) => {
           const bar = e.currentTarget.querySelector<HTMLElement>('[data-accent-bar]');
           if (bar) bar.style.borderRightWidth = '8px';
           const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
@@ -1409,7 +1509,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Info Dialog ──────────────────────────────────────────────────── */}
+        </BelowFold>
+
+      {/* ── Info Dialog ──────────────────────────────────────────── */}
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader>
@@ -1420,7 +1522,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               {isAvailable ? (
                 <span>
                   מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים ויכולים לפנות אליך ישירות.
-                  הזמינות תתבטל אוטומטית לאחר {selectedDuration} שעות, או לחץ שוב על הכפתור לביטול מיידי.
+                  {countdown
+                    ? <> זמן שנותר: <strong className="font-mono">{countdown}</strong>.</>  
+                    : " הזמינות עומדת לפוג בקרוב."
+                  }
+                  {" "}לחץ שוב על הכפתור לביטול מיידי.
                 </span>
               ) : (
                 <span>
@@ -1465,17 +1571,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </div>
             );
           })()}
-          <div className="grid grid-cols-3 gap-3 mt-2">
-            {([2, 4, 8] as const).map((h) => {
+          {/* Preset quick-select buttons */}
+          <div className="grid grid-cols-4 gap-2 mt-2">
+            {([2, 4, 8, 12, 24, 48, 72] as const).map((h) => {
               const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
               const crossesCutoff = workerIsMinor && (nowMins + h * 60 > 22 * 60);
               return (
               <motion.button
                 key={h}
-                onClick={() => confirmAvailability(h)}
+                onClick={() => { setCustomHours(""); confirmAvailability(h); }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-4 rounded-xl border-2 transition-all font-bold relative"
+                className="flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all font-bold relative"
                 style={{
                   borderColor: crossesCutoff ? "rgba(251,191,36,0.6)" : "var(--border)",
                   color: "var(--brand)",
@@ -1485,13 +1592,64 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 {crossesCutoff && (
                   <span className="absolute top-1 left-1 text-xs" title="חוצה 22:00">⚠️</span>
                 )}
-                <span className="text-2xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
-                <span className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>שעות</span>
+                <span className="text-xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
+                <span className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>שע'</span>
               </motion.button>
               );
             })}
           </div>
-          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setDurationOpen(false)}>ביטול</AppButton>
+
+          {/* Custom hours input */}
+          <div className="mt-3">
+            <p className="text-xs text-right mb-1.5" style={{ color: "var(--muted-foreground)" }}>או הזן מספר שעות חופשי (1–72):</p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                min={1}
+                max={72}
+                value={customHours}
+                onChange={(e) => setCustomHours(e.target.value)}
+                placeholder="למשל: 36"
+                className="flex-1 rounded-lg border px-3 py-2 text-right text-sm"
+                style={{
+                  borderColor: "var(--border)",
+                  backgroundColor: "var(--card)",
+                  color: "var(--foreground)",
+                  outline: "none",
+                }}
+                dir="rtl"
+              />
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const h = parseInt(customHours, 10);
+                  if (!isNaN(h) && h >= 1 && h <= 72) {
+                    setCustomHours("");
+                    confirmAvailability(h);
+                  }
+                }}
+                disabled={!customHours || parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72}
+                className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                style={{
+                  backgroundColor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand)"
+                    : "var(--muted)",
+                  color: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand-foreground)"
+                    : "var(--muted-foreground)",
+                  cursor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72 ? "pointer" : "not-allowed",
+                }}
+              >
+                אשר
+              </motion.button>
+            </div>
+            {customHours && (parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72) && (
+              <p className="text-xs mt-1 text-right" style={{ color: "oklch(0.55 0.2 25)" }}>יש להזין מספר בין 1 ל-72</p>
+            )}
+          </div>
+
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => { setCustomHours(""); setDurationOpen(false); }}>ביטול</AppButton>
         </DialogContent>
       </Dialog>
 
@@ -1541,6 +1699,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         isAuthenticated={isAuthenticated}
         layoutId={bottomSheetJob ? `carousel-card-${bottomSheetJob.id}` : undefined}
       />
+
+      {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
+      <section dir="rtl" className="px-4 py-6 border-t border-gray-100">
+        <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים שימושיים</h2>
+        <ul className="flex flex-col gap-2">
+          <li><a href="/questions/איך-למצוא-עובד-זמני" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך למצוא עובד זמני בישראל?</a></li>
+          <li><a href="/guide/איך-לגייס-עובד-תוך-שעה" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לגייס עובד תוך שעה?</a></li>
+          <li><a href="/for/סטודנטים" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">עבודות זמניות לסטודנטים</a></li>
+          <li><a href="/for/נוער" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">עבודות זמניות לנוער</a></li>
+        </ul>
+      </section>
 
     </div>
   );

@@ -8,6 +8,7 @@
 
 import { useState, useCallback } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
@@ -15,6 +16,7 @@ import { IdleWarningDialog } from "./IdleWarningDialog";
 
 export function IdleLogoutManager() {
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
   const logout = trpc.auth.logout.useMutation();
 
@@ -47,7 +49,7 @@ export function IdleLogoutManager() {
   }, []);
 
   useIdleLogout({
-    enabled: isAuthenticated,
+    ...authQuery(),
     onWarning: handleWarning,
     onLogout: handleLogout,
     onResume: handleResume,

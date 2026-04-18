@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, phone, email, \"loginMethod\", \"termsAcceptedAt\", \"createdAt\" FROM users ORDER BY \"createdAt\" DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, name, phone, email, \"loginMethod\", \"termsAcceptedAt\", \"createdAt\" FROM users ORDER BY \"createdAt\" DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "יעל ביטרן",
+      "phone": "NULL",
+      "email": "yaelbtr@gmail.com",
+      "loginMethod": "loginMethod",
+      "termsAcceptedAt": "termsAcceptedAt",
+      "createdAt": "createdAt"
+    },
+    {
+      "id": "30004",
+      "name": "יעל ביטרן",
+      "phone": "+972559258668",
+      "email": "NULL",
+      "loginMethod": "loginMethod",
+      "termsAcceptedAt": "termsAcceptedAt",
+      "createdAt": "createdAt"
+    },
+    {
+      "id": "120008",
+      "name": "יהודה דוד ביטרן",
+      "phone": "+972504487144",
+      "email": "NULL",
+      "loginMethod": "loginMethod",
+      "termsAcceptedAt": "termsAcceptedAt",
+      "createdAt": "createdAt"
+    },
+    {
+      "id": "482142",
+      "name": "יעל טסט",
+      "phone": "+972548481498",
+      "email": "NULL",
+      "loginMethod": "loginMethod",
+      "termsAcceptedAt": "termsAcceptedAt",
+      "createdAt": "createdAt"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\temail\tloginMethod\ttermsAcceptedAt\tcreatedAt\n1\tיעל ביטרן\tNULL\tyaelbtr@gmail.com\tloginMethod\ttermsAcceptedAt\tcreatedAt\n30004\tיעל ביטרן\t+972559258668\tNULL\tloginMethod\ttermsAcceptedAt\tcreatedAt\n120008\tיהודה דוד ביטרן\t+972504487144\tNULL\tloginMethod\ttermsAcceptedAt\tcreatedAt\n482142\tיעל טסט\t+972548481498\tNULL\tloginMethod\ttermsAcceptedAt\tcreatedAt\n",
+  "stderr": "",
+  "execution_time_ms": 1608
+}

@@ -6,8 +6,9 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=5" />
-    <title>AvodaNow | מצא עבודה או עובדים עכשיו</title>
+    <title>AvodaNow — עבודות זמניות בישראל | מצא עבודה עכשיו</title>
     <meta name="description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך — שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
+    <meta name="keywords" content="עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל" />
     <meta name="theme-color" content="#2e3c0f" />
     <meta name="robots" content="index,follow" />
 
@@ -15,14 +16,14 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AvodaNow" />
     <meta property="og:locale" content="he_IL" />
-    <meta property="og:title" content="AvodaNow | מצא עבודה או עובדים עכשיו" />
+    <meta property="og:title" content="AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות" />
     <meta property="og:description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך — שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
     <meta property="og:url" content="https://avodanow.co.il/" />
     <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AvodaNow | מצא עבודה או עובדים עכשיו" />
+    <meta name="twitter:title" content="AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות" />
     <meta name="twitter:description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך ללא עמלות." />
     <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png" />
 
@@ -41,19 +42,148 @@
     <link rel="dns-prefetch" href="https://api.manus.im" />
 
     <!-- Preload LCP images (RoleSelectionScreen hero cards) from project CDN -->
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker_3978d496.jpg" fetchpriority="high" />
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_41da06bf.jpg" fetchpriority="high" />
+    <!-- Using v2 images: role-worker-v2 (33KB) and role-employer_f597 (37KB) -->
+    <!-- Old images were 309KB and 358KB JPGs — replaced with 10x smaller versions -->
+    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-worker-v2_eb503874.jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/role-employer_f5973684.jpg" fetchpriority="high" />
 
     <!-- Fonts: non-blocking load to avoid render-blocking -->
+    <!-- Step 9 (perf skill): removed weight 300 (unused), reduced Frank Ruhl to 2 weights.
+         Heebo 400-900 covers normal/medium/semibold/bold/extrabold/black.
+         Frank Ruhl Libre 700+900 covers display headings only. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Load fonts asynchronously: media=print trick swaps to all after load -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;500;700;900&display=swap" rel="stylesheet" /></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet" /></noscript>
   </head>
 
   <body dir="rtl">
+    <!--
+      SSR shell: full above-fold layout visible before JS loads.
+      Renders navbar + hero heading + subtitle + CTA immediately on HTML parse.
+      Fades out once React mounts. OUTSIDE #root — no hydration conflict.
+    -->
+    <script>
+      // Route-aware SSR shell: inject correct content based on current pathname
+      // This runs synchronously before React loads, giving instant visual feedback.
+      (function() {
+        var path = window.location.pathname;
+        var NAV_BG = 'oklch(0.22 0.06 84.0)';
+        var PAGE_BG = 'oklch(0.97 0.01 84.0)';
+        var BRAND = 'oklch(0.35 0.1 84.0)';
+        var BRAND_LIGHT = 'oklch(0.92 0.04 84.0)';
+        var TEXT_DARK = 'oklch(0.18 0.05 84.0)';
+        var TEXT_MID = 'oklch(0.42 0.04 84.0)';
+        var HERO_DARK = 'oklch(0.28 0.06 122)';
+        var HERO_DARKER = 'oklch(0.22 0.05 122)';
+        var SKELETON_BG = 'oklch(0.90 0.02 84.0)';
+        var SKELETON_SHINE = 'oklch(0.95 0.01 84.0)';
+
+        // Shared navbar HTML
+        var navbar = '<nav style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.25rem;background:' + NAV_BG + ';height:56px;position:sticky;top:0;z-index:100">'
+          + '<span style="font-size:1.25rem;font-weight:800;color:#fff;letter-spacing:-0.02em">Avoda<span style="color:oklch(0.75 0.15 84.0)">Now</span></span>'
+          + '<div style="width:32px;height:32px;border-radius:50%;background:oklch(0.35 0.08 84.0)"></div>'
+          + '</nav>';
+
+        // Skeleton card factory — shimmer animation for perceived performance
+        function skeletonCard(delay) {
+          var d = delay || 0;
+          return '<div style="background:#fff;border-radius:12px;padding:1rem;margin-bottom:0.75rem;box-shadow:0 1px 4px rgba(0,0,0,0.07);animation:ssr-fade-in 0.3s ease both;animation-delay:' + d + 'ms">'
+            + '<div style="display:flex;gap:0.75rem;align-items:flex-start">'
+            + '<div style="width:44px;height:44px;border-radius:8px;background:' + SKELETON_BG + ';flex-shrink:0"></div>'
+            + '<div style="flex:1">'
+            + '<div style="height:14px;background:' + SKELETON_BG + ';border-radius:4px;width:60%;margin-bottom:8px"></div>'
+            + '<div style="height:12px;background:' + SKELETON_BG + ';border-radius:4px;width:40%;margin-bottom:8px"></div>'
+            + '<div style="height:12px;background:' + SKELETON_BG + ';border-radius:4px;width:75%"></div>'
+            + '</div></div>'
+            + '<div style="display:flex;gap:0.5rem;margin-top:0.75rem">'
+            + '<div style="height:28px;background:' + SKELETON_BG + ';border-radius:6px;flex:1"></div>'
+            + '<div style="height:28px;background:' + SKELETON_BG + ';border-radius:6px;flex:1"></div>'
+            + '</div>'
+            + '</div>';
+        }
+
+        var content = '';
+
+        if (path === '/find-jobs' || path.startsWith('/find-jobs?')) {
+          // FindJobs shell: dark hero + title + filter chips + skeleton cards
+          content = navbar
+            + '<div style="background:linear-gradient(135deg,' + HERO_DARK + ' 0%,' + HERO_DARKER + ' 100%);padding:1.5rem 1.25rem 2rem;min-height:220px">'
+            + '<h1 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 0.5rem;font-family:Frank Ruhl Libre,Heebo,serif">משרות זמינות</h1>'
+            + '<p style="color:rgba(255,255,255,0.75);font-size:0.9rem;margin:0 0 1.25rem">חפש עבודה זמנית קרוב אליך</p>'
+            + '<div style="display:flex;gap:0.5rem;overflow-x:auto;padding-bottom:0.5rem;scrollbar-width:none">'
+            + '<div style="background:rgba(255,255,255,0.15);border-radius:9999px;padding:0.35rem 0.85rem;font-size:0.8rem;color:#fff;white-space:nowrap;border:1px solid rgba(255,255,255,0.25)">📍 קרוב אלי</div>'
+            + '<div style="background:rgba(255,255,255,0.15);border-radius:9999px;padding:0.35rem 0.85rem;font-size:0.8rem;color:#fff;white-space:nowrap;border:1px solid rgba(255,255,255,0.25)">⚡ דחוף</div>'
+            + '<div style="background:rgba(255,255,255,0.15);border-radius:9999px;padding:0.35rem 0.85rem;font-size:0.8rem;color:#fff;white-space:nowrap;border:1px solid rgba(255,255,255,0.25)">🗂 קטגוריה</div>'
+            + '<div style="background:rgba(255,255,255,0.15);border-radius:9999px;padding:0.35rem 0.85rem;font-size:0.8rem;color:#fff;white-space:nowrap;border:1px solid rgba(255,255,255,0.25)">📅 תאריך</div>'
+            + '</div>'
+            + '</div>'
+            + '<div style="max-width:640px;margin:0 auto;padding:1rem 1.25rem">'
+            + skeletonCard(0) + skeletonCard(60) + skeletonCard(120) + skeletonCard(180) + skeletonCard(240)
+            + '</div>';
+        } else if (path === '/available-workers' || path.startsWith('/available-workers')) {
+          // AvailableWorkers shell
+          content = navbar
+            + '<div style="background:linear-gradient(135deg,' + HERO_DARK + ' 0%,' + HERO_DARKER + ' 100%);padding:1.5rem 1.25rem 2rem">'
+            + '<h1 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 0.5rem;font-family:Frank Ruhl Libre,Heebo,serif">עובדים זמינים</h1>'
+            + '<p style="color:rgba(255,255,255,0.75);font-size:0.9rem;margin:0">עובדים הזמינים לעבודה עכשיו</p>'
+            + '</div>'
+            + '<div style="max-width:640px;margin:0 auto;padding:1rem 1.25rem">'
+            + skeletonCard() + skeletonCard() + skeletonCard() + skeletonCard()
+            + '</div>';
+        } else {
+          // Default homepage shell
+          content = navbar
+            + '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem 2rem;text-align:center;min-height:calc(100vh - 56px)">'
+            + '<div style="display:inline-block;padding:0.35rem 1rem;background:' + BRAND_LIGHT + ';border-radius:9999px;font-size:0.8rem;font-weight:600;color:' + BRAND + ';margin-bottom:1.25rem">הפלטפורמה לעבודות זמניות בישראל ⚡</div>'
+            + '<h1 style="font-size:clamp(2rem,6vw,3rem);font-weight:900;color:' + TEXT_DARK + ';line-height:1.15;margin:0 0 1rem;max-width:600px">מצא עבודה<br/>או עובדים עכשיו</h1>'
+            + '<p style="font-size:clamp(1rem,2.5vw,1.2rem);color:' + TEXT_MID + ';margin:0 0 2rem;max-width:440px;line-height:1.6">חיבור ישיר בין עובדים למעסיקים — ללא עמלות, ללא מתווכים</p>'
+            + '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center">'
+            + '<a href="/find-jobs" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:' + BRAND + ';color:#fff;border-radius:9999px;font-size:1rem;font-weight:700;text-decoration:none">מצא עבודה עכשיו ←</a>'
+            + '<a href="/post-job" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:transparent;color:' + BRAND + ';border:2px solid ' + BRAND + ';border-radius:9999px;font-size:1rem;font-weight:700;text-decoration:none">פרסם משרה</a>'
+            + '</div>'
+            + '<div style="margin-top:2.5rem;display:flex;align-items:center;gap:0.5rem;color:oklch(0.6 0.03 84.0);font-size:0.85rem">'
+            + '<span style="width:14px;height:14px;border:2px solid oklch(0.8 0.03 84.0);border-top-color:oklch(0.45 0.08 84.0);border-radius:50%;display:inline-block;animation:ssr-spin 0.8s linear infinite"></span>'
+            + 'טוען...'
+            + '</div>'
+            + '</div>';
+        }
+
+        var shell = document.createElement('div');
+        shell.id = 'ssr-shell';
+        shell.setAttribute('aria-hidden', 'true');
+        shell.style.cssText = 'position:fixed;inset:0;z-index:9999;background:' + PAGE_BG + ';font-family:Heebo,system-ui,sans-serif;direction:rtl;overflow-y:auto';
+        shell.innerHTML = content;
+        document.body.insertBefore(shell, document.body.firstChild);
+      })();
+    </script>
     <div id="root"></div>
+    <style>
+      @keyframes ssr-spin { to { transform: rotate(360deg); } }
+      @keyframes ssr-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes ssr-shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+    </style>
+    <script>
+      // Remove SSR shell once React mounts into #root.
+      // Shell is now OUTSIDE #root so no hydration conflict with createRoot.
+      (function() {
+        var root = document.getElementById('root');
+        var observer = new MutationObserver(function() {
+          var shell = document.getElementById('ssr-shell');
+          if (shell && root && root.children.length > 0) {
+            shell.style.opacity = '0';
+            shell.style.transition = 'opacity 0.2s';
+            setTimeout(function() { shell && shell.remove(); }, 200);
+            observer.disconnect();
+          }
+        });
+        if (root) observer.observe(root, { childList: true, subtree: false });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Analytics script is injected dynamically by CookieConsentBanner only when analyticsConsent=true -->
   </body>

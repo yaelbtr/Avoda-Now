@@ -1,0 +1,8 @@
+{
+  "query": "SELECT a.id, a.status, a.\"contactRevealed\", u.name as worker_name FROM applications a JOIN users u ON u.id = a.\"workerId\" WHERE u.name ILIKE '%נחמה%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT a.id, a.status, a.\"contactRevealed\", u.name as worker_name FROM applications a JOIN users u ON u.id = a.\"workerId\" WHERE u.name ILIKE '%נחמה%' LIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near \"\"contactRevealed\", u.name as worker_name FROM applications a JOIN users u ON u.id = a.\"workerId\" WHERE u.name ILIKE '%נחמה%' LIMIT 10\""
+  ]
+}

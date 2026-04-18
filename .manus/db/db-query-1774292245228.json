@@ -1,0 +1,24 @@
+{
+  "query": "\nSELECT\n  TABLE_NAME AS child_table,\n  COLUMN_NAME AS child_column,\n  CONSTRAINT_NAME,\n  REFERENCED_TABLE_NAME AS parent_table,\n  REFERENCED_COLUMN_NAME AS parent_column\nFROM information_schema.KEY_COLUMN_USAGE\nWHERE REFERENCED_TABLE_NAME = 'jobs'\n  AND TABLE_SCHEMA = DATABASE();\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \nSELECT\n  TABLE_NAME AS child_table,\n  COLUMN_NAME AS child_column,\n  CONSTRAINT_NAME,\n  REFERENCED_TABLE_NAME AS parent_table,\n  REFERENCED_COLUMN_NAME AS parent_column\nFROM information_schema.KEY_COLUMN_USAGE\nWHERE REFERENCED_TABLE_NAME = 'jobs'\n  AND TABLE_SCHEMA = DATABASE();\n",
+  "rows": [
+    {
+      "child_table": "applications",
+      "child_column": "jobId",
+      "CONSTRAINT_NAME": "applications_jobId_jobs_id_fk",
+      "parent_table": "jobs",
+      "parent_column": "id"
+    },
+    {
+      "child_table": "notification_batches",
+      "child_column": "jobId",
+      "CONSTRAINT_NAME": "notification_batches_jobId_jobs_id_fk",
+      "parent_table": "jobs",
+      "parent_column": "id"
+    }
+  ],
+  "messages": [],
+  "stdout": "child_table\tchild_column\tCONSTRAINT_NAME\tparent_table\tparent_column\napplications\tjobId\tapplications_jobId_jobs_id_fk\tjobs\tid\nnotification_batches\tjobId\tnotification_batches_jobId_jobs_id_fk\tjobs\tid\n",
+  "stderr": "",
+  "execution_time_ms": 1685
+}

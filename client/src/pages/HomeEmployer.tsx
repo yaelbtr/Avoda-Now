@@ -5,15 +5,18 @@ import { motion, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil,
-  Star, Clock, MapPin,
+  Star, Clock, MapPin, Bell, BellOff, Search,
 } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
 import { CarouselSkeletonRow } from "@/components/JobCardSkeleton";
+import BelowFold from "@/components/BelowFold";
 
 // Hook: counts UP from 0 to endValue over duration ms when triggered
 function useCountUp(endValue: number, duration: number, triggered: boolean) {
@@ -37,35 +40,37 @@ function useCountUp(endValue: number, duration: number, triggered: boolean) {
 /* ── How it works steps ───────────────────────────────────────────── */
 const HOW_IT_WORKS_EMPLOYER = [
   {
-    step: "1", title: "פרסם צורך", icon: Plus,
-    desc: "ניקיון, אירוע, תיקון ועוד — פרסם בדיוק מה אתה צריך",
+    step: "01",
+    title: "פרסם מודעה",
+    desc: "פרסם מודעה בקטגוריה הרצויה.",
     imgUrl: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=200&q=80",
     reverse: false,
   },
   {
-    step: "2", title: "קבל פניות", icon: Phone,
-    desc: "עובדים זמינים באזורך רואים את הצורך ופונים אליך ישירות — תוך דקות",
+    step: "02",
+    title: "קבל הצעות מעובדים או בחר בעצמך",
+    desc: "המערכת תסנן עבורך עובדים מתאימים, תוכל לבחור עובד או לקבל הצעות מעובדים.",
     imgUrl: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=200&q=80",
     reverse: true,
   },
   {
-    step: "3", title: "בחר עובד", icon: CheckCircle2,
-    desc: "סגור ישיר בוואטסאפ או בטלפון — העובד מגיע ומתחיל את העבודה",
+    step: "03",
+    title: "קבל אישור וצור קשר",
+    desc: "לאחר שהעובד מאשר את ההצעה, תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.",
     imgUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=200&q=80",
     reverse: false,
   },
 ];
 
 /* ── Stats row ────────────────────────────────────────────────────── */
-function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number }) {
+function StatsRow({ activeJobs, workers, registeredWorkers }: { activeJobs: number; workers: number; registeredWorkers: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
   const animJobs = useCountUp(activeJobs, 1200, inView);
-  const animWorkers = useCountUp(workers, 1000, inView);
+  const animRegistered = useCountUp(registeredWorkers, 1000, inView);
   const stats = [
-    { label: "ללא עמלות", value: "100%", icon: CheckCircle2 },
-    { label: "עובדים זמינים", value: workers > 0 ? `${animWorkers}+` : "1+", icon: Users },
-    { label: "משרות פעילות", value: activeJobs > 0 ? String(animJobs) : "0", icon: Briefcase },
+    { label: "עובדים רשומים", value: registeredWorkers > 0 ? `${animRegistered}+` : "1+", icon: Users },
+    { label: "זמין תמיד", value: "24/7", icon: Clock },
   ];
   return (
     <motion.div
@@ -111,7 +116,8 @@ function StatsRow({ activeJobs, workers }: { activeJobs: number; workers: number
 export default function HomeEmployer() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const { resetUserMode } = useUserMode();
+  const { resetUserMode, userMode } = useUserMode();
+  const authQuery = useAuthQuery();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [userLat, setUserLat] = useState<number | null>(null);
@@ -122,7 +128,7 @@ export default function HomeEmployer() {
 
   useSEO({
     title: "מעסיקים — קבל עובדים תוך דקות",
-    description: "הפלטפורמה לעבודות זמניות בישראל. פרסם משרה וקבל עובדים זמינים באזורך ישירות ללא עמלות.",
+    description: "הפלטפורמה לעבודות זמניות בישראל. פרסם מודעה וקבל עובדים זמינים באזורך ישירות ללא עמלות.",
     canonical: "/",
   });
 
@@ -157,32 +163,52 @@ export default function HomeEmployer() {
   const requireLogin = (msg: string) => { saveReturnPath(); setLoginMessage(msg); setLoginOpen(true); };
 
   const handlePostJob = () => {
-    if (!isAuthenticated) { requireLogin("כדי לפרסם משרה יש להתחבר למערכת"); return; }
+    if (!isAuthenticated) { requireLogin("כדי לפרסם מודעה יש להתחבר למערכת"); return; }
     navigate("/post-job");
   };
 
-  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, { enabled: isAuthenticated });
-  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myJobsQuery = trpc.jobs.myJobs.useQuery(undefined, authQuery());
+  const pendingAppsQuery = trpc.jobs.totalPendingApplications.useQuery(undefined, authQuery());
+  const push = usePushNotifications();
   const pendingCount = pendingAppsQuery.data?.total ?? 0;
+  // Load employer profile to use saved workerSearchLatitude/Longitude as fallback
+  const isEmployer = isAuthenticated && userMode === "employer";
+  const employerProfileQuery = trpc.user.getEmployerProfile.useQuery(undefined, {
+    enabled: authQuery({ enabled: userMode === "employer" }).enabled,
+    staleTime: 60_000,
+  });
+  const savedLat = isEmployer && employerProfileQuery.data?.workerSearchLatitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLatitude)
+    : null;
+  const savedLng = isEmployer && employerProfileQuery.data?.workerSearchLongitude
+    ? parseFloat(employerProfileQuery.data.workerSearchLongitude)
+    : null;
+  // Use employer's saved search radius (fallback to 20km)
+  const savedRadiusKm = isEmployer ? (employerProfileQuery.data?.workerSearchRadiusKm ?? 20) : 20;
+  // Priority: live GPS > employer saved location > Jerusalem default
+  const effectiveLat = userLat ?? savedLat ?? 31.7683;
+  const effectiveLng = userLng ?? savedLng ?? 35.2137;
   const workersQuery = trpc.workers.nearby.useQuery(
-    { lat: userLat ?? 31.7683, lng: userLng ?? 35.2137, radiusKm: 20, limit: 8 },
+    { lat: effectiveLat, lng: effectiveLng, radiusKm: savedRadiusKm, limit: 8 },
     { staleTime: 60_000 }
   );
+
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60_000 });
+  const registeredWorkers = heroStatsQuery.data?.registeredWorkers ?? 0;
 
   const myJobs = myJobsQuery.data ?? [];
   const workers = workersQuery.data ?? [];
   const activeJobs = myJobs.filter((j) => j.status === "active").length;
 
   return (
-    <div dir="rtl" className="min-h-screen" style={{ background: "var(--page-bg)" }}>
+    <div dir="rtl" data-testid="home-employer" className="min-h-screen" style={{ background: "var(--page-bg)" }}>
 
       {/* ── MOBILE Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden md:hidden" style={{ minHeight: "480px" }}>
         {/* Background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt=""
-          aria-hidden="true"
+          alt="מעסיק מוצא עובדים זמינים דרך AvodaNow"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -223,7 +249,7 @@ export default function HomeEmployer() {
             className="text-[32px] leading-[1.15] font-black mb-2"
             style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.70)" }}
           >
-            צריך עובד לבית?<br />
+            צריך עובד זמני לבית או לעסק?<br />
             <span style={{ color: "oklch(0.88 0.18 70)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.4)" }}>קבל אחד תוך דקות</span>
           </motion.h1>
 
@@ -240,7 +266,7 @@ export default function HomeEmployer() {
 
       {/* Mobile Stats + CTA */}
       <div className="relative z-10 flex flex-col items-center text-center px-5 pt-4 pb-6 md:hidden" style={{ backgroundColor: "var(--page-bg)" }}>
-        <StatsRow activeJobs={activeJobs} workers={workers.length} />
+        <StatsRow activeJobs={activeJobs} workers={workers.length} registeredWorkers={registeredWorkers} />
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
           className="w-full flex flex-col gap-3"
@@ -258,7 +284,7 @@ export default function HomeEmployer() {
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Zap size={15} />
-            פרסם צורך עכשיו
+            פרסם עכשיו
             <motion.span
               animate={{ x: [0, -5, 0] }}
               transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
@@ -267,25 +293,87 @@ export default function HomeEmployer() {
               <ChevronLeft size={16} style={{ opacity: 0.9 }} />
             </motion.span>
           </motion.button>
-          <motion.button
-            onClick={() => navigate("/available-workers")}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
-            style={{
-              background: "white",
-              border: "1px solid oklch(0.89 0.05 84.0)",
-              color: "oklch(0.35 0.08 122)",
-              boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <Users size={14} />
-            עובדים זמינים עכשיו
-          </motion.button>
         </motion.div>
       </div>
 
+      {/* ── How it works ─────────────────────────────────────────────────────────── */}
+      <section
+        className="relative z-10 mx-6 mb-12 rounded-[28px] p-7 max-w-lg"
+        style={{
+          background: "white",
+          boxShadow: "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+          border: "none",
+          marginTop: "8px",
+        }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-7">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}>
+            <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>איך זה עובד</h3>
+            <p className="text-[12px] font-medium mt-0.5" style={{ color: "var(--text-secondary)" }}>מצא עובדים זמניים בשלושה צעדים פשוטים</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 mb-8">
+          {HOW_IT_WORKS_EMPLOYER.map(({ step, title, desc, imgUrl, reverse }, idx) => (
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: reverse ? -24 : 24, y: 12 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
+              whileHover={{ y: -3, boxShadow: "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)" }}
+              whileTap={{ scale: 0.98 }}
+              className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
+              style={{
+                background: "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
+                border: "1px solid oklch(0.89 0.05 84.0)",
+              }}
+            >
+              <div
+                className="flex-shrink-0 w-24 h-20 text-center text-[72px] font-black leading-none select-none flex items-center justify-center"
+                style={{
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  backgroundImage: `url("${imgUrl}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.85)",
+                } as React.CSSProperties}
+              >
+                {step}
+              </div>
+              <div className="flex-1 text-right">
+                <h4 className="text-[15px] font-black mb-1" style={{ color: "var(--brand)" }}>{title}</h4>
+                <p className="text-[12px] font-medium leading-relaxed" style={{ color: "var(--text-secondary)" }}>{desc}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="text-center text-[12px] font-medium mb-6" style={{ color: "var(--text-secondary)" }}>
+          התשלום מתבצע ישירות בינך לבין העובד.
+        </p>
+
+        <motion.button
+          onClick={() => navigate("/post-job")}
+          whileHover={{ scale: 1.01, backgroundColor: "oklch(0.96 0.02 122.3)" }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center justify-center gap-3 px-10 py-3.5 rounded-2xl text-[14px] font-bold transition-all"
+          style={{
+            background: "white",
+            color: "oklch(0.35 0.08 122)",
+            border: "1.5px solid oklch(0.82 0.06 122 / 0.5)",
+            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.08)",
+          }}
+        >
+          <Search className="h-4 w-4" style={{ color: "oklch(0.35 0.08 122)" }} />
+          פרסם מודעה עכשיו
+        </motion.button>
+      </section>
       {/* ── DESKTOP Hero ────────────────────────────────────────────── */}
       <section
         className="relative z-10 overflow-hidden hidden md:block"
@@ -293,8 +381,7 @@ export default function HomeEmployer() {
       >
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt=""
-          aria-hidden="true"
+          alt="מעסיק מוצא עובדים זמינים דרך AvodaNow"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -352,7 +439,7 @@ export default function HomeEmployer() {
             ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
           </motion.p>
 
-          <StatsRow activeJobs={activeJobs} workers={workers.length} />
+          <StatsRow activeJobs={activeJobs} workers={workers.length} registeredWorkers={registeredWorkers} />
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
@@ -411,7 +498,7 @@ export default function HomeEmployer() {
       </section>
 
       {/* ── Pending Applications Banner ─────────────────────────────── */}
-      {isAuthenticated && myJobs.length > 0 && (
+      {isAuthenticated && activeJobs > 0 && (
         <motion.button
           dir="rtl"
           onClick={() => navigate("/my-jobs")}
@@ -459,7 +546,7 @@ export default function HomeEmployer() {
               )}
             </div>
             <p className="text-[11px] font-medium mt-0.5" style={{ color: "oklch(0.85 0.06 80 / 0.75)" }}>
-              {pendingCount > 0 ? `${pendingCount} מועמדויות ממתינות לסקירה` : "לחץ לניהול המשרות ומועמדויות"}
+              {pendingCount > 0 ? `${pendingCount} מועמדויות ממתינות לסקירה` : "לחץ לניהול המודעות ומועמדויות"}
             </p>
           </div>
           <ChevronLeft className="h-4 w-4 flex-shrink-0" style={{ color: "oklch(0.85 0.08 80 / 0.70)", transform: "rotate(180deg)" }} />
@@ -483,15 +570,15 @@ export default function HomeEmployer() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
-              <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום משרה</span>
+              <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>פרסום מודעה</span>
             </div>
-            {isAuthenticated && myJobs.length > 0 && (
+            {isAuthenticated && activeJobs > 0 && (
               <button
                 onClick={() => navigate("/my-jobs")}
                 className="text-[12px] font-semibold px-3 py-1 rounded-full"
                 style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
               >
-                המשרות שלי
+                המודעות שלי
               </button>
             )}
           </div>
@@ -514,9 +601,9 @@ export default function HomeEmployer() {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 text-right">
-              <p className="text-[15px] font-black text-white leading-tight">פרסם משרה דחופה</p>
+              <p className="text-[15px] font-black text-white leading-tight">פרסם מודעה דחופה</p>
               <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
-                עובדים יפנו אליך תוך דקות — ללא עמלות
+                עובדים זמינים יפנו אליך תוך דקות
               </p>
             </div>
             <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
@@ -557,7 +644,7 @@ export default function HomeEmployer() {
                   <Briefcase className="h-4 w-4" style={{ color: "var(--amber)" }} />
                 </div>
                 <div>
-                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>המשרות שלי</p>
+                  <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>המודעות שלי</p>
                   <p className="text-[10px]" style={{ color: "oklch(0.58 0.03 91)" }}>ניהול ומועמדויות</p>
                 </div>
               </button>
@@ -682,7 +769,7 @@ export default function HomeEmployer() {
           >
             <div className="flex items-center gap-2">
               <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
-              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המשרות שלי</h2>
+              <h2 className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>המודעות שלי</h2>
             </div>
             <button
               onClick={() => navigate("/my-jobs")}
@@ -708,8 +795,8 @@ export default function HomeEmployer() {
                 >
                   <Briefcase className="h-7 w-7" style={{ color: "oklch(0.45 0.08 122)" }} />
                 </div>
-                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת משרות</p>
-                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם משרה ראשונה וקבל מועמדים תוך דקות</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: "oklch(0.28 0.06 122)" }}>עדיין לא פרסמת מודעות</p>
+                <p className="text-xs mb-4" style={{ color: "oklch(0.58 0.03 100)" }}>פרסם מודעה ראשונה וקבל מועמדים תוך דקות</p>
                 <motion.button
                   onClick={handlePostJob}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl font-bold text-[13px]"
@@ -722,7 +809,7 @@ export default function HomeEmployer() {
                   whileTap={{ scale: 0.97 }}
                 >
                   <Plus size={14} />
-                  פרסם משרה ראשונה
+                  פרסם מודעה ראשונה
                 </motion.button>
               </div>
             ) : (
@@ -836,13 +923,54 @@ export default function HomeEmployer() {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
                   <Plus size={14} />
-                  פרסם משרה חדשה
+                  פרסם מודעה חדשה
                 </motion.button>
               </div>
             )}
           </div>
         </section>
       )}
+
+      {/* Step 8 (perf skill): defer below-fold SEO sections until browser is idle */}
+      <BelowFold minHeight="200px" rootMargin="400px 0px">
+      {/* SEO internal links */}
+      <section dir="rtl"
+        className="relative z-10"
+        style={{
+          background: "oklch(0.98 0.008 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 16px 24px",
+        }}
+      >
+        <div className="max-w-lg mx-auto">
+          <p className="text-[13px] font-black mb-3" style={{ color: "var(--brand)" }}>🧹 שירותי בית וניקיון</p>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { label: "מנקה לבית", href: "/מנקה-לבית" },
+              { label: "עוזרת בית", href: "/עוזרת-בית" },
+              { label: "דרושה מנקה מהיום", href: "/דרושה-מנקה-מהיום" },
+              { label: "כמה עולה עוזרת בית?", href: "/כמה-עולה-עוזרת-בית" },
+              { label: "מנקה לבית חד פעמי", href: "/מנקה-לבית-חד-פעמי" },
+            ] as const).map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex items-center gap-1 rounded-full text-[12px] font-semibold px-3 py-1.5 transition-all"
+                style={{
+                  background: "oklch(0.93 0.03 122)",
+                  color: "var(--brand)",
+                  border: "1px solid oklch(0.87 0.05 122)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.88 0.06 122)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.03 122)"; }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── Worker CTA banner (mirrors HomeWorker's employer banner) ── */}
       <section
@@ -894,6 +1022,19 @@ export default function HomeEmployer() {
             ←
           </div>
         </div>
+      </section>
+
+      </BelowFold>
+
+      {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
+      <section dir="rtl" className="px-4 py-6 border-t border-gray-100">
+        <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים למעסיקים</h2>
+        <ul className="flex flex-col gap-2">
+          <li><a href="/guide/איך-לפרסם-משרה" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לפרסם משרה שתגיע לעובדים הנכונים?</a></li>
+          <li><a href="/guide/איך-לבחור-עובד-אמין" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לבחור עובד אמין לעבודה זמנית?</a></li>
+          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו מול קבוצות פייסבוק — מה יותר יעיל?</a></li>
+          <li><a href="/for/מעסיקים" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו למעסיקים — כל מה שצריך לדעת</a></li>
+        </ul>
       </section>
 
             <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />

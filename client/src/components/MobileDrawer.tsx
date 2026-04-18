@@ -5,6 +5,7 @@ import {
   RefreshCw, RotateCcw, Shield, LogOut, X, Mail, FileText, ShieldCheck, AlertTriangle, Accessibility,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { trpc } from "@/lib/trpc";
@@ -34,6 +35,7 @@ const ITEM = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl t
 export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen }: MobileDrawerProps) {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const authQuery = useAuthQuery();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
 
@@ -44,13 +46,13 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
   }, []);
 
   const { data: profileData } = trpc.user.getProfile.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 60_000,
   });
   const profilePhoto = profileData?.profilePhoto ?? null;
 
   const { data: savedIdsData } = trpc.savedJobs.getSavedIds.useQuery(undefined, {
-    enabled: isAuthenticated && userMode === "worker",
+    ...authQuery({ enabled: userMode === "worker" }),
     staleTime: 30_000,
   });
   const savedJobsCount = savedIdsData?.ids?.length ?? 0;
@@ -58,7 +60,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
   const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
     { lastSeenAt },
     {
-      enabled: isAuthenticated && userMode === "worker",
+      ...authQuery({ enabled: userMode === "worker" }),
       refetchInterval: 60_000,
       staleTime: 30_000,
     }
@@ -243,7 +245,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
                 <ul className="px-2 py-1 flex flex-col gap-0.5 list-none m-0 p-0" aria-label="פעולות חשבון">
                   {isAuthenticated && (
                     <li>
-                    <Link href={userMode === "employer" ? "/my-jobs" : "/worker-profile"} className="block">
+                    <Link href={userMode === "employer" ? "/employer-profile" : "/worker-profile"} className="block">
                       <span className={ITEM} style={{ color: COLOR, border: "1px solid transparent", borderRadius: "0.75rem" }} onClick={() => setTimeout(onClose, 150)}>
                         <User className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1">אזור אישי</span>

@@ -12,9 +12,10 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { MapPin, Loader2, X } from "lucide-react";
+import { MapPin, Loader2, X, AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
+import { validateCityName } from "../../../shared/cityValidation";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,7 +31,8 @@ interface Suggestion {
 interface CityAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect: (city: string, lat: number, lng: number) => void;
+  /** Called when user selects a city. placeId is provided when the result came from Google Places. */
+  onSelect: (city: string, lat: number, lng: number, placeId?: string) => void;
   placeholder?: string;
   className?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -70,6 +72,7 @@ export default function CityAutocomplete({
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [mapsReady, setMapsReady] = useState(false);
   const [googleSuggestions, setGoogleSuggestions] = useState<Suggestion[]>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
   const geocoder = useRef<google.maps.Geocoder | null>(null);
@@ -184,6 +187,15 @@ export default function CityAutocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     onChange(v);
+    // Validate inline — only show error once the user has typed enough to be
+    // clearly entering an address (≥ 4 chars), to avoid false positives on
+    // partial city names.
+    if (v.trim().length >= 4) {
+      const { error } = validateCityName(v);
+      setValidationError(error);
+    } else {
+      setValidationError(null);
+    }
     if (!v.trim()) {
       setShowDropdown(false);
       setGoogleSuggestions([]);
@@ -197,12 +209,14 @@ export default function CityAutocomplete({
   // ── Select suggestion ─────────────────────────────────────────────────────
   const handleSelectSuggestion = (suggestion: Suggestion) => {
     onChange(suggestion.nameHe);
+    setValidationError(null); // selection from dropdown is always valid
     setShowDropdown(false);
     setGoogleSuggestions([]);
 
     // If we have DB lat/lng, use them immediately
+    // Still pass placeId if available (from Google Places) so callers can store it for matching.
     if (suggestion.lat != null && suggestion.lng != null) {
-      onSelect(suggestion.nameHe, suggestion.lat, suggestion.lng);
+      onSelect(suggestion.nameHe, suggestion.lat, suggestion.lng, suggestion.placeId);
       return;
     }
 
@@ -210,7 +224,7 @@ export default function CityAutocomplete({
     if (suggestion.placeId) {
       const cached = getCachedGeo(suggestion.placeId);
       if (cached) {
-        onSelect(cached.city, cached.lat, cached.lng);
+        onSelect(cached.city, cached.lat, cached.lng, suggestion.placeId);
         return;
       }
       if (geocoder.current) {
@@ -219,13 +233,13 @@ export default function CityAutocomplete({
             const loc = results[0].geometry.location;
             const result: GeoResult = { city: suggestion.nameHe, lat: loc.lat(), lng: loc.lng() };
             setCachedGeo(suggestion.placeId!, result);
-            onSelect(result.city, result.lat, result.lng);
+            onSelect(result.city, result.lat, result.lng, suggestion.placeId);
           }
         });
       }
     } else {
       // No lat/lng available at all — pass 0,0 as fallback
-      onSelect(suggestion.nameHe, 0, 0);
+      onSelect(suggestion.nameHe, 0, 0, undefined);
     }
   };
 
@@ -250,6 +264,7 @@ export default function CityAutocomplete({
 
   const handleClear = () => {
     onChange("");
+    setValidationError(null);
     setShowDropdown(false);
     setGoogleSuggestions([]);
     inputRef.current?.focus();
@@ -270,9 +285,11 @@ export default function CityAutocomplete({
             if (suggestions.length > 0 && trimmedQuery.length >= 1) setShowDropdown(true);
           }}
           placeholder={placeholder}
-          className={`pr-10 text-right text-sm ${value ? "pl-8" : ""}`}
+          className={`pr-10 text-right text-sm ${value ? "pl-8" : ""} ${validationError ? "border-destructive focus-visible:ring-destructive/30" : ""}`}
           autoComplete="off"
           dir="rtl"
+          aria-invalid={!!validationError}
+          aria-describedby={validationError ? "city-validation-error" : undefined}
         />
         {loading ? (
           <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -320,12 +337,25 @@ export default function CityAutocomplete({
       )}
 
       {/* No results hint */}
-      {showDropdown && trimmedQuery.length >= 1 && suggestions.length === 0 && !loading && (
+      {showDropdown && trimmedQuery.length >= 1 && suggestions.length === 0 && !loading && !validationError && (
         <div
           className="absolute z-50 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-lg px-4 py-3 text-sm text-muted-foreground text-right"
           dir="rtl"
         >
           לא נמצאה עיר בשם &ldquo;{trimmedQuery}&rdquo;
+        </div>
+      )}
+
+      {/* Address-like input validation error */}
+      {validationError && (
+        <div
+          id="city-validation-error"
+          role="alert"
+          className="flex items-center gap-1.5 mt-1.5 text-xs text-destructive text-right"
+          dir="rtl"
+        >
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>{validationError}</span>
         </div>
       )}
     </div>

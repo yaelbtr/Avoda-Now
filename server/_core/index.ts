@@ -3,6 +3,7 @@ import compression from "compression";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -16,9 +17,10 @@ import {
   otpRateLimit,
   botDetection,
   antiEnumeration,
+  trpcPathTraversalGuard,
 } from "../security";
 import { makeRequest } from "./map";
-import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty } from "../db";
+import { getWorkersWithExpiringAvailability, markAvailabilityReminderSent, getJobCountByCityAndCategory, getActiveJobs, seedRegionsIfEmpty, logEvent } from "../db";
 import { sendSms } from "../sms";
 import { scheduleDailyBackup } from "../backup";
 import { assertDbHealth } from "../dbHealthCheck";
@@ -49,8 +51,18 @@ async function startServer() {
   // ── Trust proxy: required for accurate IP detection behind load balancers ───
   app.set("trust proxy", 1);
 
-  // ── Compression: gzip/brotli for all text responses (JSON, HTML, XML) ──────
-  app.use(compression({ threshold: 1024 })); // only compress responses > 1KB
+  // ── Compression: gzip for text responses (JSON, HTML, CSS, JS, XML, SVG) ────
+  // Step 9 (perf skill): level 6 = best speed/size trade-off for Node.js.
+  // threshold: 1024 bytes — skip tiny responses where overhead exceeds savings.
+  // filter: only compress text-based content types to avoid double-compressing images.
+  app.use(compression({
+    threshold: 1024,
+    level: 6,
+    filter: (req, res) => {
+      const type = (res.getHeader("Content-Type") as string | undefined) ?? "";
+      return /text|json|javascript|xml|svg/.test(type);
+    },
+  }));
 
   // ── CORS: restrict cross-origin requests to allowed origins ─────────────────────
   app.use(corsMiddleware);
@@ -64,12 +76,17 @@ async function startServer() {
     next();
   });
 
-  // ── Body size limit: 8mb for photo upload, 10kb for all other API routes ───
+  // ── Body size limit: 8mb for photo upload, 5mb for tRPC (job posts with images) ──
   app.use("/api/upload-photo", express.json({ limit: "8mb" }));
-  app.use("/api/trpc", express.json({ limit: "10kb" }));
-  app.use("/api/trpc", express.urlencoded({ limit: "10kb", extended: true }));
+  app.use("/api/trpc", express.json({ limit: "5mb" }));
+  app.use("/api/trpc", express.urlencoded({ limit: "5mb", extended: true }));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // ── Path Traversal Guard (CWE-22): must be first on /api/trpc ───────────────
+  // Blocks traversal sequences in procedure names and input params before any
+  // other middleware processes the request. Fixes OWASP ZAP High finding.
+  app.use("/api/trpc", trpcPathTraversalGuard);
 
   // ── Global rate limit: 60 req/min per IP ─────────────────────────────────
   app.use("/api/trpc", globalRateLimit);
@@ -123,6 +140,33 @@ async function startServer() {
     } catch (err) {
       console.error("[upload-photo]", err);
       res.status(500).json({ error: "Upload failed" });
+    }
+  });
+
+  // ── Job image upload endpoint (8mb limit, auth required, no DB update) ──────
+  const jobImageUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 8 * 1024 * 1024 }, // 8mb hard limit (client enforces 4mb)
+    fileFilter: (_req, file, cb) => {
+      if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) cb(null, true);
+      else cb(new Error("Unsupported image type"));
+    },
+  });
+
+  app.post("/api/upload-job-image", jobImageUpload.single("image"), async (req, res) => {
+    try {
+      const { sdk: sdkInstance } = await import("./sdk");
+      const authUser = await sdkInstance.authenticateRequest(req).catch(() => null);
+      if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+      if (!req.file) return res.status(400).json({ error: "No image file provided" });
+      const { storagePut } = await import("../storage");
+      const ext = req.file.mimetype === "image/png" ? "png" : req.file.mimetype === "image/webp" ? "webp" : "jpg";
+      const key = `job-images/${authUser.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype);
+      return res.json({ url });
+    } catch (err) {
+      console.error("[upload-job-image]", err);
+      return res.status(500).json({ error: "Upload failed" });
     }
   });
 
@@ -225,7 +269,79 @@ async function startServer() {
     for (const slug of BEST_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/best/${slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
+    // Hebrew keyword SEO landing pages — priority 0.9 (just below homepage)
+    const KEYWORD_SLUGS = [
+      "עבודה-זמנית",
+      "עבודה-מיידית",
+      "עבודות-מזדמנות",
+      "עבודה-עונתית",
+      "עבודה-לסטודנטים",
+      "עבודה-לנוער",
+      "משרות-זמניות",
+      "מנקה-לבית",
+      "עוזרת-בית",
+      "דרושה-מנקה-מהיום",
+      "כמה-עולה-עוזרת-בית",
+      "מנקה-לבית-חד-פעמי",
+    ];
+    for (const slug of KEYWORD_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/${encodeURIComponent(slug)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`);
+    }
+    // City-specific keyword landing pages: /עבודה-זמנית/:city — priority 0.8
+    const CITY_LANDING_SLUGS = [
+      "תל-אביב",
+      "חיפה",
+      "ירושלים",
+      "ראשון-לציון",
+      "באר-שבע",
+      "נתניה",
+      "אשדוד",
+      "פתח-תקווה",
+      "חולון",
+      "הרצליה",
+      "רמת-גן",
+      "בני-ברק",
+      "מודיעין",
+      "אשקלון",
+      "רחובות",
+      "עפולה",
+    ];
+    for (const city of CITY_LANDING_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/עבודה-זמנית/${encodeURIComponent(city)}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);
+    }
 
+    // ── AEO content pages (/questions/, /compare/, /guide/, /for/, /about, /faq-general, /reviews)
+    const AEO_SLUGS = [
+      // questions
+      "questions/איך-למצוא-עובד-זמני","questions/כמה-עולה-עובד-זמני","questions/איך-למצוא-מנקה-לבית","questions/כמה-עולה-מנקה-לבית",
+      "questions/איך-למצוא-בייביסיטר","questions/כמה-עולה-בייביסיטר","questions/איך-למצוא-שליח","questions/כמה-עולה-עובד-אבטחה",
+      "questions/כמה-עולה-עובד-מטבח","questions/כמה-עולה-עובד-חקלאי",
+      "questions/איך-למצוא-דוגווקר","questions/כמה-עולה-דוגווקר","questions/דוגווקר-בדחיפות","questions/דוגווקר-לפי-שעות",
+      "questions/איך-למצוא-מוביל","questions/כמה-עולה-הובלה","questions/הובלה-בדחיפות",
+      "questions/עובד-ניקיון-בדחיפות","questions/בייביסיטר-בדחיפות","questions/שליח-בדחיפות",
+      // compare
+      "compare/אוודאנאו-מול-פייסבוק","compare/אוודאנאו-מול-חברה","compare/אוודאנאו-מול-יד-2","compare/אוודאנאו-מול-וואטסאפ",
+      // guide
+      "guide/איך-לגייס-עובד-תוך-שעה","guide/איך-לפרסם-משרה","guide/איך-לבחור-עובד-אמין","guide/טעויות-נפוצות",
+      // for (audience)
+      "for/מעסיקים","for/פרטיים","for/סטודנטים","for/נוער",
+      // trust
+      "about","faq-general","reviews",
+    ];
+    for (const slug of AEO_SLUGS) {
+      urls.push(`<url><loc>${baseUrl}/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`);
+    }
+    // ── Programmatic SEO pages: /category/city, /category/city-בדחיפות, /category/city-מחיר
+    const PROG_CATEGORIES = ["cleaning","dog-walker","moving","babysitter","delivery","events"];
+    const PROG_CITIES_SLUGS = ["תל-%D7%90ביב","ירושלים","חיפה","ראשון-%D7%9Cציון","פתח-%D7%AAקווה","אשדוד","נתניה","באר-%D7%A9בע","בני-%D7%91רק","רמת-%D7%92ן"];
+    const PROG_INTENTS = ["", "-בדחיפות", "-מחיר"];
+    for (const cat of PROG_CATEGORIES) {
+      for (const city of PROG_CITIES_SLUGS) {
+        for (const intent of PROG_INTENTS) {
+          urls.push(`<url><loc>${baseUrl}/${cat}/${city}${intent}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>${intent === "" ? "0.8" : "0.7"}</priority></url>`);
+        }
+      }
+    }
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
     _sitemapCache = { xml, ts: Date.now() };
     res.setHeader("Content-Type", "application/xml");
@@ -325,6 +441,23 @@ async function startServer() {
     res.send(content);
   });
 
+  // ── Referral link click tracker: /api/r/:code → redirect to homepage ──────────
+  // NOTE: Must be under /api/ so the Manus proxy routes it to the Express server.
+  // A bare /r/:code path is intercepted by the static-file middleware before
+  // reaching Express, causing a 200 SPA response instead of a 302 redirect.
+  app.get("/api/r/:code", async (req, res) => {
+    const { code } = req.params;
+    try {
+      const { incrementReferralLinkClicks } = await import("../adminDb");
+      await incrementReferralLinkClicks(code);
+    } catch (err) {
+      console.error("[referral] click increment failed:", err);
+    }
+    // Redirect to homepage; pass ?ref=<code> so the frontend can write
+    // referralSource to localStorage for registration attribution.
+    res.redirect(302, `/?ref=${encodeURIComponent(code)}`);
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API
@@ -333,6 +466,24 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError({ error, path, ctx }) {
+        // Only log unexpected server errors — skip client errors (BAD_REQUEST,
+        // UNAUTHORIZED, FORBIDDEN, NOT_FOUND) which are expected business-logic
+        // rejections and should not pollute the error log.
+        const clientCodes = new Set(["BAD_REQUEST", "UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "CONFLICT", "PRECONDITION_FAILED", "METHOD_NOT_SUPPORTED", "TIMEOUT", "TOO_MANY_REQUESTS"]);
+        if (!clientCodes.has(error.code)) {
+          const user = (ctx as { user?: { id?: number; phone?: string } } | undefined)?.user;
+          logEvent("error", `trpc.${path ?? "unknown"}`, error.message, {
+            userId: user?.id,
+            phone: user?.phone,
+            meta: {
+              code: error.code,
+              path,
+              stack: error.stack?.split("\n").slice(0, 8).join("\n"),
+            },
+          }).catch(() => {});
+        }
+      },
     })
   );
   // development mode uses Vite, production mode uses static files
@@ -352,6 +503,19 @@ async function startServer() {
   // ── DB health check: verify all schema tables exist before accepting traffic ──
   await assertDbHealth();
 
+  // ── DB warm-up: establish the connection pool before the first HTTP request ──
+  // getDb() is lazy — without this, the very first request pays the full TCP +
+  // SSL handshake cost (~2-3 s on Neon), which shows up as TTFB 3.3 s in
+  // Lighthouse. Pre-connecting here moves that cost to startup time so all
+  // subsequent requests hit an already-open connection.
+  try {
+    const { getDb } = await import("../db");
+    await getDb();
+    console.log("[DB] Connection pool warmed up");
+  } catch (err) {
+    console.warn("[DB] Warm-up failed (server will still start):", err);
+  }
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     // Seed regions on first startup
@@ -365,15 +529,15 @@ startServer().catch(console.error);
 
 // ── Availability expiry reminder: run every 5 minutes ────────────────────────
 // Sends an SMS to workers whose availability expires in ~30 minutes.
-setInterval(async () => {
+// Retries up to 3 times with exponential backoff on transient DB errors.
+async function runAvailabilityReminder(attempt = 1): Promise<void> {
   try {
     const expiring = await getWorkersWithExpiringAvailability();
     for (const worker of expiring) {
       const minutesLeft = Math.round((worker.availableUntil.getTime() - Date.now()) / 60_000);
       const msg =
-        `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.
-` +
-        `להארכת הזמינות כנס ל: https://job-now.manus.space`;
+        `הזמינות שלך ב-Job-Now פוקחת בעוד ${minutesLeft} דקות.\n` +
+        `להארכת הזמינות כנס ל: https://avodanow.co.il`;
       const result = await sendSms(worker.phone, msg);
       if (result.success) {
         await markAvailabilityReminderSent(worker.availabilityId);
@@ -381,6 +545,21 @@ setInterval(async () => {
       }
     }
   } catch (err) {
-    console.warn("[Reminder] Error sending availability expiry reminders:", err);
+    const isTransient =
+      err instanceof Error &&
+      (err.message.includes("Connection terminated") ||
+        err.message.includes("connection timeout") ||
+        err.message.includes("ECONNRESET") ||
+        err.message.includes("ETIMEDOUT"));
+
+    if (isTransient && attempt < 3) {
+      const delay = attempt * 2_000; // 2s, 4s
+      console.warn(`[Reminder] Transient DB error (attempt ${attempt}/3), retrying in ${delay}ms:`, (err as Error).message);
+      setTimeout(() => runAvailabilityReminder(attempt + 1), delay);
+    } else {
+      console.warn("[Reminder] Error sending availability expiry reminders:", err);
+    }
   }
-}, 5 * 60 * 1000); // every 5 minutes
+}
+
+setInterval(() => runAvailabilityReminder(), 5 * 60 * 1000); // every 5 minutes

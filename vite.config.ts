@@ -167,6 +167,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        // No manualChunks — let Rollup/Vite manage the entire chunk graph.
+        // Any attempt to manually split vendor chunks caused circular import
+        // ordering in production: the "vendor-react" chunk imported from
+        // "vendor" because Rollup placed shared Radix/TanStack helpers there,
+        // making vendor load BEFORE vendor-react and crashing with
+        // "Cannot read properties of undefined (reading 'createContext')".
+        // Vite's automatic chunking respects the import graph and is safe.
+      },
+    },
   },
   server: {
     host: true,

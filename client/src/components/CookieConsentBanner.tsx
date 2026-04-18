@@ -42,17 +42,28 @@ const BRAND_OLIVE = "#3d4a28";
 const CITRUS = "oklch(0.75 0.15 76)";
 
 // ── Analytics loader ──────────────────────────────────────────────────────────
+// Step 5 (perf skill): defer analytics until browser is idle to avoid
+// competing with the critical rendering path.
+const rIC: (cb: () => void) => void =
+  typeof window !== "undefined" && "requestIdleCallback" in window
+    ? (cb) => (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(cb)
+    : (cb) => setTimeout(cb, 200); // fallback for Safari
+
 function loadAnalyticsScript() {
   if (document.getElementById("umami-script")) return;
   const endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
   const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
   if (!endpoint || !websiteId) return;
-  const s = document.createElement("script");
-  s.id = "umami-script";
-  s.defer = true;
-  s.src = `${endpoint}/umami`;
-  s.dataset.websiteId = websiteId;
-  document.body.appendChild(s);
+  // Defer until browser is idle so analytics never competes with LCP/FID
+  rIC(() => {
+    if (document.getElementById("umami-script")) return; // guard double-call
+    const s = document.createElement("script");
+    s.id = "umami-script";
+    s.defer = true;
+    s.src = `${endpoint}/umami`;
+    s.dataset.websiteId = websiteId;
+    document.body.appendChild(s);
+  });
 }
 
 // ── Hook: consent state ────────────────────────────────────────────────────────

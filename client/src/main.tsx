@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { shouldRetry, retryDelay } from "@/lib/queryRetry";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { PHONE_REQUIRED_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -27,6 +27,14 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+  const isPhoneRequired = error.message === PHONE_REQUIRED_ERR_MSG;
+
+  if (isPhoneRequired) {
+    // Dispatch a custom event so the Navbar can open LoginModal with a phone-required message.
+    // This avoids a hard redirect and keeps the user on the current page.
+    window.dispatchEvent(new CustomEvent("avodanow:phone-required"));
+    return;
+  }
 
   if (!isUnauthorized) return;
 
@@ -38,11 +46,26 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   }
 };
 
+/** Returns true for errors that are expected and should not pollute the console. */
+const isSilentError = (error: unknown): boolean => {
+  if (!(error instanceof TRPCClientError)) return false;
+  // 401 Unauthorized — expected when unauthenticated users hit protected procedures
+  const httpStatus = (error.data as { httpStatus?: number } | undefined)?.httpStatus;
+  if (httpStatus === 401) return true;
+  // Gateway errors (504 / HTML response) — transient, handled by queryRetry with backoff
+  if (
+    error.message.includes("Unexpected token") ||
+    error.message.includes("Unable to transform response from server") ||
+    error.message.includes("Failed to fetch")
+  ) return true;
+  return false;
+};
+
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Query Error]", error);
+    if (!isSilentError(error)) console.error("[API Query Error]", error);
   }
 });
 
@@ -50,7 +73,7 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Mutation Error]", error);
+    if (!isSilentError(error)) console.error("[API Mutation Error]", error);
   }
 });
 

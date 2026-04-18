@@ -17,6 +17,7 @@ import type { TrpcContext } from "./_core/context";
 
 vi.mock("./sms", () => ({
   sendJobAlerts: vi.fn().mockResolvedValue(0),
+  sendSms: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("./webPush", () => ({
@@ -51,6 +52,22 @@ vi.mock("./db", () => ({
   checkRegionActiveForJob: vi.fn().mockResolvedValue({ allowed: true }),
   findNearestRegion: vi.fn().mockResolvedValue(undefined),
   associateWorkerWithRegion: vi.fn().mockResolvedValue(undefined),
+  getApplicationsForJob: vi.fn().mockResolvedValue([]),
+  getApplicationsForJobWithDistance: vi.fn().mockResolvedValue([]),
+  createJobOffer: vi.fn().mockResolvedValue(undefined),
+  respondToJobOffer: vi.fn().mockResolvedValue(undefined),
+  getApplicationByWorkerAndJob: vi.fn().mockResolvedValue(null),
+  getApplicationById: vi.fn().mockResolvedValue(null),
+  getWorkerProfile: vi.fn().mockResolvedValue(null),
+  markEmployerApplicationsViewed: vi.fn().mockResolvedValue(undefined),
+  getUnreadApplicationsCount: vi.fn().mockResolvedValue(0),
+  revealApplicationContact: vi.fn().mockResolvedValue(undefined),
+  updateApplicationStatus: vi.fn().mockResolvedValue(undefined),
+  getMyApplications: vi.fn().mockResolvedValue([]),
+  createApplication: vi.fn().mockResolvedValue(undefined),
+  withdrawApplication: vi.fn().mockResolvedValue(undefined),
+  getWorkerBirthDate: vi.fn().mockResolvedValue(null),
+  getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
 }));
 
 import * as db from "./db";
@@ -66,6 +83,7 @@ function makeCtx(overrides: Partial<AuthUser> = {}): TrpcContext {
     openId: "test-user",
     email: "test@example.com",
     name: "Test User",
+    phone: "+972501234567",
     loginMethod: "phone_otp",
     role: "user",
     createdAt: new Date(),

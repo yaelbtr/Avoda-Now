@@ -68,6 +68,7 @@ export const JOB_CATEGORY_SLUGS = [
   "electricity",
   "plumbing",
   "moving",
+  "dog_walker",
   "other",
 ] as const;
 export type JobCategory = typeof JOB_CATEGORY_SLUGS[number];
@@ -94,6 +95,8 @@ export const closedReasonEnum = pgEnum("closed_reason", [
   "found_worker",
   "expired",
   "manual",
+  /** Job automatically closed because MAX_ACCEPTED_CANDIDATES workers accepted */
+  "cap_reached",
 ]);
 export const jobLocationModeEnum = pgEnum("job_location_mode", [
   "city",
@@ -104,6 +107,8 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "viewed",
   "accepted",
   "rejected",
+  "offered",       // employer proactively offered the job to the worker
+  "offer_rejected", // worker declined the employer's offer
 ]);
 export const phoneChangeResultEnum = pgEnum("phone_change_result", [
   "success",
@@ -165,6 +170,8 @@ export const users = pgTable("users", {
   preferredCategories: json("preferredCategories").$type<string[]>(),
   /** Worker's preferred city / area (legacy single city) */
   preferredCity: varchar("preferredCity", { length: 100 }),
+  /** Google Maps place_id for the worker's preferred city — canonical city identifier */
+  preferredCityPlaceId: varchar("preferredCityPlaceId", { length: 100 }),
   /** Worker's preferred cities (JSON array of city IDs from the cities table) */
   preferredCities: json("preferredCities").$type<number[]>(),
   /** Worker's location mode for matching: city or radius */
@@ -173,6 +180,12 @@ export const users = pgTable("users", {
   workerLatitude: numeric("workerLatitude", { precision: 10, scale: 7 }),
   /** Worker's GPS longitude for radius-based matching */
   workerLongitude: numeric("workerLongitude", { precision: 10, scale: 7 }),
+  /**
+   * PostGIS Point geometry (SRID 4326) — auto-computed from workerLatitude/workerLongitude.
+   * Used for ST_DWithin radius queries; faster than Haversine at scale.
+   * Populated by updateWorkerProfile whenever lat/lng are saved.
+   */
+  workerLocation: geometry("workerLocation"),
   /** Worker's preferred search radius in km */
   searchRadiusKm: integer("searchRadiusKm").default(5),
   /** Free text describing work preferences for AI matching */
@@ -218,6 +231,52 @@ export const users = pgTable("users", {
    * Null means no forced logout has been issued.
    */
   forcedLogoutAt: bigint("forcedLogoutAt", { mode: "number" }),
+
+  // ── Employer-specific profile fields ─────────────────────────────────────
+  /** Company name (optional) — displayed on job cards and employer profile */
+  companyName: varchar("companyName", { length: 120 }),
+  /** Short bio / description for the employer */
+  employerBio: text("employerBio"),
+  /**
+   * Default job location city ID — pre-filled when posting a new job.
+   * References the cities table.
+   */
+  defaultJobCityId: integer("defaultJobCityId"),
+  /** Default job location free-text city name (for display) */
+  defaultJobCity: varchar("defaultJobCity", { length: 100 }),
+  /** Default job latitude for map display */
+  defaultJobLatitude: numeric("defaultJobLatitude", { precision: 10, scale: 7 }),
+  /** Default job longitude for map display */
+  defaultJobLongitude: numeric("defaultJobLongitude", { precision: 10, scale: 7 }),
+  /**
+   * Employer preferred worker search city — used to filter available workers.
+   */
+  workerSearchCity: varchar("workerSearchCity", { length: 100 }),
+  /** Worker search city ID */
+  workerSearchCityId: integer("workerSearchCityId"),
+  /** Worker search radius in km (default 10) */
+  workerSearchRadiusKm: integer("workerSearchRadiusKm").default(10),
+  /** Worker search latitude (for radius-based search) */
+  workerSearchLatitude: numeric("workerSearchLatitude", { precision: 10, scale: 7 }),
+  /** Worker search longitude (for radius-based search) */
+  workerSearchLongitude: numeric("workerSearchLongitude", { precision: 10, scale: 7 }),
+  /** Worker search location mode: city or radius */
+  workerSearchLocationMode: locationModeEnum("workerSearchLocationMode").default("city"),
+  /**
+   * Minimum worker age the employer is willing to hire.
+   * Values: 16 | 18 (null = no restriction).
+   */
+  minWorkerAge: integer("minWorkerAge"),
+  /**
+   * UTM / referral source captured at first visit and saved at registration.
+   * Values: "facebook" (fbclid), "google" (gclid), "organic", or raw utm_source.
+   * Set once at signup — never overwritten on subsequent logins.
+   */
+  referralSource: varchar("referralSource", { length: 64 }),
+  /** utm_campaign value captured on first visit (e.g. "summer_promo") */
+  utmCampaign: varchar("utmCampaign", { length: 128 }),
+  /** utm_medium value captured on first visit (e.g. "cpc", "social") */
+  utmMedium: varchar("utmMedium", { length: 64 }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -253,6 +312,8 @@ export const jobs = pgTable("jobs", {
   category: varchar("category", { length: 64 }).notNull(),
   address: varchar("address", { length: 300 }).notNull(),
   city: varchar("city", { length: 100 }),
+  /** Google Maps place_id for the job's city — canonical city identifier for matching */
+  cityPlaceId: varchar("cityPlaceId", { length: 100 }),
   latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
   longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
   salary: numeric("salary", { precision: 10, scale: 2 }),
@@ -775,3 +836,76 @@ export const emailUnsubscribes = pgTable(
 );
 export type EmailUnsubscribe = typeof emailUnsubscribes.$inferSelect;
 export type InsertEmailUnsubscribe = typeof emailUnsubscribes.$inferInsert;
+
+/**
+ * referral_links — admin-managed trackable referral links.
+ * Each link has a unique short code (e.g. "fb-jan26") that redirects to the
+ * homepage while recording a click. When a user registers after clicking the
+ * link (referralSource matches the code), the registration is attributed.
+ *
+ * - code: short unique identifier used in the URL (/r/:code)
+ * - label: human-readable name for the admin panel (e.g. "פייסבוק ינואר 2026")
+ * - source: the referralSource value written to users.referralSource on registration
+ * - clicks: incremented atomically on every visit to /r/:code
+ * - isActive: soft-disable without deleting
+ */
+export const referralLinks = pgTable(
+  "referral_links",
+  {
+    id: serial("id").primaryKey(),
+    code: varchar("code", { length: 64 }).notNull().unique(),
+    label: varchar("label", { length: 128 }).notNull(),
+    source: varchar("source", { length: 64 }).notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("referral_links_code_idx").on(t.code),
+    index("referral_links_source_idx").on(t.source),
+  ]
+);
+export type ReferralLink = typeof referralLinks.$inferSelect;
+export type InsertReferralLink = typeof referralLinks.$inferInsert;
+
+// ─── Notification Logs ────────────────────────────────────────────────────────
+/**
+ * notification_logs — per-worker delivery record for every notification dispatch.
+ * One row per worker per batch. Enables the admin panel to show exactly who was
+ * notified, via which channel, and whether delivery succeeded.
+ *
+ * channel: "sms" | "push"
+ * status:  "sent" | "failed" | "skipped"
+ * errorMsg: populated only on failure (e.g. "Twilio error 21211", "no subscription")
+ */
+export const notificationChannelEnum = pgEnum("notification_channel", ["sms", "push"]);
+export const notificationStatusEnum = pgEnum("notification_status", ["sent", "failed", "skipped"]);
+
+export const notificationLogs = pgTable(
+  "notification_logs",
+  {
+    id: serial("id").primaryKey(),
+    /** The notification batch this log belongs to */
+    batchId: integer("batch_id").references(() => notificationBatches.id, { onDelete: "set null" }),
+    /** The job this notification was about */
+    jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    /** The worker who received (or should have received) the notification */
+    workerId: integer("worker_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** Delivery channel */
+    channel: notificationChannelEnum("channel").notNull(),
+    /** Delivery outcome */
+    status: notificationStatusEnum("status").notNull(),
+    /** Error detail when status = 'failed' */
+    errorMsg: text("error_msg"),
+    /** Phone number used for SMS (E.164), null for push */
+    phone: varchar("phone", { length: 20 }),
+    sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("notif_logs_job_idx").on(t.jobId),
+    index("notif_logs_worker_idx").on(t.workerId),
+    index("notif_logs_batch_idx").on(t.batchId),
+  ]
+);
+export type NotificationLog = typeof notificationLogs.$inferSelect;
+export type InsertNotificationLog = typeof notificationLogs.$inferInsert;

@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AdminCategoriesTab } from "./AdminCategories";
 import { AdminRegionsTab } from "./AdminRegions";
+import { AdminNotificationTrackingTab } from "./AdminNotificationTracking";
 import { Badge } from "@/components/ui/badge";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppSelect, AppTextarea, AppLabel } from "@/components/ui";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
@@ -47,10 +49,114 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Share2,
+  Globe,
+  Building2,
+  UserRound,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+
+// ─── Application status labels (reused in popover) ─────────────────────────
+const APP_STATUS_LABELS: Record<string, string> = {
+  pending: "ממתין",
+  viewed: "נצפה",
+  offered: "הוצע",
+  accepted: "התקבל",
+  rejected: "נדחה",
+  offer_rejected: "ההצעה נדחתה",
+  withdrawn: "בוטל",
+};
+
+const APP_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  viewed: "bg-blue-100 text-blue-800",
+  offered: "bg-purple-100 text-purple-800",
+  accepted: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
+  offer_rejected: "bg-orange-100 text-orange-800",
+  withdrawn: "bg-gray-100 text-gray-700",
+};
+
+/**
+ * Lazy-loaded popover showing all applicants for a job.
+ * Data is fetched only when the popover is opened.
+ */
+function JobApplicantsPopover({ jobId, applicantCount }: { jobId: number; applicantCount: number }) {
+  const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const query = trpc.admin.getJobApplicants.useQuery(
+    { jobId },
+    { enabled: open && !!user && user.role === "admin" }
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <AppButton
+          variant="outline"
+          size="sm"
+          className="gap-1 text-xs"
+          onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        >
+          <UserRound className="w-3.5 h-3.5" />
+          {applicantCount}
+        </AppButton>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-80 p-0"
+        align="end"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-4 py-3 border-b">
+          <p className="font-semibold text-sm">מועמדים ({applicantCount})</p>
+        </div>
+        {query.isLoading && (
+          <div className="flex justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {query.error && (
+          <p className="text-sm text-destructive px-4 py-3">{query.error.message}</p>
+        )}
+        {query.data && query.data.length === 0 && (
+          <p className="text-sm text-muted-foreground px-4 py-4 text-center">אין מועמדים עדיין</p>
+        )}
+        {query.data && query.data.length > 0 && (
+          <div className="max-h-72 overflow-y-auto divide-y">
+            {query.data.map((app) => (
+              <div
+                key={app.id}
+                className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-muted/40 cursor-pointer"
+                onClick={() => window.open(`/admin/applications/${app.id}`, "_blank")}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{app.workerName ?? "עובד"}</p>
+                  {app.workerPhone && (
+                    <a
+                      href={`tel:${app.workerPhone}`}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      dir="ltr"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {app.workerPhone}
+                    </a>
+                  )}
+                </div>
+                <Badge className={`text-xs shrink-0 ${APP_STATUS_COLORS[app.status] ?? "bg-gray-100 text-gray-700"}`}>
+                  {APP_STATUS_LABELS[app.status] ?? app.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   delivery: "משלוחים",
@@ -114,6 +220,11 @@ export default function Admin() {
 
   // User management modals
   const [userSearch, setUserSearch] = useState("");
+  const [employerSearch, setEmployerSearch] = useState("");
+  const employersQuery = trpc.admin.listEmployers.useQuery(
+    {},
+    { enabled: !!user && user.role === "admin" && activeTab === "employers" }
+  );
   const [editUserModal, setEditUserModal] = useState<{
     open: boolean;
     user: { id: number; name: string | null; phone: string | null; role: string; status: string } | null;
@@ -126,6 +237,7 @@ export default function Admin() {
 
   // Queries
   const statsQuery = trpc.admin.stats.useQuery(undefined, { enabled: !!user && user.role === "admin" });
+  const referralStatsQuery = trpc.admin.referralStats.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "stats" });
   const jobsQuery = trpc.admin.listJobs.useQuery(
     { status: jobStatusFilter === "all" ? undefined : jobStatusFilter, limit: 100 },
     { enabled: !!user && user.role === "admin" && activeTab === "jobs" }
@@ -156,7 +268,8 @@ export default function Admin() {
 
   // System Logs state
   const [logsPhoneFilter, setLogsPhoneFilter] = useState("");
-  const [logsLevelFilter, setLogsLevelFilter] = useState<"" | "info" | "warn" | "error">("error");
+  const [logsLevelFilter, setLogsLevelFilter] = useState<"" | "info" | "warn" | "error">("");
+  const [logsEventFilter, setLogsEventFilter] = useState("");
   const [logsOffset, setLogsOffset] = useState(0);
   const LOGS_PAGE_SIZE = 50;
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
@@ -164,6 +277,7 @@ export default function Admin() {
     {
       phone: logsPhoneFilter.trim() || undefined,
       level: logsLevelFilter || undefined,
+      event: logsEventFilter.trim() || undefined,
       limit: LOGS_PAGE_SIZE,
       offset: logsOffset,
     },
@@ -228,6 +342,23 @@ export default function Admin() {
   });
   const deleteUserMutation = trpc.admin.deleteUser.useMutation({
     onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("המשתמש נמחק"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Referral link manager
+  const [newLinkForm, setNewLinkForm] = useState({ code: "", label: "", source: "" });
+  const referralLinksQuery = trpc.admin.listReferralLinks.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "referral-links" });
+  const referralLinkStatsQuery = trpc.admin.referralLinkStats.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "referral-links" });
+  const createReferralLink = trpc.admin.createReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); utils.admin.referralLinkStats.invalidate(); setNewLinkForm({ code: "", label: "", source: "" }); toast.success("הקישור נוצר בהצלחה"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const toggleReferralLink = trpc.admin.toggleReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); toast.success("הסטטוס עודכן"); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteReferralLink = trpc.admin.deleteReferralLink.useMutation({
+    onSuccess: () => { utils.admin.listReferralLinks.invalidate(); utils.admin.referralLinkStats.invalidate(); toast.success("הקישור נמחק"); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -327,14 +458,17 @@ export default function Admin() {
               { value: "jobs", icon: <Briefcase className="w-4 h-4" />, label: "משרות", badge: stats?.underReviewJobs },
               { value: "reports", icon: <Flag className="w-4 h-4" />, label: "דיווחים", badge: stats?.underReviewJobs },
               { value: "users", icon: <Users className="w-4 h-4" />, label: "משתמשים" },
+              { value: "employers", icon: <Building2 className="w-4 h-4" />, label: "מעסיקים" },
               { value: "applications", icon: <Briefcase className="w-4 h-4" />, label: "מועמדויות" },
               { value: "batches", icon: <Bell className="w-4 h-4" />, label: "הודעות" },
+              { value: "notif-tracking", icon: <Bell className="w-4 h-4" />, label: "מעקב הודעות" },
               { value: "categories", icon: <Tag className="w-4 h-4" />, label: "קטגוריות" },
               { value: "regions", icon: <MapPin className="w-4 h-4" />, label: "אזורים" },
               { value: "maintenance", icon: <Wrench className="w-4 h-4" />, label: "תחזוקה" },
               { value: "employer-lock", icon: <Lock className="w-4 h-4" />, label: "נעילת מעסיקים" },
               { value: "birthdate-audit", icon: <Calendar className="w-4 h-4" />, label: "ביקורת גיל" },
               { value: "system-logs", icon: <FileText className="w-4 h-4" />, label: "לוגים" },
+              { value: "referral-links", icon: <Share2 className="w-4 h-4" />, label: "קישורי קמפיין" },
             ].map((item) => (
               <button
                 key={item.value}
@@ -380,6 +514,10 @@ export default function Admin() {
               <Users className="w-4 h-4" />
               משתמשים
             </TabsTrigger>
+            <TabsTrigger value="employers" className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              מעסיקים
+            </TabsTrigger>
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <Briefcase className="w-4 h-4" />
               מועמדויות
@@ -387,6 +525,10 @@ export default function Admin() {
             <TabsTrigger value="batches" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               הודעות מקובצות
+            </TabsTrigger>
+            <TabsTrigger value="notif-tracking" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              מעקב הודעות
             </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
@@ -412,6 +554,10 @@ export default function Admin() {
               <FileText className="w-4 h-4" />
               לוגים
             </TabsTrigger>
+            <TabsTrigger value="referral-links" className="flex items-center gap-2">
+              <Share2 className="w-4 h-4" />
+              קישורי מעקב
+            </TabsTrigger>
           </TabsList>
 
           {/* ─── Stats Tab ─── */}
@@ -432,6 +578,87 @@ export default function Admin() {
                 <StatCard title="משתמשים חדשים היום" value={stats.newUsersToday} icon={UserCheck} color="bg-teal-100 text-teal-600" />
               </div>
             ) : null}
+
+            {/* ─── Referral Source Card ─── */}
+            {referralStatsQuery.data && (() => {
+              const rs = referralStatsQuery.data;
+              const pct = (n: number) => rs.total > 0 ? Math.round((n / rs.total) * 100) : 0;
+              return (
+                <Card className="mt-4">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-blue-500" />
+                      מקורות הרשמה
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div className="rounded-lg bg-blue-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-blue-700">{rs.facebook}</div>
+                        <div className="text-xs text-blue-600 mt-1">📘 פייסבוק</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.facebook)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-red-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-red-700">{rs.google}</div>
+                        <div className="text-xs text-red-600 mt-1">🔍 גוגל</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.google)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-green-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-green-700">{rs.organic}</div>
+                        <div className="text-xs text-green-600 mt-1"><Globe className="inline w-3 h-3" /> אורגני</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.organic)}%</div>
+                      </div>
+                      <div className="rounded-lg bg-gray-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-gray-700">{rs.other}</div>
+                        <div className="text-xs text-gray-600 mt-1">🔗 אחר</div>
+                        <div className="text-xs text-muted-foreground">{pct(rs.other)}%</div>
+                      </div>
+                    </div>
+                    {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic" && b.count > 0).length > 0 && (
+                      <div className="border-t pt-3">
+                        <p className="text-xs text-muted-foreground mb-2">מקורות נוספים:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic").map(b => (
+                            <Badge key={b.source} variant="outline" className="text-xs">{b.source}: {b.count}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* utm_campaign breakdown */}
+                    {rs.campaignBreakdown && rs.campaignBreakdown.length > 0 && (
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-xs font-medium mb-2">📣 קמפיינים (utm_campaign):</p>
+                        <div className="space-y-1">
+                          {rs.campaignBreakdown.map(c => (
+                            <div key={c.campaign} className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground font-mono truncate max-w-[60%]">{c.campaign}</span>
+                              <span className="font-semibold">{c.count} <span className="text-muted-foreground font-normal">({rs.total > 0 ? Math.round((c.count / rs.total) * 100) : 0}%)</span></span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* utm_medium breakdown */}
+                    {rs.mediumBreakdown && rs.mediumBreakdown.length > 0 && (
+                      <div className="border-t pt-3 mt-3">
+                        <p className="text-xs font-medium mb-2">📡 מדיה (utm_medium):</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rs.mediumBreakdown.map(m => (
+                            <Badge key={m.medium} variant="secondary" className="text-xs gap-1">
+                              {m.medium} <span className="font-bold">{m.count}</span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground mt-3 border-t pt-2">סה"כ נרשמים עם מקור מעקב: {rs.total.toLocaleString()}</p>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </TabsContent>
 
           {/* ─── Jobs Tab ─── */}
@@ -487,6 +714,7 @@ export default function Admin() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          <JobApplicantsPopover jobId={job.id} applicantCount={job.applicantCount} />
                           <Link href={`/job/${job.id}`}>
                             <AppButton variant="secondary" size="sm">
                               <Eye className="w-4 h-4" />
@@ -901,6 +1129,120 @@ export default function Admin() {
             </Dialog>
           </TabsContent>
 
+          {/* ─── Employers Tab ─── */}
+          <TabsContent value="employers">
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <h2 className="text-lg font-semibold">מעסיקים ({employersQuery.data?.length ?? 0})</h2>
+              <div className="flex items-center gap-2">
+                <AppInput
+                  placeholder="חיפוש שם / טלפון..."
+                  value={employerSearch}
+                  onChange={(e) => setEmployerSearch(e.target.value)}
+                  dir="rtl"
+                  wrapperClassName="w-48"
+                />
+                <AppButton variant="secondary" size="sm" onClick={() => utils.admin.listEmployers.invalidate()}>
+                  רענן
+                </AppButton>
+              </div>
+            </div>
+            {employersQuery.isLoading ? (
+              <div className="space-y-2">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="h-10 bg-muted animate-pulse rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-border">
+                <table className="w-full text-sm" dir="rtl">
+                  <thead>
+                    <tr className="bg-muted/60 text-muted-foreground text-xs">
+                      <th className="text-right px-3 py-2.5 font-semibold">שם</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">טלפון</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">סטטוס</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">סה"כ משרות</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">משרות פעילות</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">הצטרף</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">כניסה אחרונה</th>
+                      <th className="text-right px-3 py-2.5 font-semibold">פעולות</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(employersQuery.data ?? [])
+                      .filter(e =>
+                        !employerSearch ||
+                        (e.name ?? "").includes(employerSearch) ||
+                        (e.phone ?? "").includes(employerSearch)
+                      )
+                      .map((e, idx) => (
+                        <tr
+                          key={e.id}
+                          className={`border-t border-border transition-colors hover:bg-muted/30 ${
+                            e.status === "suspended" ? "bg-red-50/40 opacity-80" : idx % 2 === 0 ? "" : "bg-muted/10"
+                          }`}
+                        >
+                          <td className="px-3 py-2.5 font-medium">{e.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{e.phone ?? "—"}</td>
+                          <td className="px-3 py-2.5">
+                            {e.status === "suspended"
+                              ? <Badge variant="destructive" className="text-xs">חסום</Badge>
+                              : <Badge variant="outline" className="text-xs text-green-700 border-green-300">פעיל</Badge>
+                            }
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <span className={`font-semibold text-sm ${
+                              e.totalJobs > 0 ? "text-primary" : "text-muted-foreground"
+                            }`}>{e.totalJobs}</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            {e.activeJobs > 0
+                              ? <Badge variant="outline" className="text-xs text-green-700 border-green-300">{e.activeJobs} פעילות</Badge>
+                              : <span className="text-muted-foreground text-xs">0</span>
+                            }
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(e.createdAt).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">{new Date(e.lastSignedIn).toLocaleDateString("he-IL")}</td>
+                          <td className="px-3 py-2.5">
+                            <div className="flex items-center gap-1.5">
+                              {e.status === "suspended" ? (
+                                <button
+                                  title="בטל חסימה"
+                                  className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                  onClick={() => confirm("ביטול חסימה", `לבטל חסימה מהמעסיק ${e.phone}?`, () => unblockUser.mutate({ userId: e.id }))}
+                                >
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  title="חסום"
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                                  onClick={() => confirm("חסימת מעסיק", `לחסום את המעסיק ${e.phone}?`, () => blockUser.mutate({ userId: e.id }))}
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <button
+                                title="מחק"
+                                className="p-1.5 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                                onClick={() => confirm("מחיקת מעסיק", `למחוק לצמיתות את המעסיק ${e.phone}? פעולה זו בלתי הפיכה!`, () => deleteUserMutation.mutate({ userId: e.id }))}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {(employersQuery.data ?? []).filter(e =>
+                  !employerSearch || (e.name ?? "").includes(employerSearch) || (e.phone ?? "").includes(employerSearch)
+                ).length === 0 && (
+                  <div className="text-center py-10 text-muted-foreground">לא נמצאו מעסיקים</div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
           {/* ─── Applications Tab ─── */}
           <TabsContent value="applications">
             <div className="flex items-center justify-between mb-4">
@@ -966,7 +1308,7 @@ export default function Admin() {
                             <AppButton
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(`/applications/${app.id}`, "_blank")}
+                              onClick={() => window.open(`/admin/applications/${app.id}`, "_blank")}
                             >
                               <Eye className="w-4 h-4 ml-1" />
                               צפה
@@ -1407,9 +1749,9 @@ export default function Admin() {
             <div className="space-y-4" dir="rtl">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold">לוג אירועים ושגיאות</h2>
+                  <h2 className="text-lg font-semibold">לוגים כלליים</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    רשומים מהשרת לאיתור בעיות הרשמה והתחברות. ניתן לסנן לפי מספר טלפון.
+                    כל אירועי המערכת — שגיאות שרת, אזהרות, ואירועי מידע. לחץ על שורה לפרטים מלאים וstack trace.
                   </p>
                 </div>
                 <AppButton
@@ -1421,14 +1763,64 @@ export default function Admin() {
                 </AppButton>
               </div>
 
+              {/* Summary badges */}
+              {logsQuery.data && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border">
+                    סה&quot;כ {logsQuery.data.total} רשומות
+                  </span>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                    onClick={() => { setLogsLevelFilter("error"); setLogsOffset(0); }}
+                  >
+                    <AlertCircle className="w-3 h-3" /> הצג שגיאות בלבד
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("trpc."); setLogsOffset(0); }}
+                  >
+                    שגיאות API
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("otp."); setLogsOffset(0); }}
+                  >
+                    אירועי OTP
+                  </button>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
+                    onClick={() => { setLogsEventFilter("signup."); setLogsOffset(0); }}
+                  >
+                    הרשמות
+                  </button>
+                  {(logsLevelFilter || logsEventFilter || logsPhoneFilter) && (
+                    <button
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border hover:bg-muted/80 transition-colors"
+                      onClick={() => { setLogsLevelFilter(""); setLogsEventFilter(""); setLogsPhoneFilter(""); setLogsOffset(0); }}
+                    >
+                      נקה פילטרים ×
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Filters */}
               <div className="flex flex-wrap gap-3 items-end">
-                <div className="flex-1 min-w-[180px]">
+                <div className="flex-1 min-w-[160px]">
                   <label className="block text-xs font-medium text-muted-foreground mb-1">חיפוש לפי טלפון</label>
                   <AppInput
                     placeholder="לדוגמא: 0559258668"
                     value={logsPhoneFilter}
                     onChange={(e) => { setLogsPhoneFilter(e.target.value); setLogsOffset(0); }}
+                    dir="ltr"
+                  />
+                </div>
+                <div className="flex-1 min-w-[160px]">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">חיפוש לפי אירוע</label>
+                  <AppInput
+                    placeholder="לדוגמא: trpc. / otp. / signup."
+                    value={logsEventFilter}
+                    onChange={(e) => { setLogsEventFilter(e.target.value); setLogsOffset(0); }}
                     dir="ltr"
                   />
                 </div>
@@ -1569,6 +1961,155 @@ export default function Admin() {
                   סה&quot;כ {logsQuery.data.total} רשומות
                 </p>
               )}
+            </div>
+          </TabsContent>
+
+          {/* ─── Notification Tracking Tab ─── */}
+          <TabsContent value="notif-tracking">
+            <AdminNotificationTrackingTab />
+          </TabsContent>
+
+          {/* ─── Referral Links Tab ─── */}
+          <TabsContent value="referral-links">
+            <div className="space-y-6" dir="rtl">
+              <div>
+                <h2 className="text-lg font-semibold">קישורי מעקב</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">צור קישורים ייחודיים לכל קמפיין ועקוב קליקים והרשמות בזמן אמת.</p>
+              </div>
+
+              {/* Create new link form */}
+              <Card>
+                <CardHeader><CardTitle className="text-base">צור קישור חדש</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <AppLabel>שם קוד (באנגלית, בלי רווחים)</AppLabel>
+                      <AppInput
+                        dir="ltr"
+                        placeholder="facebook-jan-2026"
+                        value={newLinkForm.code}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, code: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "-") }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">ייצור URL: /api/r/{newLinkForm.code || "code"}</p>
+                    </div>
+                    <div>
+                      <AppLabel>תווית (לתצוגה בלבד)</AppLabel>
+                      <AppInput
+                        placeholder="פייסבוק ינואר 2026"
+                        value={newLinkForm.label}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, label: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <AppLabel>מקור (utm_source)</AppLabel>
+                      <AppInput
+                        dir="ltr"
+                        placeholder="facebook / whatsapp / email"
+                        value={newLinkForm.source}
+                        onChange={(e) => setNewLinkForm(f => ({ ...f, source: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <AppButton
+                    className="mt-3"
+                    disabled={!newLinkForm.code || !newLinkForm.label || !newLinkForm.source || createReferralLink.isPending}
+                    onClick={() => createReferralLink.mutate(newLinkForm)}
+                  >
+                    {createReferralLink.isPending ? "יוצר..." : "צור קישור"}
+                  </AppButton>
+                </CardContent>
+              </Card>
+
+              {/* Stats table */}
+              {referralLinkStatsQuery.isLoading ? (
+                <div className="space-y-2">{[...Array(3)].map((_, i) => <Card key={i}><CardContent className="pt-4"><div className="h-12 bg-muted animate-pulse rounded" /></CardContent></Card>)}</div>
+              ) : referralLinkStatsQuery.data && referralLinkStatsQuery.data.length > 0 ? (
+                <Card>
+                  <CardHeader><CardTitle className="text-base">סטטיסטיקות קישורים</CardTitle></CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/40 text-right">
+                            <th className="px-4 py-2.5 font-medium">תווית</th>
+                            <th className="px-4 py-2.5 font-medium">קוד</th>
+                            <th className="px-4 py-2.5 font-medium">מקור</th>
+                            <th className="px-4 py-2.5 font-medium text-center">קליקים</th>
+                            <th className="px-4 py-2.5 font-medium text-center">נרשמים</th>
+                            <th className="px-4 py-2.5 font-medium text-center">המרה</th>
+                            <th className="px-4 py-2.5 font-medium text-center">סטטוס</th>
+                            <th className="px-4 py-2.5 font-medium text-center">פעולות</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {referralLinkStatsQuery.data.map((row) => {
+                            const fullUrl = `https://avodanow.co.il/api/r/${row.code}`;
+                            const convRate = row.clicks > 0 ? ((row.registrations / row.clicks) * 100).toFixed(1) : "0.0";
+                            return (
+                              <tr key={row.id} className="border-b hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3 font-medium">{row.label}</td>
+                                <td className="px-4 py-3 font-mono text-xs text-muted-foreground" dir="ltr">{row.code}</td>
+                                <td className="px-4 py-3"><Badge variant="secondary">{row.source}</Badge></td>
+                                <td className="px-4 py-3 text-center font-semibold">{row.clicks}</td>
+                                <td className="px-4 py-3 text-center font-semibold text-green-600">{row.registrations}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className={`font-semibold ${parseFloat(convRate) >= 10 ? "text-green-600" : parseFloat(convRate) >= 3 ? "text-yellow-600" : "text-muted-foreground"}`}>
+                                    {convRate}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <Badge variant={row.isActive ? "default" : "secondary"}>{row.isActive ? "פעיל" : "מושבת"}</Badge>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2 justify-center">
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => { navigator.clipboard.writeText(fullUrl); toast.success("הקישור הועתק"); }}
+                                    >
+                                      העתק
+                                    </AppButton>
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => toggleReferralLink.mutate({ id: row.id, isActive: !row.isActive })}
+                                    >
+                                      {row.isActive ? "בטל" : "הפעל"}
+                                    </AppButton>
+                                    <AppButton
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                      onClick={() => confirm("מחיקת קישור", `האם למחוק את הקישור "${row.label}"? הנתונים לא ישוחזרו.`, () => deleteReferralLink.mutate({ id: row.id }))}
+                                    >
+                                      מחק
+                                    </AppButton>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : referralLinkStatsQuery.isFetched ? (
+                <Card><CardContent className="py-10 text-center text-muted-foreground">אין קישורים עדיין. צור קישור ראשון למעלה.</CardContent></Card>
+              ) : null}
+
+              {/* How it works */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <p className="text-sm font-medium mb-2">איך זה עובד?</p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>צור קישור עם קוד ייחודי לכל קמפיין (למשל: facebook-jan-2026)</li>
+                    <li>שתף את הקישור https://avodanow.co.il/api/r/קוד בפוסטים / וואצאפ / אימייל</li>
+                    <li>כל קליק נספר אוטומטית והמשתמש מופנה לדף הבית</li>
+                    <li>אם המשתמש נרשם, הקישור נזכה בהרשמה</li>
+                  </ol>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 

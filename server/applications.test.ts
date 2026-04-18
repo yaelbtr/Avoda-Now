@@ -67,6 +67,9 @@ vi.mock("./db", () => ({
   getWorkerBirthDate: vi.fn().mockResolvedValue(new Date("2000-01-01")),
   logLegalAcknowledgement: vi.fn().mockResolvedValue(undefined),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
+  // Candidate cap helpers — default to 0 accepted (cap not reached)
+  countAcceptedCandidates: vi.fn().mockResolvedValue(0),
+  autoCloseJobIfCapReached: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("./sms", () => ({

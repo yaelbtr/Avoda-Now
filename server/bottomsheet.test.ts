@@ -75,10 +75,14 @@ vi.mock("./db", () => ({
   getWorkerBirthDate: vi.fn().mockResolvedValue(new Date("2000-01-01")),
   logLegalAcknowledgement: vi.fn().mockResolvedValue(undefined),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
+  // job offer deps
+  createJobOffer: vi.fn().mockResolvedValue(undefined),
+  respondToJobOffer: vi.fn().mockResolvedValue(undefined),
+  withdrawApplication: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("./_core/notification", () => ({ notifyOwner: vi.fn().mockResolvedValue(true) }));
-vi.mock("./sms", () => ({ sendJobAlerts: vi.fn() }));
+vi.mock("./sms", () => ({ sendJobAlerts: vi.fn(), sendSms: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("./webPush", () => ({ sendPushToUser: vi.fn() }));
 vi.mock("./_core/adminDb", () => ({
   adminApproveJob: vi.fn(),
@@ -190,7 +194,7 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
     vi.mocked(db.getJobById).mockResolvedValue(mockJob as any);
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null as any);
     vi.mocked(db.createApplication).mockResolvedValue({ id: 10 } as any);
-    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", role: "user" } as any));
+    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", phone: "+972501234567", role: "user" } as any));
     const result = await caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" });
     expect(result.success).toBe(true);
     // createApplication is called with positional args: (workerId, jobId, message)
@@ -200,7 +204,7 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
   it("throws CONFLICT when user already applied", async () => {
     vi.mocked(db.getJobById).mockResolvedValue(mockJob as any);
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue({ id: 1 } as any);
-    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", role: "user" } as any));
+    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", phone: "+972501234567", role: "user" } as any));
     await expect(
       caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" })
     ).rejects.toThrow(TRPCError);

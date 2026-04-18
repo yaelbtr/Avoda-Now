@@ -377,9 +377,8 @@ export function JobCard({
       other:        "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&q=80&fit=crop",
     };
     const bgImage = bgImages[job.category] ?? bgImages.other;
-    const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
-
-    // Placeholder colors per category (dominant hue of the real image)
+    const salaryStr = formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || 'לא צוין';
+    // Placeholder colors per category (dominant hue of the real image))
     const placeholderColors: Record<string, string> = {
       food:         "#c8a97e", // warm spice tones
       hospitality:  "#2a3a4a", // dark hotel lobby
@@ -658,7 +657,7 @@ export function JobCard({
 
   const salaryDisplay = isVolunteer
     ? '💚 התנדבות'
-    : formatSalary(job.salary ?? null, job.salaryType);
+    : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || 'לא צוין');
 
   return (
     <motion.div

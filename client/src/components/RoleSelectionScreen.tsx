@@ -35,6 +35,8 @@ interface RoleCardProps {
   features: string[];
   badge: string;
   badgeIcon: React.ReactNode;
+  privacyBadge?: string;
+  privacyBadgeTooltip?: string;
   buttonLabel: string;
   loading: boolean;
   disabled: boolean;
@@ -44,6 +46,7 @@ interface RoleCardProps {
 }
 
 function RoleCard({
+  role,
   image,
   icon,
   title,
@@ -52,6 +55,8 @@ function RoleCard({
   features,
   badge,
   badgeIcon,
+  privacyBadge,
+  privacyBadgeTooltip,
   buttonLabel,
   loading,
   disabled,
@@ -69,6 +74,7 @@ function RoleCard({
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onSelect}
+      data-testid={`role-card-${role}`}
       className="group relative rounded-2xl overflow-hidden cursor-pointer"
       style={{
         background: "white",
@@ -99,12 +105,14 @@ function RoleCard({
             }}
           />
         </motion.div>
-        {/* Preload image to trigger fade-in once loaded */}
+        {/* Preload image to trigger fade-in once loaded — fetchPriority=high for LCP */}
         <img
           src={image}
           alt=""
           aria-hidden="true"
           className="hidden"
+          fetchPriority="high"
+          decoding="async"
           onLoad={() => setImageLoaded(true)}
         />
         <motion.div
@@ -121,23 +129,30 @@ function RoleCard({
             background: "linear-gradient(to bottom, oklch(0 0 0 / 0.0) 30%, oklch(0 0 0 / 0.55) 100%)",
           }}
         />
-        {/* Badge overlay — hidden when badge is empty */}
-        {badge && (
+        {/* Privacy badge — shown at bottom-left */}
+        {privacyBadge && (
           <motion.div
-            className="absolute bottom-3 right-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-bold"
+            className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
             style={{
-              background: "oklch(1 0 0 / 0.92)",
-              color: C_BRAND,
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 2px 8px oklch(0 0 0 / 0.15)",
+              background: "oklch(1 0 0 / 0.15)",
+              color: '#f6b83d',
+              backdropFilter: "blur(12px) saturate(180%)",
+              WebkitBackdropFilter: "blur(12px) saturate(180%)",
+              border: "1px solid oklch(1 0 0 / 0.35)",
+              boxShadow: "0 2px 12px oklch(0 0 0 / 0.18), inset 0 1px 0 oklch(1 0 0 / 0.25)",
+              textShadow: "0 1px 2px oklch(0 0 0 / 0.3)",
             }}
-            animate={{ y: hovered ? -2 : 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 6, scale: 0.9 }}
+            animate={{ opacity: 1, y: hovered ? -2 : 0, scale: 1 }}
+            whileHover={{ scale: 1.08 }}
+            transition={{ opacity: { duration: 0.4, delay: 0.35 }, y: { duration: 0.3 }, scale: { duration: 0.4, delay: 0.35, type: "spring", stiffness: 300, damping: 20 } }}
+            title={privacyBadgeTooltip}
           >
-            {badgeIcon}
-            {badge}
+            <Shield className="h-3 w-3" />
+            {privacyBadge}
           </motion.div>
         )}
+
         {/* Subtitle chip */}
         <div
           className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -182,6 +197,7 @@ function RoleCard({
         {/* CTA Button */}
         <motion.button
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
+          data-testid={`role-select-${role}`}
           disabled={disabled}
           className="w-full py-3 rounded-xl font-black text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 text-[14px]"
           style={{
@@ -460,6 +476,8 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     ]}
                     badge={workerBadge ?? ""}
                     badgeIcon={workerBadge ? <Zap className="h-3 w-3" /> : null}
+                    privacyBadge="אתם בוחרים למי הטלפון שלכם יוצג"
+                    privacyBadgeTooltip="הטלפון שלך נחשף רק כשאתה מאשר הצעת עבודה"
                     buttonLabel="מצא עבודה עכשיו"
                     loading={loading === "worker"}
                     disabled={!!loading}
@@ -471,17 +489,19 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="employer"
                     image={EMPLOYER_IMG}
                     icon={<Briefcase className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title={employerLock ? "פרסום משרה — בקרוב" : "מחפש עובדים?"}
+                    title={employerLock ? "פרסום מודעה — בקרוב" : "מחפש עובדים?"}
                     subtitle="למעסיקים"
                     description={employerLock
                       ? "בשלב זה הפלטפורמה פתוחה לעובדים בלבד. אפשרות פרסום משרות תיפתח בקרוב."
-                      : "פרסם משרה והתחבר לעובדים המחפשים עבודה באזור שלך."}
+                      : "פרסם מודעה והתחבר לעובדים המחפשים עבודה באזור שלך."}
                     features={employerLock
                       ? ["פרסום מהיר וקל", "גישה לעובדים זמינים באזורך", "ניהול מלא של המשרות שלך"]
-                      : ["פרסום משרה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
+                      : ["פרסום מודעה תוך דקה", "עובדים מכל רחבי הארץ", "קשר ישיר עם מועמדים"]}
                     badge={employerLock ? "בקרוב" : "עובדים זמינים"}
                     badgeIcon={<Users className="h-3 w-3" />}
-                    buttonLabel={employerLock ? "בקרוב..." : "פרסם משרה"}
+                    privacyBadge="הטלפון שלכם נשאר חסוי"
+                    privacyBadgeTooltip="מספר הטלפון של העובד נחשף רק לאחר שהוא מאשר את הצעת העבודה שלך"
+                    buttonLabel={employerLock ? "בקרוב..." : "פרסם מודעה"}
                     loading={loading === "employer"}
                     disabled={!!loading || employerLock}
                     onSelect={() => handleSelect("employer")}

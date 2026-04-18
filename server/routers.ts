@@ -1,11 +1,13 @@
 import { TRPCError } from "@trpc/server";
+import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
-import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACCEPTED_CANDIDATES, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { cityZodRefine } from "@shared/cityValidation";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { phoneRequiredProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   checkAndIncrementSendRate,
   checkAndIncrementVerifyAttempts,
@@ -41,6 +43,7 @@ import {
   updateWorkerProfile,
   clearUserMode,
   getWorkersMatchingJob,
+  getWorkerNamesByIds,
   getMyJobsWithPendingCounts,
   getMyApplications,
   createApplication,
@@ -78,6 +81,7 @@ import {
   toggleCategoryActive,
   deleteCategory,
   seedCategoriesIfEmpty,
+  syncMissingCategories,
   getRegions,
   getActiveRegionCities,
   getRegionBySlug,
@@ -123,8 +127,19 @@ import {
   getLastBirthDateChange,
   logEvent,
   getLogs,
+  getEmployerProfile,
+  updateEmployerProfile,
+  createJobOffer,
+  respondToJobOffer,
+  countActiveOffers,
+  countAcceptedCandidates,
+  autoCloseJobIfCapReached,
+  getApplicantWorkerIdsForJob,
+  getWorkerLocationsByIds,
+  getCityNamesByIds,
+  getOfferedWorkerIdsForEmployer,
 } from "./db";
-import { sendJobAlerts } from "./sms";
+import { sendJobAlerts, sendSms } from "./sms";
 import { sendPushToUser, sendJobPushNotifications } from "./webPush";
 import {
   adminApproveJob,
@@ -139,10 +154,17 @@ import {
   adminGetAllJobs,
   adminGetAllReports,
   adminGetAllUsers,
+  adminGetAllEmployers,
   adminGetBatchById,
   adminGetBirthdateChanges,
   adminGetReportedJobs,
   adminGetStats,
+  adminGetReferralStats,
+  adminListReferralLinks,
+  adminCreateReferralLink,
+  adminToggleReferralLink,
+  adminDeleteReferralLink,
+  adminGetReferralLinkStats,
   adminRejectJob,
   adminSetJobStatus,
   adminSetUserRole,
@@ -152,6 +174,9 @@ import {
   adminCreateUser,
   adminUpdateUser,
   adminDeleteUser,
+  getJobsWithNotificationStats,
+  getNotificationLogsForJob,
+  getNotificationBatchSummaryForJob,
 } from "./adminDb";
 import {
   isValidIsraeliPhone,
@@ -335,6 +360,12 @@ const authRouter = router({
         name: z.string().max(100).optional(),
         email: z.string().email().max(320).optional(),
         termsAccepted: z.boolean().optional(),
+        /** UTM/referral source captured from URL params at first visit (e.g. "facebook", "google") */
+        referralSource: z.string().max(64).optional(),
+        /** utm_campaign value captured at first visit (e.g. "summer_promo") */
+        utmCampaign: z.string().max(128).optional(),
+        /** utm_medium value captured at first visit (e.g. "cpc", "social", "email") */
+        utmMedium: z.string().max(64).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -412,7 +443,7 @@ const authRouter = router({
           });
         }
         try {
-          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone);
+          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone, input.referralSource, input.utmCampaign, input.utmMedium);
           void logEvent("info", "signup.user_created", "New user created via phone OTP", {
             phone,
             userId: user?.id,
@@ -614,10 +645,11 @@ const jobInputSchema = z.object({
   category: z.enum([
     "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
     "security", "construction", "childcare", "eldercare", "retail",
-    "events", "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
+    "events", "gardening", "serving", "electricity", "plumbing", "moving",
+    "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
   ]),
   address: z.string().min(2).max(300),
-  city: z.string().max(100).optional(),
+  city: z.string().max(100).optional().superRefine(cityZodRefine),
   latitude: z.number(),
   longitude: z.number(),
   salary: z.number().optional(),
@@ -653,7 +685,12 @@ const jobInputSchema = z.object({
   imageUrls: z.array(z.string().url()).max(5).optional(),
   /** Minimum worker age: null = no restriction, 16 = 16+, 18 = adults only */
   minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
+  /** Google Maps place_id for the job's city — canonical city identifier for matching */
+  cityPlaceId: z.string().max(100).optional(),
 });
+
+/** Rate limiter for job-publish OTP sends: max 3 per user per 10 minutes */
+const publishOtpRateLimiter = createInMemoryRateLimiter(3, 10 * 60 * 1000);
 
 const jobsRouter = router({
   list: publicProcedure
@@ -731,7 +768,7 @@ const jobsRouter = router({
       return { ...job, contactPhone: null };
     }),
 
-  create: protectedProcedure
+  create: phoneRequiredProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
       // ── Regional access control: block posting if region is not yet active ──
@@ -818,6 +855,7 @@ const jobsRouter = router({
         workEndTime: input.workEndTime ?? null,
         imageUrls: input.imageUrls ?? null,
         minAge: input.minAge ?? null,
+        cityPlaceId: input.cityPlaceId ?? null,
       });
       // Fire-and-forget: call external matching API to pre-compute matching workers
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
@@ -837,7 +875,7 @@ const jobsRouter = router({
       }
       // Fire-and-forget: notify matching workers via SMS + Web Push (does not block the response)
       const jobMeta = { title: input.title, city, category: input.category, isUrgent: input.isUrgent ?? false, id: job.id };
-      getWorkersMatchingJob(input.category, city, ctx.user.id)
+      getWorkersMatchingJob(input.category, city, ctx.user.id, 100, input.latitude, input.longitude)
         .then(async (workers) => {
           // SMS alerts
           const smsSent = await sendJobAlerts(workers, jobMeta);
@@ -935,10 +973,29 @@ const jobsRouter = router({
     await markEmployerApplicationsViewed(ctx.user.id);
     return { success: true };
   }),
+  /**
+   * Returns a map of workerId → jobIds[] for all active offers the employer has sent.
+   * Used in AvailableWorkers to show "offer already sent" badges and filter out offered workers.
+   */
+  getOfferedWorkerIds: protectedProcedure.query(async ({ ctx }) => {
+    const map = await getOfferedWorkerIdsForEmployer(ctx.user.id);
+    // Serialize Map → plain object { workerId: jobId[] } for tRPC transport
+    const result: Record<number, number[]> = {};
+    Array.from(map.entries()).forEach(([workerId, jobIds]) => {
+      result[workerId] = Array.from(jobIds);
+    });
+    return result;
+  }),
+
   /** Worker's own applications with job info and status */
-  myApplications: protectedProcedure.query(async ({ ctx }) =>
-    getMyApplications(ctx.user.id)
-  ),
+  myApplications: protectedProcedure.query(async ({ ctx }) => {
+    const apps = await getMyApplications(ctx.user.id);
+    // Only expose employer phone when the worker has accepted the offer (contactRevealed)
+    return apps.map(app => ({
+      ...app,
+      employerPhone: (app.status === "accepted" && app.contactRevealed) ? app.employerPhone : null,
+    }));
+  }),
   /** Count of unread application status updates since lastSeenAt */
   unreadApplicationsCount: protectedProcedure
     .input(z.object({ lastSeenAt: z.date() }))
@@ -971,6 +1028,77 @@ const jobsRouter = router({
     }),
 
   /**
+   * Single-shot dashboard query for the worker home screen.
+   * Replaces 4 parallel calls (listUrgent, listToday, list, search) with one
+   * round-trip. The client filters/maps the result per panel — no duplicate
+   * server logic, no extra DB connections.
+   *
+   * Input:
+   *   lat/lng  — worker's current location (optional; nearby panel is skipped when absent)
+   *   radiusKm — search radius for nearby panel (default 10)
+   *
+   * Returns:
+   *   urgent  — up to 4 urgent jobs
+   *   today   — up to 4 jobs starting today
+   *   nearby  — up to 8 jobs near the worker (empty array when lat/lng absent)
+   *   latest  — up to 6 most-recent active jobs
+   *   isFallback — true when nearby fell back to 100 km radius
+   */
+  getWorkerDashboard: publicProcedure
+    .input(
+      z.object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        radiusKm: z.number().min(1).max(200).default(10),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      // Resolve worker age once — reused across all sub-queries
+      const workerAge = ctx.user
+        ? calcAge(await getWorkerBirthDate(ctx.user.id))
+        : null;
+
+      const stripPhone = <T extends { contactPhone?: unknown }>(j: T) => ({ ...j, contactPhone: null });
+
+      // Run all non-geo queries in parallel — single DB connection pool burst
+      const [urgentRows, todayRows, latestResult] = await Promise.all([
+        getUrgentJobs(4, undefined, workerAge),
+        getTodayJobs(4, undefined, workerAge),
+        getActiveJobs(6, undefined, undefined, undefined, 0, undefined, undefined, undefined, workerAge),
+      ]);
+
+      // Nearby query is conditional on having a valid location
+      let nearbyJobs: Array<Record<string, unknown> & { distance: number }> = [];
+      let isFallback = false;
+      if (input.lat !== undefined && input.lng !== undefined) {
+        let { rows, total } = await getJobsNearLocation(
+          input.lat, input.lng, input.radiusKm,
+          undefined, 8, undefined, undefined, 0, undefined, undefined, undefined, workerAge
+        );
+        // Expand to 100 km when no results found in the requested radius
+        if (total === 0) {
+          const fallback = await getJobsNearLocation(
+            input.lat, input.lng, 100,
+            undefined, 8, undefined, undefined, 0, undefined, undefined, undefined, workerAge
+          );
+          if (fallback.total > 0) {
+            rows = fallback.rows;
+            isFallback = true;
+          }
+        }
+        nearbyJobs = rows as Array<Record<string, unknown> & { distance: number }>;
+      }
+
+      return {
+        urgent: urgentRows.map(stripPhone),
+        today: todayRows.map(stripPhone),
+        latest: (latestResult.rows as (typeof urgentRows[0])[]).map(stripPhone),
+        nearby: nearbyJobs.map(j => ({ ...j, contactPhone: null })),
+        isFallback,
+      };
+    }),
+
+  /**
    * Call external matching API to get workers matching a job.
    * Returns worker IDs with scores from the external backend.
    */
@@ -981,10 +1109,36 @@ const jobsRouter = router({
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
+      // Pre-fetch workers already engaged with this job (any status) so we can
+      // exclude them from the results — single source of truth for this filter.
+      const engagedWorkerIds = await getApplicantWorkerIdsForJob(input.jobId);
+
       const MATCHING_API_URL = process.env.MATCHING_API_URL;
       if (!MATCHING_API_URL) {
-        // Return empty list if no external API configured yet
-        return { workers: [] as { worker_id: number; score: number }[] };
+        // Fallback: use internal DB matching when no external API is configured
+        const localWorkers = await getWorkersMatchingJob(
+          job.category,
+          job.city,
+          ctx.user.id,
+          50,
+          job.latitude ? Number(job.latitude) : null,
+          job.longitude ? Number(job.longitude) : null,
+        );
+        // Enrich with names, ratings, profile photos and availability in a single batch query
+        const nameMap = await getWorkerNamesByIds(localWorkers.map((w) => w.id));
+        return {
+          workers: localWorkers
+            .filter((w) => !engagedWorkerIds.has(w.id))
+            .map((w, i) => ({
+              worker_id: w.id,
+              score: 1 - i * 0.01,
+              name: nameMap.get(w.id)?.name ?? null,
+              rating: nameMap.get(w.id)?.workerRating ?? null,
+              profilePhoto: nameMap.get(w.id)?.profilePhoto ?? null,
+              availabilityStatus: nameMap.get(w.id)?.availabilityStatus ?? null,
+              locationMissingGps: false,
+            })),
+        };
       }
 
       try {
@@ -1002,7 +1156,135 @@ const jobsRouter = router({
         });
         if (!res.ok) throw new Error(`Matching API error: ${res.status}`);
         const data = await res.json() as { workers: { worker_id: number; score: number }[] };
-        return data;
+
+        // Step 1: filter out workers already engaged with this job
+        const notEngaged = data.workers.filter((w) => !engagedWorkerIds.has(w.worker_id));
+
+        // Step 2: server-side location guard — the external API may rank workers
+        // purely on semantic/category similarity without respecting the worker's
+        // preferred city or radius setting. We re-apply the same location rules
+        // that the internal DB path uses, so city-mode workers from a different
+        // city (e.g. Beer Sheva for a Bnei Brak job) are never returned.
+        //
+        // IMPORTANT: fail-closed for unknown workers — if a worker_id is not found
+        // in our DB (e.g. data not yet synced), we EXCLUDE them rather than
+        // passing them through unchecked.
+        const workerLocations = await getWorkerLocationsByIds(notEngaged.map((w) => w.worker_id));
+        const jobCity = (job.city ?? "").trim().toLowerCase();
+        // Access cityPlaceId from the job row (added via schema, present in select *)
+        const jobPlaceId = (job as Record<string, unknown>).cityPlaceId as string | null | undefined;
+        const jobLat = job.latitude ? Number(job.latitude) : null;
+        const jobLng = job.longitude ? Number(job.longitude) : null;
+
+        // Collect all city IDs referenced by city-mode workers so we can resolve
+        // them to Hebrew names in a single batch query (O(n) not O(n²)).
+        const allCityIds = new Set<number>();
+        Array.from(workerLocations.values()).forEach((loc) => {
+          if (loc.locationMode !== "radius" && loc.preferredCities) {
+            loc.preferredCities.forEach((id) => allCityIds.add(id));
+          }
+        });
+        const cityNameMap = await getCityNamesByIds(Array.from(allCityIds));
+
+        // Evaluate each worker and attach a locationMissingGps flag for radius-mode
+        // workers who were included because the job has no coordinates (no distance
+        // validation possible). The UI can surface these with a "מיקום לא מוגדר" tag.
+        type EnrichedWorker = typeof notEngaged[number] & { locationMissingGps?: boolean };
+        const locationFiltered: EnrichedWorker[] = [];
+
+        for (const w of notEngaged) {
+          const loc = workerLocations.get(w.worker_id);
+          // fail-closed: worker not found in our DB → exclude
+          if (!loc) {
+            console.info(`[LocationGuard] worker ${w.worker_id} not in local DB → excluded`);
+            continue;
+          }
+
+          if (loc.locationMode === "radius") {
+            // Radius-mode: check haversine distance against worker's searchRadiusKm
+            if (jobLat == null || jobLng == null) {
+              // No job coords → include but flag as unverified distance
+              locationFiltered.push({ ...w, locationMissingGps: !loc.workerLatitude || !loc.workerLongitude });
+              continue;
+            }
+            if (!loc.workerLatitude || !loc.workerLongitude) {
+              // Worker has no GPS → include with flag (was previously excluded; now included per fix)
+              locationFiltered.push({ ...w, locationMissingGps: true });
+              continue;
+            }
+            const R = 6371;
+            const dLat = ((jobLat - Number(loc.workerLatitude)) * Math.PI) / 180;
+            const dLng = ((jobLng - Number(loc.workerLongitude)) * Math.PI) / 180;
+            const a =
+              Math.sin(dLat / 2) ** 2 +
+              Math.cos((Number(loc.workerLatitude) * Math.PI) / 180) *
+                Math.cos((jobLat * Math.PI) / 180) *
+                Math.sin(dLng / 2) ** 2;
+            const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            if (distKm <= (loc.searchRadiusKm ?? 5)) {
+              locationFiltered.push({ ...w, locationMissingGps: false });
+            }
+            continue;
+          }
+
+          // city-mode (default): prefer placeId comparison (canonical, locale-independent),
+          // fall back to city-name text comparison for workers/jobs that predate placeId.
+          if (!jobCity && !jobPlaceId) {
+            locationFiltered.push({ ...w, locationMissingGps: false }); // no city on job → include all
+            continue;
+          }
+
+          // ── Primary: placeId match ─────────────────────────────────────────────────────────
+          // If both job and worker have a placeId, use it as the single source of truth.
+          if (jobPlaceId && loc.preferredCityPlaceId) {
+            if (loc.preferredCityPlaceId === jobPlaceId) {
+              locationFiltered.push({ ...w, locationMissingGps: false });
+            } else {
+              console.info(
+                `[LocationGuard] worker ${w.worker_id} placeId mismatch: worker=${loc.preferredCityPlaceId} job=${jobPlaceId} → excluded`
+              );
+            }
+            continue;
+          }
+
+          // ── Fallback: city-name text comparison ─────────────────────────────────────────
+          // Used when either side lacks a placeId (legacy data or Maps API unavailable).
+          if (!jobCity) {
+            locationFiltered.push({ ...w, locationMissingGps: false }); // job has no city text either → include
+            continue;
+          }
+
+          // Check preferredCities (array of city IDs) first — canonical field from CityPicker.
+          if (loc.preferredCities && loc.preferredCities.length > 0) {
+            const matches = loc.preferredCities.some((id) => {
+              const name = cityNameMap.get(id);
+              return name ? name.trim().toLowerCase() === jobCity : false;
+            });
+            if (matches) locationFiltered.push({ ...w, locationMissingGps: false });
+            continue;
+          }
+
+          // Last resort: legacy preferredCity string field
+          if (!loc.preferredCity) continue; // worker has no city preference → exclude
+          if (loc.preferredCity.trim().toLowerCase() === jobCity) {
+            locationFiltered.push({ ...w, locationMissingGps: false });
+          }
+        }
+
+        console.info(
+          `[LocationGuard] job ${input.jobId} (${job.city}): ${notEngaged.length} → ${locationFiltered.length} workers after location filter`
+        );
+
+        // Enrich with names, ratings, profile photos and availability in a single batch query
+        const photoMap = await getWorkerNamesByIds(locationFiltered.map((w) => w.worker_id));
+        const enrichedFiltered = locationFiltered.map((w) => ({
+          ...w,
+          name: photoMap.get(w.worker_id)?.name ?? null,
+          rating: photoMap.get(w.worker_id)?.workerRating ?? null,
+          profilePhoto: photoMap.get(w.worker_id)?.profilePhoto ?? null,
+          availabilityStatus: photoMap.get(w.worker_id)?.availabilityStatus ?? null,
+        }));
+        return { workers: enrichedFiltered };
       } catch (err) {
         console.warn("[MatchWorkers] External API call failed:", err);
         return { workers: [] as { worker_id: number; score: number }[] };
@@ -1013,37 +1295,143 @@ const jobsRouter = router({
    * Send a job offer to a specific worker via external API.
    */
   sendJobOffer: protectedProcedure
-    .input(z.object({ jobId: z.number(), workerId: z.number() }))
+    .input(z.object({ jobId: z.number(), workerId: z.number(), origin: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
-      const MATCHING_API_URL = process.env.MATCHING_API_URL;
-      if (!MATCHING_API_URL) {
-        // Stub: log and return success when no external API configured
-        console.log(`[JobOffer] Stub: offer job #${input.jobId} to worker #${input.workerId}`);
-        return { success: true, stub: true };
+      // Block if job is closed because the candidate cap was reached
+      if (job.status === "closed" && job.closedReason === "cap_reached") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `המשרה נסגרה — כבר התקבלו ${MAX_ACCEPTED_CANDIDATES} מועמדים.`,
+        });
       }
 
-      try {
-        const res = await fetch(`${MATCHING_API_URL}/job-offer`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ job_id: input.jobId, worker_id: input.workerId }),
-        });
-        if (!res.ok) throw new Error(`Job offer API error: ${res.status}`);
-        // Notify worker via Push
-        sendPushToUser(input.workerId, {
-          title: "💼 הצעת עבודה חדשה!",
-          body: `מעסיק שלח לך הצעת עבודה למשרה: ${job.title}`,
-          url: "/my-applications",
-        }).catch((e) => console.warn("[JobOffer] Push to worker failed:", e));
-        return { success: true, stub: false };
-      } catch (err) {
-        console.warn("[JobOffer] External API call failed:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה בשליחת ההצעה" });
+      // Prevent duplicate offers
+      const existing = await getApplicationByWorkerAndJob(input.workerId, input.jobId);
+      if (existing) {
+        // If already offered/applied, just return success without re-notifying
+        return { success: true, alreadyExists: true };
       }
+
+      // Enforce maximum active offers per job
+      const activeOfferCount = await countActiveOffers(input.jobId);
+      if (activeOfferCount >= MAX_ACTIVE_OFFERS) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `לא ניתן לשלוח יותר מ-${MAX_ACTIVE_OFFERS} הצעות עבודה פעילות בו-זמנית למשרה זו. המתן לתגובת העובדים שכבר קיבלו הצעה.`,
+        });
+      }
+
+      // Block if accepted candidate cap is already reached
+      const acceptedCount = await countAcceptedCandidates(input.jobId);
+      if (acceptedCount >= MAX_ACCEPTED_CANDIDATES) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `המשרה כבר מלאה — ${MAX_ACCEPTED_CANDIDATES} מועמדים אישרו.`,
+        });
+      }
+
+      // Get worker profile to determine notification prefs and phone
+      const worker = await getWorkerProfile(input.workerId);
+      if (!worker) throw new TRPCError({ code: "NOT_FOUND", message: "עובד לא נמצא" });
+
+      // Create application record with status "offered"
+      await createJobOffer(input.workerId, input.jobId);
+
+      const jobUrl = `${input.origin ?? "https://avodanow.co.il"}/job/${input.jobId}`;
+      const employerName = ctx.user.name ?? "מעסיק";
+      const jobLabel = job.category ?? job.title ?? "משרה";
+
+      const notifPrefs = worker.notificationPrefs ?? "both";
+
+      // Send SMS if prefs allow
+      if ((notifPrefs === "both" || notifPrefs === "sms_only") && worker.phone) {
+        const smsBody = `שלום ${worker.name ?? ""},\n${employerName} שלח לך הצעת עבודה: ${jobLabel}.\nלצפייה ואישור/דחייה: ${jobUrl}\n\nלהסרה מרשימת ההתראות: https://avodanow.co.il/worker-profile`;
+        sendSms(worker.phone, smsBody).catch(e => console.warn("[JobOffer] SMS failed:", e));
+      }
+
+      // Send Push if prefs allow
+      if (notifPrefs === "both" || notifPrefs === "push_only") {
+        sendPushToUser(input.workerId, {
+          title: `💼 הצעת עבודה: ${jobLabel}`,
+          body: `${employerName} שלח לך הצעת עבודה. לחץ לצפייה ואישור.`,
+          url: "/my-applications",
+        }).catch(e => console.warn("[JobOffer] Push failed:", e));
+      }
+
+      console.log(`[JobOffer] Offered job #${input.jobId} to worker #${input.workerId} (prefs: ${notifPrefs})`);
+      return { success: true, alreadyExists: false };
+    }),
+
+  /** Worker responds to an employer's job offer: reveal phone or reject */
+  respondToOffer: protectedProcedure
+    .input(z.object({
+      applicationId: z.number(),
+      action: z.enum(["accept", "reject"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const app = await getApplicationById(input.applicationId);
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "הצעה לא נמצאה" });
+      if (app.workerId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+      if (app.status !== "offered") throw new TRPCError({ code: "BAD_REQUEST", message: "הצעה זו כבר טופלה" });
+
+      // Block accept if the job was already closed due to cap_reached
+      if (input.action === "accept") {
+        const job = await getJobById(app.jobId);
+        if (job && job.status === "closed" && job.closedReason === "cap_reached") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "העבודה נסגרה — כבר התקבל מספר המועמדים המקסימלי.",
+          });
+        }
+      }
+
+      await respondToJobOffer(input.applicationId, input.action);
+
+      if (input.action === "accept") {
+        const workerPhone = app.workerPhone ?? "";
+        const workerName = app.workerName ?? "עובד";
+        const jobTitle = app.jobTitle ?? "";
+        const employerId = app.jobPostedBy;
+        const employerPhone = app.employerPhone;
+        const employerPrefs = app.employerNotificationPrefs ?? "both";
+
+        // Auto-close the job if the candidate cap is now reached
+        const capReached = await autoCloseJobIfCapReached(app.jobId, MAX_ACCEPTED_CANDIDATES);
+        if (capReached) {
+          console.log(`[CandidateCap] Job #${app.jobId} auto-closed (cap_reached after ${MAX_ACCEPTED_CANDIDATES} acceptances)`);
+          // Notify employer that the job is now filled
+          if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
+            sendPushToUser(employerId, {
+              title: `✅ המשרה הושלמה!`,
+              body: `קיבלת ${MAX_ACCEPTED_CANDIDATES} מועמדים למשרה "${jobTitle}". המשרה נסגרה אוטומטית.`,
+              url: `/job/${app.jobId}/applications`,
+            }).catch(e => console.warn("[CandidateCap] Push to employer failed:", e));
+          }
+        }
+
+        // SMS to employer with worker phone
+        if (employerPhone && (employerPrefs === "sms_only" || employerPrefs === "both")) {
+          sendSms(
+            employerPhone,
+            `אישררור הצעה! ${workerName} אישר את הצעתך למשרה "${jobTitle}". הטלפון שלו: ${workerPhone}`
+          ).catch(e => console.warn("[JobOffer] SMS to employer failed:", e));
+        }
+
+        // Push to employer with worker phone
+        if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
+          sendPushToUser(employerId, {
+            title: `📞 ${workerName} אישר את הצעתך!`,
+            body: `משרה: ${jobTitle}. טלפון העובד: ${workerPhone}`,
+            url: `/job/${app.jobId}/applications`,
+          }).catch(e => console.warn("[JobOffer] Push to employer failed:", e));
+        }
+      }
+
+      return { success: true };
     }),
 
   /** Mark a job as filled — only the job owner can do this */
@@ -1077,7 +1465,7 @@ const jobsRouter = router({
     }),
 
   /** Worker applies to a job — records application and sends SMS to employer */
-  applyToJob: protectedProcedure
+  applyToJob: phoneRequiredProcedure
     .input(
       z.object({
         jobId: z.number(),
@@ -1159,11 +1547,17 @@ const jobsRouter = router({
         job.latitude,
         job.longitude
       );
+      const acceptedCount = await countAcceptedCandidates(input.jobId);
       // Strip phone for non-accepted applicants
-      return rows.map((r) => ({
-        ...r,
-        workerPhone: r.contactRevealed ? r.workerPhone : null,
-      }));
+      return {
+        jobStatus: job.status,
+        jobClosedReason: job.closedReason ?? null,
+        acceptedCount,
+        applicants: rows.map((r) => ({
+          ...r,
+          workerPhone: r.contactRevealed ? r.workerPhone : null,
+        })),
+      };
     }),
 
   /** Get applications for a job (employer view) */
@@ -1211,7 +1605,27 @@ const jobsRouter = router({
       }
       // ── End minor eligibility guard ────────────────────────────────────────────
 
+      // ── Candidate cap guard (only when accepting) ──────────────────────────────
+      if (input.action === "accept") {
+        const alreadyAccepted = await countAcceptedCandidates(app.jobId);
+        if (alreadyAccepted >= MAX_ACCEPTED_CANDIDATES) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `המשרה כבר מלאה — כבר התקבלו ${MAX_ACCEPTED_CANDIDATES} מועמדים.`,
+          });
+        }
+      }
+      // ── End candidate cap guard ────────────────────────────────────────────────
+
       await updateApplicationStatus(input.id, input.action);
+
+      // Auto-close the job if the candidate cap is now reached
+      if (input.action === "accept") {
+        const capReached = await autoCloseJobIfCapReached(app.jobId, MAX_ACCEPTED_CANDIDATES);
+        if (capReached) {
+          console.log(`[CandidateCap] Job #${app.jobId} auto-closed (cap_reached after ${MAX_ACCEPTED_CANDIDATES} acceptances via updateApplicationStatus)`);
+        }
+      }
 
       // Send Web Push notification to the worker
       if (app.workerId) {
@@ -1293,25 +1707,231 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  /** Upload a job image to S3 and return the URL. Max 5 per job. */
-  uploadJobImage: protectedProcedure
+  // ─── Job Publish OTP ─────────────────────────────────────────────────────────
+
+  /**
+   * Step 1: Send a 6-digit OTP to the employer's phone (SMS) or email.
+   * The OTP is scoped to job publishing — it reuses the existing Twilio Verify
+   * and emailOtp infrastructure but is a separate call so it doesn't interfere
+   * with the login flow.
+   */
+  sendPublishOtp: phoneRequiredProcedure
     .input(z.object({
-      base64: z.string(),
-      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+      channel: z.enum(["sms", "email"]),
     }))
-    .mutation(async ({ ctx, input }) => {
-      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
-      const key = `job-images/${ctx.user.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const buffer = Buffer.from(input.base64, "base64");
-      const { url } = await storagePut(key, buffer, input.mimeType);
-      return { url };
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+
+      // ── Rate limit: max 3 sends per user per 10 minutes ────────────────────
+      const rlKey = `publish-otp:${user.id}`;
+      const rlResult = publishOtpRateLimiter.check(rlKey);
+      if (!rlResult.allowed) {
+        const minutes = Math.ceil(rlResult.retryAfterMs / 60_000);
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `שלחת יותר מדי קודות. נסה שוב בעוד ${minutes} דקות`,
+        });
+      }
+
+      if (input.channel === "email") {
+        const email = user.email;
+        if (!email) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצאה כתובת מייל בחשבונך" });
+        }
+        // Cooldown check
+        const cooldownMs = await getEmailSendCooldown(email);
+        if (cooldownMs > 0) {
+          const seconds = Math.ceil(cooldownMs / 1000);
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `המתן ${seconds} שניות לפני שליחה חוזרת` });
+        }
+        const code = await createEmailOtp(email);
+        await sendEmailOtp(email, code);
+        return { channel: "email" as const, maskedTarget: email.replace(/(.{2}).*(@.*)/, "$1***$2") };
+      } else {
+        // SMS via Twilio Verify
+        const phone = user.phone;
+        if (!phone) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון בחשבונך" });
+        }
+        const result = await smsProvider.sendOtp(phone);
+        if (!result.success) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שליחת קוד SMS נכשלה. נסה שוב" });
+        }
+        const last4 = phone.slice(-4);
+        return { channel: "sms" as const, maskedTarget: `****${last4}` };
+      }
     }),
+
+  /**
+   * Step 2: Verify the OTP and, if valid, create the job.
+   * Accepts the full job payload so the job is only created after OTP success.
+   */
+  verifyPublishOtp: phoneRequiredProcedure
+    .input(z.object({
+      channel: z.enum(["sms", "email"]),
+      code: z.string().length(6),
+      jobData: jobInputSchema,
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+
+      // ── Verify OTP ──────────────────────────────────────────────────────────
+      if (input.channel === "email") {
+        const email = user.email;
+        if (!email) throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצאה כתובת מייל" });
+        const result = await verifyEmailOtp(email, input.code);
+        if (result === "not_found" || result === "expired") {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "הקוד פג תוקף. שלח קוד חדש" });
+        }
+        if (result === "max_attempts") {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `חרגת ${EMAIL_OTP_MAX_ATTEMPTS} ניסיונות. שלח קוד חדש` });
+        }
+        if (result === "wrong") {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי. נסה שוב" });
+        }
+      } else {
+        // SMS via Twilio Verify
+        const phone = user.phone;
+        if (!phone) throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון" });
+        const verifyResult = await smsProvider.verifyOtp(phone, input.code);
+        if (!verifyResult.success) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי או פג תוקף. נסה שוב" });
+        }
+      }
+
+      // ── OTP valid — create the job (same logic as jobs.create) ──────────────
+      const jobInput = input.jobData;
+
+      if (user.role !== "admin") {
+        const regionCheck = await checkRegionActiveForJob(jobInput.latitude, jobInput.longitude);
+        if (!regionCheck.allowed) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `האזור עדיין בהרצה ונפתח בקרוב למעסיקים.`,
+            cause: { regionId: regionCheck.regionId, regionName: regionCheck.regionName, regionSlug: regionCheck.regionSlug },
+          });
+        }
+      }
+
+      const contactPhone = user.phone ?? jobInput.contactPhone;
+      if (!contactPhone) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא מספר טלפון בחשבונך" });
+      }
+
+      const durationDays = parseInt(jobInput.activeDuration);
+      const expiresMs = jobInput.isUrgent ? 12 * 60 * 60 * 1000 : durationDays * 24 * 60 * 60 * 1000;
+      const expiresAt = new Date(Date.now() + expiresMs);
+
+      const extractCity = (addr: string): string => {
+        const parts = addr.split(",").map(p => p.trim()).filter(Boolean);
+        for (let i = parts.length - 1; i >= 0; i--) {
+          const part = parts[i];
+          if (/^\d+$/.test(part)) continue;
+          if (part === "ישראל" || part === "Israel") continue;
+          return part;
+        }
+        return parts[0] ?? addr;
+      };
+      const city = jobInput.city ?? extractCity(jobInput.address);
+
+      const sanitizedInput = {
+        ...jobInput,
+        title: sanitizeText(jobInput.title),
+        description: sanitizeRichText(jobInput.description),
+        address: sanitizeText(jobInput.address),
+        city: sanitizeText(city),
+        contactName: sanitizeText(jobInput.contactName),
+        businessName: sanitizeText(jobInput.businessName),
+        workingHours: sanitizeText(jobInput.workingHours),
+        jobTags: sanitizeTextArray(jobInput.jobTags ?? [jobInput.category]),
+      };
+
+      const job = await createJob({
+        ...sanitizedInput,
+        contactPhone,
+        city: sanitizedInput.city,
+        latitude: jobInput.latitude.toString(),
+        longitude: jobInput.longitude.toString(),
+        salary: jobInput.salary?.toString(),
+        hourlyRate: jobInput.hourlyRate?.toString(),
+        estimatedHours: jobInput.estimatedHours?.toString(),
+        expiresAt,
+        isUrgent: jobInput.isUrgent ?? false,
+        isLocalBusiness: jobInput.isLocalBusiness ?? false,
+        showPhone: jobInput.showPhone ?? false,
+        startDateTime: jobInput.startDateTime ? new Date(jobInput.startDateTime) : null,
+        postedBy: user.id,
+        status: "active",
+        jobTags: jobInput.jobTags ?? [jobInput.category],
+        jobLocationMode: jobInput.jobLocationMode ?? "radius",
+        jobSearchRadiusKm: jobInput.jobSearchRadiusKm ?? 5,
+        jobDate: jobInput.jobDate ?? null,
+        workStartTime: jobInput.workStartTime ?? null,
+        workEndTime: jobInput.workEndTime ?? null,
+        imageUrls: jobInput.imageUrls ?? null,
+        minAge: jobInput.minAge ?? null,
+        cityPlaceId: jobInput.cityPlaceId ?? null,
+      });
+
+      // Fire-and-forget: matching + alerts (same as jobs.create)
+      const MATCHING_API_URL = process.env.MATCHING_API_URL;
+      if (MATCHING_API_URL) {
+        fetch(`${MATCHING_API_URL}/match-workers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: job.id, job_description: jobInput.description, latitude: jobInput.latitude, longitude: jobInput.longitude, city, location_mode: jobInput.jobLocationMode ?? "radius" }),
+        }).catch((err) => console.warn("[MatchAPI] Pre-compute call failed:", err));
+      }
+      const jobMeta = { title: jobInput.title, city, category: jobInput.category, isUrgent: jobInput.isUrgent ?? false, id: job.id };
+      getWorkersMatchingJob(jobInput.category, city, user.id, 100, jobInput.latitude, jobInput.longitude)
+        .then(async (workers) => {
+          const smsSent = await sendJobAlerts(workers, jobMeta);
+          if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} workers for job #${job.id}`);
+          const workerIds = workers.map((w) => w.id);
+          if (workerIds.length > 0) {
+            const pushSent = await sendJobPushNotifications(workerIds, jobMeta);
+            if (pushSent > 0) console.log(`[JobAlert] Sent Push to ${pushSent} workers for job #${job.id}`);
+          }
+        })
+        .catch((err) => console.warn("[JobAlert] Error sending alerts:", err));
+
+      return job;
+    }),
+
 });
 // ─── Admin Router ─────────────────────────────────────────────────────────────
 
 const adminRouter = router({
   /** Dashboard statistics */
   stats: adminProcedure.query(async () => adminGetStats()),
+
+  /** Registration source breakdown (fbclid / gclid / utm_source) */
+  referralStats: adminProcedure.query(async () => adminGetReferralStats()),
+
+  /** List all managed referral links */
+  listReferralLinks: adminProcedure.query(async () => adminListReferralLinks()),
+
+  /** Per-link stats: clicks + registrations + conversion rate */
+  referralLinkStats: adminProcedure.query(async () => adminGetReferralLinkStats()),
+
+  /** Create a new trackable referral link */
+  createReferralLink: adminProcedure
+    .input(z.object({
+      code: z.string().min(2).max(64).regex(/^[a-zA-Z0-9_-]+$/, "Code must be alphanumeric with - or _"),
+      label: z.string().min(1).max(128),
+      source: z.string().min(1).max(64),
+    }))
+    .mutation(async ({ input }) => adminCreateReferralLink(input)),
+
+  /** Toggle active/inactive for a referral link */
+  toggleReferralLink: adminProcedure
+    .input(z.object({ id: z.number(), isActive: z.boolean() }))
+    .mutation(async ({ input }) => adminToggleReferralLink(input.id, input.isActive)),
+
+  /** Delete a referral link permanently */
+  deleteReferralLink: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => adminDeleteReferralLink(input.id)),
 
   /** All jobs with optional status filter */
   listJobs: adminProcedure
@@ -1352,8 +1972,11 @@ const adminRouter = router({
   /** All users */
   listUsers: adminProcedure
     .input(z.object({ limit: z.number().optional() }))
-    .query(async ({ input }) => adminGetAllUsers(input.limit ?? 200)),
-
+     .query(async ({ input }) => adminGetAllUsers(input.limit ?? 200)),
+  /** List all employer-mode users with job stats */
+  listEmployers: adminProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => adminGetAllEmployers(input.limit ?? 300)),
   /** Block a user */
   blockUser: adminProcedure
     .input(z.object({ userId: z.number() }))
@@ -1444,13 +2067,27 @@ const adminRouter = router({
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ input }) => adminGetAllApplications(input.limit ?? 300)),
 
-  // ── Notification Batches Admin ────────────────────────────────────────────
+  /** Admin: get all applicants for a specific job (name, phone, status) */
+  getJobApplicants: adminProcedure
+    .input(z.object({ jobId: z.number() }))
+    .query(async ({ input }) => {
+      const rows = await getApplicationsForJob(input.jobId);
+      return rows.map((r) => ({
+        id: r.id,
+        workerId: r.workerId,
+        workerName: r.workerName,
+        workerPhone: r.workerPhone,
+        status: r.status,
+        contactRevealed: r.contactRevealed,
+        createdAt: r.createdAt,
+      }));
+    }),
 
-  /** All notification batches with job title */
+  // ── Notification Batches Admin ───────────────────────────────────────
+  /** All notification batches */
   listBatches: adminProcedure
     .input(z.object({ limit: z.number().optional() }))
-    .query(async ({ input }) => adminGetAllBatches(input.limit ?? 300)),
-
+    .query(async ({ input }) => adminGetAllBatches(input.limit ?? 200)),
   /** Force-flush a pending batch immediately */
   flushBatch: adminProcedure
     .input(z.object({ batchId: z.number() }))
@@ -1553,6 +2190,23 @@ const adminRouter = router({
         offset: input.offset,
       });
     }),
+
+  // ─── Notification Logs ──────────────────────────────────────────────────────
+
+  /** List all jobs that have notification logs, with aggregate sent/failed/skipped counts */
+  getJobsWithNotificationStats: adminProcedure.query(async () =>
+    getJobsWithNotificationStats()
+  ),
+
+  /** Per-worker notification logs for a specific job */
+  getNotificationLogsForJob: adminProcedure
+    .input(z.object({ jobId: z.number().int().positive() }))
+    .query(async ({ input }) => getNotificationLogsForJob(input.jobId)),
+
+  /** Batch-level summary (sent/failed/skipped per batch) for a specific job */
+  getNotificationBatchSummaryForJob: adminProcedure
+    .input(z.object({ jobId: z.number().int().positive() }))
+    .query(async ({ input }) => getNotificationBatchSummaryForJob(input.jobId)),
 });
 // ─── Workers Router ───────────────────────────────────────────────────────────
 
@@ -1600,9 +2254,18 @@ const workersRouter = router({
       lng: z.number(),
       radiusKm: z.number().default(20),
       limit: z.number().optional(),
+      /** Minimum worker age (16 or 18) from employer preferences. Workers
+       *  without a recorded birthDate are excluded when this is set. */
+      minWorkerAge: z.number().int().min(16).max(99).optional().nullable(),
     }))
     .query(async ({ input, ctx }) => {
-      const workers = await getNearbyWorkers(input.lat, input.lng, input.radiusKm, input.limit ?? 50);
+      const workers = await getNearbyWorkers(
+        input.lat,
+        input.lng,
+        input.radiusKm,
+        input.limit ?? 50,
+        input.minWorkerAge ?? null,
+      );
       // Only show phone to authenticated users
       if (!ctx.user) return workers.map(w => ({ ...w, userPhone: null }));
       return workers;
@@ -1706,7 +2369,7 @@ const userRouter = router({
         // Required
         name: z.string().min(2).max(100),
         locationMode: z.enum(["city", "radius"]),
-        preferredCity: z.string().max(100).nullable().optional(),
+        preferredCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
         workerLatitude: z.string().nullable().optional(),
         workerLongitude: z.string().nullable().optional(),
         searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
@@ -1720,6 +2383,7 @@ const userRouter = router({
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
         preferredCities: z.array(z.number().int()).optional(),
+        preferredCityPlaceId: z.string().max(100).nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -1761,6 +2425,7 @@ const userRouter = router({
           preferredDays: input.preferredDays,
           preferredTimeSlots: input.preferredTimeSlots,
           preferredCities: input.preferredCities,
+          preferredCityPlaceId: input.preferredCityPlaceId,
           signupCompleted: true,
         });
         void logEvent("info", "signup.complete", "Worker completed signup wizard", {
@@ -1797,7 +2462,7 @@ const userRouter = router({
         phonePrefix: z.string().length(3).nullable().optional(),
         phoneNumber: z.string().length(7).regex(/^\d{7}$/).nullable().optional(),
         preferredCategories: z.array(z.string()).optional(),
-        preferredCity: z.string().max(100).nullable().optional(),
+        preferredCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
         workerBio: z.string().max(500).nullable().optional(),
         locationMode: z.enum(["city", "radius"]).optional(),
         workerLatitude: z.string().nullable().optional(),
@@ -1808,6 +2473,7 @@ const userRouter = router({
         preferredDays: z.array(z.string()).optional(),
         preferredTimeSlots: z.array(z.string()).optional(),
         preferredCities: z.array(z.number().int()).optional(),
+        preferredCityPlaceId: z.string().max(100).nullable().optional(),
         email: z.string().email().max(320).nullable().optional(),
       })
     )
@@ -1887,6 +2553,7 @@ const userRouter = router({
         preferredDays: input.preferredDays,
         preferredTimeSlots: sanitizedTimeSlots,
         preferredCities: input.preferredCities,
+        preferredCityPlaceId: input.preferredCityPlaceId,
         // Only allow email update for non-Google users (Google users get email from OAuth)
         email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
       });
@@ -1931,6 +2598,112 @@ const userRouter = router({
       const buffer = Buffer.from(input.base64, "base64");
       const { url } = await storagePut(key, buffer, input.mimeType);
       await updateWorkerProfile(ctx.user.id, { profilePhoto: url });
+      return { url };
+    }),
+
+  // ── Employer Profile ──────────────────────────────────────────────────────────────────
+
+  /** Get the current employer's profile */
+  getEmployerProfile: protectedProcedure.query(async ({ ctx }) => {
+    const profile = await getEmployerProfile(ctx.user.id);
+    return profile;
+  }),
+
+  /** Update the current employer's profile */
+  updateEmployerProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2).max(100).optional(),
+        phone: z.string().min(9).max(20).nullable().optional(),
+        phonePrefix: z.string().length(3).nullable().optional(),
+        phoneNumber: z.string().length(7).regex(/^\d{7}$/).nullable().optional(),
+        email: z.string().email().max(320).nullable().optional(),
+        companyName: z.string().max(120).nullable().optional(),
+        employerBio: z.string().max(500).nullable().optional(),
+        defaultJobCity: z.string().max(100).nullable().optional(),
+        defaultJobCityId: z.number().int().nullable().optional(),
+        defaultJobLatitude: z.string().nullable().optional(),
+        defaultJobLongitude: z.string().nullable().optional(),
+        workerSearchCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
+        workerSearchCityId: z.number().int().nullable().optional(),
+        workerSearchRadiusKm: z.number().int().min(1).max(200).nullable().optional(),
+        workerSearchLatitude: z.string().nullable().optional(),
+        workerSearchLongitude: z.string().nullable().optional(),
+        workerSearchLocationMode: z.enum(["city", "radius"]).optional(),
+        minWorkerAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
+        signupCompleted: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Phone validation (same pattern as worker profile)
+      let normalizedPhone: string | undefined = undefined;
+      if (input.phone !== undefined && input.phone !== null) {
+        if (ctx.user.loginMethod === "phone_otp") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "שינוי מספר טלפון אינו מותר למשתמשים שנכנסו עם OTP" });
+        }
+        try {
+          normalizedPhone = normalizeIsraeliPhone(input.phone);
+          if (!isValidIsraeliPhone(normalizedPhone)) throw new Error();
+        } catch {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+        }
+      }
+      let phonePrefix: string | undefined = undefined;
+      let phoneNumber: string | undefined = undefined;
+      if (input.phonePrefix != null && input.phoneNumber != null) {
+        const prefixValid = await isValidPhonePrefix(input.phonePrefix);
+        if (!prefixValid) throw new TRPCError({ code: "BAD_REQUEST", message: "קידומת טלפון לא תקינה" });
+        if (!/^\d{7}$/.test(input.phoneNumber)) throw new TRPCError({ code: "BAD_REQUEST", message: "מספר הטלפון חייב להכיל בדייק 7 ספרות" });
+        phonePrefix = input.phonePrefix;
+        phoneNumber = input.phoneNumber;
+        const combined = `${input.phonePrefix}${input.phoneNumber}`;
+        try {
+          normalizedPhone = normalizeIsraeliPhone(combined);
+          if (!isValidIsraeliPhone(normalizedPhone)) normalizedPhone = undefined;
+        } catch { normalizedPhone = undefined; }
+      }
+      if (normalizedPhone) {
+        const existing = await getUserByNormalizedPhone(normalizedPhone, normalizeIsraeliPhone);
+        if (existing && existing.id !== ctx.user.id) {
+          throw new TRPCError({ code: "CONFLICT", message: "מספר הטלפון כבר משויך לחשבון אחר במערכת." });
+        }
+      }
+      await updateEmployerProfile(ctx.user.id, {
+        name: input.name,
+        phone: normalizedPhone,
+        phonePrefix,
+        phoneNumber,
+        email: input.email ?? undefined,
+        companyName: input.companyName ?? undefined,
+        employerBio: input.employerBio ?? undefined,
+        defaultJobCity: input.defaultJobCity ?? undefined,
+        defaultJobCityId: input.defaultJobCityId ?? undefined,
+        defaultJobLatitude: input.defaultJobLatitude ?? undefined,
+        defaultJobLongitude: input.defaultJobLongitude ?? undefined,
+        workerSearchCity: input.workerSearchCity ?? undefined,
+        workerSearchCityId: input.workerSearchCityId ?? undefined,
+        workerSearchRadiusKm: input.workerSearchRadiusKm ?? undefined,
+        workerSearchLatitude: input.workerSearchLatitude ?? undefined,
+        workerSearchLongitude: input.workerSearchLongitude ?? undefined,
+        workerSearchLocationMode: input.workerSearchLocationMode,
+        minWorkerAge: input.minWorkerAge ?? undefined,
+        signupCompleted: input.signupCompleted,
+      });
+      return { success: true };
+    }),
+
+  /** Upload employer profile photo to S3 */
+  uploadEmployerProfilePhoto: protectedProcedure
+    .input(z.object({
+      base64: z.string(),
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ext = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const key = `employer-photos/${ctx.user.id}-${Date.now()}.${ext}`;
+      const buffer = Buffer.from(input.base64, "base64");
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      await updateEmployerProfile(ctx.user.id, { profilePhoto: url });
       return { url };
     }),
 
@@ -2335,6 +3108,22 @@ const userRouter = router({
     }),
 
   /**
+   * Returns a map of workerId → availabilityStatus for a batch of workers.
+   * Used for real-time availability dot refresh without re-running the matching algorithm.
+   */
+  getWorkersAvailabilityStatus: protectedProcedure
+    .input(z.object({ workerIds: z.array(z.number().int()).max(200) }))
+    .query(async ({ input }) => {
+      if (input.workerIds.length === 0) return {} as Record<number, string | null>;
+      const nameMap = await getWorkerNamesByIds(input.workerIds);
+      const result: Record<number, string | null> = {};
+      for (const id of input.workerIds) {
+        result[id] = nameMap.get(id)?.availabilityStatus ?? null;
+      }
+      return result;
+    }),
+
+  /**
    * Check if a specific job is accessible to the current worker based on age.
    * Returns { accessible: true } or { accessible: false, reason }.
    */
@@ -2564,6 +3353,14 @@ const categoriesRouter = router({
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       await seedCategoriesIfEmpty();
       return { success: true };
+    }),
+
+  /** Sync any seed categories missing from the DB (admin only, safe on live DB) */
+  syncMissing: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const inserted = await syncMissingCategories();
+      return { inserted, count: inserted.length };
     }),
 });
 

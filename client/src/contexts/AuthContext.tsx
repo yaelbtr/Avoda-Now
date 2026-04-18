@@ -10,6 +10,8 @@ interface AuthUser {
   phone: string | null;
   email: string | null;
   role: "user" | "admin" | "test";
+  /** User's chosen mode: 'worker' (job seeker) or 'employer' (job poster). Null = not yet chosen. */
+  userMode: "worker" | "employer" | null | undefined;
   loginMethod: string | null;
   termsAcceptedAt: Date | null | undefined;
 }

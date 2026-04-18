@@ -1,0 +1,348 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "דלג לתוכן הראשי" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner "כותרת האתר" [ref=e7]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "תפריט נייד" [ref=e11] [cursor=pointer]:
+            - img [ref=e13]
+          - button "כניסה" [ref=e14] [cursor=pointer]:
+            - img [ref=e15]
+        - link "AvodaNow עבודה עכשיו" [ref=e18] [cursor=pointer]:
+          - /url: /
+          - img [ref=e20]
+          - generic [ref=e23]:
+            - generic [ref=e24]: AvodaNow
+            - generic [ref=e25]: עבודה עכשיו
+    - banner "הזמנה להתחברות" [ref=e26]:
+      - paragraph [ref=e27]: 🔒 התחבר כדי לראות מספרי טלפון ולפרסם משרות
+      - button "כניסה / הרשמה" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - text: כניסה / הרשמה
+      - button "סגור באנר" [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+    - main "תוכן ראשי" [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - img [ref=e42]
+            - generic [ref=e44]:
+              - heading "איך זה עובד" [level=3] [ref=e45]
+              - paragraph [ref=e46]: מצא עובדים זמניים בשלושה צעדים פשוטים
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]: "01"
+              - generic [ref=e50]:
+                - heading "פרסם מודעה" [level=4] [ref=e51]
+                - paragraph [ref=e52]: פרסם מודעה בקטגוריה הרצויה.
+            - generic [ref=e53]:
+              - generic [ref=e54]: "02"
+              - generic [ref=e55]:
+                - heading "קבל הצעות מעובדים או בחר בעצמך" [level=4] [ref=e56]
+                - paragraph [ref=e57]: המערכת תסנן עבורך עובדים מתאימים, תוכל לבחור עובד או לקבל הצעות מעובדים.
+            - generic [ref=e58]:
+              - generic [ref=e59]: "03"
+              - generic [ref=e60]:
+                - heading "קבל אישור וצור קשר" [level=4] [ref=e61]
+                - paragraph [ref=e62]: לאחר שהעובד מאשר את ההצעה, תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.
+          - paragraph [ref=e63]: התשלום מתבצע ישירות בינך לבין העובד.
+          - button "פרסם מודעה עכשיו" [ref=e64] [cursor=pointer]:
+            - img [ref=e65]
+            - text: פרסם מודעה עכשיו
+        - generic [ref=e68]:
+          - img "מעסיק מוצא עובדים זמינים דרך AvodaNow" [ref=e69]
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - img [ref=e73]
+              - generic [ref=e75]: מצא עובד תוך דקות
+            - heading "עובדים מקצועיים מוכנים לעבוד עכשיו" [level=1] [ref=e76]:
+              - text: עובדים מקצועיים
+              - text: מוכנים לעבוד עכשיו
+            - paragraph [ref=e77]: ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - img [ref=e80]
+                - generic [ref=e85]: 0+
+                - generic [ref=e86]: עובדים רשומים
+              - generic [ref=e87]:
+                - img [ref=e88]
+                - generic [ref=e91]: 24/7
+                - generic [ref=e92]: זמין תמיד
+            - generic [ref=e93]:
+              - button "פרסם צורך עכשיו" [ref=e94] [cursor=pointer]:
+                - img [ref=e95]
+                - text: פרסם צורך עכשיו
+                - img [ref=e98]
+              - button "עובדים זמינים" [ref=e100] [cursor=pointer]:
+                - img [ref=e101]
+                - text: עובדים זמינים
+          - generic:
+            - img
+        - generic [ref=e107]:
+          - generic [ref=e111]: פרסום מודעה
+          - button "פרסם מודעה דחופה עובדים זמינים יפנו אליך תוך דקות" [ref=e112] [cursor=pointer]:
+            - img [ref=e114]
+            - generic [ref=e116]:
+              - paragraph [ref=e117]: פרסם מודעה דחופה
+              - paragraph [ref=e118]: עובדים זמינים יפנו אליך תוך דקות
+            - img [ref=e119]
+          - button "עובדים זמינים באזורך עכשיו" [ref=e122] [cursor=pointer]:
+            - img [ref=e124]
+            - generic [ref=e129]:
+              - paragraph [ref=e130]: עובדים זמינים
+              - paragraph [ref=e131]: באזורך עכשיו
+      - generic [ref=e133]: לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+    - contentinfo [ref=e135]:
+      - generic [ref=e136]:
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - img [ref=e140]
+            - generic [ref=e143]:
+              - generic [ref=e144]: AvodaNow
+              - generic [ref=e145]: עובדים תוך דקות
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - img [ref=e148]
+              - generic [ref=e150]: 113+ עובדים רשומים
+            - generic [ref=e151]:
+              - img [ref=e152]
+              - generic [ref=e157]: 113+ עובדים רשומים
+            - link "info@avodanow.co.il" [ref=e158] [cursor=pointer]:
+              - /url: mailto:info@avodanow.co.il
+              - img [ref=e159]
+              - generic [ref=e162]: info@avodanow.co.il
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - heading "משרות לפי עיר" [level=2] [ref=e166]
+            - list [ref=e167]:
+              - listitem [ref=e168]:
+                - link "עבודות בתל אביב" [ref=e169] [cursor=pointer]:
+                  - /url: /jobs/%D7%AA%D7%9C%20%D7%90%D7%91%D7%99%D7%91
+              - listitem [ref=e170]:
+                - link "עבודות בירושלים" [ref=e171] [cursor=pointer]:
+                  - /url: /jobs/%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D
+              - listitem [ref=e172]:
+                - link "עבודות בחיפה" [ref=e173] [cursor=pointer]:
+                  - /url: /jobs/%D7%97%D7%99%D7%A4%D7%94
+              - listitem [ref=e174]:
+                - link "עבודות בראשון לציון" [ref=e175] [cursor=pointer]:
+                  - /url: /jobs/%D7%A8%D7%90%D7%A9%D7%95%D7%9F%20%D7%9C%D7%A6%D7%99%D7%95%D7%9F
+              - listitem [ref=e176]:
+                - link "עבודות בפתח תקווה" [ref=e177] [cursor=pointer]:
+                  - /url: /jobs/%D7%A4%D7%AA%D7%97%20%D7%AA%D7%A7%D7%95%D7%95%D7%94
+              - listitem [ref=e178]:
+                - link "עבודות באשדוד" [ref=e179] [cursor=pointer]:
+                  - /url: /jobs/%D7%90%D7%A9%D7%93%D7%95%D7%93
+              - listitem [ref=e180]:
+                - link "עבודות בנתניה" [ref=e181] [cursor=pointer]:
+                  - /url: /jobs/%D7%A0%D7%AA%D7%A0%D7%99%D7%94
+              - listitem [ref=e182]:
+                - link "עבודות בבאר שבע" [ref=e183] [cursor=pointer]:
+                  - /url: /jobs/%D7%91%D7%90%D7%A8%20%D7%A9%D7%91%D7%A2
+              - listitem [ref=e184]:
+                - link "עבודות בבני ברק" [ref=e185] [cursor=pointer]:
+                  - /url: /jobs/%D7%91%D7%A0%D7%99%20%D7%91%D7%A8%D7%A7
+              - listitem [ref=e186]:
+                - link "עבודות ברמת גן" [ref=e187] [cursor=pointer]:
+                  - /url: /jobs/%D7%A8%D7%9E%D7%AA%20%D7%92%D7%9F
+              - listitem [ref=e188]:
+                - link "עבודות בהרצליה" [ref=e189] [cursor=pointer]:
+                  - /url: /jobs/%D7%94%D7%A8%D7%A6%D7%9C%D7%99%D7%94
+              - listitem [ref=e190]:
+                - link "עבודות ברחובות" [ref=e191] [cursor=pointer]:
+                  - /url: /jobs/%D7%A8%D7%97%D7%95%D7%91%D7%95%D7%AA
+          - generic [ref=e192]:
+            - heading "משרות לפי קטגוריה" [level=2] [ref=e193]
+            - list [ref=e194]:
+              - listitem [ref=e195]:
+                - link "עבודות ניקיון" [ref=e196] [cursor=pointer]:
+                  - /url: /jobs/cleaning
+              - listitem [ref=e197]:
+                - link "עבודות אירועים" [ref=e198] [cursor=pointer]:
+                  - /url: /jobs/events
+              - listitem [ref=e199]:
+                - link "עבודות מטבח ובישול" [ref=e200] [cursor=pointer]:
+                  - /url: /jobs/kitchen
+              - listitem [ref=e201]:
+                - link "עבודות מלצרות וברים" [ref=e202] [cursor=pointer]:
+                  - /url: /jobs/serving
+              - listitem [ref=e203]:
+                - link "עבודות גינון" [ref=e204] [cursor=pointer]:
+                  - /url: /jobs/gardening
+              - listitem [ref=e205]:
+                - link "עבודות אינסטלציה" [ref=e206] [cursor=pointer]:
+                  - /url: /jobs/plumbing
+              - listitem [ref=e207]:
+                - link "עבודות חשמל" [ref=e208] [cursor=pointer]:
+                  - /url: /jobs/electricity
+              - listitem [ref=e209]:
+                - link "עבודות הובלות" [ref=e210] [cursor=pointer]:
+                  - /url: /jobs/moving
+              - listitem [ref=e211]:
+                - link "עבודות טיפול בילדים" [ref=e212] [cursor=pointer]:
+                  - /url: /jobs/childcare
+              - listitem [ref=e213]:
+                - link "עבודות טיפול בקשישים" [ref=e214] [cursor=pointer]:
+                  - /url: /jobs/eldercare
+              - listitem [ref=e215]:
+                - link "עבודות שליחויות" [ref=e216] [cursor=pointer]:
+                  - /url: /jobs/delivery
+              - listitem [ref=e217]:
+                - link "עבודות אבטחה" [ref=e218] [cursor=pointer]:
+                  - /url: /jobs/security
+              - listitem [ref=e219]:
+                - link "עבודות אחר" [ref=e220] [cursor=pointer]:
+                  - /url: /jobs/other
+        - generic [ref=e221]:
+          - heading "משרות לפי זמן" [level=2] [ref=e222]
+          - list [ref=e223]:
+            - listitem [ref=e224]:
+              - link "עבודות להיום" [ref=e225] [cursor=pointer]:
+                - /url: /jobs/today
+            - listitem [ref=e226]:
+              - link "עבודות מיידיות" [ref=e227] [cursor=pointer]:
+                - /url: /jobs/immediate
+            - listitem [ref=e228]:
+              - link "עבודות ערב" [ref=e229] [cursor=pointer]:
+                - /url: /jobs/evening
+            - listitem [ref=e230]:
+              - link "עבודות סוף שבוע" [ref=e231] [cursor=pointer]:
+                - /url: /jobs/weekend
+        - generic [ref=e232]:
+          - heading "משרות מומלצות" [level=2] [ref=e233]
+          - list [ref=e234]:
+            - listitem [ref=e235]:
+              - link "עבודות שליחויות הטובות" [ref=e236] [cursor=pointer]:
+                - /url: /best/delivery-jobs
+            - listitem [ref=e237]:
+              - link "עבודות לסטודנטים" [ref=e238] [cursor=pointer]:
+                - /url: /best/student-jobs
+            - listitem [ref=e239]:
+              - link "עבודות ערב הטובות" [ref=e240] [cursor=pointer]:
+                - /url: /best/evening-jobs
+            - listitem [ref=e241]:
+              - link "עבודות סוף שבוע" [ref=e242] [cursor=pointer]:
+                - /url: /best/weekend-jobs
+            - listitem [ref=e243]:
+              - link "עבודות מיידיות" [ref=e244] [cursor=pointer]:
+                - /url: /best/immediate-jobs
+          - heading "שאלות נפוצות" [level=2] [ref=e245]
+          - list [ref=e246]:
+            - listitem [ref=e247]:
+              - link "שאלות נפוצות על עבודה" [ref=e248] [cursor=pointer]:
+                - /url: /faq/jobs
+            - listitem [ref=e249]:
+              - link "שאלות על שליחויות" [ref=e250] [cursor=pointer]:
+                - /url: /faq/delivery-jobs
+            - listitem [ref=e251]:
+              - link "שאלות על עבודות לסטודנטים" [ref=e252] [cursor=pointer]:
+                - /url: /faq/student-jobs
+        - generic [ref=e253]:
+          - heading "מדריכים לעבודות זמניות" [level=2] [ref=e254]
+          - list [ref=e255]:
+            - listitem [ref=e256]:
+              - 'link "מדריך: ניקיון" [ref=e257] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/cleaning
+            - listitem [ref=e258]:
+              - 'link "מדריך: אירועים" [ref=e259] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/events
+            - listitem [ref=e260]:
+              - 'link "מדריך: מטבח ובישול" [ref=e261] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/kitchen
+            - listitem [ref=e262]:
+              - 'link "מדריך: מלצרות וברים" [ref=e263] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/serving
+            - listitem [ref=e264]:
+              - 'link "מדריך: גינון" [ref=e265] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/gardening
+            - listitem [ref=e266]:
+              - 'link "מדריך: אינסטלציה" [ref=e267] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/plumbing
+            - listitem [ref=e268]:
+              - 'link "מדריך: חשמל" [ref=e269] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/electricity
+            - listitem [ref=e270]:
+              - 'link "מדריך: הובלות" [ref=e271] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/moving
+            - listitem [ref=e272]:
+              - 'link "מדריך: טיפול בילדים" [ref=e273] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/childcare
+            - listitem [ref=e274]:
+              - 'link "מדריך: טיפול בקשישים" [ref=e275] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/eldercare
+            - listitem [ref=e276]:
+              - 'link "מדריך: שליחויות" [ref=e277] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/delivery
+            - listitem [ref=e278]:
+              - 'link "מדריך: אבטחה" [ref=e279] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/security
+            - listitem [ref=e280]:
+              - 'link "מדריך: אחר" [ref=e281] [cursor=pointer]':
+                - /url: /guide/temporary-jobs/other
+            - listitem [ref=e282]:
+              - 'link "מדריך: עבודות לסטודנטים" [ref=e283] [cursor=pointer]':
+                - /url: /guide/student-jobs
+            - listitem [ref=e284]:
+              - 'link "מדריך: שכר שליח" [ref=e285] [cursor=pointer]':
+                - /url: /guide/delivery-salary
+            - listitem [ref=e286]:
+              - 'link "מדריך: עבודות לפסח" [ref=e287] [cursor=pointer]':
+                - /url: /guide/passover-jobs
+            - listitem [ref=e288]:
+              - link "כל המדריכים →" [ref=e289] [cursor=pointer]:
+                - /url: /guide/temporary-jobs
+        - generic [ref=e290]:
+          - heading "מסמכים משפטיים" [level=2] [ref=e291]
+          - generic [ref=e292]:
+            - generic [ref=e293]:
+              - link "כל המסמכים המשפטיים" [ref=e294] [cursor=pointer]:
+                - /url: /legal
+              - generic [ref=e295]: ·
+            - generic [ref=e296]:
+              - link "תנאי שימוש" [ref=e297] [cursor=pointer]:
+                - /url: /terms
+              - generic [ref=e298]: ·
+            - generic [ref=e299]:
+              - link "מדיניות פרטיות" [ref=e300] [cursor=pointer]:
+                - /url: /privacy
+              - generic [ref=e301]: ·
+            - generic [ref=e302]:
+              - link "מדיניות פרסום משרות" [ref=e303] [cursor=pointer]:
+                - /url: /job-posting-policy
+              - generic [ref=e304]: ·
+            - generic [ref=e305]:
+              - link "מדיניות בטיחות" [ref=e306] [cursor=pointer]:
+                - /url: /safety-policy
+              - generic [ref=e307]: ·
+            - generic [ref=e308]:
+              - link "מדיניות תוכן" [ref=e309] [cursor=pointer]:
+                - /url: /user-content-policy
+              - generic [ref=e310]: ·
+            - link "מדיניות ביקורות" [ref=e312] [cursor=pointer]:
+              - /url: /reviews-policy
+          - button "שנה העדפות עוגיות" [ref=e313] [cursor=pointer]: 🍪 שנה העדפות עוגיות
+          - paragraph [ref=e314]:
+            - text: © 2026
+            - generic [ref=e315]: AvodaNow
+            - text: · כל הזכויות שמורות
+        - paragraph [ref=e316]:
+          - generic [ref=e317]: AvodaNow
+          - text: אינה סוכנת תיווך. הפלטפורמה מספקת עובדים תוך דקות לעבודות בית ואירועים. הפלטפורמה אינה אחראית לתנאי העסקה בין הצדדים.
+        - paragraph [ref=e318]: לשון זכר בפלטפורמה נועדה מטעמי נוחות בלבד ומתייחסת לכל המינים.
+  - region "הסכמה לעוגיות" [ref=e319]:
+    - generic [ref=e321]:
+      - generic [ref=e322]:
+        - img [ref=e323]
+        - paragraph [ref=e325]:
+          - text: אנו משתמשים בעוגיות לשיפור חוויית המשתמש וניתוח שימוש. בהמשך השימוש באתר, אתה מסכים לשימוש שלנו בעוגיות.
+          - link "קרא עוד על מדיניות העוגיות שלנו" [ref=e326] [cursor=pointer]:
+            - /url: /cookies
+      - generic [ref=e327]:
+        - button "פתח הגדרות עוגיות" [ref=e328] [cursor=pointer]: הגדרות
+        - button "אישור" [ref=e329] [cursor=pointer]
+```

@@ -31,6 +31,7 @@ import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { Link } from "wouter";
 import { MapPin, Briefcase, Search, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -121,6 +122,7 @@ function buildCanonical(city?: string, category?: string, time?: TimeFilter): st
 export default function JobsLanding() {
   const params = useParams<{ slug?: string; category?: string; city?: string }>();
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const { categories: dbCategories } = useCategories();
   // Derive valid category slugs from DB at runtime (Single Source of Truth)
   const dbCategorySlugs = useMemo(() => new Set(dbCategories.map((c) => c.slug)), [dbCategories]);
@@ -257,14 +259,14 @@ export default function JobsLanding() {
   );
 
   // Saved jobs
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
   const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
   const utils = trpc.useUtils();
   const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
 
   // Applications
-  const myAppsQuery = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myAppsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
   const appliedJobIds = new Set((myAppsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
   const applyMutation = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },

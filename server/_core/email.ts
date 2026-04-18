@@ -1,17 +1,18 @@
 /**
- * Email helper – sends transactional emails via the Manus Forge API.
+ * Email helper – sends transactional emails via SMTP (primary) or SendGrid (fallback).
  *
- * The Forge API exposes a `SendEmail` endpoint under the same base URL
- * used by notifications and other built-in services.
+ * Transport priority:
+ *   1. SMTP  — uses SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS / SMTP_SECURE
+ *   2. SendGrid — uses SENDGRID_API_KEY (fallback when SMTP is not configured)
  *
  * Usage:
  *   await sendEmail({ to, subject, html, text })
  *
- * Returns `true` on success, `false` when the upstream service is
- * temporarily unavailable (callers can fall back to owner notification).
+ * Returns `true` on success, `false` when all transports fail (callers can fall
+ * back to owner notification).
  */
 
-import { ENV } from "./env";
+import nodemailer from "nodemailer";
 
 export type EmailPayload = {
   /** Recipient email address */
@@ -24,49 +25,108 @@ export type EmailPayload = {
   text?: string;
 };
 
-const buildEmailEndpoint = (baseUrl: string): string => {
-  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return new URL("webdevtoken.v1.WebDevService/SendEmail", normalizedBase).toString();
-};
+// ─── SMTP transport ──────────────────────────────────────────────────────────
 
-export async function sendEmail(payload: EmailPayload): Promise<boolean> {
-  if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
-    console.warn("[Email] Forge API not configured – skipping email send.");
-    return false;
-  }
+function createSmtpTransport(): nodemailer.Transporter | null {
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 465;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const secure = process.env.SMTP_SECURE !== "false"; // default true
 
-  const endpoint = buildEmailEndpoint(ENV.forgeApiUrl);
+  if (!host || !user || !pass) return null;
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }, // allow self-signed certs on custom mail servers
+  });
+}
+
+async function sendViaSmtp(payload: EmailPayload): Promise<boolean> {
+  const transport = createSmtpTransport();
+  if (!transport) return false;
+
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER ?? "no-reply@avodanow.co.il";
 
   try {
-    const response = await fetch(endpoint, {
+    await transport.sendMail({
+      from,
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
+    });
+    return true;
+  } catch (error) {
+    console.warn("[Email/SMTP] Failed to send email:", error);
+    return false;
+  }
+}
+
+// ─── SendGrid fallback ────────────────────────────────────────────────────────
+
+async function sendViaSendGrid(payload: EmailPayload): Promise<boolean> {
+  const apiKey = process.env.SENDGRID_API_KEY;
+  if (!apiKey) return false;
+
+  const from = process.env.EMAIL_FROM ?? "no-reply@avodanow.co.il";
+
+  try {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
       headers: {
-        accept: "application/json",
-        authorization: `Bearer ${ENV.forgeApiKey}`,
-        "content-type": "application/json",
-        "connect-protocol-version": "1",
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        to: payload.to,
+        personalizations: [{ to: [{ email: payload.to }] }],
+        from: { email: from },
         subject: payload.subject,
-        html: payload.html,
-        text: payload.text ?? payload.html.replace(/<[^>]+>/g, ""),
+        content: [
+          { type: "text/plain", value: payload.text ?? payload.html.replace(/<[^>]+>/g, "") },
+          { type: "text/html", value: payload.html },
+        ],
       }),
     });
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
-      console.warn(
-        `[Email] Failed to send email (${response.status} ${response.statusText})${detail ? `: ${detail}` : ""}`
-      );
+      console.warn(`[Email/SendGrid] Failed (${response.status})${detail ? `: ${detail}` : ""}`);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.warn("[Email] Error calling email service:", error);
+    console.warn("[Email/SendGrid] Error calling SendGrid API:", error);
     return false;
   }
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Send a transactional email. Tries SMTP first, then SendGrid as fallback.
+ * Returns `true` on success, `false` when all transports fail.
+ */
+export async function sendEmail(payload: EmailPayload): Promise<boolean> {
+  // 1. Try SMTP
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const sent = await sendViaSmtp(payload);
+    if (sent) return true;
+    console.warn("[Email] SMTP failed, trying SendGrid fallback...");
+  }
+
+  // 2. Try SendGrid
+  if (process.env.SENDGRID_API_KEY) {
+    const sent = await sendViaSendGrid(payload);
+    if (sent) return true;
+  }
+
+  console.warn("[Email] All transports failed for:", payload.to);
+  return false;
 }
 
 /**
@@ -149,7 +209,6 @@ export async function sendWelcomeEmail(params: {
     console.log(`[Email] Welcome email sent to ${email}`);
   } else {
     console.warn(`[Email] Welcome email failed for ${email} – falling back to owner notification`);
-    // Non-blocking fallback: notify owner so no registration is silently lost
     try {
       const { notifyOwner } = await import("./notification");
       await notifyOwner({

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ShieldCheck, AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   LEGAL_DOCUMENT_LABELS,
   LEGAL_DOCUMENT_PATHS,
@@ -34,12 +35,13 @@ import {
  */
 export default function ReConsentModal() {
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { data, isLoading } = trpc.user.checkOutdatedConsents.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });

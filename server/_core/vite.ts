@@ -141,10 +141,9 @@ export function serveStatic(app: Express) {
       // nanoid(24) gives ~143 bits of entropy — well above the 128-bit minimum.
       const nonce = nanoid(24);
 
-      // Inject nonce into every inline <script> tag in the SSR shell.
-      // The SSR shell uses synchronous inline scripts that cannot be moved to
-      // external files without breaking the instant-render behaviour.
-      html = html.replace(/<script(?!\s[^>]*\bsrc=)/g, `<script nonce="${nonce}"`);
+      // מוסיפים nonce לכל תגית script כדי שגם bundle חיצוני של Vite
+      // יורשה תחת strict-dynamic ולא רק הסקריפטים ה-inline של ה-SSR shell.
+      html = html.replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
 
       // Build the full CSP directive set with this request's nonce.
       const directives = buildCspDirectives(nonce);

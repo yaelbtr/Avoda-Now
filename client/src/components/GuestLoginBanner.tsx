@@ -19,8 +19,8 @@ export default function GuestLoginBanner() {
   );
   const [loginOpen, setLoginOpen] = useState(false);
 
-  // Don't render while auth is loading, when user is logged in, or after dismiss
-  if (loading || isAuthenticated || dismissed) return null;
+ 
+  return null;
 
   const handleDismiss = () => {
     sessionStorage.setItem(DISMISSED_KEY, "1");
@@ -37,7 +37,7 @@ export default function GuestLoginBanner() {
       <div
         className="w-full z-30 flex items-center justify-between gap-3 px-4 py-2.5"
         style={{
-          background: "linear-gradient(90deg, #1d4ed8 0%, #2563eb 60%, #3b82f6 100%)",
+          background: "linear-gradient(90deg, #d87a1d 0%, #389332 60%, #3b82f6 100%)",
           minHeight: 44,
         }}
         dir="rtl"

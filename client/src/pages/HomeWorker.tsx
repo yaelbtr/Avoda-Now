@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useCountdown } from "@/hooks/useCountdown";
+import workerHeroCollage from "@/assets/home/worker-hero-collage.jpg";
 
 // Hook: counts DOWN from startValue to endValue over duration ms
 function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
@@ -136,6 +137,9 @@ const HOW_IT_WORKS = [
     reverse: false,
   },
 ];
+
+const WORKER_HOME_HERO_ALT =
+  "עובד יושב על ספה ובודק עבודות זמינות בטלפון";
 
 interface HomeWorkerProps {
   onLoginRequired: (msg: string) => void;
@@ -365,42 +369,49 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── MOBILE Hero (< md): image at original size, stats+CTA below with glass continuation ── */}
       <section className="relative overflow-hidden md:hidden">
 
-        {/* Image block — fixed 380px, badge + headline overlaid at bottom */}
-        <div className="relative w-full" style={{ height: 440 }}>
+        {/* Image block — landscape hero with text over the quieter side */}
+        <div className="relative w-full" style={{ aspectRatio: "1456 / 816" }}>
           <img
-            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
-            alt="עובד צעיר מחזיק מטאטא במטבח"
+            src={workerHeroCollage}
+            alt={WORKER_HOME_HERO_ALT}
             loading="eager"
             fetchPriority="high"
             decoding="async"
+            width={1456}
+            height={816}
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "50% 15%" }}
+            style={{ objectPosition: "50% 50%" }}
           />
-          {/* Gradient: dark band in middle for text readability, fades to page-bg at bottom */}
+          {/* גרדינט שמדגיש את אזור הטקסט בלי להעמיס על הדמות */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background: [
-                "linear-gradient(to bottom,",
-                "  oklch(0.10 0.06 122 / 0.55) 0%,",
-                "  oklch(0.10 0.06 122 / 0.60) 22%,",
-                "  oklch(0.10 0.06 122 / 0.05) 36%,",
-                "  oklch(0.10 0.06 122 / 0.00) 46%,",
-                "  oklch(0.10 0.06 122 / 0.55) 54%,",
-                "  oklch(0.10 0.06 122 / 0.65) 66%,",
-                "  oklch(0.10 0.06 122 / 0.20) 74%,",
-                "  oklch(0.95 0.03 91.6 / 0.80) 88%,",
-                "  oklch(0.95 0.03 91.6) 100%)",
-              ].join(" "),
-            }}
+            // style={{
+            //   background: [
+            //     "linear-gradient(90deg,",
+            //     "  oklch(0.96 0.03 91.6 / 0.78) 0%,",
+            //     "  oklch(0.96 0.03 91.6 / 0.58) 23%,",
+            //     "  oklch(0.96 0.03 91.6 / 0.20) 45%,",
+            //     "  oklch(0.11 0.05 122 / 0.10) 67%,",
+            //     "  oklch(0.11 0.05 122 / 0.30) 100%),",
+            //     "linear-gradient(180deg,",
+            //     "  transparent 46%,",
+            //     "  oklch(0.10 0.04 122 / 0.08) 62%,",
+            //     "  oklch(0.10 0.04 122 / 0.24) 78%,",
+            //     "  oklch(0.10 0.04 122 / 0.42) 100%),",
+            //     "linear-gradient(180deg,",
+            //     "  oklch(0.11 0.05 122 / 0.26) 0%,",
+            //     "  oklch(0.11 0.05 122 / 0.06) 28%,",
+            //     "  oklch(0.11 0.05 122 / 0.12) 72%,",
+            //     "  oklch(0.95 0.03 91.6 / 0.88) 100%)",
+            //   ].join(" "),
+            // }}
           />
-          {/* Badge — top center, above head — only shown when 10+ active jobs */}
+          {/* Badge — kept on the quieter side of the photo */}
           {(activeJobCount === null || activeJobCount >= 10) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-              className="absolute top-5 left-1/2 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+              className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
               style={{
-                transform: "translateX(-50%)",
                 background: "oklch(1 0 0 / 0.14)",
                 border: "1px solid oklch(1 0 0 / 0.30)",
                 boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
@@ -415,33 +426,321 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               </span>
             </motion.div>
           )}
-          {/* White headline — above the worker's head */}
-          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "18%" }}>
+          {/* White headline */}
+          {/* <div className="absolute z-10 flex flex-col items-start text-right" style={{ top: "21%", left: "1rem", right: "31%" }}>
             <motion.h1
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[30px] leading-[1.15] font-black"
-              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 12px oklch(0.10 0.06 122 / 0.80)" }}
+              className="text-[25px] leading-[1.12] font-black"
+              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 14px oklch(0.10 0.06 122 / 0.42)" }}
             >
               מחפש עבודה זמנית?
             </motion.h1>
-          </div>
-          {/* Yellow headline + subtitle — below the worker's head */}
-          <div className="absolute inset-x-0 z-10 flex flex-col items-center text-center px-5" style={{ top: "56%" }}>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="text-[30px] leading-[1.15] font-black mb-2"
-              style={{ color: "oklch(0.88 0.13 70)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 0 16px oklch(0.68 0.10 80.8 / 0.40)" }}
+          </div> */}
+          {/* Yellow headline + subtitle */}
+          <div className="absolute z-10" style={{ display: "none", top: "24%", left: "0.9rem", right: "32%" }}>
+            <div
+              className="relative flex flex-col items-start text-right"
+              style={{
+                width: "100%",
+                maxWidth: "275px",
+              }}
             >
-              מצא אחת תוך דקות
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[13px] font-semibold leading-relaxed"
-              style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  inset: "-18px -18px -22px -18px",
+                  borderRadius: "28px",
+                  background: "radial-gradient(circle at 42% 28%, oklch(0.17 0.03 122 / 0.34) 0%, oklch(0.17 0.03 122 / 0.18) 50%, transparent 100%)",
+                  filter: "blur(16px)",
+                }}
+              />
+              <motion.p
+                aria-label="רוצה לעבוד עכשיו?"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="relative text-[27px] leading-[1.04] font-black"
+              style={{
+                color: "oklch(0.90 0.13 77)",
+                fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
+                textShadow: "0 2px 6px oklch(0.08 0.03 122 / 0.72), 0 12px 26px oklch(0.08 0.03 122 / 0.30)",
+                letterSpacing: "-0.02em",
+                fontSize: 0,
+                lineHeight: 0,
+              }}
             >
-              ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "block",
+                  fontSize: "29px",
+                  lineHeight: 1.02,
+                  color: "oklch(0.90 0.13 77)",
+                }}
+              >
+                רוצה לעבוד עכשיו?
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "none",
+                  fontSize: "27px",
+                  lineHeight: 1.04,
+                  color: "oklch(0.98 0.01 88)",
+                }}
+              >
+                רוצה
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "none",
+                  marginInlineStart: "0.18em",
+                  padding: "0.02em 0.18em 0.08em",
+                  borderRadius: "16px",
+                  fontSize: "27px",
+                  lineHeight: 1.04,
+                  color: "oklch(0.90 0.13 77)",
+                  background: "linear-gradient(180deg, oklch(0.97 0.03 92 / 0.10) 0%, oklch(0.86 0.12 76 / 0.18) 100%)",
+                  boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.12), 0 8px 20px oklch(0.75 0.14 70 / 0.10)",
+                }}
+              >
+                לעבוד עכשיו?
+              </span>
+              <span aria-hidden="true" style={{ display: "none" }}>
+         רוצה לעבוד עכשיו?    
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "block",
+                  marginTop: "0.72rem",
+                  fontSize: "15px",
+                  lineHeight: 1.18,
+                  fontWeight: 700,
+                  color: "oklch(0.98 0.01 88)",
+                }}
+              >
+            או לקבל עוד פניות – בלי התחייבות
+              </span>
             </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="relative text-[13px] font-semibold leading-relaxed"
+              style={{
+                color: "oklch(0.98 0.01 88)",
+                width: "100%",
+                marginTop: "0.65rem",
+                fontSize: 0,
+                lineHeight: 0,
+                textShadow: "0 1px 4px oklch(0.08 0.03 122 / 0.54)",
+              }}
+            >
+           או לקבל עוד פניות – בלי התחייבות
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}
+              className="relative"
+              style={{
+                display: "none",
+                marginTop: "0.45rem",
+                color: "oklch(0.97 0.01 88 / 0.96)",
+                fontSize: "13px",
+                fontWeight: 600,
+                lineHeight: 1.55,
+                textShadow: "0 1px 4px oklch(0.08 0.03 122 / 0.52), 0 8px 20px oklch(0.08 0.03 122 / 0.18)",
+              }}
+            >
+              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.24 }}
+              className="relative inline-flex items-center gap-2 rounded-full"
+              style={{
+                marginTop: "0.8rem",
+                padding: "0.38rem 0.7rem",
+                background: "oklch(0.14 0.03 122 / 0.34)",
+                border: "1px solid oklch(0.96 0.03 92 / 0.12)",
+                boxShadow: "0 8px 24px oklch(0.08 0.03 122 / 0.16)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: "7px",
+                  height: "7px",
+                  borderRadius: "999px",
+                  background: "oklch(0.90 0.13 77)",
+                  boxShadow: "0 0 0 4px oklch(0.90 0.13 77 / 0.14)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  color: "oklch(0.97 0.01 88)",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  letterSpacing: "-0.01em",
+                  textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.40)",
+                }}
+              >
+                537+ עובדים כבר בפנים
+              </span>
+            </motion.div>
+            </div>
           </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}
+            className="absolute z-10 text-center"
+            style={{
+              display: "none",
+              left: "1rem",
+              right: "1rem",
+              bottom: "0.9rem",
+              padding: "0.6rem 0.9rem",
+              borderRadius: "18px",
+              background: "linear-gradient(180deg, oklch(0.12 0.03 122 / 0.18) 0%, oklch(0.12 0.03 122 / 0.44) 100%)",
+              border: "1px solid oklch(0.96 0.03 92 / 0.10)",
+              boxShadow: "0 12px 28px oklch(0.08 0.03 122 / 0.18)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
+            <span
+              style={{
+                display: "block",
+                color: "oklch(0.97 0.01 88 / 0.98)",
+                fontSize: "13px",
+                fontWeight: 700,
+                lineHeight: 1.45,
+                letterSpacing: "-0.01em",
+                textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.45)",
+              }}
+            >
+              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+            </span>
+          </motion.div>
+          <div className="absolute z-10" style={{ top: "19%",   right: "40%" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+              style={{ maxWidth: "186px" }}
+            >
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  inset: "-10px -12px -16px -12px",
+                  borderRadius: "24px",
+                  background: "radial-gradient(circle at 38% 30%, oklch(0.16 0.03 122 / 0.24) 0%, oklch(0.16 0.03 122 / 0.08) 58%, transparent 100%)",
+                  filter: "blur(12px)",
+                }}
+              />
+              <h1
+                className="relative"
+                style={{
+                  color: "oklch(0.90 0.13 77)",
+                  fontSize: "24px",
+                  lineHeight: 1.08,
+                  fontWeight: 900,
+                  fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
+                  letterSpacing: "-0.02em",
+                  textShadow: "0 2px 5px oklch(0.08 0.03 122 / 0.64), 0 10px 20px oklch(0.08 0.03 122 / 0.22)",
+                }}
+              >
+                רוצה לעבוד עכשיו?
+              </h1>
+              <p
+                className="relative"
+                style={{
+                  marginRight: "-0.5rem",
+                  marginTop: "0.42rem",
+                  color: "oklch(0.98 0.01 88)",
+                  fontSize: "12.5px",
+                  lineHeight: 1.34,
+                  fontWeight: 700,
+                  textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.46)",
+                }}
+              >
+                עבודות זמינות כבר היום באזור שלך
+              </p>
+              <div
+                className="relative inline-flex items-center gap-2 rounded-full"
+                style={{ 
+                  marginRight: "1.5rem",
+                  marginTop: "1.5rem",
+                  padding: "0.3rem 0.55rem",
+                  background: "oklch(0.14 0.03 122 / 0.22)",
+                  border: "1px solid oklch(0.96 0.03 92 / 0.12)",
+                  boxShadow: "0 5px 14px oklch(0.08 0.03 122 / 0.10)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "999px",
+                    background: "oklch(0.90 0.13 77)",
+                    boxShadow: "0 0 0 4px oklch(0.90 0.13 77 / 0.12)",
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    color: "oklch(0.97 0.01 88 / 0.94)",
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    letterSpacing: "-0.01em",
+                    textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.36)",
+                  }}
+                >
+                  537+ עובדים כבר בפנים
+                </span>
+              </div>
+            </motion.div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12 }}
+            className="absolute z-10 text-center"
+            style={{
+              
+              right: "2rem",
+              bottom: "0.5rem",
+              padding: "0.18rem 0.45rem 0.2rem",
+              borderRadius: "12px",
+              background: "linear-gradient(180deg, transparent 0%, oklch(0.12 0.03 122 / 0.14) 100%)",
+            }}
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                width: "36px",
+                height: "1px",
+                margin: "0 auto 0.26rem",
+                background: "linear-gradient(90deg, transparent 0%, oklch(0.96 0.03 92 / 0.40) 50%, transparent 100%)",
+              }}
+            />
+            <span
+              style={{
+                display: "block",
+                color: "oklch(0.97 0.01 88 / 0.98)",
+                fontSize: "11px",
+                fontWeight: 700,
+                lineHeight: 1.28,
+                letterSpacing: "-0.01em",
+                textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.36)",
+              }}
+            >
+              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+            </span>
+          </motion.div>
         </div>
 
         {/* Stats + CTAs — on page-bg, seamlessly below the faded image */}
@@ -546,22 +845,35 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       >
         {/* Full-bleed background image */}
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/worker_hero_new_380ae5da.webp"
-          alt="עובד צעיר מחזיק מטאטא במטבח"
+          src={workerHeroCollage}
+          alt={WORKER_HOME_HERO_ALT}
           loading="eager"
           fetchPriority="high"
           decoding="async"
-          width={1440}
-          height={540}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "50% 15%" }}
+          width={1456}
+          height={816}
+          className="absolute right-6 top-1/2 z-0 w-[520px] max-w-[44vw] -translate-y-1/2 rounded-[36px] border object-cover shadow-[0_24px_60px_oklch(0.28_0.06_122_/_0.18),0_8px_18px_oklch(0.28_0.06_122_/_0.12)] xl:right-12 xl:w-[620px]"
+          style={{
+            objectPosition: "50% 50%",
+            borderColor: "oklch(1 0 0 / 0.72)",
+            background: "oklch(1 0 0 / 0.72)",
+          }}
         />
 
         {/* Directional overlay: very light on left only */}
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to right, oklch(0.95 0.03 91.6 / 0.20) 0%, oklch(0.95 0.03 91.6 / 0.08) 25%, transparent 45%)",
+            background: [
+              "radial-gradient(circle at 18% 22%,",
+              "  oklch(0.99 0.015 80 / 0.92) 0%,",
+              "  oklch(0.99 0.015 80 / 0.80) 28%,",
+              "  transparent 56%),",
+              "linear-gradient(180deg,",
+              "  oklch(0.99 0.01 95) 0%,",
+              "  oklch(0.97 0.02 90) 58%,",
+              "  oklch(0.95 0.03 91.6) 100%)",
+            ].join(" "),
           }}
         />
         {/* Bottom fade to page bg */}

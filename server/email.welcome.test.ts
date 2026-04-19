@@ -1,9 +1,12 @@
 /**
- * Tests for the welcome email helper (server/_core/email.ts)
+ * Tests for the email helper (server/_core/email.ts)
  * and the name validation logic mirrored from the registration form.
+ *
+ * The email module uses SMTP (primary) and SendGrid (fallback).
+ * Tests mock nodemailer and fetch to avoid real network calls.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
 // ─── Name validation (mirrors LoginModal validateName) ────────────────────────
 
@@ -57,123 +60,97 @@ describe("validateName", () => {
   });
 });
 
-// ─── sendEmail / sendWelcomeEmail ─────────────────────────────────────────────
-// The email module reads ENV at call time, so we can test by injecting
-// a custom sendEmail implementation that bypasses the real fetch.
+// ─── sendEmail helper ─────────────────────────────────────────────────────────
 
 describe("sendEmail helper", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.resetModules();
   });
 
-  it("returns false when forgeApiUrl is empty", async () => {
-    // Directly test the guard branch by calling with empty env
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
-    // Override ENV inline for this test
-    const { ENV } = await import("./_core/env");
-    const origUrl = ENV.forgeApiUrl;
-    const origKey = ENV.forgeApiKey;
-    (ENV as Record<string, string>).forgeApiUrl = "";
-    (ENV as Record<string, string>).forgeApiKey = "";
+  it("returns false when no transport is configured", async () => {
+    // Temporarily clear env vars
+    const origSmtpHost = process.env.SMTP_HOST;
+    const origSmtpUser = process.env.SMTP_USER;
+    const origSmtpPass = process.env.SMTP_PASS;
+    const origSgKey = process.env.SENDGRID_API_KEY;
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    delete process.env.SENDGRID_API_KEY;
 
+    vi.resetModules();
     const { sendEmail } = await import("./_core/email");
     const result = await sendEmail({ to: "a@b.com", subject: "s", html: "<p>h</p>" });
-
     expect(result).toBe(false);
-    expect(fetchSpy).not.toHaveBeenCalled();
 
     // Restore
-    (ENV as Record<string, string>).forgeApiUrl = origUrl;
-    (ENV as Record<string, string>).forgeApiKey = origKey;
+    if (origSmtpHost) process.env.SMTP_HOST = origSmtpHost;
+    if (origSmtpUser) process.env.SMTP_USER = origSmtpUser;
+    if (origSmtpPass) process.env.SMTP_PASS = origSmtpPass;
+    if (origSgKey) process.env.SENDGRID_API_KEY = origSgKey;
   });
 
-  it("calls fetch with SendEmail endpoint and returns true on 200", async () => {
-    const { ENV } = await import("./_core/env");
-    const origUrl = ENV.forgeApiUrl;
-    const origKey = ENV.forgeApiKey;
-    (ENV as Record<string, string>).forgeApiUrl = "https://forge.example.com/";
-    (ENV as Record<string, string>).forgeApiKey = "test-key";
+  it("falls back to SendGrid when SMTP is not configured but SendGrid is", async () => {
+    const origSmtpHost = process.env.SMTP_HOST;
+    delete process.env.SMTP_HOST;
 
+    // Mock fetch for SendGrid
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ success: true }), { status: 200 })
+      new Response("", { status: 202 })
     );
 
+    vi.resetModules();
     const { sendEmail } = await import("./_core/email");
-    const result = await sendEmail({
-      to: "user@example.com",
-      subject: "ברוכים הבאים",
-      html: "<p>שלום</p>",
-    });
+    const result = await sendEmail({ to: "user@example.com", subject: "Test", html: "<p>hi</p>" });
 
     expect(result).toBe(true);
     expect(fetchSpy).toHaveBeenCalledOnce();
-    const [url, options] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("SendEmail");
-    const body = JSON.parse(options.body as string);
-    expect(body.to).toBe("user@example.com");
-    expect(body.subject).toBe("ברוכים הבאים");
+    const [url] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("sendgrid.com");
 
-    (ENV as Record<string, string>).forgeApiUrl = origUrl;
-    (ENV as Record<string, string>).forgeApiKey = origKey;
+    if (origSmtpHost) process.env.SMTP_HOST = origSmtpHost;
   });
 
-  it("returns false when fetch returns non-200", async () => {
-    const { ENV } = await import("./_core/env");
-    const origUrl = ENV.forgeApiUrl;
-    const origKey = ENV.forgeApiKey;
-    (ENV as Record<string, string>).forgeApiUrl = "https://forge.example.com/";
-    (ENV as Record<string, string>).forgeApiKey = "test-key";
+  it("returns false when SendGrid returns non-200", async () => {
+    const origSmtpHost = process.env.SMTP_HOST;
+    delete process.env.SMTP_HOST;
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response("Internal Server Error", { status: 500 })
+      new Response("Unauthorized", { status: 401 })
     );
 
+    vi.resetModules();
     const { sendEmail } = await import("./_core/email");
     const result = await sendEmail({ to: "a@b.com", subject: "s", html: "<p>h</p>" });
     expect(result).toBe(false);
 
-    (ENV as Record<string, string>).forgeApiUrl = origUrl;
-    (ENV as Record<string, string>).forgeApiKey = origKey;
+    if (origSmtpHost) process.env.SMTP_HOST = origSmtpHost;
   });
 
-  it("returns false when fetch throws", async () => {
-    const { ENV } = await import("./_core/env");
-    const origUrl = ENV.forgeApiUrl;
-    const origKey = ENV.forgeApiKey;
-    (ENV as Record<string, string>).forgeApiUrl = "https://forge.example.com/";
-    (ENV as Record<string, string>).forgeApiKey = "test-key";
+  it("sendWelcomeEmail does not throw when all transports fail", async () => {
+    const origSmtpHost = process.env.SMTP_HOST;
+    delete process.env.SMTP_HOST;
 
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network error"));
 
-    const { sendEmail } = await import("./_core/email");
-    const result = await sendEmail({ to: "a@b.com", subject: "s", html: "<p>h</p>" });
-    expect(result).toBe(false);
-
-    (ENV as Record<string, string>).forgeApiUrl = origUrl;
-    (ENV as Record<string, string>).forgeApiKey = origKey;
-  });
-
-  it("sendWelcomeEmail does not throw when service is unavailable", async () => {
-    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network error"));
+    vi.resetModules();
     const { sendWelcomeEmail } = await import("./_core/email");
-    await expect(sendWelcomeEmail({ name: "ישראל", email: "test@example.com" })).resolves.not.toThrow();
+    await expect(
+      sendWelcomeEmail({ name: "ישראל", email: "test@example.com" })
+    ).resolves.not.toThrow();
+
+    if (origSmtpHost) process.env.SMTP_HOST = origSmtpHost;
   });
 });
 
 // ─── Welcome email routing logic ─────────────────────────────────────────────
-// Unit tests for the routing decisions around when welcome emails are sent.
 
 describe("welcome email routing decisions", () => {
-  /**
-   * Mirrors the guard in verifyEmailCode:
-   *   sendWelcomeEmailOtp({ to: email, name: input.name ?? "" })
-   *   — always fires for new email_otp users (email is always known)
-   */
   it("email_otp: welcome email fires for every new user (email always known)", () => {
     const isNewUser = true;
     const loginMethod = "email_otp";
     const email = "test@example.com";
-
     const shouldSend = isNewUser && loginMethod === "email_otp" && !!email;
     expect(shouldSend).toBe(true);
   });
@@ -182,20 +159,13 @@ describe("welcome email routing decisions", () => {
     const isNewUser = false;
     const loginMethod = "email_otp";
     const email = "test@example.com";
-
     const shouldSend = isNewUser && loginMethod === "email_otp" && !!email;
     expect(shouldSend).toBe(false);
   });
 
-  /**
-   * Mirrors the guard in completeSignup:
-   *   if (userEmail && ctx.user.loginMethod !== "email_otp")
-   *   — skips email_otp users to avoid duplicate welcome emails
-   */
   it("completeSignup: skips welcome email for email_otp users (already sent in verifyEmailCode)", () => {
     const loginMethod = "email_otp";
     const userEmail = "test@example.com";
-
     const shouldSend = !!userEmail && loginMethod !== "email_otp";
     expect(shouldSend).toBe(false);
   });
@@ -203,7 +173,6 @@ describe("welcome email routing decisions", () => {
   it("completeSignup: sends welcome email for phone_otp users with email", () => {
     const loginMethod = "phone_otp";
     const userEmail = "test@example.com";
-
     const shouldSend = !!userEmail && loginMethod !== "email_otp";
     expect(shouldSend).toBe(true);
   });
@@ -211,7 +180,6 @@ describe("welcome email routing decisions", () => {
   it("completeSignup: sends welcome email for google users (always have email)", () => {
     const loginMethod = "google";
     const userEmail = "test@gmail.com";
-
     const shouldSend = !!userEmail && loginMethod !== "email_otp";
     expect(shouldSend).toBe(true);
   });
@@ -219,7 +187,6 @@ describe("welcome email routing decisions", () => {
   it("completeSignup: does NOT send when email is missing", () => {
     const loginMethod = "phone_otp";
     const userEmail = null;
-
     const shouldSend = !!userEmail && loginMethod !== "email_otp";
     expect(shouldSend).toBe(false);
   });

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { useForm } from "react-hook-form";
@@ -6,27 +6,30 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { MapView } from "@/components/Map";
+import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
+import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import LoginModal from "@/components/LoginModal";
+import JobPublishOtpModal from "@/components/JobPublishOtpModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { saveReturnPath } from "@/const";
-import { SALARY_TYPES, START_TIMES } from "@shared/categories";
-import { shouldWarnLateJob, minAgeLabel, normalizeDateInput } from "@shared/ageUtils";
+import { SALARY_TYPES } from "@shared/categories";
+import { shouldWarnLateJob, normalizeDateInput, isEndTimeInvalid, isOvernightShift } from "@shared/ageUtils";
+import { SHIFT_PRESETS } from "@shared/const";
 import { useCategories } from "@/hooks/useCategories";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
-import { MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase, Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus } from "lucide-react";
+import {
+  MapPin, LocateFixed, Loader2, CheckCircle2, Shield, Copy, Briefcase,
+  Crosshair, Building2, Bell, BellOff, AlertTriangle, Camera, X, ImagePlus,
+  FileText, Clock, Banknote, Send, ArrowLeft, ArrowRight, RotateCcw, Trash2, User,
+} from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ConfettiCelebration from "@/components/ConfettiCelebration";
+import { usePostJobDraft, draftAge } from "@/hooks/usePostJobDraft";
 import {
   C_SUCCESS as SUCCESS, C_DARK_BG, C_DARK_CARD, C_DARK_CARD_BORDER,
   C_TEXT_ON_DARK as TEXT_BRIGHT, C_TEXT_ON_DARK_MID as TEXT_MID,
@@ -41,14 +44,7 @@ const schema = z.object({
   salary: z.string().optional(),
   salaryType: z.string(),
   hourlyRate: z.string().optional(),
-  estimatedHours: z.string().optional(),
-  // contactPhone is NOT in the form — taken from logged-in user on the server
   contactName: z.string().min(2, "נדרש שם"),
-  businessName: z.string().optional(),
-  workingHours: z.string().optional(),
-  startTime: z.string(),
-  startDateTime: z.string().optional(),
-  workersNeeded: z.string(),
   activeDuration: z.enum(["1", "3", "7"]),
   isUrgent: z.boolean().optional(),
   isLocalBusiness: z.boolean().optional(),
@@ -57,66 +53,78 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type TabId = "details" | "location" | "conditions" | "publish";
 
-// Simple math CAPTCHA (no external service needed)
-function generateCaptcha() {
-  const a = Math.floor(Math.random() * 9) + 1;
-  const b = Math.floor(Math.random() * 9) + 1;
-  return { a, b, answer: a + b };
-}
+const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
+  { id: "details",    label: "פרטי מודעה",  icon: FileText  },
+  { id: "location",   label: "מיקום ושעות", icon: Clock     },
+  { id: "conditions", label: "תנאים",       icon: Banknote  },
+  { id: "publish",    label: "פרסום",       icon: Send      },
+];
 
 export default function PostJob() {
   const [, navigate] = useLocation();
   const { categories: dbCategories, bySlug: catBySlug } = useCategories();
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
   const { userMode, setUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
-  const [locating, setLocating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [jobLocationMode, setJobLocationMode] = useState<"radius" | "city">("radius");
+  const [locationSubTab, setLocationSubTab] = useState<"search" | "address">("address");
   const [jobSearchRadiusKm, setJobSearchRadiusKm] = useState(5);
   const [jobCity, setJobCity] = useState("");
-  // New fields: date, work hours, images
+  const [jobCityPlaceId, setJobCityPlaceId] = useState<string | null>(null);
   const [jobDate, setJobDate] = useState("");
   const [jobDateTouched, setJobDateTouched] = useState(false);
   const [workStartTime, setWorkStartTime] = useState("");
   const [workEndTime, setWorkEndTime] = useState("");
+  const [hoursSubTab, setHoursSubTab] = useState<"fields" | "presets">("fields");
+  const [hoursError, setHoursError] = useState(false);
+  const [hoursTimeError, setHoursTimeError] = useState(false);
   const [minAge, setMinAge] = useState<16 | 18 | null>(null);
-  const [jobImages, setJobImages] = useState<string[]>([]); // S3 URLs
+  const [jobImages, setJobImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("details");
+  const [mapError, setMapError] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  // ── Draft persistence ─────────────────────────────────────────────────────
+  const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
 
   useSEO({
-    title: "פרסום משרה",
-    description: "פרסם משרה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
+    title: "פרסום מודעה",
+    description: "פרסם מודעה בחינם ומצא עובדים זמינים במהירות. פשוט, מהיר, ללא עמלות.",
     canonical: "/post-job",
     noIndex: true,
   });
 
-  // CAPTCHA state
-  const [captcha, setCaptcha] = useState(generateCaptcha);
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaError, setCaptchaError] = useState(false);
-  // Legal checkboxes (Step 5 — Job Posting Policy)
-  const [legalLawsConfirmed, setLegalLawsConfirmed] = useState(false);
-  const [legalLicensesConfirmed, setLegalLicensesConfirmed] = useState(false);
-  const [legalPolicyAccepted, setLegalPolicyAccepted] = useState(false);
+  const [legalAllConfirmed, setLegalAllConfirmed] = useState(false);
   const [legalCheckboxError, setLegalCheckboxError] = useState(false);
+  const [salaryError, setSalaryError] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [pendingJobData, setPendingJobData] = useState<Record<string, unknown> | null>(null);
 
-  // Read URL params for duplicate-job pre-fill
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const isDuplicate = !!urlParams.get("from");
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+  // Show draft banner on mount if draft exists and not a duplicate
+  useEffect(() => {
+    if (hasDraft && !isDuplicate && !draftRestored) {
+      setShowDraftBanner(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { register, handleSubmit, setValue, watch, getValues, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       salaryType: (urlParams.get("salaryType") as FormData["salaryType"]) || "hourly",
-      startTime: (urlParams.get("startTime") as FormData["startTime"]) || "flexible",
-      workersNeeded: urlParams.get("workersNeeded") || "1",
       activeDuration: "7",
       title: urlParams.get("title") || "",
       description: urlParams.get("description") || "",
@@ -124,59 +132,171 @@ export default function PostJob() {
       address: urlParams.get("address") || "",
       salary: urlParams.get("salary") || "",
       contactName: urlParams.get("contactName") || "",
-      businessName: urlParams.get("businessName") || "",
-      workingHours: urlParams.get("workingHours") || "",
-      startDateTime: urlParams.get("startDateTime") || "",
     },
   });
 
+  // Watch contactName early so it can be used in draft auto-save deps
+  const watchedContactName = watch("contactName");
+
+  // ── Collect all form state for draft ──────────────────────────────────────
+  const collectDraftData = useCallback(() => {
+    const vals = getValues();
+    return {
+      ...vals,
+      lat,
+      lng,
+      jobLocationMode,
+      jobSearchRadiusKm,
+      jobCity,
+      jobDate,
+      workStartTime,
+      workEndTime,
+      minAge,
+      jobImages,
+      activeTab,
+      locationSubTab,
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
+
+  // Auto-save on every meaningful state change (including contactName edits)
+  useEffect(() => {
+    if (draftRestored || success) return;
+    saveDraft(collectDraftData());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
+
+  // Restore draft into form fields
+  const restoreDraft = useCallback(() => {
+    if (!draft) return;
+    const fields: (keyof FormData)[] = [
+      "title", "description", "category", "address", "salary", "salaryType",
+      "hourlyRate", "contactName",
+      "activeDuration",
+      "isUrgent", "isLocalBusiness", "isVolunteer", "showPhone",
+    ];
+    fields.forEach((f) => {
+      const v = draft[f];
+      // Skip empty contactName so the profile autofill can still run
+      if (f === "contactName" && (!v || (v as string).trim() === "")) return;
+      if (v !== undefined && v !== null) setValue(f, v as any);
+    });
+    if (draft.lat != null) setLat(draft.lat);
+    if (draft.lng != null) setLng(draft.lng);
+    if (draft.jobLocationMode) setJobLocationMode(draft.jobLocationMode);
+    if (draft.jobSearchRadiusKm) setJobSearchRadiusKm(draft.jobSearchRadiusKm);
+    if (draft.jobCity) setJobCity(draft.jobCity);
+    if (draft.jobDate) setJobDate(draft.jobDate);
+    if (draft.workStartTime) setWorkStartTime(draft.workStartTime);
+    if (draft.workEndTime) setWorkEndTime(draft.workEndTime);
+    if (draft.minAge !== undefined) setMinAge(draft.minAge ?? null);
+    if (draft.jobImages?.length) setJobImages(draft.jobImages);
+    if (draft.activeTab) setActiveTab(draft.activeTab as TabId);
+    if (draft.locationSubTab) setLocationSubTab(draft.locationSubTab);
+    setDraftRestored(true);
+    setShowDraftBanner(false);
+    toast.success("הטיוטה שוחזרה בהצלחה");
+  }, [draft, setValue]);
+
+  const discardDraft = useCallback(() => {
+    clearDraft();
+    setShowDraftBanner(false);
+    toast("הטיוטה נמחקה");
+  }, [clearDraft]);
+
   const salaryType = watch("salaryType");
   const isUrgent = watch("isUrgent");
-  const isLocalBusiness = watch("isLocalBusiness");
   const isVolunteer = watch("isVolunteer");
   const showPhone = watch("showPhone");
   const watchedCategory = watch("category");
+  const watchedTitle = watch("title");
+  const watchedAddress = watch("address");
+  const watchedSalary = watch("salary");
+  const watchedHourlyRate = watch("hourlyRate");
+  // ── Tab completion tracking ─────────────────────────────────────────────────────
+  const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
 
-  // Unified minor-restriction flag — true when either condition blocks minors from seeing this job
   const categoryBlocksMinors = !!(watchedCategory && catBySlug[watchedCategory]?.allowedForMinors === false);
   const hoursBlockMinors = !!(workEndTime && shouldWarnLateJob(workEndTime));
   const jobBlocksMinors = categoryBlocksMinors || hoursBlockMinors;
 
-  // Region inactive state — set when server rejects with FORBIDDEN + region info
   const [regionBlocked, setRegionBlocked] = useState<{
     regionId: number;
     regionName: string;
     regionSlug: string;
   } | null>(null);
 
-  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
-    enabled: isAuthenticated,
+  const { data: employerProfile } = trpc.user.getEmployerProfile.useQuery(undefined, {
+    ...authQuery(),
     staleTime: 60_000,
   });
+
+  // ── Autofill contact + worker search preferences from employer profile ──────
+  // Fills contactName from profile whenever the field is empty (even if a draft exists).
+  useEffect(() => {
+    if (!employerProfile) return;
+
+    // Contact fields — always fill if empty (draft may not have contactName)
+    const currentContact = getValues("contactName");
+    if (!currentContact || currentContact.trim() === "") {
+      const profileName = (employerProfile.name ?? "").trim() || (user?.name ?? "").trim();
+      if (profileName) setValue("contactName", profileName, { shouldDirty: false });
+    }
+    // Worker search preferences — only autofill if still at default values
+    if (employerProfile.workerSearchLocationMode) {
+      setJobLocationMode(employerProfile.workerSearchLocationMode as "radius" | "city");
+    }
+    if (
+      employerProfile.workerSearchLocationMode === "radius" &&
+      employerProfile.workerSearchRadiusKm != null
+    ) {
+      // Snap to nearest supported radius chip (2/5/10/20); fallback to 5
+      const supported = [2, 5, 10, 20] as const;
+      const km = employerProfile.workerSearchRadiusKm;
+      const snapped = supported.reduce((prev, cur) =>
+        Math.abs(cur - km) < Math.abs(prev - km) ? cur : prev
+      );
+      setJobSearchRadiusKm(snapped);
+    }
+    if (
+      employerProfile.workerSearchLocationMode === "city" &&
+      employerProfile.workerSearchCity
+    ) {
+      setJobCity(employerProfile.workerSearchCity);
+    }
+  // Run only when employerProfile first becomes available
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employerProfile]);
+
+  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, authQuery({ staleTime: 60_000 }));
 
   const requestNotif = trpc.regions.requestNotification.useMutation({
     onSuccess: (d) => {
       utils.regions.myNotifications.invalidate();
-      if (d.alreadySubscribed) {
-        toast.info("כבר נרשמת לקבל התראה עבור אזור זה");
-      } else {
-        toast.success("נרשמת! נשלח לך התראה כשהאזור ייפתח.");
-      }
+      if (d.alreadySubscribed) toast.info("כבר נרשמת לקבל התראה עבור אזור זה");
+      else toast.success("נרשמת! נשלח לך התראה כשהאזור ייפתח.");
     },
     onError: (e) => toast.error(e.message),
   });
 
   const cancelNotif = trpc.regions.cancelNotification.useMutation({
-    onSuccess: () => {
-      utils.regions.myNotifications.invalidate();
-      toast.success("ביטלת את ההתראה");
-    },
+    onSuccess: () => { utils.regions.myNotifications.invalidate(); toast.success("ביטלת את ההתראה"); },
     onError: (e) => toast.error(e.message),
   });
 
   const utils = trpc.useUtils();
-
-  const uploadJobImage = trpc.jobs.uploadJobImage.useMutation();
+  // Image upload via dedicated multipart endpoint (avoids base64 bloat in tRPC payload)
+  const uploadJobImageToServer = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch("/api/upload-job-image", { method: "POST", body: formData, credentials: "include" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Upload failed" }));
+      throw new Error(err.error ?? "Upload failed");
+    }
+    const data = await res.json() as { url: string };
+    return data.url;
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -185,20 +305,17 @@ export default function PostJob() {
     if (remaining <= 0) { toast.error("ניתן להעלות עד 5 תמונות"); return; }
     const toUpload = files.slice(0, remaining);
     setUploadingImages(true);
+    const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB — must match server tRPC limit (5mb)
     try {
       const urls: string[] = [];
       for (const file of toUpload) {
-        if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} גדולה מדי (מקסימום 5MB)`); continue; }
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve((reader.result as string).split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
-        if (!["image/jpeg", "image/png", "image/webp"].includes(mimeType)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
-        const result = await uploadJobImage.mutateAsync({ base64, mimeType });
-        urls.push(result.url);
+        if (file.size > MAX_IMAGE_SIZE) {
+          toast.error(`"${file.name}" גדולה מדי — מקסימום 4MB לתמונה (הקובץ הנוכחי: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+          continue;
+        }
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
+        const url = await uploadJobImageToServer(file);
+        urls.push(url);
       }
       setJobImages(prev => [...prev, ...urls]);
       if (urls.length > 0) toast.success(`${urls.length} תמונות הועלו בהצלחה`);
@@ -210,85 +327,73 @@ export default function PostJob() {
     }
   };
 
+  // Watch form changes for draft saving (react-hook-form subscription)
+  watch((values) => {
+    if (!success) saveDraft({ ...collectDraftData(), ...values });
+  });
+
   const createJob = trpc.jobs.create.useMutation({
     onSuccess: (job) => {
+      clearDraft();
       setSuccess(true);
-      setTimeout(() => navigate(`/job/${job?.id}`), 2000);
+      const matchedUrl = `/matched-workers?jobId=${job?.id}`;
+      toast.success(
+        <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
+          המודעה פורסמה!
+          <a
+            href={matchedUrl}
+            style={{ color: "#4a5d23", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}
+            onClick={(e) => { e.preventDefault(); navigate(matchedUrl); }}
+          >
+            לצפייה בעובדים מתאימים ←
+          </a>
+        </span>,
+        { duration: 4000 }
+      );
+      setTimeout(() => navigate(matchedUrl), 2000);
     },
     onError: (e) => {
-      // Check if the error is a region-not-active FORBIDDEN
       const msg = e.message;
       if (e.data?.code === "FORBIDDEN" && msg.includes("האזור")) {
-        // errorFormatter passes cause fields into e.data
         const regionId = (e.data as any)?.regionId as number | undefined;
         const regionName = (e.data as any)?.regionName as string | undefined;
         const regionSlug = (e.data as any)?.regionSlug as string | undefined;
-        setRegionBlocked({
-          regionId: regionId ?? 0,
-          regionName: regionName ?? "האזור שלך",
-          regionSlug: regionSlug ?? "",
-        });
+        setRegionBlocked({ regionId: regionId ?? 0, regionName: regionName ?? "האזור שלך", regionSlug: regionSlug ?? "" });
       } else {
         toast.error(msg);
       }
     },
   });
 
-  const handleMapReady = (map: google.maps.Map) => {
-    mapRef.current = map;
-    map.setCenter({ lat: 31.7683, lng: 35.2137 });
-    map.setZoom(8);
 
-    map.addListener("click", (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
-      const newLat = e.latLng.lat();
-      const newLng = e.latLng.lng();
-      setLat(newLat);
-      setLng(newLng);
-
-      if (markerRef.current) markerRef.current.setMap(null);
-      markerRef.current = new google.maps.Marker({
-        position: { lat: newLat, lng: newLng },
-        map,
-        animation: google.maps.Animation.DROP,
-      });
-
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
-        if (status === "OK" && results?.[0]) {
-          setValue("address", results[0].formatted_address);
-        }
-      });
-    });
-  };
 
   const getMyLocation = () => {
+    if (!navigator.geolocation) { toast.error("הדפדפן אינו תומך ב-GPS"); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const newLat = pos.coords.latitude;
         const newLng = pos.coords.longitude;
-        setLat(newLat);
-        setLng(newLng);
-        setLocating(false);
-
-        if (mapRef.current) {
-          mapRef.current.setCenter({ lat: newLat, lng: newLng });
-          mapRef.current.setZoom(15);
-          if (markerRef.current) markerRef.current.setMap(null);
-          markerRef.current = new google.maps.Marker({
-            position: { lat: newLat, lng: newLng },
-            map: mapRef.current,
-            animation: google.maps.Animation.DROP,
-          });
+        try {
+          await ensureMapsLoaded();
           const geocoder = new google.maps.Geocoder();
           geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
+            setLocating(false);
             if (status === "OK" && results?.[0]) {
-              setValue("address", results[0].formatted_address);
+              const address = results[0].formatted_address;
+              setLat(newLat);
+              setLng(newLng);
+              setMapError(false);
+              setValue("address", address, { shouldValidate: true });
+              toast.success("מיקום נמצא!");
+            } else {
+              toast.error("לא ניתן לאתר כתובת למיקום זה");
             }
           });
+        } catch {
+          setLocating(false);
+          toast.error("שגיאה בטעינת שירות המפות");
         }
-        toast.success("מיקום נמצא!");
       },
       () => { setLocating(false); toast.error("לא ניתן לאתר מיקום"); }
     );
@@ -296,31 +401,25 @@ export default function PostJob() {
 
   const onSubmit = (data: FormData) => {
     if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
-    if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); return; }
-
-    // Validate CAPTCHA
-    if (parseInt(captchaInput) !== captcha.answer) {
-      setCaptchaError(true);
-      setCaptcha(generateCaptcha());
-      setCaptchaInput("");
-      toast.error("קוד אבטחה שגוי, נסה שוב");
-      return;
-    }
-    // Validate required jobDate
+    if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); setActiveTab("location"); return; }
     if (!jobDate) {
       setJobDateTouched(true);
       toast.error("אנא בחר תאריך לעבודה");
+      setActiveTab("location");
       return;
     }
-    // Validate legal checkboxes
-    if (!legalLawsConfirmed || !legalLicensesConfirmed || !legalPolicyAccepted) {
+    if (!data.contactName || data.contactName.trim().length < 2) {
+      toast.error("אנא הזן שם איש קשר");
+      return;
+    }
+    if (!legalAllConfirmed) {
       setLegalCheckboxError(true);
-      toast.error("יש לאשר את כל האישורים הנדרשים");
+      toast.error("יש לאשר את התנאים לפני פרסום המודעה");
       return;
     }
     setLegalCheckboxError(false);
-    setCaptchaError(false);
-    createJob.mutate({
+    // Collect job payload and open OTP modal instead of submitting directly
+    const jobPayload = {
       title: data.title,
       description: data.description,
       category: data.category as Parameters<typeof createJob.mutate>[0]["category"],
@@ -331,14 +430,9 @@ export default function PostJob() {
       salary: data.salary ? parseFloat(data.salary) : undefined,
       salaryType: data.salaryType as Parameters<typeof createJob.mutate>[0]["salaryType"],
       hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
-      estimatedHours: data.estimatedHours ? parseFloat(data.estimatedHours) : undefined,
-      // contactPhone is taken from the logged-in user on the server
       contactName: data.contactName,
-      businessName: data.businessName || undefined,
-      workingHours: data.workingHours || undefined,
-      startTime: data.startTime as Parameters<typeof createJob.mutate>[0]["startTime"],
-      startDateTime: data.startDateTime ? new Date(data.startDateTime).toISOString() : undefined,
-      workersNeeded: parseInt(data.workersNeeded),
+      businessName: employerProfile?.companyName || undefined,
+      startTime: "flexible",
       activeDuration: data.activeDuration,
       isUrgent: data.isUrgent ?? false,
       isLocalBusiness: data.isLocalBusiness ?? false,
@@ -350,67 +444,57 @@ export default function PostJob() {
       workEndTime: workEndTime || undefined,
       imageUrls: jobImages.length > 0 ? jobImages : undefined,
       minAge: minAge ?? undefined,
-    });
+      cityPlaceId: jobLocationMode === "city" ? (jobCityPlaceId ?? undefined) : undefined,
+    };
+    setPendingJobData(jobPayload);
+    setShowOtpModal(true);
   };
 
-  // Guest guard — show login prompt instead of form
+  // ── Guards ────────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
       <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Shield className="h-8 w-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה</h2>
-        <p className="text-muted-foreground mb-6">
-          כדי לפרסם משרה יש להתחבר למערכת עם מספר טלפון
-        </p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה</h2>
+        <p className="text-muted-foreground mb-6">כדי לפרסם מודעה יש להתחבר למערכת עם מספר טלפון</p>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setLoginOpen(true)}>
-          <Shield className="h-5 w-5" />
-          התחבר למערכת
+          <Shield className="h-5 w-5" />התחבר למערכת
         </AppButton>
-        <LoginModal
-          open={loginOpen}
-          onClose={() => setLoginOpen(false)}
-          message="כדי לפרסם משרה יש להתחבר למערכת"
-        />
+        <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message="כדי לפרסם מודעה יש להתחבר למערכת" />
       </div>
     );
   }
 
-  // Employer lock guard — platform is in workers-only mode
   if (employerLock) {
     return (
       <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-amber-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — בקרוב</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — בקרוב</h2>
         <p className="text-muted-foreground mb-4">
-          בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.
-          <br />
-          אפשרות פרסום משרות למעסיקים תיפתח בקרוב.
+          בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
+          אפשרות פרסום מודעות למעסיקים תיפתח בקרוב.
         </p>
-        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>
-          חפש עבודה
-        </AppButton>
+        <AppButton variant="brand" size="lg" className="gap-2" onClick={() => navigate("/find-jobs")}>חפש עבודה</AppButton>
       </div>
     );
   }
 
-  // Worker guard — if user chose worker mode, show a prompt to switch to employer
   if (isAuthenticated && userMode === "worker") {
     return (
       <div dir="rtl" className="max-w-md mx-auto px-4 py-16 text-center">
         <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-orange-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום משרה — למעסיקים</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — למעסיקים</h2>
         <p className="text-muted-foreground mb-6">
-          אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם משרה, עבור למצב מעסיק.
+          אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם מודעה, עבור למצב מעסיק.
         </p>
         <AppButton variant="brand" size="lg" className="gap-2" onClick={() => setUserMode("employer")}>
-          <Briefcase className="h-5 w-5" />
-          עבור למצב מעסיק ופרסם משרה
+          <Briefcase className="h-5 w-5" />עבור למצב מעסיק ופרסם מודעה
         </AppButton>
         <p className="text-xs text-muted-foreground mt-4">תוכל לחזור למצב עובד בכל עת מהתפריט</p>
       </div>
@@ -420,97 +504,35 @@ export default function PostJob() {
   if (success) {
     return (
       <>
-        {/* Full-screen confetti burst */}
         <ConfettiCelebration count={180} duration={3500} />
-
-        {/* Celebration card */}
-        <div
-          className="min-h-screen flex items-center justify-center px-4"
-          dir="rtl"
-          style={{ background: C_DARK_BG }}
-        >
+        <div className="min-h-screen flex items-center justify-center px-4" dir="rtl" style={{ background: C_DARK_BG }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.7, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
             className="text-center max-w-sm w-full"
-            style={{
-              background: C_DARK_CARD,
-              backdropFilter: "blur(20px) saturate(180%)",
-              WebkitBackdropFilter: "blur(20px) saturate(180%)",
-              border: `1px solid ${C_DARK_CARD_BORDER}`,
-              borderRadius: "1.5rem",
-              padding: "2.5rem 2rem",
-            }}
+            style={{ background: C_DARK_CARD, backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: `1px solid ${C_DARK_CARD_BORDER}`, borderRadius: "1.5rem", padding: "2.5rem 2rem" }}
           >
-            {/* Animated checkmark ring */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.2 }}
               className="mx-auto mb-6 flex items-center justify-center"
-              style={{
-                width: 88,
-                height: 88,
-                borderRadius: "50%",
-                background: `linear-gradient(135deg, ${SUCCESS} 0%, oklch(0.52 0.22 150) 100%)`,
-                boxShadow: `0 0 40px ${SUCCESS} / 0.5, 0 0 80px ${SUCCESS} / 0.2`,
-              }}
+              style={{ width: 88, height: 88, borderRadius: "50%", background: `linear-gradient(135deg, ${SUCCESS} 0%, oklch(0.52 0.22 150) 100%)`, boxShadow: `0 0 40px ${SUCCESS} / 0.5, 0 0 80px ${SUCCESS} / 0.2` }}
             >
               <CheckCircle2 className="h-10 w-10 text-white" />
             </motion.div>
-
-            {/* Title */}
-            <motion.h2
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.4 }}
-              className="text-3xl font-black mb-2"
-              style={{ color: TEXT_BRIGHT }}
-            >
-              🎉 המשרה פורסמה!
+            <motion.h2 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }} className="text-3xl font-black mb-2" style={{ color: TEXT_BRIGHT }}>
+              🎉 המודעה פורסמה!
             </motion.h2>
-
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.4 }}
-              className="text-base mb-1"
-              style={{ color: TEXT_MID }}
-            >
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }} className="text-base mb-1" style={{ color: TEXT_MID }}>
               עובדים יוכלו לראות אותה עכשיו
             </motion.p>
-
-            {/* Redirect notice */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="text-sm"
-              style={{ color: TEXT_FAINT }}
-            >
-              מעביר אותך לדף המשרה...
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="text-sm" style={{ color: TEXT_FAINT }}>
+              מעביר אותך לדף המודעה...
             </motion.p>
-
-            {/* Animated progress bar */}
-            <motion.div
-              className="mt-6 rounded-full overflow-hidden"
-              style={{
-                height: 4,
-                background: C_DARK_CARD,
-              }}
-            >
-              <motion.div
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }}
-                transition={{ delay: 0.5, duration: 2.0, ease: "linear" }}
-                style={{
-                  height: "100%",
-                  borderRadius: "9999px",
-                  background: `linear-gradient(90deg, ${SUCCESS} 0%, ${BRAND} 100%)`,
-                }}
-              />
+            <motion.div className="mt-6 rounded-full overflow-hidden" style={{ height: 4, background: C_DARK_CARD }}>
+              <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ delay: 0.5, duration: 2.0, ease: "linear" }} style={{ height: "100%", borderRadius: "9999px", background: `linear-gradient(90deg, ${SUCCESS} 0%, ${BRAND} 100%)` }} />
             </motion.div>
           </motion.div>
         </div>
@@ -518,705 +540,985 @@ export default function PostJob() {
     );
   }
 
+  // ── Tab content helpers ───────────────────────────────────────────────────
+  const tabIndex = TABS.findIndex(t => t.id === activeTab);
+  const isLastTab = tabIndex === TABS.length - 1;
+
+  const goNext = async () => {
+    // Save draft immediately when navigating between tabs
+    saveDraftNow(collectDraftData());
+    // Validate fields for current tab before advancing
+    if (activeTab === "details") {
+      const ok = await trigger(["title", "description", "category"]);
+      if (!ok) return;
+    }
+    if (activeTab === "location") {
+      if (!lat || !lng) {
+        setLocationSubTab("address");
+        setMapError(true);
+        toast.error("אנא בחר כתובת מהרשימה");
+        return;
+      }
+      if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return; }
+      if (!workStartTime || !workEndTime) { setHoursError(true); toast.error("אנא מלא שעת התחלה וסיום או בחר משמרת"); return; }
+      if (isEndTimeInvalid(workStartTime, workEndTime)) { setHoursTimeError(true); toast.error("שעת הסיום חייבת להיות לאחר שעת ההתחלה"); return; }
+      const ok = await trigger(["address"]);
+      if (!ok) return;
+    }
+    if (activeTab === "conditions") {
+      // Salary is required unless volunteer
+      const currentSalaryType = getValues("salaryType");
+      const currentSalary = getValues("salary");
+      const currentHourlyRate = getValues("hourlyRate");
+      if (currentSalaryType !== "volunteer") {
+        const hasSalary = currentSalaryType === "hourly"
+          ? !!(currentHourlyRate && parseFloat(currentHourlyRate) > 0)
+          : !!(currentSalary && parseFloat(currentSalary) > 0);
+        if (!hasSalary) {
+          setSalaryError(true);
+          toast.error("אנא הזן שכר למודעה");
+          return;
+        }
+      }
+      setSalaryError(false);
+    }
+    // Mark current tab as completed
+    setCompletedTabs(prev => new Set(Array.from(prev).concat(activeTab)));
+    const nextId = TABS[tabIndex + 1]?.id;
+    if (nextId) setActiveTab(nextId);
+  };
+
+  const goPrev = () => {
+    const prevId = TABS[tabIndex - 1]?.id;
+    if (prevId) setActiveTab(prevId);
+  };
+
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
-    <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-start justify-between mb-2">
-        <h1 className="text-2xl font-bold text-foreground text-right w-full">פרסם משרה</h1>
-      </div>
-      <p className="text-muted-foreground mb-6 text-sm text-right">מלא את הפרטים ומצא עובדים תוך דקות</p>
+    <div dir="rtl" className="min-h-screen" style={{ backgroundColor: "var(--page-bg)" }}>
+      {/* ── Header + Tab Bar ─────────────────────────────────────────────── */}
+      <div
+        className="relative overflow-hidden"
+        style={{ backgroundColor: "var(--page-bg)", borderBottom: "1px solid oklch(0.92 0.02 100)" }}
+      >
+        {/* Accent gradient bar */}
+        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)" }} />
 
-      {/* Duplicate notice */}
-      {isDuplicate && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center gap-3 text-sm">
-          <Copy className="h-4 w-4 text-blue-500 shrink-0" />
-          <span className="text-blue-700">
-            הטופס מולא מראש עם פרטי המשרה הקודמת. ערוך ופרסם.
-          </span>
-        </div>
-      )}
+        <div className="max-w-lg mx-auto px-4 pt-5 pb-4">
+          {/* Back + title row */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
+              style={{ color: "#4F583B" }}
+            >
+              <ArrowRight className="h-4 w-4" />
+              חזרה
+            </button>
+            <h1 className="text-lg font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>
+              פרסם משרה
+            </h1>
+            <div className="w-14" /> {/* spacer */}
+          </div>
 
-      {/* Limit notice */}
-      <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 mb-5 flex items-center gap-3 text-sm">
-        <Shield className="h-4 w-4 text-primary shrink-0" />
-        <span className="text-muted-foreground">
-          ניתן לפרסם עד <strong className="text-foreground">3 משרות פעילות</strong> בו-זמנית. נדרש אימות טלפון.
-        </span>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Basic info */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground text-right">פרטי המשרה</h2>
-
-          <AppInput
-            id="title"
-            label="כותרת המשרה"
-            required
-            placeholder="לדוגמה: שליח/ה דחופ/ת"
-            dir="rtl"
-            {...register("title")}
-            error={errors.title?.message}
-          />
-
-          <AppSelect
-            label="קטגוריה"
-            required
-            placeholder="בחר קטגוריה"
-            options={dbCategories.map((cat) => ({ value: cat.slug, label: `${cat.icon} ${cat.name}` }))}
-            onChange={(e) => setValue("category", e.target.value)}
-            error={errors.category?.message}
-          />
-          {/* Unified minor-restriction warning — shown when category OR hours block minors */}
-          {jobBlocksMinors && (
+          {/* Draft restore banner */}
+          {showDraftBanner && draft?.savedAt && (
             <div
-              className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
-              style={{
-                background: "oklch(0.95 0.04 30 / 0.85)",
-                border: "1px solid oklch(0.85 0.08 30 / 0.5)",
-                color: "oklch(0.42 0.15 30)",
-              }}
+              className="rounded-xl border p-3 mb-4 flex items-center gap-3 text-sm"
+              style={{ background: "oklch(0.97 0.03 100)", borderColor: "oklch(0.82 0.08 100)" }}
               dir="rtl"
             >
-              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span className="font-medium">
-                משרה זו לא תוצג לעובדים מתחת לגיל 18
-                {categoryBlocksMinors && hoursBlockMinors && (
-                  <span className="block text-xs mt-0.5 font-normal">
-                    סיבה: קטגוריה מוגבלת לקטינים + שעת סיום לאחר 22:00
-                  </span>
-                )}
-                {categoryBlocksMinors && !hoursBlockMinors && (
-                  <span className="block text-xs mt-0.5 font-normal">
-                    סיבה: קטגוריה זו אינה מותרת לעבודת קטינים
-                  </span>
-                )}
-                {!categoryBlocksMinors && hoursBlockMinors && (
-                  <span className="block text-xs mt-0.5 font-normal">
-                    סיבה: שעת סיום לאחר 22:00 (חוק עבודת נוער)
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-
-          <AppTextarea
-            id="description"
-            label="תיאור המשרה"
-            required
-            placeholder="תאר את המשרה, דרישות, שעות עבודה וכל מידע רלוונט…"
-            rows={4}
-            dir="rtl"
-            {...register("description")}
-            error={errors.description?.message}
-          />
-        </div>
-
-        {/* Location */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            מיקום ואיך לחפש עובדים
-          </h2>
-
-          {/* Location mode selection */}
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground">איך תרצה לחפש עובדים?</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setJobLocationMode("radius")}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                  jobLocationMode === "radius" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"
-                }`}
-              >
-                <Crosshair className="h-4 w-4" />
-                עובדים ברדיוס
-              </button>
-              <button
-                type="button"
-                onClick={() => setJobLocationMode("city")}
-                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                  jobLocationMode === "city" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"
-                }`}
-              >
-                <Building2 className="h-4 w-4" />
-                עובדים מעיר
-              </button>
-            </div>
-
-            {jobLocationMode === "radius" && (
-              <div className="flex gap-2 pt-1">
-                {[2, 5, 10, 20].map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setJobSearchRadiusKm(r)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                      jobSearchRadiusKm === r ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"
-                    }`}
-                  >
-                    {r} ק"מ
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {jobLocationMode === "city" && (
-              <div className="mt-1">
-                <CityAutocomplete
-                  value={jobCity}
-                  onChange={setJobCity}
-                  onSelect={(city, _lat, _lng) => {
-                    setJobCity(city);
-                    toast.success(`עיר נבחרה: ${city}`);
-                  }}
-                  placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
-                />
-              </div>
-            )}
-          </div>
-
-          <p className="text-xs text-muted-foreground">לחץ על המפה לבחירת מיקום מדויק, או השתמש ב-GPS</p>
-
-          <AppButton
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={getMyLocation}
-            disabled={locating}
-            className="gap-2"
-          >
-            {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
-            השתמש במיקום שלי
-          </AppButton>
-
-          <div className="rounded-lg overflow-hidden border border-border h-56">
-            <MapView onMapReady={handleMapReady} className="h-56" />
-          </div>
-
-          {lat && lng && (
-            <p className="text-xs text-green-600 flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              מיקום נבחר ({lat.toFixed(4)}, {lng.toFixed(4)})
-            </p>
-          )}
-
-          <AppInput
-            id="address"
-            label="כתובת"
-            required
-            placeholder="הכתובת תמולא אוטומטית לאחר בחירת מיקום"
-            dir="rtl"
-            {...register("address")}
-            error={errors.address?.message}
-          />
-        </div>
-
-        {/* Salary & timing */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground text-right">שכר ושעות</h2>
-
-          <div className="grid grid-cols-2 gap-3">
-            <AppSelect
-              label="סוג שכר"
-              defaultValue="hourly"
-              options={SALARY_TYPES.map((s) => ({ value: s.value, label: s.label }))}
-              onChange={(e) => setValue("salaryType", e.target.value)}
-            />
-            <AppInput
-              id="salary"
-              label={salaryType === "volunteer" ? "התנדבות" : "סכום (₪)"}
-              type="number"
-              placeholder={salaryType === "volunteer" ? "—" : "50"}
-              disabled={salaryType === "volunteer"}
-              dir="ltr"
-              {...register("salary")}
-            />
-          </div>
-
-          {/* Hourly rate + estimated hours — key info for workers */}
-          {salaryType !== "volunteer" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <AppInput
-                  id="hourlyRate"
-                  label="מחיר לשעה (₪)"
-                  type="number"
-                  min="0"
-                  step="5"
-                  placeholder="70"
-                  dir="ltr"
-                  {...register("hourlyRate")}
-                />
-                <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪ לשעה</p>
-              </div>
-              <div>
-                <AppInput
-                  id="estimatedHours"
-                  label="שעות עבודה משוערות"
-                  type="number"
-                  min="0.5"
-                  max="24"
-                  step="0.5"
-                  placeholder="4"
-                  dir="ltr"
-                  {...register("estimatedHours")}
-                />
-                <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 4 שעות</p>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <AppSelect
-              label="זמן התחלה"
-              defaultValue="flexible"
-              options={START_TIMES.map((s) => ({ value: s.value, label: s.label }))}
-              onChange={(e) => setValue("startTime", e.target.value)}
-            />
-            <AppInput
-              id="workersNeeded"
-              label="עובדים דרושים"
-              type="number"
-              min="1"
-              dir="ltr"
-              {...register("workersNeeded")}
-            />
-          </div>
-
-          {/* startDateTime moved into the grid above */}
-
-          {/* Volunteer mode toggle */}
-          <div
-            onClick={() => {
-              const next = !isVolunteer;
-              setValue("isVolunteer", next);
-              if (next) setValue("salaryType", "volunteer");
-              else setValue("salaryType", "hourly");
-            }}
-            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isVolunteer ? "border-green-400 bg-green-50" : "border-border hover:border-green-300"}`}
-          >
-            <div>
-              <p className={`font-semibold text-sm ${isVolunteer ? "text-green-700" : "text-foreground"}`}>
-                💚 זו עבודת התנדבות — ללא תשלום
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                משרה התנדבותית — עזרה לקהילה, חירום, משפחות מילואימניקים
-              </p>
-            </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isVolunteer ? "border-green-500 bg-green-500" : "border-muted-foreground"}`}>
-              {isVolunteer && <span className="text-white text-xs">✓</span>}
-            </div>
-          </div>
-
-          {/* Urgent toggle */}
-          <div
-            onClick={() => setValue("isUrgent", !isUrgent)}
-            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isUrgent ? "border-red-400 bg-red-50" : "border-border hover:border-red-300"}`}
-          >
-            <div>
-              <p className={`font-semibold text-sm ${isUrgent ? "text-red-700" : "text-foreground"}`}>
-                ⚡ צריך עובד עכשיו — משרה דחופה
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                יוצג ראשון ברשימה · תפוג אחרי 12 שעות
-              </p>
-            </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isUrgent ? "border-red-500 bg-red-500" : "border-muted-foreground"}`}>
-              {isUrgent && <span className="text-white text-xs">✓</span>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <AppSelect
-              label="משך פרסום"
-              defaultValue="1"
-              options={[
-                { value: "1", label: "יום אחד" },
-                { value: "3", label: "3 ימים" },
-                { value: "7", label: "שבוע" },
-              ]}
-              onChange={(e) => setValue("activeDuration", e.target.value as "1" | "3" | "7")}
-            />
-            <AppInput
-              id="workingHours"
-              label="שעות עבודה (טקסט חופשי)"
-              placeholder="08:00-16:00"
-              dir="ltr"
-              {...register("workingHours")}
-            />
-            <AppInput
-              id="startDateTime"
-              label="🔥 תאריך ושעת התחלה מדויקים (אופציונלי)"
-              type="datetime-local"
-              dir="ltr"
-              wrapperClassName="col-span-2"
-              {...register("startDateTime")}
-            />
-          </div>
-
-          {/* Date + exact work hours */}
-          <div className="space-y-3">
-            {/* Required date */}
-            <AppInput
-              id="jobDate"
-              label="תאריך העבודה"
-              required
-              type="date"
-              value={jobDate}
-              placeholder="DD/MM/YYYY"
-              onChange={e => setJobDate(normalizeDateInput(e.target.value))}
-              onBlur={() => setJobDateTouched(true)}
-              min={new Date().toISOString().split("T")[0]}
-              dir="ltr"
-              error={!jobDate && jobDateTouched ? "תאריך העבודה הוא שדה חובה" : undefined}
-            />
-
-            {/* Optional time range */}
-            <div>
-              <AppLabel>שעות עבודה <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></AppLabel>
-              {/* Quick preset buttons */}
-              <div className="flex flex-wrap gap-2 mt-2 mb-2">
-                {[
-                  { label: "☀️ בוקר", start: "06:00", end: "14:00" },
-                  { label: "☀️ צהריים", start: "12:00", end: "20:00" },
-                  { label: "🌆 ערב", start: "16:00", end: "22:00" },
-                  { label: "🌙 לילה", start: "22:00", end: "06:00" },
-                ].map(preset => {
-                  const isActive = workStartTime === preset.start && workEndTime === preset.end;
-                  return (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => {
-                        if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
-                        else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); }
-                      }}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
-                      style={isActive ? {
-                        background: "oklch(0.35 0.08 122)",
-                        borderColor: "oklch(0.35 0.08 122)",
-                        color: "white",
-                      } : {
-                        background: "white",
-                        borderColor: "oklch(0.88 0.04 122)",
-                        color: "oklch(0.35 0.08 122)",
-                      }}
-                    >
-                      {preset.label} ({preset.start}–{preset.end})
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Manual time inputs */}
-              <div className="grid grid-cols-2 gap-3">
-                <AppInput
-                  id="workStartTime"
-                  label="שעת התחלה"
-                  type="time"
-                  value={workStartTime}
-                  onChange={e => setWorkStartTime(e.target.value)}
-                  dir="ltr"
-                />
-                <AppInput
-                  id="workEndTime"
-                  label="שעת סיום"
-                  type="time"
-                  value={workEndTime}
-                  onChange={e => setWorkEndTime(e.target.value)}
-                  dir="ltr"
-                />
-              </div>
-              {/* Minor-restriction warning is now shown as a unified banner near the category selector above */}
-            </div>
-          </div>
-        </div>
-
-        {/* Minimum Age Requirement */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <div>
-            <h2 className="font-semibold text-foreground text-right mb-1">הגבלת גיל מינימלי <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span></h2>
-            <p className="text-xs text-muted-foreground text-right mb-3">קבע גיל מינימלי לעובדים. ברירת מחדל: ללא הגבלה.</p>
-            <div className="flex flex-wrap gap-2">
-              {([null, 16, 18] as const).map((val) => (
-                <button
-                  key={String(val)}
-                  type="button"
-                  onClick={() => setMinAge(val)}
-                  className="px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all"
-                  style={minAge === val ? {
-                    background: "var(--brand)",
-                    borderColor: "var(--brand)",
-                    color: "white",
-                  } : {
-                    background: "transparent",
-                    borderColor: "var(--border)",
-                    color: "var(--foreground)",
-                  }}
-                >
-                  {val === null ? "ללא הגבלה" : val === 18 ? "מבוגרים בלבד (18+)" : "גיל 16+"}
-                </button>
-              ))}
-            </div>
-            {minAge === 18 && (
-              <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>
-                ℹ️ משרה זו תוצג לעובדים בני 18 ומעלה בלבד.
-              </p>
-            )}
-            {minAge === 16 && (
-              <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>
-                ℹ️ משרה זו תוצג לעובדים בני 16 ומעלה (כולל קטינים).
-              </p>
-            )}
-          </div>
-        </div>
-        {/* Job Images */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-foreground text-right">תמונות מהמקום (אופציונלי)</h2>
-            <span className="text-xs text-muted-foreground">{jobImages.length}/5</span>
-          </div>
-          <p className="text-xs text-muted-foreground text-right bg-primary/5 border border-primary/20 rounded-lg p-3">
-            📸 הוספת תמונות תעזור לעובדים להבין את העבודה ולקבל החלטה מהר יותר.
-          </p>
-          {/* Image previews */}
-          {jobImages.length > 0 && (
-            <div className="flex gap-2 flex-wrap">
-              {jobImages.map((url, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
-                  <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  <button
-                    type="button"
-                    onClick={() => setJobImages(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {jobImages.length < 5 && (
-            <label className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-border rounded-xl p-4 hover:border-primary/50 transition-colors">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="hidden"
-                onChange={handleImageUpload}
-                disabled={uploadingImages}
-              />
-              {uploadingImages ? (
-                <><Loader2 className="w-5 h-5 animate-spin text-primary" /><span className="text-sm text-muted-foreground">מעלה תמונות...</span></>
-              ) : (
-                <><ImagePlus className="w-5 h-5 text-muted-foreground" /><span className="text-sm text-muted-foreground">לחץ להוספת תמונות (עד {5 - jobImages.length} נוספות)</span></>
-              )}
-            </label>
-          )}
-        </div>
-
-        {/* Contact */}
-        <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-          <h2 className="font-semibold text-foreground text-right">פרטי יצירת קשר</h2>
-
-          <AppInput
-            id="contactName"
-            label="שם איש קשר"
-            required
-            placeholder="ישראל ישראלי"
-            dir="rtl"
-            {...register("contactName")}
-            error={errors.contactName?.message}
-          />
-
-          <div>
-            <AppLabel htmlFor="contactPhone">טלפון ליצירת קשר</AppLabel>
-            <div
-              id="contactPhone"
-              dir="ltr"
-              className="mt-1 flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-muted text-muted-foreground text-sm select-none"
-            >
-              📱 {user?.phone ?? "יופיע אוטומטית מהחשבון"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">הטלפון נלקח אוטומטית מחשבוןך</p>
-          </div>
-
-          <AppInput
-            id="businessName"
-            label="שם עסק"
-            placeholder="שם החברה / העסק"
-            dir="rtl"
-            {...register("businessName")}
-          />
-
-          {/* Show phone toggle */}
-          <div
-            onClick={() => setValue("showPhone", !showPhone)}
-            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
-              showPhone ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-            }`}
-          >
-            <div>
-              <p className={`font-semibold text-sm ${showPhone ? "text-primary" : "text-foreground"}`}>
-                📞 הצג מספר טלפון לעובדים
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {showPhone
-                  ? "מספר הטלפון שלך יוצג בכרטיס המשרה"
-                  : "מספר הטלפון מוסתר — עובדים ישלחו מועמדות ותקבל SMS"}
-              </p>
-            </div>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-              showPhone ? "border-primary bg-primary" : "border-muted-foreground"
-            }`}>
-              {showPhone && <span className="text-white text-xs">✓</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* CAPTCHA */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            אימות אנטי-ספאם
-          </h2>
-          <p className="text-sm text-muted-foreground mb-3 text-right">
-            פתור: <strong className="text-foreground text-base">{captcha.a} + {captcha.b} = ?</strong>
-          </p>          <AppInput
-            type="number"
-            placeholder="הכנס את התשובה"
-            value={captchaInput}
-            onChange={(e) => { setCaptchaInput(e.target.value); setCaptchaError(false); }}
-            wrapperClassName="max-w-32"
-            error={captchaError ? "תשובה שגויאה, נסה שוב" : undefined}
-            dir="ltr"
-          />
-        </div>
-
-        {/* Region blocked banner */}
-        {regionBlocked && (
-          <div
-            dir="rtl"
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-right"
-            role="alert"
-          >
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex-shrink-0 rounded-full bg-red-100 p-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-              </div>
+              <RotateCcw className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-red-900 text-sm leading-snug">
-                  האזור עדיין בהרצה ונפתח בקרוב למעסיקים.
-                </p>
-                <p className="mt-1 text-xs text-red-700 leading-relaxed">
-                  אנחנו אוספים עובדים באזור ונעדכן אותך כשהאזור ייפתח לפרסום משרות.
-                </p>
-                {regionBlocked.regionId > 0 && (() => {
-                  const subscribed = (myNotifications ?? []).some(
-                    (n) => n.regionId === regionBlocked.regionId
-                  );
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (subscribed) {
-                          cancelNotif.mutate({ regionId: regionBlocked.regionId });
-                        } else {
-                          requestNotif.mutate({ regionId: regionBlocked.regionId, type: "employer" });
+                <p className="font-semibold text-sm" style={{ color: "#4F583B" }}>נמצאה טיוטה שמורה</p>
+                <p className="text-xs" style={{ color: "oklch(0.50 0.06 122)" }}>נשמרה {draftAge(draft.savedAt)}</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={restoreDraft}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-80"
+                  style={{ background: "#4F583B" }}
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  שחזר
+                </button>
+                <button
+                  type="button"
+                  onClick={discardDraft}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  style={{ background: "oklch(0.92 0.03 100)", color: "oklch(0.45 0.08 30)" }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  מחק
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Duplicate notice */}
+          {isDuplicate && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center gap-3 text-sm">
+              <Copy className="h-4 w-4 text-blue-500 shrink-0" />
+              <span className="text-blue-700">הטופס מולא מראש עם פרטי המודעה הקודמת. ערוך ופרסם.</span>
+            </div>
+          )}
+
+          {/* Progress dots */}
+          <div className="flex items-center justify-center gap-1.5 mb-4">
+            {TABS.map((tab, i) => (
+              <div
+                key={tab.id}
+                className="transition-all rounded-full"
+                style={{
+                  width: i === tabIndex ? 24 : 8,
+                  height: 8,
+                  background: i <= tabIndex ? "#4F583B" : "oklch(0.88 0.03 100)",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Tab Bar */}
+          <div
+            className="rounded-2xl p-1 flex gap-1"
+            style={{ background: "oklch(0.93 0.02 100)", border: "1px solid oklch(0.89 0.03 100)" }}
+          >
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              const isDone = completedTabs.has(tab.id);
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all relative"
+                  style={isActive
+                    ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
+                    : { color: "oklch(0.50 0.06 122)" }
+                  }
+                >
+                  {/* Completion checkmark badge */}
+                  {isDone && !isActive && (
+                    <span
+                      className="absolute top-1 right-1 flex items-center justify-center rounded-full"
+                      style={{ width: 14, height: 14, background: "oklch(0.55 0.18 145)", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
+                    >
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <path d="M1.5 4L3 5.5L6.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  )}
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tab Content ──────────────────────────────────────────────────── */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="max-w-lg mx-auto px-4 mt-4 pb-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.2 }}
+            >
+
+              {/* ── Tab 1: פרטי משרה ──────────────────────────────────── */}
+              {activeTab === "details" && (
+                <div className="space-y-5">
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground text-right flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      פרטי המודעה
+                    </h2>
+
+                    <AppInput
+                      id="title"
+                      label="כותרת המודעה"
+                      required
+                      placeholder="לדוגמה: שליח/ה דחופ/ת"
+                      dir="rtl"
+                      {...register("title")}
+                      error={errors.title?.message}
+                    />
+
+                    <AppSelect
+                      label="קטגוריה"
+                      required
+                      placeholder="בחר קטגוריה"
+                      options={dbCategories.map((cat) => ({ value: cat.slug, label: `${cat.icon} ${cat.name}` }))}
+                      onChange={(e) => setValue("category", e.target.value)}
+                      error={errors.category?.message}
+                    />
+
+                    {jobBlocksMinors && (
+                      <div
+                        className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
+                        style={{ background: "oklch(0.95 0.04 30 / 0.85)", border: "1px solid oklch(0.85 0.08 30 / 0.5)", color: "oklch(0.42 0.15 30)" }}
+                        dir="rtl"
+                      >
+                        <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                        <span className="font-medium">
+                          מודעה זו לא תוצג לעובדים מתחת לגיל 18
+                          {categoryBlocksMinors && hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: קטגוריה מוגבלת לקטינים + שעת סיום לאחר 22:00</span>}
+                          {categoryBlocksMinors && !hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: קטגוריה זו אינה מותרת לעבודת קטינים</span>}
+                          {!categoryBlocksMinors && hoursBlockMinors && <span className="block text-xs mt-0.5 font-normal">סיבה: שעת סיום לאחר 22:00 (חוק עבודת נוער)</span>}
+                        </span>
+                      </div>
+                    )}
+
+                    <AppTextarea
+                      id="description"
+                      label="תיאור המודעה"
+                      required
+                      placeholder="תאר את המודעה, דרישות, שעות עבודה וכל מידע רלוונט…"
+                      rows={4}
+                      dir="rtl"
+                      {...register("description")}
+                      error={errors.description?.message}
+                    />
+                  </div>
+
+                  {/* Job Images */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-bold text-foreground text-right flex items-center gap-2">
+                        <Camera className="h-4 w-4 text-primary" />
+                        תמונות מהמקום
+                        <span className="text-xs font-normal text-muted-foreground">(אופציונלי)</span>
+                      </h2>
+                      <span className="text-xs text-muted-foreground">{jobImages.length}/5</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-right bg-primary/5 border border-primary/20 rounded-lg p-3">
+                      📸 הוספת תמונות תעזור לעובדים להבין את העבודה ולקבל החלטה מהר יותר.
+                    </p>
+                    {jobImages.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        {jobImages.map((url, i) => (
+                          <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                            <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                            <button
+                              type="button"
+                              onClick={() => setJobImages(prev => prev.filter((_, idx) => idx !== i))}
+                              className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {jobImages.length < 5 && (
+                      <label className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-border rounded-xl p-4 hover:border-primary/50 transition-colors">
+                        <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleImageUpload} disabled={uploadingImages} />
+                        {uploadingImages
+                          ? <><Loader2 className="w-5 h-5 animate-spin text-primary" /><span className="text-sm text-muted-foreground">מעלה תמונות...</span></>
+                          : <><ImagePlus className="w-5 h-5 text-muted-foreground" /><span className="text-sm text-muted-foreground">לחץ להוספת תמונות (עד {5 - jobImages.length} נוספות)</span></>
                         }
-                      }}
-                      disabled={requestNotif.isPending || cancelNotif.isPending}
-                      className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        subscribed
-                          ? "border-red-300 bg-red-100 text-red-700 hover:bg-red-50"
-                          : "border-red-300 bg-white text-red-700 hover:bg-red-50"
+                      </label>
+                    )}
+                  </div>
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <span />
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* Tab 2: מיקום ושעות */}
+              {activeTab === "location" && (
+                <div className="space-y-5">
+                  {/* Location — two sub-tabs */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      מיקום ואיך לחפש עובדים
+                    </h2>
+
+                    {/* Sub-tab bar */}
+                    <div className="flex rounded-xl overflow-hidden border border-border">
+                      {(["address", "search"] as const).map((st) => {
+                        const isActive = locationSubTab === st;
+                        const addressDone = st === "address" && !!(lat && lng);
+                        return (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => setLocationSubTab(st)}
+                            className={`relative flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold transition-all ${
+                              isActive
+                                ? "bg-primary text-white"
+                                : "bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                          >
+                            {st === "search" ? "העדפת חיפוש עובדים" : "כתובת המודעה"}
+                            {addressDone && (
+                              <span
+                                className="flex items-center justify-center rounded-full shrink-0"
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  background: isActive ? "rgba(255,255,255,0.25)" : "oklch(0.55 0.18 145)",
+                                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                                }}
+                              >
+                                <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                                  <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sub-tab 1: worker search preferences */}
+                    {locationSubTab === "search" && (
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground">איך תרצה לחפש עובדים?</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setJobLocationMode("radius")}
+                            className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "radius" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                          >
+                            <Crosshair className="h-4 w-4" />עובדים ברדיוס
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setJobLocationMode("city")}
+                            className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${jobLocationMode === "city" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                          >
+                            <Building2 className="h-4 w-4" />עובדים מעיר
+                          </button>
+                        </div>
+
+                        {jobLocationMode === "radius" && (
+                          <div className="flex gap-2 pt-1">
+                            {[2, 5, 10, 20].map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                onClick={() => setJobSearchRadiusKm(r)}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${jobSearchRadiusKm === r ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"}`}
+                              >
+                                {r} ק"מ
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {jobLocationMode === "city" && (
+                          <div className="mt-1">
+                            <CityAutocomplete
+                              value={jobCity}
+                              onChange={setJobCity}
+                              onSelect={(city, _lat, _lng, placeId) => { setJobCity(city); if (placeId) setJobCityPlaceId(placeId); toast.success(`עיר נבחרה: ${city}`); }}
+                              placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Sub-tab 2: job address */}
+                    {locationSubTab === "address" && (
+                      <div className="space-y-3">
+                        {/* Inline location error — shown until a valid location is selected */}
+                        {mapError && (
+                          <p className="flex items-center gap-1.5 text-xs font-medium text-red-500" dir="rtl">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                              <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2" />
+                              <path d="M6.5 3.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                              <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor" />
+                            </svg>
+                            בחירת מיקום נדרשת
+                          </p>
+                        )}
+
+                        <AppButton
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={getMyLocation}
+                          disabled={locating}
+                          className="gap-2 w-full"
+                        >
+                          {locating
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <LocateFixed className="h-4 w-4" />}
+                          השתמש במיקום שלי
+                        </AppButton>
+
+                        <PlacesAutocomplete
+                          value={watch("address") ?? ""}
+                          onChange={(val) => setValue("address", val, { shouldValidate: true })}
+                          onPlaceSelect={({ lat: newLat, lng: newLng, formattedAddress }) => {
+                            setLat(newLat);
+                            setLng(newLng);
+                            setMapError(false);
+                            setValue("address", formattedAddress, { shouldValidate: true });
+                          }}
+                          placeholder="חפש כתובת..."
+                          error={errors.address?.message}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Date & Hours */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      תאריך ושעות עבודה
+                    </h2>
+
+                    <AppInput
+                      id="jobDate"
+                      label="תאריך העבודה"
+                      required
+                      type="date"
+                      value={jobDate}
+                      placeholder="DD/MM/YYYY"
+                      onChange={e => setJobDate(normalizeDateInput(e.target.value))}
+                      onBlur={() => setJobDateTouched(true)}
+                      min={new Date().toISOString().split("T")[0]}
+                      dir="ltr"
+                      error={!jobDate && jobDateTouched ? "תאריך העבודה הוא שדה חובה" : undefined}
+                    />
+
+                    <div>
+                      <AppLabel>שעות עבודה <span style={{ color: "#ef4444", fontSize: 12, fontWeight: 600 }}>*</span></AppLabel>
+
+                      {/* Sub-tab bar — same style as location sub-tabs */}
+                      <div className="flex flex-row-reverse gap-1 mt-2 mb-3" onClick={() => setHoursError(false)}>
+                        {(["presets", "fields"] as const).map(tab => {
+                          const label = tab === "fields" ? "שעת התחלה וסיום" : "בחירת משמרת";
+                          const isActive = hoursSubTab === tab;
+                          return (
+                            <button
+                              key={tab}
+                              type="button"
+                              onClick={() => setHoursSubTab(tab)}
+                              className="flex-1 py-2 px-3 rounded-xl text-sm font-semibold border-2 transition-all"
+                              style={isActive
+                                ? { background: "oklch(0.35 0.08 122)", borderColor: "oklch(0.35 0.08 122)", color: "white" }
+                                : { background: "transparent", borderColor: "oklch(0.88 0.04 122)", color: "oklch(0.45 0.08 122)" }
+                              }
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Sub-tab 1: manual time fields */}
+                      {hoursSubTab === "fields" && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <AppInput id="workStartTime" label="שעת התחלה" type="time" value={workStartTime} onChange={e => { setWorkStartTime(e.target.value); setHoursError(false); setHoursTimeError(false); }} dir="ltr" />
+                          <AppInput id="workEndTime" label="שעת סיום" type="time" value={workEndTime} onChange={e => { setWorkEndTime(e.target.value); setHoursError(false); setHoursTimeError(false); }} dir="ltr" />
+                        </div>
+                      )}
+
+                      {/* Sub-tab 2: shift presets */}
+                      {hoursSubTab === "presets" && (
+                        <div className="grid grid-cols-2 gap-2" dir="rtl">
+                          {SHIFT_PRESETS.map(preset => {
+                            const isActive = workStartTime === preset.start && workEndTime === preset.end;
+                            return (
+                              <button
+                                key={preset.label}
+                                type="button"
+                                onClick={() => {
+                                  if (isActive) { setWorkStartTime(""); setWorkEndTime(""); }
+                                  else { setWorkStartTime(preset.start); setWorkEndTime(preset.end); setHoursError(false); setHoursTimeError(false); }
+                                }}
+                                className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                                  isActive
+                                    ? "border-primary bg-primary/5 text-primary"
+                                    : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                                }`}
+                              >
+                                <span className="text-lg">{preset.icon}</span>
+                                <div className="text-right">
+                                  <div className="font-bold text-sm">{preset.label}</div>
+                                  <div className="text-xs opacity-70">{preset.sub}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Inline time-order error */}
+                      {hoursTimeError && (
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-red-500 mt-2" dir="rtl">
+                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                            <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M6.5 3.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                            <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor" />
+                          </svg>
+                          שעת הסיום חייבת להיות לאחר שעת ההתחלה
+                          {isOvernightShift(workStartTime, workEndTime) && (
+                            <span className="text-amber-600 mr-1">(משמרת לילה תקינה)</span>
+                          )}
+                        </p>
+                      )}
+
+                      {/* Inline hours error */}
+                      {hoursError && (
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-red-500 mt-2" dir="rtl">
+                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
+                            <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M6.5 3.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                            <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor" />
+                          </svg>
+                          יש למלא שעת התחלה וסיום, או לבחור משמרת
+                        </p>
+                      )}
+
+                      {/* Youth employment law warning — shown when end time is after 22:00 or shift is overnight */}
+                      {(shouldWarnLateJob(workEndTime) || isOvernightShift(workStartTime, workEndTime)) && workStartTime && workEndTime && (
+                        <div
+                          className="flex items-start gap-2 rounded-xl px-3 py-2.5 mt-2 text-xs font-medium"
+                          dir="rtl"
+                          style={{
+                            background: "oklch(0.97 0.05 85)",
+                            border: "1px solid oklch(0.82 0.12 80)",
+                            color: "oklch(0.45 0.12 60)",
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 mt-0.5">
+                            <path d="M7 1.5L12.5 11H1.5L7 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                            <path d="M7 5.5v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                            <circle cx="7" cy="9.5" r="0.65" fill="currentColor" />
+                          </svg>
+                          <span>
+                            מודעה זו לא תוצג לעובדים מתחת לגיל 18 בשל חוק עבודת נוער.
+                            {" "}
+                            <a
+                              href="https://www.gov.il/he/departments/guides/working_youth"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline"
+                              style={{ color: "oklch(0.40 0.12 60)" }}
+                            >
+                              קרא עוד
+                            </a>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
+                    </button>
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Tab 3: תנאים ותשלום ──────────────────────── */}
+              {activeTab === "conditions" && (
+                <div className="space-y-5">
+                  {/* Salary */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <Banknote className="h-4 w-4 text-primary" />
+                      שכר ותנאים
+                    </h2>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <AppSelect
+                        label="סוג שכר"
+                        defaultValue="hourly"
+                        options={SALARY_TYPES.map((s) => ({ value: s.value, label: s.label }))}
+                        onChange={(e) => {
+                          const type = e.target.value;
+                          setValue("salaryType", type);
+                          // Clear the amount field when switching types
+                          setValue("salary", "");
+                          setValue("hourlyRate", "");
+                        }}
+                      />
+                      {salaryType === "volunteer" ? (
+                        <AppInput
+                          id="salary-volunteer"
+                          label="התנדבות"
+                          type="text"
+                          placeholder="—"
+                          disabled
+                          dir="ltr"
+                        />
+                      ) : salaryType === "hourly" ? (
+                        <div>
+                          <AppInput
+                            id="hourlyRate"
+                            label="מחיר לשעה (₪)"
+                            required
+                            type="number"
+                            min="0"
+                            step="5"
+                            placeholder="70"
+                            dir="ltr"
+                            {...register("hourlyRate", { onChange: () => setSalaryError(false) })}
+                            error={salaryError ? "נדרש מחיר לשעה" : undefined}
+                          />
+                          <p className="text-xs text-muted-foreground mt-0.5">לדוגמא: 70 ₪/שעה</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <AppInput
+                            id="salary"
+                            label={salaryType === "daily" ? "שכר יומי (₪)" : "סכום כולל (₪)"}
+                            required
+                            type="number"
+                            min="0"
+                            step="10"
+                            placeholder={salaryType === "daily" ? "300" : "500"}
+                            dir="ltr"
+                            {...register("salary", { onChange: () => setSalaryError(false) })}
+                            error={salaryError ? "נדרש שכר" : undefined}
+                          />
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {salaryType === "daily" ? "לדוגמא: 300 ₪/יום" : 'לדוגמא: 500 ₪ סה"כ'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <AppSelect
+                        label="משך פרסום"
+                        defaultValue="1"
+                        options={[
+                          { value: "1", label: "יום אחד" },
+                          { value: "3", label: "3 ימים" },
+                          { value: "7", label: "שבוע" },
+                        ]}
+                        onChange={(e) => setValue("activeDuration", e.target.value as "1" | "3" | "7")}
+                      />
+                                    </div>
+
+                    {/* Urgent toggle — shown first, emphasized with amber */}
+                    <div
+                      onClick={() => setValue("isUrgent", !isUrgent)}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        isUrgent
+                          ? "border-amber-400 bg-amber-50 shadow-md shadow-amber-100"
+                          : "border-amber-200 hover:border-amber-400 hover:bg-amber-50/40"
                       }`}
                     >
-                      {subscribed ? (
-                        <><BellOff className="w-3 h-3" /> בטל התראה</>
-                      ) : (
-                        <><Bell className="w-3 h-3" /> הודע לי כשהאזור נפתח</>
-                      )}
+                      <div>
+                        <p className={`font-bold text-sm ${isUrgent ? "text-amber-700" : "text-foreground"}`}>
+                          ⚡ צריך עובד עכשיו — <span className={isUrgent ? "text-amber-600" : "text-amber-500"}>משרה דחופה</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">יוצג ראשון ברשימה · תפוג אחרי 12 שעות</p>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        isUrgent ? "border-amber-500 bg-amber-500" : "border-amber-300"
+                      }`}>
+                        {isUrgent && <span className="text-white text-xs font-bold">✓</span>}
+                      </div>
+                    </div>
+
+                    {/* Volunteer toggle */}
+                    <div
+                      onClick={() => { const next = !isVolunteer; setValue("isVolunteer", next); if (next) setValue("salaryType", "volunteer"); else setValue("salaryType", "hourly"); }}
+                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isVolunteer ? "border-green-400 bg-green-50" : "border-border hover:border-green-300"}`}
+                    >
+                      <div>
+                        <p className={`font-semibold text-sm ${isVolunteer ? "text-green-700" : "text-foreground"}`}>💚 זו עבודת התנדבות — ללא תשלום</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">משרה התנדבותית — עזרה לקהילה, חירום, משפחות מילואימניקים</p>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isVolunteer ? "border-green-500 bg-green-500" : "border-muted-foreground"}`}>
+                        {isVolunteer && <span className="text-white text-xs">✓</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Min age */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <div>
+                      <h2 className="font-bold text-foreground text-right mb-1">
+                        הגבלת גיל מינימלי <span style={{ color: "var(--muted-foreground)", fontSize: 12, fontWeight: 400 }}>(אופציונלי)</span>
+                      </h2>
+                      <p className="text-xs text-muted-foreground text-right mb-3">קבע גיל מינימלי לעובדים. ברירת מחדל: ללא הגבלה.</p>
+                      <div className="flex flex-row flex-nowrap gap-2">
+                        {([null, 16, 18] as const).map((val) => (
+                          <button
+                            key={String(val)}
+                            type="button"
+                            onClick={() => setMinAge(val)}
+                            className="flex-1 px-3 py-2 rounded-full text-sm font-semibold border-2 transition-all whitespace-nowrap text-center"
+                            style={minAge === val
+                              ? { background: "var(--brand)", borderColor: "var(--brand)", color: "white" }
+                              : { background: "transparent", borderColor: "var(--border)", color: "var(--foreground)" }
+                            }
+                          >
+                            {val === null ? "ללא הגבלה" : val === 18 ? "מבוגרים (18+)" : "גיל 16+"}
+                          </button>
+                        ))}
+                      </div>
+                      {minAge === 18 && <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>ℹ️ משרה זו תוצג לעובדים בני 18 ומעלה בלבד.</p>}
+                      {minAge === 16 && <p className="text-xs text-right mt-2" style={{ color: "var(--muted-foreground)" }}>ℹ️ משרה זו תוצג לעובדים בני 16 ומעלה (כולל קטינים).</p>}
+                    </div>
+                  </div>
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
                     </button>
-                  );
-                })()}
-              </div>
-            </div>
-          </div>
-        )}
+                    <button type="button" onClick={goNext} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--primary)" }}>
+                      הבא
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
 
-        {/* Legal checkboxes — Step 5 (Job Posting Policy) */}
-        <div dir="rtl" className="space-y-3 rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
-          <p className="text-xs font-semibold" style={{ color: "#4a5d23" }}>אישורים נדרשים לפרסום משרה</p>
+              {/* ── Tab 4: פרסום ─────────────────────────────────────────────── */}
+              {activeTab === "publish" && (
+                <div className="space-y-5">
+                  {/* ── Job Preview Card ──────────────────────────────── */}
+                  <div
+                    className="rounded-2xl border p-5 space-y-3"
+                    style={{ background: "oklch(0.97 0.03 100)", borderColor: "oklch(0.84 0.06 100)" }}
+                    dir="rtl"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className="flex items-center justify-center rounded-full"
+                        style={{ width: 28, height: 28, background: "#4F583B" }}
+                      >
+                        <Briefcase className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <h2 className="font-bold text-sm" style={{ color: "#4F583B" }}>תצוגה מקדימית של המשרה</h2>
+                    </div>
 
-          {/* Checkbox 1 */}
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={legalLawsConfirmed}
-              onChange={e => { setLegalLawsConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-olive-600 cursor-pointer"
-            />
-            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
-              אני מאשר/ת כי פרסום המשרה עומד בדרישות החוק הישראלי ואינו כולל אפליה, הטרדה או פרסום בלתי חוקי.
-            </span>
-          </label>
+                    <p className="text-lg font-black leading-tight" style={{ color: "#1a1a1a" }}>
+                      {watchedTitle || <span className="text-muted-foreground italic text-base font-normal">ללא כותרת</span>}
+                    </p>
+                    {watchedCategory && catBySlug[watchedCategory] && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium mt-1 px-2 py-0.5 rounded-full" style={{ background: "oklch(0.90 0.06 100)", color: "#4F583B" }}>
+                        {catBySlug[watchedCategory].icon} {catBySlug[watchedCategory].name}
+                      </span>
+                    )}
 
-          {/* Checkbox 2 */}
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={legalLicensesConfirmed}
-              onChange={e => { setLegalLicensesConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer"
-            />
-            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
-              אני מאשר/ת כי בדיקת רישיונות והסמכות של נותן השירות היא באחריותי בלבד.
-            </span>
-          </label>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {/* Location */}
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                        <span className="text-muted-foreground text-xs">
+                          {watchedAddress || (jobCity ? jobCity : "מיקום לא נבחר")}
+                        </span>
+                      </div>
 
-          {/* Checkbox 3 */}
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={legalPolicyAccepted}
-              onChange={e => { setLegalPolicyAccepted(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer"
-            />
-            <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
-              אני קראתי ומסכים/ת ל{" "}
-              <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות פרסום משרות</a>
-              {" ול "}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
-            </span>
-          </label>
+                      {/* Date */}
+                      {jobDate && (
+                        <div className="flex items-start gap-1.5">
+                          <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-muted-foreground text-xs">
+                            {new Date(jobDate).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}
+                            {workStartTime && workEndTime && ` · ${workStartTime}–${workEndTime}`}
+                          </span>
+                        </div>
+                      )}
 
-          {/* Platform disclaimer */}
-          <p className="text-xs" style={{ color: "#6b7280" }}>
-            הפלטפורמה אינה אחראית לתוכן המשרה או לתנאי העבודה.
-          </p>
+                      {/* Salary */}
+                      {!isVolunteer && (watchedSalary || watchedHourlyRate) && (
+                        <div className="flex items-start gap-1.5">
+                          <Banknote className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-muted-foreground text-xs">
+                            {salaryType === "hourly" && watchedHourlyRate ? `₪${watchedHourlyRate}/שעה` : null}
+                            {salaryType === "total" && watchedSalary ? `₪${watchedSalary} סה"כ` : null}
+                            {salaryType === "daily" && watchedSalary ? `₪${watchedSalary}/יום` : null}
+                          </span>
+                        </div>
+                      )}
+                      {isVolunteer && (
+                        <div className="flex items-start gap-1.5">
+                          <Banknote className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#4F583B" }} />
+                          <span className="text-xs font-medium" style={{ color: "oklch(0.55 0.18 145)" }}>התנדבות</span>
+                        </div>
+                      )}
 
-          {legalCheckboxError && (
-            <p className="text-xs font-medium" style={{ color: "#dc2626" }}>יש לאשר את כל האישורים לפני פרסום המשרה</p>
-          )}
+                      {/* Urgency */}
+                      {isUrgent && (
+                        <div className="flex items-start gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
+                          <span className="text-xs font-semibold text-amber-600">דחוף</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Contact */}
+                    {watchedContactName && (
+                      <p className="text-xs" style={{ color: "oklch(0.55 0.06 122)" }}>
+                        איש קשר: <strong>{watchedContactName}</strong>
+                        {employerProfile?.companyName ? ` · ${employerProfile.companyName}` : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Contact — auto-filled from employer profile */}
+                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                    <h2 className="font-bold text-foreground flex items-center gap-2">
+                      <User className="h-4 w-4 text-primary" />
+                      פרטי קשר
+                    </h2>
+                    <AppInput
+                      id="contactName"
+                      label="שם איש קשר"
+                      required
+                      placeholder="שם מלא"
+                      dir="rtl"
+                      {...register("contactName")}
+                      error={errors.contactName?.message}
+                    />
+                    {employerProfile?.companyName && (
+                      <p className="text-xs text-muted-foreground">
+                        שם עסק: <strong className="text-foreground">{employerProfile.companyName}</strong>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Region blocked */}
+                  {regionBlocked && (
+                    <div dir="rtl" className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-right" role="alert">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex-shrink-0 rounded-full bg-red-100 p-2">
+                          <AlertTriangle className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-red-900 text-sm leading-snug">האזור עדיין בהרצה ונפתח בקרוב למעסיקים.</p>
+                          <p className="mt-1 text-xs text-red-700 leading-relaxed">אנחנו אוספים עובדים באזור ונעדכן אותך כשהאזור ייפתח לפרסום משרות.</p>
+                          {regionBlocked.regionId > 0 && (() => {
+                            const subscribed = (myNotifications ?? []).some(n => n.regionId === regionBlocked.regionId);
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (subscribed) cancelNotif.mutate({ regionId: regionBlocked.regionId });
+                                  else requestNotif.mutate({ regionId: regionBlocked.regionId, type: "employer" });
+                                }}
+                                disabled={requestNotif.isPending || cancelNotif.isPending}
+                                className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${subscribed ? "border-red-300 bg-red-100 text-red-700 hover:bg-red-50" : "border-red-300 bg-white text-red-700 hover:bg-red-50"}`}
+                              >
+                                {subscribed ? <><BellOff className="w-3 h-3" /> בטל התראה</> : <><Bell className="w-3 h-3" /> הודע לי כשהאזור נפתח</>}
+                              </button>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Legal checkbox — single combined confirmation */}
+                  <div dir="rtl" className="rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={legalAllConfirmed}
+                        onChange={e => { setLegalAllConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
+                        className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer shrink-0"
+                      />
+                      <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
+                        אני מאשר/ת כי המשרה עומדת בדרישות החוק, בדיקת רישיונות היא באחריותי, וקראתי ומסכים/ת ל{" "}
+                        <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות הפרסום</a>
+                        {" ול"}
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
+                      </span>
+                    </label>
+
+                    {legalCheckboxError && (
+                      <p className="text-xs font-medium mt-2" style={{ color: "#dc2626" }}>יש לאשר את התנאים לפני פרסום המשרה</p>
+                    )}
+                  </div>
+
+                  {/* Tab nav */}
+                  <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
+                    <button type="button" onClick={goPrev} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+                      <ArrowRight className="h-4 w-4" />
+                      הקודם
+                    </button>
+                    <span />
+                  </div>
+                  {/* Submit */}
+                  <AppButton
+                    type="submit"
+                    variant="brand"
+                    size="xl"
+                    className="w-full"
+                    disabled={createJob.isPending}
+                  >
+                    {createJob.isPending
+                      ? <><Loader2 className="h-5 w-5 animate-spin ml-2" />מפרסם...</>
+                      : <><Send className="h-5 w-5 ml-2" />פרסם עבודה</>
+                    }
+                  </AppButton>
+                </div>
+              )}
+
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        <AppButton
-          type="submit"
-          variant="brand"
-          size="xl"
-          className="w-full"
-          disabled={createJob.isPending}
-        >
-          {createJob.isPending ? (
-            <><Loader2 className="h-5 w-5 animate-spin ml-2" />מפרסם...</>
-          ) : (
-            "פרסם עבודה"
-          )}
-        </AppButton>
+
       </form>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+
+      {/* OTP verification modal for job publishing */}
+      {pendingJobData && (
+        <JobPublishOtpModal
+          open={showOtpModal}
+          onClose={() => setShowOtpModal(false)}
+          jobData={pendingJobData}
+          onSuccess={(job) => {
+            setShowOtpModal(false);
+            clearDraft();
+            setSuccess(true);
+            const jobId = (job as { id?: number })?.id;
+            const matchedUrl = jobId ? `/matched-workers?jobId=${jobId}` : "/my-jobs";
+            toast.success(
+              <span style={{ display: "flex", alignItems: "center", gap: "6px", direction: "rtl" }}>
+                המודעה פורסמה!
+                {jobId && (
+                  <a
+                    href={matchedUrl}
+                    style={{ color: "#4a5d23", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}
+                    onClick={(e) => { e.preventDefault(); navigate(matchedUrl); }}
+                  >
+                    לצפייה בעובדים מתאימים ←
+                  </a>
+                )}
+              </span>,
+              { duration: 4000 }
+            );
+            setTimeout(() => navigate(matchedUrl), 1500);
+          }}
+        />
+      )}
     </div>
   );
 }

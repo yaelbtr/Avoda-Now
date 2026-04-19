@@ -50,6 +50,8 @@ export interface JobPostingSchema {
   createdAt?: Date | string | null;
   expiresAt?: Date | string | null;
   isUrgent?: boolean;
+  /** Hourly rate — used as baseSalary when salary is not set */
+  hourlyRate?: string | number | null;
 }
 
 export interface BreadcrumbItem {
@@ -104,19 +106,26 @@ function buildJobPosting(job: JobPostingSchema): object {
       sameAs: BASE_URL,
     },
     url: jobUrl,
-    employmentType: job.isUrgent ? "TEMPORARY" : "OTHER",
+    employmentType: "TEMPORARY",
   };
 
   if (validThrough) schema.validThrough = validThrough;
 
-  if (job.salary && job.salaryType !== "volunteer") {
+  // Prefer explicit salary; fall back to hourlyRate
+  const salaryValue = job.salary
+    ? parseFloat(job.salary)
+    : job.hourlyRate
+    ? parseFloat(String(job.hourlyRate))
+    : null;
+  const salaryType = job.salary ? job.salaryType : "hourly";
+  if (salaryValue && salaryType !== "volunteer") {
     schema.baseSalary = {
       "@type": "MonetaryAmount",
       currency: "ILS",
       value: {
         "@type": "QuantitativeValue",
-        value: parseFloat(job.salary),
-        unitText: salaryUnit(job.salaryType),
+        value: salaryValue,
+        unitText: salaryUnit(salaryType),
       },
     };
   }

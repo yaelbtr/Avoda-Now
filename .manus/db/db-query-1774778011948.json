@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id, \"openId\", name, phone, role, \"userMode\", \"signupCompleted\" FROM users WHERE role = 'test' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, \"openId\", name, phone, role, \"userMode\", \"signupCompleted\" FROM users WHERE role = 'test' LIMIT 5;",
+  "rows": [
+    {
+      "id": "482142",
+      "openId": "openId",
+      "name": "יעל טסט",
+      "phone": "+972548481498",
+      "role": "test",
+      "userMode": "userMode",
+      "signupCompleted": "signupCompleted"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\tphone\trole\tuserMode\tsignupCompleted\n482142\topenId\tיעל טסט\t+972548481498\ttest\tuserMode\tsignupCompleted\n",
+  "stderr": "",
+  "execution_time_ms": 3449
+}

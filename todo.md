@@ -1,5 +1,9 @@
 # Job-Now TODO
 
+## Bug Fix — Hydration Mismatch
+- [x] החזרת createRoot במקום hydrateRoot (אין SSR אמיתי, hydrateRoot גורם למחיקת ה-SSR shell)
+- [x] העברת SSR shell מחוץ ל-#root כדי שלא יהיה conflict עם React render
+
 ## Phase 1: Database & Schema
 - [ ] Jobs table: title, description, category, location (lat/lng), address, salary, contactPhone, contactName, postedBy, status, createdAt
 - [ ] OTP table: phone, code, expiresAt, used
@@ -2816,3 +2820,975 @@ Isolation guarantees:
 - [x] Create deploy-prod.yml — deploy to PROD on push to main (placeholder)
 - [x] Validate YAML syntax for all three workflows
 - [x] Save checkpoint
+
+## Round 7: Employer Personal Area
+
+- [x] Add employer profile fields to schema (companyName, employerCity, employerRadius, defaultJobCity, minWorkerAge)
+- [x] Run db:push to apply schema changes
+- [x] Add getEmployerProfile and updateEmployerProfile functions to server/db.ts
+- [x] Add getEmployerProfile and updateEmployerProfile tRPC procedures to server/routers.ts
+- [x] Create EmployerProfile.tsx page matching WorkerProfile design and style
+- [x] Add /employer-profile route to App.tsx
+- [x] Update Navbar to link employer mode user icon to /employer-profile
+- [x] Add employer profile link to Navbar dropdown menu and employerLinks nav array
+
+## Round 7 Bug Fix: Employer Profile Navigation
+
+- [x] Fix employer navbar "פרופיל" link — clicking opens /my-jobs instead of /employer-profile
+
+## Round 7b: Google Maps Location Picker in Employer Profile
+
+- [x] Add Google Maps location picker to "מיקום ברירת מחדל למשרה" section in EmployerProfile
+- [x] Support click-on-map to set lat/lng + reverse geocode to city name
+- [x] Save defaultJobLat, defaultJobLng, defaultJobCity to employer profile
+
+## Round 7c: Auto-fill PostJob Location from Employer Profile
+
+- [x] Read employer defaultJobCity/lat/lng in PostJob form on mount
+- [x] Pre-fill location field with employer's default job location
+- [x] Allow employer to override the pre-filled location (map click still works)
+
+## Round 7d: minWorkerAge Filter on Available Workers Page
+
+- [x] Read employer minWorkerAge from profile in available workers query
+- [x] Filter out workers below minWorkerAge using birthDate on server side
+- [x] Show indicator on available workers page when age filter is active
+
+## Round 7e: Bug Fixes
+
+- [x] Fix CityPicker in worker profile edit view losing focus — accordion button was swallowing click events from the city search input
+
+## Round 7f: Accordion Refactor
+
+- [ ] Audit all accordion toggle button patterns across the codebase
+- [ ] Extract shared AccordionSection component to client/src/components/ui/AccordionSection.tsx
+- [ ] Replace accordion buttons in WorkerProfile.tsx with the new component
+- [ ] Replace accordion buttons in EmployerProfile.tsx with the new component
+- [ ] Replace any other accordion patterns found in other pages
+- [x] Fix CityPicker dropdown not showing on mobile — mousedown outside-click handler fires on keyboard events and resets open state
+- [x] Fix CityPicker dropdown clipped by overflow-hidden accordion ancestors — rewrote to use position:fixed with getBoundingClientRect, escapes all overflow containers
+
+## Round 7g: BirthDate Nudge Notification
+
+- [x] Add inline alert/banner in worker profile when birthDate is missing, explaining it affects employer visibility
+- [x] Banner links directly to the personal details section (settings tab) where birthDate field is
+- [x] Integrate with existing profile completeness logic (missing fields list)
+
+## Round 7h: Default Job Location — GPS Button
+
+- [x] Add GPS "use my location" button above the MapView in EmployerProfile default job location section
+
+## Round 7i: Location Gap Fixes
+
+- [ ] Fix getWorkersMatchingJob to use PostGIS radius matching for workers in radius mode
+- [ ] Fix defaultJobCity CityPicker to geocode and save lat/lng when a city is selected manually
+- [ ] Fix updateEmployerProfile to accept and save workerSearchLatitude/Longitude
+
+## Round 7i: Location Gap Fix
+
+- [x] Fix getWorkersMatchingJob to include radius-mode workers via Haversine distance check
+- [x] Add onCitySelect callback to CityPicker to expose lat/lng on city selection (DRY — no extra API call)
+- [x] Add GPS button to worker search radius section in EmployerProfile to save workerSearchLatitude/Longitude
+- [x] Pass job lat/lng to getWorkersMatchingJob call site in routers.ts
+
+## Round 7j: Save City Lat/Lng on Employer City Selection
+
+- [x] Wire onCitySelect in EmployerProfile workerSearchCity picker to save workerSearchLatitude/Longitude
+- [x] defaultJobCity uses MapView + GPS (no CityPicker) — already saves lat/lng via map click and GPS button
+- [x] PostJob uses CityAutocomplete + MapView — already saves lat/lng via geocoder and map click
+- [x] Always send workerSearchLatitude/Longitude regardless of mode (city or radius)
+- [x] Verified updateEmployerProfile accepts and persists workerSearchLatitude/Longitude
+
+## Round 7k: PostGIS Geometry Column for Worker Location
+
+- [x] Add `workerLocation geometry(Point, 4326)` column to users table in schema.ts
+- [x] Sync migration state — column already existed in DB from previous session, fixed drizzle migration journal
+- [x] Update `updateWorkerProfile` in db.ts to auto-compute `workerLocation` via ST_SetSRID/ST_MakePoint when lat/lng are provided
+- [x] Replace Haversine JS filtering in `getWorkersMatchingJob` with PostGIS ST_DWithin SQL filter for radius-mode workers
+- [x] Wire `onCitySelect` on both CityPicker instances in WorkerProfile.tsx to save city coordinates
+- [x] Add 3 Vitest tests for getWorkersMatchingJob PostGIS ST_DWithin behavior (802 passing)
+
+## Round 7k Followup: GIST Index + EmployerProfile CityPicker
+
+- [x] Add GIST index on users.workerLocation via Drizzle migration for PostGIS performance
+- [x] Verify/wire onCitySelect in EmployerProfile CityPicker to save workerSearchLatitude/Longitude
+- [x] Fix HomeEmployer and AvailableWorkers to use employer's saved workerSearchLatitude/Longitude as fallback (priority: GPS > saved > Jerusalem default)
+
+## Round 7L: Index Verification + Employer Radius Wiring
+
+- [x] Run EXPLAIN ANALYZE — index is valid (is_valid: true, is_ready: true); Seq Scan is expected with 17 rows (planner switches to Index Scan automatically at scale)
+- [x] Backfill workerLocation geometry for existing users with lat/lng
+- [x] Wire workerSearchRadiusKm from employer profile into AvailableWorkers (initializes from saved, user can override)
+- [x] Wire workerSearchRadiusKm from employer profile into HomeEmployer (uses saved radius, fallback 20km)
+
+## Round 7M: MatchedWorkers Employer Profile Integration
+
+- [x] Audited MatchedWorkers: uses job lat/lng (not employer) — correct by design
+- [x] Added getWorkerNamesByIds batch helper to db.ts (no N+1)
+- [x] matchWorkers local fallback now returns enriched results (name + rating) via getWorkerNamesByIds
+- [x] matchWorkers fallback uses getWorkersMatchingJob with job lat/lng + worker searchRadiusKm (PostGIS ST_DWithin)
+
+## Round 7N: MATCHING_API_URL Production Secret
+
+- [ ] Set MATCHING_API_URL via webdev_request_secrets
+- [ ] Validate secret is accessible in server env and write Vitest test
+
+## Round 7O: Employer Menu Fix
+
+- [x] Remove "פרופיל" item from employer navigation menu (keep only "אזור אישי")
+
+## Round 7P: MyJobs Page Redesign
+
+- [x] Redesign MyJobs page to match AvodaNow design language (follow MyApplications style) — dark header banner, light cards, stats row, consistent colors
+
+## Round 7Q: MyJobs Applicants Badge
+
+- [x] Add pending applicants count badge directly on job card header (visible without expanding panel)
+
+## Round 7R: Push Notifications for New Applicants
+
+- [x] Audit: push infrastructure fully implemented (VAPID keys, push_subscriptions table, sw.js, sendPushToUser)
+- [x] Server: jobs.apply already calls sendPushToUser(job.postedBy, ...) — no changes needed
+- [x] Frontend: added push prompt banner in MyJobs (subscribe CTA + active state with unsubscribe)
+- [x] Handle notification click → navigate to /jobs/{id}/applications (already in sw.js)
+- [x] 802 tests passing, no regressions
+
+## Round 7S: Push Banner on HomeEmployer
+
+- [ ] Add push notification permission banner to HomeEmployer page (reuse MyJobs pattern)
+
+## Round 7T: AvailableWorkers Bug Fix
+
+- [x] Diagnosed: worker_availability.location column was missing (migration not applied)
+- [x] Added location geometry(Point,4326) column to worker_availability + GIST index
+- [x] Updated setWorkerAvailable to auto-compute PostGIS geometry from lat/lng
+- [x] Documented migration 0014 in journal and marked as applied
+- [x] 802 tests passing, no new regressions
+
+## Round 7U: Custom Availability Duration
+
+- [x] Add free-text hours input (1–72) to worker availability form alongside preset buttons (2,4,8,12,24,48,72 + custom)
+
+## Round 7V: Availability Countdown Timer
+
+- [x] Create useCountdown hook (HH:MM:SS, updates every second)
+- [x] Create useCountdownLabel hook (Hebrew label: "זמין עוד X שעות")
+- [x] HomeWorker: show live countdown in availability status badge (top row)
+- [x] HomeWorker: show "נשאר HH:MM:SS" inside the availability toggle button
+- [x] HomeWorker: show live countdown in info dialog
+- [x] AvailableWorkers: replace static availableUntilText with live WorkerCountdownBadge component
+- [x] WorkerCountdownBadge: color-coded urgency (green > 30min, amber < 30min, red < 10min)
+- [x] 13 new Vitest tests for countdown formatting (815 passing total)
+
+## Bug Fix: setWorkerAvailable PostgreSQL type error
+
+- [x] Fix "inconsistent types deduced for parameter $2" in setWorkerAvailable raw SQL
+
+## PostGIS Error Logging
+
+- [x] Add postgisLogger child logger to logger.ts
+- [x] Wrap setWorkerAvailable _pool.query in try/catch with structured error log (coords, userId, error code)
+- [x] Wrap updateWorkerProfile PostGIS update in try/catch with structured error log
+- [x] Add logPostgisError helper to logger.ts (DRY — reused by all PostGIS operations)
+- [x] Write Vitest tests for the logging helper (8 tests, 830 passing total)
+
+## Bug Fix: Missing availability success feedback
+
+- [x] Add toast.success with duration info on setAvailableMutation onSuccess
+- [x] Add toast.success on setUnavailableMutation onSuccess
+- [x] Add toast.error with message on both mutations onError
+
+## Bug Fix: Availability button text not reflecting current state
+
+- [x] Show "סמן כלא זמין" on the availability button when worker is currently available
+
+## Feature: Employer Bottom Navigation Bar
+
+- [x] Audit worker BottomNav component for design tokens and structure
+- [x] Create EmployerBottomNav component (4 tabs: מסך הבית, פרסם משרה, המשרות שלי, עובדים זמינים)
+- [x] Integrate EmployerBottomNav into App.tsx (renders only when userMode === employer)
+- [x] All employer pages covered: HomeEmployer, PostJob, MyJobs, AvailableWorkers
+
+## UX: Pulse animation on PostJob tab in EmployerBottomNav
+
+- [x] Add framer-motion pulse ring animation to PlusSquare icon when on /post-job route
+
+## UI: Remove phone verification banner from HomeEmployer
+
+- [x] Remove "ניתן לפרסם עד 3 משרות פעילות בו-זמנית. נדרש אימות טלפון" banner
+
+## Feature: PostJob tabbed layout (like WorkerProfile)
+
+- [x] Audit WorkerProfile tab design tokens and structure
+- [x] Group PostJob fields into 4 tabs: פרטי משרה / מיקום ושעות / תנאים / פרסום
+- [x] Implement sticky tab bar with active indicator matching WorkerProfile style
+- [x] Add per-tab validation (trigger) before allowing next tab
+- [x] Add animated progress dots above tab bar
+- [x] Add AnimatePresence slide transition between tabs
+- [x] Add sticky bottom Prev/Next navigation bar
+- [x] Preserve all existing form fields and submission logic
+
+## Feature: PostJob localStorage draft saving
+
+- [x] Create usePostJobDraft hook (save/load/clear with debounce 800ms)
+- [x] Persist all form fields + extra state (lat/lng, jobDate, times, images, activeTab, etc.)
+- [x] Show restore banner on page load when draft exists (with age label)
+- [x] Auto-save on every form change (watch subscription) + debounced state changes
+- [x] Immediate save on tab navigation (saveDraftNow)
+- [x] Clear draft on successful submit
+- [x] 12 Vitest tests for pure draft utilities (854 passing total)
+
+## Feature: PostJob UX improvements (round 2)
+
+- [x] Job preview card in "פרסום" tab (title, location, salary, category, hours, contact)
+- [x] Per-tab completion indicator — green checkmark badge on completed tabs in tab bar
+- [x] localStorage draft saving verified — auto-save on every change, restore banner on load
+
+## Feature: PostJob autofill from employer profile
+
+- [x] Auto-fill contactName from employerProfile.name ?? user.name when form is empty and no draft exists
+- [x] Auto-fill businessName from employerProfile.companyName when form is empty and no draft exists
+- [x] Only autofill when field is currently empty (never overwrite user input or draft)
+
+## UI: PostJob contact card refactor
+
+- [x] Remove contact details card (contactName, businessName, showPhone) from conditions tab
+- [x] Add info notice in details tab: "פרטי איש הקשר נלקחים מהאזור האישי" with link to profile
+
+## Bug Fix: PostJob mutation returns HTML instead of JSON
+
+- [x] Root cause: PayloadTooLargeError — /api/trpc limit was 10kb, too small for job posts with images
+- [x] Fix: increased tRPC body limit from 10kb to 5mb in server/_core/index.ts
+
+## Feature: PostJob image size validation
+
+- [x] Add 4MB per-image client-side validation in PostJob image upload handler
+- [x] Show Hebrew error message with actual file size when image exceeds limit
+- [x] Oversized images are skipped (continue) — valid images in same batch still upload
+- [x] MAX_IMAGE_SIZE constant defined once outside the loop (DRY)
+
+## Refactor: PostJob image upload via /api/upload-photo
+
+- [x] Audit /api/upload-photo endpoint and uploadJobImage tRPC mutation
+- [x] Add /api/upload-job-image Express endpoint with multer memory storage (8mb hard limit)
+- [x] Refactor handleImageUpload to use fetch + FormData (multipart) — no more base64 in tRPC payload
+- [x] Remove uploadJobImage tRPC procedure (no longer used anywhere)
+- [x] 19 Vitest tests for upload logic (861 passing total)
+
+## UI: PostJob location card split into sub-tabs
+
+- [x] Split "מיקום ואיך לחפש עובדים" card into 2 sub-tabs: "העדפת חיפוש עובדים" and "כתובת המשרה"
+- [x] Sub-tab 1: worker search mode (radius/city) + distance selector
+- [x] Sub-tab 2: job address map + location picker (full map, GPS button)
+- [x] Added locationSubTab state (default: search)
+
+## Feature: PostJob autofill worker search preferences from employer profile
+
+- [x] Auto-fill jobLocationMode from employerProfile.workerSearchLocationMode when no draft exists
+- [x] Auto-fill jobSearchRadiusKm from employerProfile.workerSearchRadiusKm when no draft exists
+- [x] Auto-fill jobCity from employerProfile.workerSearchCity when no draft exists
+- [x] Only autofill when fields are at default values and no draft exists
+
+## Feature: Persist locationSubTab in PostJob draft
+
+- [x] Add locationSubTab to collectDraftData() output
+- [x] Restore locationSubTab from draft in restoreDraft()
+- [x] Add locationSubTab to auto-save dependency array
+
+## Feature: Auto-switch to Job Address sub-tab on missing location
+
+- [x] Add mapContainerRef to the map div in the address sub-tab
+- [x] In goNext(), when lat/lng missing: switch to "address" sub-tab, scroll mapContainerRef into view, show inline error
+- [x] Add shake CSS animation to map container when triggered
+
+## Feature: Google Places Autocomplete for job address
+
+- [x] Create PlacesAutocomplete component using google.maps.places.Autocomplete
+- [x] On place select: set lat/lng, center map, drop marker, fill address field
+- [x] Replace read-only address AppInput with PlacesAutocomplete in PostJob address sub-tab
+- [x] Keep map click and GPS as alternative location methods
+
+## Feature: GPS button in address sub-tab
+
+- [x] Add locating state and getMyLocation function using Geolocation + Geocoder
+- [x] Render GPS button above PlacesAutocomplete in address sub-tab
+- [x] On GPS success: set lat/lng, fill address field, clear mapError
+
+## Feature: PlacesAutocomplete in employer profile
+
+- [x] Replace address AppInput in employer profile with PlacesAutocomplete
+- [x] On place select: set lat/lng fields alongside address text
+
+## Feature: Remove redundant PostJob fields
+
+- [x] Audit workStartTime, workersNeeded, exactDateTime usage in schema/routers/db/matching
+- [ ] Remove workStartTime field from PostJob UI and state
+- [x] Remove workersNeeded field from PostJob UI and state
+- [x] Remove exactDateTime field from PostJob UI and state
+- [x] Verify submission and matching logic unaffected
+
+## Feature: Remove workersNeeded from PostJob UI
+
+- [x] Remove workersNeeded AppInput from PostJob UI
+- [x] Remove workersNeeded from Zod schema (keep server default=1)
+- [x] Remove workersNeeded from defaultValues, restoreDraft, urlParams
+- [x] Verify job cards/details still display workersNeeded correctly
+
+## OTP Publish Modal Redesign
+- [x] Redesign JobPublishOtpModal to match LoginModal visual style (channel cards, OTP inputs, security badge, RTL)
+- [x] Add 60-second resend countdown timer to "שלח קוד חדש" button in OTP step
+- [x] Add send cooldown timer on channel selection screen (prevents re-sending immediately)
+
+## Bug Fix — Phone Number Enforcement
+- [ ] Email OTP login: block new user creation if phone not provided (server-side)
+- [ ] Email OTP login: add phone field to login tab's email flow (frontend)
+- [ ] Google OAuth: block completeGoogleRegistration if phone not provided (server-side)
+- [ ] Google OAuth: make phone required in CompleteProfileModal (remove skip option)
+
+## Bug Fix — Remove Google OAuth (phone bypass)
+- [x] Block /api/oauth/callback route (redirect to home with error)
+- [ ] Remove completeGoogleRegistration procedure from routers.ts (dead code)
+- [ ] Remove PostGoogleRegistration component from App.tsx (dead code)
+- [ ] Remove CompleteProfileModal component (dead code)
+- [ ] Remove google_oauth check from Navbar.tsx
+- [ ] Remove GoogleAuthButton component (dead code)
+- [ ] Remove getGoogleLoginUrl from const.ts
+
+## Feature — Phone Enforcement in authenticateRequest
+- [x] Add phoneRequiredProcedure middleware in trpc.ts — throws FORBIDDEN with PHONE_REQUIRED_ERR_MSG
+- [x] Add PHONE_REQUIRED_ERR_MSG to shared/const.ts
+- [x] Apply phoneRequiredProcedure to jobs.create, jobs.applyToJob, jobs.sendPublishOtp, jobs.verifyPublishOtp
+- [x] Handle PHONE_REQUIRED on frontend: dispatch custom event from main.tsx interceptor
+- [x] Navbar listens for avodanow:phone-required event and opens LoginModal with contextual message
+
+## Bug Fix — Delete Jobs Query Error
+- [ ] Fix: "delete from jobs where postedBy = $1" deletes ALL jobs by user instead of single job
+
+## Bug Fix — adminDeleteUser notification_batches FK
+- [x] Fix adminDeleteUser: delete notification_batches for user's jobs before deleting jobs
+
+## Bug Fix — adminDeleteUser job_reports FK
+- [x] Fix adminDeleteUser: delete job_reports for user's jobs before deleting jobs (FK: job_reports.jobId → jobs.id, no cascade)
+
+## Bug Fix — Invalid category value on post-job
+- [x] Fix: category value sent from PostJob form doesn't match server enum — added gardening/serving/electricity/plumbing/moving to JOB_CATEGORIES, CATEGORY_COLORS, and z.enum in routers.ts
+
+## Feature — Job Detail Page Redesign (AvodaNow Design)
+- [x] Redesign job detail page using AvodaNow design tokens (brand colors, AppButton, RTL layout)
+
+## Feature — Post-Job Redirect to Matched Workers
+- [x] After job publish success, redirect to /matched-workers?jobId={id}
+
+## Feature — Toast with Link After Job Publish
+- [x] Show toast "המשרה פורסמה! לצפייה בעובדים מתאימים ←" with clickable link on job publish success
+
+## Bug Fix — Homepage query fires for unauthenticated users
+- [ ] Fix: query on homepage calls protectedProcedure when user=null → "Please login (10001)"
+
+## Bug Fix — OTP "קוד שגוי" on worker-profile
+- [ ] Fix: OTP verification returns "קוד שגוי" for Google user (id=497267) adding phone on worker-profile
+
+## Bug Fix — Role combo in admin user-edit modal doesn't open
+- [x] Fix: role Select combo in admin user-edit modal appears empty and doesn't open — AppSelect now supports children prop
+
+## Bug Fix — worker_availability DB connection error
+- [x] Fix recurring "Connection terminated unexpectedly" in worker_availability reminder job — added pool error handler, idleTimeoutMillis, connectionTimeoutMillis, and retry wrapper with exponential backoff
+
+## Feature — DB Pool keepAlive
+- [x] Add keepAlive and keepAliveInitialDelayMillis to pg.Pool config
+
+## Feature — Offer Job to Worker (Full Implementation)
+- [x] Backend: implement offerJob procedure (create application record with status "offered")
+- [x] Backend: notify worker on offer (SMS/push/both per notificationPrefs) with job link
+- [x] Frontend: show "offered" applications in worker's My Applications page
+- [x] Frontend: worker can Reject or Show Phone to employer on offered applications
+
+## Feature — Active Offer Limit per Job (Max 5)
+- [x] Backend: add countActiveOffers(jobId) helper in db.ts (counts applications with status='offered')
+- [x] Backend: enforce MAX_ACTIVE_OFFERS=5 in sendJobOffer — throw BAD_REQUEST when limit reached
+- [x] Backend: add MAX_ACTIVE_OFFERS constant to shared/const.ts (Single Source of Truth)
+- [x] Frontend: show friendly Hebrew error toast in MatchedWorkers when limit is reached (reuses existing onError handler)
+- [x] Tests: 6 Vitest tests for countActiveOffers and the limit guard in sendJobOffer (918 passing total)
+
+## Bug Fix — countActiveOffers query type error
+- [x] Fix: replaced sql<number>`count(*)::int` with Drizzle's count() helper — same pattern as countActiveJobsByUser
+
+## Bug Fix — countActiveOffers still failing after count() fix
+- [x] Root cause: offered/offer_rejected enum values were never migrated to the DB (only in schema.ts)
+- [x] Fix: applied ALTER TYPE application_status ADD VALUE directly via pg driver
+- [x] Fix: updated Drizzle snapshots (0012, 0013) to include offered/offer_rejected so db:push stays in sync
+
+## Bug Fix — "Please login (10001)" on home page for unauthenticated users
+- [x] Root cause: HomeEmployer fired myJobs + totalPendingApplications + getEmployerProfile before auth.me resolved (race condition)
+- [x] Fix: added authLoading guard — enabled: !authLoading && isAuthenticated for all three queries
+
+## Feature — useAuthQuery hook (Single Source of Truth for auth-gated queries)
+- [x] Create useAuthQuery hook in client/src/hooks/useAuthQuery.ts
+- [x] Migrate all enabled: isAuthenticated query sites to use useAuthQuery (25 pages/components/hooks migrated, 2 prop-based exceptions kept as-is)
+- [x] Ensure !authLoading guard is applied consistently everywhere (baked into useAuthQuery hook)
+
+## Bug Fix — Job Offer Flow Correction
+- [x] MyApplications: offer card shows Accept/Reject only; after accept shows confirmation message
+- [x] Backend respondToOffer (accept): keeps status=offered, sets contactRevealed=true, notifies employer via SMS/Push with worker phone
+- [x] Backend respondToOffer (reject): sets status=offer_rejected
+- [x] JobApplications: shows offered/offer_rejected sections with worker phone visible when contactRevealed=true
+- [x] getApplicationById: includes employerPhone + employerNotificationPrefs via aliased join
+
+## Bug Fix — "Please login" on home page (round 2)
+- [ ] Find which protectedProcedure fires on / for unauthenticated users (race condition with auth)
+- [ ] Add useAuthQuery guard to prevent firing before auth resolves
+
+## Bug Fix — "Please login" on home page (third occurrence)
+- [x] Root cause: WorkerRegionBanner (regions.workerRegionStatus, regions.myNotifications), usePushNotifications (push.vapidKey), and EmployerProfile (getNotificationPrefs) were missing useAuthQuery guards
+- [x] Fix: added authQuery() to all three components — consistent with useAuthQuery pattern
+
+## Feature — MyJobs: auto-expand applicants section when applicants exist
+- [x] db.ts: added totalApplicationCount to getMyJobsWithPendingCounts (separate query, all statuses)
+- [x] MyJobs.tsx: useEffect auto-expands all jobs with totalApplicationCount > 0 on first data load (runs once)
+
+## Bug Fix — JobApplications: wrong badge for offer-accepted state
+- [x] Fix: badge shows "הצעה נשלחה" even when worker accepted — should show "העובד אישר את ההצעה" when offered+contactRevealed=true
+
+## Bug Fix — JobApplications: offered section includes accepted offers
+- [x] Fix: offered filter was `status=offered` (all), causing accepted offers to appear in both "ממתינות" and "אישרו הצעה" sections. Fixed to `status=offered && !contactRevealed` for pending section only.
+
+## Redesign — JobApplications card to AvodaNow design language
+- [x] Replace shadcn Card/Badge with OKLCH inline styles matching MyApplications pattern
+- [x] Avatar icon block (rounded-xl, brand bg), status badge with border, meta row with Clock/MapPin
+- [x] Pending actions: brand olive-green "קבל" + muted "דחה" inline buttons
+- [x] Offer accepted section: green confirmation banner + Phone/WhatsApp contact buttons
+- [x] Dark olive header bar (matching navbar), SectionHeader component with colored count pill
+- [x] Skeleton loading uses AvodaNow card style, empty state uses brand icon block
+
+- [x] Redesign ApplicantCard to exactly match MyApplications card structure (motion.div, same tokens, same layout)
+
+- [x] Fix: console.error noise from expected 401 and 504 gateway errors — add isSilentError filter in main.tsx
+
+- [x] Fix MyJobs card: salary not displayed
+- [x] Fix MyJobs card: remove "גמיש" and "1 עובדים" from meta row
+- [x] Fix MyJobs card: "התנדבות" shown incorrectly (should only show when payType=volunteer)
+
+- [x] Fix: formatSalary() didn't handle Drizzle Decimal objects (PostgreSQL numeric) — salary showed "לא צוין" even when set. Fixed by using String(salary) conversion and accepting { toString() } type.
+- [x] Fix: salary not displayed — hourlyRate stored separately from salary, formatSalary updated to accept optional hourlyRate param; all components updated (JobCard, CarouselJobCard, SearchJobCard, JobBottomSheet, JobDetails, MyApplications, ActivityTicker, db.ts)
+
+## City Matching via Google Maps Place ID
+- [x] Add cityPlaceId column to jobs table (schema migration + direct SQL for collision workaround)
+- [x] Add preferredCityPlaceId column to users table (schema migration + direct SQL)
+- [x] CityAutocomplete: extended onSelect callback to pass placeId as 4th optional argument (backward-compatible)
+- [x] CityPicker: added resolvePlaceId() helper with module-level cache; onCitySelect now fires twice — immediately with lat/lng, then with placeId once resolved
+- [x] PostJob: added jobCityPlaceId state; CityAutocomplete onSelect captures placeId; payload includes cityPlaceId
+- [x] WorkerProfile: added preferredCityPlaceId state; both CityPicker onCitySelect callbacks capture placeId; all 3 mutation call sites (handleWizardSubmit, handleSave, phone-change path) send preferredCityPlaceId
+- [x] server/db.ts: updateWorkerProfile accepts preferredCityPlaceId; getWorkerLocationsByIds returns preferredCityPlaceId
+- [x] server/routers.ts: jobInputSchema includes cityPlaceId; both createJob calls pass cityPlaceId; completeSignup and updateProfile accept and forward preferredCityPlaceId
+- [x] Location guard (matchWorkers): placeId comparison as primary strategy; city-name text fallback for legacy data
+- [x] TypeScript clean, 918/918 unit tests passing
+
+## Bug Fix: Workers from wrong cities appearing in matchWorkers (job 60012)
+- [x] Root cause: getWorkersMatchingJob (internal DB path) only checked legacy `preferredCity` string; workers using CityPicker store IDs in `preferredCities` array (not string), so they bypassed the city filter entirely
+- [x] Fix: Added `preferredCities` to SELECT; batch-resolved city IDs to Hebrew names via getCityNamesByIds (O(n) pattern); city filter now checks `preferredCities` array first, falls back to `preferredCity` string; workers with no city data at all are included (incomplete profile)
+- [x] TypeScript clean, 918/918 unit tests passing
+
+## Backfill cityPlaceId for existing jobs
+- [x] Script: scripts/backfill-city-place-id.mjs — resolves each distinct city name via Google Maps Place Autocomplete (Israel, language=he), deduplicates API calls, rate-limited to 5 req/s
+- [x] Dry-run mode (DRY_RUN=1) for safe preview before writing
+- [x] Skips address-like strings (contains digits or >40 chars)
+- [x] Ran script: 12 jobs updated (6x "בני ברק", 6x "ישראל"); 1 address-like skipped; 1 ZERO_RESULTS ("אברבנאל")
+
+## Manual city correction + backfill re-run
+- [x] Job 30003 ("ביביסיטר"): city corrected from "אברבנאל 121א בני ברק" → "בני ברק"
+- [x] Job 60005 ("שליח"): city corrected from "אברבנאל" → "בני ברק"
+- [x] Re-ran backfill script: 2 more jobs resolved → ChIJeXLMWyNKHRURhzlCjBfKL6M
+- [x] All 14 jobs now have cityPlaceId set (0 missing, 0 no-city)
+
+## City input validation (address guard)
+- [x] shared/cityValidation.ts — single source of truth: validateCityName(), cityZodRefine(), CITY_MAX_LENGTH
+- [x] Rules: length > 40, ASCII digits, Hebrew ordinal suffix (e.g. 121א), address keywords (רחוב, שדרות, כיכר, דרך, ...)
+- [x] CityAutocomplete — inline error with AlertCircle icon + aria-invalid; clears on dropdown selection
+- [x] server/routers.ts jobInputSchema — city field guarded by cityZodRefine via .superRefine()
+- [x] shared/cityValidation.test.ts — 39 unit tests (39/39 passing); vitest.config.ts updated to include shared/**/*.test.ts
+
+## City validation extended to WorkerProfile & EmployerProfile
+- [x] CityPicker: inline address-guard error (AlertCircle + red border) on search input when ≥4 chars typed; clears on X button
+- [x] server/routers.ts completeSignup: preferredCity guarded by cityZodRefine
+- [x] server/routers.ts updateProfile (worker): preferredCity guarded by cityZodRefine
+- [x] server/routers.ts updateEmployerProfile: workerSearchCity guarded by cityZodRefine
+- [x] defaultJobCity (EmployerProfile PlacesAutocomplete) intentionally excluded — it is a full address field
+- [x] 957/957 unit tests passing, TypeScript clean
+
+## OTP rate-limit error UX fix
+- [x] LoginModal: parse seconds from TOO_MANY_REQUESTS error, start sendCooldown with exact remaining time, show inline error banner
+- [x] LoginModal: same fix for sendEmailCode TOO_MANY_REQUESTS
+- [x] JobPublishOtpModal: same fix for sendPublishOtp TOO_MANY_REQUESTS
+
+## Email OTP send failure fix
+- [x] Replace SendGrid call in emailOtp.ts sendEmailOtp with _core/email.ts sendEmail (Forge API)
+- [x] Remove @sendgrid/mail dependency from emailOtp.ts (keep sendWelcomeEmail in emailOtp.ts using sendEmail helper too)
+
+## Bug Fix: "הגדר התראות" button navigation blocked by overlay
+- [x] Fix FindJobsComingSoonOverlay to hide when not on /find-jobs route
+
+## Bug Fix: Browser back from /jobs/:id/applications lands on 404
+- [x] Add NumericJobRedirect component that redirects /jobs/:id (numeric) to /job/:id
+
+## Change back button in JobApplications
+- [x] Navigate to /job/:id instead of /my-jobs
+
+## Bug Fix: Back button 404 on /matched-workers and /worker/:id
+- [x] Fix MatchedWorkers back button: navigate(-1) → navigate(/job/:id)
+- [x] Fix PublicWorkerProfile back button: navigate(-1 as any) → window.history.back()
+
+## Bug Fix: radius-mode workers with null workerLocation excluded from matching
+- [x] Fix getWorkersMatchingJob: include radius-mode workers with null workerLocation (fallback to include)
+- [ ] Fix WorkerProfile UI: require location when locationMode=radius before saving
+
+## Bug Fix: SendGrid content order (text/plain must precede text/html)
+- [x] Fix sendViaSendGrid content array order in _core/email.ts
+
+## Feature: Location requirement for radius mode in WorkerProfile wizard
+- [x] Add geolocation button to wizard step 2 (same UI as edit mode) — inside radius mode section
+- [x] Block "המשך" button in wizard step 2 if locationMode=radius && workerLatitude=null
+- [x] Add validation to handleWizardSubmit: reject if locationMode=radius && workerLatitude=null
+- [x] Add validation to handleSave: reject if locationMode=radius && workerLatitude=null
+
+## Feature: "מיקום לא מוגדר" indicator in MatchedWorkers
+- [x] Add locationMissingGps flag to matchWorkers return value (server/routers.ts)
+- [x] Refactor locationFiltered from .filter() to for-loop to attach per-worker flag
+- [x] MatchedWorker interface: add locationMissingGps?: boolean
+- [x] WorkerMatchCard: show amber "מיקום לא מוגדר" badge when locationMissingGps=true
+- [x] enrichedWorkers: propagate locationMissingGps from raw match result
+
+## Feature: City allowlist for address-keyword guard
+- [x] Add CITY_ALLOWLIST Set in shared/cityValidation.ts
+- [x] Update validateCityName to skip address-keyword check for allowlisted cities
+- [x] Update tests: allowlisted cities must pass, non-allowlisted keyword strings must still fail
+
+## Feature: 3-candidate cap per job posting
+- [x] Add MAX_ACCEPTED_CANDIDATES = 3 to shared/const.ts
+- [x] Add cap_reached to closedReasonEnum in schema.ts + run db:push
+- [x] Add countAcceptedCandidates(jobId) helper in db.ts
+- [x] Update updateApplicationStatus (accept path): count accepted → if >=3 auto-close job with cap_reached
+- [x] Update respondToJobOffer (accept path): count accepted → if >=3 auto-close job with cap_reached; if job already closed with cap_reached throw CAP_REACHED error
+- [x] Update sendJobOffer: block if job already closed with cap_reached
+- [x] Update queryJobs: exclude jobs with status=closed AND closedReason=cap_reached
+- [x] Update getMyApplications: return jobClosedReason so worker UI can show "העבודה נסגרה"
+- [x] Update MyApplications UI: show "העבודה נסגרה" banner when jobStatus=closed + jobClosedReason=cap_reached
+- [x] Update JobApplications/MatchedWorkers UI: show cap-reached banner and disable send-offer
+- [x] Write vitest tests for the cap logic
+
+## Feature: Worker avatar + status label in MyJobs applicant rows
+- [x] Extend getMyJobs applicants to return profilePhoto per worker
+- [x] Add WorkerAvatar shared component (photo or letter-avatar fallback)
+- [x] Add applicationStatusLabel() utility in shared/const.ts
+- [x] Update MyJobs applicant row UI: show avatar + status label
+
+## Refactor: Unify status labels + profilePhoto + tooltips
+- [x] Replace STATUS_CONFIG in JobApplications.tsx with getApplicationStatusLabel from shared/const.ts
+- [x] Add workerProfilePhoto to getApplicationsForJobWithDistance SELECT in db.ts
+- [x] Add tooltip (title) descriptions to APPLICATION_STATUS_LABELS in shared/const.ts
+- [x] Apply title attribute to status badges in JobApplications and MyJobs
+
+## Feature: Radix Tooltip for status badges
+- [x] Verify Radix Tooltip is available (shadcn/ui tooltip.tsx)
+- [x] Create shared StatusBadge component in client/src/components/StatusBadge.tsx
+- [x] Replace title attribute in MyJobs ApplicantsPanel with StatusBadge
+- [x] Replace title attribute in JobApplications ApplicantCard with StatusBadge
+
+## Bug: "ראה את כל המשרות" shows employer-locked popup for workers
+- [x] Find the button handler in the worker home page
+- [x] Find the employer-locked gate logic and ensure it only applies to employers/non-workers
+- [x] Fix routing so workers navigate directly to FindJobs without the lock
+
+## Refactor: StatusBadge in MyApplications
+- [x] Replace local STATUS_CONFIG in MyApplications with shared StatusBadge component
+- [x] Remove unused imports from MyApplications after refactor
+
+## Bug: queryJobs cap_reached enum cast fails
+- [x] Find actual PostgreSQL enum type name for closedReason
+- [x] Fix sql cast in queryJobs to use correct type name or use text comparison
+
+## Bug: MyApplications contradictory status badge
+- [x] Find what status value is passed to StatusBadge vs what drives the card body
+- [x] Fix StatusBadge to show effective status (offered_accepted when worker accepted)
+
+## UX: Hide initial offer banner after worker accepts
+- [x] Hide "המעסיק שלח לך הצעה" banner when contactRevealed=true in MyApplications
+
+## Refactor: Unify acceptance confirmation message with offered_accepted tooltip
+- [x] Use APPLICATION_STATUS_LABELS offered_accepted tooltip text in MyApplications acceptance block
+
+## Refactor: APPLICATION_STATUS_LABELS 4-field schema
+- [ ] Add workerLabel, employerLabel, workerTooltip, employerTooltip to all entries
+- [ ] Update getApplicationStatusLabel to accept perspective param
+- [ ] Update StatusBadge to accept perspective prop and use correct label/tooltip
+- [ ] Update MyApplications to pass perspective="worker"
+- [ ] Update JobApplications to pass perspective="employer"
+- [ ] Update MyJobs to pass perspective="employer"
+- [ ] Update applicationStatus.test.ts for new schema
+
+## APPLICATION_STATUS_LABELS 4-Field Perspective Refactor
+- [x] Restructure APPLICATION_STATUS_LABELS in shared/const.ts: replace single label/tooltip with workerLabel, employerLabel, workerTooltip, employerTooltip per status
+- [x] Update getApplicationStatusLabel() to accept perspective ("worker"|"employer", default "employer") and return resolved label+tooltip for that perspective
+- [x] Update StatusBadge component to accept and pass perspective prop to getApplicationStatusLabel
+- [x] Update MyApplications: pass perspective="worker" to StatusBadge; use cfg.workerLabel in acceptance confirmation block
+- [x] Update JobApplications: pass perspective="employer" to StatusBadge
+- [x] Update MyJobs: pass perspective="employer" to StatusBadge
+- [x] Rewrite applicationStatus.test.ts: 22 tests covering both perspectives, symmetry checks, and all known statuses
+
+## Universal Status Banner in MyApplications
+- [x] Show a contextual status explanation banner for every application status in MyApplications (worker view), using workerLabel + workerTooltip from APPLICATION_STATUS_LABELS
+- [x] Remove the old offered_accepted-specific conditional block and replace with a single unified banner component
+
+## Profile Photo in WorkerMatchCard
+- [x] Add profilePhoto field to matchWorkers query (server/routers.ts or server/db.ts)
+- [x] Add profilePhoto to MatchedWorker interface in MatchedWorkers page
+- [x] Render profile photo in WorkerMatchCard avatar area (with letter-avatar fallback)
+
+## Employer Photo in MyApplications Card
+- [ ] Add employerPhoto to getMyApplications DB query (JOIN on postedBy user)
+- [ ] Add employerPhoto to MyApplication type in MyApplications.tsx
+- [ ] Render employer photo (with initial-avatar fallback) next to employer name in the card
+
+## Bug: Wrong status label in JobApplications when offered+contactRevealed
+- [x] Root cause found: revealApplicationContact was setting status="viewed" unconditionally, overwriting "offered" status when employer revealed contact via direct link
+- [x] Fixed revealApplicationContact in db.ts: only advances to "viewed" when current status is pending/viewed; preserves offered/accepted/rejected statuses
+
+## Candidate Counter on MyJobs Card
+- [x] Add acceptedCount per job to getMyJobs query (batch via countAcceptedCandidates or subquery)
+- [x] Add acceptedCount to Job type in MyJobs page
+- [x] Render X/3 counter badge on job card in MyJobs
+
+## Button Visual Differentiation in JobApplications
+- [x] Accept button: green filled (primary action)
+- [x] Reject button: red/muted destructive outline
+- [x] WhatsApp button: WhatsApp green brand color (filled)
+- [x] Phone button: blue outline distinct from accept/reject
+
+## Phone/WhatsApp Link Style in JobApplications
+- [x] Phone and WhatsApp buttons styled as inline text links (underline, no background/border)
+
+## Disable /jobs/:id/applications navigation
+- [x] Remove all links and navigate() calls pointing to /jobs/:id/applications
+
+## Click applicant card in MyJobs to open worker profile
+- [x] Applicant card in MyJobs opens worker profile on click (same pattern as JobApplications)
+
+## Worker profile bottom sheet in MyJobs
+- [x] Open worker profile as bottom sheet modal (not new tab) when clicking applicant card in MyJobs
+
+## First job applicants panel open by default in MyJobs
+- [x] First job card in MyJobs has applicants panel expanded by default
+
+## Redesign MyJobs job card per design files
+- [x] Redesign job card in MyJobs to match uploaded design files (design-only, no behavior changes)
+
+## Redesign MyJobs job card top section
+- [ ] Round edit button in top-left corner (pencil icon, surface-container-low bg)
+- [ ] Large bold Manrope title, right-aligned
+- [ ] Green status dot + "משרה פעילה" label below title
+- [ ] 2x2 chip grid: salary (primary-fixed bg), location, shift time, date
+
+## MyJobs Card Design Improvements (Mar 2026)
+- [x] Hero header: title right (Heebo bold), edit + close buttons stacked top-left as rounded-full circles
+- [x] Status dot: green dot on RIGHT of "משרה פעילה" text (RTL: dot appears after text)
+- [x] Chips 2 rows × 2 cols: row1 = salary (ירקרק #dce8b3) + location (grey); row2 = expiry (red/neutral) + time (grey)
+- [x] Analytics bento RTL: RIGHT=grey total | LEFT=ירקרק accepted (3/3)
+- [x] Applicant cards: 2-column action row (reject grey RIGHT | accept dark-green LEFT)
+- [x] Matched workers link: right-aligned with ← arrow
+
+## MyJobs Card — Status Dot Fix
+- [x] Status dot: move to RIGHT of "משרה פעילה" text (RTL: dot visually before text, i.e. dot is first in DOM)
+
+## MyJobs Card — Match HomeEmployer Style
+- [x] Card header: pencil + eye buttons left, briefcase right, status badge + title + city inline (like HomeEmployer)
+- [x] Chips (address, salary, time, expiry): styled like the "הכל" filter button from HomeEmployer
+
+## MyJobs Card — Chips 2x2 Grid
+- [x] Chips layout: 2x2 grid (equal width columns), same layout as analytics bento squares
+
+## MyJobs — Applicant Card Redesign
+- [x] Applicant cards: match HomeEmployer job card style (white bg, subtle border, action buttons left, name+badge right, details below)
+
+## MyJobs — Applicant Card StatusBadge Position
+- [x] Move StatusBadge below worker name (separate line, not inline)
+
+## MyJobs — Applicant Card Action Buttons Layout
+- [x] Action buttons: horizontal row — reject LEFT of accept (not stacked vertically)
+
+## MyJobs — Phone Reveal Button
+- [x] Replace inline phone number with phone icon button that reveals number on click (like WhatsApp button)
+
+## MyJobs — Phone Number Position
+- [x] Show revealed phone number below action buttons row (not inline in details row)
+
+## MyJobs — Phone Reveal Animation
+- [x] Add slide-down animation (AnimatePresence + motion.div) to phone number reveal row
+
+## MyJobs — Matched Workers Button
+- [x] Center the "הצג עובדים מתאימים" button (text already updated by visual editor)
+
+## MyJobs — Matched Workers Button Animation
+- [x] Add subtle pulse/glow animation to "הצג עובדים מתאימים" button to draw user attention
+
+## MyJobs — Swipe Gesture on Applicant Cards
+- [ ] Swipe right = accept, swipe left = reject, with dynamic bg color feedback and snap-back animation
+
+## SEO — קידום אורגני (Mar 28 2026)
+- [x] JobPosting JSON-LD — תיקון employmentType ל-TEMPORARY בכל המשרות
+- [x] JobPosting JSON-LD — הוספת hourlyRate כ-baseSalary כאשר salary לא מוגדר
+- [x] דף Landing ייעודי /עבודה-זמנית עם H1, intro 150+ מילים, FAQ Schema, ItemList Schema
+- [x] דף Landing ייעודי /עבודה-מיידית
+- [x] דף Landing ייעודי /עבודות-מזדמנות
+- [x] דף Landing ייעודי /עבודה-עונתית
+- [x] דף Landing ייעודי /עבודה-לסטודנטים
+- [x] דף Landing ייעודי /עבודה-לנוער
+- [x] דף Landing ייעודי /משרות-זמניות
+- [x] Sitemap.xml — הוספת כל דפי ה-keyword landing בעדיפות 0.9
+- [ ] דפי עיר פרוגרמטיים /עבודה-זמנית/:עיר (שלב עתידי)
+
+## SEO — תיקוני דף הבית (Mar 29 2026)
+- [x] Homepage: הוסף useSEO עם title 30-60 תווים + keywords meta tag
+- [x] HomeWorker: הוסף alt text לתמונה ריקה (not-found-bg)
+- [x] HomeEmployer: הוסף alt text לשתי תמונות הרו (aria-hidden → alt תיאורי)
+
+## SEO — alt text בדפים נוספים (Mar 29 2026)
+- [ ] RoleSelectionScreen: preload image — hidden, decorative (aria-hidden כבר קיים)
+- [ ] AdminRegionDetailPage: profile photo של עובד — alt עם שם העובד
+- [ ] FindJobs: hero background image — alt תיאורי
+- [ ] MyApplications: hero background image — alt תיאורי
+
+## SEO - alt text fixes (Mar 29 2026)
+- [x] AdminRegionDetailPage: worker profile photo alt
+- [x] FindJobs: hero background image alt
+- [x] MyApplications: hero background image alt
+
+## SEO - City landing pages (Mar 29 2026)
+- [x] Create cityLandingData.ts with data for 10 cities
+- [x] Create CityLandingPage.tsx component (reuses KeywordLandingPage pattern)
+- [x] Register /עבודה-זמנית/:city routes in App.tsx
+- [x] Add city URLs to sitemap
+
+## SEO — קטגוריית שירותי בית בדף הבית
+
+- [x] הוסף סקשן "שירותי בית וניקיון" בדף הבית עם קישורים ל-5 דפי ה-keyword החדשים
+
+## באגים
+
+- [x] תיקון 404 בלחיצה על קישורי "שירותי בית וניקיון" בדף הבית
+
+## SEO — קישורים פנימיים בין דפי keyword
+
+- [x] הוסף relatedLinks צולבים בין כל 12 דפי ה-keyword (עבודה זמנית, ניקיון, עיר)
+
+## פאנל ניהול — מקורות הרשמה (fbclid)
+- [x] הוספת עמודת referralSource לטבלת users
+- [x] שמירת fbclid/gclid/utm_source ב-localStorage בכניסה לאתר
+- [x] העברת referralSource בעת הרשמה ל-verifyOtp
+- [x] שמירת referralSource ב-DB בעת יצירת משתמש
+- [x] כרטיסיית 'מקורות הרשמה' בפאנל הניהול
+
+## SEO — הרחבת מעקב UTM
+
+- [x] הוסף עמודות utmCampaign ו-utmMedium לטבלת users
+- [x] שמור utm_campaign ו-utm_medium ב-localStorage בכניסה ראשונה
+- [x] העבר utm_campaign ו-utm_medium ב-verifyOtp ושמור ב-DB
+- [x] הצג פירוט קמפיינים ומדיה בכרטיסיית "מקורות הרשמה" בפאנל הניהול
+## פאנל ניהול — מנהל קישורי מעקב
+- [x] הוסף טבלת referral_links ל-DB
+- [x] endpoint /r/:code לספירת קליקים והפניה לדף הבית
+- [x] tRPC procedures: createReferralLink, listReferralLinks, toggleReferralLink, deleteReferralLink, referralLinkStats
+- [x] כרטיסיית 'קישורי מעקב' בפאנל הניהול עם יצירה, רשימה, סטטיסטיקות, העתקה ומחיקה
+- [x] ?ref= capture ב-App.tsx לשיוך נרשמים לקישורי מעקב
+
+## ביצועים — אופטימיזציית Initial Load
+
+- [x] Lazy loading לכל ה-routes הלא-קריטיים (42 דפים → dynamic import)
+- [x] Vite build config: manualChunks — vendor-react, vendor-motion, vendor-trpc, vendor-ui, vendor-forms, vendor-dates, vendor-icons, vendor-misc
+- [x] הסרת imports לא בשימוש מ-App.tsx (FindJobsComingSoonOverlay, createPortal, JobsToday, FIND_JOBS_OPEN)
+- [x] בדיקת ספריות כבדות — recharts dead code (רק ב-chart.tsx, לא בשימוש), embla-carousel רק ב-ComponentShowcase
+- [x] TypeScript 0 errors לאחר כל השינויים
+
+## React Performance Optimization Skill — Full Execution (11 Steps)
+
+- [ ] Step 1: Full SSR with renderToString for all entry pages (Home, FindJobs, JobDetails, Login)
+- [ ] Step 2: Bundle visualizer — verify no cross-chunk contamination
+- [ ] Step 5+7: useMemo for FindJobs sort/filter pipeline + Set constructions in HomeWorker/FindJobs
+- [ ] Step 5+7: startTransition for FindJobs search input
+- [ ] Step 7: useMemo for allCarouselJobs in HomeWorker
+- [ ] Step 8: Upgrade createRoot → hydrateRoot in main.tsx
+- [ ] Step 8: Expand BelowFold to HomeEmployer SEO sections
+- [ ] Step 9: Reduce Google Fonts weights — only load critical weights
+- [ ] Step 9: Preload critical woff2 font file directly
+
+## Available Workers Page — Performance Fix
+- [ ] Fix 1: Immediate shell render — header + title + skeleton cards without waiting for API
+- [ ] Fix 2: Async worker fetch after initial paint (defer trpc query)
+- [ ] Fix 3: List virtualization with react-window for >20 workers
+- [ ] Fix 4: Lazy load worker images + smaller thumbnails
+- [ ] Fix 5: Verify AvailableWorkers is a separate lazy chunk (no dashboard logic)
+- [ ] Fix 6: SSR prerender shell for /available-workers in index.html
+
+## Available Workers Page — Performance Fixes
+- [x] Fix 1: Immediate shell render (header + skeleton cards, no BrandLoader blocking)
+- [x] Fix 2: Workers fetched async after paint (skeleton while loading)
+- [x] Fix 3: Progressive rendering with IntersectionObserver sentinel (PAGE_SIZE=15, load more on scroll)
+- [x] Fix 4: Avatar uses initials only (profilePhoto not in nearby API response)
+- [x] Fix 5: Route already lazy-loaded in App.tsx (verified)
+- [x] Fix 6: SSR prerender shell in index.html for /available-workers
+- [x] Bug: Removed react-window dependency (v2 API incompatible), replaced with native progressive rendering
+
+## Critical Performance Fixes (FCP < 2.5s, LCP < 4s)
+- [ ] Fix 1: SSR shell — full hero HTML (title + hero text + CTA) in index.html before JS loads
+- [ ] Fix 2: Initial JS bundle < 250KB — verify code splitting, remove heavy imports from critical path
+- [ ] Fix 3: Remove all render-blocking patterns (auth checks, API calls, global state init)
+- [ ] Fix 4: Defer all third-party scripts after window.onload / requestIdleCallback
+- [ ] Fix 5: Hydrate only visible components first, delay heavy components
+- [ ] Fix 6: LCP element — preload hero image/text, WebP/AVIF conversion if image
+- [ ] Fix 7: Above-fold isolation — initial render: header + hero + CTA only
+- [ ] Fix 8: Font optimization — font-display: swap, preload 1 weight, remove unused weights
+- [ ] Fix 9: Server — gzip/brotli, Cache-Control immutable for static assets
+- [ ] Fix 10: Validate targets — FCP < 2.5s, LCP < 4s, Performance 70-85+
+
+## Admin Notifications Panel
+- [ ] Extend DB: add notification_logs table (per-worker delivery tracking: jobId, workerId, channel, status, sentAt, errorMsg)
+- [ ] tRPC procedures: admin.getNotificationBatches, admin.getNotificationLogs (admin-only)
+- [ ] AdminNotifications page: job list with notification stats (total sent, success, failed)
+- [ ] Per-job expandable table: worker name, channel (SMS/Push), status, timestamp
+- [ ] Register /admin/notifications route in App.tsx
+- [ ] Add to admin sidebar navigation
+
+## Admin Notification Tracking (2026-03-29)
+- [x] DB: notification_logs table (batchId, jobId, workerId, channel, status, errorMsg, phone, sentAt)
+- [x] DB: notification_channel enum (sms, push) and notification_status enum (sent, failed, skipped)
+- [x] Server: db.ts — insertNotificationLog, getNotificationLogsForJob, getNotificationBatchSummaryForJob, getJobsWithNotificationStats helpers
+- [x] Server: adminDb.ts — re-exports notification log helpers for admin router
+- [x] Server: routers.ts — admin.getJobsWithNotificationStats, admin.getNotificationLogsForJob, admin.getNotificationBatchSummaryForJob procedures
+- [x] Frontend: AdminNotificationTracking.tsx — per-job tracking component with expandable per-worker log table
+- [x] Frontend: Admin.tsx — added "מעקב הודעות" tab (mobile + desktop) wired to AdminNotificationTrackingTab
+
+## FindJobs Performance Optimization (2026-03-29)
+- [ ] SSR shell: add 5 skeleton cards below filters for /find-jobs in index.html
+- [ ] FindJobs: defer birthDateInfoQuery, myApplicationsQuery, savedIdsQuery until after first paint
+- [ ] FindJobs: defer QuickStats heroStats query (staleTime already set, add enabled: mounted flag)
+- [ ] FindJobs: remove auth-blocking render — never return null/spinner while authLoading
+- [ ] FindJobs: virtualize job list with react-window (FixedSizeList) for large result sets
+- [ ] FindJobs: lazy-load images with loading="lazy" on all non-hero job card images
+- [ ] FindJobs: split heavy filter panel into React.lazy sub-component
+- [ ] vite.config: ensure framer-motion is tree-shaken (already in vendor-motion chunk)
+- [ ] server: add Cache-Control headers for static assets (immutable, 1yr)
+
+## Security — Path Traversal CWE-22 (OWASP ZAP Finding)
+- [x] Add tRPC batch request middleware: validate procedure names against allowlist regex
+- [x] Block path traversal patterns (../.*) in tRPC input
+- [x] Add X-Content-Type-Options and Content-Disposition headers for file-like responses (helmet xContentTypeOptions: true already set)
+- [x] Write vitest security test for path traversal attempts on /api/trpc
+
+## Security — Content-Security-Policy (CSP)
+- [x] Audit all external sources (scripts, styles, fonts, images, connect targets)
+- [x] Replace 'unsafe-inline' in script-src with nonce-based CSP
+- [x] Add buildCspDirectives() utility — nonce-aware, covers all directives
+- [x] Per-request nonce injection into index.html inline <script> tags (production)
+- [x] img-src: explicit CDN hostnames (CloudFront, Google, Unsplash, GitHub)
+- [x] connect-src: Forge proxy, api.manus.im, Maps, Umami, Push
+- [x] worker-src: 'self' blob: for service worker
+- [x] frame-src: 'none' — prevents clickjacking
+- [x] object-src: 'none' — no plugins
+- [x] upgrade-insecure-requests — force HTTPS sub-resources
+- [x] 20 vitest tests passing (csp.test.ts)
+
+## SEO Fixes — Homepage (/)
+- [x] Fix static <title> in index.html to 30-60 chars (was 7 chars before JS ran)
+- [x] Add <meta name="keywords"> to index.html static HTML (not only via JS)
+- [x] Add H2 heading to HomeGuest component for on-page keyword structure
+
+## Critical Production Fix — Vite Chunk Loading (2026-03-29)
+- [x] Simplified manualChunks to 2 chunks only: vendor-react + vendor
+- [x] Eliminated cross-chunk dependency ordering issue (createContext/Activity crash)
+- [x] Build verified: vendor chunk has 0 Activity from lucide, vendor-react loads first
+- [x] FINAL FIX: Removed manualChunks entirely — Vite auto-chunking is self-contained, no cross-chunk imports
+
+## Lighthouse Performance Fixes (2026-03-29) — Score 31/100
+- [x] Fix TTFB 3.3s: DB warm-up in startServer() before first request + index.html cached in memory
+- [x] Fix unused JS: removed MapsPreloader from App.tsx — Maps SDK loads on-demand per page
+- [x] Fix large hero images: updated preload links in index.html from 309KB/358KB JPGs to 33KB/37KB v2 images
+- [x] Fix color contrast: text-[10px] elements in HomeWorker oklch(0.58) → oklch(0.42) for 4.5:1 ratio
+- [x] Fix heading order: H3 "איך זה עובד" → H2 in HomeWorker.tsx
+- [ ] Fix bfcache: cache-control:no-store on main HTML prevents bfcache (platform constraint, not fixable)
+
+## Performance Improvements Round 2 (2026-03-29)
+- [x] Code splitting: verified html2canvas already split (202KB chunk), recharts tree-shaken (not in bundle), code splitting already optimal
+- [x] CDN upload: moved 3 How-It-Works images from lh3.googleusercontent.com to CloudFront (step1/2/3 now on d2xsxph8kpxj0f.cloudfront.net)
+- [x] SSR/Pre-render: verified SSR shell already exists in index.html (navbar + hero + CTA + skeleton cards for FindJobs/AvailableWorkers)
+
+## Performance Improvements Round 3 (2026-03-29)
+- [x] Convert How-It-Works images from JPG to WebP: step1 384KB→34KB (91%), step2 206KB→5KB (98%), step3 331KB→18KB (95%)
+- [x] Defer analytics: verified requestIdleCallback already implemented in CookieConsentBanner.tsx with Safari fallback
+
+## Performance Improvements Round 4 (2026-03-29)
+- [x] loading="lazy": N/A — How-It-Works images are CSS background-image on fixed-size divs, not <img> tags. background-image does not block LCP.
+- [x] width/height CLS: N/A — divs have fixed Tailwind classes (w-24 h-20), no layout shift on image load.
+
+## HomeWorker Performance — Shared Jobs Service (2026-03-29)
+- [x] Audit all tRPC calls in HomeWorker (urgent, today, nearby, latest) — 4 parallel calls identified
+- [x] Create unified jobs.getWorkerDashboard procedure: parallel Promise.all for urgent+today+latest, conditional nearby
+- [x] Create WorkerJobsContext: staleTime=3min, gcTime=10min, stable refs, setLocation propagates to shared query
+- [x] Refactor HomeWorker: 4 queries replaced by useWorkerJobs() hook, client-side panel derivation O(1)
+- [x] WorkerJobsProvider mounted in App.tsx inside UserModeProvider
+- [x] Vitest: 6 tests pass for worker.dashboard.test.ts
+
+## WorkerJobsContext Expansion — FindJobs + SavedJobs (2026-03-29)
+- [x] Audit: savedIdsQuery duplicated in HomeWorker + FindJobs; search/list queries in FindJobs are filter-dependent (not shareable)
+- [x] Extend WorkerJobsContext: savedIds (staleTime=5min), optimistic save/unsave with onMutate/onError/onSettled pattern
+- [x] Refactor HomeWorker: removed savedIdsQuery + saveMutation + unsaveMutation, now uses context savedIds + toggleSave
+- [x] Refactor FindJobs: removed savedIdsQuery + saveMutationFj + unsaveMutationFj, now uses context savedIds + toggleSave
+- [x] Vitest: 9 tests pass for worker.savedJobs.test.ts (optimistic save/unsave/rollback/auth-guard)
+
+## Bug Fix — /r/:code Referral Redirect 404 (2026-03-29)
+- [x] Root cause: /r/:code intercepted by express.static middleware before Express routes in production
+- [x] Fix: moved route to /api/r/:code (guaranteed to reach Express server via Manus proxy)
+- [x] Updated Admin.tsx: fullUrl, preview text, and instructions now use /api/r/:code
+- [x] Verified: localhost:3000/api/r/hering returns HTTP 302 → /?ref=hering
+
+## Bug Fix — Role Selection Redirects to Wrong Page (2026-03-29)
+- [x] Root cause: double mutation race — RoleSelectionScreen sent setMode("worker"), then handleRoleSelected called setUserMode("worker") which fired a second mutation; modeQuery.refetch() returned stale "employer" from server and overwrote the new mode
+- [x] Fix: handleRoleSelected now calls setLocalModeOnly (no server mutation) for authenticated users; guests still use setUserMode
+- [x] TypeScript: 0 errors
+
+## E2E Tests — Playwright Role Selection (2026-03-29)
+- [ ] Install Playwright and configure for local dev server
+- [ ] Test: guest selects worker role → HomeWorker shown
+- [ ] Test: guest selects employer role → HomeEmployer shown
+- [ ] Test: authenticated user selects worker → HomeWorker shown (no double mutation)
+- [ ] Test: authenticated user switches employer→worker across sessions → HomeWorker shown
+- [x] Bug: campaign/referral link (?ref=) bypasses role selection — guest role from sessionStorage causes direct navigation to HomeWorker without showing role selection screen
+- [x] Bug (still open): campaign link still navigates immediately to worker home — fixed with local campaignRoleSelected flag in Router that forces showRoleSelection without touching server state
+- [x] Feature: add mobile button in Admin panel for referral links management tab
+- [x] Copy: change "צריך עובד לבית?" to "צריך עובד זמני לבית או לעסק?" in HomeEmployer.tsx
+- [x] AEO: create static content data file (30+ pages: questions, compare, guides, audience, trust)
+- [x] AEO: build ContentPage template component with AEO structure and schema.org JSON-LD
+- [x] AEO: build Compare, Audience, About, FAQ, Reviews page components
+- [x] AEO: register all /questions/, /compare/, /guide/, /for/, /about, /faq-general, /reviews routes in App.tsx
+- [x] AEO: expand aeoContent.ts to 33 pages (questions, location, compare, guides, audience)
+- [ ] AEO: add AI content generator in Admin panel (generateContentPage)
+- [ ] AEO: add internal linking section (3 related links per page) to AEOPage template
+- [ ] AEO: add live available workers widget inside content pages
+- [x] AEO: add Dog Walker category pages (questions, location, compare, category page)
+- [x] AEO: add Moving category pages (questions, location, compare, category page)
+- [x] DB: add dog_walker to JOB_CATEGORY_SLUGS enum + push migration (moving already existed)
+- [ ] UI: add Dog Walker and Moving filters + specialized fields in search/post-job UI
+- [x] Admin: add "סנכרן קטגוריות חסרות" button that runs INSERT ON CONFLICT DO NOTHING for all seed categories
+- [x] AEO: add 7 new pages (cleaning-urgent, babysitter-urgent, courier-urgent, dog-walker-price, moving-price, avodanow-vs-yad2, hire-in-hour)
+- [x] AEO: add relatedLinks to all 51 pages (full internal link network — 0 pages missing)
+- [x] AEO: relatedLinks on all 51 pages + RelatedArticles sidebar already in AEOPage template
+- [x] Programmatic SEO: build content generation engine (generatePage, generateFAQ, generateMeta) for 180 category×city×intent combinations
+- [x] Programmatic SEO: build ProgrammaticPage component with static content + live WorkersList widget
+- [x] Programmatic SEO: uses existing workers.nearby tRPC procedure with city coordinates
+- [x] Programmatic SEO: register all /:category/:city routes in App.tsx (6 categories × 10 cities via ProgrammaticPageWrapper)
+- [x] SEO: add /sitemap.xml Express route generating all 230+ URLs (AEO + programmatic)
+- [x] SEO: register urgent and price intent routes (/category/city-בדחיפות, /category/city-מחיר)
+- [x] UX: add "מאמרים קשורים" section to HomeWorker and HomeEmployer
+- [x] Admin: הוסף טאב "מעסיקים" עם טבלת משתמשים שמצב=employer + סטטיסטיקות משרות
+- [x] Bug: כפתור "צפה" בטאב מועמדויות בפאנל ניהול גורם ל-React error #310 (unstable query input)
+- [x] Admin: הוסף מסלול /admin/applications/:id לצפייה בפרטי מועמדות מלאים ללא הגבלת תפקיד
+- [x] Admin: בטבלת משרות — hover על שורה מציג popover עם רשימת מועמדים (שם, טלפון, סטטוס)
+- [x] Error Handling: טבלת error_logs בDB, interceptor ב-tRPC, הודעות גנריות למשתמש, טאב לוגים בפאנל ניהול
+- [x] Admin: טאב "לוגים כלליים" — כל system_logs (לא רק OTP/auth), פילטר לפי רמה/event/תאריך, expand לstack trace

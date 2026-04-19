@@ -105,6 +105,75 @@ export function normalizeDateInput(raw: string): string {
 }
 
 /**
+ * Converts an HH:MM time string to total minutes since midnight.
+ * Returns null for empty/invalid input.
+ */
+export function timeToMinutes(time: string | null | undefined): number | null {
+  if (!time) return null;
+  const match = time.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+}
+
+/**
+ * Returns true if the shift spans midnight (end time < start time in minutes).
+ * e.g. 22:00 → 06:00 is overnight.
+ */
+export function isOvernightShift(
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): boolean {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null) return false;
+  return end < start;
+}
+
+/**
+ * Returns true if the end/start time combination is invalid.
+ *
+ * Rules:
+ *  - end === start → invalid (zero-duration)
+ *  - end > start  → valid   (normal same-day shift)
+ *  - end < start  → valid ONLY if it looks like a genuine overnight shift,
+ *    i.e. the gap wrapping midnight is at least 1 hour.
+ *    e.g. 22:00→06:00 = 8 h overnight ✓
+ *         09:00→08:00 = 23 h "overnight" — treat as user error ✗
+ *
+ * Heuristic: if end < start AND the forward (overnight) duration is < 1 h,
+ * flag as invalid.
+ */
+export function isEndTimeInvalid(
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): boolean {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null) return false;
+  if (end === start) return true; // zero-duration
+  if (end > start) return false;  // normal same-day shift
+  // end < start — potential overnight.
+  // A genuine overnight shift starts in the evening (18:00 or later).
+  // If start < 18:00 and end < start, it's almost certainly a user error
+  // (e.g. typed 08:45 as end when start is 09:00).
+  const EVENING_CUTOFF = 18 * 60; // 18:00 in minutes
+  return start < EVENING_CUTOFF; // starts before 18:00 → not a real overnight → invalid
+}
+
+/**
+ * Returns true if endTime equals startTime (zero-duration shift — invalid).
+ */
+export function isZeroDurationShift(
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): boolean {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null) return false;
+  return end === start;
+}
+
+/**
  * Returns a human-readable Hebrew label for a minAge value.
  * Used on job cards and PostJob form.
  */

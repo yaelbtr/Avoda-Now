@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, KeyboardEvent, ClipboardEvent } from "react";
 import { trpc } from "@/lib/trpc";
+import { REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import {
   Phone, PhoneCall, Loader2, CheckCircle2, RefreshCw, ArrowLeft, X,
   UserPlus, LogIn, HardHat, Briefcase, MapPin, CheckCircle,
-  User, Mail,
+  User, Mail, Shield,
 } from "lucide-react";
 import { IsraeliPhoneInput, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { AppInput, AppLabel } from "@/components/ui";
@@ -88,6 +89,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [isTestBypass, setIsTestBypass] = useState(false);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
   const [notFoundError, setNotFoundError] = useState<string | null>(null);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 
   // Post-OTP setup state
   const [selectedRole, setSelectedRole] = useState<"worker" | "employer" | null>(null);
@@ -113,8 +115,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   const [sendCooldown, setSendCooldown] = useState(0);
   const sendCooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startSendCooldown = useCallback(() => {
-    setSendCooldown(60);
+  const startSendCooldown = useCallback((seconds = 60) => {
+    setSendCooldown(seconds);
     if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
     sendCooldownRef.current = setInterval(() => {
       setSendCooldown(prev => {
@@ -123,6 +125,18 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       });
     }, 1000);
   }, []);
+
+  /** Parse remaining seconds from a TOO_MANY_REQUESTS error message like "נא המתן 57 שניות" */
+  const handleRateLimitError = useCallback((e: { data?: { code?: string } | null; message: string }) => {
+    if (e.data?.code === "TOO_MANY_REQUESTS") {
+      const match = e.message.match(/(\d+)/);
+      const secs = match ? parseInt(match[1], 10) : 60;
+      startSendCooldown(secs);
+      setRateLimitError(e.message);
+      return true;
+    }
+    return false;
+  }, [startSendCooldown]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -171,6 +185,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setSelectedCategories([]);
         setSelectedCity("");
         setChannelEmailError(null);
+        setRateLimitError(null);
         setLoginEmail("");
         setLoginEmailError(null);
         setShowEmailLogin(false);
@@ -198,6 +213,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     setDuplicateError(null);
     setNotFoundError(null);
     setChannelEmailError(null);
+    setRateLimitError(null);
     setLoginEmail("");
     setLoginEmailError(null);
     setShowEmailLogin(false);
@@ -247,6 +263,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // ── tRPC mutations ───────────────────────────────────────────────────────────
   const sendOtp = trpc.auth.sendOtp.useMutation({
     onSuccess: (data) => {
+      setRateLimitError(null);
       setNormalizedPhone(data.phone);
       setDigits(Array(OTP_LENGTH).fill(""));
       setStep("otp");
@@ -264,7 +281,6 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
     onError: (e) => {
       // CONFLICT = phone or email already registered
       if (e.data?.code === "CONFLICT") {
-        // In channel step, duplicateError is shown inline there too
         setDuplicateError(e.message);
         return;
       }
@@ -273,6 +289,8 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         setNotFoundError(e.message);
         return;
       }
+      // TOO_MANY_REQUESTS — show inline error with exact remaining cooldown
+      if (handleRateLimitError(e)) return;
       toast.error(e.message);
     },
   });
@@ -313,6 +331,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       if ((data as any).isNewUser && data.user?.id) {
         const consentTypes = ["terms", "privacy", "age_18"] as const;
         consentTypes.forEach((ct) => recordConsent.mutate({ consentType: ct }));
+        // Clear UTM attribution keys after successful registration — they have been saved to DB
+        localStorage.removeItem(REFERRAL_SOURCE_KEY);
+        localStorage.removeItem(UTM_CAMPAIGN_KEY);
+        localStorage.removeItem(UTM_MEDIUM_KEY);
       }
       if (data.user?.userMode) {
         setStep("success");
@@ -348,6 +370,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   // Email OTP mutations (login tab only)
   const sendEmailCode = trpc.auth.sendEmailCode.useMutation({
     onSuccess: () => {
+      setRateLimitError(null);
       setIsEmailOtpFlow(true);
       setOtpChannel("email");
       setDigits(Array(OTP_LENGTH).fill(""));
@@ -359,7 +382,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
         : loginEmail;
       toast.success(`קוד נשלח למייל ${masked} • תקף ל-5 דקות`, { duration: 5000 });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      if (handleRateLimitError(e)) return;
+      toast.error(e.message);
+    },
   });
 
   const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
@@ -456,6 +482,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
       phone: normalizedPhone || phone,
       code,
       ...(reg ? { name: reg.name, email: reg.email || undefined, termsAccepted: true } : {}),
+      // Pass UTM attribution only for new registrations; cleared from localStorage after success
+      referralSource: reg ? (localStorage.getItem(REFERRAL_SOURCE_KEY) ?? undefined) : undefined,
+      utmCampaign: reg ? (localStorage.getItem(UTM_CAMPAIGN_KEY) ?? undefined) : undefined,
+      utmMedium: reg ? (localStorage.getItem(UTM_MEDIUM_KEY) ?? undefined) : undefined,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verifyOtp, verifyEmailCode, normalizedPhone, phone, isEmailOtpFlow, loginEmail, phoneVal]);
@@ -845,6 +875,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                     style={{ color: "oklch(0.38 0.14 55)" }}
                     onClick={() => { setNotFoundError(null); setActiveTab("register"); setStep("phone"); }}
                   >אנא בצע הרשמה תחילה</button>
+                </div>
+              )}
+
+              {/* Rate-limit error banner */}
+              {rateLimitError && (
+                <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                  style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                >
+                  <span className="mt-0.5 shrink-0">⚠️</span>
+                  <p className="font-medium">{rateLimitError}</p>
                 </div>
               )}
 
@@ -1277,6 +1317,16 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
                   </p>
                 </div>
 
+                {/* Rate-limit error banner (shown when resend is rate-limited) */}
+                {rateLimitError && (
+                  <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                    style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                  >
+                    <span className="mt-0.5 shrink-0">⚠️</span>
+                    <p className="font-medium">{rateLimitError}</p>
+                  </div>
+                )}
+
                 <AppButton
                   variant="cta"
                   size="lg"
@@ -1616,6 +1666,10 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
 
               {/* Phone */}
               <IsraeliPhoneInput value={phoneVal} onChange={(v) => { setPhoneVal(v); setNotFoundError(null); }} label="מספר טלפון" />
+              <p className="text-[11px] flex items-center gap-1 -mt-1" style={{ color: '#b08a2a' }} dir="rtl">
+                <Shield className="h-3 w-3 flex-shrink-0" />
+                הטלפון שלך נחשף רק כשאתה מאשר הצעת עבודה — אף פעם לא יוצג למעסיק ללא אישורך.
+              </p>
 
               {/* Email — read-only when pre-filled from Google account */}
               <AppInput

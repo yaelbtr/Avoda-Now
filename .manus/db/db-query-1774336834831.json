@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, name, \"preferredCity\", \"locationMode\", \"searchRadiusKm\", \"workerLatitude\", \"workerLongitude\" FROM users WHERE name ILIKE '%efrat%' OR name ILIKE '%Efrat%' LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, name, \"preferredCity\", \"locationMode\", \"searchRadiusKm\", \"workerLatitude\", \"workerLongitude\" FROM users WHERE name ILIKE '%efrat%' OR name ILIKE '%Efrat%' LIMIT 10",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1521
+}

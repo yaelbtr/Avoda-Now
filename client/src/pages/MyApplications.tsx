@@ -4,16 +4,20 @@ import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { AppButton } from "@/components/ui";
 import BrandLoader from "@/components/BrandLoader";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {
   Briefcase, MapPin, Clock, CheckCircle, XCircle,
-  HourglassIcon, ChevronRight, Phone, MessageCircle,
+  ChevronRight, Phone, MessageCircle,
   Bell, BellOff, Bookmark, BookmarkX, Flame,
   Search, ChevronLeft, ArrowUpDown, Loader2, Send, Share2,
+  Gift,
 } from "lucide-react";
 import { getCategoryLabel, formatSalary } from "@shared/categories";
+import { APPLICATION_STATUS_LABELS } from "@shared/const";
+import { StatusBadge } from "@/components/StatusBadge";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { toast } from "sonner";
@@ -21,37 +25,7 @@ import { JobCard } from "@/components/JobCard";
 import JobCardSkeleton from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 
-// ── Status config ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; bg: string; color: string; border: string }> = {
-  pending: {
-    label: "ממתין",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.75 0.12 76.7 / 0.12)",
-    color: "oklch(0.65 0.13 76.7)",
-    border: "oklch(0.75 0.12 76.7 / 0.30)",
-  },
-  viewed: {
-    label: "נצפה",
-    icon: <HourglassIcon className="h-3.5 w-3.5" />,
-    bg: "oklch(0.50 0.07 125.0 / 0.12)",
-    color: "oklch(0.38 0.07 125.0)",
-    border: "oklch(0.50 0.07 125.0 / 0.30)",
-  },
-  accepted: {
-    label: "התקבלת!",
-    icon: <CheckCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.65 0.22 160 / 0.12)",
-    color: "oklch(0.52 0.22 150)",
-    border: "oklch(0.65 0.22 160 / 0.30)",
-  },
-  rejected: {
-    label: "לא התקבלת",
-    icon: <XCircle className="h-3.5 w-3.5" />,
-    bg: "oklch(0.93 0.02 91.6)",
-    color: "oklch(0.58 0.02 100)",
-    border: "oklch(0.87 0.04 84.0)",
-  },
-};
+// STATUS_CONFIG removed — using shared StatusBadge component instead
 
 type MyApplication = {
   id: number;
@@ -65,12 +39,17 @@ type MyApplication = {
   jobCity: string | null;
   jobSalary: string | null;
   jobSalaryType: string | null;
+  jobHourlyRate?: string | null;
   jobStatus: string | null;
+  jobClosedReason?: string | null;
   employerName: string | null;
+  employerPhone?: string | null;
+  employerPhoto?: string | null;
+  jobPostedBy?: number | null;
   workerPhone?: string | null;
 };
 
-type AppStatus = "pending" | "viewed" | "accepted" | "rejected";
+type AppStatus = "pending" | "viewed" | "accepted" | "rejected" | "offered" | "offer_rejected";
 type AppSortBy = "jobDate" | "salary" | "city";
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -80,6 +59,7 @@ export default function MyApplications() {
   const [, navigate] = useLocation();
   const search = useSearch();
   const { isAuthenticated, loading } = useAuth();
+  const authQuery = useAuthQuery();
 
   useSEO({
     title: "המועמדויות שלי",
@@ -132,12 +112,10 @@ export default function MyApplications() {
   }, [isAuthenticated]);
 
   const { data: applications, isLoading: appsLoading } = trpc.jobs.myApplications.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
   });
 
-  const { data: savedJobs, isLoading: savedLoading } = trpc.savedJobs.getSavedJobs.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+  const { data: savedJobs, isLoading: savedLoading } = trpc.savedJobs.getSavedJobs.useQuery(undefined, authQuery());
 
   const utils = trpc.useUtils();
 
@@ -168,6 +146,19 @@ export default function MyApplications() {
       toast.success("המשרה הוסרה מהשמורים");
     },
     onError: () => toast.error("שגיאה בהסרת המשרה"),
+  });
+
+  // Respond to employer's job offer
+  const respondToOffer = trpc.jobs.respondToOffer.useMutation({
+    onSuccess: (_, vars) => {
+      utils.jobs.myApplications.invalidate();
+      if (vars.action === "accept") {
+        toast.success("אישרת את ההצעה! המעסיק קיבל את הטלפון שלך.");
+      } else {
+        toast("דחיתא את ההצעה", { icon: "✅" });
+      }
+    },
+    onError: (err) => toast.error(err.message ?? "שגיאה בעיבוד ההצעה"),
   });
 
   // ── Filter + sort ─────────────────────────────────────────────────────────
@@ -264,8 +255,7 @@ export default function MyApplications() {
         {/* Hero background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/man-on-sofa_4ff4d4d8.png"
-          alt=""
-          aria-hidden="true"
+          alt="עובד צעיר מעיין בהגשות שלו למשרות זמניות"
           loading="lazy"
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
@@ -560,6 +550,8 @@ export default function MyApplications() {
                             { key: "pending",  label: "ממתינות / נצפה" },
                             { key: "accepted", label: "התקבלתי" },
                             { key: "rejected", label: "לא התקבלתי" },
+                            { key: "offered",  label: "הצעות עבודה" },
+                            { key: "offer_rejected", label: "הצעות שדחיתי" },
                           ] as { key: AppStatus; label: string }[]).map(({ key, label }) => {
                             const checked = statusFilter.includes(key);
                             return (
@@ -611,9 +603,10 @@ export default function MyApplications() {
             {/* Application cards */}
             <AnimatePresence>
               {!isLoading && filtered.map((app: MyApplication, idx: number) => {
-                const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.pending;
                 const isAccepted = app.status === "accepted";
                 const isRejected = app.status === "rejected";
+                const isOffered = app.status === "offered";
+                const isOfferRejected = app.status === "offer_rejected";
                 const timeAgo = formatDistanceToNow(new Date(app.createdAt), {
                   addSuffix: true,
                   locale: he,
@@ -629,16 +622,37 @@ export default function MyApplications() {
                     style={{
                       background: isAccepted
                         ? "oklch(0.65 0.22 160 / 0.05)"
+                        : isOffered
+                        ? "oklch(0.55 0.18 260 / 0.05)"
                         : "white",
                       border: isAccepted
                         ? "1px solid oklch(0.65 0.22 160 / 0.20)"
+                        : isOffered
+                        ? "2px solid oklch(0.55 0.18 260 / 0.40)"
                         : "1px solid oklch(0.87 0.04 84.0)",
                       borderRadius: "1rem",
                       padding: "1rem",
-                      boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
-                      opacity: isRejected ? 0.70 : 1,
+                      boxShadow: isOffered
+                        ? "0 4px 16px oklch(0.55 0.18 260 / 0.12)"
+                        : "0 1px 4px oklch(0.28 0.06 122 / 0.06)",
+                      opacity: (isRejected || isOfferRejected) ? 0.70 : 1,
                     }}
                   >
+                    {/* Offered banner — only shown before the worker accepts (contactRevealed=false) */}
+                    {isOffered && !app.contactRevealed && (
+                      <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-semibold"
+                        style={{
+                          background: "oklch(0.55 0.18 260 / 0.12)",
+                          color: "oklch(0.40 0.18 260)",
+                          border: "1px solid oklch(0.55 0.18 260 / 0.20)",
+                        }}
+                      >
+                        <Gift className="h-4 w-4 shrink-0" />
+                        <span>המעסיק שלח לך הצעת עבודה! אשר כדי לחשוף את הטלפון שלך, או דחה.</span>
+                      </div>
+                    )}
+
                     {/* Top row: icon + title + status badge */}
                     <div className="flex items-start gap-3 mb-2">
                       <div
@@ -646,17 +660,26 @@ export default function MyApplications() {
                         style={{
                           background: isAccepted
                             ? "oklch(0.65 0.22 160 / 0.12)"
+                            : isOffered
+                            ? "oklch(0.55 0.18 260 / 0.12)"
                             : "oklch(0.38 0.07 125.0 / 0.08)",
                         }}
                       >
-                        <Briefcase
-                          className="h-5 w-5"
-                          style={{
-                            color: isAccepted
-                              ? "oklch(0.52 0.22 150)"
-                              : "oklch(0.38 0.07 125.0)",
-                          }}
-                        />
+                        {isOffered ? (
+                          <Gift
+                            className="h-5 w-5"
+                            style={{ color: "oklch(0.45 0.18 260)" }}
+                          />
+                        ) : (
+                          <Briefcase
+                            className="h-5 w-5"
+                            style={{
+                              color: isAccepted
+                                ? "oklch(0.52 0.22 150)"
+                                : "oklch(0.38 0.07 125.0)",
+                            }}
+                          />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
@@ -668,18 +691,15 @@ export default function MyApplications() {
                           </p>
                         )}
                       </div>
-                      {/* Status badge */}
-                      <span
-                        className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold shrink-0"
-                        style={{
-                          background: cfg.bg,
-                          color: cfg.color,
-                          border: `1px solid ${cfg.border}`,
-                        }}
-                      >
-                        {cfg.icon}
-                        {cfg.label}
-                      </span>
+                      {/* Status badge — uses shared StatusBadge for consistent display.
+                           When status=offered AND contactRevealed=true the worker has accepted,
+                           so we pass effectiveStatus='offered_accepted' to override the label. */}
+                      <StatusBadge
+                        status={app.status}
+                        effectiveStatus={app.status === "offered" && app.contactRevealed ? "offered_accepted" : undefined}
+                        perspective="worker"
+                        className="shrink-0"
+                      />
                     </div>
 
                     {/* Meta row */}
@@ -690,9 +710,9 @@ export default function MyApplications() {
                           {app.jobCity ?? app.jobAddress}
                         </span>
                       )}
-                      {app.jobSalary && (
+                      {(app.jobSalary || app.jobHourlyRate) && (
                         <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "oklch(0.65 0.13 76.7)" }}>
-                          {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly")}
+                          {formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly", app.jobHourlyRate ?? null)}
                         </span>
                       )}
                       <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-faint)" }}>
@@ -752,12 +772,90 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Accepted but contact not yet revealed */}
-                    {isAccepted && !app.contactRevealed && (
-                      <p className="text-xs mt-2 font-medium" style={{ color: "oklch(0.52 0.22 150)" }}>
-                        ✓ התקבלת! המעסיק ייצור איתך קשר בקרוב.
-                      </p>
+                    {/* Accepted but contact not yet revealed — covered by the universal banner below */}
+
+                    {/* Job closed due to cap_reached: show banner instead of accept/reject buttons */}
+                    {isOffered && !app.contactRevealed && app.jobClosedReason === "cap_reached" && (
+                      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ background: "oklch(0.95 0.03 55 / 0.60)", border: "1px solid oklch(0.75 0.12 55 / 0.40)" }}>
+                        <p className="text-xs font-bold" style={{ color: "oklch(0.50 0.14 55)" }}>
+                          🔒 העבודה נסגרה
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 55)" }}>
+                          המשרה מולאה ע"י מועמדים אחרים לפני שהספקת לאשר.
+                        </p>
+                      </div>
                     )}
+
+                    {/* Offered: accept or reject buttons — only show when worker hasn't responded yet and job is still open */}
+                    {isOffered && !app.contactRevealed && app.jobClosedReason !== "cap_reached" && (
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          disabled={respondToOffer.isPending}
+                          onClick={() => respondToOffer.mutate({ applicationId: app.id, action: "accept" })}
+                          className="flex-1 flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-bold transition-all"
+                          style={{
+                            background: "oklch(0.45 0.18 260)",
+                            color: "white",
+                            border: "none",
+                            boxShadow: "0 2px 8px oklch(0.45 0.18 260 / 0.30)",
+                            opacity: respondToOffer.isPending ? 0.7 : 1,
+                          }}
+                        >
+                          {respondToOffer.isPending ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          )}
+                          אשר הצעה
+                        </button>
+                        <button
+                          disabled={respondToOffer.isPending}
+                          onClick={() => respondToOffer.mutate({ applicationId: app.id, action: "reject" })}
+                          className="flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all"
+                          style={{
+                            background: "oklch(0.93 0.02 91.6)",
+                            color: "oklch(0.50 0.04 100)",
+                            border: "1px solid oklch(0.85 0.03 91.6)",
+                            opacity: respondToOffer.isPending ? 0.7 : 1,
+                          }}
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          דחה
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Universal status banner — shown for every status using worker-perspective text */}
+                    {(() => {
+                      // Determine the effective status key (offered+contactRevealed → offered_accepted)
+                      const effectiveKey =
+                        app.status === "offered" && app.contactRevealed
+                          ? "offered_accepted"
+                          : app.status;
+                      // Skip the banner when a richer dedicated UI is already rendered above:
+                      // • offered + !contactRevealed + open job → accept/reject buttons
+                      // • offered + !contactRevealed + cap_reached → cap_reached block
+                      // • accepted + contactRevealed + phone → call/WhatsApp buttons
+                      const skipBanner =
+                        (app.status === "offered" && !app.contactRevealed) ||
+                        (app.status === "accepted" && app.contactRevealed && !!app.workerPhone);
+                      if (skipBanner) return null;
+                      const cfg = APPLICATION_STATUS_LABELS[effectiveKey];
+                      if (!cfg) return null;
+                      return (
+                        <div
+                          className="mt-3 rounded-xl px-3 py-2.5"
+                          style={{ background: cfg.bg, border: `1px solid ${cfg.color}33` }}
+                        >
+                          <p className="text-xs font-bold" style={{ color: cfg.color }}>
+                            {cfg.workerLabel}
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: cfg.color, opacity: 0.75 }}>
+                            {cfg.workerTooltip}
+                          </p>
+                        </div>
+                      );
+                    })()}
 
                     {/* View job link + share */}
                     <div className="mt-2 flex items-center gap-2 text-left">
@@ -791,7 +889,7 @@ export default function MyApplications() {
                           const parts = [title];
                           if (app.employerName) parts.push(app.employerName);
                           if (app.jobCity) parts.push(`ב${app.jobCity}`);
-                          if (app.jobSalary) parts.push(formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly"));
+                          if (app.jobSalary || app.jobHourlyRate) parts.push(formatSalary(app.jobSalary, app.jobSalaryType ?? "hourly", app.jobHourlyRate ?? null));
                           const text = parts.join(" | ");
                           if (navigator.share) {
                             try { await navigator.share({ title, text, url }); }

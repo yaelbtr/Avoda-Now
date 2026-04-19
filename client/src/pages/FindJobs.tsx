@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, startTransition } from "react";
 import { saveSnapshot, restoreSnapshot, subscribeToNewJobs, computeFilterKey } from "@/services/jobsStore";
 import type { CachedJob } from "@/services/jobsStore";
 import { createPortal } from "react-dom";
+import { List as VirtualList, type RowComponentProps } from "react-window";
 import { getMobileRoot } from "@/lib/mobileRoot";
 import { FIND_JOBS_OPEN } from "@shared/const";
 import FindJobsComingSoonOverlay from "@/components/FindJobsComingSoonOverlay";
@@ -9,6 +10,7 @@ import { useSearch, Link } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useWorkerJobs } from "@/contexts/WorkerJobsContext";
 import { JobCard, type JobCardJob } from "@/components/JobCard";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
@@ -16,6 +18,7 @@ import EmptyStateCarousel from "@/components/EmptyStateCarousel";
 import LoginModal from "@/components/LoginModal";
 import { saveReturnPath } from "@/const";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import { RADIUS_OPTIONS, getCategoryLabel, getCategoryIcon } from "@shared/categories";
 import { useCategories } from "@/hooks/useCategories";
@@ -161,9 +164,11 @@ function QuickStats() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -20px 0px" });
 
-  // Fetch real counts for conditional display
+  // Deferred: only fetch heroStats when the component scrolls into view
+  // This avoids a network request during initial page load (above-the-fold optimization)
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
     staleTime: 5 * 60 * 1000, // refresh every 5 min
+    enabled: inView,
   });
   const hs = heroStatsQuery.data;
 
@@ -438,16 +443,24 @@ function ProfileIconWithTooltip({ onOpen }: { onOpen: () => void }) {
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function FindJobs() {
+  // ── Deferred mount flag: non-critical queries are disabled until after first paint ──
+  // This prevents birthDateInfoQuery, myApplicationsQuery, savedIdsQuery from
+  // blocking the initial render. They fire in the next event loop tick.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
   const { categories: dbCategories, isLoading: catsLoading } = useCategories();
   const searchStr = useSearch();
   const params = new URLSearchParams(searchStr);
   const initialCategory = params.get("category") ?? "all";
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const authQuery = useAuthQuery();
 
   // Determine if the current user is a minor so we can hide restricted categories
+  // Deferred: only runs after first paint (isMounted) to avoid blocking FCP
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    ...authQuery({ staleTime: 5 * 60 * 1000 }),
+    enabled: isMounted && isAuthenticated,
   });
   const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
   // Categories visible in the filter panel — hide allowedForMinors=false for minors
@@ -498,8 +511,10 @@ export default function FindJobs() {
   const [showCityInput, setShowCityInput] = useState(false);
   const [searchText, setSearchText] = useState(""); // raw input — bound to <input>
   const [debouncedSearchText, setDebouncedSearchText] = useState(""); // debounced — used for filtering
+  // Step 7 (perf skill): wrap debounced update in startTransition so typing stays urgent
+  // and the filter re-computation (O(n log n)) is deferred as a non-urgent update.
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearchText(searchText), 200);
+    const id = setTimeout(() => startTransition(() => setDebouncedSearchText(searchText)), 200);
     return () => clearTimeout(id);
   }, [searchText]);
   const [showUrgentToday, setShowUrgentToday] = useState(
@@ -678,8 +693,11 @@ export default function FindJobs() {
   const [noIndexReady, setNoIndexReady] = useState(false);
   useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical, noIndex: noIndexReady });
 
-  const profileQuery = trpc.user.getProfile.useQuery(undefined, { enabled: isAuthenticated, staleTime: 5 * 60 * 1000 });
-  const { loading: authLoading } = useAuth();
+  // Deferred: profileQuery fires after first paint — profile data is non-critical for initial render
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, {
+    ...authQuery({ staleTime: 5 * 60 * 1000 }),
+    enabled: isMounted,
+  });
   // Use sessionStorage so the "auto-open filter" only fires once per browser session,
   // not on every remount (e.g. navigating away and back via the bottom nav).
   const FILTER_INIT_KEY = "fj_filter_initialized";
@@ -708,23 +726,33 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPath]);
 
+  // Perf fix: never block render on auth state.
+  // Open filter panel after mount once auth + profile are resolved.
+  // Uses isMounted so this never runs during SSR shell phase.
   useEffect(() => {
+    if (!isMounted) return;
     if (filterInitialized.current) return;
+    // If auth is still loading, wait — but do NOT block the page render
     if (authLoading) return;
     const markInitialized = () => {
       filterInitialized.current = true;
       try { sessionStorage.setItem(FILTER_INIT_KEY, "1"); } catch {}
     };
     if (!isAuthenticated) { markInitialized(); setFilterOpen(true); return; }
+    // Profile query is deferred (enabled: isMounted) — wait for it to resolve
     if (profileQuery.isLoading) return;
     const profile = profileQuery.data;
     const hasProfile = (profile?.preferredCategories && profile.preferredCategories.length > 0) || !!profile?.preferredCity;
     markInitialized();
     if (!hasProfile) setFilterOpen(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
+  }, [isMounted, authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
-  const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  // Deferred: city list is only needed when filter panel opens — not on initial render
+  const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+    enabled: isMounted,
+  });
   const popularCities = activeCitiesQuery.data ?? [];
 
   useEffect(() => {
@@ -822,13 +850,17 @@ export default function FindJobs() {
     { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
-  const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
+  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with HomeWorker)
+  const { savedIds, toggleSave } = useWorkerJobs();
   const utilsFj = trpc.useUtils();
-  const saveMutationFj = trpc.savedJobs.save.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
-  const unsaveMutationFj = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utilsFj.savedJobs.getSavedIds.invalidate() });
-  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
-   const appliedJobIdsFj = new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId));
+  const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, {
+    ...authQuery(),
+    enabled: isMounted && isAuthenticated,
+  });
+  const appliedJobIdsFj = useMemo(
+    () => new Set((myAppsQueryFj.data ?? []).map((a: { jobId: number }) => a.jobId)),
+    [myAppsQueryFj.data]
+  );
   const {
     apply: applyWithAgeGateFj,
     isPending: isApplyPendingFj,
@@ -844,8 +876,7 @@ export default function FindJobs() {
     applyWithAgeGateFj({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
-    if (!isAuthenticated) { requireLogin("כדי לשמור משרות יש להתחבר למערכת"); return; }
-    if (save) saveMutationFj.mutate({ jobId }); else unsaveMutationFj.mutate({ jobId });
+    toggleSave(jobId, !save, requireLogin);
   };
 
   /** Add a category to the active filter when the user clicks a category pill on a job card.
@@ -907,7 +938,6 @@ export default function FindJobs() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeQueryData]);
-  let jobs: AnyJob[] = accumulatedJobs;
   const isLoading = userLat ? searchQuery.isLoading : listQuery.isLoading;
   const isFetching = userLat ? searchQuery.isFetching : listQuery.isFetching;
   const isQueryError = userLat ? searchQuery.isError : listQuery.isError;
@@ -915,67 +945,74 @@ export default function FindJobs() {
   const showSkeleton = isLoading;
   const showRefetchOverlay = !isLoading && isFetching;
 
-  if (debouncedSearchText.trim()) {
-    const q = debouncedSearchText.toLowerCase();
-    jobs = jobs.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q) || j.address.toLowerCase().includes(q));
-  }
-  if (showUrgentToday) {
-    const now = Date.now();
-    const in24h = now + 24 * 60 * 60 * 1000;
-    const todayJobIds = new Set((todayQuery.data ?? []).map(j => j.id));
-    jobs = jobs.filter(j => {
-      const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
-      const isToday = todayJobIds.has(j.id);
-      const startDt = (j as { startDateTime?: string | null }).startDateTime;
-      const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
-      return isUrgentJob || isToday || startsWithin24h;
-    });
-  }
-  if (selectedTimeSlots.length > 0) {
-    const slotRanges: Record<string, [number, number]> = { morning: [6, 12], afternoon: [12, 17], evening: [17, 22], night: [22, 30] };
-    jobs = jobs.filter(j => {
-      const wh = (j as { workingHours?: string | null }).workingHours;
-      if (!wh) return false;
-      const match = wh.match(/(\d{1,2}):(\d{2})/);
-      if (!match) return false;
-      const startHour = parseInt(match[1], 10);
-      return selectedTimeSlots.some(slot => {
-        const [from, to] = slotRanges[slot];
-        if (slot === "night") return startHour >= 22 || startHour < 6;
-        return startHour >= from && startHour < to;
+  // Step 5+7 (perf skill): memoize the full sort/filter pipeline.
+  // Without useMemo this runs O(n log n) on every render — including unrelated state changes
+  // like opening a modal, hovering a button, or toggling a filter panel.
+  const jobs = useMemo(() => {
+    let result: AnyJob[] = accumulatedJobs;
+    if (debouncedSearchText.trim()) {
+      const q = debouncedSearchText.toLowerCase();
+      result = result.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q) || j.address.toLowerCase().includes(q));
+    }
+    if (showUrgentToday) {
+      const now = Date.now();
+      const in24h = now + 24 * 60 * 60 * 1000;
+      const todayJobIds = new Set((todayQuery.data ?? []).map(j => j.id));
+      result = result.filter(j => {
+        const isUrgentJob = (j as { isUrgent?: boolean | null }).isUrgent;
+        const isToday = todayJobIds.has(j.id);
+        const startDt = (j as { startDateTime?: string | null }).startDateTime;
+        const startsWithin24h = startDt ? new Date(startDt).getTime() <= in24h : false;
+        return isUrgentJob || isToday || startsWithin24h;
       });
+    }
+    if (selectedTimeSlots.length > 0) {
+      const slotRanges: Record<string, [number, number]> = { morning: [6, 12], afternoon: [12, 17], evening: [17, 22], night: [22, 30] };
+      result = result.filter(j => {
+        const wh = (j as { workingHours?: string | null }).workingHours;
+        if (!wh) return false;
+        const match = wh.match(/(\d{1,2}):(\d{2})/);
+        if (!match) return false;
+        const startHour = parseInt(match[1], 10);
+        return selectedTimeSlots.some(slot => {
+          const [from, to] = slotRanges[slot];
+          if (slot === "night") return startHour >= 22 || startHour < 6;
+          return startHour >= from && startHour < to;
+        });
+      });
+    }
+    // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
+    return [...result].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortBy === "salary") {
+        const aSal = (a as { salary?: number | null }).salary ?? 0;
+        const bSal = (b as { salary?: number | null }).salary ?? 0;
+        return (aSal - bSal) * dir;
+      }
+      if (sortBy === "date") {
+        const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
+        const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
+        const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
+        const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
+        return (aDate - bDate) * dir;
+      }
+      if (sortBy === "distance" && userLat) {
+        const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+        const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+        return (aDist - bDist) * dir;
+      }
+      // default: distance first (if available), then urgent
+      if (userLat) {
+        const aDist = (a as { distance?: number | null }).distance ?? Infinity;
+        const bDist = (b as { distance?: number | null }).distance ?? Infinity;
+        if (aDist !== bDist) return aDist - bDist;
+      }
+      const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+      const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
+      return bUrgent - aUrgent;
     });
-  }
-  // Day-of-week filtering is now handled server-side via dayOfWeekParam in the query
-  jobs = [...jobs].sort((a, b) => {
-    const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "salary") {
-      const aSal = (a as { salary?: number | null }).salary ?? 0;
-      const bSal = (b as { salary?: number | null }).salary ?? 0;
-      return (aSal - bSal) * dir; // desc=high first, asc=low first
-    }
-    if (sortBy === "date") {
-      const aRaw = (a as unknown as { createdAt?: Date | number | null }).createdAt;
-      const bRaw = (b as unknown as { createdAt?: Date | number | null }).createdAt;
-      const aDate = aRaw instanceof Date ? aRaw.getTime() : (typeof aRaw === "number" ? aRaw : 0);
-      const bDate = bRaw instanceof Date ? bRaw.getTime() : (typeof bRaw === "number" ? bRaw : 0);
-      return (aDate - bDate) * dir; // desc=newest first, asc=oldest first
-    }
-    if (sortBy === "distance" && userLat) {
-      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
-      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
-      return (aDist - bDist) * dir; // desc=far first, asc=near first
-    }
-    // default: distance first (if available), then urgent
-    if (userLat) {
-      const aDist = (a as { distance?: number | null }).distance ?? Infinity;
-      const bDist = (b as { distance?: number | null }).distance ?? Infinity;
-      if (aDist !== bDist) return aDist - bDist;
-    }
-    const aUrgent = (a as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
-    const bUrgent = (b as { isUrgent?: boolean | null }).isUrgent ? 1 : 0;
-    return bUrgent - aUrgent;
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accumulatedJobs, debouncedSearchText, showUrgentToday, todayQuery.data, selectedTimeSlots, sortBy, sortDir, userLat]);
 
    useEffect(() => {
     if (!isLoading && userLat && jobs.length === 0 && radiusKm < 50 && !autoExpandedRadius) setAutoExpandedRadius(true);
@@ -1090,8 +1127,7 @@ export default function FindJobs() {
         {/* Hero background image — same treatment as MyApplications */}
         <img
           src={HERO_IMG}
-          alt=""
-          aria-hidden="true"
+          alt="עובד מחפש עבודה זמנית בישראל"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -1588,29 +1624,57 @@ export default function FindJobs() {
               <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
             </div>
           )}
-          <motion.div
-            initial="hidden" animate="visible"
-            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-            className="space-y-4"
-          >
-            {pagedJobs.map(job => {
-              const j = job as unknown as JobCardJob & { distance?: number };
-              return (
-                <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
-                  <JobCard
-                    job={j}
-                    isSaved={savedIds.has(j.id)}
-                    isApplied={appliedJobIdsFj.has(j.id)}
-                    onSaveToggle={handleSaveToggle}
-                    onApply={handleApplyFjWrapped}
-                    onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
-                    onCategoryClick={handleCategoryFromCard}
-                    activeCategories={selectedCategories}
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          {/* Virtualize when list is large (>15 jobs) to avoid rendering all DOM nodes at once.
+              Below threshold: use staggered motion.div for visual polish.
+              Above threshold: use react-window List (v2 API) for O(1) DOM nodes regardless of list size. */}
+          {pagedJobs.length > 15 ? (
+            <VirtualList
+              rowCount={pagedJobs.length}
+              rowHeight={196}
+              rowProps={{}}
+              rowComponent={({ index, style }: RowComponentProps) => {
+                const j = pagedJobs[index] as unknown as JobCardJob & { distance?: number };
+                return (
+                  <div style={{ ...style, paddingBottom: 16 }}>
+                    <JobCard
+                      job={j}
+                      isSaved={savedIds.has(j.id)}
+                      isApplied={appliedJobIdsFj.has(j.id)}
+                      onSaveToggle={handleSaveToggle}
+                      onApply={handleApplyFjWrapped}
+                      onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                      onCategoryClick={handleCategoryFromCard}
+                      activeCategories={selectedCategories}
+                    />
+                  </div>
+                );
+              }}
+            />
+          ) : (
+            <motion.div
+              initial="hidden" animate="visible"
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+              className="space-y-4"
+            >
+              {pagedJobs.map(job => {
+                const j = job as unknown as JobCardJob & { distance?: number };
+                return (
+                  <motion.div key={j.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}>
+                    <JobCard
+                      job={j}
+                      isSaved={savedIds.has(j.id)}
+                      isApplied={appliedJobIdsFj.has(j.id)}
+                      onSaveToggle={handleSaveToggle}
+                      onApply={handleApplyFjWrapped}
+                      onCardClick={() => { setBottomSheetJob(j); setBottomSheetOpen(true); }}
+                      onCategoryClick={handleCategoryFromCard}
+                      activeCategories={selectedCategories}
+                    />
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
           </>
         )}
         </div>{/* end job list wrapper */}

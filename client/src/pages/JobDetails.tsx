@@ -4,17 +4,17 @@ import { parseJobId, buildJobPath } from "@/lib/jobSlug";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { AppButton } from "@/components/ui";
 import { MapView } from "@/components/Map";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { AppTextarea } from "@/components/ui";
 import {
   MapPin, Clock, Users, Phone, Share2, ChevronRight,
-  Briefcase, DollarSign, AlertCircle, Flag, CheckCircle2,
-  Lock, Copy, Zap, Timer, Calendar, ImageIcon, ChevronLeft,
+  Briefcase, AlertCircle, Flag, CheckCircle2,
+  Copy, Zap, Timer, Calendar, ImageIcon, ChevronLeft, X,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import {
@@ -30,13 +30,59 @@ import { useJobPostingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredD
 import { useSEO } from "@/hooks/useSEO";
 import {
   C_BRAND_HEX, C_BRAND_DARK_HEX, C_BORDER, C_PAGE_BG_HEX,
-  C_SUCCESS_HEX, C_SUCCESS_DARK_HEX, G_WHATSAPP,
+  C_SUCCESS_HEX, C_SUCCESS_DARK_HEX,
 } from "@/lib/colors";
 
 const SITE_URL = typeof window !== "undefined"
   ? window.location.origin.replace(/\/+$/, "")
   : "";
 
+// ── Brand design tokens (AvodaNow) ─────────────────────────────────────────
+const T = {
+  brand:        C_BRAND_HEX,          // olive-green #4a5d23
+  brandDark:    C_BRAND_DARK_HEX,
+  pageBg:       C_PAGE_BG_HEX,        // #f8f5ee
+  border:       C_BORDER,             // oklch(0.88 0.04 122)
+  labelColor:   "#4F583B",
+  cardBg:       "#ffffff",
+  cardRadius:   "1rem",
+  cardShadow:   "0 1px 4px rgba(0,0,0,0.06)",
+  sectionIconBg: "oklch(0.94 0.04 122)",
+  sectionIconBorder: "oklch(0.85 0.06 122)",
+  sectionIconColor: C_BRAND_HEX,
+} as const;
+
+const card: React.CSSProperties = {
+  background: T.cardBg,
+  border: `1px solid ${T.border}`,
+  borderRadius: T.cardRadius,
+  boxShadow: T.cardShadow,
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.07, duration: 0.4 },
+  }),
+};
+
+// ── Section header with brand icon ─────────────────────────────────────────
+function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-3">
+      <div
+        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+        style={{ background: T.sectionIconBg, border: `1px solid ${T.sectionIconBorder}` }}
+      >
+        <span style={{ color: T.sectionIconColor }}>{icon}</span>
+      </div>
+      <h2 className="font-bold text-sm" style={{ color: "#1a2010" }}>{title}</h2>
+    </div>
+  );
+}
+
+// ── WhatsApp icon ───────────────────────────────────────────────────────────
 const WhatsAppIcon = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
   const cls = size === "lg" ? "h-5 w-5" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
   return (
@@ -61,48 +107,29 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
     setMeta("og:type", "article");
     setMeta("og:site_name", "AvodaNow");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-    return () => { document.title = "AvodaNow | מצא עבודה או עובדים עכשיו"; };
+    return () => { document.title = "AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
   }, [title, description, jobId]);
   return null;
 }
 
-// ── Light card style helper ─────────────────────────────────────────────
-const lightCard: React.CSSProperties = {
-  background: "white",
-  border: `1px solid ${C_BORDER}`,
-  borderRadius: "1rem",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-};
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.45 },
-  }),
-};
-
 export default function JobDetails() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  // Accept both /job/42 and /job/42-שליח-בתל-אביב formats
   const jobId = parseJobId(params.id ?? "0");
   const { isAuthenticated, user } = useAuth();
+  const authQuery = useAuthQuery();
 
   const { data: job, isLoading, error } = trpc.jobs.getById.useQuery(
     { id: jobId },
     { enabled: !!jobId }
   );
 
-  // Fetch employer profile for profile photo (only if job has a postedBy)
   const { data: employerProfile } = trpc.user.getPublicProfile.useQuery(
     { userId: job?.postedBy ?? 0 },
     { enabled: !!job?.postedBy }
   );
 
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
-
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
@@ -110,7 +137,6 @@ export default function JobDetails() {
   const [reported, setReported] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
-  // Age-gate state (same pattern as FindJobs)
   const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
@@ -131,12 +157,13 @@ export default function JobDetails() {
     onError: (e) => toast.error(e.message),
   });
 
-  // Worker's own application for this job (to show withdraw button)
   const { data: myApplications } = trpc.jobs.myApplications.useQuery(undefined, {
-    enabled: isAuthenticated,
+    ...authQuery(),
     staleTime: 30_000,
   });
   const myApplicationForJob = myApplications?.find(a => a.jobId === jobId);
+
+  const utils = trpc.useUtils();
 
   const withdrawMutation = trpc.jobs.withdrawApplication.useMutation({
     onSuccess: () => {
@@ -146,25 +173,20 @@ export default function JobDetails() {
     onError: (e) => toast.error(e.message),
   });
 
-  const utils = trpc.useUtils();
-  // Apply mutation with age-gate
   const applyMutationJD = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה! 🎉"); },
     onError: (e: { message: string }) => toast.error(e.message),
   });
-  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
-  });
+
+  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
+
   const handleApplyJD = () => {
     if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר למערכת"); return; }
     const hasBirthDate = birthDateInfoQueryJD.data?.birthDate != null;
-    if (!hasBirthDate) {
-      setBirthDateModalOpen(true);
-      return;
-    }
+    if (!hasBirthDate) { setBirthDateModalOpen(true); return; }
     applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
   };
+
   const handleBirthDateSuccessJD = () => {
     setBirthDateModalOpen(false);
     applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
@@ -182,7 +204,7 @@ export default function JobDetails() {
 
   const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
-  // ── SEO hooks MUST be called before any early returns (Rules of Hooks) ──────
+  // ── SEO hooks (must be before early returns) ────────────────────────────
   const _jobCity = job ? (job.city ?? job.address?.split(",")[0] ?? "") : "";
   const _isVolunteer = job?.salaryType === "volunteer";
   const _salaryText = _isVolunteer ? "התנדבות" : job?.salary ? `₪${job.salary} ל${job?.salaryType === "hourly" ? "שעה" : job?.salaryType === "daily" ? "יום" : "חודש"}` : "";
@@ -221,13 +243,15 @@ export default function JobDetails() {
           createdAt: job.createdAt,
           expiresAt: job.expiresAt,
           isUrgent: job.isUrgent,
+          hourlyRate: job.hourlyRate,
         }
       : null
   );
 
+  // ── Loading ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" style={{ background: C_PAGE_BG_HEX }}>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" style={{ background: T.pageBg }}>
         <BrandLoader size="lg" label="טוען פרטי משרה..." />
       </div>
     );
@@ -235,11 +259,11 @@ export default function JobDetails() {
 
   if (error || !job) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4 bg-[#f5f7f8]" dir="rtl">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-red-50 border border-red-200">
-          <AlertCircle className="h-8 w-8 text-red-500" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4" style={{ background: T.pageBg }} dir="rtl">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "oklch(0.96 0.02 15)", border: "1px solid oklch(0.88 0.04 15)" }}>
+          <AlertCircle className="h-8 w-8" style={{ color: "oklch(0.55 0.18 15)" }} />
         </div>
-        <p className="font-semibold text-lg text-gray-900">משרה לא נמצאה</p>
+        <p className="font-bold text-lg" style={{ color: "#1a2010" }}>משרה לא נמצאה</p>
         <AppButton variant="brand" onClick={() => navigate("/find-jobs")}>חזור לחיפוש</AppButton>
       </div>
     );
@@ -248,12 +272,9 @@ export default function JobDetails() {
   const lat = parseFloat(job.latitude as string);
   const lng = parseFloat(job.longitude as string);
   const isVolunteer = job.salaryType === "volunteer";
-  // Use slug-based URL for canonical and sharing
   const jobPath = buildJobPath(job.id, job.title, job.city);
   const referrerId = user?.id ?? null;
   const jobUrl = `${SITE_URL}${jobPath}${referrerId ? `?ref=${referrerId}` : ""}`;
-  const shareText = encodeURIComponent(`מצאתי עבודה באתר AvodaNow 💼\n${job.title}\n${jobUrl}`);
-  // contactPhone is never sent to workers — contact is via application only
 
   const distance = userLat && userLng
     ? (() => {
@@ -280,40 +301,38 @@ export default function JobDetails() {
     (isVolunteer ? "התנדבות" : "₪" + (job.salary ?? "")) + "\n" + "פרטים כאן:" + "\n" + jobUrl
   );
 
+  const images: string[] = (() => {
+    try { return JSON.parse((job as any).imageUrls ?? "[]"); } catch { return []; }
+  })();
+
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen" style={{ background: C_PAGE_BG_HEX }}
-    >
+    <div dir="rtl" className="min-h-screen" style={{ background: T.pageBg }}>
+      <OGMetaTags title={job.title} description={job.description} jobId={job.id} />
 
+      <div className="relative max-w-2xl mx-auto px-4 py-6">
 
-      <div className="relative max-w-2xl mx-auto px-4 py-8">
-
-        {/* ── Visual Breadcrumb ── */}
+        {/* ── Breadcrumb ── */}
         <motion.nav
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           aria-label="ניווט אתר"
-          className="flex items-center gap-1 text-sm mb-6 flex-wrap"
+          className="flex items-center gap-1 text-xs mb-5 flex-wrap"
           dir="rtl"
         >
-          <Link href="/" className="text-gray-400 hover:text-gray-700 transition-colors">בית</Link>
-          <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
-          <Link href="/find-jobs" className="text-gray-400 hover:text-gray-700 transition-colors">חיפוש עבודה</Link>
+          <Link href="/" className="transition-colors" style={{ color: "#9ca3af" }}>בית</Link>
+          <ChevronRight className="h-3 w-3 shrink-0" style={{ color: "#d1d5db" }} />
+          <Link href="/find-jobs" className="transition-colors" style={{ color: "#9ca3af" }}>חיפוש עבודה</Link>
           {_jobCity && (
             <>
-              <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
-              <Link
-                href={`/jobs/${encodeURIComponent(_jobCity)}`}
-                className="text-gray-400 hover:text-gray-700 transition-colors"
-              >
+              <ChevronRight className="h-3 w-3 shrink-0" style={{ color: "#d1d5db" }} />
+              <Link href={`/jobs/${encodeURIComponent(_jobCity)}`} className="transition-colors" style={{ color: "#9ca3af" }}>
                 {`עבודות ב${_jobCity}`}
               </Link>
             </>
           )}
-          <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
-          <span className="text-gray-600 font-medium truncate max-w-[160px]">{job.title}</span>
+          <ChevronRight className="h-3 w-3 shrink-0" style={{ color: "#d1d5db" }} />
+          <span className="font-medium truncate max-w-[160px]" style={{ color: T.labelColor }}>{job.title}</span>
         </motion.nav>
 
         {/* ── Header card ── */}
@@ -322,22 +341,23 @@ export default function JobDetails() {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
+          style={{ ...card, padding: "1.25rem", marginBottom: "0.875rem" }}
         >
-          <div className="flex items-start gap-4 mb-4">
-            {/* Category icon or employer profile photo */}
+          {/* Employer avatar + title row */}
+          <div className="flex items-start gap-3.5 mb-4">
             {employerProfile?.profilePhoto ? (
               <img
                 src={employerProfile.profilePhoto}
                 alt={job.businessName ?? job.contactName}
-                className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-200"
+                className="w-14 h-14 rounded-xl object-cover shrink-0"
+                style={{ border: `1px solid ${T.border}` }}
               />
             ) : (
               <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl shrink-0"
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${C_BRAND_HEX}1a 0%, ${C_BRAND_HEX}0d 100%)`,
-                  border: `1px solid ${C_BRAND_HEX}26`,
+                  background: `oklch(0.94 0.05 122)`,
+                  border: `1px solid ${T.sectionIconBorder}`,
                 }}
               >
                 {getCategoryIcon(job.category)}
@@ -345,47 +365,50 @@ export default function JobDetails() {
             )}
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-black leading-tight mb-1 text-gray-900">
+              <h1 className="text-xl font-black leading-tight mb-0.5" style={{ color: "#1a2010" }}>
                 {job.title}
               </h1>
               {job.businessName && (
-                <p className="text-sm mb-2 text-gray-500">
-                  {job.businessName}
-                </p>
+                <p className="text-sm mb-2" style={{ color: T.labelColor }}>{job.businessName}</p>
               )}
 
               {/* Badges */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {job.isUrgent && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-500 text-white">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
                     <Zap className="h-3 w-3 fill-white" />
-                    דחוף — צריך עובד עכשיו
+                    דחוף
                   </span>
                 )}
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                  {getCategoryLabel(job.category)}
+                <span
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                  style={{ background: "oklch(0.94 0.05 122)", color: T.brand, border: `1px solid ${T.sectionIconBorder}` }}
+                >
+                  {getCategoryIcon(job.category)} {getCategoryLabel(job.category)}
                 </span>
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                    job.status === "active" ? "bg-green-100 text-green-700 border border-green-200" : "bg-gray-100 text-gray-500 border border-gray-200"
-                  }`}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  style={
+                    job.status === "active"
+                      ? { background: "oklch(0.94 0.06 145)", color: "oklch(0.38 0.14 145)", border: "1px solid oklch(0.84 0.08 145)" }
+                      : { background: "oklch(0.94 0.01 100)", color: "#6b7280", border: "1px solid oklch(0.88 0.02 100)" }
+                  }
                 >
                   {job.status === "active" ? "פעיל" : job.status === "under_review" ? "בבדיקה" : "סגור"}
                 </span>
                 {isVolunteer && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: "oklch(0.94 0.06 145)", color: "oklch(0.38 0.14 145)", border: "1px solid oklch(0.84 0.08 145)" }}>
                     💚 התנדבות
                   </span>
                 )}
                 {expiryText && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: "oklch(0.95 0.06 60)", color: "oklch(0.45 0.14 60)", border: "1px solid oklch(0.86 0.08 60)" }}>
                     <Timer className="h-3 w-3" />
                     {expiryText}
                   </span>
                 )}
                 {(job as any).minAge && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                    style={{ background: "rgba(239,68,68,0.08)", color: "rgb(185,28,28)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "oklch(0.96 0.03 15)", color: "oklch(0.45 0.18 15)", border: "1px solid oklch(0.88 0.06 15)" }}>
                     🔞 {minAgeLabel((job as any).minAge)}
                   </span>
                 )}
@@ -394,44 +417,45 @@ export default function JobDetails() {
           </div>
 
           {/* Details grid */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex items-center gap-2 text-gray-700">
-              <MapPin className="h-4 w-4 shrink-0 text-blue-500" />
+          <div
+            className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm pt-4"
+            style={{ borderTop: `1px solid ${T.border}` }}
+          >
+            <div className="flex items-center gap-2" style={{ color: "#374151" }}>
+              <MapPin className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
               <span className="truncate">{job.city ?? job.address.split(",")[0]}</span>
             </div>
             {distance !== null && (
-              <div className="flex items-center gap-2 font-medium text-blue-600">
+              <div className="flex items-center gap-2 font-semibold" style={{ color: T.brand }}>
                 <MapPin className="h-4 w-4 shrink-0" />
                 {formatDistance(distance)} ממך
               </div>
             )}
-            <div className="flex items-center gap-2 text-gray-700">
-              <Clock className="h-4 w-4 shrink-0 text-blue-500" />
-              {getStartTimeLabel(job.startTime)}
-              {job.workingHours && ` · ${job.workingHours}`}
+            <div className="flex items-center gap-2" style={{ color: "#374151" }}>
+              <Clock className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
+              <span>{getStartTimeLabel(job.startTime)}{job.workingHours ? ` · ${job.workingHours}` : ""}</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-700">
-              <Users className="h-4 w-4 shrink-0 text-blue-500" />
-              {job.workersNeeded} עובדים דרושים
+            <div className="flex items-center gap-2" style={{ color: "#374151" }}>
+              <Users className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
+              <span>{job.workersNeeded} עובדים דרושים</span>
             </div>
-            {/* Date */}
             {(job as any).jobDate && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <Calendar className="h-4 w-4 shrink-0 text-blue-500" />
-                <span>תאריך: {new Date((job as any).jobDate).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}</span>
+              <div className="flex items-center gap-2" style={{ color: "#374151" }}>
+                <Calendar className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
+                <span>{new Date((job as any).jobDate).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}</span>
               </div>
             )}
-            {/* Work hours */}
             {((job as any).workStartTime || (job as any).workEndTime) && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <Clock className="h-4 w-4 shrink-0 text-orange-500" />
-                <span>שעות: {(job as any).workStartTime ?? ""}{(job as any).workStartTime && (job as any).workEndTime ? " עד " : ""}{(job as any).workEndTime ?? ""}</span>
+              <div className="flex items-center gap-2" style={{ color: "#374151" }}>
+                <Clock className="h-4 w-4 shrink-0" style={{ color: "oklch(0.55 0.14 60)" }} />
+                <span>{(job as any).workStartTime ?? ""}{(job as any).workStartTime && (job as any).workEndTime ? " עד " : ""}{(job as any).workEndTime ?? ""}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 col-span-2">
-              <DollarSign className="h-4 w-4 shrink-0 text-blue-500" />
-              <span className={`font-semibold ${isVolunteer ? "text-green-600" : "text-blue-600"}`}>
-                {isVolunteer ? "💚 התנדבות" : formatSalary(job.salary ?? null, job.salaryType)}
+            {/* Salary — full width */}
+            <div className="col-span-2 flex items-center gap-2 pt-1" style={{ borderTop: `1px dashed ${T.border}` }}>
+              <span className="text-lg">💰</span>
+              <span className="font-bold text-base" style={{ color: isVolunteer ? "oklch(0.38 0.14 145)" : T.brand }}>
+                {isVolunteer ? "💚 התנדבות" : (formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null) || "לא צוין")}
               </span>
             </div>
           </div>
@@ -443,91 +467,39 @@ export default function JobDetails() {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
+          style={{ ...card, padding: "1.25rem", marginBottom: "0.875rem" }}
         >
-          <h2 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
-              <Briefcase className="h-3.5 w-3.5 text-blue-600" />
-            </div>
-            תיאור המשרה
-          </h2>
-          <p className="leading-relaxed whitespace-pre-wrap text-sm text-gray-600">
+          <SectionHeader icon={<Briefcase className="h-3.5 w-3.5" />} title="תיאור המשרה" />
+          <p className="leading-relaxed whitespace-pre-wrap text-sm" style={{ color: "#4b5563" }}>
             {job.description}
           </p>
         </motion.div>
 
-        {/* ── Job Images Gallery ── */}
-        {(job as any).imageUrls && JSON.parse((job as any).imageUrls ?? "[]").length > 0 && (() => {
-          const images: string[] = JSON.parse((job as any).imageUrls ?? "[]");
-          return (
-            <motion.div
-              custom={2}
-              variants={sectionVariants}
-              initial="hidden"
-              animate="visible"
-              style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
-            >
-              <h2 className="font-bold mb-3 flex items-center gap-2 text-gray-900">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
-                  <ImageIcon className="h-3.5 w-3.5 text-blue-600" />
-                </div>
-                תמונות מהמקום
-              </h2>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((url, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setGalleryIndex(i)}
-                    className="shrink-0 w-28 h-28 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
-                  >
-                    <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  </button>
-                ))}
-              </div>
-              {/* Lightbox */}
-              {galleryIndex !== null && (
-                <div
-                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-                  onClick={() => setGalleryIndex(null)}
+        {/* ── Gallery ── */}
+        {images.length > 0 && (
+          <motion.div
+            custom={2}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            style={{ ...card, padding: "1.25rem", marginBottom: "0.875rem" }}
+          >
+            <SectionHeader icon={<ImageIcon className="h-3.5 w-3.5" />} title="תמונות" />
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {images.map((url, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setGalleryIndex(i)}
+                  className="shrink-0 w-28 h-28 rounded-xl overflow-hidden transition-opacity hover:opacity-90"
+                  style={{ border: `1px solid ${T.border}` }}
                 >
-                  <button
-                    type="button"
-                    className="absolute top-4 right-4 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
-                    onClick={() => setGalleryIndex(null)}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  {galleryIndex > 0 && (
-                    <button
-                      type="button"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
-                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) - 1); }}
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  )}
-                  {galleryIndex < images.length - 1 && (
-                    <button
-                      type="button"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 rounded-full p-2 hover:bg-white/30"
-                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) + 1); }}
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                  )}
-                  <img
-                    src={images[galleryIndex]}
-                    alt={`תמונה ${galleryIndex + 1}`}
-                    className="max-w-full max-h-[80vh] rounded-xl object-contain"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <div className="absolute bottom-4 text-white text-sm">{galleryIndex + 1} / {images.length}</div>
-                </div>
-              )}
-            </motion.div>
-          );
-        })()}
+                  <img src={url} alt={`תמונה ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ── Map ── */}
         <motion.div
@@ -535,13 +507,16 @@ export default function JobDetails() {
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          style={{ ...lightCard, overflow: "hidden", marginBottom: "1rem" }}
+          style={{ ...card, overflow: "hidden", marginBottom: "0.875rem" }}
         >
-          <div className="p-4 flex items-center gap-2 border-b border-gray-100">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
-              <MapPin className="h-3.5 w-3.5 text-blue-600" />
+          <div className="p-4 flex items-center gap-2.5" style={{ borderBottom: `1px solid ${T.border}` }}>
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: T.sectionIconBg, border: `1px solid ${T.sectionIconBorder}` }}
+            >
+              <MapPin className="h-3.5 w-3.5" style={{ color: T.sectionIconColor }} />
             </div>
-            <h2 className="font-bold text-sm text-gray-900">
+            <h2 className="font-bold text-sm" style={{ color: "#1a2010" }}>
               מיקום — {job.address}
             </h2>
           </div>
@@ -553,87 +528,72 @@ export default function JobDetails() {
           />
         </motion.div>
 
-        {/* ── Contact section ── */}
+        {/* ── Contact / CTA ── */}
         <motion.div
-          custom={3}
+          custom={4}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          style={{ ...lightCard, padding: "1.25rem", marginBottom: "1rem" }}
+          style={{ ...card, padding: "1.25rem", marginBottom: "0.875rem" }}
         >
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
-              <Phone className="h-3.5 w-3.5 text-blue-600" />
-            </div>
-            <h2 className="font-bold text-gray-900">פרטי יצירת קשר</h2>
-          </div>
-          <p className="text-sm mb-4 text-gray-600">
-            <span className="font-medium text-gray-900">{job.contactName}</span>
+          <SectionHeader icon={<Phone className="h-3.5 w-3.5" />} title="פרטי יצירת קשר" />
+          <p className="text-sm mb-4" style={{ color: "#4b5563" }}>
+            <span className="font-semibold" style={{ color: "#1a2010" }}>{job.contactName}</span>
           </p>
 
-          {/* Apply button — shown to workers who haven't applied yet */}
+          {/* Apply button */}
           {!isOwner && job.status === "active" && !myApplicationForJob && (
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+            <AppButton
+              variant="brand"
+              className="w-full mb-3"
               onClick={handleApplyJD}
               disabled={applyMutationJD.isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all mb-3"
-              style={{ background: C_BRAND_HEX, color: "#fff" }}
             >
-              {applyMutationJD.isPending ? (
-                <BrandLoader size="sm" />
-              ) : (
-                <>
-                  <Briefcase className="h-4 w-4" />
-                  הגש מועמדות
-                </>
-              )}
-            </motion.button>
+              {applyMutationJD.isPending ? <BrandLoader size="sm" /> : <><Briefcase className="h-4 w-4 ml-1.5" />הגש מועמדות</>}
+            </AppButton>
           )}
-          {/* Already applied indicator */}
+
+          {/* Already applied */}
           {!isOwner && isAuthenticated && myApplicationForJob && (
-            <div className="flex items-center justify-center gap-2 text-sm text-green-600 mb-3 py-2 rounded-xl bg-green-50 border border-green-200">
+            <div
+              className="flex items-center justify-center gap-2 text-sm mb-3 py-2.5 rounded-xl"
+              style={{ background: "oklch(0.94 0.06 145)", color: "oklch(0.38 0.14 145)", border: "1px solid oklch(0.84 0.08 145)" }}
+            >
               <CheckCircle2 className="h-4 w-4" />
               הגשת מועמדות למשרה זו
             </div>
           )}
-          {/* Contact via application only */}
-          <div className="space-y-3">
-            <p className="text-xs text-center text-gray-500">פנייה למעסיק מתבצעת דרך הגשת מועמדות בלבד</p>
-          </div>
 
-          {/* Share — always visible */}
-          <motion.a
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+          <p className="text-xs text-center mb-3" style={{ color: "#9ca3af" }}>
+            פנייה למעסיק מתבצעת דרך הגשת מועמדות בלבד
+          </p>
+
+          {/* WhatsApp share */}
+          <a
             href={`https://wa.me/?text=${shareJobText}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="block mt-3"
+            className="block"
           >
-            <button
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all border border-gray-200 text-gray-600 hover:bg-gray-100" style={{ background: C_PAGE_BG_HEX }}
-            >
-              <Share2 className="h-4 w-4" />
+            <AppButton variant="outline" className="w-full gap-2">
+              <WhatsAppIcon size="sm" />
               שתף עבודה ב-WhatsApp
-            </button>
-          </motion.a>
+            </AppButton>
+          </a>
         </motion.div>
 
-        {/* ── Worker: withdraw application ── */}
+        {/* ── Withdraw application ── */}
         <AnimatePresence>
           {!isOwner && isAuthenticated && myApplicationForJob && job.status === "active" && (
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              className="mb-4"
+              exit={{ opacity: 0, y: 12 }}
+              className="mb-3"
             >
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+              <AppButton
+                variant="destructive"
+                className="w-full"
                 onClick={() => {
                   if (confirm("האם אתה בטוח שברצונך לבטל את המועמדות?")) {
                     withdrawMutation.mutate({ applicationId: myApplicationForJob.id });
@@ -641,13 +601,9 @@ export default function JobDetails() {
                 }}
                 disabled={withdrawMutation.isPending}
               >
-                {withdrawMutation.isPending ? (
-                  <BrandLoader size="sm" />
-                ) : (
-                  <>❌ בטל מועמדות</>
-                )}
-              </motion.button>
-              <p className="text-xs text-center text-gray-400 mt-1">ניתן לבטל מועמדות רק כל עוד המשרה פעילה</p>
+                {withdrawMutation.isPending ? <BrandLoader size="sm" /> : <><X className="h-4 w-4 ml-1.5" />בטל מועמדות</>}
+              </AppButton>
+              <p className="text-xs text-center mt-1" style={{ color: "#9ca3af" }}>ניתן לבטל מועמדות רק כל עוד המשרה פעילה</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -656,15 +612,13 @@ export default function JobDetails() {
         <AnimatePresence>
           {isOwner && job.status === "active" && (
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              className="mb-4"
+              exit={{ opacity: 0, y: 12 }}
+              className="mb-3"
             >
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white"
+              <button
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white text-sm transition-all"
                 style={{
                   background: `linear-gradient(135deg, ${C_SUCCESS_HEX} 0%, ${C_SUCCESS_DARK_HEX} 100%)`,
                   boxShadow: `0 4px 16px ${C_SUCCESS_HEX}4d`,
@@ -672,26 +626,22 @@ export default function JobDetails() {
                 onClick={() => markFilledMutation.mutate({ id: job.id })}
                 disabled={markFilledMutation.isPending}
               >
-                {markFilledMutation.isPending
-                  ? <BrandLoader size="sm" />
-                  : <CheckCircle2 className="h-5 w-5" />}
+                {markFilledMutation.isPending ? <BrandLoader size="sm" /> : <CheckCircle2 className="h-5 w-5" />}
                 מצאתי עובד — סגור משרה
-              </motion.button>
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* ── Duplicate job ── */}
         <motion.div
-          custom={4}
+          custom={5}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="mb-4"
+          className="mb-3"
         >
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={() => {
               const p = new URLSearchParams({
                 from: String(job.id),
@@ -702,7 +652,7 @@ export default function JobDetails() {
                 salary: job.salary ? String(job.salary) : "",
                 salaryType: job.salaryType ?? "hourly",
                 contactName: job.contactName,
-                contactPhone: "", // contactPhone not exposed to workers
+                contactPhone: "",
                 businessName: job.businessName ?? "",
                 workingHours: job.workingHours ?? "",
                 startTime: job.startTime ?? "flexible",
@@ -710,23 +660,28 @@ export default function JobDetails() {
               });
               navigate(`/post-job?${p.toString()}`);
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all bg-white border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all"
+            style={{
+              background: T.cardBg,
+              border: `1.5px dashed ${T.sectionIconBorder}`,
+              color: T.brand,
+            }}
           >
             <Copy className="h-4 w-4" />
             פרסם עבודה דומה
-          </motion.button>
+          </button>
         </motion.div>
 
         {/* ── Report ── */}
         <motion.div
-          custom={5}
+          custom={6}
           variants={sectionVariants}
           initial="hidden"
           animate="visible"
-          className="text-center pb-4"
+          className="text-center pb-6"
         >
           {reported ? (
-            <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+            <div className="flex items-center justify-center gap-2 text-sm" style={{ color: "oklch(0.38 0.14 145)" }}>
               <CheckCircle2 className="h-4 w-4" />
               הדיווח נשלח. תודה!
             </div>
@@ -736,7 +691,10 @@ export default function JobDetails() {
                 if (!isAuthenticated) { requireLogin("כדי לדווח על משרה יש להתחבר למערכת"); return; }
                 setReportOpen(true);
               }}
-              className="flex items-center gap-1.5 text-xs mx-auto transition-colors text-gray-400 hover:text-red-500"
+              className="flex items-center gap-1.5 text-xs mx-auto transition-colors"
+              style={{ color: "#9ca3af" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "oklch(0.45 0.18 15)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#9ca3af")}
             >
               <Flag className="h-3.5 w-3.5" />
               דווח על משרה חשודה
@@ -744,6 +702,55 @@ export default function JobDetails() {
           )}
         </motion.div>
       </div>
+
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {galleryIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setGalleryIndex(null)}
+          >
+            <button
+              type="button"
+              className="absolute top-4 right-4 text-white rounded-full p-2 transition-colors"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+              onClick={() => setGalleryIndex(null)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {galleryIndex > 0 && (
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white rounded-full p-2 transition-colors"
+                style={{ background: "rgba(255,255,255,0.15)" }}
+                onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) - 1); }}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            )}
+            {galleryIndex < images.length - 1 && (
+              <button
+                type="button"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white rounded-full p-2 transition-colors"
+                style={{ background: "rgba(255,255,255,0.15)" }}
+                onClick={(e) => { e.stopPropagation(); setGalleryIndex(g => (g ?? 0) + 1); }}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            <img
+              src={images[galleryIndex]}
+              alt={`תמונה ${galleryIndex + 1}`}
+              className="max-w-full max-h-[80vh] rounded-xl object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute bottom-4 text-white text-sm">{galleryIndex + 1} / {images.length}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Report Dialog ── */}
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
@@ -780,7 +787,8 @@ export default function JobDetails() {
         onClose={() => setLoginOpen(false)}
         message={loginMessage}
       />
-      {/* ── Birth Date Modal (age gate) ── */}
+
+      {/* ── Birth Date Modal ── */}
       <BirthDateModal
         isOpen={birthDateModalOpen}
         onClose={() => setBirthDateModalOpen(false)}

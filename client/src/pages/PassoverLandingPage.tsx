@@ -21,6 +21,7 @@ import { JobCardSkeletonList } from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { Briefcase, ChevronRight, BookOpen, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { saveReturnPath } from "@/const";
@@ -96,6 +97,7 @@ export default function PassoverLandingPage() {
   const content = SLUG_CONTENT[slug] ?? SLUG_CONTENT["ניקיון-לפסח"];
 
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | undefined>();
   type BottomSheetJobType = JobCardJob & { contactPhone: string | null };
@@ -167,14 +169,14 @@ export default function PassoverLandingPage() {
   }, [slug, content]);
 
   // Saved jobs
-  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, { enabled: isAuthenticated });
+  const savedIdsQuery = trpc.savedJobs.getSavedIds.useQuery(undefined, authQuery());
   const savedIds = new Set(savedIdsQuery.data?.ids ?? []);
   const utils = trpc.useUtils();
   const saveMutation = trpc.savedJobs.save.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
   const unsaveMutation = trpc.savedJobs.unsave.useMutation({ onSuccess: () => utils.savedJobs.getSavedIds.invalidate() });
 
   // Applications
-  const myAppsQuery = trpc.jobs.myApplications.useQuery(undefined, { enabled: isAuthenticated });
+  const myAppsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
   const appliedJobIds = new Set((myAppsQuery.data ?? []).map((a: { jobId: number }) => a.jobId));
   const applyMutation = trpc.jobs.applyToJob.useMutation({
     onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },

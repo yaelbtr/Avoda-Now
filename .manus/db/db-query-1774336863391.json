@@ -1,0 +1,66 @@
+{
+  "query": "SELECT id, city, \"jobLocationMode\", latitude, longitude FROM jobs ORDER BY id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT id, city, \"jobLocationMode\", latitude, longitude FROM jobs ORDER BY id",
+  "rows": [
+    {
+      "id": "1",
+      "city": "אברבנאל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0968469",
+      "longitude": "34.8328991"
+    },
+    {
+      "id": "30001",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0971201",
+      "longitude": "34.8327278"
+    },
+    {
+      "id": "30002",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0973666",
+      "longitude": "34.8300091"
+    },
+    {
+      "id": "30003",
+      "city": "אברבנאל 121א בני ברק",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0970845",
+      "longitude": "34.8326938"
+    },
+    {
+      "id": "60001",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "31.7523032",
+      "longitude": "35.0719764"
+    },
+    {
+      "id": "60002",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "31.7691174",
+      "longitude": "34.6105506"
+    },
+    {
+      "id": "60003",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0970784",
+      "longitude": "34.8327299"
+    },
+    {
+      "id": "60004",
+      "city": "ישראל",
+      "jobLocationMode": "jobLocationMode",
+      "latitude": "32.0970834",
+      "longitude": "34.8327287"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcity\tjobLocationMode\tlatitude\tlongitude\n1\tאברבנאל\tjobLocationMode\t32.0968469\t34.8328991\n30001\tישראל\tjobLocationMode\t32.0971201\t34.8327278\n30002\tישראל\tjobLocationMode\t32.0973666\t34.8300091\n30003\tאברבנאל 121א בני ברק\tjobLocationMode\t32.0970845\t34.8326938\n60001\tישראל\tjobLocationMode\t31.7523032\t35.0719764\n60002\tישראל\tjobLocationMode\t31.7691174\t34.6105506\n60003\tישראל\tjobLocationMode\t32.0970784\t34.8327299\n60004\tישראל\tjobLocationMode\t32.0970834\t34.8327287\n",
+  "stderr": "",
+  "execution_time_ms": 1595
+}

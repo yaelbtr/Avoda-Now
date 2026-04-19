@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 
 /**
  * Manages Web Push subscription lifecycle:
@@ -9,6 +10,7 @@ import { trpc } from "@/lib/trpc";
  * - Syncs the subscription with the server
  */
 export function usePushNotifications() {
+  const authQuery = useAuthQuery();
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== "undefined" ? Notification.permission : "default"
   );
@@ -16,7 +18,7 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: vapidData } = trpc.push.vapidKey.useQuery();
+  const { data: vapidData } = trpc.push.vapidKey.useQuery(undefined, authQuery());
   const subscribeMutation = trpc.push.subscribe.useMutation();
   const unsubscribeMutation = trpc.push.unsubscribe.useMutation();
 

@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   ChevronRight,
   Loader2,
@@ -16,6 +17,10 @@ import {
   Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
+import { WorkerProfilePreviewModal } from "@/components/WorkerProfilePreviewModal";
+import { useCategories } from "@/hooks/useCategories";
+import { useWorkerProfile } from "@/hooks/useWorkerProfile";
+import { SHIFT_PRESETS } from "@shared/const";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -24,6 +29,16 @@ const C_DARK = "oklch(0.28 0.06 122)";
 const C_GREEN = "oklch(0.38 0.10 125)";
 const C_LIGHT_GREEN = "oklch(0.92 0.05 122)";
 const C_BORDER = "oklch(0.90 0.04 91.6)";
+
+const DAYS = [
+  { value: "sunday",    label: "א׳" },
+  { value: "monday",    label: "ב׳" },
+  { value: "tuesday",   label: "ג׳" },
+  { value: "wednesday", label: "ד׳" },
+  { value: "thursday",  label: "ה׳" },
+  { value: "friday",    label: "ש׳" },
+  { value: "saturday",  label: "שבת" },
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,9 +49,11 @@ interface MatchedWorker {
   distance?: number;
   rating?: number;
   isMinor?: boolean;
-  availabilityStatus?: "available_now" | "available_today" | "available_hours" | "not_available" | null;
+  availabilityStatus?: string | null;
   preferredCategories?: string[];
   categoryCount?: number;
+  locationMissingGps?: boolean;
+  profilePhoto?: string | null;
 }
 
 const AVAILABILITY_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -52,10 +69,15 @@ function WorkerMatchCard({
   worker,
   jobId,
   onOfferSent,
+  onCardClick,
+  isCapReached = false,
 }: {
   worker: MatchedWorker;
   jobId: number;
   onOfferSent: (workerId: number) => void;
+  onCardClick: (workerId: number) => void;
+  /** When true, the send-offer button is hidden — job cap already reached */
+  isCapReached?: boolean;
 }) {
   const [offerSent, setOfferSent] = useState(false);
 
@@ -63,8 +85,8 @@ function WorkerMatchCard({
     onSuccess: (data) => {
       setOfferSent(true);
       onOfferSent(worker.worker_id);
-      if (data.stub) {
-        toast.success("ההצעה נשלחה (מצב בדיקה — API חיצוני לא מוגדר עדיין)");
+      if (data.alreadyExists) {
+        toast("הצעה כבר נשלחה לעובד זה", { icon: "ℹ️" });
       } else {
         toast.success("הצעת עבודה נשלחה לעובד!");
       }
@@ -93,15 +115,41 @@ function WorkerMatchCard({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl p-4 flex items-center gap-3"
+      className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
       style={{ background: "white", border: `1px solid ${C_BORDER}` }}
+      onClick={() => onCardClick(worker.worker_id)}
     >
-      {/* Avatar */}
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: C_LIGHT_GREEN }}
-      >
-        <User className="h-6 w-6" style={{ color: C_DARK }} />
+      {/* Avatar — profile photo if available, letter-avatar fallback + availability dot */}
+      <div className="relative flex-shrink-0">
+        {worker.profilePhoto ? (
+          <img
+            src={worker.profilePhoto}
+            alt={worker.name ?? "עובד"}
+            className="w-12 h-12 rounded-xl object-cover"
+            style={{ border: `1px solid ${C_BORDER}` }}
+          />
+        ) : (
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ background: C_LIGHT_GREEN }}
+          >
+            {worker.name ? (
+              <span className="text-base font-bold" style={{ color: C_DARK }}>
+                {worker.name.charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <User className="h-6 w-6" style={{ color: C_DARK }} />
+            )}
+          </div>
+        )}
+        {/* Green pulsing dot — shown when worker is currently available */}
+        {worker.availabilityStatus === "available_now" && (
+          <span
+            className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
+            style={{ border: "2px solid white" }}
+            title="עובד זמין עכשיו"
+          />
+        )}
       </div>
 
       {/* Info */}
@@ -153,6 +201,16 @@ function WorkerMatchCard({
                 : `${worker.distance.toFixed(1)} ק"מ`}
             </span>
           )}
+          {/* Missing GPS indicator for radius-mode workers without location */}
+          {worker.locationMissingGps && (
+            <span
+              className="text-xs flex items-center gap-0.5 px-1.5 py-0.5 rounded-full"
+              style={{ background: "oklch(0.97 0.04 55)", color: "oklch(0.45 0.12 55)", border: "1px solid oklch(0.85 0.08 55)" }}
+            >
+              <MapPin className="h-3 w-3" />
+              מיקום לא מוגדר
+            </span>
+          )}
           {/* Rating */}
           {worker.rating != null && (
             <span className="text-xs flex items-center gap-0.5" style={{ color: "oklch(0.55 0.04 122)" }}>
@@ -163,18 +221,19 @@ function WorkerMatchCard({
         </div>
       </div>
 
-      {/* Action button */}
-      {offerSent ? (
+      {/* Action button — stop propagation so click doesn't open modal */}
+      {isCapReached ? null : offerSent ? (
         <div
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0"
           style={{ background: C_LIGHT_GREEN, color: C_DARK }}
+          onClick={(e) => e.stopPropagation()}
         >
           <CheckCircle2 className="h-3.5 w-3.5" />
           נשלח
         </div>
       ) : (
         <button
-          onClick={() => sendOffer.mutate({ jobId, workerId: worker.worker_id })}
+          onClick={(e) => { e.stopPropagation(); sendOffer.mutate({ jobId, workerId: worker.worker_id }); }}
           disabled={sendOffer.isPending}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0 transition-all"
           style={{
@@ -194,19 +253,64 @@ function WorkerMatchCard({
   );
 }
 
+// ─── Worker Profile Bottom Sheet ──────────────────────────────────────────────
+
+function WorkerProfileSheet({
+  workerId,
+  onClose,
+}: {
+  workerId: number | null;
+  onClose: () => void;
+}) {
+  const { categories: dbCategories } = useCategories();
+  const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
+
+  // useWorkerProfile provides 10-min tRPC staleTime + module-level in-memory cache
+  const { profile } = useWorkerProfile(workerId);
+  const categoryLabels = dbCategories.map((c) => ({ value: c.slug, label: c.name, icon: c.icon ?? "💼" }));
+  const cityNames = profile?.preferredCities
+    ? (citiesQuery.data ?? []).filter((c) => (profile.preferredCities as number[]).includes(c.id)).map((c) => c.nameHe)
+    : [];
+
+  return (
+    <WorkerProfilePreviewModal
+      open={workerId != null}
+      onClose={onClose}
+      name={profile?.name ?? ""}
+      photo={profile?.profilePhoto ?? null}
+      bio={profile?.workerBio ?? ""}
+      categories={(profile?.preferredCategories as string[] | null) ?? []}
+      categoryLabels={categoryLabels}
+      preferredDays={(profile?.preferredDays as string[] | null) ?? []}
+      preferredTimeSlots={(profile?.preferredTimeSlots as string[] | null) ?? []}
+      dayLabels={DAYS}
+      timeSlotLabels={SHIFT_PRESETS}
+      locationMode={(profile?.locationMode as "city" | "radius") ?? "city"}
+      preferredCities={(profile?.preferredCities as number[] | null) ?? []}
+      cityNames={cityNames}
+      searchRadiusKm={profile?.searchRadiusKm ?? 5}
+      workerRating={profile?.workerRating ?? null}
+      completedJobsCount={profile?.completedJobsCount ?? 0}
+      availabilityStatus={(profile?.availabilityStatus as "available_now" | "available_today" | "available_hours" | "not_available" | null) ?? null}
+    />
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function MatchedWorkers() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const authQuery = useAuthQuery();
   const [offeredWorkers, setOfferedWorkers] = useState<Set<number>>(new Set());
+  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
 
   // Get jobId from URL query param
   const jobId = parseInt(new URLSearchParams(window.location.search).get("jobId") ?? "0");
 
   const { data: job } = trpc.jobs.getById.useQuery(
     { id: jobId },
-    { enabled: !!jobId && isAuthenticated }
+    authQuery({ enabled: !!jobId })
   );
 
   const matchMutation = trpc.jobs.matchWorkers.useMutation();
@@ -220,10 +324,23 @@ export default function MatchedWorkers() {
     { workerIds },
     { enabled: workerIds.length > 0, staleTime: 5 * 60 * 1000 }
   );
+
+  // Real-time availability refresh — polls every 60s so green dots stay accurate
+  // without re-running the full matching algorithm.
+  const availabilityQuery = trpc.user.getWorkersAvailabilityStatus.useQuery(
+    { workerIds },
+    { enabled: workerIds.length > 0, refetchInterval: 60_000, staleTime: 30_000, refetchIntervalInBackground: false }
+  );
+
   const enrichedWorkers: MatchedWorker[] | null = matchedWorkers
     ? matchedWorkers.map((w) => ({
         ...w,
         isMinor: minorStatusQuery.data?.[w.worker_id] ?? false,
+        locationMissingGps: w.locationMissingGps ?? false,
+        // Prefer live availability data from the polling query; fall back to initial match result
+        availabilityStatus: availabilityQuery.data?.[w.worker_id] !== undefined
+          ? availabilityQuery.data[w.worker_id]
+          : w.availabilityStatus,
       }))
     : null;
 
@@ -272,7 +389,7 @@ export default function MatchedWorkers() {
         style={{ background: C_BG, borderBottom: `1px solid ${C_BORDER}` }}
       >
         <button
-          onClick={() => navigate(-1 as unknown as string)}
+          onClick={() => navigate(`/job/${jobId}`)}
           className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: C_LIGHT_GREEN }}
         >
@@ -361,6 +478,24 @@ export default function MatchedWorkers() {
                       חפש שוב
                     </button>
                   </div>
+                  {/* Cap-reached banner in MatchedWorkers */}
+                  {job?.status === "closed" && job?.closedReason === "cap_reached" && (
+                    <div
+                      className="rounded-2xl px-4 py-3 flex items-start gap-3"
+                      style={{ background: "oklch(0.45 0.18 160 / 0.10)", border: "1px solid oklch(0.45 0.18 160 / 0.30)" }}
+                    >
+                      <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "oklch(0.45 0.18 160)" }} />
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.14 160)" }}>
+                          המשרה הושלמה — קיבלת 3 מועמדים
+                        </p>
+                        <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 160)" }}>
+                          לא ניתן לשלוח הצעות נוספות למשרה זו.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {enrichedWorkers!.map((w, i) => (
                     <motion.div
                       key={w.worker_id}
@@ -372,6 +507,8 @@ export default function MatchedWorkers() {
                         worker={w}
                         jobId={jobId}
                         onOfferSent={handleOfferSent}
+                        onCardClick={(id) => setSelectedWorkerId(id)}
+                        isCapReached={job?.status === "closed" && job?.closedReason === "cap_reached"}
                       />
                     </motion.div>
                   ))}
@@ -411,6 +548,12 @@ export default function MatchedWorkers() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Worker profile bottom sheet */}
+      <WorkerProfileSheet
+        workerId={selectedWorkerId}
+        onClose={() => setSelectedWorkerId(null)}
+      />
     </div>
   );
 }

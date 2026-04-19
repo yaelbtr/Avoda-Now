@@ -1,0 +1,66 @@
+{
+  "query": "\n-- All active users with location info\nSELECT id, name, email, phone, role, \"userMode\",\n       \"workerLocation\", \"preferredCity\", \"workerSearchCity\",\n       \"workerLatitude\", \"workerLongitude\",\n       \"notificationPrefs\"\nFROM users\nWHERE status = 'active'\nORDER BY role, name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \n-- All active users with location info\nSELECT id, name, email, phone, role, \"userMode\",\n       \"workerLocation\", \"preferredCity\", \"workerSearchCity\",\n       \"workerLatitude\", \"workerLongitude\",\n       \"notificationPrefs\"\nFROM users\nWHERE status = 'active'\nORDER BY role, name;\n",
+  "rows": [
+    {
+      "id": "120008",
+      "name": "יהודה דוד ביטרן",
+      "email": "NULL",
+      "phone": "+972504487144",
+      "role": "user",
+      "userMode": "userMode",
+      "workerLocation": "workerLocation",
+      "preferredCity": "preferredCity",
+      "workerSearchCity": "workerSearchCity",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "notificationPrefs": "notificationPrefs"
+    },
+    {
+      "id": "1",
+      "name": "יעל ביטרן",
+      "email": "yaelbtr@gmail.com",
+      "phone": "NULL",
+      "role": "admin",
+      "userMode": "userMode",
+      "workerLocation": "workerLocation",
+      "preferredCity": "preferredCity",
+      "workerSearchCity": "workerSearchCity",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "notificationPrefs": "notificationPrefs"
+    },
+    {
+      "id": "30004",
+      "name": "יעל ביטרן",
+      "email": "NULL",
+      "phone": "+972559258668",
+      "role": "admin",
+      "userMode": "userMode",
+      "workerLocation": "workerLocation",
+      "preferredCity": "preferredCity",
+      "workerSearchCity": "workerSearchCity",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "notificationPrefs": "notificationPrefs"
+    },
+    {
+      "id": "482142",
+      "name": "יעל טסט",
+      "email": "NULL",
+      "phone": "+972548481498",
+      "role": "test",
+      "userMode": "userMode",
+      "workerLocation": "workerLocation",
+      "preferredCity": "preferredCity",
+      "workerSearchCity": "workerSearchCity",
+      "workerLatitude": "workerLatitude",
+      "workerLongitude": "workerLongitude",
+      "notificationPrefs": "notificationPrefs"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tphone\trole\tuserMode\tworkerLocation\tpreferredCity\tworkerSearchCity\tworkerLatitude\tworkerLongitude\tnotificationPrefs\n120008\tיהודה דוד ביטרן\tNULL\t+972504487144\tuser\tuserMode\tworkerLocation\tpreferredCity\tworkerSearchCity\tworkerLatitude\tworkerLongitude\tnotificationPrefs\n1\tיעל ביטרן\tyaelbtr@gmail.com\tNULL\tadmin\tuserMode\tworkerLocation\tpreferredCity\tworkerSearchCity\tworkerLatitude\tworkerLongitude\tnotificationPrefs\n30004\tיעל ביטרן\tNULL\t+972559258668\tadmin\tuserMode\tworkerLocation\tpreferredCity\tworkerSearchCity\tworkerLatitude\tworkerLongitude\tnotificationPrefs\n482142\tיעל טסט\tNULL\t+972548481498\ttest\tuserMode\tworkerLocation\tpreferredCity\tworkerSearchCity\tworkerLatitude\tworkerLongitude\tnotificationPrefs\n",
+  "stderr": "",
+  "execution_time_ms": 1478
+}

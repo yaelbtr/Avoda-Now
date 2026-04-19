@@ -23,6 +23,7 @@ interface CarouselJob {
   city?: string | null;
   salary?: string | null;
   salaryType: string;
+  hourlyRate?: string | null;
   contactPhone: string | null;
   businessName?: string | null;
   startTime: string;
@@ -198,7 +199,7 @@ function CarouselSharePopover({ job }: { job: CarouselJob }) {
 export default function CarouselJobCard({ job, badge, onLoginRequired, onCardClick }: CarouselJobCardProps) {
   const { isAuthenticated } = useAuth();
 
-  const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
+  const salaryStr = formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null);
   const catIcon = getCategoryIcon(job.category);
   const catLabel = getCategoryLabel(job.category);
   const location = job.city ?? job.address;

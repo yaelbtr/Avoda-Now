@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useOrganizationSchema, useWebSiteSchema, useLocalBusinessSchema } from "@/hooks/useStructuredData";
+import { useSEO } from "@/hooks/useSEO";
 import { useUserMode } from "@/contexts/UserModeContext";
 import LoginModal from "@/components/LoginModal";
-import HomeWorker from "./HomeWorker";
-import HomeEmployer from "./HomeEmployer";
 import ActivityTicker from "@/components/ActivityTicker";
 import LiveStats from "@/components/LiveStats";
 import { useLocation } from "wouter";
 import { AppButton } from "@/components/ui";
 import { Search, Zap } from "lucide-react";
 import { SectionLoader } from "@/components/BrandLoader";
+
+// Fix 2 (perf): lazy-load HomeWorker and HomeEmployer so they are NOT in the
+// initial JS bundle. They are only fetched when the user's role is known.
+// This removes ~136KB from the critical path (85KB HomeWorker + 51KB HomeEmployer).
+const HomeWorker = lazy(() => import("./HomeWorker"));
+const HomeEmployer = lazy(() => import("./HomeEmployer"));
 
 /** Shown while userMode is still loading (null) */
 function HomeLoading() {
@@ -51,9 +56,17 @@ function HomeGuest() {
           </div>
         </div>
       </section>
+      {/* SEO: H2 introduces the two main user paths — required for on-page keyword structure */}
+      <section className="bg-background py-6 px-4 text-center">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
+          מצא עבודה זמנית קרוב אליך — או פרסם משרה ומצא עובדים עכשיו
+        </h2>
+        <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+          AvodaNow מחברת בין עובדים פנויים למעסיקים בכל רחבי ישראל, ללא עמלות ובלי בירוקרטיה.
+        </p>
+      </section>
       <ActivityTicker />
       <LiveStats />
-
     </div>
   );
 }
@@ -63,6 +76,13 @@ export default function Home() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
 
+  // Page-level SEO: title (30-60 chars), description, keywords
+  useSEO({
+    title: "AvodaNow — עבודות זמניות בישראל",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. מעסיקים — פרסם משרה ומצא עובדים זמינים קרוב אליך.",
+    keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
+    canonical: "/",
+  });
   // JSON-LD schemas for Google Rich Results
   useOrganizationSchema();
   useWebSiteSchema();
@@ -78,10 +98,14 @@ export default function Home() {
   return (
     <>
       {userMode === "worker" && (
-        <HomeWorker onLoginRequired={handleLoginRequired} />
+        <Suspense fallback={<SectionLoader label="טוען..." />}>
+          <HomeWorker onLoginRequired={handleLoginRequired} />
+        </Suspense>
       )}
       {userMode === "employer" && (
-        <HomeEmployer />
+        <Suspense fallback={<SectionLoader label="טוען..." />}>
+          <HomeEmployer />
+        </Suspense>
       )}
       {!userMode && (
         <HomeGuest />

@@ -1,0 +1,30 @@
+{
+  "query": "SELECT a.status, a.contactRevealed, COUNT(*) as cnt FROM applications a GROUP BY a.status, a.contactRevealed;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT a.status, a.contactRevealed, COUNT(*) as cnt FROM applications a GROUP BY a.status, a.contactRevealed;",
+  "rows": [
+    {
+      "status": "viewed",
+      "contactRevealed": "0",
+      "cnt": "3"
+    },
+    {
+      "status": "rejected",
+      "contactRevealed": "0",
+      "cnt": "1"
+    },
+    {
+      "status": "accepted",
+      "contactRevealed": "1",
+      "cnt": "1"
+    },
+    {
+      "status": "pending",
+      "contactRevealed": "0",
+      "cnt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "status\tcontactRevealed\tcnt\nviewed\t0\t3\nrejected\t0\t1\naccepted\t1\t1\npending\t0\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1594
+}

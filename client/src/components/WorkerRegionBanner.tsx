@@ -6,20 +6,22 @@
  * notification when any of their regions becomes active.
  */
 import { trpc } from "@/lib/trpc";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { Bell, BellOff, MapPin, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export function WorkerRegionBanner() {
+  const authQuery = useAuthQuery();
   const [dismissed, setDismissed] = useState(false);
 
-  const { data: regionStatus, isLoading } = trpc.regions.workerRegionStatus.useQuery(undefined, {
-    staleTime: 60_000,
-  });
+  const { data: regionStatus, isLoading } = trpc.regions.workerRegionStatus.useQuery(undefined,
+    authQuery({ staleTime: 60_000 })
+  );
 
-  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined, {
-    staleTime: 60_000,
-  });
+  const { data: myNotifications } = trpc.regions.myNotifications.useQuery(undefined,
+    authQuery({ staleTime: 60_000 })
+  );
 
   const requestNotif = trpc.regions.requestNotification.useMutation({
     onSuccess: (d) => {

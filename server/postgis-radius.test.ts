@@ -43,10 +43,26 @@ vi.mock("./db", () => ({
   recordConsent: vi.fn().mockResolvedValue(undefined),
   // Age gate: return null (no birth date) so workerAge=null and filter is skipped
   getWorkerBirthDate: vi.fn().mockResolvedValue(null),
+  // job offer deps
+  createJobOffer: vi.fn().mockResolvedValue(undefined),
+  respondToJobOffer: vi.fn().mockResolvedValue(undefined),
+  getWorkerProfile: vi.fn().mockResolvedValue(null),
+  getApplicationsForJob: vi.fn().mockResolvedValue([]),
+  getApplicationByWorkerAndJob: vi.fn().mockResolvedValue(null),
+  getApplicationById: vi.fn().mockResolvedValue(null),
+  markEmployerApplicationsViewed: vi.fn().mockResolvedValue(undefined),
+  getUnreadApplicationsCount: vi.fn().mockResolvedValue(0),
+  revealApplicationContact: vi.fn().mockResolvedValue(undefined),
+  updateApplicationStatus: vi.fn().mockResolvedValue(undefined),
+  getMyApplications: vi.fn().mockResolvedValue([]),
+  createApplication: vi.fn().mockResolvedValue(undefined),
+  withdrawApplication: vi.fn().mockResolvedValue(undefined),
+  getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("./sms", () => ({
   sendJobAlerts: vi.fn().mockResolvedValue(0),
+  sendSms: vi.fn().mockResolvedValue(undefined),
 }));
 
 import * as db from "./db";
@@ -58,6 +74,7 @@ function makeCtx(overrides: Partial<TrpcContext["user"]> = {}): TrpcContext {
     openId: "test-postgis",
     email: "test@avodanow.co.il",
     name: "PostGIS Tester",
+    phone: "+972501234567",
     loginMethod: "phone_otp",
     role: "user",
     createdAt: new Date(),
@@ -252,13 +269,41 @@ describe("PostGIS Radius Search — jobs.search procedure", () => {
 describe("PostGIS Radius Search — getNearbyWorkers distance computation", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("passes lat/lng/radiusKm to getNearbyWorkers", async () => {
+  it("passes lat/lng/radiusKm to getNearbyWorkers (no age filter)", async () => {
     vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
     const caller = appRouter.createCaller(makeCtx());
 
     await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 20 });
 
-    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50);
+    // 5th arg is minAge — null when not supplied
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, null);
+  });
+
+  it("passes minWorkerAge=18 to getNearbyWorkers when employer sets 18+", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 20, minWorkerAge: 18 });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, 18);
+  });
+
+  it("passes minWorkerAge=16 to getNearbyWorkers when employer sets 16+", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 10, minWorkerAge: 16 });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 10, 50, 16);
+  });
+
+  it("passes null minAge when minWorkerAge is explicitly null", async () => {
+    vi.mocked(db.getNearbyWorkers).mockResolvedValue([]);
+    const caller = appRouter.createCaller(makeCtx());
+
+    await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, minWorkerAge: null });
+
+    expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, null);
   });
 
   it("returns workers with distance field", async () => {
@@ -351,5 +396,113 @@ describe("PostGIS distance — spatial math invariants", () => {
       Math.cos(toRad(lat)) * Math.cos(toRad(lat)) * Math.sin(dLon / 2) ** 2;
     const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     expect(km).toBe(0);
+  });
+});
+
+describe("getWorkersMatchingJob — PostGIS ST_DWithin radius filtering", () => {
+  /**
+   * These tests verify the router-level behavior of getWorkersMatchingJob.
+   * The actual ST_DWithin SQL is tested implicitly via the mock — we verify
+   * that the function is called with the correct arguments and that the router
+   * correctly passes job lat/lng through.
+   */
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns workers matching job category and city (city-mode)", async () => {
+    const mockWorkers = [
+      { id: 7, phone: "+972501111111", name: "עובד א", preferredCity: "תל אביב" },
+    ];
+    vi.mocked(db.getWorkersMatchingJob).mockResolvedValue(mockWorkers);
+    const caller = appRouter.createCaller(makeCtx());
+
+    // Trigger a job create which internally calls getWorkersMatchingJob
+    vi.mocked(db.createJob).mockResolvedValue({ id: 99 } as any);
+    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(0);
+    vi.mocked(db.checkRegionActiveForJob).mockResolvedValue({ allowed: true });
+
+    await caller.jobs.create({
+      title: "שליח",
+      description: "תיאור משרה לשליח",
+      category: "delivery",
+      city: "תל אביב",
+      address: "רחוב הרצל 1",
+      latitude: 32.0853,
+      longitude: 34.7818,
+      contactPhone: "+972501234567",
+      contactName: "מנהל",
+      salary: 50,
+      salaryType: "hourly",
+      startTime: "flexible",
+      activeDuration: "1",
+      workersNeeded: 1,
+    });
+
+    expect(db.getWorkersMatchingJob).toHaveBeenCalled();
+    const [category, city] = vi.mocked(db.getWorkersMatchingJob).mock.calls[0];
+    expect(category).toBe("delivery");
+    expect(city).toBe("תל אביב");
+  });
+
+  it("passes job lat/lng to getWorkersMatchingJob for radius-mode filtering", async () => {
+    vi.mocked(db.getWorkersMatchingJob).mockResolvedValue([]);
+    vi.mocked(db.createJob).mockResolvedValue({ id: 100 } as any);
+    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(0);
+    vi.mocked(db.checkRegionActiveForJob).mockResolvedValue({ allowed: true });
+
+    const caller = appRouter.createCaller(makeCtx());
+    await caller.jobs.create({
+      title: "מחסנאי",
+      description: "תיאור משרה למחסנאי",
+      category: "warehouse",
+      city: "חיפה",
+      address: "נמל חיפה",
+      contactPhone: "+972501234567",
+      contactName: "מנהל",
+      salary: 60,
+      salaryType: "hourly",
+      startTime: "today",
+      activeDuration: "1",
+      workersNeeded: 2,
+      latitude: 32.8191,
+      longitude: 34.9983,
+    });
+
+    expect(db.getWorkersMatchingJob).toHaveBeenCalled();
+    const args = vi.mocked(db.getWorkersMatchingJob).mock.calls[0];
+    // args: [category, city, excludeUserId, limit, jobLat, jobLng]
+    expect(args[0]).toBe("warehouse");
+    expect(args[4]).toBeCloseTo(32.8191, 3); // jobLat
+    expect(args[5]).toBeCloseTo(34.9983, 3); // jobLng
+  });
+
+  it("passes job lat/lng to getWorkersMatchingJob for city-mode job with coordinates", async () => {
+    vi.mocked(db.getWorkersMatchingJob).mockResolvedValue([]);
+    vi.mocked(db.createJob).mockResolvedValue({ id: 101 } as any);
+    vi.mocked(db.countActiveJobsByUser).mockResolvedValue(0);
+    vi.mocked(db.checkRegionActiveForJob).mockResolvedValue({ allowed: true });
+
+    const caller = appRouter.createCaller(makeCtx());
+    await caller.jobs.create({
+      title: "מנקה",
+      description: "תיאור משרה למנקה",
+      category: "cleaning",
+      city: "ירושלים",
+      address: "רחוב יפו 1",
+      latitude: 31.7683,
+      longitude: 35.2137,
+      contactPhone: "+972501234567",
+      contactName: "מנהל",
+      salary: 45,
+      salaryType: "hourly",
+      startTime: "tomorrow",
+      activeDuration: "3",
+      workersNeeded: 1,
+    });
+
+    expect(db.getWorkersMatchingJob).toHaveBeenCalled();
+    const args = vi.mocked(db.getWorkersMatchingJob).mock.calls[0];
+    // lat/lng should be passed through for PostGIS ST_DWithin filtering
+    expect(args[4]).toBeCloseTo(31.7683, 3); // jobLat
+    expect(args[5]).toBeCloseTo(35.2137, 3); // jobLng
   });
 });

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT * FROM worker_availability ORDER BY \"createdAt\" DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute SELECT * FROM worker_availability ORDER BY \"createdAt\" DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "60001",
+      "userId": "30004",
+      "latitude": "32.0970617",
+      "longitude": "34.8327181",
+      "city": "NULL",
+      "note": "NULL",
+      "availableUntil": "2026-03-08 09:36:29",
+      "createdAt": "2026-03-08 01:36:29",
+      "updatedAt": "2026-03-08 01:36:29",
+      "reminderSentAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tlatitude\tlongitude\tcity\tnote\tavailableUntil\tcreatedAt\tupdatedAt\treminderSentAt\n60001\t30004\t32.0970617\t34.8327181\tNULL\tNULL\t2026-03-08 09:36:29\t2026-03-08 01:36:29\t2026-03-08 01:36:29\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1536
+}

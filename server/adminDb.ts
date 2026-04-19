@@ -2,13 +2,14 @@
  * Admin-only database query helpers.
  * All functions here are called only from adminProcedure-protected routes.
  */
-import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, or, sql, asc } from "drizzle-orm";
 import {
   BirthdateChange, Job,
   applications, birthdateChanges, jobReports, jobs,
   notificationBatches, phoneChangeLogs, users,
   pushSubscriptions, savedJobs, workerRatings,
   workerAvailability, legalAcknowledgements,
+  referralLinks, type ReferralLink,
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
@@ -37,9 +38,12 @@ export async function adminGetAllJobs(limit = 100, status?: string) {
       createdAt: jobs.createdAt,
       salary: jobs.salary,
       salaryType: jobs.salaryType,
+      applicantCount: count(applications.id),
     })
     .from(jobs)
+    .leftJoin(applications, eq(applications.jobId, jobs.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .groupBy(jobs.id)
     .orderBy(desc(jobs.createdAt))
     .limit(limit);
 }
@@ -196,14 +200,26 @@ export async function adminDeleteUser(userId: number) {
   // 1. Applications where this user is the worker
   await db.delete(applications).where(eq(applications.workerId, userId));
 
-  // 2. Jobs posted by this user (and their applications, which cascade from jobs)
-  //    First delete applications for those jobs, then the jobs themselves.
+  // 2. Jobs posted by this user — delete all child rows that reference jobs.id
+  //    before deleting the jobs themselves (FK constraints without CASCADE).
   const userJobs = await db
     .select({ id: jobs.id })
     .from(jobs)
     .where(eq(jobs.postedBy, userId));
-  for (const j of userJobs) {
-    await db.delete(applications).where(eq(applications.jobId, j.id));
+  if (userJobs.length > 0) {
+    const jobIds = userJobs.map((j) => j.id);
+    // 2a. Applications referencing these jobs
+    for (const jid of jobIds) {
+      await db.delete(applications).where(eq(applications.jobId, jid));
+    }
+    // 2b. Job reports referencing these jobs (FK: job_reports.jobId → jobs.id, no cascade)
+    for (const jid of jobIds) {
+      await db.delete(jobReports).where(eq(jobReports.jobId, jid));
+    }
+    // 2c. Notification batches referencing these jobs (FK: notification_batches.jobId → jobs.id, no cascade)
+    for (const jid of jobIds) {
+      await db.delete(notificationBatches).where(eq(notificationBatches.jobId, jid));
+    }
   }
   await db.delete(jobs).where(eq(jobs.postedBy, userId));
 
@@ -300,6 +316,52 @@ export async function adminGetStats() {
     totalReports: totalReportsRes[0]?.cnt ?? 0,
     newUsersToday: newUsersTodayRes[0]?.cnt ?? 0,
   };
+}
+
+/**
+ * Returns registration counts grouped by referralSource, utmCampaign, and utmMedium.
+ * Used in the admin panel "מקורות הרשמה" card.
+ */
+export async function adminGetReferralStats() {
+  const db = await getDb();
+  if (!db) return {
+    total: 0, facebook: 0, google: 0, organic: 0, other: 0,
+    breakdown: [] as { source: string; count: number }[],
+    campaignBreakdown: [] as { campaign: string; count: number }[],
+    mediumBreakdown: [] as { medium: string; count: number }[],
+  };
+
+  // Group by referralSource
+  const sourceRows = await db
+    .select({ source: users.referralSource, cnt: count() })
+    .from(users)
+    .groupBy(users.referralSource);
+  const breakdown = sourceRows.map(r => ({ source: r.source ?? "organic", count: Number(r.cnt) }));
+  const facebook = breakdown.find(r => r.source === "facebook")?.count ?? 0;
+  const google   = breakdown.find(r => r.source === "google")?.count ?? 0;
+  const organic  = breakdown.filter(r => r.source === "organic" || !r.source).reduce((s, r) => s + r.count, 0);
+  const other    = breakdown.filter(r => r.source !== "facebook" && r.source !== "google" && r.source !== "organic" && !!r.source).reduce((s, r) => s + r.count, 0);
+  const total    = breakdown.reduce((s, r) => s + r.count, 0);
+
+  // Group by utmCampaign (exclude nulls), sorted by count desc
+  const campaignRows = await db
+    .select({ campaign: users.utmCampaign, cnt: count() })
+    .from(users)
+    .where(isNotNull(users.utmCampaign))
+    .groupBy(users.utmCampaign)
+    .orderBy(desc(count()));
+  const campaignBreakdown = campaignRows.map(r => ({ campaign: r.campaign!, count: Number(r.cnt) }));
+
+  // Group by utmMedium (exclude nulls), sorted by count desc
+  const mediumRows = await db
+    .select({ medium: users.utmMedium, cnt: count() })
+    .from(users)
+    .where(isNotNull(users.utmMedium))
+    .groupBy(users.utmMedium)
+    .orderBy(desc(count()));
+  const mediumBreakdown = mediumRows.map(r => ({ medium: r.medium!, count: Number(r.cnt) }));
+
+  return { total, facebook, google, organic, other, breakdown, campaignBreakdown, mediumBreakdown };
 }
 
 // ─── Applications Admin ───────────────────────────────────────────────────────
@@ -505,4 +567,127 @@ export async function adminClearForcedLogout(userId: number): Promise<void> {
     .update(users)
     .set({ forcedLogoutAt: null })
     .where(eq(users.id, userId));
+}
+
+// ─── Referral Links Admin ─────────────────────────────────────────────────────
+
+/** List all referral links ordered by creation date (newest first). */
+export async function adminListReferralLinks(): Promise<ReferralLink[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(referralLinks).orderBy(desc(referralLinks.createdAt));
+}
+
+/** Create a new referral link. code must be unique. */
+export async function adminCreateReferralLink(
+  data: { code: string; label: string; source: string }
+): Promise<ReferralLink> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [row] = await db
+    .insert(referralLinks)
+    .values({ code: data.code, label: data.label, source: data.source })
+    .returning();
+  return row;
+}
+
+/** Toggle the isActive flag of a referral link. */
+export async function adminToggleReferralLink(id: number, isActive: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(referralLinks).set({ isActive }).where(eq(referralLinks.id, id));
+}
+
+/** Delete a referral link permanently. */
+export async function adminDeleteReferralLink(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(referralLinks).where(eq(referralLinks.id, id));
+}
+
+/**
+ * Atomically increment the click counter for a referral link by code.
+ * Returns the updated row, or null if the code does not exist / is inactive.
+ */
+export async function incrementReferralLinkClicks(
+  code: string
+): Promise<ReferralLink | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .update(referralLinks)
+    .set({ clicks: sql`${referralLinks.clicks} + 1` })
+    .where(and(eq(referralLinks.code, code), eq(referralLinks.isActive, true)))
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Return per-link stats: clicks + registrations attributed to each source.
+ * A registration is attributed when users.referralSource matches the link's source.
+ */
+export async function adminGetReferralLinkStats() {
+  const db = await getDb();
+  if (!db) return [];
+  const links = await db.select().from(referralLinks).orderBy(desc(referralLinks.createdAt));
+  if (links.length === 0) return [];
+  // Count registrations per source in one query
+  const regRows = await db
+    .select({ source: users.referralSource, total: count() })
+    .from(users)
+    .where(isNotNull(users.referralSource))
+    .groupBy(users.referralSource);
+  const regMap = new Map(regRows.map((r) => [r.source, Number(r.total)]));
+  return links.map((link) => ({
+    ...link,
+    registrations: regMap.get(link.source) ?? 0,
+    conversionRate:
+      link.clicks > 0
+        ? Math.round(((regMap.get(link.source) ?? 0) / link.clicks) * 100)
+        : 0,
+  }));
+}
+
+// ─── Notification Log helpers (re-exported from db.ts for admin router) ───────
+export {
+  getJobsWithNotificationStats,
+  getNotificationLogsForJob,
+  getNotificationBatchSummaryForJob,
+} from "./db";
+
+// ─── Employers Admin ──────────────────────────────────────────────────────────
+/**
+ * Returns all users whose userMode = 'employer', enriched with job-posting stats.
+ * Uses a LEFT JOIN + GROUP BY so users with 0 jobs are still included.
+ */
+export async function adminGetAllEmployers(limit = 300) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+
+  const rows = await db
+    .select({
+      id: users.id,
+      phone: users.phone,
+      name: users.name,
+      role: users.role,
+      status: users.status,
+      createdAt: users.createdAt,
+      lastSignedIn: users.lastSignedIn,
+      totalJobs: count(jobs.id),
+      activeJobs: sql<number>`SUM(CASE WHEN ${jobs.status} = 'active' AND (${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now}) THEN 1 ELSE 0 END)`,
+    })
+    .from(users)
+    .leftJoin(jobs, eq(jobs.postedBy, users.id))
+    .where(eq(users.userMode, "employer"))
+    .groupBy(users.id)
+    .orderBy(desc(users.createdAt))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    ...r,
+    totalJobs: Number(r.totalJobs),
+    activeJobs: Number(r.activeJobs ?? 0),
+  }));
 }

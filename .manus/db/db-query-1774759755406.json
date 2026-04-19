@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Workers in Bnei Brak (by city name in profile or workerLocation)\nSELECT id, name, email, phone, \"workerLocation\", \"preferredCity\", \"notificationPrefs\"\nFROM users\nWHERE role = 'user'\n  AND status = 'active'\n  AND (\n    \"preferredCity\" ILIKE '%בני ברק%'\n    OR \"workerLocation\" ILIKE '%בני ברק%'\n    OR \"workerSearchCity\" ILIKE '%בני ברק%'\n  )\nLIMIT 50;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4ShrASiucEBBHq4.29f4086d1d74 --database REsBLBseSeXTZwj6TLp8WJ --execute \n-- Workers in Bnei Brak (by city name in profile or workerLocation)\nSELECT id, name, email, phone, \"workerLocation\", \"preferredCity\", \"notificationPrefs\"\nFROM users\nWHERE role = 'user'\n  AND status = 'active'\n  AND (\n    \"preferredCity\" ILIKE '%בני ברק%'\n    OR \"workerLocation\" ILIKE '%בני ברק%'\n    OR \"workerSearchCity\" ILIKE '%בני ברק%'\n  )\nLIMIT 50;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4729
+}

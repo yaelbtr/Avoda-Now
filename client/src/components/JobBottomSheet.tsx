@@ -17,6 +17,7 @@ interface JobBottomSheetProps {
     city?: string | null;
     salary?: string | null;
     salaryType: string;
+    hourlyRate?: string | null;
     contactPhone: string | null | undefined;
     showPhone?: boolean | null;
     businessName?: string | null;
@@ -140,7 +141,7 @@ export default function JobBottomSheet({
 
   if (!job) return null;
 
-  const salaryStr = formatSalary(job.salary ?? null, job.salaryType);
+  const salaryStr = formatSalary(job.salary ?? null, job.salaryType, job.hourlyRate ?? null);
   const catIcon = getCategoryIcon(job.category);
   const catLabel = getCategoryLabel(job.category);
   const isVolunteer = job.salaryType === "volunteer";
@@ -286,7 +287,7 @@ export default function JobBottomSheet({
               <InfoTile
                 icon={<Briefcase size={16} color={OLIVE} />}
                 label="שכר"
-                value={job.salary ? salaryStr : "לא צוין"}
+                value={salaryStr || "לא צוין"}
               />
             ) : (
               <InfoTile

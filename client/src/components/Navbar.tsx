@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -48,6 +49,7 @@ function resolveLoginMessage(authError: string | null): string | undefined {
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const authQuery = useAuthQuery();
   const { theme, toggleTheme, switchable } = useTheme();
   const { userMode, setUserMode, resetUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
@@ -59,6 +61,17 @@ export default function Navbar() {
   // Use a session flag so it only prompts once per browser session (not on every render)
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const completeProfileShown = useRef(false);
+
+  // Listen for the global phone-required event dispatched by the tRPC error interceptor.
+  // Opens LoginModal with a contextual message so the user can add their phone number.
+  useEffect(() => {
+    const handlePhoneRequired = () => {
+      setLoginMessage("כדי להמשיך יש להוסיף מספר טלפון לחשבון שלך");
+      setLoginOpen(true);
+    };
+    window.addEventListener("avodanow:phone-required", handlePhoneRequired);
+    return () => window.removeEventListener("avodanow:phone-required", handlePhoneRequired);
+  }, []);
 
   useEffect(() => {
     if (
@@ -138,7 +151,7 @@ export default function Navbar() {
   }, []);
 
   const { data: profileData } = trpc.user.getProfile.useQuery(undefined, {
-    enabled: isAuthenticated && userMode === "worker",
+    ...authQuery({ enabled: userMode === "worker" }),
     staleTime: 60_000,
   });
   const profilePhoto = profileData?.profilePhoto ?? null;
@@ -146,7 +159,7 @@ export default function Navbar() {
   const { data: unreadCount } = trpc.jobs.unreadApplicationsCount.useQuery(
     { lastSeenAt },
     {
-      enabled: isAuthenticated && userMode === "worker",
+      ...authQuery({ enabled: userMode === "worker" }),
       refetchInterval: 60_000, // re-check every minute
       staleTime: 30_000,
     }
@@ -154,7 +167,7 @@ export default function Navbar() {
   const hasUnread = (unreadCount ?? 0) > 0;
 
   const { data: savedIdsData } = trpc.savedJobs.getSavedIds.useQuery(undefined, {
-    enabled: isAuthenticated && userMode === "worker",
+    ...authQuery({ enabled: userMode === "worker" }),
     staleTime: 30_000,
   });
   const savedJobsCount = savedIdsData?.ids?.length ?? 0;
@@ -171,6 +184,7 @@ export default function Navbar() {
     { href: "/post-job", label: "פרסם משרה", icon: PlusCircle },
     { href: "/my-jobs", label: "המשרות שלי", icon: Briefcase },
     { href: "/available-workers", label: "עובדים זמינים", icon: Users },
+    { href: "/employer-profile", label: "פרופיל", icon: User },
   ];
 
   const guestLinks = [
@@ -271,15 +285,15 @@ export default function Navbar() {
               </motion.button>
               {/* User icon — always visible; opens login for guests, navigates for auth users */}
               {isAuthenticated ? (
-                <Link href={userMode === "worker" ? "/worker-profile" : "/my-jobs"}>
+                <Link href={userMode === "worker" ? "/worker-profile" : "/employer-profile"}>
                   <motion.button
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.92 }}
                     className="w-9 h-9 flex items-center justify-center rounded-xl"
                     style={{
-                      background: (location === "/worker-profile" || location === "/my-jobs") ? ACTIVE_BG : "transparent",
-                      color: (location === "/worker-profile" || location === "/my-jobs") ? "var(--citrus)" : "#e8eae5",
-                      border: `1px solid ${(location === "/worker-profile" || location === "/my-jobs") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
+                      background: (location === "/worker-profile" || location === "/employer-profile") ? ACTIVE_BG : "transparent",
+                      color: (location === "/worker-profile" || location === "/employer-profile") ? "var(--citrus)" : "#e8eae5",
+                      border: `1px solid ${(location === "/worker-profile" || location === "/employer-profile") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                     }}
                     aria-label="הפרופיל שלי"
                   >
@@ -602,6 +616,14 @@ export default function Navbar() {
                     {userMode === "worker" && (
                       <DropdownMenuItem asChild>
                         <Link href="/worker-profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
+                          <User className="h-4 w-4 shrink-0" />
+                          <span>הפרופיל שלי</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {userMode === "employer" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/employer-profile" className="flex items-center gap-2 cursor-pointer w-full" style={{ color: TEXT_MUTED }}>
                           <User className="h-4 w-4 shrink-0" />
                           <span>הפרופיל שלי</span>
                         </Link>

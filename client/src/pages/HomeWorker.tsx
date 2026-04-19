@@ -382,29 +382,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute inset-0 w-full h-full object-cover"
             style={{ objectPosition: "50% 50%" }}
           />
-          {/* גרדינט שמדגיש את אזור הטקסט בלי להעמיס על הדמות */}
+          {/* שכבת זכוכית שקופה על כל התמונה */}
           <div
             className="absolute inset-0 pointer-events-none"
-            // style={{
-            //   background: [
-            //     "linear-gradient(90deg,",
-            //     "  oklch(0.96 0.03 91.6 / 0.78) 0%,",
-            //     "  oklch(0.96 0.03 91.6 / 0.58) 23%,",
-            //     "  oklch(0.96 0.03 91.6 / 0.20) 45%,",
-            //     "  oklch(0.11 0.05 122 / 0.10) 67%,",
-            //     "  oklch(0.11 0.05 122 / 0.30) 100%),",
-            //     "linear-gradient(180deg,",
-            //     "  transparent 46%,",
-            //     "  oklch(0.10 0.04 122 / 0.08) 62%,",
-            //     "  oklch(0.10 0.04 122 / 0.24) 78%,",
-            //     "  oklch(0.10 0.04 122 / 0.42) 100%),",
-            //     "linear-gradient(180deg,",
-            //     "  oklch(0.11 0.05 122 / 0.26) 0%,",
-            //     "  oklch(0.11 0.05 122 / 0.06) 28%,",
-            //     "  oklch(0.11 0.05 122 / 0.12) 72%,",
-            //     "  oklch(0.95 0.03 91.6 / 0.88) 100%)",
-            //   ].join(" "),
-            // }}
+            style={{
+              // backdropFilter: "blur(2px)",
+              // WebkitBackdropFilter: "blur(2px)",
+              background: "oklch(0.08 0.02 124.11 / 0.09)",
+            }}
           />
           {/* Badge — kept on the quieter side of the photo */}
           {(activeJobCount === null || activeJobCount >= 10) && (
@@ -564,11 +549,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 WebkitBackdropFilter: "blur(10px)",
               }}
             >
-              <span
-                aria-hidden="true"
-                style={{
-                  width: "7px",
-                  height: "7px",
+                <span
+                  aria-hidden="true"
+                  className="animate-pulse"
+                  style={{
+                    width: "7px",
+                    height: "7px",
                   borderRadius: "999px",
                   background: "oklch(0.90 0.13 77)",
                   boxShadow: "0 0 0 4px oklch(0.90 0.13 77 / 0.14)",
@@ -640,7 +626,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <h1
                 className="relative"
                 style={{
-                  color: "oklch(0.90 0.13 77)",
+                  color: "oklch(0.91 0.21 98.84 / 0.98)",
                   fontSize: "24px",
                   lineHeight: 1.08,
                   fontWeight: 900,
@@ -663,11 +649,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.46)",
                 }}
               >
-                עבודות זמינות כבר היום באזור שלך
+                          או לקבל עוד פניות – בלי התחייבות
+
               </p>
               <div
                 className="relative inline-flex items-center gap-2 rounded-full"
-                style={{ 
+                style={{
                   marginRight: "1.5rem",
                   marginTop: "1.5rem",
                   padding: "0.3rem 0.55rem",
@@ -678,15 +665,27 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   WebkitBackdropFilter: "blur(6px)",
                 }}
               >
-                <span
+                <motion.span
                   aria-hidden="true"
+                  animate={{
+                    scale: [1, 1.18, 1],
+                    opacity: [0.78, 1, 0.78],
+                    boxShadow: [
+                      "0 0 0 0 oklch(0.90 0.13 77 / 0.18)",
+                      "0 0 0 6px oklch(0.90 0.13 77 / 0.02)",
+                      "0 0 0 0 oklch(0.90 0.13 77 / 0.18)",
+                    ],
+                  }}
+                  transition={{
+                    duration: 1.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   style={{
-                    
                     width: "7px",
                     height: "7px",
                     borderRadius: "999px",
                     background: "oklch(0.90 0.13 77)",
-                    boxShadow: "0 0 0 4px oklch(0.90 0.13 77 / 0.12)",
                     flexShrink: 0,
                   }}
                 />
@@ -711,11 +710,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute z-10 text-center"
             style={{
               
-              right: "2rem",
+              right: "3rem",
               bottom: "0.5rem",
               padding: "0.18rem 0.45rem 0.2rem",
               borderRadius: "12px",
-              background: "linear-gradient(180deg, transparent 0%, oklch(0.12 0.03 122 / 0.14) 100%)",
+
+              background: "linear-gradient(transparent 0%, oklch(0.12 0.03 122 / 0.19) 100%);",
             }}
           >
             <div

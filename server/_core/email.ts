@@ -1,5 +1,5 @@
 ﻿/**
- * Email helper - sends transactional emails via the Manus Forge API.
+ * Email helper - sends transactional emails via the configured service API.
  *
  * The Forge API exposes a `SendEmail` endpoint under the same base URL
  * used by notifications and other built-in services.

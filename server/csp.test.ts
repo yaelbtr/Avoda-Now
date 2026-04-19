@@ -100,20 +100,15 @@ describe("buildCspDirectives — Content-Security-Policy builder", () => {
   });
 
   // ── 9. Required API endpoints are in connect-src ─────────────────────────
-  it("includes Manus Forge proxy in connect-src", () => {
+  it("does NOT hardcode legacy Manus Forge hosts in connect-src", () => {
     const { connectSrc } = buildCspDirectives();
-    expect(
-      connectSrc.some(
-        (s) =>
-          s.includes("forge.butterfly-effect.dev") ||
-          s.includes("forge.manus.im")
-      )
-    ).toBe(true);
+    expect(connectSrc).not.toContain("https://forge.butterfly-effect.dev");
+    expect(connectSrc).not.toContain("https://forge.manus.im");
   });
 
-  it("includes Manus OAuth backend in connect-src", () => {
+  it("does NOT hardcode legacy Manus OAuth hosts in connect-src", () => {
     const { connectSrc } = buildCspDirectives();
-    expect(connectSrc).toContain("https://api.manus.im");
+    expect(connectSrc).not.toContain("https://api.manus.im");
   });
 
   it("includes Google Maps API in connect-src", () => {

@@ -36,13 +36,17 @@ const { Pool } = pg;
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const POSTGRES_URL = process.env.POSTGRES_URL;
-const FORGE_API_URL = (process.env.BUILT_IN_FORGE_API_URL ?? "").replace(/\/+$/, "");
-const FORGE_API_KEY = process.env.BUILT_IN_FORGE_API_KEY ?? "";
+const FORGE_API_URL = (
+  process.env.FORGE_API_URL ??
+  process.env.BUILT_IN_FORGE_API_URL ??
+  ""
+).replace(/\/+$/, "");
+const FORGE_API_KEY = process.env.FORGE_API_KEY ?? process.env.BUILT_IN_FORGE_API_KEY ?? "";
 const DRY_RUN = process.env.DRY_RUN === "1";
 const RATE_LIMIT_MS = 200; // 5 req/s
 
 if (!POSTGRES_URL) { console.error("❌  POSTGRES_URL is not set"); process.exit(1); }
-if (!FORGE_API_URL || !FORGE_API_KEY) { console.error("❌  BUILT_IN_FORGE_API_URL / BUILT_IN_FORGE_API_KEY not set"); process.exit(1); }
+if (!FORGE_API_URL || !FORGE_API_KEY) { console.error("❌  FORGE_API_URL / FORGE_API_KEY not set"); process.exit(1); }
 
 const pool = new Pool({ connectionString: POSTGRES_URL });
 

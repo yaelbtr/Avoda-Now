@@ -465,7 +465,7 @@ async function startServer() {
   });
 
   // ── Referral link click tracker: /api/r/:code → redirect to homepage ──────────
-  // NOTE: Must be under /api/ so the Manus proxy routes it to the Express server.
+  // NOTE: Must stay under /api/ so the frontend proxy and production routing reach Express.
   // A bare /r/:code path is intercepted by the static-file middleware before
   // reaching Express, causing a 200 SPA response instead of a 302 redirect.
   app.get("/api/r/:code", async (req, res) => {

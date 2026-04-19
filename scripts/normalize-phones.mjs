@@ -12,7 +12,7 @@
  * Usage:
  *   node scripts/normalize-phones.mjs
  *
- * Requires DATABASE_URL env variable (auto-injected in the Manus sandbox).
+ * Requires DATABASE_URL env variable.
  */
 
 import mysql from "mysql2/promise";

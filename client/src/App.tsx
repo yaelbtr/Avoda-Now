@@ -109,7 +109,7 @@ function PageLoader() {
 }
 
 const REFERRAL_KEY = "avodanow_ref";
-const MANUS_BYPASS_KEY = "avodanow_manus_bypass";
+const DEV_MAINTENANCE_BYPASS_KEY = "avodanow_dev_maintenance_bypass";
 
 /**
  * Captures UTM/referral params on first visit and stores in localStorage.
@@ -184,27 +184,27 @@ function NumericJobRedirect({ params }: { params?: { id?: string } }) {
 }
 
 /**
- * Sets the manus bypass flag ONLY when running on the Manus sandbox/dev
- * domain (*.manus.computer). On any production domain (avodanow.co.il,
- * *.manus.space, etc.) the flag is explicitly cleared so that stale values
+ * Sets a maintenance bypass flag only on trusted local development hosts.
+ * On any production domain the flag is explicitly cleared so stale values
  * from previous dev sessions never leak through to real users.
  */
-(function initManusMaintenanceBypass() {
+(function initDevMaintenanceBypass() {
   try {
     const hostname = window.location.hostname || "";
-    // Only the internal sandbox preview domain gets the bypass
-    const isSandbox = hostname.endsWith(".manus.computer");
-    if (isSandbox) {
-      localStorage.setItem(MANUS_BYPASS_KEY, "1");
+    const isLocalDev =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1";
+    if (isLocalDev) {
+      localStorage.setItem(DEV_MAINTENANCE_BYPASS_KEY, "1");
     } else {
-      // Explicitly remove any stale bypass key on production
-      localStorage.removeItem(MANUS_BYPASS_KEY);
+      localStorage.removeItem(DEV_MAINTENANCE_BYPASS_KEY);
     }
   } catch (_) { /* localStorage may be unavailable in some environments */ }
 })();
 
 // Kept as a no-op component so the JSX reference below still compiles
-function ManusMaintenanceBypass() { return null; }
+function DevMaintenanceBypass() { return null; }
 
 /** Captures ?ref=userId from the URL and stores it in localStorage. */
 function ReferralCapture() {
@@ -350,7 +350,8 @@ function Router() {
   });
   const isAdmin = user?.role === "admin";
   const isTestUser = user?.role === "test";
-  const hasManusSessionBypass = localStorage.getItem(MANUS_BYPASS_KEY) === "1";
+  const hasDevSessionBypass =
+    localStorage.getItem(DEV_MAINTENANCE_BYPASS_KEY) === "1";
   const isMaintenanceActive = maintenanceQuery.data?.active === true;
 
   if (maintenanceQuery.isLoading && !maintenanceQuery.data) {
@@ -365,7 +366,7 @@ function Router() {
   // Only redirect to MaintenancePage once we have a confirmed active=true response.
   // Errors and loading states are treated as "not in maintenance" to avoid
   // blocking the initial render on a DB round-trip (Step 4 of perf skill).
-  if (isMaintenanceActive && !isAdmin && !isTestUser && !hasManusSessionBypass) {
+  if (isMaintenanceActive && !isAdmin && !isTestUser && !hasDevSessionBypass) {
     return <MaintenancePage />;
   }
   // Show RoleSelectionScreen when:
@@ -535,7 +536,7 @@ function App() {
             <UserModeProvider>
               <WorkerJobsProvider>
                 <Toaster position="top-center" dir="rtl" />
-                <ManusMaintenanceBypass />
+                <DevMaintenanceBypass />
                 <MapsPreloader />
                 <ReferralCapture />
                 <ReferralSourceCapture />

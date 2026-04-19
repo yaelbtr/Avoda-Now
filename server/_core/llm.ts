@@ -212,11 +212,17 @@ const normalizeToolChoice = (
 const resolveApiUrl = () =>
   ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+    : "";
+
+const assertApiUrl = () => {
+  if (!resolveApiUrl()) {
+    throw new Error("FORGE_API_URL is not configured");
+  }
+};
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+    throw new Error("FORGE_API_KEY is not configured");
   }
 };
 
@@ -266,6 +272,7 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+  assertApiUrl();
   assertApiKey();
 
   const {

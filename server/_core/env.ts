@@ -18,6 +18,14 @@ function resolveAppId(value: string | undefined): string {
   return process.env.NODE_ENV === "development" ? "local-dev-app" : "";
 }
 
+function readFirstEnv(...keys: string[]): string {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) return value;
+  }
+  return "";
+}
+
 const appBaseUrl = normalizeBaseUrl(process.env.APP_BASE_URL);
 
 export const ENV = {
@@ -26,11 +34,11 @@ export const ENV = {
   appOrigin: toOrigin(appBaseUrl),
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+  oAuthServerUrl: readFirstEnv("OAUTH_SERVER_URL"),
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  forgeApiUrl: readFirstEnv("FORGE_API_URL", "BUILT_IN_FORGE_API_URL"),
+  forgeApiKey: readFirstEnv("FORGE_API_KEY", "BUILT_IN_FORGE_API_KEY"),
   vapidPublicKey: process.env.VAPID_PUBLIC_KEY ?? "",
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? "",
   smtpHost: process.env.SMTP_HOST ?? "",

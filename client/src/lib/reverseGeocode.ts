@@ -1,6 +1,6 @@
 /**
  * Reverse geocode a lat/lng coordinate to a Hebrew city name using the
- * Google Maps Geocoder (loaded via the existing Manus proxy).
+ * Google Maps Geocoder (loaded via the configured Maps proxy).
  *
  * Returns the Hebrew city name (e.g. "תל אביב") or null if it cannot be
  * resolved (network error, no results, permission denied, etc.).

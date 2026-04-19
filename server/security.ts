@@ -20,6 +20,22 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { ENV } from "./_core/env";
 
+function toOrigin(value: string | undefined): string | null {
+  if (!value?.trim()) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+function addOrigin(target: string[], value: string | undefined): void {
+  const origin = toOrigin(value);
+  if (origin && !target.includes(origin)) {
+    target.push(origin);
+  }
+}
+
 // ── Allowed CORS origins ──────────────────────────────────────────────────────
 // Single source of truth for all allowed origins.
 // Add new domains here when deploying to new environments.
@@ -83,17 +99,21 @@ export function buildCspDirectives(
   nonce?: string,
   dev = false
 ): Record<string, string[]> {
+  const mapsProxyUrl =
+    process.env.MAPS_PROXY_URL ??
+    process.env.VITE_MAPS_PROXY_URL ??
+    process.env.VITE_FRONTEND_FORGE_API_URL ??
+    ENV.forgeApiUrl;
+
   const scriptSrc: string[] = [
     "'self'",
-    // Manus Forge proxy serves the Google Maps JS SDK
-    "https://forge.butterfly-effect.dev",
-    "https://forge.manus.im",
     // Maps JS API loaded from Google CDN (required by Maps SDK)
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
-    // Umami analytics (injected dynamically only after cookie consent)
-    "https://*.manus.space",
   ];
+  addOrigin(scriptSrc, ENV.forgeApiUrl);
+  addOrigin(scriptSrc, mapsProxyUrl);
+  addOrigin(scriptSrc, process.env.ANALYTICS_ENDPOINT ?? process.env.VITE_ANALYTICS_ENDPOINT);
 
   if (nonce) {
     // Nonce allows the specific inline <script> tags in index.html (SSR shell).
@@ -109,18 +129,15 @@ export function buildCspDirectives(
 
   const connectSrc: string[] = [
     "'self'",
-    // Manus Forge proxy: Maps API + LLM
-    "https://forge.butterfly-effect.dev",
-    "https://forge.manus.im",
-    // Manus OAuth backend
-    "https://api.manus.im",
     // Google Maps API (direct calls from Maps SDK)
     "https://maps.googleapis.com",
-    // Umami analytics beacon
-    "https://*.manus.space",
     // Browser Web Push subscriptions (endpoint is dynamic per browser)
     "https:",
   ];
+  addOrigin(connectSrc, ENV.forgeApiUrl);
+  addOrigin(connectSrc, mapsProxyUrl);
+  addOrigin(connectSrc, ENV.oAuthServerUrl);
+  addOrigin(connectSrc, process.env.ANALYTICS_ENDPOINT ?? process.env.VITE_ANALYTICS_ENDPOINT);
 
   if (dev) {
     // Vite HMR uses WebSocket on the same host for hot-reload.
@@ -167,9 +184,6 @@ export function buildCspDirectives(
       "https://images.unsplash.com",
       // GitHub avatars (used in some UI placeholders)
       "https://github.com",
-      // Manus Forge CDN
-      "https://forge.butterfly-effect.dev",
-      "https://forge.manus.im",
     ],
 
     // XHR / fetch / WebSocket connections

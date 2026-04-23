@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import LoginModal from "./LoginModal";
 import MobileDrawer from "./MobileDrawer";
 import { AppButton } from "@/components/ui";
+import AppLogo from "./AppLogo";
 import { saveReturnPath } from "@/const";
 import {
   DropdownMenu,
@@ -253,9 +254,9 @@ export default function Navbar() {
       >
         <div className="w-full px-4">
           {/* ── Mobile header (3-column RTL layout) ── */}
-          <div className="flex items-center h-16">
+          <div className="relative flex items-center justify-between h-16">
             {/* Right side: hamburger + user icon */}
-            <div className="flex items-center gap-1">
+            <div className="relative z-10 flex items-center gap-1">
               {/* Hamburger */}
               <motion.button
                 whileHover={{ scale: 1.08 }}
@@ -319,29 +320,15 @@ export default function Navbar() {
             </div>
 
             {/* Center: Logo */}
-            <Link href="/" className="flex-1 flex items-center justify-center gap-2 group">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.50 0.09 124.9) 0%, oklch(0.36 0.07 124.9) 100%)",
-                  boxShadow: "0 2px 10px oklch(0 0 0 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.15)",
-                }}
-              >
-                <Briefcase className="h-4 w-4" style={{ color: "var(--citrus)" }} />
-              </motion.div>
-              <div className="flex flex-col leading-none">
-                <span lang="en" className="font-black text-[17px] tracking-tight" style={{ color: "var(--header-fg)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", letterSpacing: "-0.03em" }}>
-                  Avoda<span style={{ color: "var(--citrus)" }}>Now</span>
-                </span>
-                <span className="text-[7px] font-bold tracking-widest uppercase" style={{ color: "oklch(0.9904 0.0107 95.3 / 0.70)", letterSpacing: "0.14em" }}>עבודה עכשיו</span>
-              </div>
+            <Link
+              href="/"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+            >
+              <AppLogo size="sm" />
             </Link>
 
             {/* Left side: applications + saved jobs (worker only) */}
-            <div className="flex items-center gap-1">
+            <div className="relative z-10 flex items-center gap-1">
               {isAuthenticated && userMode === "worker" && (
                 <>
                   {/* My Applications */}
@@ -396,38 +383,8 @@ export default function Navbar() {
           {/* ── Desktop header ── */}
           <div className="hidden items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                whileTap={{ scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="w-9 h-9 rounded-xl flex items-center justify-center relative"
-                style={{
-                  background: "linear-gradient(135deg, oklch(0.50 0.09 124.9) 0%, oklch(0.36 0.07 124.9) 100%)",
-                  boxShadow: "0 2px 10px oklch(0 0 0 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.15)",
-                }}
-              >
-                <Briefcase className="h-4.5 w-4.5" style={{ color: "var(--citrus)" }} />
-              </motion.div>
-              <div className="flex flex-col leading-none">
-                <span
-                  className="font-black text-[19px] tracking-tight"
-                  style={{
-                    color: "var(--header-fg)",
-                    fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
-                    letterSpacing: "-0.03em",
-                    textShadow: "0 1px 3px oklch(0 0 0 / 0.2)",
-                  }}
-                >
-                  <span lang="en">Avoda<span style={{ color: "var(--citrus)", textShadow: "0 0 12px oklch(0.82 0.15 80.8 / 0.4)" }}>Now</span></span>
-                </span>
-                <span
-                  className="text-[8px] font-bold tracking-widest uppercase"
-                  style={{ color: "oklch(0.9904 0.0107 95.3 / 0.40)", letterSpacing: "0.14em" }}
-                >
-                  עבודה עכשיו
-                </span>
-              </div>
+            <Link href="/" className="flex items-center">
+              <AppLogo size="md" />
             </Link>
 
             {/* Desktop nav */}
@@ -714,3 +671,4 @@ export default function Navbar() {
     </>
   );
 }
+

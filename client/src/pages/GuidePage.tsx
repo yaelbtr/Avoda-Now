@@ -29,12 +29,12 @@ export default function GuidePage() {
   useSEO(
     entry
       ? {
-          title: `${entry.title} | AvodaNow`,
+          title: `${entry.title} | YallaAvoda`,
           description: entry.metaDescription,
           canonical: `https://avodanow.co.il/guide/temporary-jobs/${entry.slug}`,
         }
       : {
-          title: "מדריך לא נמצא | AvodaNow",
+          title: "מדריך לא נמצא | YallaAvoda",
           description: "הדף המבוקש לא נמצא.",
           noIndex: true,
         }
@@ -59,7 +59,7 @@ export default function GuidePage() {
           headline: entry.title,
           description: entry.metaDescription,
           url: `https://avodanow.co.il/guide/temporary-jobs/${entry.slug}`,
-          publisher: { "@type": "Organization", name: "AvodaNow", url: "https://avodanow.co.il" },
+          publisher: { "@type": "Organization", name: "YallaAvoda", url: "https://avodanow.co.il" },
         },
         {
           "@type": "BreadcrumbList",

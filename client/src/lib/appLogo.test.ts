@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 type LogoVariant = "dark" | "light";
-type LogoSize = "sm" | "md";
+type LogoSize = "xs" | "sm" | "md";
 
 function resolveLogoAsset(variant: LogoVariant): string {
   return variant === "light"
@@ -10,7 +10,14 @@ function resolveLogoAsset(variant: LogoVariant): string {
 }
 
 function resolveLogoWidth(size: LogoSize): number {
-  return size === "sm" ? 192 : 240;
+  switch (size) {
+    case "xs":
+      return 132;
+    case "sm":
+      return 192;
+    default:
+      return 250;
+  }
 }
 
 function resolveLogoScale(): number {
@@ -28,6 +35,10 @@ describe("AppLogo presentation", () => {
 
   it("renders the small size narrower than the default size", () => {
     expect(resolveLogoWidth("sm")).toBeLessThan(resolveLogoWidth("md"));
+  });
+
+  it("renders the modal size narrower than the mobile navbar size", () => {
+    expect(resolveLogoWidth("xs")).toBeLessThan(resolveLogoWidth("sm"));
   });
 
   it("applies display-only scaling to crop the empty canvas", () => {

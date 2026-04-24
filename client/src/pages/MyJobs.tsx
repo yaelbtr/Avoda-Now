@@ -66,7 +66,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
   },
 };
 
-// ── Card style — AvodaNow design system ──────────────────────────────────────
+// ── Card style — YallaAvoda design system ──────────────────────────────────────
 const cardStyle: React.CSSProperties = {
   background: "oklch(0.97 0.012 100)",
   borderBottom: "1px solid oklch(0.92 0.02 100)",

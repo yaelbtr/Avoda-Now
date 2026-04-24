@@ -25,7 +25,7 @@ export default function GuideTopicPage() {
           keywords: entry.keywords?.join(", "),
         }
       : {
-          title: "מדריך לא נמצא | AvodaNow",
+          title: "מדריך לא נמצא | YallaAvoda",
           description: "הדף המבוקש לא נמצא.",
           noIndex: true,
         }
@@ -48,7 +48,7 @@ export default function GuideTopicPage() {
         headline: entry.title,
         description: entry.metaDescription,
         url: `${BASE_URL}/guide/${entry.slug}`,
-        publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
+        publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
         inLanguage: "he",
         keywords: entry.keywords?.join(", "),
       },

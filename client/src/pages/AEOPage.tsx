@@ -145,11 +145,11 @@ export default function AEOPageComponent({ page }: { page: AEOPage }) {
     schemas.push({
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "AvodaNow",
+      name: "YallaAvoda",
       url: BASE_URL,
       logo: `${BASE_URL}/logo.png`,
       description:
-        "AvodaNow — הפלטפורמה הישראלית לעבודה זמנית. מחברת בין עובדים זמינים למעסיקים שצריכים אותם.",
+        "YallaAvoda — הפלטפורמה הישראלית לעבודה זמנית. מחברת בין עובדים זמינים למעסיקים שצריכים אותם.",
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer support",
@@ -251,7 +251,7 @@ export default function AEOPageComponent({ page }: { page: AEOPage }) {
           {/* ── CTA ──────────────────────────────────────────────────── */}
           <div className="bg-gradient-to-l from-blue-600 to-blue-700 rounded-2xl p-6 mb-10 text-white text-center">
             <p className="text-sm font-medium mb-3 opacity-90">
-              AvodaNow — הפלטפורמה הישראלית לעבודה זמנית
+              YallaAvoda — הפלטפורמה הישראלית לעבודה זמנית
             </p>
             <Link
               href={page.cta.href}

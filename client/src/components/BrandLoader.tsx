@@ -16,7 +16,7 @@ interface BrandLoaderProps {
 }
 
 /**
- * Branded AvodaNow loading indicator.
+ * Branded YallaAvoda loading indicator.
  * - sm: inline spinner replacement (32px)
  * - md: section loader (56px) — default
  * - lg: full-page loader (80px)

@@ -69,7 +69,7 @@ export default function FAQPage() {
           canonical: `/faq/${page.slug}`,
         }
       : {
-          title: "שאלות נפוצות | AvodaNow",
+          title: "שאלות נפוצות | YallaAvoda",
           description: "שאלות ותשובות על עבודות זמניות בישראל.",
           noIndex: true,
         }

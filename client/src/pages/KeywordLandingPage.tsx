@@ -83,7 +83,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "AvodaNow",
+      name: "YallaAvoda",
       sameAs: BASE_URL,
     },
     ...(salaryNum && job.salaryType !== "volunteer"
@@ -200,7 +200,7 @@ export default function KeywordLandingPage() {
           canonical: `/${page.slug}`,
           keywords: `${page.h1}, עבודה זמנית, משרות, ישראל`,
         }
-      : { title: "AvodaNow | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
+      : { title: "YallaAvoda | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
   );
 
   // ── JSON-LD injection ─────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ export default function KeywordLandingPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
         },
         // ItemList of JobPosting
         ...(rawJobs.length > 0

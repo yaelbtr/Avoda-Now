@@ -208,7 +208,7 @@ export default function HomeEmployer() {
         {/* Background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt="מעסיק מוצא עובדים זמינים דרך AvodaNow"
+          alt="מעסיק מוצא עובדים זמינים דרך YallaAvoda"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -381,7 +381,7 @@ export default function HomeEmployer() {
       >
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt="מעסיק מוצא עובדים זמינים דרך AvodaNow"
+          alt="מעסיק מוצא עובדים זמינים דרך YallaAvoda"
           loading="eager"
           fetchPriority="high"
           decoding="async"

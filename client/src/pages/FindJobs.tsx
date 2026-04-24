@@ -685,7 +685,7 @@ export default function FindJobs() {
     ? `מצא עבודות זמניות ב${selectedCity}. משרות להיום, שליחויות, מחסן, מטבח ועוד.`
     : category !== "all"
     ? `עובדים ל${catName} זמינים תוך דקות — הגדר זמינות וקבל פנייה ישירות.`
-    : "AvodaNow — עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד — הגדר זמינות וקבל עבודה.";
+    : "YallaAvoda — עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד — הגדר זמינות וקבל עבודה.";
   const seoCanonical = selectedCity
     ? `/find-jobs?city=${encodeURIComponent(selectedCity)}`
     : category !== "all" ? `/find-jobs?category=${encodeURIComponent(category)}` : "/find-jobs";

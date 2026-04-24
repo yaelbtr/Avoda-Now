@@ -9,7 +9,7 @@ import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 
-// AvodaNow design tokens
+// YallaAvoda design tokens
 const BRAND = "oklch(0.50 0.14 85)";          // #4a5d23 — brand primary
 const BRAND_LIGHT = "oklch(0.92 0.04 122)";   // light olive tint — range middle
 const BRAND_RING = "oklch(0.55 0.12 140 / 0.18)"; // focus ring

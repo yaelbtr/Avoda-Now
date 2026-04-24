@@ -45,8 +45,8 @@ export function useSEO({
 }: SEOOptions) {
   useEffect(() => {
     const fullTitle = title
-      ? `${title} | AvodaNow`
-      : "AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות";
+      ? `${title} | YallaAvoda`
+      : "YallaAvoda | מוצאים עבודה זמנית או עובדים – תוך דקות";
     const fullDescription =
       description ?? "הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך ללא עמלות.";
     const fullOgImage = ogImage ?? DEFAULT_OG_IMAGE;
@@ -68,7 +68,7 @@ export function useSEO({
     setMeta("og:url", canonicalUrl, "property");
     setMeta("og:type", "website", "property");
     setMeta("og:locale", "he_IL", "property");
-    setMeta("og:site_name", "AvodaNow", "property");
+    setMeta("og:site_name", "YallaAvoda", "property");
 
     // Twitter Card
     setMeta("twitter:card", "summary_large_image");

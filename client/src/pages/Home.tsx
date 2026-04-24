@@ -62,7 +62,7 @@ function HomeGuest() {
           מצא עבודה זמנית קרוב אליך — או פרסם משרה ומצא עובדים עכשיו
         </h2>
         <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-          AvodaNow מחברת בין עובדים פנויים למעסיקים בכל רחבי ישראל, ללא עמלות ובלי בירוקרטיה.
+          YallaAvoda מחברת בין עובדים פנויים למעסיקים בכל רחבי ישראל, ללא עמלות ובלי בירוקרטיה.
         </p>
       </section>
       <ActivityTicker />
@@ -78,7 +78,7 @@ export default function Home() {
 
   // Page-level SEO: title (30-60 chars), description, keywords
   useSEO({
-    title: "AvodaNow — עבודות זמניות בישראל",
+    title: "YallaAvoda — עבודות זמניות בישראל",
     description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. מעסיקים — פרסם משרה ומצא עובדים זמינים קרוב אליך.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",

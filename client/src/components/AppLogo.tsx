@@ -3,14 +3,15 @@ import yallaAvodaLogo from "@/assets/לוגו - source.svg";
 
 interface AppLogoProps {
   variant?: "dark" | "light";
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   animated?: boolean;
   className?: string;
 }
 
 const SIZE_MAP = {
-  sm: { width: 400, height: 47 },
-  md: { width: 250, height: 58 },
+  xs: { width: 320, height: 32 },
+  sm: { width: 370, height: 47 },
+  md: { width: 420, height: 58 },
 } as const;
 
 export function AppLogo({

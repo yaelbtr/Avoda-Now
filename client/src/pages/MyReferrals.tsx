@@ -34,7 +34,7 @@ export default function MyReferrals() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: "הצטרף ל-AvodaNow",
+        title: "הצטרף ל-YallaAvoda",
         text: "מצא עבודה זמנית קרובה אליך!",
         url: referralLink,
       }).catch(() => {});

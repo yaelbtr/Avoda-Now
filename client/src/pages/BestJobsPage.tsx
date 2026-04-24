@@ -51,7 +51,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "AvodaNow",
+      name: "YallaAvoda",
       sameAs: BASE_URL,
     },
     ...(salaryNum
@@ -94,7 +94,7 @@ export default function BestJobsPage() {
           canonical: `/best/${page.slug}`,
         }
       : {
-          title: "משרות מומלצות | AvodaNow",
+          title: "משרות מומלצות | YallaAvoda",
           description: "רשימת המשרות הטובות ביותר בישראל.",
           noIndex: true,
         }
@@ -121,7 +121,7 @@ export default function BestJobsPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/best/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
         },
         ...(jobs.length > 0
           ? [

@@ -45,7 +45,7 @@ const PASSOVER_FAQ = [
   },
   {
     question: "איפה מוצאים עבודות ניקיון לפסח?",
-    answer: "אפשר למצוא עבודות ניקיון לפסח באתר AvodaNow, בחברות ניקיון מקומיות, ובדפי מדיה חברתיים. הירשמו מוקדם כי העבודות מתמלאות מהר.",
+    answer: "אפשר למצוא עבודות ניקיון לפסח באתר YallaAvoda, בחברות ניקיון מקומיות, ובדפי מדיה חברתיים. הירשמו מוקדם כי העבודות מתמלאות מהר.",
   },
   {
     question: "כמה שעות עובדים בניקיון לפסח?",
@@ -82,7 +82,7 @@ const SLUG_CONTENT: Record<PassoverSlug, SlugContent> = {
   },
   "מנקה-לפסח": {
     h1: "דרוש/ה מנקה לפסח",
-    title: "מנקה לפסח — דרושים | AvodaNow",
+    title: "מנקה לפסח — דרושים | YallaAvoda",
     description: "דרוש/ה מנקה לפסח? מצא עבודות ניקיון לפסח קרוב אליך. שכר 45–90 ₪ לשעה, עבודה מיידית. הירשם עכשיו — ללא עמלות.",
     keywords: "מנקה לפסח, דרוש מנקה לפסח, דרושה מנקה לפסח, עוזרת בית לפסח, עבודות מנקה לפסח",
     canonical: "/jobs/מנקה-לפסח",
@@ -148,7 +148,7 @@ export default function PassoverLandingPage() {
           headline: content.h1,
           description: content.description,
           url: `${BASE_URL}${content.canonical}`,
-          publisher: { "@type": "Organization", name: "AvodaNow", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
           inLanguage: "he",
           keywords: content.keywords,
         },

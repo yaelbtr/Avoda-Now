@@ -63,7 +63,7 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: React.ElementTyp
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function EmployerProfile() {
-  useSEO({ title: "פרופיל מעסיק | AvodaNow" });
+  useSEO({ title: "פרופיל מעסיק | YallaAvoda" });
   const { user } = useAuth();
   const authQuery = useAuthQuery();
   const [, navigate] = useLocation();

@@ -29,7 +29,7 @@ export interface BestJobsPage {
 const BEST_JOBS_PAGES: BestJobsPage[] = [
   {
     slug: "delivery-jobs",
-    title: "עבודות שליחויות הכי טובות בישראל | AvodaNow",
+    title: "עבודות שליחויות הכי טובות בישראל | YallaAvoda",
     h1: "עבודות שליחויות — המשרות הטובות ביותר",
     metaDescription:
       "רשימת עבודות השליחויות הטובות ביותר בישראל — שכר גבוה, שעות גמישות, ללא ניסיון. מצא משרת שליח קרוב אליך.",
@@ -85,7 +85,7 @@ const BEST_JOBS_PAGES: BestJobsPage[] = [
   },
   {
     slug: "student-jobs",
-    title: "עבודות לסטודנטים — המשרות הטובות ביותר | AvodaNow",
+    title: "עבודות לסטודנטים — המשרות הטובות ביותר | YallaAvoda",
     h1: "עבודות לסטודנטים — המשרות הטובות ביותר",
     metaDescription:
       "עבודות זמניות לסטודנטים עם שעות גמישות — שליחויות, מלצרות, מכירות ועוד. מצא עבודה שמתאימה ללוח הלימודים שלך.",
@@ -140,7 +140,7 @@ const BEST_JOBS_PAGES: BestJobsPage[] = [
   },
   {
     slug: "evening-jobs",
-    title: "עבודות ערב — המשרות הטובות ביותר | AvodaNow",
+    title: "עבודות ערב — המשרות הטובות ביותר | YallaAvoda",
     h1: "עבודות ערב — המשרות הטובות ביותר",
     metaDescription:
       "עבודות ערב בישראל — שכר גבוה, שעות גמישות. מצא משרת ערב בתחומי אבטחה, מטבח, שליחויות ועוד.",
@@ -196,7 +196,7 @@ const BEST_JOBS_PAGES: BestJobsPage[] = [
   },
   {
     slug: "weekend-jobs",
-    title: "עבודות סוף שבוע — המשרות הטובות ביותר | AvodaNow",
+    title: "עבודות סוף שבוע — המשרות הטובות ביותר | YallaAvoda",
     h1: "עבודות סוף שבוע — המשרות הטובות ביותר",
     metaDescription:
       "עבודות סוף שבוע בישראל — שכר גבוה, ביקוש גבוה. מצא משרת סוף שבוע בתחומי אירועים, אבטחה, מטבח ועוד.",
@@ -251,7 +251,7 @@ const BEST_JOBS_PAGES: BestJobsPage[] = [
   },
   {
     slug: "immediate-jobs",
-    title: "עבודות מיידיות — להתחיל היום | AvodaNow",
+    title: "עבודות מיידיות — להתחיל היום | YallaAvoda",
     h1: "עבודות מיידיות — להתחיל היום",
     metaDescription:
       "עבודות מיידיות בישראל — מעסיקים שצריכים עובדים עכשיו. מצא עבודה שמתחילה היום ללא ניסיון.",

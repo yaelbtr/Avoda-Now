@@ -89,11 +89,11 @@ export default function WorkerLandingPage() {
 
   useSEO({
     title: region
-      ? `הצטרף לעובדים ב${region.name} | AvodaNow`
-      : "הצטרף כעובד | AvodaNow",
+      ? `הצטרף לעובדים ב${region.name} | YallaAvoda`
+      : "הצטרף כעובד | YallaAvoda",
     description: region
       ? `הצטרף לרשימת העובדים ב${region.name} ותהיה הראשון לקבל הצעות עבודה כשהאזור נפתח.`
-      : "הצטרף לפלטפורמת AvodaNow וקבל עבודות קרוב אליך.",
+      : "הצטרף לפלטפורמת YallaAvoda וקבל עבודות קרוב אליך.",
     canonical: `/work/${slug}`,
   });
 

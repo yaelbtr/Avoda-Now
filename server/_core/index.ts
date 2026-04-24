@@ -417,7 +417,7 @@ async function startServer() {
         `<?xml version="1.0" encoding="UTF-8"?>`,
         `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
         `<channel>`,
-        `  <title>AvodaNow — משרות זמניות</title>`,
+        `  <title>YallaAvoda — משרות זמניות</title>`,
         `  <link>${baseUrl}</link>`,
         `  <description>לוח דרושים מהיר ופשוט — עבודות זמניות קרוב אליך</description>`,
         `  <language>he</language>`,

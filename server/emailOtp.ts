@@ -42,12 +42,12 @@ export function hashEmailCode(code: string): string {
 export async function sendEmailOtp(to: string, code: string): Promise<void> {
   const sent = await sendEmail({
     to,
-    subject: "קוד האימות שלך — AvodaNow",
+    subject: "קוד האימות שלך — YallaAvoda",
     text: `קוד האימות שלך הוא: ${code}\n\nהקוד תקף ל-5 דקות.`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
         <h2 style="color: #1a1a1a; margin-bottom: 8px;">קוד האימות שלך</h2>
-        <p style="color: #555; margin-bottom: 24px;">הזן את הקוד הבא כדי להתחבר ל-AvodaNow:</p>
+        <p style="color: #555; margin-bottom: 24px;">הזן את הקוד הבא כדי להתחבר ל-YallaAvoda:</p>
         <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; text-align: center; letter-spacing: 8px; font-size: 32px; font-weight: bold; color: #1a1a1a;">
           ${code}
         </div>
@@ -259,12 +259,12 @@ export async function sendWelcomeEmail(params: {
 
   const sent = await sendEmail({
     to: params.to,
-    subject: `ברוך הבא ל-AvodaNow, ${firstName}! 🎉`,
-    text: `שלום ${firstName},\n\nברוך הבא ל-AvodaNow!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות AvodaNow\n\nלהסרה מרשימת התפוצה: ${unsubUrl}`,
+    subject: `ברוך הבא ל-YallaAvoda, ${firstName}! 🎉`,
+    text: `שלום ${firstName},\n\nברוך הבא ל-YallaAvoda!\nהפרופיל שלך נוצר בהצלחה ואתה מוכן לקבל הצעות עבודה.\n\nבהצלחה,\nצוות YallaAvoda\n\nלהסרה מרשימת התפוצה: ${unsubUrl}`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h1 style="color: #2d4a1e; font-size: 28px; margin: 0;">AvodaNow</h1>
+          <h1 style="color: #2d4a1e; font-size: 28px; margin: 0;">YallaAvoda</h1>
           <p style="color: #888; font-size: 13px; margin: 4px 0 0;">עבודה עכשיו</p>
         </div>
 
@@ -292,7 +292,7 @@ export async function sendWelcomeEmail(params: {
 
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
         <p style="color: #aaa; font-size: 12px; text-align: center; margin: 0; line-height: 1.8;">
-          קיבלת מייל זה כי נרשמת ל-AvodaNow.<br/>
+          קיבלת מייל זה כי נרשמת ל-YallaAvoda.<br/>
           אם לא ביצעת פעולה זו, התעלם מהודעה זו.<br/>
           <a href="${unsubUrl}" style="color: #aaa; text-decoration: underline;">הסרה מרשימת התפוצה</a>
         </p>

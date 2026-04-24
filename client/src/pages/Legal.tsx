@@ -22,7 +22,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/terms",
     title: "תנאי שימוש",
-    description: "הכללים והתנאים לשימוש בפלטפורמה AvodaNow, כולל זכויות וחובות המשתמשים.",
+    description: "הכללים והתנאים לשימוש בפלטפורמה YallaAvoda, כולל זכויות וחובות המשתמשים.",
     icon: <FileText className="h-5 w-5" />,
     sections: ["כללי", "שימוש מותר", "אחריות", "פרסום משרות", "פרטיות", "יצירת קשר"],
     lastUpdated: "מרץ 2026",

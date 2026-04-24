@@ -189,7 +189,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     navigate("/find-jobs");
   };
   useSEO({
-    title: "AvodaNow — עבודות זמניות בישראל",
+    title: "YallaAvoda — עבודות זמניות בישראל",
     description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
@@ -244,6 +244,10 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
+  const registeredWorkersCount = heroStatsQuery.data?.registeredWorkers ?? null;
+  const registeredWorkersChipText = registeredWorkersCount !== null
+    ? `+${registeredWorkersCount} עובדים כבר בפנים`
+    : "עובדים כבר בפנים";
   // ── Job data now comes from the shared WorkerJobsContext (single server call) ──
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
   // Age-gate: fetch birth date info to warn minors about late availability
@@ -570,7 +574,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.40)",
                 }}
               >
-                537+ עובדים כבר בפנים
+                {registeredWorkersChipText}
               </span>
             </motion.div>
             </div>
@@ -698,7 +702,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                     textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.36)",
                   }}
                 >
-                  537+ עובדים כבר בפנים
+                  {registeredWorkersChipText}
                 </span>
               </div>
             </motion.div>

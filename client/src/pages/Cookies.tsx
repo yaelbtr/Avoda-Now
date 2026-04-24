@@ -9,7 +9,7 @@ export default function Cookies() {
       <h1 className="text-3xl font-bold text-foreground mb-2">מדיניות עוגיות</h1>
       <p className="text-sm text-muted-foreground mb-2">עדכון אחרון: מרץ 2026</p>
       <p className="text-sm text-muted-foreground mb-8">
-        מסמך זה מסביר כיצד AvodaNow משתמשת בעוגיות (Cookies) ובטכנולוגיות דומות,
+        מסמך זה מסביר כיצד YallaAvoda משתמשת בעוגיות (Cookies) ובטכנולוגיות דומות,
         ומה הבחירות העומדות בפניך בנוגע לשימוש בהן.
       </p>
 

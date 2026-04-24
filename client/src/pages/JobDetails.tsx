@@ -37,7 +37,7 @@ const SITE_URL = typeof window !== "undefined"
   ? window.location.origin.replace(/\/+$/, "")
   : "";
 
-// ── Brand design tokens (AvodaNow) ─────────────────────────────────────────
+// ── Brand design tokens (YallaAvoda) ─────────────────────────────────────────
 const T = {
   brand:        C_BRAND_HEX,          // olive-green #4a5d23
   brandDark:    C_BRAND_DARK_HEX,
@@ -100,14 +100,14 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
       el.setAttribute("content", content);
     };
     const jobUrl = `${SITE_URL}/job/${jobId}`;
-    document.title = `${title} | AvodaNow`;
-    setMeta("og:title", `${title} | AvodaNow`);
+    document.title = `${title} | YallaAvoda`;
+    setMeta("og:title", `${title} | YallaAvoda`);
     setMeta("og:description", description.slice(0, 200));
     setMeta("og:url", jobUrl);
     setMeta("og:type", "article");
-    setMeta("og:site_name", "AvodaNow");
+    setMeta("og:site_name", "YallaAvoda");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-    return () => { document.title = "AvodaNow | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
+    return () => { document.title = "YallaAvoda | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
   }, [title, description, jobId]);
   return null;
 }
@@ -208,7 +208,7 @@ export default function JobDetails() {
   const _jobCity = job ? (job.city ?? job.address?.split(",")[0] ?? "") : "";
   const _isVolunteer = job?.salaryType === "volunteer";
   const _salaryText = _isVolunteer ? "התנדבות" : job?.salary ? `₪${job.salary} ל${job?.salaryType === "hourly" ? "שעה" : job?.salaryType === "daily" ? "יום" : "חודש"}` : "";
-  const _seoJobTitle = job ? `${job.title}${_jobCity ? ` ב${_jobCity}` : ""}${_salaryText ? ` – ${_salaryText}` : ""}` : "AvodaNow | מצא עבודה";
+  const _seoJobTitle = job ? `${job.title}${_jobCity ? ` ב${_jobCity}` : ""}${_salaryText ? ` – ${_salaryText}` : ""}` : "YallaAvoda | מצא עבודה";
   const _jobPath = job ? buildJobPath(job.id, job.title, job.city) : "";
 
   useSEO({

@@ -34,7 +34,7 @@ export default function Unsubscribe() {
       <div className="max-w-md w-full bg-card border border-border rounded-2xl shadow-md p-8 text-center">
         {/* Logo */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-primary">AvodaNow</h1>
+          <h1 className="text-2xl font-bold text-primary">YallaAvoda</h1>
           <p className="text-xs text-muted-foreground">עבודה עכשיו</p>
         </div>
 
@@ -59,7 +59,7 @@ export default function Unsubscribe() {
             <h2 className="text-xl font-semibold mb-2">הוסרת בהצלחה</h2>
             <p className="text-muted-foreground text-sm mb-6">
               כתובת המייל שלך הוסרה מרשימת התפוצה שלנו. לא תקבל יותר מיילים
-              שיווקיים מ-AvodaNow.
+              שיווקיים מ-YallaAvoda.
             </p>
             <p className="text-xs text-muted-foreground mb-6">
               שים לב: מיילים עסקיים חיוניים (כגון אישורי עסקה) עדיין יישלחו.
@@ -88,7 +88,7 @@ export default function Unsubscribe() {
             <Mail className="mx-auto mb-4 text-muted-foreground" size={48} />
             <h2 className="text-xl font-semibold mb-2">הסרה מרשימת תפוצה</h2>
             <p className="text-muted-foreground text-sm mb-6">
-              האם אתה בטוח שברצונך להסיר את עצמך מרשימת התפוצה של AvodaNow?
+              האם אתה בטוח שברצונך להסיר את עצמך מרשימת התפוצה של YallaAvoda?
               <br />
               לא תקבל יותר עדכונים ומיילים שיווקיים.
             </p>

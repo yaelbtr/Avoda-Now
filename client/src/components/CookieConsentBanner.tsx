@@ -1,7 +1,7 @@
 /**
  * CookieConsentBanner
  *
- * Styled to match the AvodaNow design language:
+ * Styled to match the YallaAvoda design language:
  *   - Banner bar: dark nav bg `oklch(0.28 0.06 122.3)` — same as Navbar
  *   - Settings modal: glass-modal + brand tokens
  *   - Buttons: AppButton cta / cta-outline variants

@@ -1,5 +1,5 @@
 /**
- * BrandName — renders "AvodaNow" with the brand typography:
+ * BrandName — renders "YallaAvoda" with the brand typography:
  *   "Avoda" → dark olive (light bg) / near-white (dark bg)
  *   "Now"   → citrus gold (always)
  *
@@ -19,8 +19,8 @@ interface BrandNameProps extends HTMLAttributes<HTMLElement> {
 export function BrandName({ as: Tag = "span", className, ...props }: BrandNameProps) {
   return (
     <Tag className={cn("brand-name", className)} {...props}>
+      <span className="brand-yalla">Yalla</span>
       <span className="brand-avoda">Avoda</span>
-      <span className="brand-now">Now</span>
     </Tag>
   );
 }

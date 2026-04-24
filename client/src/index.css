@@ -51,7 +51,7 @@
 :root {
   --radius: 0.625rem;
 
-  /* ── AvodaNow Brand Palette ────────────────────────────────────────────────
+  /* ── YallaAvoda Brand Palette ────────────────────────────────────────────────
    * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
    * Edit these variables to swap the entire site palette.
    * TS constants mirror these in client/src/lib/colors.ts
@@ -619,7 +619,7 @@
 
 
 /* ── Brand Name Typography ─────────────────────────────────────────────────────
-   Usage: <span className="brand-name">AvodaNow</span>
+   Usage: <span className="brand-name">YallaAvoda</span>
    Renders "Avoda" in dark olive and "Now" in citrus gold.
    Works on both light and dark backgrounds via CSS variables.
    ─────────────────────────────────────────────────────────────────────────── */
@@ -627,21 +627,21 @@
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.brand-name .brand-avoda {
+.brand-name .brand-yalla {
   color: var(--brand-avoda-color, #3d4a28);
 }
-.brand-name .brand-now {
+.brand-name .brand-avoda {
   /* Use darker citrus on light backgrounds for WCAG AA contrast (≥3:1) */
   color: var(--citrus-on-light);
 }
 
 /* On dark backgrounds, restore bright citrus and near-white Avoda */
-.dark .brand-name .brand-avoda,
-[data-theme="dark"] .brand-name .brand-avoda {
+.dark .brand-name .brand-yalla,
+[data-theme="dark"] .brand-name .brand-yalla {
   color: var(--header-fg, #e8eae5);
 }
-.dark .brand-name .brand-now,
-[data-theme="dark"] .brand-name .brand-now {
+.dark .brand-name .brand-avoda,
+[data-theme="dark"] .brand-name .brand-avoda {
   color: var(--citrus);
 }
 

@@ -47,7 +47,7 @@ const HERO_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBL
 
 export default function LoginModal({ open, onClose, message, maintenanceMode, onNonAdminLogin }: LoginModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("login");
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("phone");
 
   // Shared phone state
   const [phone, setPhone] = useState("");
@@ -169,7 +169,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
   useEffect(() => {
     if (!open) {
       const t = setTimeout(() => {
-        setStep("welcome");
+        setStep("phone");
         setActiveTab("login");
         setPhone("");
         setPhoneVal({ prefix: "", number: "" });
@@ -821,7 +821,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
               <button
-                onClick={() => setStep("welcome")}
+                onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full"
                 style={{ color: "#666" }}
                 aria-label="חזור"
@@ -1587,7 +1587,7 @@ export default function LoginModal({ open, onClose, message, maintenanceMode, on
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
               <button
-                onClick={() => { setActiveTab("login"); setStep("welcome"); }}
+                onClick={() => { setActiveTab("login"); setStep("phone"); }}
                 className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
                 style={{ color: "#4a5d23" }}
                 aria-label="חזור"

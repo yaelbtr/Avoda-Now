@@ -2,12 +2,13 @@
 import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
 import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACCEPTED_CANDIDATES, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { isGoogleLoginMethod } from "../shared/auth";
 import { cityZodRefine } from "@shared/cityValidation";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
-import { phoneRequiredProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { phoneRequiredProcedure, protectedProcedure, publicProcedure, registeredProcedure, router } from "./_core/trpc";
 import {
   checkAndIncrementSendRate,
   checkAndIncrementVerifyAttempts,
@@ -118,7 +119,6 @@ import {
   resetTestUserProfile,
   recordUserConsent,
   getUserConsents,
-  completeGoogleRegistration,
   hasRequiredConsents,
   saveBirthDate,
   getWorkerBirthDate,
@@ -230,11 +230,11 @@ const authRouter = router({
       try {
         phone = normalizeIsraeliPhone(input.phone);
       } catch {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳. ׳”׳›׳ ׳¡ ׳׳¡׳₪׳¨ ׳™׳©׳¨׳׳׳™ ׳×׳§׳™׳." });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין. הכנס מספר ישראלי תקין." });
       }
 
       if (!isValidIsraeliPhone(phone)) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳. ׳”׳›׳ ׳¡ ׳׳¡׳₪׳¨ ׳ ׳™׳™׳“ ׳™׳©׳¨׳׳׳™." });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין. הכנס מספר נייד ישראלי." });
       }
 
       // Test-user bypass: if this phone belongs to a 'test' role user, skip SMS entirely
@@ -254,7 +254,7 @@ const authRouter = router({
           });
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "׳׳¡׳₪׳¨ ׳–׳” ׳׳™׳ ׳• ׳¨׳©׳•׳ ׳‘׳׳¢׳¨׳›׳×.",
+            message: "מספר זה אינו רשום במערכת.",
           });
         }
       }
@@ -265,7 +265,7 @@ const authRouter = router({
           // Phone already registered with completed signup ג€” block registration
           throw new TRPCError({
             code: "CONFLICT",
-            message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳›׳‘׳¨ ׳¨׳©׳•׳ ׳‘׳׳¢׳¨׳›׳×. ׳׳ ׳׳×׳” ׳׳©׳×׳׳© ׳§׳™׳™׳, ׳ ׳¡׳” ׳׳”׳×׳—׳‘׳¨ ׳׳• ׳₪׳ ׳” ׳׳׳ ׳”׳ ׳”׳׳¢׳¨׳›׳×.",
+            message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
           });
         }
         // Email duplicate check (only if email provided)
@@ -273,19 +273,17 @@ const authRouter = router({
           const emailUser = await getUserByEmail(input.email);
           if (emailUser) {
             // Provide a context-aware message based on how the existing account was created
-            const isGoogleAccount =
-              emailUser.loginMethod === "google" ||
-              emailUser.loginMethod === "google_oauth";
+            const isGoogleAccount = isGoogleLoginMethod(emailUser.loginMethod);
             const message = isGoogleAccount
-              ? "׳”׳׳™׳™׳ ׳›׳‘׳¨ ׳§׳©׳•׳¨ ׳׳—׳©׳‘׳•׳ ׳§׳™׳™׳ ׳©׳ ׳₪׳×׳— ׳‘׳׳׳¦׳¢׳•׳× Google. ׳׳ ׳ ׳”׳×׳—׳‘׳¨ ׳¢׳ Google ׳‘׳׳§׳•׳."
-              : "׳›׳×׳•׳‘׳× ׳”׳׳™׳™׳ ׳›׳‘׳¨ ׳¨׳©׳•׳׳” ׳‘׳׳¢׳¨׳›׳×. ׳׳ ׳׳×׳” ׳׳©׳×׳׳© ׳§׳™׳™׳, ׳ ׳¡׳” ׳׳”׳×׳—׳‘׳¨ ׳׳• ׳₪׳ ׳” ׳׳׳ ׳”׳ ׳”׳׳¢׳¨׳›׳×.";
+              ? "המייל כבר קשור לחשבון קיים שנפתח באמצעות Google. אנא התחבר עם Google במקום."
+              : "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.";
             throw new TRPCError({ code: "CONFLICT", message });
           }
         }
         if (!input.termsAccepted) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "׳™׳© ׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳© ׳׳₪׳ ׳™ ׳”׳”׳¨׳©׳׳”.",
+            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
       }
@@ -308,7 +306,7 @@ const authRouter = router({
           });
           throw new TRPCError({
             code: "TOO_MANY_REQUESTS",
-            message: "׳©׳׳—׳× ׳™׳•׳×׳¨ ׳׳“׳™ ׳‘׳§׳©׳•׳×. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ׳©׳¢׳”.",
+            message: "שלחת יותר מדי בקשות. נסה שוב בעוד שעה.",
           });
         }
       }
@@ -319,7 +317,7 @@ const authRouter = router({
         // Email channel: use the email provided in registration
         const targetEmail = input.email;
         if (!targetEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳›׳×׳•׳‘׳× ׳׳™׳™׳ ׳ ׳“׳¨׳©׳× ׳׳©׳׳™׳—׳× ׳§׳•׳“ ׳׳׳™׳™׳" });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "כתובת מייל נדרשת לשליחת קוד למייל" });
         }
         result = await smsProvider.sendOtpToEmail(targetEmail);
       } else if (input.channel === "call") {
@@ -339,7 +337,7 @@ const authRouter = router({
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: result.error ?? "׳׳ ׳ ׳™׳×׳ ׳׳©׳׳•׳— ׳§׳•׳“ ׳›׳¨׳’׳¢. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ׳׳¡׳₪׳¨ ׳“׳§׳•׳×.",
+          message: result.error ?? "לא ניתן לשלוח קוד כרגע. נסה שוב בעוד מספר דקות.",
         });
       }
 
@@ -376,7 +374,7 @@ const authRouter = router({
       try {
         phone = normalizeIsraeliPhone(input.phone);
       } catch {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
       }
 
       // Test-user bypass: check if this phone belongs to a 'test' role user
@@ -388,7 +386,7 @@ const authRouter = router({
         if (input.code !== first6) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "׳§׳•׳“ ׳”׳׳™׳׳•׳× ׳©׳’׳•׳™. ׳”׳›׳ ׳¡ ׳׳× 6 ׳”׳¡׳₪׳¨׳•׳× ׳”׳¨׳׳©׳•׳ ׳•׳× ׳©׳ ׳”׳˜׳׳₪׳•׳.",
+            message: "קוד האימות שגוי. הכנס את 6 הספרות הראשונות של הטלפון.",
           });
         }
         // Bypass Twilio ג€” reset profile and issue session directly
@@ -412,7 +410,7 @@ const authRouter = router({
         void logEvent("warn", "otp.verify.rate_limited", "OTP verify rate limit exceeded", { phone });
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
-          message: "׳׳¡׳₪׳¨ ׳”׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳”׳׳¨׳‘׳™ ׳”׳’׳™׳¢. ׳‘׳§׳© ׳§׳•׳“ ׳—׳“׳©.",
+          message: "מספר הניסיונות המרבי הגיע. בקש קוד חדש.",
         });
       }
 
@@ -427,7 +425,7 @@ const authRouter = router({
         });
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: result.error ?? "׳§׳•׳“ ׳”׳׳™׳׳•׳× ׳©׳’׳•׳™.",
+          message: result.error ?? "קוד האימות שגוי.",
         });
       }
 
@@ -441,7 +439,7 @@ const authRouter = router({
         if (!input.termsAccepted) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "׳™׳© ׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳© ׳׳₪׳ ׳™ ׳”׳”׳¨׳©׳׳”.",
+            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
         try {
@@ -458,7 +456,7 @@ const authRouter = router({
             // Another account with the same number (different format) already exists
             throw new TRPCError({
               code: "CONFLICT",
-              message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳›׳‘׳¨ ׳¨׳©׳•׳ ׳‘׳׳¢׳¨׳›׳×. ׳׳ ׳׳×׳” ׳׳©׳×׳׳© ׳§׳™׳™׳, ׳ ׳¡׳” ׳׳”׳×׳—׳‘׳¨.",
+              message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר.",
             });
           }
           void logEvent("error", "signup.create_user_failed", `Failed to create user: ${msg}`, { phone, meta: { error: msg } });
@@ -470,14 +468,14 @@ const authRouter = router({
         if (!user.termsAcceptedAt) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "׳—׳©׳‘׳•׳ ׳ ׳׳ ׳”׳•׳©׳׳. ׳™׳© ׳׳”׳™׳¨׳©׳ ׳׳—׳“׳© ׳•׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳©.",
+            message: "חשבונך לא הושלם. יש להירשם מחדש ולאשר את תנאי השימוש.",
           });
         }
         await updateUserLastSignedIn(user.id);
       }
 
       if (!user) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "׳©׳’׳™׳׳” ׳‘׳™׳¦׳™׳¨׳× ׳׳©׳×׳׳©" });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה ביצירת משתמש" });
       }
 
       // Issue session JWT using the same format sdk.verifySession expects:
@@ -509,7 +507,7 @@ const authRouter = router({
   sendEmailCode: publicProcedure
     .input(
       z.object({
-        email: z.string().email("׳›׳×׳•׳‘׳× ׳”׳׳™׳™׳ ׳׳™׳ ׳” ׳×׳§׳™׳ ׳”"),
+        email: z.string().email("כתובת המייל אינה תקינה"),
       })
     )
     .mutation(async ({ input }) => {
@@ -522,7 +520,7 @@ const authRouter = router({
         void logEvent("warn", "email_otp.send.cooldown", `Email OTP cooldown active: ${seconds}s remaining`, { meta: { email } });
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
-          message: `׳ ׳ ׳”׳׳×׳ ${seconds} ׳©׳ ׳™׳•׳× ׳׳₪׳ ׳™ ׳©׳׳™׳—׳× ׳§׳•׳“ ׳ ׳•׳¡׳£`,
+          message: `נא המתן ${seconds} שניות לפני שליחת קוד נוסף`,
         });
       }
 
@@ -532,14 +530,14 @@ const authRouter = router({
         code = await createEmailOtp(email);
       } catch (err) {
         void logEvent("error", "email_otp.send.db_error", "Failed to create email OTP record", { meta: { email, error: String(err) } });
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "׳©׳’׳™׳׳” ׳₪׳ ׳™׳׳™׳×. ׳ ׳ ׳ ׳¡׳” ׳©׳ ׳™׳×" });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שגיאה פנימית. נא נסה שנית" });
       }
 
       try {
         await sendEmailOtp(email, code);
       } catch (err) {
         void logEvent("error", "email_otp.send.failed", "SendGrid send failed", { meta: { email, error: String(err) } });
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "׳©׳׳™׳—׳× ׳”׳׳™׳™׳ ׳ ׳›׳©׳׳”. ׳ ׳ ׳ ׳¡׳” ׳©׳ ׳™׳×" });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שליחת המייל נכשלה. נא נסה שנית" });
       }
 
       void logEvent("info", "email_otp.send.success", "Email OTP sent", { meta: { email } });
@@ -549,8 +547,8 @@ const authRouter = router({
   verifyEmailCode: publicProcedure
     .input(
       z.object({
-        email: z.string().email("׳›׳×׳•׳‘׳× ׳”׳׳™׳™׳ ׳׳™׳ ׳” ׳×׳§׳™׳ ׳”"),
-        code: z.string().length(6, "׳§׳•׳“ ׳—׳™׳™׳‘ ׳׳”׳›׳™׳ 6 ׳¡׳₪׳¨׳•׳×"),
+        email: z.string().email("כתובת המייל אינה תקינה"),
+        code: z.string().length(6, "קוד חייב להכיל 6 ספרות"),
         termsAccepted: z.boolean().optional(),
         /** Full name collected during registration ג€” saved immediately on new user creation */
         name: z.string().min(2).max(100).optional(),
@@ -559,7 +557,6 @@ const authRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-   debugger
       const email = input.email.toLowerCase().trim();
       const completedTermsNow = input.termsAccepted === true;
 
@@ -567,19 +564,19 @@ const authRouter = router({
 
       if (result === "not_found") {
         void logEvent("warn", "email_otp.verify.not_found", "No OTP record found", { meta: { email } });
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳ ׳§׳•׳“ ׳₪׳¢׳™׳. ׳©׳׳— ׳§׳•׳“ ׳—׳“׳©" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "לא נמצא קוד פעיל. שלח קוד חדש" });
       }
       if (result === "expired") {
         void logEvent("warn", "email_otp.verify.expired", "OTP expired", { meta: { email } });
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳₪׳’ ׳×׳•׳§׳£ ׳”׳§׳•׳“. ׳©׳׳— ׳§׳•׳“ ׳—׳“׳©" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "פג תוקף הקוד. שלח קוד חדש" });
       }
       if (result === "max_attempts") {
         void logEvent("warn", "email_otp.verify.max_attempts", "Max OTP attempts reached", { meta: { email } });
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳—׳¨׳’׳× ${EMAIL_OTP_MAX_ATTEMPTS} ׳ ׳™׳¡׳™׳•׳ ׳•׳×. ׳©׳׳— ׳§׳•׳“ ׳—׳“׳©` });
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `חרגת ${EMAIL_OTP_MAX_ATTEMPTS} ניסיונות. שלח קוד חדש` });
       }
       if (result === "wrong") {
         void logEvent("warn", "email_otp.verify.wrong_code", "Wrong OTP code", { meta: { email } });
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳§׳•׳“ ׳©׳’׳•׳™. ׳ ׳ ׳ ׳¡׳” ׳©׳ ׳™׳×" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "קוד שגוי. נא נסה שנית" });
       }
 
       // result === "ok" ג€” find or create user by email
@@ -626,7 +623,7 @@ const authRouter = router({
         void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "׳™׳© ׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳© ׳׳₪׳ ׳™ ׳”׳”׳¨׳©׳׳”.",
+          message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
         });
       }
 
@@ -635,7 +632,7 @@ const authRouter = router({
           void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "׳³ג„¢׳³ֲ© ׳³ֲ׳³ֲ׳³ֲ©׳³ֲ¨ ׳³ֲ׳³ֳ— ׳³ֳ—׳³ֲ ׳³ֲ׳³ג„¢ ׳³ג€׳³ֲ©׳³ג„¢׳³ֲ׳³ג€¢׳³ֲ© ׳³ֲ׳³ג‚×׳³ֲ ׳³ג„¢ ׳³ג€׳³ג€׳³ֲ¨׳³ֲ©׳³ֲ׳³ג€.",
+            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
         // New user ג€” create account
@@ -673,7 +670,7 @@ const authRouter = router({
           });
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "׳—׳©׳‘׳•׳ ׳–׳” ׳׳ ׳”׳•׳©׳׳. ׳™׳© ׳׳”׳©׳׳™׳ ׳”׳¨׳©׳׳” ׳•׳׳׳©׳¨ ׳׳× ׳×׳ ׳׳™ ׳”׳©׳™׳׳•׳©.",
+            message: "חשבון זה לא הושלם. יש להשלים הרשמה ולאשר את תנאי השימוש.",
           });
         }
 
@@ -685,7 +682,7 @@ const authRouter = router({
             });
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "׳³ג€”׳³ֲ©׳³ג€˜׳³ג€¢׳³ֲ ׳³ֲ ׳³ֲ׳³ֲ ׳³ג€׳³ג€¢׳³ֲ©׳³ֲ׳³ֲ. ׳³ג„¢׳³ֲ© ׳³ֲ׳³ג€׳³ג„¢׳³ֲ¨׳³ֲ©׳³ֲ ׳³ג€¢׳³ֲ׳³ֲ׳³ֲ©׳³ֲ¨ ׳³ֲ׳³ֳ— ׳³ֳ—׳³ֲ ׳³ֲ׳³ג„¢ ׳³ג€׳³ֲ©׳³ג„¢׳³ֲ׳³ג€¢׳³ֲ©.",
+              message: "חשבון זה לא הושלם. יש להשלים הרשמה ולאשר את תנאי השימוש.",
             });
           }
 
@@ -1021,7 +1018,7 @@ const jobsRouter = router({
       };
     }),
 
-  getById: publicProcedure
+  getById: publicProcedure 
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
@@ -1030,7 +1027,7 @@ const jobsRouter = router({
       return { ...job, contactPhone: null };
     }),
 
-  create: phoneRequiredProcedure
+  create: registeredProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
       // ג”€ג”€ Regional access control: block posting if region is not yet active ג”€ג”€
@@ -1204,7 +1201,7 @@ const jobsRouter = router({
       return job;
     }),
 
-  update: protectedProcedure
+  update: registeredProcedure
     .input(z.object({ id: z.number(), data: jobInputSchema.partial() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
@@ -1227,7 +1224,7 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  updateStatus: protectedProcedure
+  updateStatus: registeredProcedure
     .input(z.object({ id: z.number(), status: z.enum(["active", "closed", "expired", "under_review"]) }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
@@ -1257,7 +1254,7 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  delete: protectedProcedure
+  delete: registeredProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
@@ -1416,7 +1413,7 @@ const jobsRouter = router({
    * Call external matching API to get workers matching a job.
    * Returns worker IDs with scores from the external backend.
    */
-  matchWorkers: protectedProcedure
+  matchWorkers: registeredProcedure
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
@@ -1430,7 +1427,7 @@ const jobsRouter = router({
   /**
    * Send a job offer to a specific worker via external API.
    */
-  sendJobOffer: protectedProcedure
+  sendJobOffer: registeredProcedure
     .input(z.object({ jobId: z.number(), workerId: z.number(), origin: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
@@ -1571,7 +1568,7 @@ const jobsRouter = router({
     }),
 
   /** Mark a job as filled ג€” only the job owner can do this */
-  markFilled: protectedProcedure
+  markFilled: registeredProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
@@ -1601,7 +1598,7 @@ const jobsRouter = router({
     }),
 
   /** Worker applies to a job ג€” records application and sends SMS to employer */
-  applyToJob: phoneRequiredProcedure
+  applyToJob: registeredProcedure
     .input(
       z.object({
         jobId: z.number(),
@@ -1816,7 +1813,7 @@ const jobsRouter = router({
    * Sets contactRevealed = true, revealedAt = now.
    * Only the job owner can call this.
    */
-  revealContact: protectedProcedure
+  revealContact: registeredProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const app = await getApplicationById(input.id);
@@ -1830,7 +1827,7 @@ const jobsRouter = router({
     }),
 
   /** Worker withdraws their own application. Only allowed if job is still active. */
-  withdrawApplication: protectedProcedure
+  withdrawApplication: registeredProcedure
     .input(z.object({ applicationId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const result = await withdrawApplication(input.applicationId, ctx.user.id);
@@ -2365,7 +2362,7 @@ const adminRouter = router({
 
 const workersRouter = router({
   /** Set current user as available to work */
-  setAvailable: protectedProcedure
+  setAvailable: registeredProcedure
     .input(z.object({
       latitude: z.number(),
       longitude: z.number(),
@@ -2387,7 +2384,7 @@ const workersRouter = router({
     }),
 
   /** Remove current user's availability */
-  setUnavailable: protectedProcedure
+  setUnavailable: registeredProcedure
     .mutation(async ({ ctx }) => {
       await setWorkerUnavailable(ctx.user.id);
       return { success: true };
@@ -2521,12 +2518,13 @@ const userRouter = router({
       z.object({
         // Required
         name: z.string().min(2).max(100),
-        locationMode: z.enum(["city", "radius"]),
+        // Optional — wizard fills these later; minimal signup sends only name
+        locationMode: z.enum(["city", "radius"]).optional(),
         preferredCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
         workerLatitude: z.string().nullable().optional(),
         workerLongitude: z.string().nullable().optional(),
         searchRadiusKm: z.number().int().min(1).max(100).nullable().optional(),
-        preferredCategories: z.array(z.string()),
+        preferredCategories: z.array(z.string()).optional(),
         // Optional
         phone: z.string().min(9).max(20).nullable().optional(),
         preferenceText: z.string().max(1000).nullable().optional(),
@@ -2565,12 +2563,12 @@ const userRouter = router({
           phone: normalizedPhone,
           ...(normalizedPhonePrefix !== undefined ? { phonePrefix: normalizedPhonePrefix } : {}),
           ...(normalizedPhoneNumber !== undefined ? { phoneNumber: normalizedPhoneNumber } : {}),
-          locationMode: input.locationMode,
-          preferredCity: input.preferredCity,
-          workerLatitude: input.workerLatitude,
-          workerLongitude: input.workerLongitude,
-          searchRadiusKm: input.searchRadiusKm ?? undefined,
-          preferredCategories: input.preferredCategories,
+          ...(input.locationMode !== undefined ? { locationMode: input.locationMode } : {}),
+          ...(input.preferredCity !== undefined ? { preferredCity: input.preferredCity } : {}),
+          ...(input.workerLatitude !== undefined ? { workerLatitude: input.workerLatitude } : {}),
+          ...(input.workerLongitude !== undefined ? { workerLongitude: input.workerLongitude } : {}),
+          ...(input.searchRadiusKm !== undefined && input.searchRadiusKm !== null ? { searchRadiusKm: input.searchRadiusKm } : {}),
+          ...(input.preferredCategories !== undefined ? { preferredCategories: input.preferredCategories } : {}),
           preferenceText: input.preferenceText,
           expectedHourlyRate: input.expectedHourlyRate,
           workerBio: input.workerBio,
@@ -2708,7 +2706,7 @@ const userRouter = router({
         preferredCities: input.preferredCities,
         preferredCityPlaceId: input.preferredCityPlaceId,
         // Only allow email update for non-Google users (Google users get email from OAuth)
-        email: ctx.user.loginMethod !== "google_oauth" ? input.email : undefined,
+        email: isGoogleLoginMethod(ctx.user.loginMethod) ? undefined : input.email,
       });
 
       // ג”€ג”€ Multi-region association: sync GPS radius + preferred cities ג”€ג”€
@@ -3026,7 +3024,7 @@ const userRouter = router({
     }),
 
   /** Quick availability status update without entering the full profile page */
-  quickUpdateAvailability: protectedProcedure
+  quickUpdateAvailability: registeredProcedure
     .input(z.object({
       availabilityStatus: z.enum(["available_now", "available_today", "available_hours", "not_available"]),
     }))
@@ -3091,57 +3089,6 @@ const userRouter = router({
     }
     return { outdated, currentVersions: LEGAL_DOCUMENT_VERSIONS };
   }),
-
-  /**
-   * Complete a Google OAuth registration by saving phone, name, and
-   * recording termsAcceptedAt + consents. Called once after the OAuth
-   * callback when the user chose "Continue with Google" on the
-   * channel-selection screen. Idempotent ג€” safe to call multiple times.
-   */
-  completeGoogleRegistration: protectedProcedure
-    .input(z.object({
-      // phone is optional ג€” CompleteProfileModal will prompt for it if missing
-      phone: z.string().min(9).max(20).optional(),
-      name: z.string().min(2).max(100).optional(),
-      email: z.string().email().max(320).optional(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      // Only applicable for Google OAuth users
-      if (ctx.user.loginMethod !== "google_oauth") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Only applicable for Google sign-in" });
-      }
-      // Validate and normalize phone if provided
-      let normalizedPhone: string | undefined = undefined;
-      if (input.phone) {
-        try {
-          normalizedPhone = normalizeIsraeliPhone(input.phone);
-          if (!isValidIsraeliPhone(normalizedPhone)) throw new Error("invalid");
-        } catch {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳" });
-        }
-      }
-      // Save phone (if provided) + termsAcceptedAt + optional email
-      // (idempotent ג€” only updates if termsAcceptedAt IS NULL)
-      await completeGoogleRegistration(ctx.user.id, {
-        phone: normalizedPhone,
-        name: input.name,
-        email: input.email,
-      });
-      // Record consents (terms, privacy, age_18)
-      const ip = getClientIp(ctx.req);
-      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
-      const consentTypes = ["terms", "privacy", "age_18"] as const;
-      await Promise.all(
-        consentTypes.map((ct) =>
-          recordUserConsent(ctx.user.id, ct, {
-            ipAddress: ip,
-            userAgent: ua,
-            documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
-          })
-        )
-      );
-      return { success: true };
-    }),
 
   /**
    * Save the current worker's birth date after they confirm the declaration.
@@ -3344,7 +3291,7 @@ const pushRouter = router({
 
 const savedJobsRouter = router({
   /** Save a job for the current worker */
-  save: protectedProcedure
+  save: registeredProcedure
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       await saveJob(ctx.user.id, input.jobId);
@@ -3352,7 +3299,7 @@ const savedJobsRouter = router({
     }),
 
   /** Unsave (remove bookmark) a job */
-  unsave: protectedProcedure
+  unsave: registeredProcedure
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       await unsaveJob(ctx.user.id, input.jobId);
@@ -3377,7 +3324,7 @@ const savedJobsRouter = router({
 
 const ratingsRouter = router({
   /** Submit or update a rating for a worker (employer only) */
-  rateWorker: protectedProcedure
+  rateWorker: registeredProcedure
     .input(
       z.object({
         workerId: z.number(),

@@ -25,7 +25,7 @@ import { useJobsStream } from "./hooks/useJobsStream";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { trpc } from "./lib/trpc";
-import { PENDING_GOOGLE_REG_KEY, REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
+import { REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
 
 // ─── Critical pages (loaded eagerly — needed on first paint) ─────────────────
 import Home from "./pages/Home";
@@ -233,69 +233,6 @@ function ReferralCapture() {
       onSuccess: () => localStorage.removeItem(REFERRAL_KEY),
     });
   }, [isAuthenticated, user, applyRef]);
-
-  return null;
-}
-
-/**
- * Invisible component that completes a Google OAuth registration when the
- * user chose "Continue with Google" on the channel-selection screen.
- *
- * Flow:
- *  1. User fills in name/phone/terms on the registration screen.
- *  2. On the channel step they click "Continue with Google".
- *  3. LoginModal saves {name, phone, termsAccepted, age18Accepted} to
- *     localStorage under PENDING_GOOGLE_REG_KEY before the redirect (localStorage survives OAuth redirects; sessionStorage does not).
- *  4. After OAuth callback the user is authenticated; this component fires
- *     user.completeGoogleRegistration once to persist the data server-side.
- *  5. localStorage entry is removed so the mutation never fires again.
- */
-function PostGoogleRegistration() {
-  const { isAuthenticated, user } = useAuth();
-  const fired = useRef(false);
-  const utils = trpc.useUtils();
-  const completeReg = trpc.user.completeGoogleRegistration.useMutation({
-    onSuccess: () => {
-      // Refresh auth.me so the UI reflects the updated profile
-      utils.auth.me.invalidate();
-    },
-  });
-
-  useEffect(() => {
-    if (!isAuthenticated || !user || fired.current) return;
-    // Only applicable for Google OAuth users who haven't completed registration
-    if (user.loginMethod !== "google_oauth" || user.termsAcceptedAt) return;
-
-    const raw = localStorage.getItem(PENDING_GOOGLE_REG_KEY);
-    if (!raw) return;
-
-    let payload: { name?: string; phone?: string; email?: string; termsAccepted?: boolean; age18Accepted?: boolean };
-    try {
-      payload = JSON.parse(raw);
-    } catch {
-      localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
-      return;
-    }
-
-    // Only proceed if the user actually accepted terms
-    // Phone is optional here — CompleteProfileModal will prompt for it if missing
-    if (!payload.termsAccepted) {
-      localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
-      return;
-    }
-
-    fired.current = true;
-    localStorage.removeItem(PENDING_GOOGLE_REG_KEY);
-
-    // Use Google-provided email as fallback if user left the field blank
-    const emailToSave = payload.email || user.email || undefined;
-
-    completeReg.mutate({
-      phone: payload.phone || undefined,
-      name: payload.name || undefined,
-      email: emailToSave,
-    });
-  }, [isAuthenticated, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 }
@@ -540,7 +477,6 @@ function App() {
                 <MapsPreloader />
                 <ReferralCapture />
                 <ReferralSourceCapture />
-                <PostGoogleRegistration />
                 <IdleLogoutManager />
                 <JobsStreamProvider />
                 <Router />

@@ -137,7 +137,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   if (user.lastSignedIn !== undefined) { values.lastSignedIn = user.lastSignedIn; updateSet.lastSignedIn = user.lastSignedIn; }
   if (user.role !== undefined) { values.role = user.role; updateSet.role = user.role; }
-  else if (user.openId === ENV.ownerOpenId) { values.role = "admin"; updateSet.role = "admin"; }
   if (!values.lastSignedIn) values.lastSignedIn = new Date();
   if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
@@ -250,8 +249,33 @@ export async function createUserByEmail(email: string, termsAccepted = false) {
     loginMethod: "email_otp",
     lastSignedIn: new Date(),
     termsAcceptedAt: termsAccepted ? new Date() : null,
+    signupCompleted: termsAccepted,
   });
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return result[0];
+}
+
+export async function createUserByGoogle(params: {
+  openId: string;
+  email: string;
+  name?: string | null;
+  loginMethod?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(users).values({
+    openId: params.openId,
+    phone: null,
+    name: params.name ?? null,
+    email: params.email,
+    loginMethod: params.loginMethod ?? "google",
+    lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
+    signupCompleted: true,
+  });
+
+  const result = await db.select().from(users).where(eq(users.openId, params.openId)).limit(1);
   return result[0];
 }
 
@@ -264,7 +288,10 @@ export async function updateUserLastSignedIn(id: number) {
 export async function setUserTermsAcceptedAt(id: number) {
   const db = await getDb();
   if (!db) return;
-  await db.update(users).set({ termsAcceptedAt: new Date() }).where(eq(users.id, id));
+  await db
+    .update(users)
+    .set({ termsAcceptedAt: new Date(), signupCompleted: true })
+    .where(eq(users.id, id));
 }
 
 export async function setUserMode(id: number, mode: "worker" | "employer") {
@@ -3515,29 +3542,6 @@ export async function hasRequiredConsents(
  * Uses WHERE termsAcceptedAt IS NULL to be idempotent — safe to call multiple
  * times; only updates the record if it hasn't been completed yet.
  */
-export async function completeGoogleRegistration(
-  userId: number,
-  opts: {
-    phone?: string | null;
-    name?: string | null;
-    email?: string | null;
-  }
-): Promise<void> {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const updateSet: Record<string, unknown> = {
-    termsAcceptedAt: new Date(),
-  };
-  if (opts.phone) updateSet.phone = opts.phone;
-  if (opts.name) updateSet.name = opts.name;
-  // Only update email if the user doesn't already have one (Google provides it, but
-  // the registration form email takes precedence for the user's own explicit choice)
-  if (opts.email) updateSet.email = opts.email;
-  await db.update(users)
-    .set(updateSet)
-    .where(and(eq(users.id, userId), isNull(users.termsAcceptedAt)));
-}
-
 // ─── Minor Worker / Age Verification ─────────────────────────────────────────
 
 /**

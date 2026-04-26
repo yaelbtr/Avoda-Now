@@ -16,29 +16,20 @@ import { sendEmail } from "./_core/email";
 import { emailVerifications, emailUnsubscribes } from "../drizzle/schema";
 import { eq, desc, and, gt } from "drizzle-orm";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-export const EMAIL_OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-export const EMAIL_OTP_COOLDOWN_MS = 60 * 1000;   // 60 seconds between sends
+export const EMAIL_OTP_EXPIRY_MS = 5 * 60 * 1000;
+export const EMAIL_OTP_COOLDOWN_MS = 60 * 1000;
 export const EMAIL_OTP_MAX_ATTEMPTS = 5;
 export const EMAIL_OTP_CODE_LENGTH = 6;
 
-// ─── Code generation & hashing ───────────────────────────────────────────────
-
-/** Generate a cryptographically secure 6-digit numeric code. */
 export function generateEmailCode(): string {
-  // crypto.randomInt is uniform and secure; avoids Math.random bias
   const code = crypto.randomInt(100000, 999999);
   return code.toString();
 }
 
-/** SHA-256 hex hash of a raw OTP code. */
 export function hashEmailCode(code: string): string {
   return crypto.createHash("sha256").update(code).digest("hex");
 }
 
-// ─── SendGrid email sender ────────────────────────────────────────────────────
-
-/** Send a 6-digit OTP to the given email address via the Forge API. */
 export async function sendEmailOtp(to: string, code: string): Promise<void> {
   const sent = await sendEmail({
     to,
@@ -61,12 +52,6 @@ export async function sendEmailOtp(to: string, code: string): Promise<void> {
   }
 }
 
-// ─── DB helpers ──────────────────────────────────────────────────────────────
-
-/**
- * Check if a send cooldown is active for this email.
- * Returns the remaining cooldown in ms (0 = no cooldown).
- */
 export async function getEmailSendCooldown(email: string): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -88,10 +73,6 @@ export async function getEmailSendCooldown(email: string): Promise<number> {
   return Math.max(0, EMAIL_OTP_COOLDOWN_MS - elapsed);
 }
 
-/**
- * Insert a new OTP record (overwrite strategy: delete old records for this email first).
- * Returns the raw code (to be emailed) — never stored.
- */
 export async function createEmailOtp(email: string): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -99,10 +80,7 @@ export async function createEmailOtp(email: string): Promise<string> {
   const codeHash = hashEmailCode(code);
   const expiresAt = new Date(Date.now() + EMAIL_OTP_EXPIRY_MS);
 
-  // Delete previous records for this email (overwrite strategy)
-  await db
-    .delete(emailVerifications)
-    .where(eq(emailVerifications.email, email));
+  await db.delete(emailVerifications).where(eq(emailVerifications.email, email));
 
   await db.insert(emailVerifications).values({
     email,
@@ -114,10 +92,6 @@ export async function createEmailOtp(email: string): Promise<string> {
   return code;
 }
 
-/**
- * Verify a submitted code against the latest DB record.
- * Returns: "ok" | "expired" | "wrong" | "max_attempts" | "not_found"
- */
 export type VerifyEmailResult = "ok" | "expired" | "wrong" | "max_attempts" | "not_found";
 
 export async function verifyEmailOtp(
@@ -134,15 +108,12 @@ export async function verifyEmailOtp(
     .limit(1);
 
   if (!record) return "not_found";
-
   if (record.expiresAt < new Date()) return "expired";
-
   if (record.attempts >= EMAIL_OTP_MAX_ATTEMPTS) return "max_attempts";
 
   const hash = hashEmailCode(code);
 
   if (hash !== record.codeHash) {
-    // Increment attempts
     await db
       .update(emailVerifications)
       .set({ attempts: record.attempts + 1 })
@@ -150,7 +121,6 @@ export async function verifyEmailOtp(
     return "wrong";
   }
 
-  // Success — delete the record so it can't be reused
   await db
     .delete(emailVerifications)
     .where(eq(emailVerifications.id, record.id));
@@ -158,18 +128,10 @@ export async function verifyEmailOtp(
   return "ok";
 }
 
-// ─── Unsubscribe helpers ─────────────────────────────────────────────────────
-
-/** Generate a cryptographically secure random unsubscribe token (hex, 32 bytes). */
 export function generateUnsubscribeToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
-/**
- * Upsert an unsubscribe token for the given email.
- * Returns the token (existing or newly created).
- * Call this before sending any marketing email.
- */
 export async function getOrCreateUnsubscribeToken(email: string): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -187,18 +149,10 @@ export async function getOrCreateUnsubscribeToken(email: string): Promise<string
   return token;
 }
 
-/**
- * Build the unsubscribe URL for a given token.
- * Uses the production domain by default; falls back to localhost in dev.
- */
 export function buildUnsubscribeUrl(token: string): string {
   return `${ENV.appBaseUrl}/unsubscribe?token=${token}`;
 }
 
-/**
- * Confirm an unsubscribe request by token.
- * Returns the email that was unsubscribed, or null if token not found.
- */
 export async function confirmUnsubscribe(token: string): Promise<string | null> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -219,10 +173,6 @@ export async function confirmUnsubscribe(token: string): Promise<string | null> 
   return record.email;
 }
 
-/**
- * Check if an email is unsubscribed from marketing emails.
- * Returns true if the email has confirmed unsubscribe.
- */
 export async function isEmailUnsubscribed(email: string): Promise<boolean> {
   const db = await getDb();
   if (!db) return false;
@@ -236,17 +186,10 @@ export async function isEmailUnsubscribed(email: string): Promise<boolean> {
   return !!record?.unsubscribedAt;
 }
 
-// ─── Welcome Email ────────────────────────────────────────────────────────────
-
-/**
- * Send a welcome email after a new user completes the registration wizard.
- * Fire-and-forget — caller should use .catch() to avoid blocking the response.
- */
 export async function sendWelcomeEmail(params: {
   to: string;
   name: string;
 }): Promise<void> {
-  // Skip if user has unsubscribed from marketing emails
   const unsubscribed = await isEmailUnsubscribed(params.to);
   if (unsubscribed) {
     console.info(`[sendWelcomeEmail] Skipping — ${params.to} is unsubscribed`);

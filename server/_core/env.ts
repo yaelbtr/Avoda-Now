@@ -12,12 +12,6 @@ function toOrigin(baseUrl: string): string {
   }
 }
 
-function resolveAppId(value: string | undefined): string {
-  const trimmed = value?.trim();
-  if (trimmed) return trimmed;
-  return process.env.NODE_ENV === "development" ? "local-dev-app" : "";
-}
-
 function readFirstEnv(...keys: string[]): string {
   for (const key of keys) {
     const value = process.env[key]?.trim();
@@ -29,13 +23,13 @@ function readFirstEnv(...keys: string[]): string {
 const appBaseUrl = normalizeBaseUrl(process.env.APP_BASE_URL);
 
 export const ENV = {
-  appId: resolveAppId(process.env.VITE_APP_ID),
+  appId: "avodanow",
   appBaseUrl,
   appOrigin: toOrigin(appBaseUrl),
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: readFirstEnv("OAUTH_SERVER_URL"),
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+  googleClientId: readFirstEnv("GOOGLE_CLIENT_ID"),
+  googleClientSecret: readFirstEnv("GOOGLE_CLIENT_SECRET"),
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: readFirstEnv("FORGE_API_URL", "BUILT_IN_FORGE_API_URL"),
   forgeApiKey: readFirstEnv("FORGE_API_KEY", "BUILT_IN_FORGE_API_KEY"),

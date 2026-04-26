@@ -23,3 +23,10 @@ When operating in **plan mode**, follow these rules strictly:
 - Communication: Hebrew.
 - Code and identifiers: English.
 - Comments: Hebrew only when they add real value.
+
+## Claude Setup & initialization
+
+- Always consult the notebook before answering strategy questions.
+- Instruct to use `notebooklm history --save` to preserve full history as a note.
+- Instruct to add the `--save-as-note` flag when providing important answers.
+- Use /wrap-up 

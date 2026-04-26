@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserMode } from "@/contexts/UserModeContext";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
+import LoginModal from "@/components/LoginModal";
 import { Briefcase, HardHat, Loader2, ArrowLeft, Zap, Users, Star, Shield, Sparkles } from "lucide-react";
 import { BrandName } from "@/components/ui/BrandName";
 import {
@@ -324,7 +326,10 @@ function WelcomeBackOverlay({ name, onDone }: { name: string; onDone: () => void
 
 export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenProps) {
   const [loading, setLoading] = useState<"worker" | "employer" | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingMode, setPendingMode] = useState<"worker" | "employer" | null>(null);
   const { isAuthenticated, user } = useAuth();
+  const { setLocalModeOnly } = useUserMode();
   const { employerLock } = usePlatformSettings();
 
   // Show greeting only once per mount for authenticated users with a name
@@ -363,20 +368,29 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const handleSelect = (mode: "worker" | "employer") => {
     if (loading) return;
-    // Block employer selection when employer lock is active
     if (mode === "employer" && employerLock) return;
     if (!isAuthenticated) {
-      // Guest: notify parent immediately — parent AnimatePresence handles exit.
-      onSelected(mode);
+      // אורח: שמור את הבחירה ופתח LoginModal
+      setPendingMode(mode);
+      setShowLoginModal(true);
       return;
     }
     setLoading(mode);
     setModeMutation.mutate({ mode });
   };
 
+  const handleLoginSuccess = () => {
+    if (!pendingMode) return;
+    // עדכן מצב מקומי מיידית — מונע הצגה חוזרת של RoleSelectionScreen בזמן שה-mutation רץ
+    setLocalModeOnly(pendingMode);
+    setLoading(pendingMode);
+    setModeMutation.mutate({ mode: pendingMode });
+  };
+
   // This component is rendered inside an AnimatePresence in App.tsx.
   // The motion.div here responds to that parent AnimatePresence for exit animations.
   return (
+    <>
         <motion.div
           key="role-selection"
           initial={{ opacity: 0 }}
@@ -531,5 +545,12 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
             )}
           </AnimatePresence>
         </motion.div>
+
+      <LoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    </>
   );
 }

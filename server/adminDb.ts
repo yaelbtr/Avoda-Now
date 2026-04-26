@@ -98,8 +98,8 @@ export async function adminGetAllUsers(limit = 200) {
       lastSignedIn: users.lastSignedIn,
     })
     .from(users)
-    .orderBy(desc(users.createdAt))
-    .limit(limit);
+    .orderBy(desc(users.createdAt));
+    // .limit(limit);
 }
 
 export async function adminBlockUser(userId: number) {

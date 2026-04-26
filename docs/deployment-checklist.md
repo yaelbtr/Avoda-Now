@@ -37,23 +37,19 @@ npm run build
 npm run start
 ```
 
-## 2. Required if you keep current OAuth login flow
-
-The current login flow is Manus-style OAuth and depends on the existing OAuth endpoints.
+## 2. Required if you keep Google login enabled
 
 ### Required environment variables
 
-- `VITE_ENABLE_OAUTH_LOGIN=true`
-- `VITE_APP_ID`
-- `OAUTH_SERVER_URL`
-- `VITE_OAUTH_PORTAL_URL`
+- `VITE_ENABLE_GOOGLE_LOGIN=true`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 
 ### Notes
 
-- By default the app can run on local OTP/email auth without Manus OAuth.
-- The login URL in the frontend is built from `VITE_OAUTH_PORTAL_URL` and `VITE_APP_ID`.
-- The backend callback under `/api/oauth/callback` exchanges the OAuth code using `OAUTH_SERVER_URL`.
-- If you do not have these services outside Manus, login will not work until you replace this flow.
+- The frontend starts Google login via the local `/api/auth/google/start` route.
+- The backend callback is `/api/auth/google/callback`.
+- The session is signed locally; there is no Manus OAuth dependency anymore.
 
 ## 3. Required if you keep current Forge-backed platform services
 
@@ -134,15 +130,14 @@ Required only if you want frontend analytics:
 
 These are the biggest portability risks when moving to your own hosting.
 
-### OAuth stack
+### Google auth
 
-Current code assumes a Manus-compatible OAuth service:
+Current code uses direct Google OAuth on the server:
 
-- `OAUTH_SERVER_URL`
-- `VITE_OAUTH_PORTAL_URL`
-- `VITE_APP_ID`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 
-If you move away from Manus, you should aim to replace this so the app no longer depends on:
+If you move away from Google, you should aim to replace this so the app no longer depends on:
 
 - Auth.js / NextAuth-style login
 - Clerk

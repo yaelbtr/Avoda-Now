@@ -30,9 +30,7 @@ export const popReturnPath = (): string | null => {
 };
 
 type AuthEnv = {
-  VITE_ENABLE_OAUTH_LOGIN?: string;
-  VITE_OAUTH_PORTAL_URL?: string;
-  VITE_APP_ID?: string;
+  VITE_ENABLE_GOOGLE_LOGIN?: string;
 };
 
 function normalizeReturnPath(returnPath?: string | null): string | null {
@@ -43,14 +41,10 @@ function normalizeReturnPath(returnPath?: string | null): string | null {
   return `/${raw}`;
 }
 
-export function isOAuthLoginEnabled(
+export function isGoogleLoginEnabled(
   env: AuthEnv = import.meta.env as AuthEnv
 ): boolean {
-  return (
-    env.VITE_ENABLE_OAUTH_LOGIN === "true" &&
-    Boolean(env.VITE_OAUTH_PORTAL_URL) &&
-    Boolean(env.VITE_APP_ID)
-  );
+  return env.VITE_ENABLE_GOOGLE_LOGIN === "true";
 }
 
 export function buildLocalLoginUrl(options: {
@@ -66,27 +60,15 @@ export function buildLocalLoginUrl(options: {
   return url.toString();
 }
 
-export function buildOAuthLoginUrl(options: {
+export function buildGoogleLoginUrl(options: {
   currentOrigin: string;
-  oauthPortalUrl: string;
-  appId: string;
-  provider?: string;
   returnPath?: string | null;
 }): string {
-  const redirectUri = new URL("/api/oauth/callback", options.currentOrigin);
+  const url = new URL("/api/auth/google/start", options.currentOrigin);
   const normalizedReturnPath = normalizeReturnPath(options.returnPath);
   if (normalizedReturnPath) {
-    redirectUri.searchParams.set("returnTo", normalizedReturnPath);
+    url.searchParams.set("returnTo", normalizedReturnPath);
   }
-  const state = btoa(redirectUri.toString());
-
-  const url = new URL("/app-auth", options.oauthPortalUrl);
-  url.searchParams.set("appId", options.appId);
-  url.searchParams.set("redirectUri", redirectUri.toString());
-  url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
-  if (options.provider) url.searchParams.set("provider", options.provider);
-
   return url.toString();
 }
 
@@ -97,30 +79,17 @@ function getCurrentOrigin(): string {
 
 export const getLoginUrl = (returnPath?: string) => {
   const currentOrigin = getCurrentOrigin();
-  if (!isOAuthLoginEnabled()) {
-    return buildLocalLoginUrl({ currentOrigin, returnPath });
-  }
-
-  return buildOAuthLoginUrl({
-    currentOrigin,
-    oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
-    appId: import.meta.env.VITE_APP_ID,
-    returnPath,
-  });
+  return buildLocalLoginUrl({ currentOrigin, returnPath });
 };
 
-/** Shorthand: login URL that pre-selects the Google provider */
 export const getGoogleLoginUrl = (returnPath?: string) => {
   const currentOrigin = getCurrentOrigin();
-  if (!isOAuthLoginEnabled()) {
+  if (!isGoogleLoginEnabled()) {
     return buildLocalLoginUrl({ currentOrigin, returnPath });
   }
 
-  return buildOAuthLoginUrl({
+  return buildGoogleLoginUrl({
     currentOrigin,
-    oauthPortalUrl: import.meta.env.VITE_OAUTH_PORTAL_URL,
-    appId: import.meta.env.VITE_APP_ID,
-    provider: "google",
     returnPath,
   });
 };

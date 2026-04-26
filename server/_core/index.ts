@@ -5,8 +5,8 @@ import { createServer } from "http";
 import net from "net";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { ENV } from "./env";
+import { registerGoogleAuthRoutes } from "./googleAuth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -481,8 +481,7 @@ async function startServer() {
     res.redirect(302, `/?ref=${encodeURIComponent(code)}`);
   });
 
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
+  registerGoogleAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

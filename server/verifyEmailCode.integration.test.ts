@@ -199,7 +199,7 @@ async function simulateVerifyEmailCode(input: {
   const isNewUser = !user;
 
   if (!user) {
-    user = await createUserByEmail(email);
+    user = await createUserByEmail(email, true);
 
     // Persist name and phone if provided
     if (input.name || input.phone) {
@@ -344,7 +344,7 @@ describe("Integration: verifyEmailCode — new user creation", () => {
 
     expect(user).toBeDefined();
     expect(user.loginMethod).toBe("email_otp");
-    expect(user.signupCompleted).toBe(false); // wizard not yet completed
+    expect(user.signupCompleted).toBe(true);
 
     await cleanupTestUser(email);
   });

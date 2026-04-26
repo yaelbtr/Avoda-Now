@@ -86,7 +86,7 @@ const isProduction = process.env.NODE_ENV === "production";
  *  - 'unsafe-inline' is REMOVED from script-src in production; replaced by nonce + 'strict-dynamic'.
  *  - 'unsafe-inline' is kept in style-src (Tailwind + Radix UI inject inline styles at runtime).
  *  - img-src uses explicit CDN hostnames instead of 'https:' wildcard.
- *  - connect-src covers: tRPC (self), Forge proxy (Maps/LLM), OAuth, Umami, Push.
+ *  - connect-src covers: tRPC (self), Forge proxy (Maps/LLM), Google Maps, Umami, Push.
  *  - worker-src 'self' blob: covers /sw.js service worker.
  *  - frame-src / object-src: 'none' — clickjacking + plugin protection.
  *
@@ -136,7 +136,6 @@ export function buildCspDirectives(
   ];
   addOrigin(connectSrc, ENV.forgeApiUrl);
   addOrigin(connectSrc, mapsProxyUrl);
-  addOrigin(connectSrc, ENV.oAuthServerUrl);
   addOrigin(connectSrc, process.env.ANALYTICS_ENDPOINT ?? process.env.VITE_ANALYTICS_ENDPOINT);
 
   if (dev) {
@@ -313,7 +312,7 @@ export const globalRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "יותר מדי בקשות. נסה שוב בעוד דקה." },
-  skip: (req) => req.path.startsWith("/api/oauth"), // don't limit OAuth flow
+  skip: (req) => req.path.startsWith("/api/auth/google"),
 });
 
 // ── Jobs list rate limiter — 20 req/min per IP (anti-scraping) ───────────────

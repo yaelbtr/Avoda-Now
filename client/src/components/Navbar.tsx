@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import ReportProblemModal from "./ReportProblemModal";
 import CompleteProfileModal from "./CompleteProfileModal";
+import { isGoogleLoginMethod } from "@shared/auth";
 
 import {
   C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
@@ -78,7 +79,7 @@ export default function Navbar() {
     if (
       !completeProfileShown.current &&
       isAuthenticated &&
-      user?.loginMethod === "google_oauth" &&
+      isGoogleLoginMethod(user?.loginMethod) &&
       !user?.phone
     ) {
       completeProfileShown.current = true;

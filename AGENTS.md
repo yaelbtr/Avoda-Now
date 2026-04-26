@@ -1,6 +1,10 @@
 # AvodaNow
-
 This repository uses `pnpm`.
+## Setup & initialization
+
+- Always consult the notebook before answering strategy questions.
+- Instruct to use `notebooklm history --save` to preserve full history as a note.
+- Instruct to add the `--save-as-note` flag when providing important answers.
 
 ## Project shape
 

@@ -294,6 +294,12 @@ export async function setUserTermsAcceptedAt(id: number) {
     .where(eq(users.id, id));
 }
 
+export async function setSignupCompleted(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ signupCompleted: true }).where(eq(users.id, id));
+}
+
 export async function setUserMode(id: number, mode: "worker" | "employer") {
   const db = await getDb();
   if (!db) return;

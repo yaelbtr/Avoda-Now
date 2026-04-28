@@ -3,8 +3,14 @@ This repository uses `pnpm`.
 ## Setup & initialization
 
 - Always consult the notebook before answering strategy questions.
-- Instruct to use `notebooklm history --save` to preserve full history as a note.
-- Instruct to add the `--save-as-note` flag when providing important answers.
+- Notebook: **YallaAvoda** (ID: `9f1e4257-b7a7-4622-af3c-7b52b8142fd8`)
+- CLI location: `C:\Users\User\.agents\skills\notebooklm`
+- Save important session notes with:
+  ```
+  cd C:\Users\User\.agents\skills\notebooklm
+  python -m notebooklm note create -n 9f1e4257 -t "Session YYYY-MM-DD: <title>" "<content>"
+  ```
+- UnicodeEncodeError at end of command is a display glitch only — the note is saved successfully.
 
 ## Project shape
 
@@ -12,7 +18,8 @@ This repository uses `pnpm`.
 - Backend: Node.js + Express + tRPC in `server/`
 - Database: PostgreSQL + Drizzle ORM + PostGIS in `drizzle/`
 - Shared code: `shared/`
-- Architecture reference: `Architecture.md`
+- Key design patterns: `docs/arch/patterns.md` (concise, read this first)
+- Full architecture reference: `Architecture.md` (read on demand)
 
 ## Common commands
 
@@ -53,7 +60,7 @@ This repository uses `pnpm`.
 - Make focused, minimal changes that match the current architecture.
 - Prefer updating existing files over adding new layers unless the change clearly benefits maintainability.
 - Run the smallest relevant verification step after changes when feasible.
-- If behavior is already documented in `Architecture.md`, follow that document unless the code clearly differs.
+- If behavior is already documented in `docs/arch/patterns.md` or `Architecture.md`, follow that document unless the code clearly differs.
 
 ## Orchestration preferences
 

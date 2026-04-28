@@ -20,7 +20,6 @@ import SkipToContent from "./components/SkipToContent";
 import ReConsentModal from "./components/ReConsentModal";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { IdleLogoutManager } from "./components/IdleLogoutManager";
-import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { useJobsStream } from "./hooks/useJobsStream";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "./contexts/AuthContext";
@@ -38,6 +37,7 @@ const FindJobs = lazy(() => import("./pages/FindJobs"));
 const JobDetails = lazy(() => import("./pages/JobDetails"));
 const PostJob = lazy(() => import("./pages/PostJob"));
 const MyJobs = lazy(() => import("./pages/MyJobs"));
+const HomeEmployer = lazy(() => import("./pages/HomeEmployer"));
 
 // Profile pages
 const WorkerProfile = lazy(() => import("./pages/WorkerProfile"));
@@ -242,17 +242,6 @@ function JobsStreamProvider() {
   return null;
 }
 
-function MapsPreloader() {
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    ensureMapsLoaded().catch(() => {});
-  }, [isAuthenticated]);
-
-  return null;
-}
-
 function Router() {
   const { needsRoleSelection, setUserMode, setLocalModeOnly, userMode } = useUserMode();
   const [location, navigate] = useLocation();
@@ -360,6 +349,7 @@ function Router() {
             <PageTransition key={routeKey} routeKey={routeKey}>
               <Suspense fallback={<PageLoader />}>
                 <Switch>
+                  <Route path="/employer-home" component={HomeEmployer} />
                   <Route path="/" component={Home} />
                   <Route path="/find-jobs" component={FindJobs} />
                   <Route path="/job/:id" component={JobDetails} />
@@ -474,7 +464,6 @@ function App() {
               <WorkerJobsProvider>
                 <Toaster position="top-center" dir="rtl" />
                 <DevMaintenanceBypass />
-                <MapsPreloader />
                 <ReferralCapture />
                 <ReferralSourceCapture />
                 <IdleLogoutManager />

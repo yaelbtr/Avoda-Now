@@ -173,11 +173,13 @@ export function registerGoogleAuthRoutes(app: Express) {
     }
 
     try {
+      console.log("[GoogleAuth] step=exchange_code");
       const tokenResponse = await exchangeGoogleCode(code);
       if (!tokenResponse.id_token) {
         throw new Error("Google id_token missing");
       }
 
+      console.log("[GoogleAuth] step=verify_token");
       const claims = await verifyGoogleIdToken(tokenResponse.id_token);
       const rawEmail = claims.email?.trim() || null;
       const normalizedEmail = rawEmail?.toLowerCase() || null;
@@ -185,10 +187,12 @@ export function registerGoogleAuthRoutes(app: Express) {
       const googleOpenId = claims.sub;
 
       if (!googleOpenId || !normalizedEmail || claims.email_verified !== true) {
+        console.warn("[GoogleAuth] email_required: googleOpenId=%s verified=%s", googleOpenId, claims.email_verified);
         res.redirect(302, buildAuthLoginRedirectPath(req, "google_email_required"));
         return;
       }
 
+      console.log("[GoogleAuth] step=lookup_user email=%s", normalizedEmail);
       const existingByOpenId = await db.getUserByOpenId(googleOpenId);
       const existingByEmail =
         await db.getUserByEmail(normalizedEmail) ||
@@ -197,21 +201,20 @@ export function registerGoogleAuthRoutes(app: Express) {
           : undefined);
       const existingUser = existingByOpenId ?? existingByEmail;
 
+      console.log("[GoogleAuth] existingByOpenId=%s existingByEmail=%s", !!existingByOpenId, !!existingByEmail);
+
       if (!existingUser) {
-        const createdUser = await db.createUserByGoogle({
+        console.log("[GoogleAuth] step=create_new_user");
+        await db.createUserByGoogle({
           openId: googleOpenId,
           email: normalizedEmail,
           name,
           loginMethod: "google",
         });
-        await recordCoreConsents(req, createdUser.id);
       } else {
-        if (!existingUser.termsAcceptedAt && existingUser.id != null) {
-          await db.setUserTermsAcceptedAt(existingUser.id);
-          await recordCoreConsents(req, existingUser.id);
-        }
-
-        if (existingByEmail && existingByEmail.openId !== googleOpenId) {
+        // merge רק אם המשתמש עוד לא קיים כ-Google user — כדי להימנע מ-unique constraint על openId
+        if (!existingByOpenId && existingByEmail && existingByEmail.openId !== googleOpenId) {
+          console.log("[GoogleAuth] step=merge_account oldOpenId=%s", existingByEmail.openId);
           await db.mergeAccountToGoogleOpenId(
             existingByEmail.openId,
             googleOpenId,
@@ -219,6 +222,7 @@ export function registerGoogleAuthRoutes(app: Express) {
           );
         }
 
+        console.log("[GoogleAuth] step=upsert_user signupCompleted=%s", existingUser.signupCompleted);
         await db.upsertUser({
           openId: googleOpenId,
           name,
@@ -226,8 +230,15 @@ export function registerGoogleAuthRoutes(app: Express) {
           loginMethod: "google",
           lastSignedIn: new Date(),
         });
+
+        // אחרי merge לחשבון Google — signupCompleted חייב להיות true
+        if (!existingUser.signupCompleted) {
+          console.log("[GoogleAuth] step=set_signup_completed userId=%s", existingUser.id);
+          await db.setSignupCompleted(existingUser.id);
+        }
       }
 
+      console.log("[GoogleAuth] step=create_session");
       const sessionToken = await sdk.createSessionToken(googleOpenId, {
         name: name || normalizedEmail,
         expiresInMs: ONE_YEAR_MS,
@@ -239,6 +250,7 @@ export function registerGoogleAuthRoutes(app: Express) {
         maxAge: ONE_YEAR_MS,
       });
 
+      console.log("[GoogleAuth] success returnTo=%s", state.returnTo);
       res.redirect(302, state.returnTo);
     } catch (error) {
       console.error("[GoogleAuth] Callback failed", error);

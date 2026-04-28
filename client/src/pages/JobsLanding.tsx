@@ -37,6 +37,7 @@ import { MapPin, Briefcase, Search, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { saveReturnPath } from "@/const";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import { NavPill } from "@/components/ui/NavPill";
 
 // ─── Popular cities shown in SEO link section ────────────────────────────────
 const SEO_CITIES = [
@@ -456,13 +457,9 @@ export default function JobsLanding() {
             </div>
             <div className="flex flex-wrap gap-2">
               {SEO_CITIES.map((city) => (
-                <Link
-                  key={city}
-                  href={`/jobs/${encodeURIComponent(city)}`}
-                  className="city-chip"
-                >
+                <NavPill key={city} href={`/jobs/${encodeURIComponent(city)}`} icon="📍">
                   עבודות ב{city}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>
@@ -475,13 +472,9 @@ export default function JobsLanding() {
             </div>
             <div className="flex flex-wrap gap-2">
               {dbCategories.map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/jobs/${cat.slug}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
-                >
-                  {cat.icon ?? "💼"} עבודות {cat.name}
-                </Link>
+                <NavPill key={cat.slug} href={`/jobs/${cat.slug}`} icon={cat.icon ?? "💼"}>
+                  עבודות {cat.name}
+                </NavPill>
               ))}
             </div>
           </div>
@@ -494,20 +487,13 @@ export default function JobsLanding() {
             </div>
             <div className="flex flex-wrap gap-2">
               {dbCategories.filter((c) => c.slug !== "other").map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/guide/temporary-jobs/${cat.slug}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors"
-                >
+                <NavPill key={cat.slug} href={`/guide/temporary-jobs/${cat.slug}`} icon="📖">
                   מדריך: {cat.name}
-                </Link>
+                </NavPill>
               ))}
-              <Link
-                href="/guide/temporary-jobs"
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
-              >
+              <NavPill href="/guide/temporary-jobs" icon="📖">
                 כל המדריכים →
-              </Link>
+              </NavPill>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { shareJobOnWhatsApp, shareJobByEmail, shareJobOnFacebook, shareJobOnTelegram, copyJobLink } from "@/components/JobCard";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface CarouselJob {
@@ -218,6 +219,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired,
@@ -536,6 +540,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
         </div>
       </div>
     </div>
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* Age-gate modal */}
       <BirthDateModal
         isOpen={birthDateModalOpen}

@@ -34,8 +34,8 @@ import {
   resetRateLimit,
   updateJob,
   updateJobStatus,
-  setUserTermsAcceptedAt,
   updateUserLastSignedIn,
+  setUserTermsAcceptedAt,
   getLiveStats,
   getActivityFeed,
   setUserMode,
@@ -201,7 +201,7 @@ import {
   confirmUnsubscribe,
 } from "./emailOtp";
 
-// ג”€ג”€ג”€ OTP Auth ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ OTP Auth ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const authRouter = router({
   me: publicProcedure.query((opts) => opts.ctx.user),
@@ -248,7 +248,7 @@ const authRouter = router({
       if (!input.isRegistration) {
         const isPrivilegedUser = existingUser && existingUser.role === "admin";
         if (!existingUser || (!existingUser.termsAcceptedAt && !isPrivilegedUser)) {
-          void logEvent("warn", "otp.send.blocked.not_registered", "Login OTP blocked ג€” phone not registered", {
+          void logEvent("warn", "otp.send.blocked.not_registered", "Login OTP blocked  -  phone not registered", {
             phone,
             meta: { channel: input.channel, existsInDb: !!existingUser, hasTerms: !!existingUser?.termsAcceptedAt },
           });
@@ -262,7 +262,7 @@ const authRouter = router({
       // For registration flow: check for duplicates and enforce terms
       if (input.isRegistration) {
         if (existingUser && existingUser.termsAcceptedAt) {
-          // Phone already registered with completed signup ג€” block registration
+          // Phone already registered with completed signup  -  block registration
           throw new TRPCError({
             code: "CONFLICT",
             message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
@@ -324,7 +324,7 @@ const authRouter = router({
         // Voice call channel
         result = await smsProvider.sendOtpVoice(phone);
       } else if (input.channel === "whatsapp") {
-        // WhatsApp channel ג€” fallback when SMS rate-limited
+        // WhatsApp channel  -  fallback when SMS rate-limited
         result = await smsProvider.sendOtpWhatsApp(phone);
       } else {
         result = await smsProvider.sendOtp(phone);
@@ -389,7 +389,7 @@ const authRouter = router({
             message: "קוד האימות שגוי. הכנס את 6 הספרות הראשונות של הטלפון.",
           });
         }
-        // Bypass Twilio ג€” reset profile and issue session directly
+        // Bypass Twilio  -  reset profile and issue session directly
         await resetTestUserProfile(testUserCheck.id);
         await updateUserLastSignedIn(testUserCheck.id);
         // Re-fetch user after reset so the returned object reflects cleared state
@@ -479,7 +479,7 @@ const authRouter = router({
       }
 
       // Issue session JWT using the same format sdk.verifySession expects:
-      // { openId, appId, name } ג€” must match SDKServer.verifySession field checks
+      // { openId, appId, name }  -  must match SDKServer.verifySession field checks
       const token = await sdk.signSession(
         {
           openId: user.openId,
@@ -493,7 +493,7 @@ const authRouter = router({
       ctx.res.cookie(COOKIE_NAME, token, cookieOptions);
 
       authLogger.info({ userId: user.id, event: "login_success", method: "phone_otp" }, "User logged in via OTP");
-      void logEvent("info", "otp.verify.success", "OTP verified ג€” user logged in", {
+      void logEvent("info", "otp.verify.success", "OTP verified  -  user logged in", {
         phone,
         userId: user.id,
         meta: { isNewUser: !!input.termsAccepted },
@@ -502,7 +502,7 @@ const authRouter = router({
       return { success: true, user, isNewUser };
     }),
 
-  // ג”€ג”€ג”€ Email OTP ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ג"€ Email OTP ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
   sendEmailCode: publicProcedure
     .input(
@@ -550,7 +550,7 @@ const authRouter = router({
         email: z.string().email("כתובת המייל אינה תקינה"),
         code: z.string().length(6, "קוד חייב להכיל 6 ספרות"),
         termsAccepted: z.boolean().optional(),
-        /** Full name collected during registration ג€” saved immediately on new user creation */
+        /** Full name collected during registration  -  saved immediately on new user creation */
         name: z.string().min(2).max(100).optional(),
         /** Phone number (local Israeli format) collected during registration */
         phone: z.string().min(9).max(20).optional(),
@@ -558,7 +558,6 @@ const authRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const email = input.email.toLowerCase().trim();
-      const completedTermsNow = input.termsAccepted === true;
 
       const result = await verifyEmailOtp(email, input.code);
 
@@ -579,67 +578,16 @@ const authRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "קוד שגוי. נא נסה שנית" });
       }
 
-      // result === "ok" ג€” find or create user by email
+      // result === "ok"  -  find or create user by email
       let user = await getUserByEmail(email);
       const isNewUser = !user;
-      const consentTypes = ["terms", "privacy", "age_18"] as const;
-      const ip = getClientIp(ctx.req);
-      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
-
-      const persistRegistrationFields = async (userId: number) => {
-        if (!input.name && !input.phone) return;
-
-        let normalizedPhone: string | undefined;
-        let phoneParts: { phonePrefix?: string; phoneNumber?: string } = {};
-        if (input.phone) {
-          try {
-            normalizedPhone = normalizeIsraeliPhone(input.phone);
-            const split = splitIsraeliE164Phone(normalizedPhone);
-            if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
-          } catch {
-            // invalid phone ׳’ג‚¬ג€ skip silently, user can update in profile
-          }
-        }
-
-        await updateWorkerProfile(userId, {
-          ...(input.name ? { name: input.name } : {}),
-          ...(normalizedPhone ? { phone: normalizedPhone, ...phoneParts } : {}),
-        });
-      };
-
-      const recordCoreConsents = async (userId: number) => {
-        await Promise.all(
-          consentTypes.map((ct) =>
-            recordUserConsent(userId, ct, {
-              ipAddress: ip,
-              userAgent: ua,
-              documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
-            })
-          )
-        );
-      };
-
-      if (!user && !completedTermsNow) {
-        void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
-        });
-      }
 
       if (!user) {
-        if (false && !completedTermsNow) {
-          void logEvent("warn", "email_otp.verify.missing_terms", "Email OTP signup blocked without accepted terms", { meta: { email } });
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
-          });
-        }
-        // New user ג€” create account
-        user = await createUserByEmail(email, true); // email-only user with accepted terms
+        // משתמש חדש — יצירת חשבון ללא הסכמה (תבוא בפעולה אמיתית ראשונה)
+        user = await createUserByEmail(email);
         void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
 
-        // Immediately persist name and phone if provided during registration
+        // שמירת שם וטלפון אם נשלחו
         if (input.name || input.phone) {
           let normalizedPhone: string | undefined;
           let phoneParts: { phonePrefix?: string; phoneNumber?: string } = {};
@@ -649,7 +597,7 @@ const authRouter = router({
               const split = splitIsraeliE164Phone(normalizedPhone);
               if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
             } catch {
-              // invalid phone ג€” skip silently, user can update in profile
+              // טלפון לא תקין — מדלג בשקט
             }
           }
           await updateWorkerProfile(user.id, {
@@ -658,39 +606,9 @@ const authRouter = router({
           });
         }
 
-        // Send welcome email immediately ג€” email is known at this point
-        await recordCoreConsents(user.id);
         sendWelcomeEmailOtp({ to: email, name: input.name ?? "" })
           .catch((err) => console.warn("[verifyEmailCode] sendWelcomeEmail error:", err));
       } else {
-        if (!user.termsAcceptedAt && !completedTermsNow) {
-          void logEvent("warn", "email_otp.verify.incomplete_account", "Email OTP login blocked for incomplete account", {
-            userId: user.id,
-            meta: { email },
-          });
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "חשבון זה לא הושלם. יש להשלים הרשמה ולאשר את תנאי השימוש.",
-          });
-        }
-
-        if (!user.termsAcceptedAt) {
-          if (false && !completedTermsNow) {
-            void logEvent("warn", "email_otp.verify.incomplete_account", "Email OTP login blocked for incomplete account", {
-              userId: user?.id,
-              meta: { email },
-            });
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "חשבון זה לא הושלם. יש להשלים הרשמה ולאשר את תנאי השימוש.",
-            });
-          }
-
-          await setUserTermsAcceptedAt(user.id);
-          await persistRegistrationFields(user.id);
-          await recordCoreConsents(user.id);
-        }
-
         await updateUserLastSignedIn(user.id);
         void logEvent("info", "email_otp.verify.login", "User logged in via email OTP", { userId: user.id, meta: { email } });
       }
@@ -720,17 +638,12 @@ const authRouter = router({
     }),
 });
 
-// ג”€ג”€ג”€ Jobs ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Jobs ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const jobInputSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().min(5).max(3000),
-  category: z.enum([
-    "delivery", "warehouse", "agriculture", "kitchen", "cleaning",
-    "security", "construction", "childcare", "eldercare", "retail",
-    "events", "gardening", "serving", "electricity", "plumbing", "moving",
-    "volunteer", "emergency_support", "passover_jobs", "reserve_families", "other",
-  ]),
+  category: z.string().min(1).max(100),
   address: z.string().min(2).max(300),
   city: z.string().max(100).optional().superRefine(cityZodRefine),
   latitude: z.number(),
@@ -768,13 +681,13 @@ const jobInputSchema = z.object({
   imageUrls: z.array(z.string().url()).max(5).optional(),
   /** Minimum worker age: null = no restriction, 16 = 16+, 18 = adults only */
   minAge: z.union([z.literal(16), z.literal(18)]).nullable().optional(),
-  /** Google Maps place_id for the job's city ג€” canonical city identifier for matching */
+  /** Google Maps place_id for the job's city  -  canonical city identifier for matching */
   cityPlaceId: z.string().max(100).optional(),
 });
 
-// ג”€ג”€ helpers: resolve effective filter values for jobs.list / jobs.search ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ helpers: resolve effective filter values for jobs.list / jobs.search ג"€ג"€ג"€ג"€ג"€ג"€
 
-/** ׳׳—׳–׳™׳¨ ׳׳× ׳§׳˜׳’׳•׳¨׳™׳•׳× ׳”-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳× ׳”׳¢׳“׳₪׳•׳× ׳”׳₪׳¨׳•׳₪׳™׳ ׳©׳ ׳”׳׳©׳×׳׳© */
+/** ׳׳—׳–׳™׳¨ ׳׳× ׳§׳˜׳’׳•׳¨׳™׳•׳× ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳× ׳"׳¢׳"׳₪׳•׳× ׳"׳₪׳¨׳•׳₪׳™׳ ׳©׳ ׳"׳׳©׳×׳׳© */
 function resolveEffectiveCategories(
   uiCategories: string[] | undefined,
   user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
@@ -784,7 +697,7 @@ function resolveEffectiveCategories(
   return prefs?.length ? prefs : undefined;
 }
 
-/** ׳׳—׳–׳™׳¨ ׳׳× ׳¢׳¨׳™ ׳”-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳׳™׳¨ ׳׳× IDs ׳׳”׳₪׳¨׳•׳₪׳™׳ ׳׳©׳׳•׳× ׳¢׳‘׳¨׳™ */
+/** ׳׳—׳–׳™׳¨ ׳׳× ׳¢׳¨׳™ ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳׳™׳¨ ׳׳× IDs ׳׳"׳₪׳¨׳•׳₪׳™׳ ׳׳©׳׳•׳× ׳¢׳‘׳¨׳™ */
 async function resolveEffectiveCities(
   uiCities: string[] | undefined,
   user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
@@ -875,7 +788,7 @@ async function filterJobsByWorkerProfile<T extends Record<string, unknown>>(
   );
 }
 
-// ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 /** Rate limiter for job-publish OTP sends: max 3 per user per 10 minutes */
 const publishOtpRateLimiter = createInMemoryRateLimiter(3, 10 * 60 * 1000);
@@ -884,11 +797,11 @@ const jobsRouter = router({
   list: publicProcedure
     .input(z.object({
       category: z.string().optional(),
-      /** Multi-category filter ג€” takes precedence over category when provided */
+      /** Multi-category filter  -  takes precedence over category when provided */
       categories: z.array(z.string().min(1)).max(20).optional(),
       limit: z.number().int().min(1).max(50).optional(),
       city: z.string().optional(),
-      /** Multi-city filter ג€” takes precedence over city when provided */
+      /** Multi-city filter  -  takes precedence over city when provided */
       cities: z.array(z.string().min(1)).max(20).optional(),
       dateFilter: z.string().optional(), // "today"|"tomorrow"|"this_week"|"YYYY-MM-DD"|"YYYY-MM-DD:YYYY-MM-DD"
       page: z.number().int().min(1).default(1),
@@ -903,7 +816,7 @@ const jobsRouter = router({
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
-      // ׳₪׳™׳׳˜׳¨ UI ׳’׳•׳‘׳¨ ׳¢׳ preferences; ׳׳ ׳׳™׳ ׳₪׳™׳׳˜׳¨ UI ג€” ׳׳©׳×׳׳© ׳‘׳”׳¢׳“׳₪׳•׳× ׳”׳₪׳¨׳•׳₪׳™׳
+      // ׳₪׳™׳׳˜׳¨ UI ׳’׳•׳‘׳¨ ׳¢׳ preferences; ׳׳ ׳׳™׳ ׳₪׳™׳׳˜׳¨ UI  -  ׳׳©׳×׳׳© ׳‘׳"׳¢׳"׳₪׳•׳× ׳"׳₪׳¨׳•׳₪׳™׳
       const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
       const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
       const broadLimit = shouldApplyWorkerProfileFilter ? 500 : limit;
@@ -940,11 +853,11 @@ const jobsRouter = router({
         lng: z.number(),
         radiusKm: z.number().min(1).max(200).default(10),
         category: z.string().optional(),
-        /** Multi-category filter ג€” takes precedence over category when provided */
+        /** Multi-category filter  -  takes precedence over category when provided */
         categories: z.array(z.string().min(1)).max(20).optional(),
         limit: z.number().int().min(1).max(50).optional(),
         city: z.string().optional(),
-        /** Multi-city filter ג€” takes precedence over city when provided */
+        /** Multi-city filter  -  takes precedence over city when provided */
         cities: z.array(z.string().min(1)).max(20).optional(),
       dateFilter: z.string().optional(), // "today"|"tomorrow"|"this_week"|"YYYY-MM-DD"|"YYYY-MM-DD:YYYY-MM-DD"
       page: z.number().int().min(1).default(1),
@@ -960,7 +873,7 @@ const jobsRouter = router({
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
-      // ׳₪׳™׳׳˜׳¨ UI ׳’׳•׳‘׳¨ ׳¢׳ preferences; ׳׳ ׳׳™׳ ׳₪׳™׳׳˜׳¨ UI ג€” ׳׳©׳×׳׳© ׳‘׳”׳¢׳“׳₪׳•׳× ׳”׳₪׳¨׳•׳₪׳™׳
+      // ׳₪׳™׳׳˜׳¨ UI ׳’׳•׳‘׳¨ ׳¢׳ preferences; ׳׳ ׳׳™׳ ׳₪׳™׳׳˜׳¨ UI  -  ׳׳©׳×׳׳© ׳‘׳"׳¢׳"׳₪׳•׳× ׳"׳₪׳¨׳•׳₪׳™׳
       const effectiveCategories = resolveEffectiveCategories(input.categories, ctx.user);
       const effectiveCities = await resolveEffectiveCities(input.cities, ctx.user);
       const broadLimit = shouldApplyWorkerProfileFilter ? 500 : limit;
@@ -1022,7 +935,7 @@ const jobsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.id);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       // Never expose contactPhone to workers or unauthenticated users
       return { ...job, contactPhone: null };
     }),
@@ -1030,14 +943,22 @@ const jobsRouter = router({
   create: registeredProcedure
     .input(jobInputSchema)
     .mutation(async ({ input, ctx }) => {
-      // ג”€ג”€ Regional access control: block posting if region is not yet active ג”€ג”€
+      // בדיקת הסכמה לתנאי שימוש לפני פרסום מודעה ראשונה
+      if (!ctx.user.termsAcceptedAt) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "יש לאשר את תנאי השימוש לפני פרסום מודעה",
+          cause: { code: "consent_required" },
+        });
+      }
+      // ג"€ג"€ Regional access control: block posting if region is not yet active ג"€ג"€
       // Admins bypass the regional check
       if (ctx.user.role !== "admin") {
         const regionCheck = await checkRegionActiveForJob(input.latitude, input.longitude);
         if (!regionCheck.allowed) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: `׳”׳׳–׳•׳¨ ׳¢׳“׳™׳™׳ ׳‘׳”׳¨׳¦׳” ׳•׳ ׳₪׳×׳— ׳‘׳§׳¨׳•׳‘ ׳׳׳¢׳¡׳™׳§׳™׳.`,
+            message: `׳"׳׳–׳•׳¨ ׳¢׳"׳™׳™׳ ׳‘׳"׳¨׳¦׳" ׳•׳ ׳₪׳×׳— ׳‘׳§׳¨׳•׳‘ ׳׳׳¢׳¡׳™׳§׳™׳.`,
             cause: {
               regionId: regionCheck.regionId,
               regionName: regionCheck.regionName,
@@ -1046,12 +967,12 @@ const jobsRouter = router({
           });
         }
       }
-      // Phone must come from the authenticated user ג€” never trust client-supplied phone
+      // Phone must come from the authenticated user  -  never trust client-supplied phone
       const contactPhone = ctx.user.phone ?? input.contactPhone;
       if (!contactPhone) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "׳׳ ׳ ׳׳¦׳ ׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳‘׳—׳©׳‘׳•׳ ׳. ׳׳ ׳ ׳”׳×׳—׳‘׳¨ ׳׳—׳“׳©.",
+          message: "לא ניתן למצוא מספר טלפון בחשבון. יש להתחבר מחדש.",
         });
       }
 
@@ -1062,7 +983,7 @@ const jobsRouter = router({
         : durationDays * 24 * 60 * 60 * 1000;
       const expiresAt = new Date(Date.now() + expiresMs);
       // Extract city from address: use the last meaningful part (city name)
-      // e.g. "׳”׳™׳¨׳§׳•׳/׳׳‘׳¦׳¢ ׳§׳“׳©, ׳×׳ ׳׳‘׳™׳‘" ג†’ "׳×׳ ׳׳‘׳™׳‘"
+      // e.g. "׳"׳™׳¨׳§׳•׳/׳׳‘׳¦׳¢ ׳§׳"׳©, ׳×׳ ׳׳‘׳™׳‘" ג†’ "׳×׳ ׳׳‘׳™׳‘"
       const extractCityFromAddress = (addr: string): string => {
         const parts = addr.split(",").map(p => p.trim()).filter(Boolean);
         // Last part is usually the city; skip country/zip if present
@@ -1077,7 +998,7 @@ const jobsRouter = router({
       };
       const city = input.city ?? extractCityFromAddress(input.address);
 
-      // ג”€ג”€ XSS sanitization: strip HTML from all free-text fields before DB write ג”€ג”€
+      // ג"€ג"€ XSS sanitization: strip HTML from all free-text fields before DB write ג"€ג"€
       const sanitizedInput = {
         ...input,
         title: sanitizeText(input.title),
@@ -1116,7 +1037,7 @@ const jobsRouter = router({
         minAge: input.minAge ?? null,
         cityPlaceId: input.cityPlaceId ?? null,
       });
-      // ׳©׳™׳“׳•׳¨ ׳”׳׳©׳¨׳” ׳”׳—׳“׳©׳” ׳׳›׳ ׳”׳׳§׳•׳—׳•׳× ׳”׳׳—׳•׳‘׳¨׳™׳ ׳-SSE
+      // ׳©׳™׳"׳•׳¨ ׳"׳׳©׳¨׳" ׳"׳—׳"׳©׳" ׳׳›׳ ׳"׳׳§׳•׳—׳•׳× ׳"׳׳—׳•׳‘׳¨׳™׳ ׳-SSE
       const { emitNewJob } = await import("./jobsSSE");
       emitNewJob({
         id: job.id,
@@ -1184,7 +1105,7 @@ const jobsRouter = router({
             const smsSent = await sendJobAlerts(smsWorkers, jobMeta);
             if (smsSent > 0) console.log(`[JobAlert] Sent SMS to ${smsSent} matching workers for job #${job.id}`);
           }
-          // Web Push notifications ג€” fan-out to all matching workers who have subscriptions
+          // Web Push notifications  -  fan-out to all matching workers who have subscriptions
           const pushWorkerIds = workers
             .filter((worker) => {
               const prefs = worker.notificationPrefs ?? "both";
@@ -1207,7 +1128,7 @@ const jobsRouter = router({
       const job = await getJobById(input.id);
       if (!job) throw new TRPCError({ code: "NOT_FOUND" });
       if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-      // ג”€ג”€ XSS sanitization on update fields ג”€ג”€
+      // ג"€ג"€ XSS sanitization on update fields ג"€ג"€
       const sanitized = { ...input.data };
       if (sanitized.title !== undefined) sanitized.title = sanitizeText(sanitized.title);
       if (sanitized.description !== undefined) sanitized.description = sanitizeRichText(sanitized.description);
@@ -1238,15 +1159,15 @@ const jobsRouter = router({
           const allApps = await getApplicationsForJob(input.id);
           const acceptedWorkers = allApps.filter((a) => a.status === "accepted");
           if (acceptedWorkers.length > 0) {
-            const workerNames = acceptedWorkers.map((a) => a.workerName ?? "׳¢׳•׳‘׳“").join(", ");
+            const workerNames = acceptedWorkers.map((a) => a.workerName ?? "עובד").join(", ");
             await sendPushToUser(ctx.user.id, {
-              title: "ג­ ׳“׳¨׳’׳• ׳׳× ׳”׳¢׳•׳‘׳“׳™׳ ׳©׳׳›׳",
-              body: `׳”׳׳©׳¨׳” "${job.title}" ׳”׳¡׳×׳™׳™׳׳”. ׳“׳¨׳’׳• ׳׳×: ${workerNames}`,
+              title: "✅ המשרה סוימה",
+              body: `׳"׳׳©׳¨׳" "${job.title}" ׳"׳¡׳×׳™׳™׳׳". ׳"׳¨׳’׳• ׳׳×: ${workerNames}`,
               url: `/my-jobs/${input.id}/applications`,
             });
           }
         } catch (e) {
-          // Non-critical ג€” don't fail the mutation
+          // Non-critical  -  don't fail the mutation
           console.error("[Rating notification] Failed:", e);
         }
       }
@@ -1341,19 +1262,19 @@ const jobsRouter = router({
   /**
    * Single-shot dashboard query for the worker home screen.
    * Replaces 4 parallel calls (listUrgent, listToday, list, search) with one
-   * round-trip. The client filters/maps the result per panel ג€” no duplicate
+   * round-trip. The client filters/maps the result per panel  -  no duplicate
    * server logic, no extra DB connections.
    *
    * Input:
-   *   lat/lng  ג€” worker's current location (optional; nearby panel is skipped when absent)
-   *   radiusKm ג€” search radius for nearby panel (default 10)
+   *   lat/lng   -  worker's current location (optional; nearby panel is skipped when absent)
+   *   radiusKm  -  search radius for nearby panel (default 10)
    *
    * Returns:
-   *   urgent  ג€” up to 4 urgent jobs
-   *   today   ג€” up to 4 jobs starting today
-   *   nearby  ג€” up to 8 jobs near the worker (empty array when lat/lng absent)
-   *   latest  ג€” up to 6 most-recent active jobs
-   *   isFallback ג€” true when nearby fell back to 100 km radius
+   *   urgent   -  up to 4 urgent jobs
+   *   today    -  up to 4 jobs starting today
+   *   nearby   -  up to 8 jobs near the worker (empty array when lat/lng absent)
+   *   latest   -  up to 6 most-recent active jobs
+   *   isFallback  -  true when nearby fell back to 100 km radius
    */
   getWorkerDashboard: publicProcedure
     .input(
@@ -1364,14 +1285,14 @@ const jobsRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      // Resolve worker age once ג€” reused across all sub-queries
+      // Resolve worker age once  -  reused across all sub-queries
       const workerAge = ctx.user
         ? calcAge(await getWorkerBirthDate(ctx.user.id))
         : null;
 
       const stripPhone = <T extends { contactPhone?: unknown }>(j: T) => ({ ...j, contactPhone: null });
 
-      // Run all non-geo queries in parallel ג€” single DB connection pool burst
+      // Run all non-geo queries in parallel  -  single DB connection pool burst
       const [urgentRows, todayRows, latestResult] = await Promise.all([
         getUrgentJobs(4, undefined, workerAge),
         getTodayJobs(4, undefined, workerAge),
@@ -1417,7 +1338,7 @@ const jobsRouter = router({
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
       const workers = await getMatchedWorkersForJob(input.jobId, ctx.user.id);
@@ -1431,14 +1352,14 @@ const jobsRouter = router({
     .input(z.object({ jobId: z.number(), workerId: z.number(), origin: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
       // Block if job is closed because the candidate cap was reached
       if (job.status === "closed" && job.closedReason === "cap_reached") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `׳”׳׳©׳¨׳” ׳ ׳¡׳’׳¨׳” ג€” ׳›׳‘׳¨ ׳”׳×׳§׳‘׳׳• ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳“׳™׳.`,
+          message: `׳"׳׳©׳¨׳" ׳ ׳¡׳’׳¨׳"  -  ׳›׳‘׳¨ ׳"׳×׳§׳‘׳׳• ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳"׳™׳.`,
         });
       }
 
@@ -1454,7 +1375,7 @@ const jobsRouter = router({
       if (activeOfferCount >= MAX_ACTIVE_OFFERS) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `׳׳ ׳ ׳™׳×׳ ׳׳©׳׳•׳— ׳™׳•׳×׳¨ ׳-${MAX_ACTIVE_OFFERS} ׳”׳¦׳¢׳•׳× ׳¢׳‘׳•׳“׳” ׳₪׳¢׳™׳׳•׳× ׳‘׳•-׳–׳׳ ׳™׳× ׳׳׳©׳¨׳” ׳–׳•. ׳”׳׳×׳ ׳׳×׳’׳•׳‘׳× ׳”׳¢׳•׳‘׳“׳™׳ ׳©׳›׳‘׳¨ ׳§׳™׳‘׳׳• ׳”׳¦׳¢׳”.`,
+          message: `׳׳ ׳ ׳™׳×׳ ׳׳©׳׳•׳— ׳™׳•׳×׳¨ ׳-${MAX_ACTIVE_OFFERS} ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳" ׳₪׳¢׳™׳׳•׳× ׳‘׳•-׳–׳׳ ׳™׳× ׳׳׳©׳¨׳" ׳–׳•. ׳"׳׳×׳ ׳׳×׳’׳•׳‘׳× ׳"׳¢׳•׳‘׳"׳™׳ ׳©׳›׳‘׳¨ ׳§׳™׳‘׳׳• ׳"׳¦׳¢׳".`,
         });
       }
 
@@ -1463,34 +1384,34 @@ const jobsRouter = router({
       if (acceptedCount >= MAX_ACCEPTED_CANDIDATES) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `׳”׳׳©׳¨׳” ׳›׳‘׳¨ ׳׳׳׳” ג€” ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳“׳™׳ ׳׳™׳©׳¨׳•.`,
+          message: `׳"׳׳©׳¨׳" ׳›׳‘׳¨ ׳׳׳׳"  -  ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳"׳™׳ ׳׳™׳©׳¨׳•.`,
         });
       }
 
       // Get worker profile to determine notification prefs and phone
       const worker = await getWorkerProfile(input.workerId);
-      if (!worker) throw new TRPCError({ code: "NOT_FOUND", message: "׳¢׳•׳‘׳“ ׳׳ ׳ ׳׳¦׳" });
+      if (!worker) throw new TRPCError({ code: "NOT_FOUND", message: "עובד לא נמצא" });
 
       // Create application record with status "offered"
       await createJobOffer(input.workerId, input.jobId);
 
       const jobUrl = `${input.origin ?? "https://avodanow.co.il"}/job/${input.jobId}`;
-      const employerName = ctx.user.name ?? "׳׳¢׳¡׳™׳§";
-      const jobLabel = job.category ?? job.title ?? "׳׳©׳¨׳”";
+      const employerName = ctx.user.name ?? "מעסיק";
+      const jobLabel = job.category ?? job.title ?? "משרה";
 
       const notifPrefs = worker.notificationPrefs ?? "both";
 
       // Send SMS if prefs allow
       if ((notifPrefs === "both" || notifPrefs === "sms_only") && worker.phone) {
-        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳— ׳׳ ׳”׳¦׳¢׳× ׳¢׳‘׳•׳“׳”: ${jobLabel}.\n׳׳¦׳₪׳™׳™׳” ׳•׳׳™׳©׳•׳¨/׳“׳—׳™׳™׳”: ${jobUrl}\n\n׳׳”׳¡׳¨׳” ׳׳¨׳©׳™׳׳× ׳”׳”׳×׳¨׳׳•׳×: https://avodanow.co.il/worker-profile`;
+        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}.\n׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨/׳"׳—׳™׳™׳": ${jobUrl}\n\n׳׳"׳¡׳¨׳" ׳׳¨׳©׳™׳׳× ׳"׳"׳×׳¨׳׳•׳×: https://avodanow.co.il/worker-profile`;
         sendSms(worker.phone, smsBody).catch(e => console.warn("[JobOffer] SMS failed:", e));
       }
 
       // Send Push if prefs allow
       if (notifPrefs === "both" || notifPrefs === "push_only") {
         sendPushToUser(input.workerId, {
-          title: `נ’¼ ׳”׳¦׳¢׳× ׳¢׳‘׳•׳“׳”: ${jobLabel}`,
-          body: `${employerName} ׳©׳׳— ׳׳ ׳”׳¦׳¢׳× ׳¢׳‘׳•׳“׳”. ׳׳—׳¥ ׳׳¦׳₪׳™׳™׳” ׳•׳׳™׳©׳•׳¨.`,
+          title: `נ’¼ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}`,
+          body: `${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳". ׳׳—׳¥ ׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨.`,
           url: "/my-applications",
         }).catch(e => console.warn("[JobOffer] Push failed:", e));
       }
@@ -1507,9 +1428,9 @@ const jobsRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       const app = await getApplicationById(input.applicationId);
-      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "׳”׳¦׳¢׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
       if (app.workerId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
-      if (app.status !== "offered") throw new TRPCError({ code: "BAD_REQUEST", message: "׳”׳¦׳¢׳” ׳–׳• ׳›׳‘׳¨ ׳˜׳•׳₪׳׳”" });
+      if (app.status !== "offered") throw new TRPCError({ code: "BAD_REQUEST", message: "הצעה זו כבר טופלה" });
 
       // Block accept if the job was already closed due to cap_reached
       if (input.action === "accept") {
@@ -1517,7 +1438,7 @@ const jobsRouter = router({
         if (job && job.status === "closed" && job.closedReason === "cap_reached") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "׳”׳¢׳‘׳•׳“׳” ׳ ׳¡׳’׳¨׳” ג€” ׳›׳‘׳¨ ׳”׳×׳§׳‘׳ ׳׳¡׳₪׳¨ ׳”׳׳•׳¢׳׳“׳™׳ ׳”׳׳§׳¡׳™׳׳׳™.",
+            message: "שגיאה" ,
           });
         }
       }
@@ -1526,7 +1447,7 @@ const jobsRouter = router({
 
       if (input.action === "accept") {
         const workerPhone = app.workerPhone ?? "";
-        const workerName = app.workerName ?? "׳¢׳•׳‘׳“";
+        const workerName = app.workerName ?? "עובד";
         const jobTitle = app.jobTitle ?? "";
         const employerId = app.jobPostedBy;
         const employerPhone = app.employerPhone;
@@ -1539,8 +1460,8 @@ const jobsRouter = router({
           // Notify employer that the job is now filled
           if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
             sendPushToUser(employerId, {
-              title: `ג… ׳”׳׳©׳¨׳” ׳”׳•׳©׳׳׳”!`,
-              body: `׳§׳™׳‘׳׳× ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳“׳™׳ ׳׳׳©׳¨׳” "${jobTitle}". ׳”׳׳©׳¨׳” ׳ ׳¡׳’׳¨׳” ׳׳•׳˜׳•׳׳˜׳™׳×.`,
+              title: `ג… ׳"׳׳©׳¨׳" ׳"׳•׳©׳׳׳"!`,
+              body: `׳§׳™׳‘׳׳× ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳"׳™׳ ׳׳׳©׳¨׳" "${jobTitle}". ׳"׳׳©׳¨׳" ׳ ׳¡׳’׳¨׳" ׳׳•׳˜׳•׳׳˜׳™׳×.`,
               url: `/job/${app.jobId}/applications`,
             }).catch(e => console.warn("[CandidateCap] Push to employer failed:", e));
           }
@@ -1550,15 +1471,15 @@ const jobsRouter = router({
         if (employerPhone && (employerPrefs === "sms_only" || employerPrefs === "both")) {
           sendSms(
             employerPhone,
-            `׳׳™׳©׳¨׳¨׳•׳¨ ׳”׳¦׳¢׳”! ${workerName} ׳׳™׳©׳¨ ׳׳× ׳”׳¦׳¢׳×׳ ׳׳׳©׳¨׳” "${jobTitle}". ׳”׳˜׳׳₪׳•׳ ׳©׳׳•: ${workerPhone}`
+            `׳׳™׳©׳¨׳¨׳•׳¨ ׳"׳¦׳¢׳"! ${workerName} ׳׳™׳©׳¨ ׳׳× ׳"׳¦׳¢׳×׳ ׳׳׳©׳¨׳" "${jobTitle}". ׳"׳˜׳׳₪׳•׳ ׳©׳׳•: ${workerPhone}`
           ).catch(e => console.warn("[JobOffer] SMS to employer failed:", e));
         }
 
         // Push to employer with worker phone
         if (employerId && (employerPrefs === "push_only" || employerPrefs === "both")) {
           sendPushToUser(employerId, {
-            title: `נ“ ${workerName} ׳׳™׳©׳¨ ׳׳× ׳”׳¦׳¢׳×׳!`,
-            body: `׳׳©׳¨׳”: ${jobTitle}. ׳˜׳׳₪׳•׳ ׳”׳¢׳•׳‘׳“: ${workerPhone}`,
+            title: `נ" ${workerName} ׳׳™׳©׳¨ ׳׳× ׳"׳¦׳¢׳×׳!`,
+            body: `׳׳©׳¨׳": ${jobTitle}. ׳˜׳׳₪׳•׳ ׳"׳¢׳•׳‘׳": ${workerPhone}`,
             url: `/job/${app.jobId}/applications`,
           }).catch(e => console.warn("[JobOffer] Push to employer failed:", e));
         }
@@ -1567,7 +1488,7 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  /** Mark a job as filled ג€” only the job owner can do this */
+  /** Mark a job as filled  -  only the job owner can do this */
   markFilled: registeredProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input, ctx }) => {
@@ -1597,7 +1518,7 @@ const jobsRouter = router({
       return { success: true };
     }),
 
-  /** Worker applies to a job ג€” records application and sends SMS to employer */
+  /** Worker applies to a job  -  records application and sends SMS to employer */
   applyToJob: registeredProcedure
     .input(
       z.object({
@@ -1608,31 +1529,40 @@ const jobsRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.status !== "active" && job.status !== "under_review") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳©׳¨׳” ׳–׳• ׳׳™׳ ׳” ׳₪׳¢׳™׳׳”" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "משרה זו אינה פעילה" });
       }
 
-      // ג”€ג”€ Server-side minor eligibility guard (category + hours) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // בדיקת הסכמה לתנאי שימוש לפני הגשת מועמדות
+      if (!ctx.user.termsAcceptedAt) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "יש לאשר את תנאי השימוש לפני הגשת מועמדות",
+          cause: { code: "consent_required" },
+        });
+      }
+
+      // ג"€ג"€ Server-side minor eligibility guard (category + hours) ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
       await assertMinorEligible(ctx.user.id, {
         category: job.category,
         workEndTime: job.workEndTime,
       });
-      // ג”€ג”€ minAge requirement check (applies to all ages) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ minAge requirement check (applies to all ages) ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
       const birthDate = await getWorkerBirthDate(ctx.user.id);
       const age = calcAge(birthDate)!; // assertMinorEligible already threw if null
       if (!meetsMinAgeRequirement(age, job.minAge)) {
         const required = job.minAge === 18 ? "18" : String(job.minAge);
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: `׳׳©׳¨׳” ׳–׳• ׳׳™׳•׳¢׳“׳× ׳׳¢׳•׳‘׳“׳™׳ ׳׳’׳™׳ ${required} ׳‘׳׳‘׳“`,
+          message: `׳׳©׳¨׳" ׳–׳• ׳׳™׳•׳¢׳"׳× ׳׳¢׳•׳‘׳"׳™׳ ׳׳’׳™׳ ${required} ׳‘׳׳‘׳"`,
         });
       }
-      // ג”€ג”€ End age gate ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ End age gate ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
       // Prevent duplicate applications
       const existing = await getApplicationByWorkerAndJob(ctx.user.id, input.jobId);
       if (existing) {
-        throw new TRPCError({ code: "CONFLICT", message: "׳›׳‘׳¨ ׳”׳’׳©׳× ׳׳•׳¢׳׳“׳•׳× ׳׳׳©׳¨׳” ׳–׳•" });
+        throw new TRPCError({ code: "CONFLICT", message: "קונפליקט" });
       }
 
       // Record the application (sanitize message to prevent XSS)
@@ -1655,12 +1585,12 @@ const jobsRouter = router({
 
       // Immediate Push notification to employer (respects prefs)
       if (job.postedBy != null && (employerPrefs === "both" || employerPrefs === "push_only")) {
-        const workerName = ctx.user.name ?? "׳¢׳•׳‘׳“ ׳—׳“׳©";
+        const workerName = ctx.user.name ?? "עובד חדש";
         const origin = input.origin ?? "";
         const appUrl = origin ? `${origin}/jobs/${input.jobId}/applications` : `/jobs/${input.jobId}/applications`;
         sendPushToUser(job.postedBy, {
-          title: "׳׳•׳¢׳׳“ ׳—׳“׳©! נ‰",
-          body: `${workerName} ׳”׳’׳™׳© ׳׳•׳¢׳׳“׳•׳× ׳׳׳©׳¨׳”: ${job.title}`,
+          title: "מועמדות חדשה! 📩",
+          body: `${workerName} ׳"׳’׳™׳© ׳׳•׳¢׳׳"׳•׳× ׳׳׳©׳¨׳": ${job.title}`,
           url: appUrl,
         }).catch((err) => console.warn("[Apply] Push to employer error:", err));
       }
@@ -1673,8 +1603,8 @@ const jobsRouter = router({
     .input(z.object({ jobId: z.number() }))
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
-      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN", message: "׳׳™׳ ׳”׳¨׳©׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
+      if (job.postedBy !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה" });
       const rows = await getApplicationsForJobWithDistance(
         input.jobId,
         job.latitude,
@@ -1698,7 +1628,7 @@ const jobsRouter = router({
     .input(z.object({ jobId: z.number() }))
     .query(async ({ input, ctx }) => {
       const job = await getJobById(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳©׳¨׳” ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "משרה לא נמצאה" });
       if (job.postedBy !== ctx.user.id && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
@@ -1723,12 +1653,12 @@ const jobsRouter = router({
     }))
     .mutation(async ({ input, ctx }) => {
       const app = await getApplicationById(input.id);
-      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳•׳¢׳׳“׳•׳× ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
       if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "׳׳™׳ ׳׳ ׳’׳™׳©׳” ׳׳₪׳¢׳•׳׳” ׳–׳•" });
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה לפעולה זו" });
       }
 
-      // ג”€ג”€ Minor eligibility guard (only when accepting) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ Minor eligibility guard (only when accepting) ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
       // Prevents an employer from accepting a minor worker into a restricted job.
       if (input.action === "accept" && app.workerId) {
         await assertMinorEligible(app.workerId, {
@@ -1736,19 +1666,19 @@ const jobsRouter = router({
           workEndTime: app.jobWorkEndTime,
         });
       }
-      // ג”€ג”€ End minor eligibility guard ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ End minor eligibility guard ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
-      // ג”€ג”€ Candidate cap guard (only when accepting) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ Candidate cap guard (only when accepting) ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
       if (input.action === "accept") {
         const alreadyAccepted = await countAcceptedCandidates(app.jobId);
         if (alreadyAccepted >= MAX_ACCEPTED_CANDIDATES) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `׳”׳׳©׳¨׳” ׳›׳‘׳¨ ׳׳׳׳” ג€” ׳›׳‘׳¨ ׳”׳×׳§׳‘׳׳• ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳“׳™׳.`,
+            message: `׳"׳׳©׳¨׳" ׳›׳‘׳¨ ׳׳׳׳"  -  ׳›׳‘׳¨ ׳"׳×׳§׳‘׳׳• ${MAX_ACCEPTED_CANDIDATES} ׳׳•׳¢׳׳"׳™׳.`,
           });
         }
       }
-      // ג”€ג”€ End candidate cap guard ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ג"€ג"€ End candidate cap guard ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
       await updateApplicationStatus(input.id, input.action);
 
@@ -1764,10 +1694,10 @@ const jobsRouter = router({
       if (app.workerId) {
         const isAccepted = input.action === "accept";
         sendPushToUser(app.workerId, {
-          title: isAccepted ? "נ‰ ׳׳•׳¢׳׳“׳•׳×׳ ׳”׳×׳§׳‘׳׳”!" : "׳¢׳“׳›׳•׳ ׳׳•׳¢׳׳“׳•׳×",
+          title: isAccepted ? "הבקשה התקבלה!" : "עדכון בקשה",
           body: isAccepted
-            ? `׳׳–׳ ׳˜׳•׳‘! ׳”׳׳¢׳¡׳™׳§ ׳§׳™׳‘׳ ׳׳× ׳׳•׳¢׳׳“׳•׳×׳ ׳׳׳©׳¨׳” "${app.jobTitle}"`
-            : `׳׳•׳¢׳׳“׳•׳×׳ ׳׳׳©׳¨׳” "${app.jobTitle}" ׳׳ ׳”׳×׳§׳‘׳׳”`,
+            ? `׳׳–׳ ׳˜׳•׳‘! ׳"׳׳¢׳¡׳™׳§ ׳§׳™׳‘׳ ׳׳× ׳׳•׳¢׳׳"׳•׳×׳ ׳׳׳©׳¨׳" "${app.jobTitle}"`
+            : `׳׳•׳¢׳׳"׳•׳×׳ ׳׳׳©׳¨׳" "${app.jobTitle}" ׳׳ ׳"׳×׳§׳‘׳׳"`,
           url: "/my-applications",
         }).catch((e) => console.error("[WebPush] send failed:", e));
       }
@@ -1797,9 +1727,9 @@ const jobsRouter = router({
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       const app = await getApplicationById(input.id);
-      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳•׳¢׳׳“׳•׳× ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
       if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "׳׳™׳ ׳׳ ׳’׳™׳©׳” ׳׳׳•׳¢׳׳“׳•׳× ׳–׳•" });
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה לפעולה זו" });
       }
       return {
         ...app,
@@ -1817,9 +1747,9 @@ const jobsRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const app = await getApplicationById(input.id);
-      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "׳׳•׳¢׳׳“׳•׳× ׳׳ ׳ ׳׳¦׳׳”" });
+      if (!app) throw new TRPCError({ code: "NOT_FOUND", message: "מועמדות לא נמצאה" });
       if (app.jobPostedBy !== ctx.user.id && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "׳׳™׳ ׳׳ ׳’׳™׳©׳” ׳׳₪׳¢׳•׳׳” ׳–׳•" });
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה לפעולה זו" });
       }
        await revealApplicationContact(input.id);
       // Return the phone number now that it's been revealed
@@ -1832,65 +1762,81 @@ const jobsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const result = await withdrawApplication(input.applicationId, ctx.user.id);
       if (!result.success) {
-        const msg = result.reason === "not_found" ? "׳׳•׳¢׳׳“׳•׳× ׳׳ ׳ ׳׳¦׳׳”"
-          : result.reason === "job_expired" ? "׳׳ ׳ ׳™׳×׳ ׳׳‘׳˜׳ ׳׳•׳¢׳׳“׳•׳× ׳׳׳©׳¨׳” ׳©׳₪׳’ ׳×׳•׳§׳₪׳” ׳׳• ׳ ׳¡׳’׳¨׳”"
-          : "׳׳ ׳ ׳™׳×׳ ׳׳‘׳˜׳ ׳׳•׳¢׳׳“׳•׳×";
+        const msg = result.reason === "not_found" ? "מועמדות לא נמצאה"
+          : result.reason === "job_expired" ? "לא ניתן לבטל מועמדות למשרה שפג תוקפה"
+          : "לא ניתן לבטל מועמדות";
         throw new TRPCError({ code: result.reason === "not_found" ? "NOT_FOUND" : "FORBIDDEN", message: msg });
       }
       return { success: true };
     }),
 
-  // ג”€ג”€ג”€ Job Publish OTP ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ג"€ Job Publish OTP ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
   /**
    * Step 1: Send a 6-digit OTP to the employer's phone (SMS) or email.
-   * The OTP is scoped to job publishing ג€” it reuses the existing Twilio Verify
+   * The OTP is scoped to job publishing  -  it reuses the existing Twilio Verify
    * and emailOtp infrastructure but is a separate call so it doesn't interfere
    * with the login flow.
    */
-  sendPublishOtp: phoneRequiredProcedure
+  sendPublishOtp: protectedProcedure
     .input(z.object({
       channel: z.enum(["sms", "email"]),
+      pendingPhonePrefix: z.string().min(2).max(3).optional(),
+      pendingPhoneNumber: z.string().length(7).optional(),
+      pendingName: z.string().min(2).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
 
-      // ג”€ג”€ Rate limit: max 3 sends per user per 10 minutes ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ── Rate limit: max 3 sends per user per 10 minutes ──────────────────────
       const rlKey = `publish-otp:${user.id}`;
       const rlResult = publishOtpRateLimiter.check(rlKey);
       if (!rlResult.allowed) {
         const minutes = Math.ceil(rlResult.retryAfterMs / 60_000);
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
-          message: `׳©׳׳—׳× ׳™׳•׳×׳¨ ׳׳“׳™ ׳§׳•׳“׳•׳×. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ${minutes} ׳“׳§׳•׳×`,
+          message: `שלחת יותר מדי קודות. נסה שוב בעוד ${minutes} דקות`,
         });
       }
 
       if (input.channel === "email") {
         const email = user.email;
         if (!email) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳׳” ׳›׳×׳•׳‘׳× ׳׳™׳™׳ ׳‘׳—׳©׳‘׳•׳ ׳" });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
         }
-        // Cooldown check
         const cooldownMs = await getEmailSendCooldown(email);
         if (cooldownMs > 0) {
           const seconds = Math.ceil(cooldownMs / 1000);
-          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳”׳׳×׳ ${seconds} ׳©׳ ׳™׳•׳× ׳׳₪׳ ׳™ ׳©׳׳™׳—׳” ׳—׳•׳–׳¨׳×` });
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `המתן ${seconds} שניות לפני שליחה חוזרת` });
         }
         const code = await createEmailOtp(email);
         await sendEmailOtp(email, code);
         return { channel: "email" as const, maskedTarget: email.replace(/(.{2}).*(@.*)/, "$1***$2") };
       } else {
-        // SMS via Twilio Verify
-        const phone = user.phone;
-        if (!phone) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳ ׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳‘׳—׳©׳‘׳•׳ ׳" });
+        // משתמש עם טלפון קיים — שולח לטלפון הרשום; אחרת — לטלפון שהוזן בטופס
+        let targetPhone: string;
+        if (user.phone) {
+          targetPhone = user.phone;
+        } else {
+          if (!input.pendingPhonePrefix || !input.pendingPhoneNumber) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "יש להזין מספר טלפון" });
+          }
+          const combined = `${input.pendingPhonePrefix}${input.pendingPhoneNumber}`;
+          targetPhone = normalizeIsraeliPhone(combined);
+          if (!isValidIsraeliPhone(targetPhone)) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "מספר טלפון לא תקין" });
+          }
+          // בדיקת ייחודיות לפני שליחה
+          const existing = await getUserByNormalizedPhone(targetPhone, normalizeIsraeliPhone);
+          if (existing && existing.id !== user.id) {
+            throw new TRPCError({ code: "CONFLICT", message: "מספר הטלפון כבר רשום לחשבון אחר" });
+          }
         }
-        const result = await smsProvider.sendOtp(phone);
+        const result = await smsProvider.sendOtp(targetPhone);
         if (!result.success) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "׳©׳׳™׳—׳× ׳§׳•׳“ SMS ׳ ׳›׳©׳׳”. ׳ ׳¡׳” ׳©׳•׳‘" });
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "שליחת SMS נכשלה. נסה שוב" });
         }
-        const last4 = phone.slice(-4);
+        const last4 = targetPhone.slice(-4);
         return { channel: "sms" as const, maskedTarget: `****${last4}` };
       }
     }),
@@ -1899,40 +1845,66 @@ const jobsRouter = router({
    * Step 2: Verify the OTP and, if valid, create the job.
    * Accepts the full job payload so the job is only created after OTP success.
    */
-  verifyPublishOtp: phoneRequiredProcedure
+  verifyPublishOtp: protectedProcedure
     .input(z.object({
       channel: z.enum(["sms", "email"]),
       code: z.string().length(6),
       jobData: jobInputSchema,
+      pendingPhonePrefix: z.string().min(2).max(3).optional(),
+      pendingPhoneNumber: z.string().length(7).optional(),
+      pendingName: z.string().min(2).optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
 
-      // ג”€ג”€ Verify OTP ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ── Determine target phone (same logic as sendPublishOtp) ──────────────────
+      let resolvedPhone: string;
+      if (user.phone) {
+        resolvedPhone = user.phone;
+      } else {
+        if (!input.pendingPhonePrefix || !input.pendingPhoneNumber) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "יש להזין מספר טלפון" });
+        }
+        resolvedPhone = normalizeIsraeliPhone(`${input.pendingPhonePrefix}${input.pendingPhoneNumber}`);
+      }
+
+      // ── Verify OTP ────────────────────────────────────────────────────────────
       if (input.channel === "email") {
         const email = user.email;
-        if (!email) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳׳” ׳›׳×׳•׳‘׳× ׳׳™׳™׳" });
+        if (!email) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
         const result = await verifyEmailOtp(email, input.code);
         if (result === "not_found" || result === "expired") {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "׳”׳§׳•׳“ ׳₪׳’ ׳×׳•׳§׳£. ׳©׳׳— ׳§׳•׳“ ׳—׳“׳©" });
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "נדרש אימות" });
         }
         if (result === "max_attempts") {
-          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳—׳¨׳’׳× ${EMAIL_OTP_MAX_ATTEMPTS} ׳ ׳™׳¡׳™׳•׳ ׳•׳×. ׳©׳׳— ׳§׳•׳“ ׳—׳“׳©` });
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `חרגת מ-${EMAIL_OTP_MAX_ATTEMPTS} ניסיונות. שלח קוד חדש` });
         }
         if (result === "wrong") {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "׳§׳•׳“ ׳©׳’׳•׳™. ׳ ׳¡׳” ׳©׳•׳‘" });
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי. נסה שוב" });
         }
       } else {
-        // SMS via Twilio Verify
-        const phone = user.phone;
-        if (!phone) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳ ׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳" });
-        const verifyResult = await smsProvider.verifyOtp(phone, input.code);
+        const verifyResult = await smsProvider.verifyOtp(resolvedPhone, input.code);
         if (!verifyResult.success) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "׳§׳•׳“ ׳©׳’׳•׳™ ׳׳• ׳₪׳’ ׳×׳•׳§׳£. ׳ ׳¡׳” ׳©׳•׳‘" });
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "קוד שגוי או פג תוקף. נסה שוב" });
         }
       }
 
-      // ג”€ג”€ OTP valid ג€” create the job (same logic as jobs.create) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+      // ── אם למשתמש לא היה טלפון — שמור את הטלפון (והשם) בחשבון ──────────────────
+      if (!user.phone) {
+        const existing = await getUserByNormalizedPhone(resolvedPhone, normalizeIsraeliPhone);
+        if (existing && existing.id !== user.id) {
+          throw new TRPCError({ code: "CONFLICT", message: "מספר הטלפון כבר רשום לחשבון אחר" });
+        }
+        const split = splitIsraeliE164Phone(resolvedPhone);
+        await updateEmployerProfile(user.id, {
+          phone: resolvedPhone,
+          phonePrefix: split?.prefix ?? null,
+          phoneNumber: split?.number ?? null,
+          name: input.pendingName?.trim() || user.name || undefined,
+        });
+      }
+
+      // ── OTP valid — create the job (same logic as jobs.create) ────────────────
       const jobInput = input.jobData;
 
       if (user.role !== "admin") {
@@ -1940,16 +1912,13 @@ const jobsRouter = router({
         if (!regionCheck.allowed) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: `׳”׳׳–׳•׳¨ ׳¢׳“׳™׳™׳ ׳‘׳”׳¨׳¦׳” ׳•׳ ׳₪׳×׳— ׳‘׳§׳¨׳•׳‘ ׳׳׳¢׳¡׳™׳§׳™׳.`,
+            message: `האזור עדיין בהרצה ונפתח בקרוב למעסיקים.`,
             cause: { regionId: regionCheck.regionId, regionName: regionCheck.regionName, regionSlug: regionCheck.regionSlug },
           });
         }
       }
 
-      const contactPhone = user.phone ?? jobInput.contactPhone;
-      if (!contactPhone) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳ ׳ ׳׳¦׳ ׳׳¡׳₪׳¨ ׳˜׳׳₪׳•׳ ׳‘׳—׳©׳‘׳•׳ ׳" });
-      }
+      const contactPhone = resolvedPhone;
 
       const durationDays = parseInt(jobInput.activeDuration);
       const expiresMs = jobInput.isUrgent ? 12 * 60 * 60 * 1000 : durationDays * 24 * 60 * 60 * 1000;
@@ -1960,7 +1929,7 @@ const jobsRouter = router({
         for (let i = parts.length - 1; i >= 0; i--) {
           const part = parts[i];
           if (/^\d+$/.test(part)) continue;
-          if (part === "׳™׳©׳¨׳׳" || part === "Israel") continue;
+          if (part === "ישראל" || part === "Israel") continue;
           return part;
         }
         return parts[0] ?? addr;
@@ -1973,7 +1942,7 @@ const jobsRouter = router({
         description: sanitizeRichText(jobInput.description),
         address: sanitizeText(jobInput.address),
         city: sanitizeText(city),
-        contactName: sanitizeText(jobInput.contactName),
+        contactName: sanitizeText(input.pendingName?.trim() || jobInput.contactName),
         businessName: sanitizeText(jobInput.businessName),
         workingHours: sanitizeText(jobInput.workingHours),
         jobTags: sanitizeTextArray(jobInput.jobTags ?? [jobInput.category]),
@@ -2049,7 +2018,7 @@ const jobsRouter = router({
     }),
 
 });
-// ג”€ג”€ג”€ Admin Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Admin Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const adminRouter = router({
   /** Dashboard statistics */
@@ -2091,12 +2060,12 @@ const adminRouter = router({
   /** Jobs under review (reported 3+ times) */
   reportedJobs: adminProcedure.query(async () => adminGetReportedJobs()),
 
-  /** Approve a job ג€” set status=active, clear report count */
+  /** Approve a job  -  set status=active, clear report count */
   approveJob: adminProcedure
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input }) => { await adminApproveJob(input.jobId); return { success: true }; }),
 
-  /** Reject/hide a job ג€” set status=closed */
+  /** Reject/hide a job  -  set status=closed */
   rejectJob: adminProcedure
     .input(z.object({ jobId: z.number() }))
     .mutation(async ({ input }) => { await adminRejectJob(input.jobId); return { success: true }; }),
@@ -2210,7 +2179,7 @@ const adminRouter = router({
       return { success: true };
     }),
 
-  // ג”€ג”€ Applications Admin ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ Applications Admin ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
   /** All applications with worker + job info */
   listApplications: adminProcedure
@@ -2233,7 +2202,7 @@ const adminRouter = router({
       }));
     }),
 
-  // ג”€ג”€ Notification Batches Admin ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ Notification Batches Admin ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
   /** All notification batches */
   listBatches: adminProcedure
     .input(z.object({ limit: z.number().optional() }))
@@ -2311,7 +2280,7 @@ const adminRouter = router({
       return { success: true, active: input.active };
     }),
 
-  /** Paginated audit log of all birthDate changes ג€” for legal/compliance review */
+  /** Paginated audit log of all birthDate changes  -  for legal/compliance review */
   getBirthdateChanges: adminProcedure
     .input(z.object({
       limit: z.number().int().min(1).max(200).default(50),
@@ -2322,7 +2291,7 @@ const adminRouter = router({
       return rows;
     }),
 
-  /** Paginated system logs with phone/level/event filters ג€” for debugging and support */
+  /** Paginated system logs with phone/level/event filters  -  for debugging and support */
   getSystemLogs: adminProcedure
     .input(z.object({
       phone: z.string().max(32).optional(),
@@ -2341,7 +2310,7 @@ const adminRouter = router({
       });
     }),
 
-  // ג”€ג”€ג”€ Notification Logs ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ג"€ Notification Logs ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
   /** List all jobs that have notification logs, with aggregate sent/failed/skipped counts */
   getJobsWithNotificationStats: adminProcedure.query(async () =>
@@ -2358,7 +2327,7 @@ const adminRouter = router({
     .input(z.object({ jobId: z.number().int().positive() }))
     .query(async ({ input }) => getNotificationBatchSummaryForJob(input.jobId)),
 });
-// ג”€ג”€ג”€ Workers Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Workers Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const workersRouter = router({
   /** Set current user as available to work */
@@ -2422,7 +2391,7 @@ const workersRouter = router({
     }),
 });
 
-//// ג”€ג”€ג”€ Live Stats Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+//// ג"€ג"€ג"€ Live Stats Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const liveStatsRouter = router({
   /** Real-time platform stats: available workers, new jobs last hour, urgent jobs */
@@ -2443,7 +2412,7 @@ const liveStatsRouter = router({
     }),
 });
 
-// ג”€ג”€ג”€ User Mode Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ User Mode Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const userRouter = router({
   /**
@@ -2451,7 +2420,7 @@ const userRouter = router({
    * Returns { available: true } if the email is not yet registered,
    * or { available: false, loginMethod } so the frontend can guide
    * the user to the correct sign-in method.
-   * Public ג€” no auth required (called before Google OAuth redirect).
+   * Public  -  no auth required (called before Google OAuth redirect).
    */
   checkEmailAvailable: publicProcedure
     .input(z.object({ email: z.string().email().max(320) }))
@@ -2512,7 +2481,7 @@ const userRouter = router({
       return profile;
     }),
 
-  /** Complete the worker onboarding signup flow ג€” saves all required + optional fields at once */
+  /** Complete the worker onboarding signup flow  -  saves all required + optional fields at once */
   completeSignup: protectedProcedure
     .input(
       z.object({
@@ -2585,7 +2554,7 @@ const userRouter = router({
           meta: { name: input.name, locationMode: input.locationMode, categories: input.preferredCategories },
         });
 
-        // Send welcome email (fire-and-forget ג€” don't block the response)
+        // Send welcome email (fire-and-forget  -  don't block the response)
         // Skip for email_otp users: they already received the welcome email in verifyEmailCode
         const userEmail = ctx.user.email;
         if (userEmail && ctx.user.loginMethod !== "email_otp") {
@@ -2653,10 +2622,10 @@ const userRouter = router({
           input.phonePrefix !== null && input.phoneNumber !== null) {
         const prefixValid = await isValidPhonePrefix(input.phonePrefix);
         if (!prefixValid) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳§׳™׳“׳•׳׳× ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳ ׳”" });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
         }
         if (!/^\d{7}$/.test(input.phoneNumber)) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳—׳™׳™׳‘ ׳׳”׳›׳™׳ ׳‘׳“׳™׳•׳§ 7 ׳¡׳₪׳¨׳•׳×" });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
         }
         phonePrefix = input.phonePrefix;
         phoneNumber = input.phoneNumber;
@@ -2673,11 +2642,11 @@ const userRouter = router({
         if (existingWithPhone && existingWithPhone.id !== ctx.user.id) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳›׳‘׳¨ ׳׳©׳•׳™׳ ׳׳—׳©׳‘׳•׳ ׳׳—׳¨ ׳‘׳׳¢׳¨׳›׳×.",
+            message: "שגיאה" ,
           });
         }
       }
-      // Strip 'night' slot for minor users ג€” enforced server-side regardless of client input
+      // Strip 'night' slot for minor users  -  enforced server-side regardless of client input
       let sanitizedTimeSlots = input.preferredTimeSlots;
       if (sanitizedTimeSlots && sanitizedTimeSlots.includes("night")) {
         const birthDate = await getWorkerBirthDate(ctx.user.id);
@@ -2709,7 +2678,7 @@ const userRouter = router({
         email: isGoogleLoginMethod(ctx.user.loginMethod) ? undefined : input.email,
       });
 
-      // ג”€ג”€ Multi-region association: sync GPS radius + preferred cities ג”€ג”€
+      // ג"€ג"€ Multi-region association: sync GPS radius + preferred cities ג"€ג"€
       try {
         const lat = input.workerLatitude ? parseFloat(input.workerLatitude) : null;
         const lng = input.workerLongitude ? parseFloat(input.workerLongitude) : null;
@@ -2752,7 +2721,7 @@ const userRouter = router({
       return { url };
     }),
 
-  // ג”€ג”€ Employer Profile ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+  // ג"€ג"€ Employer Profile ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
   /** Get the current employer's profile */
   getEmployerProfile: protectedProcedure.query(async ({ ctx }) => {
@@ -2803,8 +2772,8 @@ const userRouter = router({
       let phoneNumber: string | undefined = undefined;
       if (input.phonePrefix != null && input.phoneNumber != null) {
         const prefixValid = await isValidPhonePrefix(input.phonePrefix);
-        if (!prefixValid) throw new TRPCError({ code: "BAD_REQUEST", message: "׳§׳™׳“׳•׳׳× ׳˜׳׳₪׳•׳ ׳׳ ׳×׳§׳™׳ ׳”" });
-        if (!/^\d{7}$/.test(input.phoneNumber)) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳—׳™׳™׳‘ ׳׳”׳›׳™׳ ׳‘׳“׳™׳™׳§ 7 ׳¡׳₪׳¨׳•׳×" });
+        if (!prefixValid) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
+        if (!/^\d{7}$/.test(input.phoneNumber)) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
         phonePrefix = input.phonePrefix;
         phoneNumber = input.phoneNumber;
         const combined = `${input.phonePrefix}${input.phoneNumber}`;
@@ -2816,7 +2785,7 @@ const userRouter = router({
       if (normalizedPhone) {
         const existing = await getUserByNormalizedPhone(normalizedPhone, normalizeIsraeliPhone);
         if (existing && existing.id !== ctx.user.id) {
-          throw new TRPCError({ code: "CONFLICT", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳›׳‘׳¨ ׳׳©׳•׳™׳ ׳׳—׳©׳‘׳•׳ ׳׳—׳¨ ׳‘׳׳¢׳¨׳›׳×." });
+          throw new TRPCError({ code: "CONFLICT", message: "מספר הטלפון כבר רשום לחשבון אחר" });
         }
       }
       await updateEmployerProfile(ctx.user.id, {
@@ -2888,38 +2857,38 @@ const userRouter = router({
         ?? ctx.req.socket?.remoteAddress ?? "unknown";
 
       const normalized = normalizeIsraeliPhone(input.phone);
-      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳׳™׳ ׳• ׳×׳§׳™׳" });
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
 
       // Check lockout: if user had 5+ failed verify attempts in last hour
       const recentFailures = await countRecentPhoneChangeFailures(ctx.user.id);
       if (recentFailures >= 5) {
         await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
         // Notify owner about lockout
-        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳ ג€” ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "׳”׳—׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳–׳׳ ׳™׳× ׳׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ׳©׳¢׳”." });
+        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
       // Check if number is already taken by another user
       const existing = await getUserByPhone(normalized);
       if (existing && existing.id !== ctx.user.id) {
-        throw new TRPCError({ code: "CONFLICT", message: "׳׳¡׳₪׳¨ ׳–׳” ׳›׳‘׳¨ ׳¨׳©׳•׳ ׳‘׳׳¢׳¨׳›׳×" });
+        throw new TRPCError({ code: "CONFLICT", message: "קונפליקט" });
       }
 
       // Rate limit: max 5 OTP sends per phone per hour
       const rateLimitOk = await checkAndIncrementSendRate(normalized);
       if (!rateLimitOk) {
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "׳™׳•׳×׳¨ ׳׳“׳™ ׳‘׳§׳©׳•׳×. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ׳©׳¢׳”" });
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
       const result = await smsProvider.sendOtp(normalized);
       if (!result.success) {
-        // SMS failed ג€” check if user has email for fallback
+        // SMS failed  -  check if user has email for fallback
         const userEmail = ctx.user.email;
         return {
           success: false,
           smsFailed: true,
           hasEmailFallback: !!(userEmail && userEmail.includes("@")),
-          error: result.error ?? "׳©׳’׳™׳׳” ׳‘׳©׳׳™׳—׳× ׳§׳•׳“",
+          error: result.error ?? "ערך ברירת מחדל",
           normalizedPhone: normalized,
         };
       }
@@ -2934,14 +2903,14 @@ const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const userEmail = ctx.user.email;
       if (!userEmail || !userEmail.includes("@")) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳™׳ ׳›׳×׳•׳‘׳× ׳׳™׳™׳ ׳¨׳©׳•׳׳” ׳‘׳—׳©׳‘׳•׳" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
       }
       const normalized = normalizeIsraeliPhone(input.phone);
-      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳׳™׳ ׳• ׳×׳§׳™׳" });
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
 
       const result = await smsProvider.sendOtpToEmail(userEmail);
       if (!result.success) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error ?? "׳©׳’׳™׳׳” ׳‘׳©׳׳™׳—׳× ׳§׳•׳“ ׳׳׳™׳™׳" });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error ?? "שגיאה בשליחת קוד מייל" });
       }
       // Return masked email for display
       const [local, domain] = userEmail.split("@");
@@ -2967,21 +2936,21 @@ const userRouter = router({
         ?? ctx.req.socket?.remoteAddress ?? "unknown";
 
       const normalized = normalizeIsraeliPhone(input.phone);
-      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳׳™׳ ׳• ׳×׳§׳™׳" });
+      if (!normalized) throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
 
       // Check lockout before attempting
       const recentFailures = await countRecentPhoneChangeFailures(ctx.user.id);
       if (recentFailures >= 5) {
         await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
-        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳ ג€” ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "׳”׳—׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳–׳׳ ׳™׳× ׳׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳. ׳ ׳¡׳” ׳©׳•׳‘ ׳‘׳¢׳•׳“ ׳©׳¢׳”." });
+        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
       // Rate limit verify attempts
       const attemptsOk = await checkAndIncrementVerifyAttempts(normalized);
       if (!attemptsOk) {
         await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "failed" });
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "׳™׳•׳×׳¨ ׳׳“׳™ ׳ ׳™׳¡׳™׳•׳ ׳•׳×. ׳ ׳¡׳” ׳©׳•׳‘ ׳׳׳•׳—׳¨ ׳™׳•׳×׳¨" });
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
       let verifyResult;
@@ -2997,14 +2966,14 @@ const userRouter = router({
         // Check if now locked out
         const failuresAfter = await countRecentPhoneChangeFailures(ctx.user.id);
         if (failuresAfter >= 5) {
-          notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳ ג€” ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳”׳’׳™׳¢ ׳-5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳ ׳•׳ ׳¢׳§׳¨ ׳׳©׳¢׳”. IP: ${ip}` }).catch(() => {});
-          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳§׳•׳“ ׳©׳’׳•׳™. ׳”׳—׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳׳©׳¢׳” ׳׳׳—׳¨ ${failuresAfter} ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳.` });
+          notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳"׳’׳™׳¢ ׳-5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳ ׳•׳ ׳¢׳§׳¨ ׳׳©׳¢׳". IP: ${ip}` }).catch(() => {});
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳§׳•׳" ׳©׳’׳•׳™. ׳"׳—׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳׳©׳¢׳" ׳׳׳—׳¨ ${failuresAfter} ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳.` });
         }
         const remaining = 5 - failuresAfter;
-        throw new TRPCError({ code: "BAD_REQUEST", message: `׳§׳•׳“ ׳”׳׳™׳׳•׳× ׳©׳’׳•׳™ ׳׳• ׳₪׳’ ׳×׳•׳§׳₪׳•. ׳ ׳•׳×׳¨׳• ׳¢׳•׳“ ${remaining} ׳ ׳™׳¡׳™׳•׳ ׳•׳×.` });
+        throw new TRPCError({ code: "BAD_REQUEST", message: `׳§׳•׳" ׳"׳׳™׳׳•׳× ׳©׳’׳•׳™ ׳׳• ׳₪׳’ ׳×׳•׳§׳₪׳•. ׳ ׳•׳×׳¨׳• ׳¢׳•׳" ${remaining} ׳ ׳™׳¡׳™׳•׳ ׳•׳×.` });
       }
 
-      // Success ג€” update phone in DB and log
+      // Success  -  update phone in DB and log
       try {
         await updateUserPhone(ctx.user.id, normalized, input.phonePrefix ?? null, input.phoneNumber ?? null, normalizeIsraeliPhone);
       } catch (err: unknown) {
@@ -3013,7 +2982,7 @@ const userRouter = router({
           await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "failed" });
           throw new TRPCError({
             code: "CONFLICT",
-            message: "׳׳¡׳₪׳¨ ׳”׳˜׳׳₪׳•׳ ׳›׳‘׳¨ ׳©׳™׳™׳ ׳׳׳©׳×׳׳© ׳׳—׳¨ ׳‘׳׳¢׳¨׳›׳×.",
+            message: "שגיאה" ,
           });
         }
         throw err;
@@ -3035,7 +3004,7 @@ const userRouter = router({
 
   /**
    * Record a user's explicit consent to a legal document.
-   * Idempotent ג€” re-consenting to the same type is a no-op.
+   * Idempotent  -  re-consenting to the same type is a no-op.
    */
   recordConsent: protectedProcedure
     .input(z.object({
@@ -3061,6 +3030,28 @@ const userRouter = router({
       return { success: true };
     }),
 
+  /**
+   * הצהרת הסכמה לפני פעולה אמיתית ראשונה (apply / פרסום מודעה).
+   * מגדירה termsAcceptedAt ורושמת records ב-user_consents.
+   * אידמפוטנטי — קריאה חוזרת לאחר הסכמה קיימת היא no-op.
+   */
+  acceptRealActionConsent: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const ip = getClientIp(ctx.req);
+      const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
+      await setUserTermsAcceptedAt(ctx.user.id);
+      await Promise.all(
+        (["terms", "privacy"] as const).map((ct) =>
+          recordUserConsent(ctx.user.id, ct, {
+            ipAddress: ip,
+            userAgent: ua,
+            documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
+          })
+        )
+      );
+      return { success: true };
+    }),
+
   /** Get all consent records for the current user */
   getMyConsents: protectedProcedure.query(async ({ ctx }) => {
     return getUserConsents(ctx.user.id);
@@ -3081,7 +3072,7 @@ const userRouter = router({
       const acceptedVersion = existingMap.get(type);
       // Outdated if: never accepted, OR accepted an older version
       if (!acceptedVersion || acceptedVersion < currentVersion) {
-        // Only flag core documents (terms + privacy) ג€” policy docs are informational
+        // Only flag core documents (terms + privacy)  -  policy docs are informational
         if (type === "terms" || type === "privacy") {
           outdated.push(type);
         }
@@ -3105,12 +3096,12 @@ const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const age = calcAge(input.birthDate);
       if (age === null) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳×׳׳¨׳™׳ ׳׳™׳“׳” ׳׳ ׳×׳§׳™׳." });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
       }
       if (isTooYoung(age)) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "׳”׳¨׳©׳׳” ׳›׳¢׳•׳‘׳“ ׳–׳׳™׳ ׳” ׳׳’׳™׳ 16 ׳‘׳׳‘׳“.",
+          message: "שגיאה" ,
         });
       }
       await saveBirthDate(ctx.user.id, input.birthDate);
@@ -3124,23 +3115,23 @@ const userRouter = router({
     }),
 
   /**
-   * Update an existing birthDate ג€” requires re-declaration, enforces 30-day rate limit,
+   * Update an existing birthDate  -  requires re-declaration, enforces 30-day rate limit,
    * and writes an immutable audit row to birthdate_changes.
    */
   updateBirthDate: protectedProcedure
     .input(z.object({
       birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"),
-      /** Frontend must pass true ג€” confirms the declaration checkbox was checked */
+      /** Frontend must pass true  -  confirms the declaration checkbox was checked */
       declarationConfirmed: z.literal(true),
     }))
     .mutation(async ({ ctx, input }) => {
       // Validate date semantics
       const age = calcAge(input.birthDate);
       if (age === null) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "׳×׳׳¨׳™׳ ׳׳™׳“׳” ׳׳ ׳×׳§׳™׳." });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "פרמטרים לא תקינים" });
       }
       if (isTooYoung(age)) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "׳”׳¨׳©׳׳” ׳›׳¢׳•׳‘׳“ ׳–׳׳™׳ ׳” ׳׳’׳™׳ 16 ׳‘׳׳‘׳“." });
+        throw new TRPCError({ code: "FORBIDDEN", message: "אין הרשאה" });
       }
       // 30-day rate limit
       const lastChange = await getLastBirthDateChange(ctx.user.id);
@@ -3150,7 +3141,7 @@ const userRouter = router({
           const nextAllowed = new Date(new Date(lastChange.changedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
           throw new TRPCError({
             code: "TOO_MANY_REQUESTS",
-            message: `׳ ׳™׳×׳ ׳׳¢׳“׳›׳ ׳×׳׳¨׳™׳ ׳׳™׳“׳” ׳₪׳¢׳ ׳‘-30 ׳™׳•׳. ׳ ׳™׳¡׳™׳•׳ ׳”׳‘׳ ׳׳•׳×׳¨ ׳‘-${nextAllowed.toLocaleDateString("he-IL")}.`,
+            message: `׳ ׳™׳×׳ ׳׳¢׳"׳›׳ ׳×׳׳¨׳™׳ ׳׳™׳"׳" ׳₪׳¢׳ ׳‘-30 ׳™׳•׳. ׳ ׳™׳¡׳™׳•׳ ׳"׳‘׳ ׳׳•׳×׳¨ ׳‘-${nextAllowed.toLocaleDateString("he-IL")}.`,
           });
         }
       }
@@ -3200,7 +3191,7 @@ const userRouter = router({
       canChangeAfter,
     };
   }),
-  /** Get isMinor status for multiple worker IDs ג€” used by employer views */
+  /** Get isMinor status for multiple worker IDs  -  used by employer views */
   getWorkersMinorStatus: protectedProcedure
     .input(z.object({ workerIds: z.array(z.number().int()).max(200) }))
     .query(async ({ input }) => {
@@ -3253,7 +3244,7 @@ const userRouter = router({
       return { accessible: true, reason: null };
     }),
 });
-// ג”€ג”€ג”€ Push Notifications Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Push Notifications Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const pushRouter = router({
   /** Subscribe current user to Web Push notifications */
@@ -3287,7 +3278,7 @@ const pushRouter = router({
   })),
 });
 
-// ג”€ג”€ג”€ Saved Jobs Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Saved Jobs Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const savedJobsRouter = router({
   /** Save a job for the current worker */
@@ -3320,7 +3311,7 @@ const savedJobsRouter = router({
   }),
 });
 
-// ג”€ג”€ג”€ Ratings Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Ratings Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const ratingsRouter = router({
   /** Submit or update a rating for a worker (employer only) */
@@ -3364,7 +3355,7 @@ const ratingsRouter = router({
       return getWorkerReviews(input.workerId);
     }),
 });
-// ג”€ג”€ג”€ SEO Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ SEO Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 // Simple in-process cache for SEO stats (10 min TTL)
 let _seoStatsCache: { data: Awaited<ReturnType<typeof getJobCountByCityAndCategory>>; ts: number } | null = null;
@@ -3383,7 +3374,7 @@ const seoRouter = router({
   }),
 });
 
-// ג”€ג”€ג”€ Categories Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Categories Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const categoriesRouter = router({
   /** Get all active categories (public) */
@@ -3464,7 +3455,7 @@ const categoriesRouter = router({
     }),
 });
 
-// ג”€ג”€ג”€ Regions Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Regions Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const regionsRouter = router({
   /** List all regions (public) */
@@ -3657,16 +3648,16 @@ const regionsRouter = router({
       for (const sub of subscribers) {
         try {
           const msg = sub.type === "employer"
-            ? `׳”׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳›׳¢׳× ׳×׳•׳›׳ ׳׳₪׳¨׳¡׳ ׳׳©׳¨׳•׳× ׳•׳׳׳¦׳•׳ ׳¢׳•׳‘׳“׳™׳.`
-            : `׳”׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳׳¢׳¡׳™׳§׳™׳ ׳׳—׳₪׳©׳™׳ ׳¢׳›׳©׳™׳• ג€” ׳‘׳“׳•׳§ ׳”׳¦׳¢׳•׳× ׳¢׳‘׳•׳“׳”.`;
+            ? `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳›׳¢׳× ׳×׳•׳›׳ ׳׳₪׳¨׳¡׳ ׳׳©׳¨׳•׳× ׳•׳׳׳¦׳•׳ ׳¢׳•׳‘׳"׳™׳.`
+            : `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳׳¢׳¡׳™׳§׳™׳ ׳׳—׳₪׳©׳™׳ ׳¢׳›׳©׳™׳•  -  ׳‘׳"׳•׳§ ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳".`;
           await sendPushToUser(sub.userId, {
-            title: `נ‰ ׳”׳׳–׳•׳¨ ${region.name} ׳ ׳₪׳×׳—!`,
+            title: `נ‰ ׳"׳׳–׳•׳¨ ${region.name} ׳ ׳₪׳×׳—!`,
             body: msg,
             url: sub.type === "employer" ? "/post-job" : "/find-jobs",
           });
           notified++;
         } catch {
-          // Non-critical ג€” continue even if push fails
+          // Non-critical  -  continue even if push fails
         }
       }
 
@@ -3674,7 +3665,7 @@ const regionsRouter = router({
     }),
 });
 
-// ג”€ג”€ג”€ Referral Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Referral Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const referralRouter = router({
   /** Apply a referral code to the current user (only if not already set). */
@@ -3701,7 +3692,7 @@ const referralRouter = router({
   }),
 });
 
-// ג”€ג”€ג”€ Maintenance Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Maintenance Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 
 const maintenanceRouter = router({
   /** Public: check if maintenance mode is active + custom message.
@@ -3720,7 +3711,7 @@ const maintenanceRouter = router({
   }),
 });
 
-// ג”€ג”€ג”€ Platform Router (public settings readable by frontend) ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Platform Router (public settings readable by frontend) ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 const platformRouter = router({
   /** Public: check employer-lock status.
    * Admins and test users always receive locked=false so they can access all areas.
@@ -3734,7 +3725,7 @@ const platformRouter = router({
     };
   }),
 });
-// ג”€ג”€ג”€ Support Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ Support Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 /** In-memory rate-limit store: key=ip|userId ג†’ { count, windowStart } */
 const supportRateLimitStore = new Map<string, { count: number; windowStart: number }>();
 
@@ -3772,7 +3763,7 @@ const supportRouter = router({
         if (entry.count >= SUPPORT_REPORT_RATE_LIMIT) {
           throw new TRPCError({
             code: "TOO_MANY_REQUESTS",
-            message: "׳”׳’׳¢׳× ׳׳׳’׳‘׳׳× ׳”׳“׳™׳•׳—׳™׳ ׳׳©׳¢׳”. ׳ ׳¡׳” ׳©׳•׳‘ ׳׳׳•׳—׳¨ ׳™׳•׳×׳¨.",
+            message: "שגיאה" ,
           });
         }
         entry.count++;
@@ -3796,7 +3787,7 @@ const supportRouter = router({
     }),
 });
 
-// ג”€ג”€ג”€ App Router ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€ג”€
+// ג"€ג"€ג"€ App Router ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€ג"€
 export const appRouter = router({
   system: systemRouter,
   maintenance: maintenanceRouter,

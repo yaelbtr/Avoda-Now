@@ -80,6 +80,7 @@ function makeCtx(overrides: Partial<TrpcContext["user"]> = {}): TrpcContext {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
     ...overrides,
   };
   return {

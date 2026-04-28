@@ -152,7 +152,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "הגיש בקשה",
     color: "oklch(0.38 0.07 125.0)",
     bg:    "oklch(0.50 0.14 85 / 0.08)",
-    workerTooltip:   "הגשת בקשה למשרה זו — המעסיק טרם צפה בה",
+    workerTooltip:   "הגשת בקשה למשרה זו - המעסיק טרם צפה בה",
     employerTooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",
   },
   viewed: {
@@ -184,7 +184,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "ממתין לתשובת עובד",
     color: "oklch(0.45 0.16 260)",
     bg:    "oklch(0.45 0.16 260 / 0.08)",
-    workerTooltip:   "קיבלת הצעת עבודה — אשר או דחה",
+    workerTooltip:   "קיבלת הצעת עבודה - אשר או דחה",
     employerTooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",
   },
   offer_rejected: {

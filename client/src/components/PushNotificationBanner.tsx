@@ -69,20 +69,20 @@ export function PushNotificationBanner({
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl ${className}`}
         style={{
           background: "oklch(0.96 0.04 122)",
-          border: "1.5px dashed oklch(0.70 0.12 122 / 0.5)",
+          border: "1.5px solid oklch(0.70 0.12 122 / 0.5)",
         }}
       >
         <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: "oklch(0.35 0.08 122)" }}
         >
-          <Bell className="h-4 w-4" style={{ color: "oklch(0.96 0.04 80)" }} />
+          <Bell className="h-4 w-4" style={{ color: "white" }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold" style={{ color: "oklch(0.22 0.03 122.3)" }}>
+          <p className="text-[13px] font-bold" style={{ color: "oklch(0.22 0.03 122.3)" }}>
             הפעל התראות משרות
           </p>
-          <p className="text-xs truncate" style={{ color: "oklch(0.45 0.05 122)" }}>
+          <p className="text-[11px] truncate" style={{ color: "oklch(0.45 0.05 122)" }}>
             {contextText}
           </p>
         </div>

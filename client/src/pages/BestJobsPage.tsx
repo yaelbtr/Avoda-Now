@@ -11,6 +11,7 @@
  */
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { ChevronRight, Star, Briefcase, ExternalLink } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { getBestJobsPage, BEST_JOBS_PAGES } from "@/data/bestJobsData";
@@ -381,13 +382,9 @@ export default function BestJobsPage() {
             <h2 className="text-sm font-bold text-gray-700 mb-3">קישורים קשורים</h2>
             <div className="flex flex-wrap gap-2">
               {page.relatedLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-amber-300 hover:text-amber-700 transition-colors"
-                >
+                <NavPill key={link.href} href={link.href}>
                   {link.label}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>

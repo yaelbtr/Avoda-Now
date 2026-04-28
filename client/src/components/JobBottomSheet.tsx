@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { shareJobOnWhatsApp, copyJobLink } from "@/components/JobCard";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface JobBottomSheetProps {
@@ -67,6 +68,9 @@ export default function JobBottomSheet({
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired,
@@ -539,6 +543,11 @@ export default function JobBottomSheet({
       )}
     </AnimatePresence>
 
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* Age-gate modal — shown when user has no birthDate on record */}
       <BirthDateModal
         isOpen={birthDateModalOpen}

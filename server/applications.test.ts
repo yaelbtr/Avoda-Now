@@ -126,6 +126,7 @@ function makeUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
     ...overrides,
   };
 }

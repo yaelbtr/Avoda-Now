@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+﻿import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView } from "framer-motion";
@@ -18,12 +18,16 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 // CarouselJobCard replaced by unified JobCard
+import { NavPill } from "@/components/ui/NavPill";
 import JobBottomSheet from "@/components/JobBottomSheet";
 import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
 import NearbyJobsMap from "@/components/NearbyJobsMap";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import BelowFold from "@/components/BelowFold";
+import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 import { toast } from "sonner";
 import { isMinor } from "@shared/ageUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -203,20 +207,6 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const touchStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLat(pos.coords.latitude);
-          setUserLng(pos.coords.longitude);
-          // Propagate location to the shared service so the nearby panel fetches
-          setWorkerLocation(pos.coords.latitude, pos.coords.longitude);
-        },
-        () => {}
-      );
-    }
-  }, [setWorkerLocation]);
-
-  useEffect(() => {
     autoScrollRef.current = setInterval(() => {
       if (isPausedRef.current) return;
       const el = document.getElementById("job-carousel");
@@ -234,13 +224,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     return () => { if (autoScrollRef.current) clearInterval(autoScrollRef.current); };
   }, []);
 
-  // Redirect new workers who haven't completed signup yet
   const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
-  useEffect(() => {
-    if (profileQuery.data && profileQuery.data.signupCompleted === false) {
-      navigate("/worker-profile");
-    }
-  }, [profileQuery.data, navigate]);
 
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
   const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
@@ -261,13 +245,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     () => new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId)),
     [myApplicationsQuery.data]
   );
-  const applyMutation = trpc.jobs.applyToJob.useMutation({
-    onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה!"); },
-    onError: (e: { message: string }) => toast.error(e.message),
-  });
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
+  } = useApplyWithAgeGate({ isAuthenticated, onLoginRequired });
   const handleApply = (jobId: number, message: string | undefined, origin: string) => {
-    if (!isAuthenticated) { onLoginRequired("כדי להגיש מועמדות יש להתחבר"); return; }
-    applyMutation.mutate({ jobId, message, origin });
+    applyWithAgeGate({ jobId, message, origin });
   };
   const handleSaveToggle = (jobId: number, save: boolean) => {
     toggleSave(jobId, !save, onLoginRequired);
@@ -323,7 +312,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     setGeoRequested(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); },
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLng(pos.coords.longitude);
+          setWorkerLocation(pos.coords.latitude, pos.coords.longitude);
+        },
         () => {}
       );
     }
@@ -444,7 +437,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 }}
               />
               <motion.p
-                aria-label="רוצה לעבוד עכשיו?"
+                aria-label="מעסיקים באזורך מחפשים אותך"
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="relative text-[27px] leading-[1.04] font-black"
               style={{
@@ -465,7 +458,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   color: "oklch(0.90 0.13 77)",
                 }}
               >
-                רוצה לעבוד עכשיו?
+                מעסיקים באזורך מחפשים אותך
               </span>
               <span
                 aria-hidden="true"
@@ -495,7 +488,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 לעבוד עכשיו?
               </span>
               <span aria-hidden="true" style={{ display: "none" }}>
-         רוצה לעבוד עכשיו?    
+         מעסיקים באזורך מחפשים אותך    
               </span>
               <span
                 aria-hidden="true"
@@ -639,7 +632,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   textShadow: "0 2px 5px oklch(0.08 0.03 122 / 0.64), 0 10px 20px oklch(0.08 0.03 122 / 0.22)",
                 }}
               >
-                רוצה לעבוד עכשיו?
+                מעסיקים באזורך מחפשים אותך
               </h1>
               <p
                 className="relative"
@@ -719,7 +712,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               padding: "0.18rem 0.45rem 0.2rem",
               borderRadius: "12px",
 
-              background: "linear-gradient(transparent 0%, oklch(0.12 0.03 122 / 0.19) 100%);",
+              background: "linear-gradient(transparent 0%, oklch(0.12 0.03 122 / 0.19) 100%)",
             }}
           >
             <div
@@ -800,18 +793,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 <motion.button
                   onClick={handleAvailabilityToggle}
                   aria-label="הגדר זמינות עכשיו — מעסיקים רואים רק עובדים זמינים, הגדר עכשיו וקבל פניות היום"
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-[14px]"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold text-[14px]"
                   style={{
                     background: "white",
-                    border: "1px solid oklch(0.89 0.05 84.0)",
-                    color: "oklch(0.35 0.08 122)",
-                    boxShadow: "0 2px 8px oklch(0.38 0.07 125.0 / 0.08)",
+                    border: "1.5px solid oklch(0.82 0.06 84.0)",
+                    color: "var(--brand)",
+                    boxShadow: "0 2px 8px oklch(0.45 0.08 84 / 0.08)",
                   }}
                   animate={{
                     boxShadow: [
-                      "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                      "0 0 0 3px oklch(0.78 0.13 84 / 0.22), 0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
-                      "0 2px 8px oklch(0.38 0.07 125.0 / 0.06)",
+                      "0 2px 8px oklch(0.45 0.08 84 / 0.06)",
+                      "0 0 0 3px oklch(0.82 0.06 84.0 / 0.25), 0 2px 8px oklch(0.45 0.08 84 / 0.06)",
+                      "0 2px 8px oklch(0.45 0.08 84 / 0.06)",
                     ],
                   }}
                   transition={{ duration: 3.0, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.5 }}
@@ -1082,17 +1075,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
         <motion.button
           onClick={() => navigate("/find-jobs")}
-          whileHover={{ scale: 1.01, backgroundColor: "oklch(0.96 0.02 122.3)" }}
+          whileHover={{ scale: 1.01, backgroundColor: "oklch(0.93 0.04 91.6)" }}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-3 px-10 py-3.5 rounded-2xl text-[14px] font-bold transition-all"
+          className="w-full flex items-center justify-center gap-3 px-10 py-3.5 rounded-full text-[14px] font-bold transition-all"
           style={{
             background: "white",
-            color: "oklch(0.35 0.08 122)",
-            border: "1.5px solid oklch(0.82 0.06 122 / 0.5)",
-            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.08)",
+            color: "var(--brand)",
+            border: "1.5px solid oklch(0.82 0.06 84.0)",
+            boxShadow: "0 1px 4px oklch(0.45 0.08 84 / 0.08)",
           }}
         >
-          <Search className="h-4 w-4" style={{ color: "oklch(0.35 0.08 122)" }} />
+          <Search className="h-4 w-4" />
           חיפוש עבודה מזדמנת
         </motion.button>
       </section>
@@ -1267,17 +1260,17 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         <div className="relative z-10 px-4 mb-5">
           <div
             className="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl"
-            style={{ background: "oklch(0.97 0.02 95)", border: "1px solid oklch(0.88 0.05 90)" }}
+            style={{ background: "oklch(0.97 0.02 95)", border: "1.5px solid oklch(0.88 0.05 90)" }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "oklch(0.88 0.08 85)" }}
+                style={{ background: "oklch(0.45 0.12 90)" }}
               >
-                <span className="text-base">💼</span>
+                <Briefcase className="h-4 w-4" style={{ color: "white" }} />
               </div>
               <div>
-                <p className="text-[13px] font-black" style={{ color: "oklch(0.35 0.05 91)" }}>השלם את הפרופיל שלך</p>
+                <p className="text-[13px] font-bold" style={{ color: "oklch(0.35 0.05 91)" }}>השלם את הפרופיל שלך</p>
                 <p className="text-[11px]" style={{ color: "oklch(0.55 0.04 91)" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
               </div>
             </div>
@@ -1463,7 +1456,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                       onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
                       onApply={handleApply}
                       isApplied={appliedJobIds.has(job.id)}
-                      isApplyPending={applyMutation.isPending && applyMutation.variables?.jobId === job.id}
+                      isApplyPending={isApplyPending}
                     />
                   </motion.div>
                 ))}
@@ -1616,7 +1609,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                     onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
                     onApply={handleApply}
                     isApplied={appliedJobIds.has(job.id)}
-                    isApplyPending={applyMutation.isPending && applyMutation.variables?.jobId === job.id}
+                    isApplyPending={isApplyPending}
                   />
               </motion.div>
             ))}
@@ -1723,13 +1716,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             { slug: "netanya", name: "נתניה" },
             { slug: "rishon-lezion", name: "ראשון לציון" },
           ] as const).map(({ slug, name }) => (
-            <a
-              key={slug}
-              href={`/work/${slug}`}
-              className="city-chip"
-            >
+            <NavPill key={slug} href={`/work/${slug}`} icon="📍">
               {name}
-            </a>
+            </NavPill>
           ))}
         </div>
       </section>
@@ -2027,6 +2016,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </ul>
       </section>
 
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={closeBirthDateModal}
+        onSuccess={handleBirthDateSuccess}
+      />
     </div>
   );
 }

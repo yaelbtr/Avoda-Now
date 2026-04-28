@@ -10,11 +10,13 @@ import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { AppButton } from "@/components/ui";
 import { AppInput, AppTextarea, AppSelect, AppLabel } from "@/components/ui";
-import { PlacesAutocomplete } from "@/components/PlacesAutocomplete";
+import { PlacesAutocomplete, parseAddressParts, type PlaceResult } from "@/components/PlacesAutocomplete";
+import { IsraeliPhoneInput, parseIsraeliPhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import LoginModal from "@/components/LoginModal";
 import JobPublishOtpModal from "@/components/JobPublishOtpModal";
 import CityAutocomplete from "@/components/CityAutocomplete";
+import CategoryAutocomplete from "@/components/CategoryAutocomplete";
 import { saveReturnPath } from "@/const";
 import { SALARY_TYPES } from "@shared/categories";
 import { shouldWarnLateJob, normalizeDateInput, isEndTimeInvalid, isOvernightShift } from "@shared/ageUtils";
@@ -54,6 +56,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 type TabId = "details" | "location" | "conditions" | "publish";
+type SelectedJobLocation = PlaceResult;
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "details",    label: "פרטי מודעה",  icon: FileText  },
@@ -67,6 +70,7 @@ export default function PostJob() {
   const { categories: dbCategories, bySlug: catBySlug } = useCategories();
   const { isAuthenticated, user } = useAuth();
   const authQuery = useAuthQuery();
+  const utils = trpc.useUtils();
   const { userMode, setUserMode } = useUserMode();
   const { employerLock } = usePlatformSettings();
   const [loginOpen, setLoginOpen] = useState(false);
@@ -90,7 +94,10 @@ export default function PostJob() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("details");
   const [mapError, setMapError] = useState(false);
+  const [addressSelectionError, setAddressSelectionError] = useState<string | undefined>();
+  const [selectedJobLocation, setSelectedJobLocation] = useState<SelectedJobLocation | null>(null);
   const [locating, setLocating] = useState(false);
+  const [contactPhone, setContactPhone] = useState<PhoneValue>({ prefix: "050", number: "" });
 
   // ── Draft persistence ─────────────────────────────────────────────────────
   const { draft, hasDraft, saveDraft, saveDraftNow, clearDraft } = usePostJobDraft();
@@ -109,6 +116,15 @@ export default function PostJob() {
   const [salaryError, setSalaryError] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [pendingJobData, setPendingJobData] = useState<Record<string, unknown> | null>(null);
+  const acceptConsentMutation = trpc.user.acceptRealActionConsent.useMutation({
+    onSuccess: () => {
+      utils.auth.me.invalidate();
+      setShowOtpModal(true);
+    },
+    onError: () => {
+      toast.error('שגיאה בשמירת הסכמה, נסה שוב');
+    },
+  });
 
   const urlParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const isDuplicate = !!urlParams.get("from");
@@ -155,16 +171,17 @@ export default function PostJob() {
       jobImages,
       activeTab,
       locationSubTab,
+      selectedJobLocation,
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, selectedJobLocation, watchedContactName]);
 
   // Auto-save on every meaningful state change (including contactName edits)
   useEffect(() => {
     if (draftRestored || success) return;
     saveDraft(collectDraftData());
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, watchedContactName]);
+  }, [lat, lng, jobLocationMode, jobSearchRadiusKm, jobCity, jobDate, workStartTime, workEndTime, minAge, jobImages, activeTab, locationSubTab, selectedJobLocation, watchedContactName]);
 
   // Restore draft into form fields
   const restoreDraft = useCallback(() => {
@@ -193,6 +210,7 @@ export default function PostJob() {
     if (draft.jobImages?.length) setJobImages(draft.jobImages);
     if (draft.activeTab) setActiveTab(draft.activeTab as TabId);
     if (draft.locationSubTab) setLocationSubTab(draft.locationSubTab);
+    if (draft.selectedJobLocation) setSelectedJobLocation(draft.selectedJobLocation);
     setDraftRestored(true);
     setShowDraftBanner(false);
     toast.success("הטיוטה שוחזרה בהצלחה");
@@ -242,6 +260,8 @@ export default function PostJob() {
       const profileName = (employerProfile.name ?? "").trim() || (user?.name ?? "").trim();
       if (profileName) setValue("contactName", profileName, { shouldDirty: false });
     }
+    // Init phone display from user account (locked if user has phone)
+    if (user?.phone) setContactPhone(parseIsraeliPhone(user.phone));
     // Worker search preferences — only autofill if still at default values
     if (employerProfile.workerSearchLocationMode) {
       setJobLocationMode(employerProfile.workerSearchLocationMode as "radius" | "city");
@@ -284,7 +304,6 @@ export default function PostJob() {
     onError: (e) => toast.error(e.message),
   });
 
-  const utils = trpc.useUtils();
   // Image upload via dedicated multipart endpoint (avoids base64 bloat in tRPC payload)
   const uploadJobImageToServer = async (file: File): Promise<string> => {
     const formData = new FormData();
@@ -365,43 +384,111 @@ export default function PostJob() {
     },
   });
 
-
-
   const getMyLocation = () => {
-    if (!navigator.geolocation) { toast.error("הדפדפן אינו תומך ב-GPS"); return; }
+    if (!navigator.geolocation) {
+      toast.error("הדפדפן אינו תומך ב-GPS");
+      return;
+    }
+
     setLocating(true);
+    setAddressSelectionError(undefined);
+    setMapError(false);
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const newLat = pos.coords.latitude;
         const newLng = pos.coords.longitude;
+
         try {
           await ensureMapsLoaded();
+
           const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
-            setLocating(false);
-            if (status === "OK" && results?.[0]) {
-              const address = results[0].formatted_address;
-              setLat(newLat);
-              setLng(newLng);
+          geocoder.geocode(
+            { location: { lat: newLat, lng: newLng }, region: "IL" },
+            (results, status) => {
+              setLocating(false);
+
+              const result = results?.find((item) => item.place_id && item.geometry?.location) ?? results?.[0];
+              if (status !== "OK" || !result?.place_id || !result.geometry?.location) {
+                setSelectedJobLocation(null);
+                setLat(newLat);
+                setLng(newLng);
+                setMapError(true);
+                setAddressSelectionError("לא נמצאה כתובת Google למיקום הנוכחי");
+                toast.error("לא נמצאה כתובת Google למיקום הנוכחי");
+                return;
+              }
+
+              const location = result.geometry.location;
+              const selectedLocation: SelectedJobLocation = {
+                ...parseAddressParts(result.address_components),
+                lat: location.lat(),
+                lng: location.lng(),
+                placeId: result.place_id,
+                formattedAddress: result.formatted_address,
+              };
+
+              setSelectedJobLocation(selectedLocation);
+              setLat(selectedLocation.lat);
+              setLng(selectedLocation.lng);
+              setJobCityPlaceId(selectedLocation.placeId);
+              setValue("address", selectedLocation.formattedAddress, { shouldValidate: true });
               setMapError(false);
-              setValue("address", address, { shouldValidate: true });
-              toast.success("מיקום נמצא!");
-            } else {
-              toast.error("לא ניתן לאתר כתובת למיקום זה");
-            }
-          });
+              setAddressSelectionError(undefined);
+              toast.success("המיקום והכתובת נמצאו");
+            },
+          );
         } catch {
           setLocating(false);
-          toast.error("שגיאה בטעינת שירות המפות");
+          setMapError(true);
+          setAddressSelectionError("לא ניתן לטעון את שירות המפות");
+          toast.error("לא ניתן לטעון את שירות המפות");
         }
       },
-      () => { setLocating(false); toast.error("לא ניתן לאתר מיקום"); }
+      () => {
+        setLocating(false);
+        setMapError(true);
+        setAddressSelectionError("לא ניתן לאתר את המיקום שלך");
+        toast.error("לא ניתן לאתר את המיקום שלך");
+      },
     );
+  };
+
+  const onFormError = (errs: Record<string, { message?: string }>) => {
+    const fields = Object.keys(errs);
+    const detailsFields = ["title", "description", "category"];
+    const conditionsFields = ["salary", "salaryType", "hourlyRate"];
+
+    if (fields.some(f => detailsFields.includes(f))) {
+      setActiveTab("details");
+    } else if (fields.some(f => conditionsFields.includes(f))) {
+      setActiveTab("conditions");
+    } else {
+      setActiveTab("publish");
+    }
+
+    const first = Object.values(errs)[0];
+    toast.error(first?.message ?? "אנא מלא את כל שדות החובה");
   };
 
   const onSubmit = (data: FormData) => {
     if (!isAuthenticated) { saveReturnPath(); setLoginOpen(true); return; }
-    if (!lat || !lng) { toast.error("אנא בחר מיקום על המפה"); setActiveTab("location"); return; }
+    if (!selectedJobLocation?.placeId) {
+      setMapError(true);
+      setLocationSubTab("address");
+      setActiveTab("location");
+      setAddressSelectionError("יש לבחור כתובת מתוך ההצעות של Google");
+      toast.error("אנא בחר כתובת מתוך ההצעות של Google");
+      return;
+    }
+    if (!Number.isFinite(selectedJobLocation.lat) || !Number.isFinite(selectedJobLocation.lng)) {
+      setMapError(true);
+      setLocationSubTab("address");
+      setActiveTab("location");
+      setAddressSelectionError("לא נמצאו קואורדינטות לכתובת שנבחרה");
+      toast.error("לא נמצאו קואורדינטות לכתובת שנבחרה");
+      return;
+    }
     if (!jobDate) {
       setJobDateTouched(true);
       toast.error("אנא בחר תאריך לעבודה");
@@ -412,7 +499,13 @@ export default function PostJob() {
       toast.error("אנא הזן שם איש קשר");
       return;
     }
-    if (!legalAllConfirmed) {
+    if (!user?.phone && !isValidPhoneValue(contactPhone)) {
+      toast.error("אנא הזן מספר טלפון תקין");
+      setActiveTab("publish");
+      return;
+    }
+    const alreadyConsented = !!user?.termsAcceptedAt;
+    if (!alreadyConsented && !legalAllConfirmed) {
       setLegalCheckboxError(true);
       toast.error("יש לאשר את התנאים לפני פרסום המודעה");
       return;
@@ -423,10 +516,10 @@ export default function PostJob() {
       title: data.title,
       description: data.description,
       category: data.category as Parameters<typeof createJob.mutate>[0]["category"],
-      address: data.address,
-      city: jobLocationMode === "city" ? jobCity || undefined : undefined,
-      latitude: lat,
-      longitude: lng,
+      address: selectedJobLocation.formattedAddress,
+      city: selectedJobLocation.city ?? (jobLocationMode === "city" ? jobCity || undefined : undefined),
+      latitude: selectedJobLocation.lat,
+      longitude: selectedJobLocation.lng,
       salary: data.salary ? parseFloat(data.salary) : undefined,
       salaryType: data.salaryType as Parameters<typeof createJob.mutate>[0]["salaryType"],
       hourlyRate: data.hourlyRate ? parseFloat(data.hourlyRate) : undefined,
@@ -444,10 +537,14 @@ export default function PostJob() {
       workEndTime: workEndTime || undefined,
       imageUrls: jobImages.length > 0 ? jobImages : undefined,
       minAge: minAge ?? undefined,
-      cityPlaceId: jobLocationMode === "city" ? (jobCityPlaceId ?? undefined) : undefined,
+      cityPlaceId: selectedJobLocation.placeId ?? (jobLocationMode === "city" ? (jobCityPlaceId ?? undefined) : undefined),
     };
     setPendingJobData(jobPayload);
-    setShowOtpModal(true);
+    if (!alreadyConsented && legalAllConfirmed) {
+      acceptConsentMutation.mutate();
+    } else {
+      setShowOtpModal(true);
+    }
   };
 
   // ── Guards ────────────────────────────────────────────────────────────────
@@ -544,29 +641,33 @@ export default function PostJob() {
   const tabIndex = TABS.findIndex(t => t.id === activeTab);
   const isLastTab = tabIndex === TABS.length - 1;
 
-  const goNext = async () => {
-    // Save draft immediately when navigating between tabs
-    saveDraftNow(collectDraftData());
-    // Validate fields for current tab before advancing
+  const validateCurrentTab = async (): Promise<boolean> => {
     if (activeTab === "details") {
       const ok = await trigger(["title", "description", "category"]);
-      if (!ok) return;
+      if (!ok) return false;
     }
     if (activeTab === "location") {
-      if (!lat || !lng) {
+      if (!selectedJobLocation?.placeId) {
         setLocationSubTab("address");
         setMapError(true);
-        toast.error("אנא בחר כתובת מהרשימה");
-        return;
+        setAddressSelectionError("יש לבחור כתובת מתוך ההצעות של Google");
+        toast.error("אנא בחר כתובת מתוך ההצעות של Google");
+        return false;
       }
-      if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return; }
-      if (!workStartTime || !workEndTime) { setHoursError(true); toast.error("אנא מלא שעת התחלה וסיום או בחר משמרת"); return; }
-      if (isEndTimeInvalid(workStartTime, workEndTime)) { setHoursTimeError(true); toast.error("שעת הסיום חייבת להיות לאחר שעת ההתחלה"); return; }
+      if (!Number.isFinite(selectedJobLocation.lat) || !Number.isFinite(selectedJobLocation.lng)) {
+        setLocationSubTab("address");
+        setMapError(true);
+        setAddressSelectionError("לא נמצאו קואורדינטות לכתובת שנבחרה");
+        toast.error("לא נמצאו קואורדינטות לכתובת שנבחרה");
+        return false;
+      }
+      if (!jobDate) { setJobDateTouched(true); toast.error("אנא בחר תאריך לעבודה"); return false; }
+      if (!workStartTime || !workEndTime) { setHoursError(true); toast.error("אנא מלא שעת התחלה וסיום או בחר משמרת"); return false; }
+      if (isEndTimeInvalid(workStartTime, workEndTime)) { setHoursTimeError(true); toast.error("שעת הסיום חייבת להיות לאחר שעת ההתחלה"); return false; }
       const ok = await trigger(["address"]);
-      if (!ok) return;
+      if (!ok) return false;
     }
     if (activeTab === "conditions") {
-      // Salary is required unless volunteer
       const currentSalaryType = getValues("salaryType");
       const currentSalary = getValues("salary");
       const currentHourlyRate = getValues("hourlyRate");
@@ -577,20 +678,52 @@ export default function PostJob() {
         if (!hasSalary) {
           setSalaryError(true);
           toast.error("אנא הזן שכר למודעה");
-          return;
+          return false;
         }
       }
       setSalaryError(false);
     }
-    // Mark current tab as completed
+    return true;
+  };
+
+  const goNext = async () => {
+    saveDraftNow(collectDraftData());
+    const ok = await validateCurrentTab();
+    if (!ok) return;
     setCompletedTabs(prev => new Set(Array.from(prev).concat(activeTab)));
     const nextId = TABS[tabIndex + 1]?.id;
     if (nextId) setActiveTab(nextId);
   };
 
+  const handleTabClick = async (targetId: TabId) => {
+    const targetIndex = TABS.findIndex(t => t.id === targetId);
+    // מעבר אחורה — תמיד מותר
+    if (targetIndex <= tabIndex) { setActiveTab(targetId); return; }
+    // מעבר קדימה — ולידציה של הטאב הנוכחי
+    saveDraftNow(collectDraftData());
+    const ok = await validateCurrentTab();
+    if (!ok) return;
+    setCompletedTabs(prev => new Set(Array.from(prev).concat(activeTab)));
+    setActiveTab(targetId);
+  };
+
   const goPrev = () => {
     const prevId = TABS[tabIndex - 1]?.id;
     if (prevId) setActiveTab(prevId);
+  };
+
+  const handleBackToEmployerHome = async () => {
+    if (userMode !== "employer") {
+      try {
+        await setUserMode("employer");
+      } catch {
+        toast.error("לא הצלחנו לעבור למצב מעסיק, נסה שוב");
+        return;
+      }
+    }
+    navigate("/employer-home");
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
   };
 
   // ── Main render ───────────────────────────────────────────────────────────
@@ -608,7 +741,7 @@ export default function PostJob() {
           {/* Back + title row */}
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => navigate("/")}
+              onClick={handleBackToEmployerHome}
               className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
               style={{ color: "#4F583B" }}
             >
@@ -692,7 +825,7 @@ export default function PostJob() {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabClick(tab.id)}
                   className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all relative"
                   style={isActive
                     ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
@@ -720,7 +853,7 @@ export default function PostJob() {
       </div>
 
       {/* ── Tab Content ──────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onFormError)}>
         <div className="max-w-lg mx-auto px-4 mt-4 pb-8">
           <AnimatePresence mode="wait">
             <motion.div
@@ -750,13 +883,12 @@ export default function PostJob() {
                       error={errors.title?.message}
                     />
 
-                    <AppSelect
-                      label="קטגוריה"
-                      required
-                      placeholder="בחר קטגוריה"
-                      options={dbCategories.map((cat) => ({ value: cat.slug, label: `${cat.icon} ${cat.name}` }))}
-                      onChange={(e) => setValue("category", e.target.value)}
+                    <CategoryAutocomplete
+                      categories={dbCategories}
+                      value={watchedCategory}
+                      onChange={(category) => setValue("category", category, { shouldDirty: true, shouldValidate: true })}
                       error={errors.category?.message}
+                      required
                     />
 
                     {jobBlocksMinors && (
@@ -850,7 +982,7 @@ export default function PostJob() {
                     <div className="flex rounded-xl overflow-hidden border border-border">
                       {(["address", "search"] as const).map((st) => {
                         const isActive = locationSubTab === st;
-                        const addressDone = st === "address" && !!(lat && lng);
+                        const addressDone = st === "address" && !!selectedJobLocation?.placeId;
                         return (
                           <button
                             key={st}
@@ -924,7 +1056,7 @@ export default function PostJob() {
                             <CityAutocomplete
                               value={jobCity}
                               onChange={setJobCity}
-                              onSelect={(city, _lat, _lng, placeId) => { setJobCity(city); if (placeId) setJobCityPlaceId(placeId); toast.success(`עיר נבחרה: ${city}`); }}
+                              onSelect={(city, _cityLat, _cityLng, placeId) => { setJobCity(city); if (placeId) setJobCityPlaceId(placeId); toast.success(`עיר נבחרה: ${city}`); }}
                               placeholder="לדוגמה: תל אביב, חיפה, ירושלים..."
                             />
                           </div>
@@ -961,17 +1093,33 @@ export default function PostJob() {
                           השתמש במיקום שלי
                         </AppButton>
 
+                        <p className="text-xs text-muted-foreground text-right" dir="rtl">
+                          אפשר לבחור כתובת מהרשימה או להשתמש במיקום שלך כדי למלא כתובת אוטומטית.
+                        </p>
+
                         <PlacesAutocomplete
                           value={watch("address") ?? ""}
-                          onChange={(val) => setValue("address", val, { shouldValidate: true })}
-                          onPlaceSelect={({ lat: newLat, lng: newLng, formattedAddress }) => {
-                            setLat(newLat);
-                            setLng(newLng);
+                          onChange={(val) => {
+                            setValue("address", val, { shouldValidate: true });
+                            setAddressSelectionError(undefined);
                             setMapError(false);
-                            setValue("address", formattedAddress, { shouldValidate: true });
+                            if (selectedJobLocation && val !== selectedJobLocation.formattedAddress) {
+                              setSelectedJobLocation(null);
+                              setLat(null);
+                              setLng(null);
+                            }
+                          }}
+                          onPlaceSelect={(place) => {
+                            setSelectedJobLocation(place);
+                            setLat(place.lat);
+                            setLng(place.lng);
+                            setJobCityPlaceId(place.placeId);
+                            setMapError(false);
+                            setAddressSelectionError(undefined);
+                            setValue("address", place.formattedAddress, { shouldValidate: true });
                           }}
                           placeholder="חפש כתובת..."
-                          error={errors.address?.message}
+                          error={addressSelectionError ?? errors.address?.message}
                         />
                       </div>
                     )}
@@ -1375,32 +1523,58 @@ export default function PostJob() {
                     {watchedContactName && (
                       <p className="text-xs" style={{ color: "oklch(0.55 0.06 122)" }}>
                         איש קשר: <strong>{watchedContactName}</strong>
-                        {employerProfile?.companyName ? ` · ${employerProfile.companyName}` : ""}
+                        {employerProfile?.companyName ? ` ֲ· ${employerProfile.companyName}` : ""}
                       </p>
                     )}
                   </div>
 
                   {/* Contact — auto-filled from employer profile */}
-                  <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-                    <h2 className="font-bold text-foreground flex items-center gap-2">
-                      <User className="h-4 w-4 text-primary" />
-                      פרטי קשר
-                    </h2>
-                    <AppInput
-                      id="contactName"
-                      label="שם איש קשר"
-                      required
-                      placeholder="שם מלא"
-                      dir="rtl"
-                      {...register("contactName")}
-                      error={errors.contactName?.message}
-                    />
-                    {employerProfile?.companyName && (
-                      <p className="text-xs text-muted-foreground">
-                        שם עסק: <strong className="text-foreground">{employerProfile.companyName}</strong>
-                      </p>
-                    )}
-                  </div>
+                  {(() => {
+                    const profileLocked = !!(user?.phone && user?.name);
+                    return (
+                      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h2 className="font-bold text-foreground flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary" />
+                            פרטי קשר
+                          </h2>
+                          {profileLocked && (
+                            <span className="text-xs text-muted-foreground">פרטי הקשר נשמרו בחשבון</span>
+                          )}
+                        </div>
+
+                        {!profileLocked && (
+                          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 border border-amber-200">
+                            פרטי איש הקשר ישמשו ליצירת חשבון ולקבלת פניות ממועמדים
+                          </p>
+                        )}
+
+                        <AppInput
+                          id="contactName"
+                          label="שם איש קשר"
+                          required
+                          placeholder="שם מלא"
+                          dir="rtl"
+                          {...register("contactName")}
+                          error={errors.contactName?.message}
+                          disabled={profileLocked}
+                        />
+
+                        <IsraeliPhoneInput
+                          value={contactPhone}
+                          onChange={setContactPhone}
+                          label="מספר טלפון"
+                          disabled={profileLocked}
+                        />
+
+                        {employerProfile?.companyName && (
+                          <p className="text-xs text-muted-foreground">
+                            שם עסק: <strong className="text-foreground">{employerProfile.companyName}</strong>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Region blocked */}
                   {regionBlocked && (
@@ -1434,26 +1608,28 @@ export default function PostJob() {
                   )}
 
                   {/* Legal checkbox — single combined confirmation */}
-                  <div dir="rtl" className="rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
-                    <label className="flex items-start gap-2.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={legalAllConfirmed}
-                        onChange={e => { setLegalAllConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer shrink-0"
-                      />
-                      <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
-                        אני מאשר/ת כי המשרה עומדת בדרישות החוק, בדיקת רישיונות היא באחריותי, וקראתי ומסכים/ת ל{" "}
-                        <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות הפרסום</a>
-                        {" ול"}
-                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
-                      </span>
-                    </label>
-
-                    {legalCheckboxError && (
-                      <p className="text-xs font-medium mt-2" style={{ color: "#dc2626" }}>יש לאשר את התנאים לפני פרסום המשרה</p>
-                    )}
-                  </div>
+                  {!user?.termsAcceptedAt && (
+                    <div dir="rtl" className="rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
+                      <label className="flex items-start gap-2.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={legalAllConfirmed}
+                          onChange={e => { setLegalAllConfirmed(e.target.checked); if (e.target.checked) setLegalCheckboxError(false); }}
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 cursor-pointer shrink-0"
+                        />
+                        <span className="text-xs leading-relaxed" style={{ color: "#3d3d3d" }}>
+                          אני מאשר/ת כי המשרה עומדת בדרישות החוק, בדיקת רישיונות היא באחריותי, וקראתי ומסכים/ת ל{" "}
+                          <a href="/job-posting-policy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות הפרסום</a>
+                          {" ול"}
+                          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>תנאי השימוש</a>.
+                        </span>
+                      </label>
+  
+                      {legalCheckboxError && (
+                        <p className="text-xs font-medium mt-2" style={{ color: "#dc2626" }}>יש לאשר את התנאים לפני פרסום המשרה</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Tab nav */}
                   <div className="flex justify-between items-center pt-2 pb-1" dir="rtl">
@@ -1494,6 +1670,8 @@ export default function PostJob() {
           open={showOtpModal}
           onClose={() => setShowOtpModal(false)}
           jobData={pendingJobData}
+          pendingContactPhone={!user?.phone ? contactPhone : undefined}
+          pendingContactName={!user?.name ? watch("contactName") : undefined}
           onSuccess={(job) => {
             setShowOtpModal(false);
             clearDraft();

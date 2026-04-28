@@ -17,6 +17,7 @@ import {
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
+import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 type NotifPref = "both" | "push_only" | "sms_only" | "none";
@@ -77,6 +78,8 @@ export default function EmployerProfile() {
   const [companyName, setCompanyName] = useState("");
   const [employerBio, setEmployerBio] = useState("");
   const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
+  const [originalPhoneVal, setOriginalPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
+  const [phoneChangeModalOpen, setPhoneChangeModalOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
 
@@ -132,11 +135,14 @@ export default function EmployerProfile() {
     setCompanyName(d.companyName ?? "");
     setEmployerBio(d.employerBio ?? "");
     setProfilePhoto(d.profilePhoto ?? null);
+    let initialPhone: PhoneValue = { prefix: "", number: "" };
     if (d.phonePrefix && d.phoneNumber) {
-      setPhoneVal({ prefix: d.phonePrefix, number: d.phoneNumber });
+      initialPhone = { prefix: d.phonePrefix, number: d.phoneNumber };
     } else if (d.phone) {
-      setPhoneVal(parseIsraeliPhone(d.phone));
+      initialPhone = parseIsraeliPhone(d.phone);
     }
+    setPhoneVal(initialPhone);
+    setOriginalPhoneVal(initialPhone);
     setWorkerSearchMode((d.workerSearchLocationMode as "city" | "radius") ?? "city");
     setWorkerSearchCity(d.workerSearchCity ?? "");
     setWorkerSearchCityId(d.workerSearchCityId ?? null);
@@ -180,18 +186,21 @@ export default function EmployerProfile() {
   // ── Save handler ──
   const handleSave = useCallback(() => {
     if (!name.trim()) { toast.error("שם הוא שדה חובה"); return; }
-    const combined = combinePhone(phoneVal);
     const isPhoneEditable = user?.loginMethod !== "phone_otp";
+    const phoneChanged = combinePhone(phoneVal) !== combinePhone(originalPhoneVal);
+
+    // אם הוזן/שונה מספר טלפון תקין — חובה לאמת ב-OTP לפני שמירה
+    if (isPhoneEditable && phoneChanged && isValidPhoneValue(phoneVal)) {
+      setPhoneChangeModalOpen(true);
+      return;
+    }
+
     updateMutation.mutate({
       name: name.trim(),
       email: email.trim() || null,
       companyName: companyName.trim() || null,
       employerBio: employerBio.trim() || null,
-      ...(isPhoneEditable && isValidPhoneValue(phoneVal) ? {
-        phonePrefix: phoneVal.prefix,
-        phoneNumber: phoneVal.number,
-        phone: combined,
-      } : {}),
+      // הטלפון מתעדכן רק דרך זרימת ה-OTP, לא במסלול השמירה הרגיל
       workerSearchLocationMode: workerSearchMode,
       workerSearchCity: workerSearchMode === "city" ? (workerSearchCity.trim() || null) : null,
       workerSearchCityId: workerSearchMode === "city" ? workerSearchCityId : null,
@@ -205,7 +214,7 @@ export default function EmployerProfile() {
       defaultJobLongitude: defaultJobLongitude,
       minWorkerAge: minWorkerAge,
     });
-  }, [name, email, companyName, employerBio, phoneVal, workerSearchMode, workerSearchCity, workerSearchCityId, workerSearchRadiusKm, workerSearchLatitude, workerSearchLongitude, defaultJobCity, defaultJobCityId, defaultJobLatitude, defaultJobLongitude, minWorkerAge, user, updateMutation]);
+  }, [name, email, companyName, employerBio, phoneVal, originalPhoneVal, workerSearchMode, workerSearchCity, workerSearchCityId, workerSearchRadiusKm, workerSearchLatitude, workerSearchLongitude, defaultJobCity, defaultJobCityId, defaultJobLatitude, defaultJobLongitude, minWorkerAge, user, updateMutation]);
 
   // ── Photo upload ──
   const handlePhotoUpload = useCallback(async (file: File) => {
@@ -823,6 +832,37 @@ export default function EmployerProfile() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── מודאל אימות OTP לעדכון טלפון ── */}
+      <PhoneChangeModal
+        open={phoneChangeModalOpen}
+        onClose={() => setPhoneChangeModalOpen(false)}
+        initialPhone={phoneVal}
+        onSuccess={(newPhoneVal) => {
+          // הטלפון נשמר ב-DB דרך verifyPhoneChangeOtp — מעדכנים מצב מקומי וממשיכים לשמור שאר השדות
+          setOriginalPhoneVal(newPhoneVal);
+          setPhoneVal(newPhoneVal);
+          profileQuery.refetch();
+          setPhoneChangeModalOpen(false);
+          updateMutation.mutate({
+            name: name.trim() || undefined,
+            email: email.trim() || null,
+            companyName: companyName.trim() || null,
+            employerBio: employerBio.trim() || null,
+            workerSearchLocationMode: workerSearchMode,
+            workerSearchCity: workerSearchMode === "city" ? (workerSearchCity.trim() || null) : null,
+            workerSearchCityId: workerSearchMode === "city" ? workerSearchCityId : null,
+            workerSearchRadiusKm: workerSearchMode === "radius" ? workerSearchRadiusKm : null,
+            workerSearchLatitude: workerSearchLatitude,
+            workerSearchLongitude: workerSearchLongitude,
+            defaultJobCity: defaultJobCity.trim() || null,
+            defaultJobCityId: defaultJobCityId,
+            defaultJobLatitude: defaultJobLatitude,
+            defaultJobLongitude: defaultJobLongitude,
+            minWorkerAge: minWorkerAge,
+          });
+        }}
+      />
     </div>
   );
 }

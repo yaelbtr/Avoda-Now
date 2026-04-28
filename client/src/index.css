@@ -503,12 +503,11 @@
   }
 
   /**
-   * Shared city chip — use everywhere city names appear as selectable/linkable chips.
-   * Matches the HomeWorker city-link design: white bg, brand border, rounded-full, pink 📍 prefix.
-   * Usage: <button class="city-chip">...</button> or <a class="city-chip" href="...">...</a>
-   * Active state: add class "active" for selected city.
+   * NavPill — כפתור ניווט אחיד לקישורי SEO (עיר, קטגוריה, מדריך).
+   * שימוש: <NavPill href="..." icon="📍">...</NavPill>
+   * לא לשימוש עבור toggle-filters — להשתמש ב-AppButton pill-active/pill-inactive.
    */
-  .city-chip {
+  .nav-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -526,21 +525,20 @@
     user-select: none;
     line-height: 1.4;
   }
-  .city-chip::before {
-    content: "📍";
-    font-size: 0.7rem;
+  .nav-pill__icon {
+    font-size: 0.85rem;
     line-height: 1;
     flex-shrink: 0;
   }
-  .city-chip:hover {
+  .nav-pill:hover {
     background: oklch(0.93 0.04 91.6);
     border-color: oklch(0.72 0.10 84.0);
   }
-  .city-chip:active {
+  .nav-pill:active {
     transform: scale(0.96);
   }
-  .city-chip.active,
-  .city-chip[data-active="true"] {
+  .nav-pill.is-active,
+  .nav-pill[data-active="true"] {
     background: oklch(0.92 0.04 122);
     border-color: oklch(0.70 0.07 122);
     color: var(--brand);

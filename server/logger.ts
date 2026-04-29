@@ -43,7 +43,7 @@ export const logger = pino({
         },
       }),
   base: {
-    service: "job-now",
+    service: "YallaAvoda",
     env: process.env.NODE_ENV ?? "development",
   },
 });

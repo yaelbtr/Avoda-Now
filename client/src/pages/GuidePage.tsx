@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { ChevronRight, Lightbulb, ArrowLeft, Briefcase, BookOpen } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { getGuideEntry, GUIDE_ENTRIES } from "@/data/guideContent";
@@ -199,13 +200,9 @@ export default function GuidePage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {SEO_CITIES.map((city) => (
-              <Link
-                key={city}
-                href={`/jobs/${entry.category}/${encodeURIComponent(city)}`}
-                className="city-chip"
-              >
+              <NavPill key={city} href={`/jobs/${entry.category}/${encodeURIComponent(city)}`} icon="📍">
                 {`${label} ב${city}`}
-              </Link>
+              </NavPill>
             ))}
           </div>
         </div>

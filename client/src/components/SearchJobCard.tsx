@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { shareJobOnWhatsApp } from "@/components/JobCard";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface SearchJob {
@@ -88,6 +89,9 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired,
@@ -429,6 +433,11 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
       )}
     </div>
 
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* Age-gate modal */}
       <BirthDateModal
         isOpen={birthDateModalOpen}

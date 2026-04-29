@@ -25,6 +25,8 @@ import { minAgeLabel } from "@shared/ageUtils";
 import { toast } from "sonner";
 import LoginModal from "@/components/LoginModal";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 import { saveReturnPath } from "@/const";
 import { useJobPostingSchema, useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { useSEO } from "@/hooks/useSEO";
@@ -137,7 +139,6 @@ export default function JobDetails() {
   const [reported, setReported] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
-  const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   useEffect(() => {
@@ -173,23 +174,26 @@ export default function JobDetails() {
     onError: (e) => toast.error(e.message),
   });
 
-  const applyMutationJD = trpc.jobs.applyToJob.useMutation({
-    onSuccess: () => { utils.jobs.myApplications.invalidate(); toast.success("מועמדות הוגשה בהצלחה! 🎉"); },
-    onError: (e: { message: string }) => toast.error(e.message),
+  const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
+
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess: handleBirthDateSuccessJD,
+    closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
+  } = useApplyWithAgeGate({
+    isAuthenticated,
+    onLoginRequired: requireLogin,
+    onSuccess: () => utils.jobs.myApplications.invalidate(),
   });
 
-  const birthDateInfoQueryJD = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
-
   const handleApplyJD = () => {
-    if (!isAuthenticated) { requireLogin("כדי להגיש מועמדות יש להתחבר למערכת"); return; }
-    const hasBirthDate = birthDateInfoQueryJD.data?.birthDate != null;
-    if (!hasBirthDate) { setBirthDateModalOpen(true); return; }
-    applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
-  };
-
-  const handleBirthDateSuccessJD = () => {
-    setBirthDateModalOpen(false);
-    applyMutationJD.mutate({ jobId: job!.id, origin: window.location.origin });
+    if (!job) return;
+    applyWithAgeGate({ jobId: job.id, origin: window.location.origin });
   };
 
   const handleMapReady = (map: google.maps.Map) => {
@@ -201,8 +205,6 @@ export default function JobDetails() {
     map.setZoom(15);
     new google.maps.Marker({ position: { lat, lng }, map, title: job.title });
   };
-
-  const requireLogin = (message: string) => { saveReturnPath(); setLoginMessage(message); setLoginOpen(true); };
 
   // ── SEO hooks (must be before early returns) ────────────────────────────
   const _jobCity = job ? (job.city ?? job.address?.split(",")[0] ?? "") : "";
@@ -547,9 +549,9 @@ export default function JobDetails() {
               variant="brand"
               className="w-full mb-3"
               onClick={handleApplyJD}
-              disabled={applyMutationJD.isPending}
+              disabled={isApplyPending}
             >
-              {applyMutationJD.isPending ? <BrandLoader size="sm" /> : <><Briefcase className="h-4 w-4 ml-1.5" />הגש מועמדות</>}
+              {isApplyPending ? <BrandLoader size="sm" /> : <><Briefcase className="h-4 w-4 ml-1.5" />הגש מועמדות</>}
             </AppButton>
           )}
 
@@ -788,10 +790,15 @@ export default function JobDetails() {
         message={loginMessage}
       />
 
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* ── Birth Date Modal ── */}
       <BirthDateModal
         isOpen={birthDateModalOpen}
-        onClose={() => setBirthDateModalOpen(false)}
+        onClose={closeBirthDateModal}
         onSuccess={handleBirthDateSuccessJD}
         jobId={job?.id}
       />

@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import {
   C_BRAND_HEX, C_BORDER, C_PAGE_BG_HEX,
 } from "@/lib/colors";
+import { NavPill } from "@/components/ui/NavPill";
 
 const BASE_URL = "https://avodanow.co.il";
 
@@ -453,18 +454,9 @@ export default function KeywordLandingPage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {page.relatedLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors hover:opacity-80"
-                style={{
-                  background: "oklch(0.94 0.04 122)",
-                  color: T.brand,
-                  border: `1px solid oklch(0.85 0.06 122)`,
-                }}
-              >
+              <NavPill key={link.href} href={link.href}>
                 {link.label}
-              </Link>
+              </NavPill>
             ))}
           </div>
         </section>

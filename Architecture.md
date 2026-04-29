@@ -32,7 +32,7 @@ server/
 │   ├── llm.ts                 # LLM (Forge) invocation helper
 │   ├── map.ts                 # Google Maps backend proxy helper
 │   ├── notification.ts        # Owner notification helper
-│   ├── oauth.ts               # Manus OAuth flow (/api/oauth/callback)
+│   ├── googleAuth.ts          # Google OAuth routes (/api/auth/google/*)
 │   ├── sdk.ts                 # Manus platform SDK wrapper
 │   ├── systemRouter.ts        # Built-in system tRPC procedures
 │   ├── trpc.ts                # tRPC init: publicProcedure / protectedProcedure / adminProcedure
@@ -646,7 +646,6 @@ Access levels: **public** = no auth required · **protected** = authenticated us
 | `recordConsent` | protected | Record user consent to a legal document |
 | `getMyConsents` | protected | All consents given by current user |
 | `checkOutdatedConsents` | protected | Check if any consents need renewal |
-| `completeGoogleRegistration` | protected | Complete registration after Google OAuth |
 
 ---
 
@@ -888,7 +887,7 @@ Client → auth.verifyOtp → Server verifies via Twilio Verify API
 Client → auth.me        → Server reads cookie → returns ctx.user
 ```
 
-Google OAuth follows the standard Manus OAuth callback flow at `/api/oauth/callback`.
+Google OAuth is handled directly by the backend through `/api/auth/google/start` and `/api/auth/google/callback`.
 
 ### tRPC Procedure Access Levels
 

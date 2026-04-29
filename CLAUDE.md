@@ -2,7 +2,8 @@
 
 Shared orchestration reference: @docs/ai/orchestrator.md
 
-See @Architecture.md for the current architecture reference.
+Key design patterns: @docs/arch/patterns.md
+Full architecture reference (read on demand): `Architecture.md`
 See @package.json for the current project commands.
 
 ## Claude Instruction — Plan Mode Response Format
@@ -23,3 +24,16 @@ When operating in **plan mode**, follow these rules strictly:
 - Communication: Hebrew.
 - Code and identifiers: English.
 - Comments: Hebrew only when they add real value.
+
+## Claude Setup & initialization
+
+- Always consult the notebook before answering strategy questions.
+- Notebook: **YallaAvoda** (ID: `9f1e4257-b7a7-4622-af3c-7b52b8142fd8`)
+- CLI location: `C:\Users\User\.agents\skills\notebooklm`
+- Save important session notes with:
+  ```
+  cd C:\Users\User\.agents\skills\notebooklm
+  python -m notebooklm note create -n 9f1e4257 -t "Session YYYY-MM-DD: <title>" "<content>"
+  ```
+- UnicodeEncodeError at end of command is a display glitch only — the note is saved successfully.
+- Use /wrap-up 

@@ -72,7 +72,7 @@ function clearGuestRole() {
 interface UserModeContextValue {
   userMode: UserMode;
   isLoadingMode: boolean;
-  setUserMode: (mode: "worker" | "employer") => void;
+  setUserMode: (mode: "worker" | "employer") => Promise<void>;
   setLocalModeOnly: (mode: "worker" | "employer") => void;
   resetUserMode: () => void;
   needsRoleSelection: boolean;
@@ -81,7 +81,7 @@ interface UserModeContextValue {
 const UserModeContext = createContext<UserModeContextValue>({
   userMode: null,
   isLoadingMode: false,
-  setUserMode: () => {},
+  setUserMode: async () => {},
   setLocalModeOnly: () => {},
   resetUserMode: () => {},
   needsRoleSelection: false,
@@ -183,9 +183,11 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   // - Authenticated: server is authoritative, fall back to localMode during mutations
   // - Guest: use guestMode from sessionStorage
   const userMode: UserMode = isAuthenticated
-    ? hasChecked
-      ? serverMode ?? localMode  // server wins, but localMode bridges mutation lag
-      : localMode                // optimistic pre-fetch (avoids flash for returning users)
+    ? setModeMutation.isPending
+      ? localMode ?? serverMode
+      : hasChecked
+        ? serverMode ?? localMode
+        : localMode
     : guestMode;
 
   // Show loading spinner only on first fetch when we have no local fallback
@@ -196,11 +198,11 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     ? !isLoadingMode && userMode === null
     : false; // guests handled separately via isRootPath in App.tsx
 
-  const setUserMode = (mode: "worker" | "employer") => {
+  const setUserMode = async (mode: "worker" | "employer") => {
     if (isAuthenticated) {
       setLocalMode(mode);
       saveRoleToStorage(mode, userId);
-      setModeMutation.mutate({ mode });
+      await setModeMutation.mutateAsync({ mode });
     } else {
       // Guest: save to sessionStorage only
       setGuestMode(mode);

@@ -8,6 +8,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, KeyboardEvent, ClipboardEvent } from "react";
+
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -32,6 +33,10 @@ interface JobPublishOtpModalProps {
   jobData: Record<string, unknown>;
   /** Called with the created job after successful OTP verification. */
   onSuccess: (job: unknown) => void;
+  /** טלפון שהמשתמש הזין בטופס — מועבר רק כשאין טלפון בחשבון */
+  pendingContactPhone?: { prefix: string; number: string };
+  /** שם שהמשתמש הזין בטופס — מועבר רק כשאין שם בחשבון */
+  pendingContactName?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -41,9 +46,10 @@ export default function JobPublishOtpModal({
   onClose,
   jobData,
   onSuccess,
+  pendingContactPhone,
+  pendingContactName,
 }: JobPublishOtpModalProps) {
   const { user } = useAuth();
-
   const [step, setStep] = useState<Step>("channel");
   const [channel, setChannel] = useState<OtpChannel>("sms");
   const [maskedTarget, setMaskedTarget] = useState("");
@@ -150,13 +156,21 @@ export default function JobPublishOtpModal({
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
+  const pendingOtpExtras = pendingContactPhone
+    ? {
+        pendingPhonePrefix: pendingContactPhone.prefix,
+        pendingPhoneNumber: pendingContactPhone.number,
+        pendingName: pendingContactName,
+      }
+    : {};
+
   const handleSendOtp = () => {
-    sendOtp.mutate({ channel });
+    sendOtp.mutate({ channel, ...pendingOtpExtras });
   };
 
   const handleResend = () => {
     if (resendCountdown > 0) return;
-    sendOtp.mutate({ channel });
+    sendOtp.mutate({ channel, ...pendingOtpExtras });
   };
 
   const handleDigitChange = (index: number, value: string) => {
@@ -170,7 +184,7 @@ export default function JobPublishOtpModal({
     }
     if (digit && next.every(d => d !== "")) {
       const code = next.join("");
-      verifyOtp.mutate({ channel, code, jobData: jobData as Parameters<typeof verifyOtp.mutate>[0]["jobData"] });
+      verifyOtp.mutate({ channel, code, jobData: jobData as Parameters<typeof verifyOtp.mutate>[0]["jobData"], ...pendingOtpExtras });
     }
   };
 
@@ -190,7 +204,7 @@ export default function JobPublishOtpModal({
     setOtpError(null);
     inputRefs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
     if (pasted.length === OTP_LENGTH) {
-      verifyOtp.mutate({ channel, code: pasted, jobData: jobData as Parameters<typeof verifyOtp.mutate>[0]["jobData"] });
+      verifyOtp.mutate({ channel, code: pasted, jobData: jobData as Parameters<typeof verifyOtp.mutate>[0]["jobData"], ...pendingOtpExtras });
     }
   };
 
@@ -235,123 +249,129 @@ export default function JobPublishOtpModal({
             )}
 
             {/* ── STEP: channel ── */}
-            {step === "channel" && (
-              <div className="p-6 space-y-5" dir="rtl">
-                {/* Header */}
-                <div className="text-center space-y-2 pt-2">
-                  <div
-                    className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-3"
-                    style={{ background: "oklch(0.50 0.14 85 / 0.12)" }}
-                  >
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="oklch(0.50 0.14 85)" strokeWidth="2">
-                      <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+            {step === "channel" && (() => {
+              // ── מסלול רגיל: יש טלפון (קיים בחשבון או הוזן בטופס) — בחירת ערוץ ──
+              return (
+                <div className="p-6 space-y-5" dir="rtl">
+                  {/* Header */}
+                  <div className="text-center space-y-2 pt-2">
+                    <div
+                      className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-3"
+                      style={{ background: "oklch(0.50 0.14 85 / 0.12)" }}
+                    >
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="oklch(0.50 0.14 85)" strokeWidth="2">
+                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold" style={{ color: "#1a2010" }}>אימות לפרסום משרה</h2>
+                    <p className="text-sm" style={{ color: "#6b7280" }}>בחר כיצד לקבל את קוד האימות</p>
                   </div>
-                  <h2 className="text-xl font-bold" style={{ color: "#1a2010" }}>אימות לפרסום משרה</h2>
-                  <p className="text-sm" style={{ color: "#6b7280" }}>בחר כיצד לקבל את קוד האימות</p>
-                </div>
 
-                {/* Channel cards — full-width radio style like LoginModal */}
-                <div className="space-y-3">
-                  {(["sms", "email"] as OtpChannel[]).map((ch) => {
-                    const isSelected = channel === ch;
-                    const isDisabled = ch === "sms" ? !user?.phone : !user?.email;
-                    const label = ch === "sms" ? "קבלת קוד ב-SMS" : "קבלת קוד במייל";
-                    const sublabel = ch === "sms"
-                      ? (user?.phone
-                          ? (() => { const d = user.phone.replace(/\D/g, ""); return d.length >= 7 ? `${d.slice(0, 3)}-****${d.slice(-3)}` : user.phone; })()
-                          : "אין מספר טלפון בחשבון")
-                      : (user?.email
-                          ? user.email.replace(/(.{2}).*(@.*)/, "$1***$2")
-                          : "אין כתובת מייל בחשבון");
+                  {/* Channel cards — full-width radio style like LoginModal */}
+                  <div className="space-y-3">
+                    {(pendingContactPhone ? ["sms"] : ["sms", "email"] as OtpChannel[]).map((ch) => {
+                      const isSelected = channel === ch;
+                      const hasSmsTarget = !!(user?.phone || pendingContactPhone);
+                      const isDisabled = ch === "sms" ? !hasSmsTarget : !user?.email;
+                      const label = ch === "sms" ? "קבלת קוד ב-SMS" : "קבלת קוד במייל";
+                      const sublabel = ch === "sms"
+                        ? (user?.phone
+                            ? (() => { const d = user.phone.replace(/\D/g, ""); return d.length >= 7 ? `${d.slice(0, 3)}-****${d.slice(-3)}` : user.phone; })()
+                            : pendingContactPhone
+                              ? `${pendingContactPhone.prefix}-***-${pendingContactPhone.number.slice(-3)}`
+                              : "אין מספר טלפון")
+                        : (user?.email
+                            ? user.email.replace(/(.{2}).*(@.*)/, "$1***$2")
+                            : "אין כתובת מייל בחשבון");
 
-                    return (
-                      <label
-                        key={ch}
-                        className={`relative block ${isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
-                        onClick={() => { if (!isDisabled) { setChannel(ch); } }}
-                      >
-                        <div
-                          className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
-                          style={{
-                            border: `2px solid ${isSelected ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
-                            background: isSelected ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
-                          }}
+                      return (
+                        <label
+                          key={ch}
+                          className={`relative block ${isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                          onClick={() => { if (!isDisabled) { setChannel(ch); } }}
                         >
-                          {/* Radio dot */}
                           <div
-                            className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
-                            style={{ borderColor: isSelected ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                            className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200"
+                            style={{
+                              border: `2px solid ${isSelected ? "oklch(0.50 0.14 85)" : "oklch(0.88 0.04 122)"}`,
+                              background: isSelected ? "oklch(0.50 0.14 85 / 0.05)" : "#ffffff",
+                            }}
                           >
-                            {isSelected && (
-                              <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
-                            )}
+                            {/* Radio dot */}
+                            <div
+                              className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 order-last"
+                              style={{ borderColor: isSelected ? "oklch(0.50 0.14 85)" : "#d1d5db" }}
+                            >
+                              {isSelected && (
+                                <div className="w-2.5 h-2.5 rounded-full" style={{ background: "oklch(0.50 0.14 85)" }} />
+                              )}
+                            </div>
+                            {/* Text */}
+                            <div className="flex-1 text-right">
+                              <p className="font-bold text-base" style={{ color: "#1a2010" }}>{label}</p>
+                              <p className="text-sm" style={{ color: isDisabled ? "#ef4444" : "#6b7280" }}>{sublabel}</p>
+                            </div>
+                            {/* Icon */}
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                              style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
+                            >
+                              {ch === "email"
+                                ? <Mail className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
+                                : <Phone className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
+                              }
+                            </div>
                           </div>
-                          {/* Text */}
-                          <div className="flex-1 text-right">
-                            <p className="font-bold text-base" style={{ color: "#1a2010" }}>{label}</p>
-                            <p className="text-sm" style={{ color: isDisabled ? "#ef4444" : "#6b7280" }}>{sublabel}</p>
-                          </div>
-                          {/* Icon */}
-                          <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: "oklch(0.50 0.14 85 / 0.10)" }}
-                          >
-                            {ch === "email"
-                              ? <Mail className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
-                              : <Phone className="w-5 h-5" style={{ color: "oklch(0.50 0.14 85)" }} />
-                            }
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                {/* Rate-limit error banner */}
-                {sendRateLimitError && (
-                  <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
-                    style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
-                  >
-                    <span className="mt-0.5 shrink-0">⚠️</span>
-                    <p className="font-medium">{sendRateLimitError}</p>
+                        </label>
+                      );
+                    })}
                   </div>
-                )}
 
-                {/* CTA */}
-                <div className="space-y-3 pt-1">
-                  <AppButton
-                    variant="cta"
-                    size="lg"
-                    className="w-full"
-                    onClick={handleSendOtp}
-                    disabled={sendOtp.isPending || sendCooldown > 0 || (!user?.phone && !user?.email)}
-                  >
-                    {sendOtp.isPending ? (
-                      <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
-                    ) : sendCooldown > 0 ? (
-                      <>שלח שוב בעוד <span className="tabular-nums font-bold mx-1">{sendCooldown}</span>שניות</>
-                    ) : (
-                      <>המשך לקבלת הקוד <ArrowLeft className="h-4 w-4 mr-1" /></>
-                    )}
-                  </AppButton>
-                </div>
+                  {/* Rate-limit error banner */}
+                  {sendRateLimitError && (
+                    <div className="rounded-lg border p-3 text-sm flex items-start gap-2" dir="rtl"
+                      style={{ borderColor: "oklch(0.72 0.18 25 / 0.5)", background: "oklch(0.97 0.04 25 / 0.15)", color: "oklch(0.42 0.18 25)" }}
+                    >
+                      <span className="mt-0.5 shrink-0">⚠️</span>
+                      <p className="font-medium">{sendRateLimitError}</p>
+                    </div>
+                  )}
 
-                {/* Security badge */}
-                <div className="flex justify-center pt-1">
-                  <div
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs"
-                    style={{ background: "oklch(0.96 0.01 100)", color: "#6b7280" }}
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    <span>החיבור שלך מאובטח ומוצפן בדרגה גבוהה</span>
+                  {/* CTA */}
+                  <div className="space-y-3 pt-1">
+                    <AppButton
+                      variant="cta"
+                      size="lg"
+                      className="w-full"
+                      onClick={handleSendOtp}
+                      disabled={sendOtp.isPending || sendCooldown > 0 || (channel === "sms" ? !(user?.phone || pendingContactPhone) : !user?.email)}
+                    >
+                      {sendOtp.isPending ? (
+                        <><Loader2 className="h-4 w-4 animate-spin ml-2" />שולח קוד...</>
+                      ) : sendCooldown > 0 ? (
+                        <>שלח שוב בעוד <span className="tabular-nums font-bold mx-1">{sendCooldown}</span>שניות</>
+                      ) : (
+                        <>המשך לקבלת הקוד <ArrowLeft className="h-4 w-4 mr-1" /></>
+                      )}
+                    </AppButton>
+                  </div>
+
+                  {/* Security badge */}
+                  <div className="flex justify-center pt-1">
+                    <div
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs"
+                      style={{ background: "oklch(0.96 0.01 100)", color: "#6b7280" }}
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      <span>החיבור שלך מאובטח ומוצפן בדרגה גבוהה</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* ── STEP: otp ── */}
             {step === "otp" && (

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import ReportProblemModal from "./ReportProblemModal";
 import CompleteProfileModal from "./CompleteProfileModal";
+import { isGoogleLoginMethod } from "@shared/auth";
 
 import {
   C_BRAND as BLUE, C_BRAND_LIGHT as BLUE_BG,
@@ -42,7 +43,9 @@ function resolveLoginMessage(authError: string | null): string | undefined {
     case "google_existing_only":
       return "כניסה עם Google זמינה רק למשתמשים קיימים שכבר השלימו מייל, טלפון ואישורי שימוש.";
     case "google_email_required":
-      return "לא התקבלה כתובת מייל מחשבון Google. אפשר להתחבר עם מייל או SMS.";
+      return "לא התקבלה כתובת מייל מחשבון Google. אפשר להתחבר עם מייל.";
+    case "google_unavailable":
+      return "הכניסה עם Google נכשלה. נסה שוב או היכנס עם מייל.";
     default:
       return undefined;
   }
@@ -58,10 +61,7 @@ export default function Navbar() {
   const [loginMessage, setLoginMessage] = useState<string | undefined>();
   const [reportOpen, setReportOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Auto-show profile completion for Google users with no phone
-  // Use a session flag so it only prompts once per browser session (not on every render)
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
-  const completeProfileShown = useRef(false);
 
   // Listen for the global phone-required event dispatched by the tRPC error interceptor.
   // Opens LoginModal with a contextual message so the user can add their phone number.
@@ -74,21 +74,8 @@ export default function Navbar() {
     return () => window.removeEventListener("avodanow:phone-required", handlePhoneRequired);
   }, []);
 
-  useEffect(() => {
-    if (
-      !completeProfileShown.current &&
-      isAuthenticated &&
-      user?.loginMethod === "google_oauth" &&
-      !user?.phone
-    ) {
-      completeProfileShown.current = true;
-      // Small delay so the page finishes loading before the modal appears
-      const t = setTimeout(() => setCompleteProfileOpen(true), 800);
-      return () => clearTimeout(t);
-    }
-  }, [isAuthenticated, user?.loginMethod, user?.phone]);
   const [scrolled, setScrolled] = useState(false);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -98,18 +85,23 @@ export default function Navbar() {
     if (url.searchParams.get("auth") !== "login") return;
 
     const returnTo = url.searchParams.get("returnTo");
-    if (returnTo?.startsWith("/")) {
-      saveReturnPath(returnTo);
-    }
-
-    setLoginMessage(resolveLoginMessage(url.searchParams.get("authError")));
-    setLoginOpen(true);
+    const authError = url.searchParams.get("authError");
 
     url.searchParams.delete("auth");
     url.searchParams.delete("returnTo");
     url.searchParams.delete("authError");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-  }, [location]);
+
+    // משתמש מחובר — אין צורך במודל, נווט ישירות ל-returnTo
+    if (isAuthenticated) {
+      if (returnTo?.startsWith("/")) navigate(returnTo);
+      return;
+    }
+
+    if (returnTo?.startsWith("/")) saveReturnPath(returnTo);
+    setLoginMessage(resolveLoginMessage(authError));
+    setLoginOpen(true);
+  }, [location, isAuthenticated]);
 
   const openLogin = (message?: string) => {
     setLoginMessage(message);

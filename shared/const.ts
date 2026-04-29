@@ -7,12 +7,6 @@ export const FIND_JOBS_OPEN = true;
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 /**
- * sessionStorage key used to persist pending Google registration data
- * (name, phone, termsAccepted, age18Accepted) across the OAuth redirect.
- * Consumed once by PostGoogleRegistration after the OAuth callback.
- */
-export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
-/**
  * localStorage key for persisting the UTM/referral source captured at first visit.
  * Set once on landing (fbclid → "facebook", gclid → "google", utm_source → raw value).
  * Read at OTP verification time and sent to the server as `referralSource`.
@@ -46,6 +40,7 @@ export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
  * Frontend should intercept this and open the registration/phone-entry flow.
  */
 export const PHONE_REQUIRED_ERR_MSG = 'Phone number required (10003)';
+export const SIGNUP_REQUIRED_ERR_MSG = 'Registration required (10004)';
 
 /**
  * Single source of truth for legal document versions.
@@ -157,7 +152,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "הגיש בקשה",
     color: "oklch(0.38 0.07 125.0)",
     bg:    "oklch(0.50 0.14 85 / 0.08)",
-    workerTooltip:   "הגשת בקשה למשרה זו — המעסיק טרם צפה בה",
+    workerTooltip:   "הגשת בקשה למשרה זו - המעסיק טרם צפה בה",
     employerTooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",
   },
   viewed: {
@@ -189,7 +184,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "ממתין לתשובת עובד",
     color: "oklch(0.45 0.16 260)",
     bg:    "oklch(0.45 0.16 260 / 0.08)",
-    workerTooltip:   "קיבלת הצעת עבודה — אשר או דחה",
+    workerTooltip:   "קיבלת הצעת עבודה - אשר או דחה",
     employerTooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",
   },
   offer_rejected: {

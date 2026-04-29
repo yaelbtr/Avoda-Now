@@ -1,35 +1,26 @@
 /**
  * useApplyWithAgeGate
  *
- * Single Source of Truth for the "apply to job" flow with age-gate.
+ * Single Source of Truth for the "apply to job" flow with full pre-action gates.
  *
- * Behaviour:
- *  1. If user is not authenticated → call onLoginRequired and abort.
- *  2. If birthDateInfo is still loading → show "מאמת פרטים..." toast, store
- *     pending params; a useEffect retries automatically once the query resolves.
- *  3. If user has no birthDate on record → open BirthDateModal (via returned state),
- *     store the pending apply params, and abort the mutation.
- *  4. After BirthDateModal reports success → invalidate getBirthDateInfo cache so
- *     all components reflect the new value, then automatically retry the stored mutation.
- *  5. If birthDate already exists → call applyToJob immediately.
+ * Gate order:
+ *  1. Not authenticated            → call onLoginRequired, abort.
+ *  2. No phone on profile          → toast CTA to complete worker profile, abort.
+ *  3. No termsAcceptedAt           → open RealActionConsentModal (first real-action only).
+ *  4. birthDateInfo loading        → store params, retry via useEffect.
+ *  5. No birthDate                 → open BirthDateModal.
+ *  6. All gates pass               → call applyToJob mutation.
  *
- * Usage:
- *   const { apply, isPending, birthDateModalOpen, closeBirthDateModal, handleBirthDateSuccess } =
- *     useApplyWithAgeGate({ isAuthenticated, onLoginRequired, onSuccess });
- *
- *   // In JSX:
- *   <BirthDateModal
- *     isOpen={birthDateModalOpen}
- *     onClose={closeBirthDateModal}
- *     onSuccess={handleBirthDateSuccess}
- *   />
- *
- *   // On apply button click:
- *   apply({ jobId, message, origin });
+ * Error handling:
+ *  - CONFLICT          → treat as success (already applied).
+ *  - message includes "אישור הורי" → specific parental-approval toast.
+ *  - other             → generic error toast.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ApplyParams {
   jobId: number;
@@ -40,7 +31,6 @@ interface ApplyParams {
 interface UseApplyWithAgeGateOptions {
   isAuthenticated: boolean;
   onLoginRequired?: (msg: string) => void;
-  /** Called after a successful application (e.g. to update local applied state) */
   onSuccess?: () => void;
 }
 
@@ -50,15 +40,14 @@ export function useApplyWithAgeGate({
   onSuccess,
 }: UseApplyWithAgeGateOptions) {
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
 
-  // Pending params stored while BirthDateModal is open or query is loading
   const [pendingParams, setPendingParams] = useState<ApplyParams | null>(null);
   const [birthDateModalOpen, setBirthDateModalOpen] = useState(false);
-
-  // Track whether we already showed the "מאמת פרטים..." toast to avoid duplicates
+  const [consentModalOpen, setConsentModalOpen] = useState(false);
   const loadingToastShownRef = useRef(false);
 
-  // Fetch birth date info (cached, only when authenticated)
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
@@ -73,17 +62,19 @@ export function useApplyWithAgeGate({
     onError: (err) => {
       if (err.data?.code === "CONFLICT") {
         toast.info("כבר הגשת מועמדות למשרה זו");
-        onSuccess?.(); // treat as success for UI state
+        onSuccess?.();
+      } else if (err.message?.includes("אישור הורי")) {
+        toast.error("דרוש אישור הורי — הפיצ'ר יושק בקרוב");
       } else {
         toast.error(err.message || "שגיאה בהגשת מועמדות");
       }
     },
   });
 
-  // When the query finishes loading and we have pending params, continue the flow.
+  // Retry after birthDateInfo resolves while pending
   useEffect(() => {
     if (pendingParams && !birthDateInfoQuery.isLoading) {
-      loadingToastShownRef.current = false; // reset for next time
+      loadingToastShownRef.current = false;
       const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
       if (!hasBirthDate) {
         setBirthDateModalOpen(true);
@@ -95,7 +86,6 @@ export function useApplyWithAgeGate({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthDateInfoQuery.isLoading, birthDateInfoQuery.data]);
 
-  /** Trigger the apply flow. Handles auth check + age gate automatically. */
   const apply = useCallback(
     (params: ApplyParams) => {
       if (!isAuthenticated) {
@@ -103,8 +93,26 @@ export function useApplyWithAgeGate({
         return;
       }
 
-      // If birthDateInfo is still loading, store params and show a toast so the
-      // user knows something is happening. The useEffect above will retry.
+      // Gate: phone required
+      if (!user?.phone) {
+        toast.error("יש להשלים את הפרטים האישיים לפני הגשת מועמדות", {
+          action: {
+            label: "השלם פרטים",
+            onClick: () => navigate("/worker-profile"),
+          },
+          duration: 6000,
+        });
+        return;
+      }
+
+      // Gate: consent required (first real action only)
+      if (!user?.termsAcceptedAt) {
+        setPendingParams(params);
+        setConsentModalOpen(true);
+        return;
+      }
+
+      // Gate: birthDate loading
       if (birthDateInfoQuery.isLoading) {
         setPendingParams(params);
         if (!loadingToastShownRef.current) {
@@ -114,6 +122,7 @@ export function useApplyWithAgeGate({
         return;
       }
 
+      // Gate: birthDate required
       const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
       if (!hasBirthDate) {
         setPendingParams(params);
@@ -123,15 +132,37 @@ export function useApplyWithAgeGate({
 
       applyMutation.mutate(params);
     },
-    [isAuthenticated, onLoginRequired, birthDateInfoQuery.isLoading, birthDateInfoQuery.data, applyMutation]
+    [isAuthenticated, onLoginRequired, user, birthDateInfoQuery, applyMutation, navigate]
   );
 
-  /** Call this from BirthDateModal's onSuccess prop */
+  /** Called by RealActionConsentModal after successful consent recording */
+  const handleConsentConfirm = useCallback(() => {
+    setConsentModalOpen(false);
+    utils.auth.me.invalidate(); // refresh termsAcceptedAt in auth context
+    if (!pendingParams) return;
+
+    if (birthDateInfoQuery.isLoading) {
+      // Keep pendingParams; useEffect will continue once query resolves
+      return;
+    }
+
+    const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
+    if (!hasBirthDate) {
+      setBirthDateModalOpen(true);
+    } else {
+      applyMutation.mutate(pendingParams);
+      setPendingParams(null);
+    }
+  }, [pendingParams, birthDateInfoQuery, applyMutation, utils]);
+
+  const closeConsentModal = useCallback(() => {
+    setConsentModalOpen(false);
+    setPendingParams(null);
+  }, []);
+
   const handleBirthDateSuccess = useCallback(
     (_result: { age: number; isMinor: boolean }) => {
       setBirthDateModalOpen(false);
-      // Invalidate cache so all components (CarouselJobCard, SearchJobCard, etc.)
-      // immediately reflect the newly saved birthDate without a stale read.
       utils.user.getBirthDateInfo.invalidate();
       if (pendingParams) {
         applyMutation.mutate(pendingParams);
@@ -141,7 +172,6 @@ export function useApplyWithAgeGate({
     [pendingParams, applyMutation, utils.user.getBirthDateInfo]
   );
 
-  /** Call this from BirthDateModal's onClose prop */
   const closeBirthDateModal = useCallback(() => {
     setBirthDateModalOpen(false);
     setPendingParams(null);
@@ -150,6 +180,9 @@ export function useApplyWithAgeGate({
   return {
     apply,
     isPending: applyMutation.isPending,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,

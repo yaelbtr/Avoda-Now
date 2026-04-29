@@ -6,7 +6,17 @@
       "Bash(pnpm check:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(node -e ' *)",
+      "Bash(file avodanow-design.skill)",
+      "Bash(python3 -c ' *)",
+      "Bash(zip -r /tmp/avodanow-design.skill SKILL.md references/ scripts/ templates/)",
+      "Read(//c/tmp/**)",
+      "Bash(mkdir -p skill_verify)",
+      "Bash(unzip -o \"c:/Users/User/Desktop/Work-Now/AvodaNow/skill/avodanow-design.skill\" -d skill_verify)",
+      "Bash(rm -rf skill_final)",
+      "Bash(mkdir skill_final)",
+      "Bash(unzip -o \"c:/Users/User/Desktop/Work-Now/AvodaNow/skill/avodanow-design.skill\" -d skill_final)"
     ]
   }
 }

@@ -4,40 +4,40 @@
  * no matter how many components call `ensureMapsLoaded()` simultaneously.
  */
 
-const API_KEY =
-  import.meta.env.VITE_MAPS_PROXY_KEY ||
-  import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
-const MAPS_PROXY_BASE_URL =
-  import.meta.env.VITE_MAPS_PROXY_URL ||
-  import.meta.env.VITE_FRONTEND_FORGE_API_URL;
-const MAPS_PROXY_URL = MAPS_PROXY_BASE_URL
-  ? `${MAPS_PROXY_BASE_URL.replace(/\/+$/, "")}/v1/maps/proxy`
-  : null;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+function getMapsScriptUrl(): string | null {
+  if (!GOOGLE_MAPS_API_KEY) return null;
+
+  const params = new URLSearchParams({
+    key: GOOGLE_MAPS_API_KEY,
+    v: "weekly",
+    libraries: "places",
+  });
+  return `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+}
 
 let _mapsLoadPromise: Promise<void> | null = null;
 
 export function ensureMapsLoaded(): Promise<void> {
   // Already loaded
-  if (window.google?.maps) return Promise.resolve();
+  if (window.google?.maps?.places) return Promise.resolve();
 
   // In-flight — return the same promise so only one <script> is injected
   if (_mapsLoadPromise) return _mapsLoadPromise;
 
   _mapsLoadPromise = new Promise<void>((resolve, reject) => {
     // Double-check: another tab/frame may have loaded it between the checks above
-    if (window.google?.maps) { resolve(); return; }
-    if (!MAPS_PROXY_URL || !API_KEY) {
+    if (window.google?.maps?.places) { resolve(); return; }
+    const scriptUrl = getMapsScriptUrl();
+    if (!scriptUrl) {
       _mapsLoadPromise = null;
-      reject(
-        new Error(
-          "Google Maps proxy is not configured. Set VITE_MAPS_PROXY_URL and VITE_MAPS_PROXY_KEY."
-        )
-      );
+      reject(new Error("VITE_GOOGLE_MAPS_API_KEY is not configured."));
       return;
     }
 
     const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
+    script.src = scriptUrl;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => resolve();

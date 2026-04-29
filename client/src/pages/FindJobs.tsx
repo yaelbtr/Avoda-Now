@@ -34,15 +34,16 @@ import type { DateRange } from "react-day-picker";
 import BrandLoader from "@/components/BrandLoader";
 import { AppButton } from "@/components/AppButton";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
   C_BRAND_HEX, C_BORDER, C_TEXT_MUTED, C_SUCCESS_HEX, C_DANGER_HEX,
 } from "@/lib/colors";
-import { reverseGeocode } from "@/lib/reverseGeocode";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
+import { NavPill } from "@/components/ui/NavPill";
 
 const LOCATION_CACHE_KEY = "findJobs_location";
 const LOCATION_CACHE_TTL = 60 * 60 * 1000;
@@ -394,9 +395,10 @@ function SmartEmptyState({
             <button
               key={city}
               onClick={() => onSelectCity(city)}
-              className="city-chip"
+              className="nav-pill"
             >
-              עבודות ב{city}
+              <span className="nav-pill__icon">📍</span>
+              <span>עבודות ב{city}</span>
             </button>
           ))}
         </div>
@@ -763,12 +765,11 @@ export default function FindJobs() {
     } else if (autoNearby) {
       setLocating(true);
       navigator.geolocation.getCurrentPosition(
-        async (pos) => {
+        (pos) => {
           const { latitude, longitude } = pos.coords;
           setUserLat(latitude); setUserLng(longitude); setLocating(false); setLocationDenied(false);
-          const city = await reverseGeocode(latitude, longitude);
-          setGeoCity(city); saveLocationCache(latitude, longitude, city ?? undefined);
-          toast.success(city ? `מיקום נמצא — מציג עבודות ליד ${city}` : "מיקום נמצא");
+          setGeoCity(null); saveLocationCache(latitude, longitude);
+          toast.success("מיקום נמצא");
         },
         () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום — הזן עיר ידנית"); }
       );
@@ -800,12 +801,11 @@ export default function FindJobs() {
   const doGetLocation = () => {
     setLocating(true); setShowLocationDialog(false);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      (pos) => {
         const { latitude, longitude } = pos.coords;
         setUserLat(latitude); setUserLng(longitude); setLocating(false); setLocationDenied(false); setAutoExpandedRadius(false);
-        const city = await reverseGeocode(latitude, longitude);
-        setGeoCity(city); saveLocationCache(latitude, longitude, city ?? undefined);
-        toast.success(city ? `מיקום נמצא — מציג עבודות ליד ${city}` : "מיקום נמצא");
+        setGeoCity(null); saveLocationCache(latitude, longitude);
+        toast.success("מיקום נמצא");
       },
       () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום — הזן עיר ידנית"); }
     );
@@ -867,6 +867,9 @@ export default function FindJobs() {
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal: closeAgeGateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired: requireLogin,
@@ -1740,11 +1743,9 @@ export default function FindJobs() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {visibleCategories.map(cat => (
-                  <Link key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                    style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                    {cat.icon} עבודות {cat.name} ב{selectedCity}
-                  </Link>
+                  <NavPill key={cat.slug} href={`/jobs/${cat.slug}/${encodeURIComponent(selectedCity!)}`} icon={cat.icon}>
+                    עבודות {cat.name} ב{selectedCity}
+                  </NavPill>
                 ))}
               </div>
             </div>
@@ -1757,10 +1758,9 @@ export default function FindJobs() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {SEO_CITIES.map(city => (
-                  <Link key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`}
-                    className="city-chip">
+                  <NavPill key={city} href={`/jobs/${category}/${encodeURIComponent(city)}`} icon="📍">
                     עבודות {catName} ב{city}
-                  </Link>
+                  </NavPill>
                 ))}
               </div>
             </div>
@@ -1772,10 +1772,9 @@ export default function FindJobs() {
             </div>
             <div className="flex flex-wrap gap-2">
               {SEO_CITIES.filter(c => c !== selectedCity).map(city => (
-                <Link key={city} href={`/jobs/${encodeURIComponent(city)}`}
-                  className="city-chip">
+                <NavPill key={city} href={`/jobs/${encodeURIComponent(city)}`} icon="📍">
                   עבודות ב{city}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>
@@ -1786,11 +1785,9 @@ export default function FindJobs() {
             </div>
             <div className="flex flex-wrap gap-2">
               {visibleCategories.filter(c => c.slug !== category).map(cat => (
-                <Link key={cat.slug} href={`/jobs/${cat.slug}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:opacity-80"
-                  style={{ background: "white", borderColor: C_BORDER, color: "oklch(0.30 0.05 122)" }}>
-                  {cat.icon} עבודות {cat.name}
-                </Link>
+                <NavPill key={cat.slug} href={`/jobs/${cat.slug}`} icon={cat.icon}>
+                  עבודות {cat.name}
+                </NavPill>
               ))}
             </div>
           </div>
@@ -1822,6 +1819,11 @@ export default function FindJobs() {
       </AnimatePresence>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} message={loginMessage} />
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       <BirthDateModal
         isOpen={birthDateModalOpen}
         onClose={closeAgeGateModal}
@@ -2043,7 +2045,7 @@ export default function FindJobs() {
                                 });
                                 setShowCityInput(false); setUserLat(null); setUserLng(null); setGeoCity(null); clearLocationCache(); setAutoExpandedRadius(false);
                               }}
-                                className={`city-chip${selectedCities.includes(city) ? " active" : ""}`}>
+                                className={`nav-pill${selectedCities.includes(city) ? " is-active" : ""}`}>
                                 {city}
                               </button>
                             ))}

@@ -5,8 +5,8 @@ import { createServer } from "http";
 import net from "net";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { ENV } from "./env";
+import { registerGoogleAuthRoutes } from "./googleAuth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -140,6 +140,64 @@ async function startServer() {
   });
 
   // ── Profile photo upload endpoint (8mb limit, auth required) ──────────────
+  app.get("/api/maps/js", async (req, res) => {
+    try {
+      const apiKey =
+        process.env.VITE_MAPS_PROXY_KEY?.trim() ||
+        process.env.VITE_FRONTEND_FORGE_API_KEY?.trim() ||
+        ENV.forgeApiKey;
+      if (!apiKey) {
+        return res.status(500).send("Google Maps proxy key is not configured");
+      }
+
+      const configuredBaseUrl = ENV.forgeApiUrl.trim();
+      const baseUrls = [
+        /^https?:\/\//i.test(configuredBaseUrl)
+          ? configuredBaseUrl.replace(/\/+$/, "")
+          : null,
+        "https://api.manus.im/forge",
+        "https://forge.butterfly-effect.dev",
+      ].filter((value, index, values): value is string =>
+        Boolean(value) && values.indexOf(value) === index
+      );
+
+      let lastStatus = 502;
+      let lastBody = "Google Maps script proxy failed";
+      let lastContentType = "text/plain";
+
+      for (const baseUrl of baseUrls) {
+        const url = new URL(`${baseUrl}/v1/maps/proxy/maps/api/js`);
+        url.searchParams.set("key", apiKey);
+
+        for (const [key, value] of Object.entries(req.query)) {
+          if (typeof value === "string") {
+            url.searchParams.set(key, value);
+          }
+        }
+
+        const response = await fetch(url);
+        const body = await response.text();
+        lastStatus = response.status;
+        lastBody = body;
+        lastContentType = response.headers.get("content-type") ?? "text/plain";
+
+        if (response.ok) {
+          res.status(response.status);
+          res.type(lastContentType || "application/javascript");
+          res.send(body);
+          return;
+        }
+      }
+
+      res.status(lastStatus);
+      res.type(lastContentType);
+      res.send(lastBody);
+    } catch (err) {
+      console.error("[maps-js-proxy]", err);
+      res.status(500).send("Google Maps script proxy failed");
+    }
+  });
+
   app.post("/api/upload-photo", async (req, res) => {
     try {
       const { storagePut } = await import("../storage");
@@ -417,9 +475,9 @@ async function startServer() {
         `<?xml version="1.0" encoding="UTF-8"?>`,
         `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">`,
         `<channel>`,
-        `  <title>YallaAvoda — משרות זמניות</title>`,
+        `  <title>YallaAvoda - משרות זמניות</title>`,
         `  <link>${baseUrl}</link>`,
-        `  <description>לוח דרושים מהיר ופשוט — עבודות זמניות קרוב אליך</description>`,
+        `  <description>לוח דרושים מהיר ופשוט - עבודות זמניות קרוב אליך</description>`,
         `  <language>he</language>`,
         `  <lastBuildDate>${buildDate}</lastBuildDate>`,
         `  <atom:link href="${baseUrl}/jobs/rss.xml" rel="self" type="application/rss+xml"/>`,
@@ -481,8 +539,7 @@ async function startServer() {
     res.redirect(302, `/?ref=${encodeURIComponent(code)}`);
   });
 
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
+  registerGoogleAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

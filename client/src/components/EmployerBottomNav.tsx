@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useUserMode } from "@/contexts/UserModeContext";
 
 const NAV_ITEMS = [
-  { href: "/",                  label: "מסך הבית",      icon: Home },
+  { href: "/employer-home",     label: "מסך הבית",      icon: Home },
   { href: "/post-job",          label: "פרסם מודעה",     icon: PlusSquare },
   { href: "/my-jobs",           label: "המודעות שלי",    icon: Briefcase },
   { href: "/available-workers", label: "עובדים זמינים", icon: Users },

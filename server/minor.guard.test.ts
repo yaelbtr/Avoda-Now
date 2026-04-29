@@ -62,6 +62,7 @@ function makeCtx(overrides: Partial<AuthUser> = {}): TrpcContext {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
     ...overrides,
   };
   return {
@@ -95,37 +96,25 @@ describe("assertMinorEligible", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("16") });
   });
 
-  it("throws FORBIDDEN when minor (age 16) applies to a category not allowed for minors", async () => {
+  it("throws FORBIDDEN when minor (age 16) is blocked pending parental approval", async () => {
     vi.mocked(db.getWorkerBirthDate).mockResolvedValue(birthdateForAge(16));
-    vi.mocked(db.getCategoryBySlug).mockResolvedValue({
-      id: 99, slug: "security", name: "אבטחה", allowedForMinors: false,
-      icon: null, groupName: null, imageUrl: null, isActive: true, sortOrder: 0,
-    } as any);
     await expect(
       assertMinorEligible(1, { category: "security", workEndTime: "18:00" })
-    ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("אבטחה") });
+    ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("הורי") });
   });
 
-  it("throws FORBIDDEN when minor (age 17) applies to a job ending after 22:00", async () => {
+  it("throws FORBIDDEN when minor (age 17) is blocked pending parental approval", async () => {
     vi.mocked(db.getWorkerBirthDate).mockResolvedValue(birthdateForAge(17));
-    vi.mocked(db.getCategoryBySlug).mockResolvedValue({
-      id: 1, slug: "cleaning", name: "ניקיון", allowedForMinors: true,
-      icon: null, groupName: null, imageUrl: null, isActive: true, sortOrder: 0,
-    } as any);
     await expect(
       assertMinorEligible(1, { category: "cleaning", workEndTime: "23:00" })
-    ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("22:00") });
+    ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("הורי") });
   });
 
-  it("passes for a minor (age 16) in an allowed category with early end time", async () => {
+  it("blocks a minor (age 16) even in an allowed category (parental approval required)", async () => {
     vi.mocked(db.getWorkerBirthDate).mockResolvedValue(birthdateForAge(16));
-    vi.mocked(db.getCategoryBySlug).mockResolvedValue({
-      id: 1, slug: "cleaning", name: "ניקיון", allowedForMinors: true,
-      icon: null, groupName: null, imageUrl: null, isActive: true, sortOrder: 0,
-    } as any);
     await expect(
       assertMinorEligible(1, { category: "cleaning", workEndTime: "20:00" })
-    ).resolves.toBeUndefined();
+    ).rejects.toMatchObject({ code: "FORBIDDEN", message: expect.stringContaining("הורי") });
   });
 
   it("passes for an adult (age 18) even in a restricted category with late hours", async () => {
@@ -155,18 +144,14 @@ describe("applyToJob — minor guard integration", () => {
     workEndTime: "18:00", minAge: 16, postedBy: 99, contactPhone: null,
   };
 
-  it("blocks a minor applying to a restricted category", async () => {
+  it("blocks a minor applying (parental approval required for age 16–17)", async () => {
     vi.mocked(db.getJobById).mockResolvedValue(activeJob as any);
     vi.mocked(db.getWorkerBirthDate).mockResolvedValue(birthdateForAge(16));
-    vi.mocked(db.getCategoryBySlug).mockResolvedValue({
-      id: 99, slug: "security", name: "אבטחה", allowedForMinors: false,
-      icon: null, groupName: null, imageUrl: null, isActive: true, sortOrder: 0,
-    } as any);
 
     const caller = appRouter.createCaller(makeCtx({ id: 1 }));
     await expect(caller.jobs.applyToJob({ jobId: 10 })).rejects.toMatchObject({
       code: "FORBIDDEN",
-      message: expect.stringContaining("אבטחה"),
+      message: expect.stringContaining("הורי"),
     });
     expect(db.createApplication).not.toHaveBeenCalled();
   });

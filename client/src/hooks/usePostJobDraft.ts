@@ -47,6 +47,15 @@ export interface PostJobDraft {
   jobImages?: string[];
   activeTab?: string;
   locationSubTab?: "search" | "address";
+  selectedJobLocation?: {
+    lat: number;
+    lng: number;
+    placeId: string;
+    formattedAddress: string;
+    city?: string;
+    street?: string;
+    houseNumber?: string;
+  } | null;
   // metadata
   savedAt?: number; // Unix ms
 }

@@ -13,6 +13,7 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { useSEO } from "@/hooks/useSEO";
 import { useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { trpc } from "@/lib/trpc";
@@ -320,13 +321,9 @@ export default function PassoverLandingPage() {
             <h2 className="text-sm font-bold text-gray-700 mb-3">ניקיון לפסח לפי עיר</h2>
             <div className="flex flex-wrap gap-2">
               {PASSOVER_CITIES.map((city) => (
-                <Link
-                  key={city}
-                  href={`/jobs/cleaning/${encodeURIComponent(city)}`}
-                  className="city-chip"
-                >
+                <NavPill key={city} href={`/jobs/cleaning/${encodeURIComponent(city)}`} icon="📍">
                   ניקיון לפסח ב{city}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>

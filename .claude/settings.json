@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm exec *)",
+      "Bash(notebooklm history *)",
+      "Read(//c/Users/User/.claude/**)",
+      "Read(//c/Users/User/.agents/skills/notebooklm/**)",
+      "Bash(python -m notebooklm --help)",
+      "Bash(python -m notebooklm note --help)",
+      "Bash(python -m notebooklm list)",
+      "Read(//c/Users/User/**)",
+      "Bash(python -m notebooklm note create --help)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

@@ -12,7 +12,7 @@ import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   Search, MapPin, ChevronLeft, Zap, Flame,
   Map, List, ArrowLeft, TrendingUp, Star,
-  Briefcase, BadgePercent, Clock,
+  Briefcase, BadgePercent, Clock, UserPlus,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -190,7 +190,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     const id = Date.now();
     setRipples(prev => [...prev, { id, x, y }]);
     setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
-    navigate("/find-jobs");
+    if (!isAuthenticated) {
+      onLoginRequired("כדי ליצור פרופיל יש להתחבר תחילה");
+      return;
+    }
+    navigate("/worker-profile");
   };
   useSEO({
     title: "YallaAvoda — עבודות זמניות בישראל",
@@ -230,7 +234,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
   const registeredWorkersCount = heroStatsQuery.data?.registeredWorkers ?? null;
   const registeredWorkersChipText = registeredWorkersCount !== null
-    ? `+${registeredWorkersCount} עובדים כבר בפנים`
+    ? `+${registeredWorkersCount} עובדים כבר נחשפו למעסיקים באזורם`
     : "עובדים כבר בפנים";
   // ── Job data now comes from the shared WorkerJobsContext (single server call) ──
   const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
@@ -441,7 +445,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="relative text-[27px] leading-[1.04] font-black"
               style={{
-                color: "oklch(0.90 0.13 77)",
+                color: "oklch(0.98 0.01 0)",
                 fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
                 textShadow: "0 2px 6px oklch(0.08 0.03 122 / 0.72), 0 12px 26px oklch(0.08 0.03 122 / 0.30)",
                 letterSpacing: "-0.02em",
@@ -455,7 +459,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   display: "block",
                   fontSize: "29px",
                   lineHeight: 1.02,
-                  color: "oklch(0.90 0.13 77)",
+                  color: "oklch(0.98 0.01 0)",
                 }}
               >
                 מעסיקים באזורך מחפשים אותך
@@ -498,7 +502,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   fontSize: "15px",
                   lineHeight: 1.18,
                   fontWeight: 700,
-                  color: "oklch(0.98 0.01 88)",
+                  color: "oklch(0.98 0.01 0)",
                 }}
               >
             או לקבל עוד פניות – בלי התחייבות
@@ -531,14 +535,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 textShadow: "0 1px 4px oklch(0.08 0.03 122 / 0.52), 0 8px 20px oklch(0.08 0.03 122 / 0.18)",
               }}
             >
-              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.24 }}
               className="relative inline-flex items-center gap-2 rounded-full"
               style={{
                 marginTop: "0.8rem",
-                padding: "0.38rem 0.7rem",
+                padding: "0.38rem 0.17rem",
                 background: "oklch(0.14 0.03 122 / 0.34)",
                 border: "1px solid oklch(0.96 0.03 92 / 0.12)",
                 boxShadow: "0 8px 24px oklch(0.08 0.03 122 / 0.16)",
@@ -550,7 +554,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   aria-hidden="true"
                   className="animate-pulse"
                   style={{
-                    width: "7px",
+                    width: "14px",
                     height: "7px",
                   borderRadius: "999px",
                   background: "oklch(0.90 0.13 77)",
@@ -600,16 +604,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.45)",
               }}
             >
-              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
             </span>
           </motion.div>
-          <div className="absolute z-10" style={{ top: "19%",   right: "40%" }}>
+          <div className="absolute" style={{ top: "15%",   right: "40%" }}>
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className="relative"
-              style={{ maxWidth: "186px" }}
+              style={{ maxWidth: "286px" }}
             >
               <div
                 className="absolute pointer-events-none"
@@ -622,13 +626,16 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               />
               <h1
                 className="relative"
-                style={{
-                  color: "oklch(0.91 0.21 98.84 / 0.98)",
+                style={{                  
+    paddingLeft: "3rem",
+    paddingBottom: "0.3rem",  
+                  color: "oklch(0.98 0.01 0)",
                   fontSize: "24px",
+                  textAlign: "center",
                   lineHeight: 1.08,
                   fontWeight: 900,
-                  fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
-                  letterSpacing: "-0.02em",
+                  fontFamily: " 'Heebo', serif",
+                //   letterSpacing: "-0.02em",
                   textShadow: "0 2px 5px oklch(0.08 0.03 122 / 0.64), 0 10px 20px oklch(0.08 0.03 122 / 0.22)",
                 }}
               >
@@ -637,23 +644,25 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <p
                 className="relative"
                 style={{
-                  marginRight: "-0.5rem",
+                 
                   marginTop: "0.42rem",
-                  color: "oklch(0.98 0.01 88)",
+                  color: "oklch(0.91 0.22 98.95)",
                   fontSize: "12.5px",
                   lineHeight: 1.34,
                   fontWeight: 700,
                   textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.46)",
                 }}
               >
-                          או לקבל עוד פניות – בלי התחייבות
+                          בואו לקבל עוד פניות – בלי התחייבות
 
               </p>
               <div
                 className="relative inline-flex items-center gap-2 rounded-full"
                 style={{
-                  marginRight: "1.5rem",
-                  marginTop: "1.5rem",
+                  textAlign: "center",
+    maxWidth: "10rem",
+                  marginRight: "1rem",
+                  marginTop: "1rem",
                   padding: "0.3rem 0.55rem",
                   background: "oklch(0.14 0.03 122 / 0.22)",
                   border: "1px solid oklch(0.96 0.03 92 / 0.12)",
@@ -689,7 +698,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 <span
                   style={{
                     color: "oklch(0.97 0.01 88 / 0.94)",
-                    fontSize: "10px",
+                    fontSize: "12px",
                     fontWeight: 800,
                     letterSpacing: "-0.01em",
                     textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.36)",
@@ -707,7 +716,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="absolute z-10 text-center"
             style={{
               
-              right: "3rem",
+              right: "2rem",
               bottom: "0.5rem",
               padding: "0.18rem 0.45rem 0.2rem",
               borderRadius: "12px",
@@ -728,14 +737,14 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               style={{
                 display: "block",
                 color: "oklch(0.97 0.01 88 / 0.98)",
-                fontSize: "11px",
+                fontSize: "16px",
                 fontWeight: 700,
                 lineHeight: 1.28,
                 letterSpacing: "-0.01em",
                 textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.36)",
               }}
             >
-              הרשמו חינם - וקבלו הצעות ישירות לנייד תוך דקות
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
             </span>
           </motion.div>
         </div>
@@ -759,8 +768,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               whileTap={{ scale: 0.96 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
-              <Search size={15} />
-              מצא עבודה עכשיו
+              <UserPlus size={15} />
+              צור פרופיל והתפרסם
               <motion.span
                 animate={{ x: [0, -5, 0] }}
                 transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}

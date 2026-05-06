@@ -34,12 +34,10 @@ const LS_VERSION = "cookieConsentVersion";
  */
 export const CURRENT_COOKIE_VERSION = "2026-03";
 
-// Dark nav background — same token as Navbar
-const DARK_NAV = "oklch(0.28 0.06 122.3)";
-// Brand olive for accents
-const BRAND_OLIVE = "#3d4a28";
-// Citrus gold — same as --citrus in index.css
-const CITRUS = "oklch(0.75 0.15 76)";
+// טוקני עיצוב — CSS variables מה-index.css
+const DARK_NAV = "var(--brand-dark)";
+const BRAND_OLIVE = "var(--editorial-primary)";
+const CITRUS = "var(--citrus)";
 
 // ── Analytics loader ──────────────────────────────────────────────────────────
 // Step 5 (perf skill): defer analytics until browser is idle to avoid
@@ -49,18 +47,29 @@ const rIC: (cb: () => void) => void =
     ? (cb) => (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(cb)
     : (cb) => setTimeout(cb, 200); // fallback for Safari
 
+function buildAnalyticsScriptUrl(endpoint: string): string | null {
+  const trimmed = endpoint.trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(trimmed)) return null;
+  return `${trimmed}/umami`;
+}
+
 function loadAnalyticsScript() {
   if (document.getElementById("umami-script")) return;
   const endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
   const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
   if (!endpoint || !websiteId) return;
+  const scriptUrl = buildAnalyticsScriptUrl(endpoint);
+  if (!scriptUrl) {
+    console.warn("[analytics] VITE_ANALYTICS_ENDPOINT must be a full http(s) URL; skipping analytics script.");
+    return;
+  }
   // Defer until browser is idle so analytics never competes with LCP/FID
   rIC(() => {
     if (document.getElementById("umami-script")) return; // guard double-call
     const s = document.createElement("script");
     s.id = "umami-script";
     s.defer = true;
-    s.src = `${endpoint}/umami`;
+    s.src = scriptUrl;
     s.dataset.websiteId = websiteId;
     document.body.appendChild(s);
   });
@@ -187,7 +196,7 @@ function BannerBar({
       className="w-full px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
       style={{
         background: DARK_NAV,
-        borderTop: `1px solid oklch(0.38 0.07 122 / 0.5)`,
+        borderTop: "1px solid rgb(255 255 255 / 0.10)",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.25)",
       }}
     >
@@ -201,7 +210,7 @@ function BannerBar({
         <p
           className="text-sm leading-relaxed"
           style={{
-            color: "oklch(0.92 0.02 95)",
+            color: "var(--editorial-primary-fixed)",
             fontFamily: "Heebo, sans-serif",
           }}
         >
@@ -226,9 +235,9 @@ function BannerBar({
           onClick={onSettings}
           className="flex items-center gap-1 text-sm px-3 py-2 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
           style={{
-            color: "oklch(0.80 0.04 95)",
-            background: "oklch(0.35 0.06 122 / 0.6)",
-            border: "1px solid oklch(0.45 0.06 122 / 0.5)",
+            color: "var(--honey)",
+            background: "rgb(255 255 255 / 0.10)",
+            border: "1px solid rgb(255 255 255 / 0.18)",
             fontFamily: "Heebo, sans-serif",
           }}
           aria-label="פתח הגדרות עוגיות"

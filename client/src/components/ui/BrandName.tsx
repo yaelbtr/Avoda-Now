@@ -19,8 +19,8 @@ interface BrandNameProps extends HTMLAttributes<HTMLElement> {
 export function BrandName({ as: Tag = "span", className, ...props }: BrandNameProps) {
   return (
     <Tag className={cn("brand-name", className)} {...props}>
-      <span className="brand-yalla">Yalla</span>
-      <span className="brand-avoda">Avoda</span>
+      <span className="brand-yalla">Avoda</span>
+      <span className="brand-avoda">Go</span>
     </Tag>
   );
 }

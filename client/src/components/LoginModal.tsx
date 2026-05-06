@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { getGoogleLoginUrl, isGoogleLoginEnabled, popReturnPath } from "@/const";
+import { getGoogleLoginUrl, isGoogleLoginEnabled, logGoogleAuthDiagnostics, popReturnPath } from "@/const";
 import { AppButton, AppInput, AppLabel, GoogleAuthButton } from "@/components/ui";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -43,6 +43,8 @@ export default function LoginModal({
   const [, navigate] = useLocation();
 
   useEffect(() => {
+    logGoogleAuthDiagnostics();
+
     if (!open) {
       const t = setTimeout(() => {
         setStep("entry");

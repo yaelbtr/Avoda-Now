@@ -38,7 +38,7 @@ export const ENV = {
   allowedOrigins: readListEnv("ALLOWED_ORIGINS"),
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
-  googleClientId: readFirstEnv("GOOGLE_CLIENT_ID"),
+  googleClientId: readFirstEnv("GOOGLE_CLIENT_ID", "VITE_GOOGLE_CLIENT_ID"),
   googleClientSecret: readFirstEnv("GOOGLE_CLIENT_SECRET"),
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: readFirstEnv("FORGE_API_URL", "BUILT_IN_FORGE_API_URL"),

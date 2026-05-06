@@ -9,7 +9,7 @@
  *  3. 'unsafe-inline' is present in style-src (required for Tailwind/Radix)
  *  4. Nonce is correctly injected into script-src when provided
  *  5. 'strict-dynamic' is added alongside nonce
- *  6. frame-src and object-src are locked to 'none'
+ *  6. frame-src allows Google account iframes; object-src is locked to 'none'
  *  7. upgrade-insecure-requests is present
  *  8. All required CDN hostnames are in img-src
  *  9. All required API endpoints are in connect-src
@@ -64,10 +64,10 @@ describe("buildCspDirectives — Content-Security-Policy builder", () => {
     expect(scriptSrc).toContain("'strict-dynamic'");
   });
 
-  // ── 6. frame-src and object-src are locked to 'none' ─────────────────────
-  it("locks frame-src to 'none' (prevents clickjacking)", () => {
+  // ── 6. frame-src allows Google account iframes; object-src is locked to 'none'
+  it("allows only Google account iframes for Identity Services", () => {
     const { frameSrc } = buildCspDirectives();
-    expect(frameSrc).toEqual(["'none'"]);
+    expect(frameSrc).toEqual(["https://accounts.google.com"]);
   });
 
   it("locks object-src to 'none' (no Flash/Java applets)", () => {
@@ -114,6 +114,13 @@ describe("buildCspDirectives — Content-Security-Policy builder", () => {
   it("includes Google Maps API in connect-src", () => {
     const { connectSrc } = buildCspDirectives();
     expect(connectSrc).toContain("https://maps.googleapis.com");
+  });
+
+  it("includes Google account services for auth-related scripts and requests", () => {
+    const { scriptSrc, connectSrc, frameSrc } = buildCspDirectives();
+    expect(scriptSrc).toContain("https://accounts.google.com");
+    expect(connectSrc).toContain("https://accounts.google.com");
+    expect(frameSrc).toContain("https://accounts.google.com");
   });
 
   // ── 10. worker-src allows blob: for service worker ───────────────────────

@@ -46,6 +46,7 @@ npm run start
 ### Required environment variables
 
 - `VITE_ENABLE_GOOGLE_LOGIN=true`
+- `VITE_GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
@@ -54,6 +55,8 @@ npm run start
 - The frontend starts Google login via the local `/api/auth/google/start` route.
 - The backend callback is `/api/auth/google/callback`.
 - The session is signed locally; there is no Manus OAuth dependency anymore.
+- `VITE_GOOGLE_CLIENT_ID` is public and controls frontend availability.
+  `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are server-side OAuth credentials.
 
 ## 3. Required if you keep current Forge-backed platform services
 
@@ -128,6 +131,8 @@ Required only if you use worker matching / job offer flows:
 Required only if you want frontend analytics:
 
 - `VITE_ANALYTICS_ENDPOINT`
+  Must be the full analytics script base URL, for example `https://analytics.example.com`.
+  Leave empty to disable analytics.
 - `VITE_ANALYTICS_WEBSITE_ID`
 
 ## 5. Manus-specific dependencies you may need to replace

@@ -11,8 +11,8 @@ import { useEffect, useRef } from "react";
 import { X, Shield, BarChart2 } from "lucide-react";
 import { AppButton } from "@/components/ui";
 
-const BRAND_OLIVE = "#3d4a28";
-const CITRUS = "oklch(0.75 0.15 76)";
+const BRAND_OLIVE = "var(--editorial-primary)";
+const CITRUS = "var(--citrus-on-light)";
 
 interface CookieSettingsModalProps {
   analyticsEnabled: boolean;
@@ -98,14 +98,14 @@ export default function CookieSettingsModal({
           <div
             className="flex items-start gap-3 rounded-xl p-4"
             style={{
-              background: "oklch(0.96 0.02 122 / 0.6)",
-              border: "1px solid oklch(0.88 0.04 122)",
+              background: "var(--brand-light)",
+              border: "1px solid var(--editorial-outline-variant)",
             }}
           >
-            <Shield className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: "oklch(0.52 0.22 150)" }} />
+            <Shield className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: "var(--success-dark)" }} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold" style={{ color: BRAND_OLIVE }}>עוגיות חיוניות</p>
-              <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                 נדרשות לתפעול הפלטפורמה. לא ניתן לבטל.
               </p>
             </div>
@@ -124,14 +124,14 @@ export default function CookieSettingsModal({
           <div
             className="flex items-start gap-3 rounded-xl p-4"
             style={{
-              background: "oklch(0.96 0.02 122 / 0.6)",
-              border: "1px solid oklch(0.88 0.04 122)",
+              background: "var(--brand-light)",
+              border: "1px solid var(--editorial-outline-variant)",
             }}
           >
             <BarChart2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: CITRUS }} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold" style={{ color: BRAND_OLIVE }}>עוגיות אנליטיקה</p>
-              <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                 עוזרות לנו לשפר את הפלטפורמה (Umami — ללא מעקב אישי).
               </p>
             </div>
@@ -143,10 +143,10 @@ export default function CookieSettingsModal({
               className="flex-shrink-0 mt-0.5 relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2"
               style={{
                 background: analyticsEnabled
-                  ? "linear-gradient(135deg, #3d4a28 0%, #2e3a1c 100%)"
-                  : "oklch(0.85 0.03 122)",
+                  ? "var(--editorial-cta-gradient)"
+                  : "var(--editorial-outline-variant)",
                 boxShadow: analyticsEnabled
-                  ? "0 2px 8px oklch(0.38 0.07 125.0 / 0.28)"
+                  ? "0 2px 8px oklch(0.38 0.07 125 / 0.28)"
                   : "none",
               }}
               aria-label={analyticsEnabled ? "בטל עוגיות אנליטיקה" : "אפשר עוגיות אנליטיקה"}
@@ -163,7 +163,7 @@ export default function CookieSettingsModal({
         </div>
 
         {/* Link to full policy */}
-        <p className="text-xs text-center mb-4" style={{ color: "#6b7280" }}>
+        <p className="text-xs text-center mb-4" style={{ color: "var(--text-muted)" }}>
           <a
             href="/cookies"
             target="_blank"

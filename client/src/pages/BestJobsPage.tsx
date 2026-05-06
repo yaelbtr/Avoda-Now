@@ -19,7 +19,7 @@ import { trpc } from "@/lib/trpc";
 import { buildJobPath } from "@/lib/jobSlug";
 import { getCategoryLabel } from "@shared/categories";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 function buildJobPosting(job: {
   id: number;
@@ -52,7 +52,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "YallaAvoda",
+      name: "AvodaGo",
       sameAs: BASE_URL,
     },
     ...(salaryNum
@@ -95,7 +95,7 @@ export default function BestJobsPage() {
           canonical: `/best/${page.slug}`,
         }
       : {
-          title: "משרות מומלצות | YallaAvoda",
+          title: "משרות מומלצות | AvodaGo",
           description: "רשימת המשרות הטובות ביותר בישראל.",
           noIndex: true,
         }
@@ -122,7 +122,7 @@ export default function BestJobsPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/best/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
         },
         ...(jobs.length > 0
           ? [

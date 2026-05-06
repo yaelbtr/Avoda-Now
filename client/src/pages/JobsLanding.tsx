@@ -413,7 +413,7 @@ export default function JobsLanding() {
         )}
 
         {/* ── Internal SEO links ── */}
-        <div className="mt-16 border-t border-gray-200 pt-8">
+        <div className="mt-16 pt-8">
 
           {/* Time-based filter links */}
           <div className="mb-8">

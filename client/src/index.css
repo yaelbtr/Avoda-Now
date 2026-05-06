@@ -1,6 +1,32 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: 'Secular One';
+  src: url('/src/assets/fonts/SecularOne-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HugAlefAlefAlef';
+  src: url('/src/assets/fonts/HugAlefAlefAlef-Regular.woff2') format('woff2'),
+       url('/src/assets/fonts/HugAlefAlefAlef-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HugAlefAlefAlef Color';
+  src: url('/src/assets/fonts/HugAlefAlefAlef-Color.woff2') format('woff2'),
+       url('/src/assets/fonts/HugAlefAlefAlef-Color.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --breakpoint-md: 99999px;
 }
@@ -8,8 +34,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Heebo', sans-serif;
-  --font-display: 'Frank Ruhl Libre', 'Heebo', serif;
+  --font-sans: 'Inter', 'Heebo', sans-serif;
+  --font-display: 'Manrope', 'Frank Ruhl Libre', 'Heebo', sans-serif;
+  --font-alef: 'HugAlefAlefAlef', sans-serif;
+  --font-alef-color: 'HugAlefAlefAlef Color', sans-serif;
+  --font-secular: 'Secular One', sans-serif;
+  --font-rubik: 'Rubik', sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -51,7 +81,53 @@
 :root {
   --radius: 0.625rem;
 
-  /* ── YallaAvoda Brand Palette ────────────────────────────────────────────────
+  /* Editorial Artisan tokens */
+  --editorial-primary: #313b15;
+  --editorial-primary-container: #48522a;
+  --editorial-primary-fixed: #dce8b3;
+  --editorial-primary-fixed-dim: #c0cc99;
+  --editorial-on-primary: #ffffff;
+  --editorial-on-primary-fixed: #161e00;
+  --editorial-on-primary-fixed-variant: #414b23;
+  --editorial-secondary: #795900;
+  --editorial-secondary-container: #fed174;
+  --editorial-secondary-fixed: #ffdfa0;
+  --editorial-secondary-fixed-dim: #ecc165;
+  --editorial-on-secondary: #ffffff;
+  --editorial-on-secondary-container: #785800;
+  --editorial-on-secondary-fixed: #261a00;
+  --editorial-on-secondary-fixed-variant: #5c4300;
+  --editorial-tertiary: #492e49;
+  --editorial-tertiary-container: #614461;
+  --editorial-tertiary-fixed: #fed6fa;
+  --editorial-tertiary-fixed-dim: #e1bbde;
+  --editorial-on-tertiary: #ffffff;
+  --editorial-on-tertiary-container: #d9b4d6;
+  --editorial-on-tertiary-fixed: #2b122c;
+  --editorial-on-tertiary-fixed-variant: #5a3d5a;
+  --editorial-error: #ba1a1a;
+  --editorial-error-container: #ffdad6;
+  --editorial-on-error: #ffffff;
+  --editorial-on-error-container: #93000a;
+  --editorial-background: #faf9f5;
+  --editorial-surface: #ffffff;
+  --editorial-surface-container: #efeeea;
+  --editorial-surface-container-low: #f4f3ee;
+  --editorial-surface-container-lowest: #ffffff;
+  --editorial-surface-container-high: #e9e8e4;
+  --editorial-surface-container-highest: #e3e2df;
+  --editorial-on-surface: #1b1c1a;
+  --editorial-on-surface-variant: #46483d;
+  --editorial-outline: #77786c;
+  --editorial-outline-variant: #c7c7ba;
+  --editorial-outline-ghost: rgb(199 199 186 / 0.20);
+  --editorial-shadow: 0 4px 24px rgb(27 28 26 / 0.06);
+  --editorial-cta-gradient: linear-gradient(135deg, #313b15 0%, #48522a 100%);
+  --font-editorial-display: var(--font-rubik);
+  --font-editorial-headline: var(--font-secular);
+  --font-editorial-ui: var(--font-rubik);
+
+  /* ── AvodaGo Brand Palette ────────────────────────────────────────────────
    * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
    * Edit these variables to swap the entire site palette.
    * TS constants mirror these in client/src/lib/colors.ts
@@ -85,7 +161,7 @@
   --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
 
   /* Background — #fefcf4 warm cream (single source of truth) */
-  --page-bg:          oklch(0.9904 0.0107 95.3);  /* #fefcf4 warm cream — flat bg */
+  --page-bg:          var(--editorial-background);
   --page-bg-gradient: linear-gradient(
     160deg,
     oklch(0.9904 0.0107 95.3) 0%,   /* #fefcf4 warm cream */
@@ -107,18 +183,22 @@
   --danger-light:    oklch(0.65 0.22 25 / 0.12);
 
   /* Page / surface */
-  --surface:         oklch(1 0 0);
-  --border-color:    oklch(0.89 0.05 84.0);    /* Honey Wheat */
+  --surface:         var(--editorial-surface);
+  --border-color:    var(--editorial-outline-ghost);
 
   /* Text */
-  --text-primary:    oklch(0.22 0.03 122.3);   /* dark olive-tinted */
-  --text-secondary:  oklch(0.40 0.03 122.3);
-  --text-muted:      oklch(0.58 0.02 100);
+  --text-primary:    var(--editorial-on-surface);
+  --text-secondary:  var(--editorial-on-surface-variant);
+  --text-muted:      #77786d;
   --text-faint:      oklch(0.65 0.015 100);
 
   /* WhatsApp */
   --whatsapp:        #25D366;
   --whatsapp-dark:   #1da851;
+
+  /* Rose accent — urgency badges, notification dots */
+  --accent-rose:     oklch(0.75 0.18 358);
+  --accent-rose-light: oklch(0.75 0.18 358 / 0.12);
 
   /* Light theme — Olive Grove primary */
   --background: oklch(0.9904 0.0107 95.3);     /* #fefcf4 warm cream */
@@ -215,16 +295,23 @@
   }
   body {
     @apply text-foreground font-sans;
-    background: var(--page-bg-gradient);
-    background-attachment: fixed; /* gradient stays fixed while content scrolls */
+    background: var(--page-bg);
     min-height: 100dvh;
     direction: rtl;
     text-align: right;
   }
-  h1, h2 {
-    font-family: 'Frank Ruhl Libre', 'Heebo', serif;
-    font-weight: 700;
+  h1 {
+    font-family: var(--font-editorial-display);
+    font-weight: 900;
   }
+  h2 {
+    font-family: var(--font-editorial-headline);
+    font-weight: 600;
+  }
+  h3 { font-weight: 700; }
+  h4 { font-weight: 700; }
+  p, li { font-weight: 400; }
+  label, small { font-weight: 600; }
   /* Ensure all inputs respect RTL */
   input:not([dir="ltr"]),
   textarea:not([dir="ltr"]) {
@@ -511,12 +598,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
+    height: 34px;
+    padding: 0 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
     background: white;
-    border: 1.5px solid oklch(0.85 0.06 84.0);
+    border: 1px solid oklch(0.85 0.06 84.0);
     color: var(--brand);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.1s;
@@ -544,6 +632,9 @@
     color: var(--brand);
   }
 }
+
+/* ── Horizontal scroll without visible scrollbar ──────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ── Ripple effect for cta / cta-outline buttons ──────────────────────────── */
 @keyframes btn-ripple-expand {
@@ -617,7 +708,7 @@
 
 
 /* ── Brand Name Typography ─────────────────────────────────────────────────────
-   Usage: <span className="brand-name">YallaAvoda</span>
+   Usage: <span className="brand-name">AvodaGo</span>
    Renders "Avoda" in dark olive and "Now" in citrus gold.
    Works on both light and dark backgrounds via CSS variables.
    ─────────────────────────────────────────────────────────────────────────── */

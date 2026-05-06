@@ -20,12 +20,22 @@ function readFirstEnv(...keys: string[]): string {
   return "";
 }
 
-const appBaseUrl = normalizeBaseUrl(process.env.APP_BASE_URL);
+function readListEnv(key: string): string[] {
+  return (process.env[key] ?? "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+const appBaseUrl = normalizeBaseUrl(
+  readFirstEnv("APP_BASE_URL", "FRONTEND_URL", "CLIENT_URL")
+);
 
 export const ENV = {
-  appId: "avodanow",
+  appId: "avodago",
   appBaseUrl,
   appOrigin: toOrigin(appBaseUrl),
+  allowedOrigins: readListEnv("ALLOWED_ORIGINS"),
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   googleClientId: readFirstEnv("GOOGLE_CLIENT_ID"),

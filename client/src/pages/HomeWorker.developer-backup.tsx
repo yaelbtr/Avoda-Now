@@ -1,0 +1,2054 @@
+﻿import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
+import { motion, useInView } from "framer-motion";
+import { trpc } from "@/lib/trpc";
+import { useWorkerJobs } from "@/contexts/WorkerJobsContext";
+import { AppButton } from "@/components/ui";
+import { JobCard } from "@/components/JobCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserMode } from "@/contexts/UserModeContext";
+import { useAuthQuery } from "@/hooks/useAuthQuery";
+import {
+  Search, MapPin, ChevronLeft, Zap, Flame,
+  Map, List, ArrowLeft, TrendingUp, Star,
+  Briefcase, BadgePercent, Clock, UserPlus,
+} from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+// CarouselJobCard replaced by unified JobCard
+import { NavPill } from "@/components/ui/NavPill";
+import JobBottomSheet from "@/components/JobBottomSheet";
+import { JobCardSkeletonList, CarouselSkeletonRow } from "@/components/JobCardSkeleton";
+import NearbyJobsMap from "@/components/NearbyJobsMap";
+import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
+import { PushNotificationBanner } from "@/components/PushNotificationBanner";
+import BelowFold from "@/components/BelowFold";
+import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
+import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
+import { toast } from "sonner";
+import { isMinor } from "@shared/ageUtils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useCountdown } from "@/hooks/useCountdown";
+import workerHeroCollage from "@/assets/home/worker-hero-collage.jpg";
+
+// Hook: counts DOWN from startValue to endValue over duration ms
+function useCountDown(startValue: number, endValue: number, duration: number, triggered: boolean) {
+  const [current, setCurrent] = useState(startValue);
+  useEffect(() => {
+    if (!triggered) return;
+    const steps = 40;
+    const stepTime = duration / steps;
+    const delta = (startValue - endValue) / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const next = Math.round(startValue - delta * step);
+      setCurrent(step >= steps ? endValue : next);
+      if (step >= steps) clearInterval(timer);
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [triggered]);
+  return current;
+}
+
+function useCountUp(target: number, duration = 1200) {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return count;
+}
+
+function StatsRow() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
+
+  // Fetch real counts for conditional display
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const hs = heroStatsQuery.data;
+
+  // Determine the dynamic stat (priority order)
+  const dynamicStat: { display: string; label: string; Icon: typeof Briefcase } | null = (() => {
+    if (!hs) return null;
+    if (hs.activeJobs > 50)           return { display: `+${hs.activeJobs}`, label: "משרות פעילות", Icon: Briefcase };
+    if (hs.closedJobs > 50)           return { display: `+${hs.closedJobs}`, label: "משרות שנסגרו", Icon: Briefcase };
+    if (hs.registeredWorkers > 100)   return { display: `+${hs.registeredWorkers}`, label: "עובדים רשומים", Icon: Briefcase };
+    return null;
+  })();
+
+  const dynamicNum = dynamicStat ? parseInt(dynamicStat.display.replace(/\D/g, ""), 10) : 0;
+  const countDynamic = useCountUp(dynamicNum);
+  const count100 = useCountUp(100);
+
+  const statsData = [
+    ...(dynamicStat ? [dynamicStat] : []),
+    { display: "100%", label: "ללא עמלות", Icon: BadgePercent },
+    { display: "24/7", label: "זמין תמיד", Icon: Clock },
+  ];
+  return (
+    <motion.div
+      ref={ref}
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.10 } } }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.5 }}
+      dir="rtl"
+      style={{ display: "flex", gap: "10px", padding: "12px 0", width: "100%" }}
+    >
+      {statsData.map(({ display, label, Icon }, i) => (
+        <motion.div
+          key={label}
+          variants={{
+            hidden: { opacity: 0, y: 18, scale: 0.90 },
+            visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 280, damping: 26 } },
+          }}
+          whileHover={{ y: -4, boxShadow: "0 8px 24px rgba(0,0,0,0.11)", transition: { type: "spring", stiffness: 400, damping: 22 } }}
+          whileTap={{ scale: 0.94 }}
+          style={{
+            flex: "1 1 0",
+            minWidth: 0,
+            background: "oklch(0.95 0.025 125)",
+            borderRadius: "20px",
+            border: "1px solid oklch(0.88 0.045 125 / 0.55)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.05)",
+            padding: "14px 8px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "88px",
+            cursor: "default",
+          }}
+        >
+          <div style={{
+            width: "30px", height: "30px", borderRadius: "10px",
+            background: "oklch(0.87 0.065 126 / 0.6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginBottom: "7px",
+          }}>
+            <Icon style={{ width: "14px", height: "14px", color: "oklch(0.34 0.09 128)" }} />
+          </div>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "oklch(0.28 0.09 128)", lineHeight: 1 }}>
+            {label === "ללא עמלות" ? `${count100}%` : label === "זמין תמיד" ? "24/7" : `+${countDynamic}`}
+          </span>
+          <span style={{ fontSize: "10px", fontWeight: 600, color: "oklch(0.50 0.05 125)", marginTop: "4px", whiteSpace: "nowrap" }}>{label}</span>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+const HOW_IT_WORKS = [
+  {
+    step: "01",
+    title: "הגדר זמינות",
+    desc: "לחץ על \"זמין עכשיו\" כדי שמעסיקים באזור שלך יוכלו לראות שאתה זמין לעבודה.",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step1_3045eee6.webp",
+    reverse: false,
+  },
+  {
+    step: "02",
+    title: "קבל הצעות עבודה ממעסיקים",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה — אתה מחליט אם לאשר.",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
+    reverse: true,
+  },
+  {
+    step: "03",
+    title: "אשר את ההצעה בכדי שהמעסיק יוכל ליצור איתך קשר",
+    desc: "תוכל לדבר איתו ישירות, לסגור פרטים ולהתחיל לעבוד.",
+    imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step3_76fe12ce.webp",
+    reverse: false,
+  },
+];
+
+const WORKER_HOME_HERO_ALT =
+  "עובד יושב על ספה ובודק עבודות זמינות בטלפון";
+
+interface HomeWorkerProps {
+  onLoginRequired: (msg: string) => void;
+}
+
+export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const { resetUserMode } = useUserMode();
+  const authQuery = useAuthQuery();
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  // nearbyRadius and setLocation are managed by the shared WorkerJobsContext
+  const {
+    urgentJobs: urgentJobsFromCtx,
+    todayJobs: todayJobsFromCtx,
+    nearbyJobs: nearbyJobsFromCtx,
+    latestJobs: latestJobsFromCtx,
+    isLoading: dashboardLoading,
+    isFallback: nearbyIsFallback,
+    nearbyRadius,
+    setNearbyRadius,
+    setLocation: setWorkerLocation,
+    savedIds,
+    toggleSave,
+  } = useWorkerJobs();
+  const [showMap, setShowMap] = useState(false);
+  const [geoRequested, setGeoRequested] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [durationOpen, setDurationOpen] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<number>(4);
+  const [customHours, setCustomHours] = useState<string>("");
+  const [quickAvailOpen, setQuickAvailOpen] = useState(false);
+  const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
+  const [bottomSheetJob, setBottomSheetJob] = useState<null | { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: string | null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null }>(null);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  const handlePrimaryCtaClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = Date.now();
+    setRipples(prev => [...prev, { id, x, y }]);
+    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
+    if (!isAuthenticated) {
+      onLoginRequired("כדי ליצור פרופיל יש להתחבר תחילה");
+      return;
+    }
+    navigate("/worker-profile");
+  };
+  useSEO({
+    title: "AvodaGo — עבודות זמניות בישראל",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
+    keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
+    canonical: "/",
+  });
+
+  const autoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isPausedRef = useRef(false);
+  // Touch swipe state
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartScrollRef = useRef<number>(0);
+  const touchStartTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    autoScrollRef.current = setInterval(() => {
+      if (isPausedRef.current) return;
+      const el = document.getElementById("job-carousel");
+      if (!el) return;
+      const cardWidth = 288 + 16;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft >= maxScroll - 4) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        setActiveCarouselIdx(0);
+      } else {
+        el.scrollBy({ left: -cardWidth, behavior: "smooth" });
+        setActiveCarouselIdx((i) => i + 1);
+      }
+    }, 3000);
+    return () => { if (autoScrollRef.current) clearInterval(autoScrollRef.current); };
+  }, []);
+
+  const profileQuery = trpc.user.getProfile.useQuery(undefined, authQuery());
+
+  const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const activeJobCount = heroStatsQuery.data?.activeJobs ?? null;
+  const registeredWorkersCount = heroStatsQuery.data?.registeredWorkers ?? null;
+  const registeredWorkersChipText = registeredWorkersCount !== null
+    ? `+${registeredWorkersCount} עובדים כבר נחשפו למעסיקים באזורם`
+    : "עובדים כבר בפנים";
+  // ── Job data now comes from the shared WorkerJobsContext (single server call) ──
+  const workerStatusQuery = trpc.workers.myStatus.useQuery(undefined, authQuery());
+  // Age-gate: fetch birth date info to warn minors about late availability
+  const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
+  const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
+  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with FindJobs)
+  const utils = trpc.useUtils();
+  // Applied job IDs (from myApplications)
+  const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
+  const appliedJobIds = useMemo(
+    () => new Set((myApplicationsQuery.data ?? []).map((a: { jobId: number }) => a.jobId)),
+    [myApplicationsQuery.data]
+  );
+  const {
+    apply: applyWithAgeGate,
+    isPending: isApplyPending,
+    birthDateModalOpen,
+    handleBirthDateSuccess,
+    closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
+  } = useApplyWithAgeGate({ isAuthenticated, onLoginRequired });
+  const handleApply = (jobId: number, message: string | undefined, origin: string) => {
+    applyWithAgeGate({ jobId, message, origin });
+  };
+  const handleSaveToggle = (jobId: number, save: boolean) => {
+    toggleSave(jobId, !save, onLoginRequired);
+  };
+  const setAvailableMutation = trpc.workers.setAvailable.useMutation({
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      const h = selectedDuration;
+      const label = h === 1 ? "שעה אחת" : h < 11 ? `${h} שעות` : `${h} שעות`;
+      toast.success(`✓ אתה מסומן כזמין ל-${label}`, {
+        description: "מעסיקים יכולים לראות אותך עכשיו",
+        duration: 4000,
+      });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
+  });
+  const setUnavailableMutation = trpc.workers.setUnavailable.useMutation({
+    onSuccess: () => {
+      workerStatusQuery.refetch();
+      setAvailabilityLoading(false);
+      toast.success("סומנת כלא זמין", { duration: 3000 });
+    },
+    onError: (e) => {
+      setAvailabilityLoading(false);
+      toast.error("לא הצלחנו לעדכן את הזמינות", {
+        description: (e as { message?: string }).message ?? "אנא נסה שוב",
+      });
+    },
+  });
+  const quickAvailMutation = trpc.user.quickUpdateAvailability.useMutation({
+    onSuccess: () => { profileQuery.refetch(); toast.success("סטאטוס זמינות עודכן!"); setQuickAvailOpen(false); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Derive panel arrays from the shared context (client-side only, O(1))
+  type JobItem = { id: number; title: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; description?: string | null; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
+  const urgentJobs = urgentJobsFromCtx as unknown as JobItem[];
+  const todayJobs = todayJobsFromCtx as unknown as JobItem[];
+  const jobs = (userLat ? nearbyJobsFromCtx : latestJobsFromCtx) as unknown as JobItem[];
+  const isLoading = dashboardLoading;
+  const isAvailable = !!workerStatusQuery.data;
+  // availableUntil is a Date returned by the server via superjson
+  const availableUntil = (workerStatusQuery.data as { availableUntil?: Date } | null)?.availableUntil ?? null;
+  const countdown = useCountdown(availableUntil);
+
+  const requestGeo = () => {
+    setGeoRequested(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLat(pos.coords.latitude);
+          setUserLng(pos.coords.longitude);
+          setWorkerLocation(pos.coords.latitude, pos.coords.longitude);
+        },
+        () => {}
+      );
+    }
+  };
+
+  const handleAvailabilityToggle = () => {
+    if (!isAuthenticated) { onLoginRequired("כדי לסמן זמינות יש להתחבר למערכת"); return; }
+    if (isAvailable) {
+      setAvailabilityLoading(true);
+      setUnavailableMutation.mutate();
+    } else {
+      setDurationOpen(true);
+    }
+  };
+
+  const confirmAvailability = (hours: number) => {
+    setSelectedDuration(hours);
+    setDurationOpen(false);
+    setAvailabilityLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setAvailableMutation.mutate({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, city: undefined, durationHours: hours });
+        },
+        () => {
+          setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: hours });
+        }
+      );
+    } else {
+      setAvailableMutation.mutate({ latitude: 31.7683, longitude: 35.2137, durationHours: hours });
+    }
+  };
+
+  // Step 7 (perf skill): memoize carousel job list — filter+map on every render is O(n²)
+  // due to the .some() inner loop. Recompute only when urgentJobs or todayJobs change.
+  const allCarouselJobs = useMemo(() => [
+    ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
+    ...todayJobs.filter((j) => !urgentJobs.some((u) => u.id === j.id)).map((j) => ({ job: j, badge: "today" as const })),
+  ], [urgentJobs, todayJobs]);
+  const carouselTotal = allCarouselJobs.length;
+
+  return (
+    <div dir="rtl" data-testid="home-worker" className="min-h-screen overflow-x-hidden relative" style={{ backgroundColor: "var(--page-bg)" }}>
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+
+      {/* ── MOBILE Hero (< md): image at original size, stats+CTA below with glass continuation ── */}
+      <section className="relative overflow-hidden md:hidden">
+
+        {/* Image block — landscape hero with text over the quieter side */}
+        <div className="relative w-full" style={{ aspectRatio: "1456 / 816" }}>
+          <img
+            src={workerHeroCollage}
+            alt={WORKER_HOME_HERO_ALT}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width={1456}
+            height={816}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "50% 50%" }}
+          />
+          {/* שכבת זכוכית שקופה על כל התמונה */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              // backdropFilter: "blur(2px)",
+              // WebkitBackdropFilter: "blur(2px)",
+              background: "oklch(0.08 0.02 124.11 / 0.09)",
+            }}
+          />
+          {/* Badge — kept on the quieter side of the photo */}
+          {(activeJobCount === null || activeJobCount >= 10) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+              className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
+              style={{
+                background: "oklch(1 0 0 / 0.14)",
+                border: "1px solid oklch(1 0 0 / 0.30)",
+                boxShadow: "0 2px 10px oklch(0.10 0.06 122 / 0.20)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <span className="animate-pulse">
+                <Clock className="h-3 w-3" style={{ color: "oklch(0.95 0.04 80)" }} />
+              </span>
+              <span className="text-[11px] font-bold" style={{ color: "oklch(0.98 0.01 80)" }}>
+                {activeJobCount !== null ? `${activeJobCount} עבודות זמינות עכשיו` : "עבודות זמינות עכשיו"}
+              </span>
+            </motion.div>
+          )}
+          {/* White headline */}
+          {/* <div className="absolute z-10 flex flex-col items-start text-right" style={{ top: "21%", left: "1rem", right: "31%" }}>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="text-[25px] leading-[1.12] font-black"
+              style={{ color: "oklch(0.98 0.01 80)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 2px 14px oklch(0.10 0.06 122 / 0.42)" }}
+            >
+              מחפש עבודה זמנית?
+            </motion.h1>
+          </div> */}
+          {/* Yellow headline + subtitle */}
+          <div className="absolute z-10" style={{ display: "none", top: "24%", left: "0.9rem", right: "32%" }}>
+            <div
+              className="relative flex flex-col items-start text-right"
+              style={{
+                width: "100%",
+                maxWidth: "275px",
+              }}
+            >
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  inset: "-18px -18px -22px -18px",
+                  borderRadius: "28px",
+                  background: "radial-gradient(circle at 42% 28%, oklch(0.17 0.03 122 / 0.34) 0%, oklch(0.17 0.03 122 / 0.18) 50%, transparent 100%)",
+                  filter: "blur(16px)",
+                }}
+              />
+              <motion.p
+                aria-label="מעסיקים באזורך מחפשים אותך"
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="relative text-[27px] leading-[1.04] font-black"
+              style={{
+                color: "oklch(0.98 0.01 0)",
+                fontFamily: "'Frank Ruhl Libre', 'Heebo', serif",
+                textShadow: "0 2px 6px oklch(0.08 0.03 122 / 0.72), 0 12px 26px oklch(0.08 0.03 122 / 0.30)",
+                letterSpacing: "-0.02em",
+                fontSize: 0,
+                lineHeight: 0,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "block",
+                  fontSize: "29px",
+                  lineHeight: 1.02,
+                  color: "oklch(0.98 0.01 0)",
+                }}
+              >
+                מעסיקים באזורך מחפשים אותך
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "none",
+                  fontSize: "27px",
+                  lineHeight: 1.04,
+                  color: "oklch(0.98 0.01 88)",
+                }}
+              >
+                רוצה
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "none",
+                  marginInlineStart: "0.18em",
+                  padding: "0.02em 0.18em 0.08em",
+                  borderRadius: "16px",
+                  fontSize: "27px",
+                  lineHeight: 1.04,
+                  color: "oklch(0.90 0.13 77)",
+                  background: "linear-gradient(180deg, oklch(0.97 0.03 92 / 0.10) 0%, oklch(0.86 0.12 76 / 0.18) 100%)",
+                  boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.12), 0 8px 20px oklch(0.75 0.14 70 / 0.10)",
+                }}
+              >
+                לעבוד עכשיו?
+              </span>
+              <span aria-hidden="true" style={{ display: "none" }}>
+         מעסיקים באזורך מחפשים אותך    
+              </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "block",
+                  marginTop: "0.72rem",
+                  fontSize: "15px",
+                  lineHeight: 1.18,
+                  fontWeight: 700,
+                  color: "oklch(0.98 0.01 0)",
+                }}
+              >
+            או לקבל עוד פניות – בלי התחייבות
+              </span>
+            </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="relative text-[13px] font-semibold leading-relaxed"
+              style={{
+                color: "oklch(0.98 0.01 88)",
+                width: "100%",
+                marginTop: "0.65rem",
+                fontSize: 0,
+                lineHeight: 0,
+                textShadow: "0 1px 4px oklch(0.08 0.03 122 / 0.54)",
+              }}
+            >
+           או לקבל עוד פניות – בלי התחייבות
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}
+              className="relative"
+              style={{
+                display: "none",
+                marginTop: "0.45rem",
+                color: "oklch(0.97 0.01 88 / 0.96)",
+                fontSize: "13px",
+                fontWeight: 600,
+                lineHeight: 1.55,
+                textShadow: "0 1px 4px oklch(0.08 0.03 122 / 0.52), 0 8px 20px oklch(0.08 0.03 122 / 0.18)",
+              }}
+            >
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.24 }}
+              className="relative inline-flex items-center gap-2 rounded-full"
+              style={{
+                marginTop: "0.8rem",
+                padding: "0.38rem 0.17rem",
+                background: "oklch(0.14 0.03 122 / 0.34)",
+                border: "1px solid oklch(0.96 0.03 92 / 0.12)",
+                boxShadow: "0 8px 24px oklch(0.08 0.03 122 / 0.16)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+              }}
+            >
+                <span
+                  aria-hidden="true"
+                  className="animate-pulse"
+                  style={{
+                    width: "14px",
+                    height: "7px",
+                  borderRadius: "999px",
+                  background: "oklch(0.90 0.13 77)",
+                  boxShadow: "0 0 0 4px oklch(0.90 0.13 77 / 0.14)",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  color: "oklch(0.97 0.01 88)",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  letterSpacing: "-0.01em",
+                  textShadow: "0 1px 2px oklch(0.08 0.03 122 / 0.40)",
+                }}
+              >
+                {registeredWorkersChipText}
+              </span>
+            </motion.div>
+            </div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}
+            className="absolute z-10 text-center"
+            style={{
+              display: "none",
+              left: "1rem",
+              right: "1rem",
+              bottom: "0.9rem",
+              padding: "0.6rem 0.9rem",
+              borderRadius: "18px",
+              background: "linear-gradient(180deg, oklch(0.12 0.03 122 / 0.18) 0%, oklch(0.12 0.03 122 / 0.44) 100%)",
+              border: "1px solid oklch(0.96 0.03 92 / 0.10)",
+              boxShadow: "0 12px 28px oklch(0.08 0.03 122 / 0.18)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
+            <span
+              style={{
+                display: "block",
+                color: "oklch(0.97 0.01 88 / 0.98)",
+                fontSize: "13px",
+                fontWeight: 700,
+                lineHeight: 1.45,
+                letterSpacing: "-0.01em",
+                textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.45)",
+              }}
+            >
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
+            </span>
+          </motion.div>
+          <div className="absolute" style={{ top: "15%",   right: "40%" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+              style={{ maxWidth: "286px" }}
+            >
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  inset: "-10px -12px -16px -12px",
+                  borderRadius: "24px",
+                  background: "radial-gradient(circle at 38% 30%, oklch(0.16 0.03 122 / 0.24) 0%, oklch(0.16 0.03 122 / 0.08) 58%, transparent 100%)",
+                  filter: "blur(12px)",
+                }}
+              />
+              <h1
+                className="relative"
+                style={{
+    paddingBottom: "0.3rem",
+                  color: "oklch(0.98 0.01 0)",
+                  fontSize: "24px",
+                  textAlign: "right",
+                  direction: "rtl",
+                  lineHeight: 1.08,
+                  fontWeight: 900,
+                  fontFamily: " 'Heebo', serif",
+                //   letterSpacing: "-0.02em",
+                  textShadow: "0 2px 5px oklch(0.08 0.03 122 / 0.64), 0 10px 20px oklch(0.08 0.03 122 / 0.22)",
+                }}
+              >
+                מעסיקים באזורך מחפשים אותך
+              </h1>
+              <p
+                className="relative"
+                style={{
+                  marginTop: "0.42rem",
+                  color: "oklch(0.98 0.01 0)",
+                  fontSize: "12.5px",
+                  lineHeight: 1.34,
+                  fontWeight: 700,
+                  textAlign: "right",
+                  direction: "rtl",
+                  textShadow: "0 1px 3px oklch(0.08 0.03 122 / 0.46)",
+                }}
+              >
+                בואו לקבל עוד פניות – בלי התחייבות
+              </p>
+            </motion.div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12 }}
+            className="absolute z-10 bottom-0 left-0 right-0"
+            style={{
+              background: "rgba(0, 0, 0, 0.55)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              padding: "7px 14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "unset",
+              height: "auto",
+            }}
+          >
+            <span
+              style={{
+                display: "block",
+                color: "white",
+                fontSize: "13px",
+                fontWeight: 700,
+                lineHeight: 1.3,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              הרשמו <span style={{ color: "oklch(0.91 0.22 98.95)" }}>חינם</span> - וקבלו הצעות ישירות לנייד תוך דקות
+            </span>
+          </motion.div>
+        </div>
+
+        {/* Stats + CTAs — on page-bg, seamlessly below the faded image */}
+        <div className="relative z-10 flex flex-col items-center text-center px-4 pt-0 pb-6">
+          <StatsRow />
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="w-full flex flex-col gap-3"
+            style={{ marginTop: "18px", marginBottom: "8px" }}
+          >
+            <motion.button
+              onClick={handlePrimaryCtaClick}
+              className="overflow-hidden relative"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                width: "100%",
+                height: "52px",
+                background: "linear-gradient(135deg, oklch(0.46 0.10 128) 0%, oklch(0.34 0.08 124) 100%)",
+                color: "white",
+                borderRadius: "999px",
+                fontSize: "16px",
+                fontWeight: 700,
+                border: "none",
+                boxShadow: "0px 4px 18px oklch(0.34 0.08 124 / 0.28), inset 0 1px 0 rgba(255,255,255,0.15)",
+                cursor: "pointer",
+                letterSpacing: "-0.2px",
+              }}
+              whileHover={{ scale: 1.01, boxShadow: "0px 6px 22px oklch(0.33 0.07 124 / 0.32)" }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <UserPlus size={15} />
+              צור פרופיל והתפרסם
+              {ripples.map(r => (
+                <motion.span
+                  key={r.id}
+                  initial={{ scale: 0, opacity: 0.5 }}
+                  animate={{ scale: 4, opacity: 0 }}
+                  transition={{ duration: 0.65, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    left: r.x,
+                    top: r.y,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background: "oklch(1 0 0 / 0.3)",
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: "none",
+                  }}
+                />
+              ))}
+            </motion.button>
+            <Tooltip delayDuration={500}>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={handleAvailabilityToggle}
+                  aria-label="הגדר זמינות עכשיו — מעסיקים רואים רק עובדים זמינים, הגדר עכשיו וקבל פניות היום"
+                  className=""
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    width: "100%",
+                    height: "auto",
+                    background: "transparent",
+                    border: "none",
+                    boxShadow: "none",
+                    color: "var(--brand)",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    padding: "6px 0",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: "oklch(0.38 0.07 125 / 0.3)",
+                    textUnderlineOffset: "3px",
+                  }}
+                  animate={{}}
+                  transition={{}}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Zap size={14} style={{ display: "none" }} />
+                  {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                sideOffset={10}
+                className="max-w-[220px] text-center leading-relaxed px-4 py-2.5 rounded-xl text-[13px] backdrop-blur-md"
+                style={{
+                  background: "oklch(0.96 0.10 84 / 0.92)",
+                  color: "oklch(0.28 0.05 84)",
+                  border: "1px solid oklch(0.82 0.14 84 / 0.60)",
+                  boxShadow: "0 8px 32px oklch(0.75 0.18 84 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.60)",
+                }}
+              >
+                <span style={{ color: "oklch(0.32 0.06 84)" }}>מעסיקים רואים רק עובדים זמינים —</span>
+                <br />
+                <span style={{ color: "oklch(0.38 0.12 60)", fontWeight: 700 }}>הגדר עכשיו וקבל פניות היום</span>
+              </TooltipContent>
+            </Tooltip>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── DESKTOP Hero (≥ md): full-bleed image with text overlay ── */}
+      <section
+        className="relative z-10 overflow-hidden hidden md:block"
+        style={{ minHeight: "540px" }}
+      >
+        {/* Full-bleed background image */}
+        <img
+          src={workerHeroCollage}
+          alt={WORKER_HOME_HERO_ALT}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          width={1456}
+          height={816}
+          className="absolute right-6 top-1/2 z-0 w-[520px] max-w-[44vw] -translate-y-1/2 rounded-[36px] border object-cover shadow-[0_24px_60px_oklch(0.28_0.06_122_/_0.18),0_8px_18px_oklch(0.28_0.06_122_/_0.12)] xl:right-12 xl:w-[620px]"
+          style={{
+            objectPosition: "50% 50%",
+            borderColor: "oklch(1 0 0 / 0.72)",
+            background: "oklch(1 0 0 / 0.72)",
+          }}
+        />
+
+        {/* Directional overlay: very light on left only */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: [
+              "radial-gradient(circle at 18% 22%,",
+              "  oklch(0.99 0.015 80 / 0.92) 0%,",
+              "  oklch(0.99 0.015 80 / 0.80) 28%,",
+              "  transparent 56%),",
+              "linear-gradient(180deg,",
+              "  oklch(0.99 0.01 95) 0%,",
+              "  oklch(0.97 0.02 90) 58%,",
+              "  oklch(0.95 0.03 91.6) 100%)",
+            ].join(" "),
+          }}
+        />
+        {/* Bottom fade to page bg */}
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none"
+          style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
+        />
+
+        {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
+        <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "460px", marginRight: "auto" }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"
+            style={{
+              background: "oklch(0.32 0.07 122)",
+              border: "1px solid oklch(0.45 0.09 122 / 0.5)",
+              boxShadow: "0 2px 10px oklch(0.28 0.06 122 / 0.30)",
+            }}
+          >
+            <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
+            <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
+              עבודות בית ואירועים — תוך דקות
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="text-[42px] leading-[1.1] font-black mb-4"
+            style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 12px oklch(0.97 0.02 91 / 0.80), 0 2px 20px oklch(0.97 0.02 91 / 0.60)" }}
+          >
+            הגדר זמינות —<br />
+            <span style={{ color: "oklch(0.68 0.14 80.8)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.3)" }}>
+              קבל פניות ממעסיקים
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[280px]"
+            style={{ color: "oklch(0.18 0.06 122)", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70), 0 2px 16px oklch(0.97 0.02 91 / 0.50)" }}
+          >
+            ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
+          </motion.p>
+
+          <StatsRow />
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-6"
+          >
+            <motion.button
+              onClick={() => navigate("/find-jobs")}
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+                color: "oklch(0.96 0.04 80)",
+                boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45), 0 1px 4px oklch(0.28 0.06 122 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.10)",
+              }}
+              whileHover={{ scale: 1.03, y: -2, boxShadow: "0 10px 32px oklch(0.28 0.06 122 / 0.55), 0 2px 8px oklch(0.28 0.06 122 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.15)" }}
+              whileTap={{ scale: 0.96, y: 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 22 }}
+            >
+              <Search size={15} />
+              {isAvailable ? "סמן כלא זמין" : "הגדר זמינות עכשיו"}
+              <ChevronLeft size={15} style={{ opacity: 0.65 }} />
+            </motion.button>
+          </motion.div>
+        </div>
+
+        {/* Wave SVG divider */}
+        <div
+          className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none"
+          style={{ lineHeight: 0, marginBottom: "-1px" }}
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 390 48" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: "48px" }}>
+            <path d="M0,48 L0,28 C65,8 130,44 195,22 C260,0 325,38 390,16 L390,48 Z" fill="var(--page-bg)" />
+          </svg>
+        </div>
+      </section>
+
+      {/* ── Today Jobs Banner ──────────────────────────────────────────────────── */}
+      {(dashboardLoading || (todayJobs.length > 0)) && (
+        <motion.button
+          dir="rtl"
+          onClick={() => navigate("/find-jobs?filter=today")}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          whileHover={{ scale: 1.015, y: -1 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative z-10 mx-4 mb-6 w-[calc(100%-2rem)] max-w-lg flex items-center gap-3 px-5 py-4 rounded-3xl overflow-hidden text-right"
+          style={{
+            background: "linear-gradient(135deg, oklch(0.28 0.09 28) 0%, oklch(0.36 0.13 32) 60%, oklch(0.42 0.14 42) 100%)",
+            boxShadow: "0 6px 28px oklch(0.32 0.12 28 / 0.40), 0 1px 4px oklch(0.32 0.12 28 / 0.20), inset 0 1px 0 rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* Animated glow pulse */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            animate={{ opacity: [0.0, 0.12, 0.0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            style={{ background: "oklch(0.85 0.18 55)" }}
+          />
+          {/* Flame icon */}
+          <div
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: "oklch(0.50 0.15 30 / 0.40)", border: "1px solid oklch(0.65 0.18 45 / 0.35)" }}
+          >
+            <Flame className="h-4.5 w-4.5" style={{ color: "oklch(0.88 0.18 70)" }} />
+          </div>
+          {/* Text */}
+          <div className="flex-1 min-w-0">
+            {dashboardLoading ? (
+              <div className="flex flex-col gap-1.5">
+                <div className="h-3.5 w-40 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.18)" }} />
+                <div className="h-2.5 w-24 rounded-full animate-pulse" style={{ background: "oklch(1 0 0 / 0.12)" }} />
+              </div>
+            ) : (
+              <>
+                <p className="text-[13px] font-black leading-tight" style={{ color: "oklch(0.97 0.03 80)" }}>
+                  <span
+                    className="text-[17px] font-black"
+                    style={{ color: "oklch(0.88 0.18 70)", fontFamily: "'Heebo', sans-serif" }}
+                  >
+                    {todayJobs.length}
+                  </span>
+                  {" "}משרות זמינות להיום
+                </p>
+                <p className="text-[11px] font-medium mt-0.5" style={{ color: "oklch(0.85 0.06 80 / 0.75)" }}>
+                  לחץ לצפייה בעבודות דחופות שמחכות לך עכשיו
+                </p>
+              </>
+            )}
+          </div>
+          {/* Arrow */}
+          <ChevronLeft className="h-4 w-4 flex-shrink-0" style={{ color: "oklch(0.85 0.08 80 / 0.70)", transform: "rotate(180deg)" }} />
+        </motion.button>
+      )}
+
+      {/* ── How it works ─────────────────────────────────────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10 mx-4 mb-10"
+        style={{
+          background: "white",
+          borderRadius: "28px",
+          boxShadow: "0px 4px 18px oklch(0.38 0.07 125 / 0.08)",
+          border: "1px solid oklch(0.91 0.03 100)",
+          overflow: "hidden",
+          padding: "20px",
+        }}
+      >
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+
+          {/* כותרת */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            style={{ textAlign: "center", marginBottom: "28px" }}
+          >
+            <h2 style={{ fontSize: "22px", fontWeight: 900, letterSpacing: "-0.5px", color: "oklch(0.22 0.07 128)", marginBottom: "6px" }}>איך זה עובד</h2>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 500 }}>שלושה צעדים פשוטים למציאת עבודה</p>
+          </motion.div>
+
+          {/* צעדים — כרטיסים */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {HOW_IT_WORKS.map(({ step, title, desc }, idx) => (
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.12, type: "spring", stiffness: 280, damping: 26 }}
+                style={{
+                  display: "flex", gap: "14px", alignItems: "flex-start",
+                  background: "oklch(0.97 0.018 125)",
+                  borderRadius: "18px",
+                  border: "1px solid oklch(0.90 0.04 126 / 0.55)",
+                  padding: "16px 14px",
+                }}
+              >
+                {/* מספר צעד */}
+                <div style={{
+                  width: "38px", height: "38px", borderRadius: "50%",
+                  background: "oklch(0.44 0.09 128)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "15px", fontWeight: 800, color: "white",
+                  boxShadow: "0 2px 10px oklch(0.34 0.07 124 / 0.25)",
+                  flexShrink: 0,
+                }}>
+                  {parseInt(step)}
+                </div>
+
+                {/* תוכן */}
+                <div style={{ flex: 1, paddingTop: "2px" }}>
+                  <h4 style={{ fontSize: "15px", fontWeight: 800, color: "oklch(0.22 0.07 128)", marginBottom: "6px", lineHeight: 1.3 }}>{title}</h4>
+                  <p style={{ fontSize: "13px", color: "oklch(0.50 0.04 120)", lineHeight: 1.7, fontWeight: 400, margin: 0 }}>{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <p style={{ textAlign: "center", fontSize: "12px", fontWeight: 500, color: "var(--text-secondary)", marginTop: "28px", marginBottom: "16px" }}>
+            התשלום מתבצע ישירות בינך לבין המעסיק.
+          </p>
+
+
+        </div>
+      </section>
+
+      {/* ── Availability + Location ─────────────────────────────────────────────── */}
+      <section
+        dir="rtl"
+        className="mb-10 relative z-10"
+        style={{
+          display: "none",
+          background: "oklch(0.97 0.012 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          borderBottom: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 24px",
+          maxWidth: "100%",
+        }}
+      >
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
+
+        {/* Availability row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div style={{ width: 4, height: 24, borderRadius: 4, background: "#4F583B" }} />
+            <span className="text-[17px] font-black" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>זמינות לעבודה</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
+              {/* outer slow pulse ring — only when available */}
+              {isAvailable && (
+                <span
+                  className="absolute rounded-full"
+                  style={{
+                    inset: -4,
+                    background: "oklch(0.55 0.22 150 / 0.20)",
+                    animation: "pulse-ring-slow 2.2s ease-in-out infinite",
+                  }}
+                />
+              )}
+              {/* inner ping ring */}
+              {isAvailable && (
+                <span
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    backgroundColor: "#22c55e",
+                    opacity: 0.45,
+                    animation: "ping 1.6s cubic-bezier(0,0,0.2,1) infinite",
+                  }}
+                />
+              )}
+              {/* core dot */}
+              <span
+                className="relative rounded-full block"
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: isAvailable ? "#22c55e" : "var(--text-muted)",
+                  boxShadow: isAvailable ? "0 0 0 2px oklch(0.55 0.22 150 / 0.25)" : "none",
+                  border: isAvailable ? "none" : "1.5px solid var(--text-secondary)",
+                }}
+              />
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[12px] font-semibold" style={{ color: isAvailable ? "oklch(0.48 0.18 150)" : "oklch(0.55 0.02 91)" }}>
+                {isAvailable ? "זמין כרגע" : "לא זמין"}
+              </span>
+              {isAvailable && countdown && (
+                <span
+                  className="text-[10px] font-mono font-bold tabular-nums"
+                  style={{ color: "oklch(0.42 0.16 150)", letterSpacing: "0.5px" }}
+                  title="זמן שנותר לזמינות"
+                >
+                  {countdown}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <motion.button
+          onClick={handleAvailabilityToggle}
+          whileTap={{ scale: 0.985 }}
+          whileHover={{ boxShadow: isAvailable
+            ? "0 6px 20px oklch(0.45 0.18 150 / 0.25)"
+            : "0 6px 20px oklch(0.35 0.08 122 / 0.25)"
+          }}
+          disabled={availabilityLoading}
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 transition-all mb-3"
+          style={{
+            background: isAvailable
+              ? "linear-gradient(135deg, oklch(0.42 0.18 150) 0%, oklch(0.36 0.16 155) 100%)"
+              : "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+            boxShadow: isAvailable
+              ? "0 4px 16px oklch(0.42 0.18 150 / 0.30)"
+              : "0 4px 16px oklch(0.28 0.06 122 / 0.25)",
+          }}
+        >
+          <div
+            className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.18)" }}
+          >
+            {isAvailable
+              ? <MapPin className="h-5 w-5 text-white" />
+              : <MapPin className="h-5 w-5 text-white/80" />
+            }
+          </div>
+          <div className="flex-1 text-right">
+            <p className="text-[15px] font-black text-white leading-tight">
+              {isAvailable ? "סמן עצמך כלא זמין" : "סמן עצמך כזמין"}
+            </p>
+            <p className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>
+              {isAvailable
+                ? countdown
+                  ? <span className="flex items-center gap-1.5">נשאר <span className="font-mono font-bold tabular-nums text-white">{countdown}</span></span>
+                  : "הסר אותך מרשימת הזמינים"
+                : "הופע בחיפושי מעסיקים באזורך"
+              }
+            </p>
+          </div>
+          {availabilityLoading
+            ? <div className="size-5 rounded-full border-2 border-white/40 border-t-white animate-spin flex-shrink-0" />
+            : <ChevronLeft className="h-4 w-4 text-white/70 rotate-180 flex-shrink-0" />
+          }
+        </motion.button>
+
+        {/* Location + Profile row */}
+        <div className="flex gap-2.5">
+          <button
+            onClick={() => navigate("/find-jobs?filter=nearby")}
+            className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
+            style={{
+              background: "white",
+              border: "1px solid oklch(0.91 0.03 91.6)",
+            }}
+          >
+            <div
+              className="size-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: "oklch(0.93 0.03 91.6)" }}
+            >
+              <MapPin className="h-4 w-4" style={{ color: "oklch(0.55 0.04 91)" }} />
+            </div>
+            <div>
+              <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>
+                זהה מיקום
+              </p>
+              <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>עבודות בסביבה</p>
+            </div>
+          </button>
+
+          {isAuthenticated && (
+            <button
+              onClick={() => navigate("/worker-profile")}
+              className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-right"
+              style={{
+                background: "white",
+                border: "1px solid oklch(0.91 0.03 91.6)",
+              }}
+            >
+              <div className="size-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.93 0.04 84.0)" }}>
+                <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+              </div>
+              <div>
+                <p className="text-[12px] font-black" style={{ color: "oklch(0.35 0.04 91)" }}>העדפות</p>
+                <p className="text-[10px]" style={{ color: "oklch(0.42 0.03 91)" }}>התאמה אישית</p>
+              </div>
+            </button>
+          )}
+        </div>
+        </div>
+      </section>
+      {/* ── Complete Profile Banner ─────────────────────────────────────────────────────────────────── */}
+      {isAuthenticated && profileQuery.data &&
+        (!profileQuery.data.preferredCategories?.length ||
+          (!profileQuery.data.preferredCity && !profileQuery.data.workerLatitude)) && (
+        <div className="relative z-10 px-4 mb-5">
+          <div
+            className="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl"
+            style={{ background: "var(--surface)", border: "1.5px solid var(--border-color)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "var(--brand)" }}
+              >
+                <Briefcase className="h-4 w-4" style={{ color: "white" }} />
+              </div>
+              <div>
+                <p className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>השלם את הפרופיל שלך</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/worker-profile")}
+              className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold"
+              style={{ background: "var(--brand)", color: "white" }}
+            >
+              עדכן עכשיו
+            </button>
+          </div>
+        </div>
+      )}
+      {/* ── Inactive region banner ─────────────────────────────────────────── */}
+      {isAuthenticated && (
+        <div className="relative z-10 px-4 mb-4">
+          <WorkerRegionBanner />
+        </div>
+      )}
+      {/* ── Push Notification Banner ──────────────────────────────────────────── */}
+      {isAuthenticated && (
+        <div className="relative z-10 mb-4">
+          <PushNotificationBanner
+            category={profileQuery.data?.preferredCategories?.[0] ?? null}
+            city={profileQuery.data?.preferredCity ?? null}
+            compact
+          />
+        </div>
+      )}
+
+      {/* ── Urgent / Today carousel ───────────────────────────────────────────────────────────────────── */}
+      {(allCarouselJobs.length > 0 || dashboardLoading) && (
+        <section className="mb-10 relative z-10">
+          <motion.div
+            className="flex items-center justify-between px-6 mb-5 max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="flex items-center gap-2">
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "oklch(0.44 0.09 128)", flexShrink: 0, display: "inline-block" }} />
+              <h2 className="text-[17px] font-black" style={{ color: "var(--text-primary)" }}>דחוף להיום</h2>
+            </div>
+            <button
+              onClick={() => navigate("/find-jobs?urgent=1")}
+              className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+              style={{ color: "#4F583B", backgroundColor: "rgba(79,88,59,0.10)", border: "1px solid rgba(79,88,59,0.18)" }}
+            >
+              הכל
+            </button>
+          </motion.div>
+
+          {dashboardLoading ? (
+            <div className="px-6"><CarouselSkeletonRow count={3} /></div>
+          ) : (
+            <div className="relative" style={{ overflow: "hidden" }}>
+              {/* Left fade mask */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: 32,
+                  background: "linear-gradient(to right, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5,
+                  pointerEvents: "none",
+                }}
+              />
+              {/* Right fade mask */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: 32,
+                  background: "linear-gradient(to left, var(--page-bg, #f5f5f0) 0%, transparent 100%)",
+                  zIndex: 5,
+                  pointerEvents: "none",
+                }}
+              />
+              {activeCarouselIdx < carouselTotal - 1 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("job-carousel");
+                    if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+                    setActiveCarouselIdx((i) => Math.min(i + 1, carouselTotal - 1));
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הקודם"
+                >
+                  <ChevronLeft className="h-4 w-4" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
+              {activeCarouselIdx > 0 && (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("job-carousel");
+                    if (el) el.scrollBy({ left: 300, behavior: "smooth" });
+                    setActiveCarouselIdx((i) => Math.max(i - 1, 0));
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110"
+                  style={{ border: "1px solid var(--border)" }}
+                  aria-label="הבא"
+                >
+                  <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--brand)" }} />
+                </button>
+              )}
+              <motion.div
+                id="job-carousel"
+                className="flex gap-4 overflow-x-auto pb-4 px-6 snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+                variants={{
+                  hidden: {},
+                  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+                }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                onMouseEnter={() => { isPausedRef.current = true; }}
+                onMouseLeave={() => { isPausedRef.current = false; }}
+                onTouchStart={(e) => {
+                  isPausedRef.current = true;
+                  touchStartXRef.current = e.touches[0].clientX;
+                  touchStartScrollRef.current = e.currentTarget.scrollLeft;
+                  touchStartTimeRef.current = Date.now();
+                }}
+                onTouchMove={(e) => {
+                  if (touchStartXRef.current === null) return;
+                  const dx = touchStartXRef.current - e.touches[0].clientX;
+                  e.currentTarget.scrollLeft = touchStartScrollRef.current + dx;
+                }}
+                onTouchEnd={(e) => {
+                  const el = e.currentTarget;
+                  const dx = (touchStartXRef.current ?? 0) - (e.changedTouches[0]?.clientX ?? 0);
+                  const dt = Date.now() - touchStartTimeRef.current;
+                  const velocity = Math.abs(dx) / dt; // px/ms
+                  const cardWidth = 288 + 16;
+                  // Snap: flick (velocity > 0.3) or drag > half card
+                  if (velocity > 0.3 || Math.abs(dx) > cardWidth / 2) {
+                    const direction = dx > 0 ? 1 : -1; // 1 = scroll right (RTL: next), -1 = scroll left (RTL: prev)
+                    const targetIdx = Math.max(0, Math.min(carouselTotal - 1, activeCarouselIdx + direction));
+                    el.scrollTo({ left: targetIdx * cardWidth, behavior: "smooth" });
+                    setActiveCarouselIdx(targetIdx);
+                  } else {
+                    // Snap back to nearest
+                    const nearest = Math.round(el.scrollLeft / cardWidth);
+                    el.scrollTo({ left: nearest * cardWidth, behavior: "smooth" });
+                    setActiveCarouselIdx(nearest);
+                  }
+                  touchStartXRef.current = null;
+                  setTimeout(() => { isPausedRef.current = false; }, 2000);
+                }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const cardWidth = el.scrollWidth / carouselTotal;
+                  const idx = Math.round(el.scrollLeft / cardWidth);
+                  setActiveCarouselIdx(idx);
+                }}
+              >
+                {allCarouselJobs.map(({ job, badge }) => (
+                  <motion.div
+                    key={`${badge}-${job.id}`}
+                    layoutId={`carousel-card-${job.id}`}
+                    className="snap-start shrink-0"
+                    variants={{
+                      hidden: { opacity: 0, y: 32, scale: 0.93 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        transition: { type: "spring", stiffness: 280, damping: 24 },
+                      },
+                    }}
+                  >
+                    <JobCard
+                      job={{ ...job, isUrgent: badge === "urgent", contactPhone: job.contactPhone ?? null }}
+                      variant="compact"
+                      onLoginRequired={onLoginRequired}
+                      onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
+                      onApply={handleApply}
+                      isApplied={appliedJobIds.has(job.id)}
+                      isApplyPending={isApplyPending}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* ── Navigation dots ── */}
+              {carouselTotal > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 6,
+                    paddingTop: 12,
+                    paddingBottom: 4,
+                  }}
+                >
+                  {allCarouselJobs.map((_, i) => {
+                    const isActive = i === activeCarouselIdx;
+                    return (
+                      <button
+                        key={i}
+                        aria-label={`עבור לכרטיס ${i + 1}`}
+                        onClick={() => {
+                          const el = document.getElementById("job-carousel");
+                          if (!el) return;
+                          const cardWidth = el.scrollWidth / carouselTotal;
+                          el.scrollTo({ left: i * cardWidth, behavior: "smooth" });
+                          setActiveCarouselIdx(i);
+                        }}
+                        style={{
+                          width: isActive ? 22 : 8,
+                          height: 8,
+                          borderRadius: 99,
+                          background: isActive ? "#4F583B" : "#c8c2b0",
+                          border: "none",
+                          outline: "none",
+                          cursor: "pointer",
+                          padding: 0,
+                          transition: "width 0.25s ease, background 0.25s ease",
+                          flexShrink: 0,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+       {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────── */}
+      <section
+        className="relative z-10"
+        style={{
+          background: "oklch(0.97 0.015 105)",
+          borderTop: "1.5px solid oklch(0.91 0.03 100)",
+          borderBottom: "1.5px solid oklch(0.91 0.03 100)",
+          padding: "22px 20px",
+          marginBottom: "24px",
+        }}
+      >
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "oklch(0.44 0.09 128)", flexShrink: 0, display: "inline-block" }} />
+            <h2 className="text-[18px] font-black" style={{ color: "var(--text-primary)", letterSpacing: "-0.3px" }}>חדש בסביבה</h2>
+          </div>
+          <button
+            onClick={() => navigate("/find-jobs")}
+            className="text-sm font-black px-4 py-1.5 rounded-full transition-colors"
+            style={{ color: "oklch(0.40 0.08 126)", backgroundColor: "oklch(0.42 0.09 128 / 0.10)", border: "1px solid oklch(0.42 0.09 128 / 0.20)" }}
+          >
+            הכל
+          </button>
+        </div>
+
+        {userLat && (
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-xs font-bold" style={{ color: "var(--muted-foreground)" }}>רדיוס:</span>
+            {[1, 3, 5].map((km) => (
+              <button
+                key={km}
+                onClick={() => setNearbyRadius(km)}
+                className="px-3 py-1 rounded-full text-xs font-bold transition-all"
+                style={{
+                  background: nearbyRadius === km ? "var(--brand)" : "white",
+                  border: nearbyRadius === km ? "1px solid var(--brand)" : "1px solid var(--border)",
+                  color: nearbyRadius === km ? "white" : "var(--muted-foreground)",
+                }}
+              >
+                {km} ק"מ
+              </button>
+            ))}
+            <div className="mr-auto flex gap-1">
+              <button
+                onClick={() => setShowMap(false)}
+                className="p-1.5 rounded-lg transition-all"
+                style={{ background: !showMap ? "var(--brand)" : "white", border: !showMap ? "1px solid var(--brand)" : "1px solid var(--border)" }}
+              >
+                <List className="h-4 w-4" style={{ color: !showMap ? "white" : "var(--muted-foreground)" }} />
+              </button>
+              <button
+                onClick={() => setShowMap(true)}
+                className="p-1.5 rounded-lg transition-all"
+                style={{ background: showMap ? "var(--brand)" : "white", border: showMap ? "1px solid var(--brand)" : "1px solid var(--border)" }}
+              >
+                <Map className="h-4 w-4" style={{ color: showMap ? "white" : "var(--muted-foreground)" }} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!userLat && !geoRequested && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl p-5 mb-4 text-center bg-white shadow-sm"
+            style={{ border: "1.5px solid var(--honey)" }}
+          >
+            <MapPin className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--brand)" }} />
+            <p className="text-sm font-black mb-1" style={{ color: "var(--brand)" }}>רוצה לראות עבודות קרובות אליך?</p>
+            <p className="text-xs font-bold mb-3" style={{ color: "var(--muted-foreground)" }}>אפשר גישה למיקום להצגת עבודות באזור שלך</p>
+            <AppButton variant="brand" size="sm" onClick={requestGeo}>
+              <MapPin className="h-4 w-4" />
+              אפשר גישה למיקום
+            </AppButton>
+          </motion.div>
+        )}
+
+        {isLoading ? (
+          <JobCardSkeletonList count={3} />
+        ) : jobs.length === 0 ? (
+          <div className="text-center py-12">
+            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" style={{ color: "var(--brand)" }} />
+            <p className="font-black" style={{ color: "var(--brand)" }}>אין משרות בטווח {nearbyRadius} ק"מ</p>
+            <p className="text-xs mt-1 font-bold" style={{ color: "var(--muted-foreground)" }}>נסה להרחיב את הרדיוס או לחפש בכל המשרות</p>
+            <AppButton variant="brand" size="sm" className="mt-4" onClick={() => navigate("/find-jobs")}>כל המשרות</AppButton>
+          </div>
+        ) : showMap && userLat ? (
+          <NearbyJobsMap jobs={jobs} userLat={userLat} userLng={userLng!} />
+        ) : (
+          <div className="space-y-3">
+            {jobs.slice(0, 8).map((job, i) => (
+              <motion.div key={job.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.35 }}>
+                <JobCard
+                    job={job}
+                    onLoginRequired={onLoginRequired}
+                    isSaved={savedIds.has(job.id)}
+                    onSaveToggle={handleSaveToggle}
+                    onCardClick={(j) => { setBottomSheetJob(j as any); setBottomSheetOpen(true); }}
+                    onApply={handleApply}
+                    isApplied={appliedJobIds.has(job.id)}
+                    isApplyPending={isApplyPending}
+                  />
+              </motion.div>
+            ))}
+            {jobs.length > 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                <button
+                  onClick={() => navigate("/find-jobs")}
+                  className="flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    width: "calc(100% - 32px)",
+                    margin: "0 16px",
+                    height: "46px",
+                    background: "transparent",
+                    border: "1.5px solid oklch(0.42 0.08 128 / 0.45)",
+                    color: "var(--brand)",
+                    borderRadius: "999px",
+                    fontSize: "15px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "none",
+                    letterSpacing: "-0.2px",
+                  }}
+                >
+                  <Search className="h-4 w-4" />
+                  ראה את כל המשרות
+                </button>
+              </motion.div>
+            )}
+          </div>
+        )}
+        </div>
+      </section>
+
+      {/* ── Not found CTA ─────────────────────────────────────────────────────────── */}
+      <section
+        className="relative z-10"
+        dir="rtl"
+        style={{
+          borderRadius: "24px",
+          overflow: "hidden",
+          margin: "0 16px 20px",
+          boxShadow: "0 4px 20px oklch(0.38 0.07 125 / 0.12), 0 1px 4px oklch(0.38 0.07 125 / 0.06)",
+          border: "1px solid oklch(0.91 0.03 100)",
+          background: "white",
+        }}
+      >
+        {/* Image top half */}
+        <div style={{ position: "relative", height: 210, overflow: "hidden" }}>
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/not-found-bg_dd65b318.jpg"
+            alt="אין משרות זמינות באזור זה כרגע"
+            loading="lazy"
+            decoding="async"
+            style={{
+              height: "210px",
+              objectFit: "cover",
+              objectPosition: "center 35%",
+              width: "100%",
+            }}
+          />
+          {/* Bottom fade into content */}
+          <div style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 90,
+            background: "linear-gradient(to bottom, transparent, white)",
+          }} />
+        </div>
+        {/* Content below image */}
+        <div className="" style={{ padding: "12px 20px 20px", textAlign: "center" }}>
+          <h3 className="font-black mb-1.5" style={{ fontSize: "19px", color: "oklch(0.22 0.06 124)", letterSpacing: "-0.3px" }}>לא מצאתם את מה שחיפשתם?</h3>
+          <p className="text-sm font-medium mb-5" style={{ color: "var(--text-secondary)", lineHeight: 1.5 }}>
+            כדאי לנסות את החיפוש המורחב לתוצאות מדויקות יותר
+          </p>
+          <motion.button
+            onClick={() => navigate("/find-jobs")}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex items-center gap-2 transition-all"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.44 0.09 128) 0%, oklch(0.34 0.07 124) 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: 999,
+              padding: "11px 24px",
+              fontSize: 15,
+              fontWeight: 700,
+              boxShadow: "0 4px 18px oklch(0.34 0.07 124 / 0.30)",
+              letterSpacing: "-0.2px",
+            }}
+          >
+            <Search size={16} style={{ color: "var(--brand)" }} />
+            חיפוש עבודות
+          </motion.button>
+        </div>
+      </section>
+
+      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      <BelowFold minHeight="120px" rootMargin="400px 0px">
+      <section
+        dir="rtl"
+        className="relative z-10 px-5 py-8"
+        style={{ background: "oklch(0.97 0.012 100)", borderTop: "1px solid oklch(0.92 0.02 100)", paddingTop: 0, display: "none" }}
+      >
+        <h3 className="" style={{ fontSize: "17px", fontWeight: 800, marginBottom: "6px", color: "var(--brand)" }}>
+          הצטרף לעובדים באזורך
+        </h3>
+        <p className="" style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5, maxWidth: "280px", margin: "0 auto 12px" }}>
+          האזורים שלהלן נפתחים בקרוב למעסיקים. הצטרף עכשיו ותהיה הראשון לקבל הצעות.
+        </p>
+        <div style={{ display: "flex", flexDirection: "row", overflowX: "auto", flexWrap: "nowrap", gap: "8px", paddingBottom: "4px", scrollbarWidth: "none" } as React.CSSProperties}>
+          {([
+            { slug: "tel-aviv", name: "תל אביב" },
+            { slug: "jerusalem", name: "ירושלים" },
+            { slug: "haifa", name: "חיפה" },
+            { slug: "bnei-brak", name: "בני ברק" },
+            { slug: "ashdod", name: "אשדוד" },
+            { slug: "beer-sheva", name: "באר שבע" },
+            { slug: "netanya", name: "נתניה" },
+            { slug: "rishon-lezion", name: "ראשון לציון" },
+          ] as const).map(({ slug, name }) => (
+            <NavPill key={slug} href={`/work/${slug}`} className="flex-shrink-0" icon={<svg width="10" height="13" viewBox="0 0 10 13" fill="none"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor" opacity="0.7" /></svg>}>
+              {name}
+            </NavPill>
+          ))}
+        </div>
+      </section>
+
+      {/* ── שירותי בית וניקיון — SEO internal links ─────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10"
+        style={{
+          background: "oklch(0.98 0.008 100)",
+          borderTop: "1px solid oklch(0.92 0.02 100)",
+          padding: "20px 16px 24px",
+        }}
+      >
+        <div className="max-w-lg mx-auto">
+          <p className="text-[13px] font-black mb-3" style={{ color: "var(--brand)" }}>🧹 שירותי בית וניקיון</p>
+          <div
+            className="flex gap-2 overflow-x-auto hide-scrollbar"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: "4px", paddingRight: "16px", paddingLeft: "16px" } as React.CSSProperties}
+          >
+            {([
+              { label: "מנקה לבית", href: "/מנקה-לבית" },
+              { label: "עוזרת בית", href: "/עוזרת-בית" },
+              { label: "דרושה מנקה מהיום", href: "/דרושה-מנקה-מהיום" },
+              { label: "כמה עולה עוזרת בית?", href: "/כמה-עולה-עוזרת-בית" },
+              { label: "מנקה לבית חד פעמי", href: "/מנקה-לבית-חד-פעמי" },
+            ] as const).map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex items-center gap-1 rounded-full text-[12px] font-semibold px-3 transition-all flex-shrink-0"
+                style={{
+                  background: "var(--citrus-light)",
+                  color: "var(--brand)",
+                  border: "1px solid var(--citrus-dark)",
+                  borderRadius: "999px",
+                  padding: "6px 14px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.88 0.06 122)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "oklch(0.93 0.03 122)"; }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Employer CTA ────────────────────────────────────────────────────────────────────────────────── */}
+      <section
+        dir="rtl"
+        className="relative z-10 cursor-pointer"
+        style={{
+          background: "linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-mid) 100%)",
+          color: "white",
+          borderRadius: "20px",
+          overflow: "hidden",
+          margin: "0 16px 16px",
+          padding: "20px 16px",
+          boxShadow: "0px 2px 12px oklch(0.38 0.07 125 / 0.12)",
+        }}
+        onClick={resetUserMode}
+        onMouseEnter={(e) => {
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1.12)'; arrow.style.boxShadow = '0 4px 12px oklch(0.38 0.07 125 / 0.25)'; }
+        }}
+        onMouseLeave={(e) => {
+          const arrow = e.currentTarget.querySelector<HTMLElement>('[data-arrow-btn]');
+          if (arrow) { arrow.style.transform = 'scale(1)'; arrow.style.boxShadow = 'none'; }
+        }}
+      >
+        <div
+          data-accent-bar
+          className="flex items-center justify-between px-5 py-4"
+          style={{
+            borderRight: "3px solid rgba(255,255,255,0.3)",
+          }}
+        >
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[15px] font-black" style={{ color: "white" }}>מחפשים עובדים?</p>
+            <p className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.78)" }}>לחצו לפרסום עבודה</p>
+          </div>
+          <div
+            data-arrow-btn
+            className="flex items-center justify-center rounded-full shrink-0"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              color: "white",
+              borderRadius: "50%",
+              width: "36px",
+              height: "36px",
+              fontSize: 18,
+              fontWeight: 700,
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+          >
+            ←
+          </div>
+        </div>
+      </section>
+
+        </BelowFold>
+
+      {/* ── Info Dialog ──────────────────────────────────────────── */}
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent dir="rtl" className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-right">
+              {isAvailable ? "אתה מסומן כזמין כעת" : 'מה זה "סמן עצמך כזמין"?'}
+            </DialogTitle>
+            <DialogDescription className="text-right leading-relaxed">
+              {isAvailable ? (
+                <span>
+                  מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים ויכולים לפנות אליך ישירות.
+                  {countdown
+                    ? <> זמן שנותר: <strong className="font-mono">{countdown}</strong>.</>  
+                    : " הזמינות עומדת לפוג בקרוב."
+                  }
+                  {" "}לחץ שוב על הכפתור לביטול מיידי.
+                </span>
+              ) : (
+                <span>
+                  לחיצה תוסיף אותך לרשימת העובדים הזמינים שמעסיקים רואים.
+                  <br /><br />
+                  כשתסמן זמינות:
+                  <br />• המיקום שלך יישמר כדי שמעסיקים באזורך יראו אותך ראשון
+                  <br />• תבחר כמה שעות אתה פנוי (2, 4, או 8 שעות)
+                  <br />• מעסיקים יוכלו לפנות אליך ישירות דרך הטלפון
+                  <br />• הזמינות תתבטל אוטומטית בסוף הזמן שבחרת
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end mt-2">
+            <AppButton variant="brand" size="sm" onClick={() => setInfoOpen(false)}>סגור</AppButton>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Duration Picker Dialog ───────────────────────────────────────── */}
+      <Dialog open={durationOpen} onOpenChange={setDurationOpen}>
+        <DialogContent dir="rtl" className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-right">כמה שעות אתה פנוי?</DialogTitle>
+            <DialogDescription className="text-right">
+              בחר את משך הזמינות. הזמינות תתבטל אוטומטית בסוף הזמן.
+            </DialogDescription>
+          </DialogHeader>
+          {/* Minor warning: shown when any duration option would cross 22:00 */}
+          {workerIsMinor && (() => {
+            const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+            const wouldCross = [2, 4, 8].some(h => nowMins + h * 60 > 22 * 60);
+            if (!wouldCross) return null;
+            return (
+              <div className="flex items-start gap-2 rounded-lg p-3 text-sm mb-2"
+                style={{ backgroundColor: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.4)" }}>
+                <span className="text-base mt-0.5">⚠️</span>
+                <p className="text-right leading-snug" style={{ color: "var(--amber)" }}>
+                  כקטין/ה, אסור לעבוד לאחר 22:00 לפי חוק עבודת נוער. בחר/י משך שאינו חוצה את השעה 22:00.
+                </p>
+              </div>
+            );
+          })()}
+          {/* Preset quick-select buttons */}
+          <div className="grid grid-cols-4 gap-2 mt-2">
+            {([2, 4, 8, 12, 24, 48, 72] as const).map((h) => {
+              const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+              const crossesCutoff = workerIsMinor && (nowMins + h * 60 > 22 * 60);
+              return (
+              <motion.button
+                key={h}
+                onClick={() => { setCustomHours(""); confirmAvailability(h); }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all font-bold relative"
+                style={{
+                  borderColor: crossesCutoff ? "rgba(251,191,36,0.6)" : "var(--border)",
+                  color: "var(--brand)",
+                  opacity: crossesCutoff ? 0.7 : 1,
+                }}
+              >
+                {crossesCutoff && (
+                  <span className="absolute top-1 left-1 text-xs" title="חוצה 22:00">⚠️</span>
+                )}
+                <span className="text-xl font-extrabold" style={{ color: crossesCutoff ? "rgba(251,191,36,0.7)" : "var(--amber)" }}>{h}</span>
+                <span className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>שע'</span>
+              </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Custom hours input */}
+          <div className="mt-3">
+            <p className="text-xs text-right mb-1.5" style={{ color: "var(--muted-foreground)" }}>או הזן מספר שעות חופשי (1–72):</p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                min={1}
+                max={72}
+                value={customHours}
+                onChange={(e) => setCustomHours(e.target.value)}
+                placeholder="למשל: 36"
+                className="flex-1 rounded-lg border px-3 py-2 text-right text-sm"
+                style={{
+                  borderColor: "var(--border)",
+                  backgroundColor: "var(--card)",
+                  color: "var(--foreground)",
+                  outline: "none",
+                }}
+                dir="rtl"
+              />
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const h = parseInt(customHours, 10);
+                  if (!isNaN(h) && h >= 1 && h <= 72) {
+                    setCustomHours("");
+                    confirmAvailability(h);
+                  }
+                }}
+                disabled={!customHours || parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72}
+                className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                style={{
+                  backgroundColor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand)"
+                    : "var(--muted)",
+                  color: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72
+                    ? "var(--brand-foreground)"
+                    : "var(--muted-foreground)",
+                  cursor: customHours && parseInt(customHours, 10) >= 1 && parseInt(customHours, 10) <= 72 ? "pointer" : "not-allowed",
+                }}
+              >
+                אשר
+              </motion.button>
+            </div>
+            {customHours && (parseInt(customHours, 10) < 1 || parseInt(customHours, 10) > 72) && (
+              <p className="text-xs mt-1 text-right" style={{ color: "oklch(0.55 0.2 25)" }}>יש להזין מספר בין 1 ל-72</p>
+            )}
+          </div>
+
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => { setCustomHours(""); setDurationOpen(false); }}>ביטול</AppButton>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Quick Availability Dialog ─────────────────────────────────── */}
+      <Dialog open={quickAvailOpen} onOpenChange={setQuickAvailOpen}>
+        <DialogContent dir="rtl" className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-right">עדכן סטאטוס זמינות</DialogTitle>
+            <DialogDescription className="text-right">
+              בחר את סטאטוס הזמינות שלך לעבודה
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            {([
+              { value: "available_now", label: "זמין עכשיו", emoji: "🟢", desc: "פנוי מיידית" },
+              { value: "available_today", label: "זמין היום", emoji: "🟡", desc: "פנוי להיום" },
+              { value: "available_hours", label: "שעות מסוימות", emoji: "🕐", desc: "פנוי בשעות ספציפיות" },
+              { value: "not_available", label: "לא זמין", emoji: "🔴", desc: "לא פנוי כרגע" },
+            ] as const).map(({ value, label, emoji, desc }) => (
+              <motion.button
+                key={value}
+                onClick={() => quickAvailMutation.mutate({ availabilityStatus: value })}
+                disabled={quickAvailMutation.isPending}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                className="flex flex-col items-center justify-center py-4 px-2 rounded-xl border-2 transition-all"
+                style={{
+                  borderColor: profileQuery.data?.availabilityStatus === value ? "var(--brand)" : "var(--border)",
+                  background: profileQuery.data?.availabilityStatus === value ? "oklch(0.95 0.03 122)" : "white",
+                }}
+              >
+                <span className="text-2xl mb-1">{emoji}</span>
+                <span className="text-xs font-black" style={{ color: "var(--brand)" }}>{label}</span>
+                <span className="text-[10px] mt-0.5 text-center" style={{ color: "var(--muted-foreground)" }}>{desc}</span>
+              </motion.button>
+            ))}
+          </div>
+          <AppButton variant="ghost" size="sm" className="mt-1 w-full" onClick={() => setQuickAvailOpen(false)}>ביטול</AppButton>
+        </DialogContent>
+      </Dialog>
+      {/* ── Job Bottom Sheet ───────────────────────────────────────────────────── */}
+      <JobBottomSheet
+        job={bottomSheetJob}
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
+        onLoginRequired={onLoginRequired}
+        isAuthenticated={isAuthenticated}
+        layoutId={bottomSheetJob ? `carousel-card-${bottomSheetJob.id}` : undefined}
+      />
+
+      {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
+      <section dir="rtl" className="px-4 py-6">
+        <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים שימושיים</h2>
+        <ul className="flex flex-col gap-2">
+          <li><a href="/questions/איך-למצוא-עובד-זמני" className="text-[14px] underline-offset-2 hover:underline" style={{ color: 'var(--brand)' }}>איך למצוא עובד זמני בישראל?</a></li>
+          <li><a href="/guide/איך-לגייס-עובד-תוך-שעה" className="text-[14px] underline-offset-2 hover:underline" style={{ color: 'var(--brand)' }}>איך לגייס עובד תוך שעה?</a></li>
+          <li><a href="/for/סטודנטים" className="text-[14px] underline-offset-2 hover:underline" style={{ color: 'var(--brand)' }}>עבודות זמניות לסטודנטים</a></li>
+          <li><a href="/for/נוער" className="text-[14px] underline-offset-2 hover:underline" style={{ color: 'var(--brand)' }}>עבודות זמניות לנוער</a></li>
+        </ul>
+      </section>
+
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
+      <BirthDateModal
+        isOpen={birthDateModalOpen}
+        onClose={closeBirthDateModal}
+        onSuccess={handleBirthDateSuccess}
+      />
+    </div>
+  );
+}

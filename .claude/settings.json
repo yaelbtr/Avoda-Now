@@ -12,7 +12,24 @@
       "Bash(python -m notebooklm list)",
       "Read(//c/Users/User/**)",
       "Bash(python -m notebooklm note create --help)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "WebFetch(domain:dribbble.com)",
+      "WebFetch(domain:spdload.com)",
+      "WebFetch(domain:www.behance.net)",
+      "WebFetch(domain:thefinch.design)",
+      "Bash(python skills/ui-ux-pro-max/scripts/search.py \"job marketplace SaaS workers employers hiring Israel mobile-first\" --design-system -p \"AvodaGo\")",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"job marketplace SaaS workers employers hiring Israel mobile-first\" --design-system -p \"AvodaGo\")",
+      "Bash(start http://localhost:5173/landing)",
+      "PowerShell(Expand-Archive -Path \"C:\\\\Users\\\\User\\\\Downloads\\\\Secular_One.zip\" -DestinationPath \"C:\\\\Users\\\\User\\\\Downloads\\\\Secular_One-extracted\" -Force; Get-ChildItem \"C:\\\\Users\\\\User\\\\Downloads\\\\Secular_One-extracted\" -Recurse | Where-Object { !$_.PSIsContainer })",
+      "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\Desktop\\\\Work-Now\\\\AvodaNow\\\\client\\\\src\\\\components\\\\ui\\\\glassmorphism-trust-hero.tsx\")",
+      "Bash(node -e \"try { const w = require\\('@motionone/utils'\\); console.log\\('exists:', typeof w.wrap\\); } catch\\(e\\) { console.log\\('missing'\\); }\")",
+      "Bash(node -e \"try { require\\('motion/react'\\); console.log\\('motion/react ok'\\); } catch\\(e\\) { console.log\\('missing:', e.message.split\\('\\\\n'\\)[0]\\); }\")",
+      "Bash(pnpm add *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\User\\Downloads\\hug-alefalefalef-extracted\\HugAlefAlefAlef\\web",
+      "C:\\Users\\User\\Downloads\\Secular_One-extracted"
     ]
   }
 }

@@ -1486,7 +1486,7 @@
 
 ## Bug: FindJobs Blank Page (Mar 12, 2026 Round 3)
 - [x] Diagnose blank page on /find-jobs — NOT a code bug
-- [x] Root cause: user was viewing the old published version (avodanow.co.il); dev server and published site both work correctly. Need to Publish new checkpoint to update the live site.
+- [x] Root cause: user was viewing the old published domain; dev server and published site both work correctly. Need to Publish new checkpoint to update the live site.
 
 ## Location Filter Mutual Exclusion (Mar 12, 2026)
 - [x] "לפי מיקום" mode: shows only km-radius chips, city controls hidden, selectedCity reset to null
@@ -2015,7 +2015,7 @@
 - [ ] Write Vitest tests for re-consent modal logic
 
 ## Legal Documents — Content Replacement & Missing Steps
-- [x] Replace Terms.tsx content with terms_of_use.md from skill (39 sections, info@avodanow.co.il, מרץ 2026)
+- [x] Replace Terms.tsx content with terms_of_use.md from skill (39 sections, info@avoda-go.co.il, מרץ 2026)
 - [x] Replace Privacy.tsx content with privacy_policy.md from skill (13 sections)
 - [x] Replace JobPostingPolicy.tsx content with job_posting_policy.md from skill
 - [x] Replace SafetyPolicy.tsx content with safety_policy.md from skill

@@ -42,7 +42,7 @@ function buildSmsBody(
 ): string {
   const plural = count === 1 ? "עובד חדש הגיש מועמדות" : `${count} עובדים חדשים הגישו מועמדות`;
   return (
-    `YallaAvoda: ${plural} למשרה שלך.\n` +
+    `AvodaGo: ${plural} למשרה שלך.\n` +
     `לצפייה במועמדים: ${origin}/jobs/${jobId}/applications`
   );
 }

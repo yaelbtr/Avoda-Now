@@ -92,7 +92,7 @@ function HubCard({ page, basePath }: { page: AEOPage; basePath: string }) {
 
 export function QuestionsHub() {
   useSEO({
-    title: "שאלות ותשובות על עבודה זמנית בישראל | YallaAvoda",
+    title: "שאלות ותשובות על עבודה זמנית בישראל | AvodaGo",
     description:
       "תשובות לשאלות הנפוצות ביותר על עבודה זמנית בישראל — כמה מרוויחים, איך מוצאים עבודה, ומה הזכויות.",
   });
@@ -123,9 +123,9 @@ export function QuestionsHub() {
 
 export function CompareHub() {
   useSEO({
-    title: "השוואות פלטפורמות עבודה זמנית | YallaAvoda",
+    title: "השוואות פלטפורמות עבודה זמנית | AvodaGo",
     description:
-      "השוואות מפורטות בין YallaAvoda לחלופות — יד2, פייסבוק, חברות כוח אדם.",
+      "השוואות מפורטות בין AvodaGo לחלופות — יד2, פייסבוק, חברות כוח אדם.",
   });
   const pages = getAEOPagesByType("compare");
   return (
@@ -136,10 +136,10 @@ export function CompareHub() {
             <ChevronRight className="h-3 w-3" /> דף הבית
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-            השוואות — YallaAvoda לעומת חלופות
+            השוואות — AvodaGo לעומת חלופות
           </h1>
           <p className="text-sm text-gray-600">
-            השוואות מפורטות בין YallaAvoda לפלטפורמות אחרות למציאת עבודה זמנית.
+            השוואות מפורטות בין AvodaGo לפלטפורמות אחרות למציאת עבודה זמנית.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -154,9 +154,9 @@ export function CompareHub() {
 
 export function AudienceHub() {
   useSEO({
-    title: "YallaAvoda — למי זה מיועד | YallaAvoda",
+    title: "AvodaGo — למי זה מיועד | AvodaGo",
     description:
-      "YallaAvoda מתאימה לעובדים, מעסיקים, סטודנטים, הורים ועוד — גלה איך הפלטפורמה עוזרת לך.",
+      "AvodaGo מתאימה לעובדים, מעסיקים, סטודנטים, הורים ועוד — גלה איך הפלטפורמה עוזרת לך.",
   });
   const pages = getAEOPagesByType("audience");
   return (
@@ -167,10 +167,10 @@ export function AudienceHub() {
             <ChevronRight className="h-3 w-3" /> דף הבית
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-            YallaAvoda — למי זה מיועד?
+            AvodaGo — למי זה מיועד?
           </h1>
           <p className="text-sm text-gray-600">
-            YallaAvoda מתאימה לכל מי שמחפש עבודה זמנית או צריך עובד זמני.
+            AvodaGo מתאימה לכל מי שמחפש עבודה זמנית או צריך עובד זמני.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

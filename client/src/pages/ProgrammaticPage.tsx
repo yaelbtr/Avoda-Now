@@ -64,7 +64,7 @@ function SchemaLD({ page }: { page: PageData }) {
 
 function LiveWorkersWidget({ page }: { page: PageData }) {
   const { isAuthenticated } = useAuth();
-  const openLoginModal = () => window.dispatchEvent(new CustomEvent("avodanow:phone-required"));
+  const openLoginModal = () => window.dispatchEvent(new CustomEvent("avodago:phone-required"));
 
   const { data, isLoading } = trpc.workers.nearby.useQuery(
     { lat: page.city.lat, lng: page.city.lng, radiusKm: 15, limit: 6 },

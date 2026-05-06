@@ -22,7 +22,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/terms",
     title: "תנאי שימוש",
-    description: "הכללים והתנאים לשימוש בפלטפורמה YallaAvoda, כולל זכויות וחובות המשתמשים.",
+    description: "הכללים והתנאים לשימוש בפלטפורמה AvodaGo, כולל זכויות וחובות המשתמשים.",
     icon: <FileText className="h-5 w-5" />,
     sections: ["כללי", "שימוש מותר", "אחריות", "פרסום משרות", "פרטיות", "יצירת קשר"],
     lastUpdated: "מרץ 2026",
@@ -164,10 +164,10 @@ export default function Legal() {
           לכל שאלה הנוגעת למדיניות הפלטפורמה, ניתן לפנות אלינו ישירות.
         </p>
         <a
-          href="mailto:info@avodanow.co.il"
+          href="mailto:info@avoda-go.co.il"
           className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-border hover:bg-accent transition-colors text-foreground"
         >
-          info@avodanow.co.il
+          info@avoda-go.co.il
         </a>
       </div>
 

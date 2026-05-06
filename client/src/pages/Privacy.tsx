@@ -2,11 +2,11 @@ import { useFAQSchema } from "@/hooks/useStructuredData";
 
 const PRIVACY_FAQS = [
   {
-    question: "איזה מידע YallaAvoda אוספת עליי?",
+    question: "איזה מידע AvodaGo אוספת עליי?",
     answer: "אנו אוספים שם, מספר טלפון, עיר פעילות, מידע מקצועי, ומידע טכני כגון כתובת IP וסוג מכשיר.",
   },
   {
-    question: "האם YallaAvoda מוכרת מידע לגורמים שלישיים?",
+    question: "האם AvodaGo מוכרת מידע לגורמים שלישיים?",
     answer: "לא. הפלטפורמה אינה מוכרת מידע אישי של משתמשים.",
   },
   {
@@ -18,7 +18,7 @@ const PRIVACY_FAQS = [
     answer: "כן. ניתן לבקש מחיקת מידע אישי בהתאם למדיניות הפרטיות. שים לב כי מידע מסוים עשוי להישמר לצרכים משפטיים.",
   },
   {
-    question: "האם YallaAvoda משתמשת בעוגיות?",
+    question: "האם AvodaGo משתמשת בעוגיות?",
     answer: "כן, הפלטפורמה עשויה להשתמש בקבצי Cookies לצורך תפעול האתר, שמירת העדפות משתמש וניתוח פעילות.",
   },
 ];
@@ -87,7 +87,7 @@ const SECTIONS = [
   {
     id: "contact",
     title: "13. יצירת קשר",
-    content: "לשאלות בנוגע למדיניות פרטיות ניתן לפנות אל: info@avodanow.co.il",
+    content: "לשאלות בנוגע למדיניות פרטיות ניתן לפנות אל: info@avoda-go.co.il",
   },
 ];
 

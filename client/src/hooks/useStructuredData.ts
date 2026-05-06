@@ -13,8 +13,8 @@
  */
 import { useEffect } from "react";
 
-const BASE_URL = "https://avodanow.co.il";
-const SITE_NAME = "YallaAvoda";
+const BASE_URL = "https://avoda-go.co.il";
+const SITE_NAME = "AvodaGo";
 const LOGO_URL =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png";
 
@@ -214,7 +214,7 @@ export function useOrganizationSchema() {
       },
       contactPoint: {
         "@type": "ContactPoint",
-        email: "info@avodanow.co.il",
+        email: "info@avoda-go.co.il",
         contactType: "customer support",
         availableLanguage: "Hebrew",
         areaServed: "IL",
@@ -223,7 +223,7 @@ export function useOrganizationSchema() {
         BASE_URL,
       ],
       description:
-        "YallaAvoda — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
       foundingLocation: {
         "@type": "Place",
         addressCountry: "IL",
@@ -272,7 +272,7 @@ export function useWebSiteSchema() {
       name: SITE_NAME,
       url: BASE_URL,
       description:
-        "YallaAvoda — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
       inLanguage: "he",
       potentialAction: {
         "@type": "SearchAction",
@@ -301,8 +301,8 @@ export function useLocalBusinessSchema() {
       logo: LOGO_URL,
       image: LOGO_URL,
       description:
-        "YallaAvoda — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
-      email: "info@avodanow.co.il",
+        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+      email: "info@avoda-go.co.il",
       areaServed: {
         "@type": "Country",
         name: "Israel",
@@ -314,7 +314,7 @@ export function useLocalBusinessSchema() {
       },
       contactPoint: {
         "@type": "ContactPoint",
-        email: "info@avodanow.co.il",
+        email: "info@avoda-go.co.il",
         contactType: "customer support",
         availableLanguage: "Hebrew",
       },

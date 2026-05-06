@@ -1,4 +1,4 @@
-﻿import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -17,7 +17,6 @@ import GuestLoginBanner from "./components/GuestLoginBanner";
 import RoleSelectionScreen from "./components/RoleSelectionScreen";
 import PageTransition from "./components/PageTransition";
 import SkipToContent from "./components/SkipToContent";
-import ReConsentModal from "./components/ReConsentModal";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { IdleLogoutManager } from "./components/IdleLogoutManager";
 import { useJobsStream } from "./hooks/useJobsStream";
@@ -52,6 +51,7 @@ const MyApplications = lazy(() => import("./pages/MyApplications"));
 const MatchedWorkers = lazy(() => import("./pages/MatchedWorkers"));
 
 // Discovery / SEO landing pages
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 const JobsLanding = lazy(() => import("./pages/JobsLanding"));
 const KeywordLandingPage = lazy(() => import("./pages/KeywordLandingPage"));
 const CityLandingPage = lazy(() => import("./pages/CityLandingPage"));
@@ -108,8 +108,8 @@ function PageLoader() {
   );
 }
 
-const REFERRAL_KEY = "avodanow_ref";
-const DEV_MAINTENANCE_BYPASS_KEY = "avodanow_dev_maintenance_bypass";
+const REFERRAL_KEY = "avodago_ref";
+const DEV_MAINTENANCE_BYPASS_KEY = "avodago_dev_maintenance_bypass";
 
 /**
  * Captures UTM/referral params on first visit and stores in localStorage.
@@ -336,9 +336,8 @@ function Router() {
       <SkipToContent />
       <Navbar />
       <GuestLoginBanner />
-      <ReConsentModal />
 
-      <main id="main-content" className="flex-1 pb-24 md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
+      <main id="main-content" className="flex-1 pb-[88px] md:pb-0" style={{ overflow: "hidden" }} aria-label="תוכן ראשי">
         <AnimatePresence mode="wait">
           {showRoleSelection ? (
             <RoleSelectionScreen
@@ -350,6 +349,7 @@ function Router() {
               <Suspense fallback={<PageLoader />}>
                 <Switch>
                   <Route path="/employer-home" component={HomeEmployer} />
+                  <Route path="/landing" component={LandingPage} />
                   <Route path="/" component={Home} />
                   <Route path="/find-jobs" component={FindJobs} />
                   <Route path="/job/:id" component={JobDetails} />

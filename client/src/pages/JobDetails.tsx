@@ -39,7 +39,7 @@ const SITE_URL = typeof window !== "undefined"
   ? window.location.origin.replace(/\/+$/, "")
   : "";
 
-// ── Brand design tokens (YallaAvoda) ─────────────────────────────────────────
+// ── Brand design tokens (AvodaGo) ─────────────────────────────────────────
 const T = {
   brand:        C_BRAND_HEX,          // olive-green #4a5d23
   brandDark:    C_BRAND_DARK_HEX,
@@ -102,14 +102,14 @@ function OGMetaTags({ title, description, jobId }: { title: string; description:
       el.setAttribute("content", content);
     };
     const jobUrl = `${SITE_URL}/job/${jobId}`;
-    document.title = `${title} | YallaAvoda`;
-    setMeta("og:title", `${title} | YallaAvoda`);
+    document.title = `${title} | AvodaGo`;
+    setMeta("og:title", `${title} | AvodaGo`);
     setMeta("og:description", description.slice(0, 200));
     setMeta("og:url", jobUrl);
     setMeta("og:type", "article");
-    setMeta("og:site_name", "YallaAvoda");
+    setMeta("og:site_name", "AvodaGo");
     setMeta("og:image", `${SITE_URL}/og-image.png`);
-    return () => { document.title = "YallaAvoda | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
+    return () => { document.title = "AvodaGo | מוצאים עבודה זמנית או עובדים – תוך דקות"; };
   }, [title, description, jobId]);
   return null;
 }
@@ -210,7 +210,7 @@ export default function JobDetails() {
   const _jobCity = job ? (job.city ?? job.address?.split(",")[0] ?? "") : "";
   const _isVolunteer = job?.salaryType === "volunteer";
   const _salaryText = _isVolunteer ? "התנדבות" : job?.salary ? `₪${job.salary} ל${job?.salaryType === "hourly" ? "שעה" : job?.salaryType === "daily" ? "יום" : "חודש"}` : "";
-  const _seoJobTitle = job ? `${job.title}${_jobCity ? ` ב${_jobCity}` : ""}${_salaryText ? ` – ${_salaryText}` : ""}` : "YallaAvoda | מצא עבודה";
+  const _seoJobTitle = job ? `${job.title}${_jobCity ? ` ב${_jobCity}` : ""}${_salaryText ? ` – ${_salaryText}` : ""}` : "AvodaGo | מצא עבודה";
   const _jobPath = job ? buildJobPath(job.id, job.title, job.city) : "";
 
   useSEO({
@@ -377,7 +377,7 @@ export default function JobDetails() {
               {/* Badges */}
               <div className="flex flex-wrap gap-1.5">
                 {job.isUrgent && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "var(--accent-rose)", color: "white" }}>
                     <Zap className="h-3 w-3 fill-white" />
                     דחוף
                   </span>

@@ -3,7 +3,7 @@
  * Allows users to report a problem with an automatic screenshot capture.
  * - Captures the page with html2canvas when the modal opens
  * - Collects subject + message (phone auto-filled for logged-in users)
- * - Sends to support@avodanow.co.il via the support.reportProblem tRPC procedure
+ * - Sends to support@avoda-go.co.il via the support.reportProblem tRPC procedure
  */
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";

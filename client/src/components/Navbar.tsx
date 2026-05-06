@@ -70,8 +70,8 @@ export default function Navbar() {
       setLoginMessage("כדי להמשיך יש להוסיף מספר טלפון לחשבון שלך");
       setLoginOpen(true);
     };
-    window.addEventListener("avodanow:phone-required", handlePhoneRequired);
-    return () => window.removeEventListener("avodanow:phone-required", handlePhoneRequired);
+    window.addEventListener("avodago:phone-required", handlePhoneRequired);
+    return () => window.removeEventListener("avodago:phone-required", handlePhoneRequired);
   }, []);
 
   const [scrolled, setScrolled] = useState(false);
@@ -115,7 +115,7 @@ export default function Navbar() {
 
   // Glass effect on scroll
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -232,16 +232,12 @@ export default function Navbar() {
         dir="rtl"
         aria-label="כותרת האתר"
         style={{
-          background: scrolled
-            ? "oklch(0.3329 0.0694 124.9 / 0.82)"
-            : "var(--header-bg)",
-          borderBottom: `1px solid ${HEADER_DIVIDER}`,
-          boxShadow: scrolled
-            ? "0 4px 24px oklch(0 0 0 / 0.22), 0 1px 0 oklch(1 0 0 / 0.06) inset"
-            : "0 4px 24px oklch(0 0 0 / 0.28), 0 1px 0 oklch(1 0 0 / 0.06) inset",
-          backdropFilter: scrolled ? "blur(20px) saturate(1.6)" : "blur(12px)",
-          WebkitBackdropFilter: scrolled ? "blur(20px) saturate(1.6)" : "blur(12px)",
-          transition: "background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease",
+          background: scrolled ? "rgba(255,255,255,0.92)" : "transparent",
+          borderBottom: scrolled ? `1px solid ${HEADER_DIVIDER}` : "none",
+          boxShadow: scrolled ? "0px 1px 0px oklch(0.38 0.07 125 / 0.10)" : "none",
+          backdropFilter: scrolled ? "blur(16px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(16px)" : "none",
+          transition: "background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
         }}
       >
         <div className="w-full px-4">
@@ -255,8 +251,8 @@ export default function Navbar() {
                 whileTap={{ scale: 0.92 }}
                 className="w-9 h-9 flex items-center justify-center rounded-xl"
                 style={{
-                  background: mobileOpen ? ACTIVE_BG : "transparent",
-                  color: "#e8eae5",
+                  background: mobileOpen ? ACTIVE_BG : (scrolled ? "oklch(0.38 0.07 125 / 0.06)" : "oklch(0.38 0.07 125 / 0.08)"),
+                  color: mobileOpen ? "#e8eae5" : "var(--brand)",
                   border: `1px solid ${mobileOpen ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                 }}
                 onClick={() => setMobileOpen(!mobileOpen)}
@@ -284,8 +280,8 @@ export default function Navbar() {
                     whileTap={{ scale: 0.92 }}
                     className="w-9 h-9 flex items-center justify-center rounded-xl"
                     style={{
-                      background: (location === "/worker-profile" || location === "/employer-profile") ? ACTIVE_BG : "transparent",
-                      color: (location === "/worker-profile" || location === "/employer-profile") ? "var(--citrus)" : "#e8eae5",
+                      background: (location === "/worker-profile" || location === "/employer-profile") ? ACTIVE_BG : (scrolled ? "oklch(0.38 0.07 125 / 0.06)" : "oklch(0.38 0.07 125 / 0.08)"),
+                      color: (location === "/worker-profile" || location === "/employer-profile") ? "var(--citrus)" : "var(--brand)",
                       border: `1px solid ${(location === "/worker-profile" || location === "/employer-profile") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                     }}
                     aria-label="הפרופיל שלי"
@@ -300,8 +296,8 @@ export default function Navbar() {
                   onClick={() => openLogin()}
                   className="w-9 h-9 flex items-center justify-center rounded-xl"
                   style={{
-                    background: "transparent",
-                    color: "#e8eae5",
+                    background: scrolled ? "oklch(0.38 0.07 125 / 0.06)" : "oklch(0.38 0.07 125 / 0.08)",
+                    color: "var(--brand)",
                     border: "1px solid transparent",
                   }}
                   aria-label="כניסה"
@@ -330,15 +326,15 @@ export default function Navbar() {
                       whileTap={{ scale: 0.92 }}
                       className="relative w-9 h-9 flex items-center justify-center rounded-xl"
                       style={{
-                        background: location.startsWith("/my-applications") && !location.includes("saved") ? ACTIVE_BG : "transparent",
-                        color: location.startsWith("/my-applications") && !location.includes("saved") ? "var(--citrus)" : "#e8eae5",
+                        background: location.startsWith("/my-applications") && !location.includes("saved") ? ACTIVE_BG : (scrolled ? "oklch(0.38 0.07 125 / 0.06)" : "oklch(0.38 0.07 125 / 0.08)"),
+                        color: location.startsWith("/my-applications") && !location.includes("saved") ? "var(--citrus)" : "var(--brand)",
                         border: `1px solid ${location.startsWith("/my-applications") && !location.includes("saved") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                       }}
                       aria-label="המועמדויות שלי"
                     >
                       <Briefcase className="h-5 w-5" />
                       {hasUnread && (
-                        <span className="absolute top-1 left-1 w-2 h-2 rounded-full bg-red-500" />
+                        <span className="absolute top-1 left-1 w-2 h-2 rounded-full" style={{ background: "var(--accent-rose)" }} />
                       )}
                     </motion.button>
                   </Link>
@@ -349,8 +345,8 @@ export default function Navbar() {
                       whileTap={{ scale: 0.92 }}
                       className="relative w-9 h-9 flex items-center justify-center rounded-xl"
                       style={{
-                        background: location.includes("saved") ? ACTIVE_BG : "transparent",
-                        color: location.includes("saved") ? "var(--citrus)" : "#e8eae5",
+                        background: location.includes("saved") ? ACTIVE_BG : (scrolled ? "oklch(0.38 0.07 125 / 0.06)" : "oklch(0.38 0.07 125 / 0.08)"),
+                        color: location.includes("saved") ? "var(--citrus)" : "var(--brand)",
                         border: `1px solid ${location.includes("saved") ? "oklch(0.50 0.07 124.9)" : "transparent"}`,
                       }}
                       aria-label="משרות ששמרתי"

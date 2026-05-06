@@ -26,6 +26,10 @@ RTL-first (Hebrew), mobile-first, olive-green brand palette. Clean, trustworthy,
 | Page bg | `#f8f5ee` / `oklch(0.97 0.02 100)` | App background |
 | Card bg | `#ffffff` | Cards and modals |
 | Dark nav bg | `oklch(0.28 0.06 122.3)` | Navbar / dark sections |
+| Accent rose | `oklch(0.75 0.18 358)` | תגיות דחיפות, הדגשות חיות, אימוג'י-נקודות התראה |
+| Accent rose light | `oklch(0.75 0.18 358 / 0.12)` | רקע רך לסקציות עם accent ורוד |
+
+**שימוש ב-rose**: לסקציות שצריכות לשבור את מונוטוניות הזית (למשל שלב מצב accent בקרוסלת onboarding, badge "חדש"). השתמשו ב-CSS vars `var(--accent-rose)` ו-`var(--accent-rose-light)` שמוגדרים ב-`client/src/index.css`.
 
 ---
 
@@ -148,6 +152,16 @@ const TOKENS = {
 - Flex rows reverse for RTL: use `flex-row-reverse` or `dir="rtl"` on the container.
 - Chevrons in `AppSelect` are positioned on the **left** (LTR end = RTL start).
 - OTP digit inputs use `dir="ltr"` with `justify-center` for centered display.
+
+---
+
+## Step Numbering
+
+מספרי צעדים (01, 02, 03) בסקשנים כגון "איך זה עובד":
+- צבע: `oklch(0.62 0.18 0)` (ורוד)
+- גודל: `32–40px`, `fontWeight: 900`
+- **ללא רקע** — הספרה עומדת לבד, ללא עיגול, border, או background
+- אין כיתוב "STEP" — המספר בלבד
 
 ---
 

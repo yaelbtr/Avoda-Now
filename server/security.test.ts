@@ -279,9 +279,8 @@ describe("CORS allowed origin patterns", () => {
     /^http:\/\/127\.0\.0\.1:\d+$/,
   ];
   const exactAllowed = [
-    "https://avodanow.co.il",
-    "https://www.avodanow.co.il",
-    "https://avoda-now.onrender.com",
+    "https://avoda-go.co.il",
+    "https://www.avoda-go.co.il",
   ];
 
   function isOriginAllowed(origin: string): boolean {
@@ -295,9 +294,8 @@ describe("CORS allowed origin patterns", () => {
   });
 
   it("allows production domains", () => {
-    expect(isOriginAllowed("https://avodanow.co.il")).toBe(true);
-    expect(isOriginAllowed("https://www.avodanow.co.il")).toBe(true);
-    expect(isOriginAllowed("https://avoda-now.onrender.com")).toBe(true);
+    expect(isOriginAllowed("https://avoda-go.co.il")).toBe(true);
+    expect(isOriginAllowed("https://www.avoda-go.co.il")).toBe(true);
   });
 
   it("blocks unknown external origins", () => {
@@ -307,7 +305,7 @@ describe("CORS allowed origin patterns", () => {
   });
 
   it("blocks non-https production domain", () => {
-    expect(isOriginAllowed("http://avodanow.co.il")).toBe(false);
+    expect(isOriginAllowed("http://avoda-go.co.il")).toBe(false);
   });
 });
 

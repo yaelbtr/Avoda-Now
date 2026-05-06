@@ -21,6 +21,8 @@ interface IsraeliPhoneInputProps {
   label?: string;
   /** Show the label above the field */
   showLabel?: boolean;
+  /** Show required asterisk on label */
+  required?: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -157,6 +159,7 @@ export function IsraeliPhoneInput({
   error,
   label = "מספר טלפון",
   showLabel = true,
+  required,
 }: IsraeliPhoneInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
@@ -225,7 +228,7 @@ export function IsraeliPhoneInput({
   return (
     <div dir="rtl" style={{ width: "100%" }}>
       {showLabel && (
-        <AppLabel>
+        <AppLabel required={required}>
           {label}
         </AppLabel>
       )}

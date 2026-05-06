@@ -212,7 +212,7 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null as any);
     vi.mocked(db.createApplication).mockResolvedValue({ id: 10 } as any);
     const caller = appRouter.createCaller(makeCtx(makeAuthUser({ id: 5 })));
-    const result = await caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" });
+    const result = await caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" });
     expect(result.success).toBe(true);
     // createApplication is called with positional args: (workerId, jobId, message)
     expect(db.createApplication).toHaveBeenCalledWith(5, 42, undefined);
@@ -223,14 +223,14 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue({ id: 1 } as any);
     const caller = appRouter.createCaller(makeCtx(makeAuthUser({ id: 5 })));
     await expect(
-      caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" })
+      caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" })
     ).rejects.toThrow(TRPCError);
   });
 
   it("throws UNAUTHORIZED when user is not authenticated", async () => {
     const caller = appRouter.createCaller(makeCtx(null));
     await expect(
-      caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" })
+      caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" })
     ).rejects.toThrow(TRPCError);
   });
 });

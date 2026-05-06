@@ -32,7 +32,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (isPhoneRequired) {
     // Dispatch a custom event so the Navbar can open LoginModal with a phone-required message.
     // This avoids a hard redirect and keeps the user on the current page.
-    window.dispatchEvent(new CustomEvent("avodanow:phone-required"));
+    window.dispatchEvent(new CustomEvent("avodago:phone-required"));
     return;
   }
 

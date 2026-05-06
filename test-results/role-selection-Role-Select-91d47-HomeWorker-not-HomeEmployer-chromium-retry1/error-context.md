@@ -112,10 +112,10 @@
             - generic [ref=e151]:
               - img [ref=e152]
               - generic [ref=e157]: 113+ עובדים רשומים
-            - link "info@avodanow.co.il" [ref=e158] [cursor=pointer]:
-              - /url: mailto:info@avodanow.co.il
+            - link "info@avoda-go.co.il" [ref=e158] [cursor=pointer]:
+              - /url: mailto:info@avoda-go.co.il
               - img [ref=e159]
-              - generic [ref=e162]: info@avodanow.co.il
+              - generic [ref=e162]: info@avoda-go.co.il
         - generic [ref=e164]:
           - generic [ref=e165]:
             - heading "משרות לפי עיר" [level=2] [ref=e166]

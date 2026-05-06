@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthQuery } from "@/hooks/useAuthQuery";
 import { useLocation, useSearch } from "wouter";
-import { AppButton, BrandName } from "@/components/ui";
+import { AppButton } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import {
   User, MapPin, Briefcase, Save, ArrowRight, ArrowLeft,
   Bell, MessageSquare, BellOff, Crosshair, Building2, FileText,
-  CheckCircle2, Camera, ChevronDown, X, AlertTriangle, TrendingUp, Calendar, Lock,
+  CheckCircle2, Camera, X, AlertTriangle, TrendingUp, Calendar, Lock,
 } from "lucide-react";
 import BrandLoader from "@/components/BrandLoader";
 import { CityPicker } from "@/components/CityPicker";
@@ -23,9 +23,10 @@ import { Eye, Trash2 } from "lucide-react";
 import { IsraeliPhoneInput, parseIsraeliPhone, combinePhone, isValidPhoneValue, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { PhoneChangeModal } from "@/components/PhoneChangeModal";
 import { useCategories } from "@/hooks/useCategories";
-import { calcProfileScore, calcProfileMissingItems } from "@/shared/profileScore";
+import { calcProfileScore } from "@/shared/profileScore";
 import { normalizeDateInput } from "@shared/ageUtils";
-import { SHIFT_PRESETS } from "@shared/const";
+import { SHIFT_PRESETS, type LegalConsentType } from "@shared/const";
+import { LegalConsentLinks } from "@/components/ui/legalConsentText";
 
 const DAYS = [
   { value: "sunday", label: "א׳" },
@@ -48,29 +49,35 @@ const NOTIF_OPTIONS: { value: NotifPref; label: string; description: string; ico
   { value: "none", label: "כבוי", description: "ללא הודעות", icon: <BellOff className="h-4 w-4" /> },
 ];
 
-const TOTAL_WIZARD_STEPS = 5;
+const PROFILE_DESIGN = {
+  background: "#faf9f5",
+  surface: "#faf9f5",
+  surfaceLow: "#f4f4f0",
+  surfaceContainer: "#efeeea",
+  surfaceHigh: "#e9e8e4",
+  surfaceBright: "#ffffff",
+  text: "#1b1c1a",
+  textMuted: "#46483d",
+  primary: "#48522a",
+  primaryDark: "#313b15",
+  primaryFixed: "#dce8b3",
+  secondaryFixed: "#ffdfa0",
+  secondaryText: "#5c4300",
+  error: "#ba1a1a",
+  ghostBorder: "rgba(119, 120, 108, 0.2)",
+};
 
-// ── Progress bar for wizard ──────────────────────────────────────────────────
-function WizardProgress({ step, total }: { step: number; total: number }) {
-  return (
-    <div className="mb-6">
-      <div className="flex gap-1.5 mb-2">
-        {Array.from({ length: total }).map((_, i) => (
-          <div
-            key={i}
-            className="flex-1 h-1.5 rounded-full transition-all duration-300"
-            style={{
-              background: i < step
-                ? "oklch(0.45 0.12 90)"
-                : "oklch(0.88 0.03 90)",
-            }}
-          />
-        ))}
-      </div>
-      <p className="text-xs text-muted-foreground text-left">שלב {step} מתוך {total}</p>
-    </div>
-  );
-}
+const profileCardStyle: React.CSSProperties = {
+  background: PROFILE_DESIGN.surfaceBright,
+  border: `1px solid ${PROFILE_DESIGN.ghostBorder}`,
+  borderRadius: "1.5rem",
+  boxShadow: "none",
+};
+
+const profileIconStyle: React.CSSProperties = {
+  background: PROFILE_DESIGN.primaryFixed,
+  color: PROFILE_DESIGN.primaryDark,
+};
 
 export default function WorkerProfile() {
   const { isAuthenticated, user } = useAuth();
@@ -89,6 +96,7 @@ export default function WorkerProfile() {
   const citiesQuery = trpc.user.getCities.useQuery(undefined, { staleTime: 60_000 });
   const notifPrefsQuery = trpc.user.getNotificationPrefs.useQuery(undefined, authQuery());
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery());
+  const outdatedConsentsQuery = trpc.user.checkOutdatedConsents.useQuery(undefined, authQuery());
 
   // Map DB categories to the shape expected by the UI
   // Hide allowedForMinors=false categories when the worker is a minor (reuses birthDateInfoQuery above)
@@ -102,6 +110,14 @@ export default function WorkerProfile() {
   const [bdEditDate, setBdEditDate] = useState("");
   const [bdConfirmOpen, setBdConfirmOpen] = useState(false);
   const [bdDeclared, setBdDeclared] = useState(false);
+  const maxBirthDate = new Date().toISOString().split("T")[0];
+  const birthDateFormatInvalid = bdEditDate !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate);
+  const birthDateIsFuture = /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > maxBirthDate;
+  const birthDateInputError = birthDateFormatInvalid
+    ? "פורמט לא תקין. הזן בפורמט DD/MM/YYYY"
+    : birthDateIsFuture
+      ? "תאריך לידה לא יכול להיות בעתיד"
+      : undefined;
   // saveBirthDate — used in the wizard gate (first-time entry, no rate limit)
   const saveBirthDateMutation = trpc.user.saveBirthDate.useMutation({
     onSuccess: () => {
@@ -116,6 +132,7 @@ export default function WorkerProfile() {
       toast.success("תאריך לידה עודכן בהצלחה");
       setBdConfirmOpen(false);
       setBdDeclared(false);
+      setFieldErrors(p => ({ ...p, birthDate: undefined }));
       utils.user.getBirthDateInfo.invalidate();
     },
     onError: (err) => toast.error(err.message),
@@ -150,6 +167,9 @@ export default function WorkerProfile() {
     },
     onError: () => toast.error("שגיאה בשמירת הגדרות ההתראות"),
   });
+
+  const recordConsentMutation = trpc.user.recordConsent.useMutation();
+
   // ── Shared state ──────────────────────────────────────────────────────────────
   const searchString = useSearch();
   const initialTab = (() => {
@@ -181,6 +201,10 @@ export default function WorkerProfile() {
   const [phoneChangeModalOpen, setPhoneChangeModalOpen] = useState(false);
   // Track original phone to detect changes
   const [originalPhoneVal, setOriginalPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
+  // שגיאות שדות חובה — מוצגות רק לאחר ניסיון שמירה
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; birthDate?: string }>({});
+  // הסכמה לתקנון — נדרש כשחסרה רשומת consent
+  const [consentChecked, setConsentChecked] = useState<Record<string, boolean>>({});
 
   // ── Dirty-state tracking ─────────────────────────────────────────────────────
   // Snapshot of last-saved values (initialised from server data, reset on save)
@@ -230,14 +254,9 @@ export default function WorkerProfile() {
     toast.success("תמונת הפרופיל עודכנה!");
   };
 
-  // ── Wizard state ─────────────────────────────────────────────────────────────
-  const [wizardStep, setWizardStep] = useState(1);
-  const [wizardDone, setWizardDone] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   // Collapsible sections — default collapsed
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
-  const toggleSection = (key: string) =>
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
 
   // Populate from server — only initialise once to avoid overwriting user-entered values
   useEffect(() => {
@@ -313,7 +332,7 @@ export default function WorkerProfile() {
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center" dir="rtl">
+      <div className="max-w-lg mx-auto px-4 py-16 text-center" dir="rtl" style={{ background: PROFILE_DESIGN.background, color: PROFILE_DESIGN.text }}>
         <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-40" />
         <p className="text-muted-foreground">יש להתחבר כדי לצפות בפרופיל</p>
         <AppButton variant="brand" className="mt-4" onClick={() => navigate("/")}>
@@ -324,7 +343,7 @@ export default function WorkerProfile() {
   }
 
   const isLoading = profileQuery.isLoading;
-  const isNewWorker = !profileQuery.isLoading && profileQuery.data && !profileQuery.data.signupCompleted;
+  const signupCompleted = profileQuery.data?.signupCompleted ?? false;
 
   const toggleCategory = (value: string) => {
     setSelectedCategories((prev) =>
@@ -344,67 +363,102 @@ export default function WorkerProfile() {
     preferredDays,
   });
 
-  // ── Wizard submit ────────────────────────────────────────────────────────────
-  const handleWizardSubmit = async () => {
-    // Build the full phone string from phoneVal (IsraeliPhoneInput) for email_otp / Google users
-    // Use isValidPhoneValue which handles both 2-digit (02/03) and 3-digit (050/054) prefixes
-    const hasFullPhoneVal = isValidPhoneValue(phoneVal);
-    const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
+  // ── Profile save ─────────────────────────────────────────────────────────────
+  const handleSave = async () => {
+    // וולידציית שדות חובה
+    const errors: { name?: string; phone?: string; birthDate?: string } = {};
+    if (name.trim().length < 2) errors.name = "שם הוא שדה חובה";
+    // טלפון חובה רק למשתמש שכבר השלים הרשמה
+    if (signupCompleted && !isValidPhoneValue(phoneVal)) errors.phone = "מספר טלפון הוא שדה חובה";
+    if (!birthDateInfoQuery.data?.birthDate) errors.birthDate = "תאריך לידה הוא שדה חובה";
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error("יש למלא את כל שדות החובה");
+      setActiveTab("details");
+      return;
+    }
+    setFieldErrors({});
+
+    // אכיפת הסכמה לתקנון — אחיד לכל המצבים
+    const consentTypes: LegalConsentType[] = !signupCompleted
+      ? ["terms", "privacy"]
+      : (outdatedConsentsQuery.data?.outdated ?? []) as LegalConsentType[];
+
+    if (consentTypes.length > 0 && !consentTypes.every((t) => !!consentChecked[t])) {
+      toast.error("יש לאשר את התקנון לפני שמירת הפרופיל");
+      setActiveTab("settings");
+      return;
+    }
+
     if (locationMode === "radius" && !workerLatitude) {
       toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
       return;
     }
-    try {
-      await completeSignupMutation.mutateAsync({
-        name: name.trim() || (user?.name ?? ""),
-        // Pass phone for users who don't have a verified phone yet (email_otp, Google)
-        phone: !user?.phone ? combinedPhone : undefined,
-        locationMode,
-        preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
-        preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
-        searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
-        preferredCategories: selectedCategories,
-        preferenceText: preferenceText.trim() || null,
-        workerBio: workerBio.trim() || null,
-        preferredDays,
-        preferredTimeSlots,
-        preferredCities,
-      });
-      setWizardDone(true);
-    } catch {
-      // error handled by mutation
+
+    // משתמש חדש — completeSignup (כולל רישום consent בשרת)
+    if (!signupCompleted) {
+      const hasFullPhoneVal = isValidPhoneValue(phoneVal);
+      const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
+      try {
+        await completeSignupMutation.mutateAsync({
+          name: name.trim() || (user?.name ?? ""),
+          termsAccepted: true,
+          phone: !user?.phone ? combinedPhone : undefined,
+          locationMode,
+          preferredCity: locationMode === "city" ? (preferredCity.trim() || null) : null,
+          preferredCityPlaceId: locationMode === "city" ? (preferredCityPlaceId || null) : null,
+          searchRadiusKm: locationMode === "radius" ? searchRadiusKm : null,
+          preferredCategories: selectedCategories,
+          preferenceText: preferenceText.trim() || null,
+          workerBio: workerBio.trim() || null,
+          preferredDays,
+          preferredTimeSlots,
+          preferredCities,
+        });
+        toast.success("ברוך הבא! הפרופיל נשמר בהצלחה 🎉");
+        outdatedConsentsQuery.refetch();
+      } catch {
+        // error handled by mutation
+      }
+      return;
     }
-  };
 
-  // ── Profile save ─────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    // Detect phone change: if user already has a phone and the new value differs, require OTP
-    // Use isValidPhoneValue to handle both 2-digit (02/03) and 3-digit (050/054) prefixes
+    // משתמש קיים — רישום consent לסוגים outdated, ואז updateProfile
+    const outdated = outdatedConsentsQuery.data?.outdated ?? [];
+    const currentVersions = outdatedConsentsQuery.data?.currentVersions;
+    if (outdated.length > 0) {
+      try {
+        await Promise.all(
+          outdated.map((type) =>
+            recordConsentMutation.mutateAsync({
+              consentType: type as LegalConsentType,
+              documentVersion: currentVersions?.[type as LegalConsentType],
+            })
+          )
+        );
+        outdatedConsentsQuery.refetch();
+      } catch {
+        toast.error("שגיאה בשמירת ההסכמה. אנא נסה שנית.");
+        return;
+      }
+    }
+
     const hasFullPhone = isValidPhoneValue(phoneVal);
-    const phoneChanged = hasFullPhone && (
-      phoneVal.prefix !== originalPhoneVal.prefix ||
-      phoneVal.number !== originalPhoneVal.number
-    );
+    const phoneChanged =
+      hasFullPhone &&
+      (phoneVal.prefix !== originalPhoneVal.prefix ||
+        phoneVal.number !== originalPhoneVal.number);
     const userAlreadyHasPhone = !!(originalPhoneVal.prefix && originalPhoneVal.number);
+    const isPhoneOtp = user?.loginMethod === "phone_otp";
+    const isNewUserAddingPhone = !isPhoneOtp && !user?.phone && hasFullPhone;
 
-    if (phoneChanged && userAlreadyHasPhone) {
-      // Phone changed — require OTP verification first
+    if ((phoneChanged && userAlreadyHasPhone) || isNewUserAddingPhone) {
       setPhoneChangeModalOpen(true);
       return;
     }
-    if (locationMode === "radius" && !workerLatitude) {
-      toast.error("חובה לשתף מיקום לפני שמירת הפרופיל");
-      return;
-    }
 
-    // Build phone update payload for new users (no existing phone)
-    const isPhoneOtp = user?.loginMethod === "phone_otp";
-    const phonePayload = (!isPhoneOtp && !user?.phone && hasFullPhone)
-      ? { phone: combinePhone(phoneVal), phonePrefix: phoneVal.prefix, phoneNumber: phoneVal.number }
-      : {};
     updateMutation.mutate({
       name: name.trim() || undefined,
-      ...phonePayload,
       workerBio: workerBio.trim() || null,
       preferredCategories: selectedCategories,
       preferenceText: preferenceText.trim() || null,
@@ -417,7 +471,6 @@ export default function WorkerProfile() {
       preferredDays,
       preferredTimeSlots,
       preferredCities: locationMode === "city" ? preferredCities : [],
-      // Only pass email for non-Google users (Google email comes from OAuth)
       email: !user?.email ? (email.trim() || null) : undefined,
     });
   };
@@ -451,648 +504,6 @@ export default function WorkerProfile() {
     );
   }
 
-  // ── Wizard done screen ───────────────────────────────────────────────────────
-  if (wizardDone) {
-    return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center" dir="rtl">
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        >
-          <CheckCircle2 className="h-20 w-20 mx-auto mb-6" style={{ color: "oklch(0.55 0.15 145)" }} />
-        </motion.div>
-        <h1 className="text-2xl font-black mb-2" style={{ color: "oklch(0.25 0.05 91)" }}>
-          ברוך הבא ל-<BrandName />! 🎉
-        </h1>
-        <p className="text-muted-foreground mb-8">הפרופיל שלך מוכן. נתחיל לחפש עבודות מתאימות.</p>
-        <AppButton variant="brand" size="xl" className="w-full" onClick={() => navigate("/")}>
-          התחל לעבוד
-        </AppButton>
-      </div>
-    );
-  }
-
-  // ── WIZARD MODE (new worker) ─────────────────────────────────────────────────
-  if (isNewWorker) {
-    const canProceedStep1 = name.trim().length >= 2;
-    // Birth-date is required before the wizard can proceed.
-    // hasBirthDate is false while the query is loading (undefined) — treat as not-yet-declared.
-    const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
-    const birthDateLoading = birthDateInfoQuery.isLoading;
-
-    return (
-      <div className="max-w-lg mx-auto px-4 py-6" dir="rtl">
-        {/* ── Mandatory birth-date gate ─────────────────────────────────────── */}
-        {!birthDateLoading && !hasBirthDate && (
-          <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.65)" }}
-          >
-            <div
-              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
-              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.18)", marginBottom: 0 }}
-            >
-              {/* Handle */}
-              <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: "oklch(0.88 0.02 100)" }} />
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-                  <Calendar className="h-5 w-5" style={{ color: "#4F583B" }} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">נדרש תאריך לידה</h3>
-                  <p className="text-xs text-muted-foreground">לפני שממשיכים במילוי הפרופיל</p>
-                </div>
-              </div>
-
-              <p className="text-sm text-foreground leading-relaxed" dir="rtl">
-                המערכת משתמשת בתאריך הלידה כדי להציג לך משרות מתאימות ולוודא עמידה בדרישות חוק עבודת נוער.
-                לא ניתן להמשיך בלי הזנת תאריך לידה.
-              </p>
-
-              {/* Date input */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">תאריך לידה</label>
-                <input
-                  type="date"
-                  value={bdEditDate}
-                  onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
-                  max={new Date().toISOString().split("T")[0]}
-                  min="1920-01-01"
-                  className="w-full h-12 px-3 rounded-xl border text-base"
-                  style={{
-                    background: "white",
-                    borderColor: bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ? "oklch(0.55 0.2 25)" : "oklch(0.88 0.04 100)",
-                    color: "var(--foreground)",
-                    fontSize: "16px",
-                    direction: "ltr",
-                  }}
-                />
-                {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
-                  <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין</p>
-                )}
-                {bdEditDate && /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > new Date().toISOString().split("T")[0] && (
-                  <p className="text-xs text-red-500" dir="rtl">תאריך לידה לא יכול להיות בעתיד</p>
-                )}
-              </div>
-
-              {/* Declaration checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-xl" style={{ background: "oklch(0.97 0.01 100)", border: "1px solid oklch(0.90 0.03 100)" }}>
-                <input
-                  type="checkbox"
-                  checked={bdDeclared}
-                  onChange={(e) => setBdDeclared(e.target.checked)}
-                  className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
-                />
-                <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי תאריך הלידה שהזנתי נכון ומדויק</span>
-              </label>
-
-              <AppButton
-                variant="brand"
-                size="lg"
-                className="w-full"
-                disabled={
-                  !bdEditDate ||
-                  !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ||
-                  bdEditDate > new Date().toISOString().split("T")[0] ||
-                  !bdDeclared ||
-                  saveBirthDateMutation.isPending
-                }
-                onClick={() => saveBirthDateMutation.mutate({ birthDate: bdEditDate })}
-              >
-                {saveBirthDateMutation.isPending ? <BrandLoader size="sm" /> : <><Calendar className="h-4 w-4" /> אישור תאריך לידה והמשך</>}
-              </AppButton>
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="text-center mb-2">
-          <h1 className="text-2xl font-black" style={{ color: "oklch(0.25 0.05 91)" }}>
-            התחל לעבוד איתנו
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">פחות מ-30 שניות להרשמה</p>
-        </div>
-
-        <WizardProgress step={wizardStep} total={TOTAL_WIZARD_STEPS} />
-
-        <AnimatePresence mode="wait">
-          {/* ── Step 1: Basic info ── */}
-          {wizardStep === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-foreground">פרטים בסיסיים</h2>
-                </div>
-
-                {/* Photo upload */}
-                <div className="flex flex-col items-center gap-2 py-2">
-                  <div className="relative">
-                    {profilePhoto ? (
-                      <img src={profilePhoto} alt="תמונת פרופיל" loading="lazy" decoding="async" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center border-2 border-dashed border-border bg-muted">
-                        <User className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
-                    {photoUploading && (
-                      <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
-                        <BrandLoader size="sm" />
-                      </div>
-                    )}
-                  </div>
-                  <label htmlFor="wizard-photo-upload" className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors text-xs font-medium">
-                    <Camera className="h-3.5 w-3.5" />
-                    {profilePhoto ? "החלף תמונה" : "הוסף תמונה (לא חובה)"}
-                  </label>
-                  <input
-                    id="wizard-photo-upload"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error("התמונה גדולה מדי. מקסימום 5MB."); return; }
-                      setPhotoUploading(true);
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = (reader.result as string).split(",")[1];
-                        const mimeType = file.type as "image/jpeg" | "image/png" | "image/webp";
-                        await uploadPhoto(base64, mimeType);
-                        setPhotoUploading(false);
-                      };
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                  <p className="text-xs text-center mt-1">
-                    {profilePhoto ? (
-                      <span className="text-blue-600 dark:text-blue-400 font-medium">📢 התמונה תוצג למעסיקים פוטנציאלים</span>
-                    ) : (
-                      <span className="text-muted-foreground">עובדים עם תמונה מקבלים פי 3 יותר פניות 📸</span>
-                    )}
-                  </p>
-                </div>
-
-                <AppInput
-                  label="שם מלא"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="ישראל ישראלי"
-                  dir="rtl"
-                  autoFocus
-                  autoComplete="off"
-                  icon={<User className="h-4 w-4" />}
-                />
-
-                <AppInput
-                  id="email"
-                  label={
-                    <>
-                      כתובת מייל
-                      {user?.loginMethod === "google" && user?.email && (
-                        <span className="mr-2 text-xs text-green-600 font-normal">נילא מחשבון Google</span>
-                      )}
-                      {user?.loginMethod === "email_otp" && user?.email && (
-                        <span className="mr-2 text-xs text-green-600 font-normal">מאומת</span>
-                      )}
-                    </>
-                  }
-                  type="email"
-                  placeholder="example@gmail.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  readOnly={user?.loginMethod === "google" || user?.loginMethod === "email_otp"}
-                  dir="ltr"
-                />
-
-                <div>
-                  {/* Phone field in wizard: phone_otp users have verified phone (read-only); email_otp and OAuth users can enter */}
-                  {user?.phone ? (
-                    <>
-                      <IsraeliPhoneInput
-                        value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(user?.phone)}
-                        onChange={() => {}}
-                        readOnly
-                        label="מספר טלפון"
-                      />
-                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> מאומת
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <IsraeliPhoneInput
-                        value={phoneVal}
-                        onChange={setPhoneVal}
-                        label="מספר טלפון"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">מספר הטלפון ישמש ליצירת קשר עם מעסיקים (לא חובה)</p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <AppButton
-                variant="brand"
-                size="xl"
-                className="w-full mt-4"
-                disabled={!canProceedStep1}
-                onClick={() => setWizardStep(2)}
-              >
-                המשך
-                <ArrowLeft className="h-4 w-4" />
-              </AppButton>
-            </motion.div>
-          )}
-
-          {/* ── Step 2: Location ── */}
-          {wizardStep === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-foreground">איפה תרצה לעבוד?</h2>
-                </div>
-                <p className="text-xs text-muted-foreground -mt-2">בחר אחת מהאפשרויות</p>
-
-                <div className="space-y-3">
-                  {/* Option A: Radius */}
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setLocationMode("radius")}
-                    onKeyDown={(e) => e.key === "Enter" && setLocationMode("radius")}
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      locationMode === "radius"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <Crosshair className="h-5 w-5 text-primary shrink-0" />
-                      <div>
-                        <p className="font-semibold text-sm text-foreground">עבודות לפי מרחק ממני</p>
-                        <p className="text-xs text-muted-foreground">מציג עבודות קרובות למיקומך</p>
-                      </div>
-                    </div>
-                    {locationMode === "radius" && (
-                      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                        <p className="text-xs text-muted-foreground mb-2">בחר רדיוס:</p>
-                        <div className="flex gap-2 mb-3">
-                          {[2, 5, 10, 20, 50].map((r) => (
-                            <button
-                              key={r}
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setSearchRadiusKm(r); }}
-                              className={`flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
-                                searchRadiusKm === r
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border text-muted-foreground"
-                              }`}
-                            >
-                              {r} ק"מ
-                            </button>
-                          ))}
-                        </div>
-                        {/* Geolocation button — required for radius mode */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!navigator.geolocation) {
-                              toast.error("הדפדפן שלך לא תומך באיתור מיקום");
-                              return;
-                            }
-                            setGeoLoading(true);
-                            navigator.geolocation.getCurrentPosition(
-                              (pos) => {
-                                setWorkerLatitude(String(pos.coords.latitude));
-                                setWorkerLongitude(String(pos.coords.longitude));
-                                setGeoLoading(false);
-                                toast.success("מיקום נשמר בהצלחה!");
-                              },
-                              () => {
-                                setGeoLoading(false);
-                                toast.error("לא ניתן לאתר את המיקום. אנא אפשר גישה למיקום בהגדרות הדפדפן.");
-                              },
-                              { timeout: 10000 }
-                            );
-                          }}
-                          disabled={geoLoading}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all disabled:opacity-60"
-                          style={{
-                            borderColor: workerLatitude ? "oklch(0.55 0.14 145)" : "oklch(0.75 0.12 30)",
-                            background: workerLatitude ? "oklch(0.97 0.03 145)" : "oklch(0.98 0.03 30)",
-                            color: workerLatitude ? "oklch(0.35 0.12 145)" : "oklch(0.35 0.10 30)",
-                          }}
-                        >
-                          {geoLoading ? (
-                            <><BrandLoader size="sm" /> מאתר...</>
-                          ) : workerLatitude ? (
-                            <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר — לחץ לעדכון</>
-                          ) : (
-                            <><Crosshair className="h-3.5 w-3.5" /> חובה: שתף את המיקום הנוכחי שלי</>
-                          )}
-                        </button>
-                        {!workerLatitude && (
-                          <p className="text-xs mt-1.5" style={{ color: "oklch(0.50 0.15 30)" }}>
-                            נדרש מיקום כדי להציג לך משרות לפי מרחק
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Option B: City multi-select */}
-                  <div
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      locationMode === "city"
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                    }`}
-                  >
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setLocationMode("city")}
-                      onKeyDown={(e) => e.key === "Enter" && setLocationMode("city")}
-                      className="flex items-center gap-3 mb-2 cursor-pointer"
-                    >
-                      <Building2 className="h-5 w-5 text-primary shrink-0" />
-                      <div>
-                        <p className="font-semibold text-sm text-foreground">עבודות בערים מסוימות</p>
-                        <p className="text-xs text-muted-foreground">בחר ערים אחת או יותר</p>
-                      </div>
-                    </div>
-                    {locationMode === "city" && (
-                      <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                        <CityPicker
-                          selectedCityIds={preferredCities}
-                          onChange={setPreferredCities}
-                          compact
-                          onCitySelect={(city) => {
-                            if (city.latitude && city.longitude) {
-                              setWorkerLatitude(city.latitude);
-                              setWorkerLongitude(city.longitude);
-                            }
-                            if (city.placeId) setPreferredCityPlaceId(city.placeId);
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <AppButton variant="outline" size="xl" className="flex-1" onClick={() => setWizardStep(1)}>
-                  <ArrowRight className="h-4 w-4" />
-                  חזור
-                </AppButton>
-                <AppButton
-                  variant="brand"
-                  size="xl"
-                  className="flex-1"
-                  disabled={locationMode === "radius" && !workerLatitude}
-                  onClick={() => {
-                    if (locationMode === "radius" && !workerLatitude) {
-                      toast.error("חובה לשתף מיקום לפני המשך");
-                      return;
-                    }
-                    setWizardStep(3);
-                  }}
-                >
-                  המשך
-                  <ArrowLeft className="h-4 w-4" />
-                </AppButton>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Step 3: Categories (optional) ── */}
-          {wizardStep === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="bg-card border border-border rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-1">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-foreground">איזה עבודות מעניינות אותך?</h2>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">ניתן לבחור מספר קטגוריות · לא חובה</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {PREFERENCE_CATEGORIES.map((cat) => {
-                    const isSelected = selectedCategories.includes(cat.value);
-                    return (
-                      <button
-                        key={cat.value}
-                        type="button"
-                        onClick={() => toggleCategory(cat.value)}
-                        className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all text-right ${
-                          isSelected
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-border text-muted-foreground hover:border-primary/50"
-                        }`}
-                      >
-                        <span className="text-xl shrink-0">{cat.icon}</span>
-                        <span className="text-xs font-semibold leading-tight">{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {selectedCategories.length > 0 && (
-                  <p className="text-xs text-primary mt-3 font-medium">{selectedCategories.length} קטגוריות נבחרו</p>
-                )}
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <AppButton variant="outline" size="xl" className="flex-1" onClick={() => setWizardStep(2)}>
-                  <ArrowRight className="h-4 w-4" />
-                  חזור
-                </AppButton>
-                <AppButton variant="brand" size="xl" className="flex-1" onClick={() => setWizardStep(4)}>
-                  המשך
-                  <ArrowLeft className="h-4 w-4" />
-                </AppButton>
-              </div>
-              <button
-                className="w-full text-center text-xs text-muted-foreground mt-3 underline underline-offset-2"
-                onClick={() => setWizardStep(4)}
-              >
-                דלג
-              </button>
-            </motion.div>
-          )}
-
-          {/* ── Step 4: Work schedule (optional) ── */}
-          {wizardStep === 4 && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bell className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-foreground">מתי אתה מועדף לעבוד?</h2>
-                </div>
-                <p className="text-xs text-muted-foreground -mt-2">לא חובה — ניתן לעדכן בהמשך</p>
-
-                {/* Days */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">ימי עבודה:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {DAYS.map((day) => {
-                      const isSelected = preferredDays.includes(day.value);
-                      return (
-                        <button
-                          key={day.value}
-                          type="button"
-                          onClick={() =>
-                            setPreferredDays((prev) =>
-                              prev.includes(day.value)
-                                ? prev.filter((d) => d !== day.value)
-                                : [...prev, day.value]
-                            )
-                          }
-                          className={`w-10 h-10 rounded-full text-sm font-bold border-2 transition-all ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                              : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
-                          }`}
-                        >
-                          {day.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Time slots */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">שעות עבודה:</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {SHIFT_PRESETS.filter(slot => !isCurrentUserMinor || !slot.isNight).map((slot) => {
-                      const isSelected = preferredTimeSlots.includes(slot.value);
-                      return (
-                        <button
-                          key={slot.value}
-                          type="button"
-                          onClick={() =>
-                            setPreferredTimeSlots((prev) =>
-                              prev.includes(slot.value)
-                                ? prev.filter((s) => s !== slot.value)
-                                : [...prev, slot.value]
-                            )
-                          }
-                          className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                            isSelected
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                          }`}
-                        >
-                          <span className="text-lg">{slot.icon}</span>
-                          <div className="text-right">
-                            <div className="font-bold text-sm">{slot.label}</div>
-                            <div className="text-xs opacity-70">{slot.sub}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <AppButton variant="outline" size="xl" className="flex-1" onClick={() => setWizardStep(3)}>
-                  <ArrowRight className="h-4 w-4" />
-                  חזור
-                </AppButton>
-                <AppButton variant="brand" size="xl" className="flex-1" onClick={() => setWizardStep(5)}>
-                  המשך
-                  <ArrowLeft className="h-4 w-4" />
-                </AppButton>
-              </div>
-              <button
-                className="w-full text-center text-xs text-muted-foreground mt-3 underline underline-offset-2"
-                onClick={() => setWizardStep(5)}
-              >
-                דלג
-              </button>
-            </motion.div>
-          )}
-
-          {/* ── Step 5: Preference text + finish ── */}
-          {wizardStep === 5 && (
-            <motion.div
-              key="step5"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-foreground">ספר לנו איזה עבודות אתה מחפש</h2>
-                </div>
-                <p className="text-xs text-muted-foreground -mt-2">
-                  המערכת תשתמש בתיאור כדי להציע לך עבודות מתאימות · לא חובה
-                </p>
-                <AppTextarea
-                  value={preferenceText}
-                  onChange={(e) => setPreferenceText(e.target.value)}
-                  placeholder='לדוגמה: "מחפש עבודה עם כלבים או שליחויות"'
-                  dir="rtl"
-                  rows={4}
-                  maxLength={1000}
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground text-left">{preferenceText.length}/1000</p>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <AppButton variant="outline" size="xl" className="flex-1" onClick={() => setWizardStep(4)}>
-                  <ArrowRight className="h-4 w-4" />
-                  חזור
-                </AppButton>
-                <AppButton
-                  variant="brand"
-                  size="xl"
-                  className="flex-1"
-                  onClick={handleWizardSubmit}
-                  disabled={completeSignupMutation.isPending}
-                >
-                  {completeSignupMutation.isPending ? <BrandLoader size="sm" /> : "התחל לעבוד 🚀"}
-                </AppButton>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
 
   // ── EDIT MODE (existing worker) ──────────────────────────────────────────────
   const TABS = [
@@ -1102,12 +513,171 @@ export default function WorkerProfile() {
     { id: "settings" as const, label: "הגדרות", icon: BellOff },
   ];
 
+  const TAB_ORDER = ["details", "work", "schedule", "settings"] as const;
+  const currentTabIndex = TAB_ORDER.indexOf(activeTab);
+  const isFirstTab = currentTabIndex === 0;
+  const isLastTab = currentTabIndex === TAB_ORDER.length - 1;
+  const goNext = () => setActiveTab(TAB_ORDER[currentTabIndex + 1]);
+  const goPrev = () => setActiveTab(TAB_ORDER[currentTabIndex - 1]);
+
+  const outdatedForEdit = outdatedConsentsQuery.data?.outdated ?? [];
+  const consentTypes: LegalConsentType[] = !signupCompleted
+    ? ["terms", "privacy"]
+    : outdatedForEdit as LegalConsentType[];
+  const needsConsent = consentTypes.length > 0;
+  const allConsentChecked = consentTypes.every((t) => !!consentChecked[t]);
+
+  const isSaving = completeSignupMutation.isPending || updateMutation.isPending;
+
+  const navBlock = (
+    <div className="flex flex-col gap-2 mt-2">
+      {isLastTab && needsConsent && (
+        <div className="rounded-2xl px-4 py-3" dir="rtl" style={{ background: PROFILE_DESIGN.surfaceContainer, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }}>
+          <label className="flex items-start gap-3 cursor-pointer select-none text-sm">
+            <input
+              type="checkbox"
+              checked={allConsentChecked}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setConsentChecked((prev) => {
+                  const updated = { ...prev };
+                  consentTypes.forEach((t) => { updated[t] = next; });
+                  return updated;
+                });
+              }}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-olive"
+            />
+            <span><LegalConsentLinks types={consentTypes} /></span>
+          </label>
+        </div>
+      )}
+      {isLastTab && !needsConsent && (
+        <p className="text-xs text-muted-foreground text-center" dir="rtl">
+          שמירת הפרופיל מסכימה ל{" "}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">תנאי השימוש</a>
+          {" "}ול{" "}
+          <a href="/user-content-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">מדיניות תוכן</a>.
+          {" "}המידע יהיה גלוי למעסיקים שיצורו קשר איתך.
+        </p>
+      )}
+      <div className="flex gap-3">
+        {!isFirstTab && (
+          <AppButton variant="outline" size="lg" className="flex-1" onClick={goPrev}>
+            <ArrowRight className="h-4 w-4" />
+            הקודם
+          </AppButton>
+        )}
+        {isLastTab ? (
+          <div className="relative flex-1">
+            <AppButton
+              variant="cta"
+              size="lg"
+              className="w-full"
+              onClick={handleSave}
+              disabled={
+                isSaving ||
+                (needsConsent && !allConsentChecked)
+              }
+            >
+              {isSaving ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
+              {!signupCompleted ? "התחל לעבוד 🚀" : "שמור"}
+            </AppButton>
+            {isDirty && !updateMutation.isPending && (
+              <span
+                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
+                style={{ background: "oklch(0.72 0.18 50)" }}
+                title="יש שינויים שלא נשמרו"
+              />
+            )}
+          </div>
+        ) : (
+          <AppButton variant="brand" size="lg" className="flex-1" onClick={goNext}>
+            הבא
+            <ArrowLeft className="h-4 w-4" />
+          </AppButton>
+        )}
+      </div>
+      {signupCompleted && (
+        <button
+          onClick={() => window.history.back()}
+          disabled={isSaving}
+          type="button"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+          style={{ color: PROFILE_DESIGN.primaryDark, fontFamily: "var(--font-rubik)" }}
+        >
+          <ArrowRight className="h-4 w-4" />
+          יציאה ללא שמירה
+        </button>
+      )}
+    </div>
+  );
+
+  const hasBirthDate = birthDateInfoQuery.data?.birthDate != null;
+  const birthDateLoading = birthDateInfoQuery.isLoading;
+
   return (
-    <div className="min-h-screen" dir="rtl" style={{ backgroundColor: "var(--page-bg)" }}>
+    <div className="min-h-screen" dir="rtl" style={{ backgroundColor: PROFILE_DESIGN.background, color: PROFILE_DESIGN.text }}>
+      {/* ── שער תאריך לידה — חוסם עד הזנה ─────────────────────────────────── */}
+      {!birthDateLoading && !hasBirthDate && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.65)" }}
+        >
+          <div
+            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
+            style={{ background: "rgba(250, 249, 245, 0.94)", backdropFilter: "blur(20px)", boxShadow: "0 -8px 32px rgba(27, 28, 26, 0.08)", marginBottom: 0 }}
+          >
+            <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: PROFILE_DESIGN.surfaceHigh }} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={profileIconStyle}>
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>נדרש תאריך לידה</h3>
+                <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>לפני שממשיכים במילוי הפרופיל</p>
+              </div>
+            </div>
+            <p className="text-sm leading-relaxed" dir="rtl" style={{ color: PROFILE_DESIGN.text }}>
+              המערכת משתמשת בתאריך הלידה כדי להציג לך משרות מתאימות ולוודא עמידה בדרישות חוק עבודת נוער.
+              לא ניתן להמשיך בלי הזנת תאריך לידה.
+            </p>
+            <AppInput
+              id="birthDate"
+              label="תאריך לידה"
+              type="date"
+              value={bdEditDate}
+              placeholder="DD/MM/YYYY"
+              onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
+              max={maxBirthDate}
+              min="1920-01-01"
+              dir="ltr"
+              error={birthDateInputError}
+            />
+            <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-xl" style={{ background: PROFILE_DESIGN.surfaceLow }}>
+              <input
+                type="checkbox"
+                checked={bdDeclared}
+                onChange={(e) => setBdDeclared(e.target.checked)}
+                className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
+              />
+              <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי תאריך הלידה שהזנתי נכון ומדויק</span>
+            </label>
+            <AppButton
+              variant="brand"
+              size="lg"
+              className="w-full"
+              disabled={!bdEditDate || birthDateFormatInvalid || birthDateIsFuture || !bdDeclared || saveBirthDateMutation.isPending}
+              onClick={() => saveBirthDateMutation.mutate({ birthDate: bdEditDate })}
+            >
+              {saveBirthDateMutation.isPending ? <BrandLoader size="sm" /> : <><Calendar className="h-4 w-4" /> אישור תאריך לידה והמשך</>}
+            </AppButton>
+          </div>
+        </div>
+      )}
       {/* ── Hero Header + Tabs ───────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: "var(--page-bg)", borderBottom: "1px solid oklch(0.92 0.02 100)" }}>
+      <div className="relative overflow-hidden" style={{ background: `linear-gradient(180deg, ${PROFILE_DESIGN.surfaceBright} 0%, ${PROFILE_DESIGN.surface} 100%)` }}>
         {/* Accent bar matching HomeWorker brand */}
-        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #4F583B 0%, oklch(0.68 0.14 80.8) 100%)" }} />
+        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${PROFILE_DESIGN.primaryDark} 0%, ${PROFILE_DESIGN.primary} 58%, #8b6914 100%)` }} />
 
         <div className="max-w-lg mx-auto px-4 pt-5 pb-4">
           {/* Back button + Preview button */}
@@ -1115,7 +685,7 @@ export default function WorkerProfile() {
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-1.5 text-sm transition-opacity hover:opacity-60"
-              style={{ color: "#4F583B" }}
+              style={{ color: PROFILE_DESIGN.primaryDark, fontFamily: "var(--font-rubik)" }}
             >
               <ArrowRight className="h-4 w-4" />
               חזרה
@@ -1123,7 +693,7 @@ export default function WorkerProfile() {
             <button
               onClick={() => setShowPreview(true)}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all hover:opacity-80"
-              style={{ background: "oklch(0.93 0.04 122)", color: "#4F583B", border: "1px solid oklch(0.85 0.06 122)" }}
+              style={{ background: PROFILE_DESIGN.surfaceContainer, color: PROFILE_DESIGN.primaryDark, border: `1px solid ${PROFILE_DESIGN.ghostBorder}`, fontFamily: "var(--font-rubik)" }}
             >
               <Eye className="h-3.5 w-3.5" />
               תצוגת מעסיק
@@ -1141,23 +711,23 @@ export default function WorkerProfile() {
                   loading="lazy"
                   decoding="async"
                   className="w-20 h-20 rounded-full object-cover"
-                  style={{ border: "3px solid oklch(0.55 0.12 88)", boxShadow: "0 2px 12px oklch(0.45 0.12 88 / 0.25)" }}
+                  style={{ border: `3px solid ${PROFILE_DESIGN.surfaceBright}`, boxShadow: "0 10px 24px rgba(27, 28, 26, 0.08)" }}
                 />
               ) : (
                 <label
                   htmlFor="photo-upload-hero"
                   className="w-20 h-20 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all hover:opacity-80"
-                  style={{ background: "oklch(0.93 0.04 88)", border: "2px dashed oklch(0.60 0.10 88)" }}
+                  style={{ background: PROFILE_DESIGN.secondaryFixed, border: `1px solid ${PROFILE_DESIGN.ghostBorder}` }}
                 >
-                  <Camera className="h-5 w-5 mb-0.5" style={{ color: "oklch(0.50 0.12 88)" }} />
-                  <span className="text-xs font-medium" style={{ color: "oklch(0.50 0.12 88)" }}>הוסף</span>
+                  <Camera className="h-5 w-5 mb-0.5" style={{ color: PROFILE_DESIGN.secondaryText }} />
+                  <span className="text-xs font-medium" style={{ color: PROFILE_DESIGN.secondaryText, fontFamily: "var(--font-rubik)" }}>הוסף</span>
                 </label>
               )}
               {profilePhoto && (
                 <label
                   htmlFor="photo-upload-hero"
-                  className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
-                  style={{ background: "oklch(0.50 0.14 85)" }}
+                  className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
+                  style={{ background: PROFILE_DESIGN.primary }}
                   title="שנה תמונה"
                 >
                   <Camera className="h-3 w-3 text-white" />
@@ -1192,22 +762,22 @@ export default function WorkerProfile() {
 
             {/* Name + meta + photo notice */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-black leading-tight truncate" style={{ color: "#4F583B", fontFamily: "'Heebo', sans-serif" }}>
+              <h1 className="text-2xl font-black leading-tight truncate" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-rubik)" }}>
                 {name || user?.name || "פרופיל שלי"}
               </h1>
               {profileQuery.data?.phone && (
-                <p className="text-sm mt-0.5" style={{ color: "oklch(0.45 0.06 122)" }}>
+                <p className="text-sm mt-0.5" style={{ color: PROFILE_DESIGN.textMuted }}>
                   {profileQuery.data.phone}
                 </p>
               )}
               {selectedCategories.length > 0 && (
-                <p className="text-xs mt-0.5 truncate" style={{ color: "oklch(0.50 0.06 122)" }}>
+                <p className="text-xs mt-0.5 truncate" style={{ color: PROFILE_DESIGN.textMuted }}>
                   {selectedCategories.slice(0, 2).map(v => PREFERENCE_CATEGORIES.find(c => c.value === v)?.label).filter(Boolean).join(" · ")}
                   {selectedCategories.length > 2 && ` +${selectedCategories.length - 2}`}
                 </p>
               )}
               {/* Employer photo notice */}
-              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: "oklch(0.68 0.14 80.8)" }}>
+              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: PROFILE_DESIGN.secondaryText }}>
                 📸 התמונה תוצג למעסיקים פוטנציאליים
               </p>
             </div>
@@ -1215,8 +785,8 @@ export default function WorkerProfile() {
 
           {/* ── Tab Bar ──────────────────────────────────────────────── */}
           <div
-            className="rounded-2xl p-1 flex gap-1"
-            style={{ background: "oklch(0.93 0.02 100)", border: "1px solid oklch(0.89 0.03 100)" }}
+            className="rounded-3xl p-1.5 flex gap-1"
+            style={{ background: PROFILE_DESIGN.surfaceContainer, border: `1px solid ${PROFILE_DESIGN.ghostBorder}` }}
           >
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -1225,10 +795,10 @@ export default function WorkerProfile() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-2xl text-xs font-semibold transition-all"
                   style={isActive
-                    ? { background: "#4F583B", color: "white", boxShadow: "0 2px 8px rgba(79,88,59,0.35)" }
-                    : { color: "oklch(0.50 0.06 122)" }
+                    ? { background: PROFILE_DESIGN.primary, color: "#ffffff", boxShadow: "0 10px 24px rgba(27, 28, 26, 0.08)", fontFamily: "var(--font-rubik)" }
+                    : { color: PROFILE_DESIGN.textMuted, fontFamily: "var(--font-rubik)" }
                   }
                 >
                   <Icon className="h-4 w-4" />
@@ -1241,7 +811,7 @@ export default function WorkerProfile() {
       </div>
 
       {/* ── Tab Content ──────────────────────────────────────────────────────────── */}
-      <div className="max-w-lg mx-auto px-4 mt-3 pb-10">
+      <div className="max-w-lg mx-auto px-4 mt-6 pb-12">
 
         {/* ── Profile Completion Banner ──────────────────────────────────────────── */}
         {(() => {
@@ -1264,11 +834,10 @@ export default function WorkerProfile() {
               className="mb-4 rounded-2xl p-4"
               style={{
                 background: score >= 70
-                  ? "oklch(0.97 0.04 122 / 0.9)"
-                  : "oklch(0.97 0.06 80 / 0.9)",
-                border: score >= 70
-                  ? "1px solid oklch(0.85 0.08 122)"
-                  : "1px solid oklch(0.85 0.10 80)",
+                  ? PROFILE_DESIGN.primaryFixed
+                  : PROFILE_DESIGN.secondaryFixed,
+                border: `1px solid ${PROFILE_DESIGN.ghostBorder}`,
+                boxShadow: "none",
               }}
             >
               <div className="flex items-center justify-between mb-2">
@@ -1280,12 +849,12 @@ export default function WorkerProfile() {
                     פרופיל {score}% מושלם
                   </span>
                 </div>
-                <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <span className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>
                   {score >= 70 ? "כמעט שם!" : "השלם להגדיל חשיפות"}
                 </span>
               </div>
               {/* Progress bar */}
-              <div className="w-full h-2 rounded-full mb-3" style={{ background: "oklch(0.90 0.03 100)" }}>
+              <div className="w-full h-2 rounded-full mb-3" style={{ background: "rgba(255, 255, 255, 0.55)" }}>
                 <motion.div
                   className="h-2 rounded-full"
                   initial={{ width: 0 }}
@@ -1300,7 +869,7 @@ export default function WorkerProfile() {
               </div>
               {missingItems.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>חסר:</span>
+                  <span className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>חסר:</span>
                   {missingItems.map(({ label, tab, sectionId, highlight }) => (
                     <button
                       key={label}
@@ -1315,9 +884,9 @@ export default function WorkerProfile() {
                       }}
                       className="text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
-                        background: highlight ? "oklch(0.92 0.08 50)" : score >= 70 ? "oklch(0.88 0.06 122)" : "oklch(0.90 0.08 80)",
-                        color: highlight ? "oklch(0.38 0.15 50)" : score >= 70 ? "oklch(0.40 0.09 124.9)" : "oklch(0.45 0.12 76.7)",
-                        border: highlight ? "1px solid oklch(0.78 0.12 50)" : "none",
+                        background: highlight ? PROFILE_DESIGN.secondaryFixed : score >= 70 ? PROFILE_DESIGN.surfaceBright : PROFILE_DESIGN.surfaceLow,
+                        color: highlight ? PROFILE_DESIGN.secondaryText : PROFILE_DESIGN.primaryDark,
+                        boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}`,
                       }}
                     >
                       {highlight ? `👁 ${label}` : label}
@@ -1331,27 +900,29 @@ export default function WorkerProfile() {
         {activeTab === "details" && (
         <div className="space-y-4">
         {/* ── Basic info card ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        <div className="p-6" style={profileCardStyle}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <User className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={profileIconStyle}>
+              <User className="h-3.5 w-3.5" />
             </div>
-            <h2 className="font-bold text-foreground text-sm">פרטים אישיים</h2>
+            <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>פרטים אישיים</h2>
           </div>
           <div className="space-y-3">
             <AppInput
               label="שם"
+              required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); if (fieldErrors.name) setFieldErrors(p => ({ ...p, name: undefined })); }}
               placeholder="השם שלך"
               dir="rtl"
               icon={<User className="h-4 w-4" />}
+              error={fieldErrors.name}
             />
             <div>
               {/* Phone field: read-only for OTP users, editable split input for OAuth users */}
               {user?.loginMethod === "phone_otp" ? (
                 <>
-                  <AppLabel>טלפון</AppLabel>
+                  <AppLabel required>טלפון</AppLabel>
                   <IsraeliPhoneInput
                     value={phoneVal.prefix ? phoneVal : parseIsraeliPhone(profileQuery.data?.phone)}
                     onChange={() => {}}
@@ -1363,10 +934,12 @@ export default function WorkerProfile() {
               ) : (
                 <IsraeliPhoneInput
                   value={phoneVal}
-                  onChange={setPhoneVal}
+                  onChange={(v) => { setPhoneVal(v); if (fieldErrors.phone) setFieldErrors(p => ({ ...p, phone: undefined })); }}
                   disabled={!!user?.phone}
                   readOnly={!!user?.phone}
                   label="מספר טלפון"
+                  required
+                  error={fieldErrors.phone}
                 />
               )}
             </div>
@@ -1399,89 +972,191 @@ export default function WorkerProfile() {
             </div>
           </div>
         </div>
-        {/* Legal notice — profile */}
-        <p className="text-xs text-muted-foreground text-center mt-2" dir="rtl">
-          שמירת הפרופיל מסכימה ל{" "}
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">תנאי השימוש</a>
-          {" "}ול{" "}
-          <a href="/user-content-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">מדיניות תוכן</a>.
-          {" "}המידע יהיה גלוי למעסיקים שיצורו קשר איתך.
-        </p>
-
-        {/* Save button for details tab */}
-        <div className="flex flex-col gap-2 mt-2">
-          <div className="relative">
-            <AppButton
-              variant="cta"
-              size="lg"
-              className="w-full"
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-              שמור
-            </AppButton>
-            {isDirty && !updateMutation.isPending && (
-              <span
-                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
-                style={{ background: "oklch(0.72 0.18 50)" }}
-                title="יש שינויים שלא נשמרו"
-              />
-            )}
+        {/* ── BirthDate Section ─────────────────────────────────────────── */}
+        <div
+          id="birthdate-section"
+          className="p-6"
+          style={{
+            ...profileCardStyle,
+            borderColor: fieldErrors.birthDate ? "rgba(186, 26, 26, 0.35)" : PROFILE_DESIGN.ghostBorder,
+            boxShadow: fieldErrors.birthDate ? "0 0 0 3px rgba(186, 26, 26, 0.08)" : "none",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={profileIconStyle}>
+              <Calendar className="h-3.5 w-3.5" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>תאריך לידה <span style={{ color: PROFILE_DESIGN.error }}>*</span></h2>
+              <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>משמש לאימות גיל ולסינון משרות — משפיע על חשיפות אצל מעסיקים</p>
+            </div>
           </div>
-          <button
-            onClick={() => window.history.back()}
-            disabled={updateMutation.isPending}
-            type="button"
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-            style={{ color: "oklch(0.35 0.08 122)" }}
-          >
-            <ArrowRight className="h-4 w-4" />
-            יציאה ללא שמירה
-          </button>
+
+          {fieldErrors.birthDate && (
+            <p style={{ fontSize: 12, color: PROFILE_DESIGN.error, marginBottom: 8, textAlign: "right" }} role="alert">{fieldErrors.birthDate}</p>
+          )}
+          {/* Current value */}
+          {birthDateInfoQuery.data?.birthDate ? (
+            <div className="flex items-center gap-2 mb-3 p-3 rounded-2xl" style={{ background: PROFILE_DESIGN.surfaceLow }}>
+              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: PROFILE_DESIGN.primary }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium" style={{ color: PROFILE_DESIGN.primaryDark }}>תאריך לידה מאומת</p>
+                <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>
+                  {new Date(birthDateInfoQuery.data.birthDate).toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" })}
+                  {birthDateInfoQuery.data.age != null && ` · גיל ${birthDateInfoQuery.data.age}`}
+                </p>
+              </div>
+              {birthDateInfoQuery.data.lastChangedAt && (
+                <div className="flex items-center gap-1 text-xs shrink-0" style={{ color: PROFILE_DESIGN.textMuted }}>
+                  <Lock className="h-3 w-3" />
+                  <span>עודכן {new Date(birthDateInfoQuery.data.lastChangedAt).toLocaleDateString("he-IL")}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 mb-3 p-3 rounded-2xl" style={{ background: PROFILE_DESIGN.secondaryFixed }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: PROFILE_DESIGN.secondaryText }} />
+              <div>
+                <p className="text-xs font-semibold" style={{ color: PROFILE_DESIGN.secondaryText }}>תאריך לידה לא הוגדר</p>
+                <p className="text-xs mt-0.5" style={{ color: PROFILE_DESIGN.secondaryText }}>מעסיקים שהגדירו גיל מינימלי לא יוכלו לראות אותך ברשימת העובדים הזמינים. הוסף כדי להיות גלוי ליותר מעסיקים.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Rate-limit warning */}
+          {birthDateInfoQuery.data?.canChangeAfter && (
+            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200 mb-3">
+              ⏳ ניתן לשנות תאריך לידה שוב החל מ-{new Date(birthDateInfoQuery.data.canChangeAfter).toLocaleDateString("he-IL")}
+            </p>
+          )}
+
+          {/* שדה תאריך — מוסתר כשיש חסימת rate-limit */}
+          {!birthDateInfoQuery.data?.canChangeAfter && (
+            <>
+              <AppInput
+                id="birthDateUpdate"
+                label="תאריך לידה "
+                type="date"
+                value={bdEditDate}
+                placeholder="DD/MM/YYYY"
+                onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
+                max={maxBirthDate}
+                min="1920-01-01"
+                dir="ltr"
+                error={birthDateInputError}
+              />
+
+              <AppButton
+                variant="brand"
+                size="lg"
+                className="w-full mt-3"
+                disabled={
+                  !bdEditDate ||
+                  birthDateFormatInvalid ||
+                  birthDateIsFuture ||
+                  updateBirthDateMutation.isPending
+                }
+                onClick={() => setBdConfirmOpen(true)}
+              >
+                <Calendar className="h-4 w-4" />
+                עדכן תאריך לידה
+              </AppButton>
+            </>
+          )}
         </div>
+
+        {/* ── BirthDate Confirmation Dialog ─────────────────────────────────── */}
+        {bdConfirmOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setBdConfirmOpen(false); setBdDeclared(false); } }}
+          >
+            <div
+              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
+              style={{ background: "rgba(250, 249, 245, 0.94)", backdropFilter: "blur(20px)", boxShadow: "0 -8px 32px rgba(27, 28, 26, 0.08)", marginBottom: 0 }}
+            >
+              {/* Handle */}
+              <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: PROFILE_DESIGN.surfaceHigh }} />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={profileIconStyle}>
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>שינוי תאריך לידה</h3>
+                  <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>{bdEditDate ? new Date(bdEditDate + "T00:00:00").toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
+                </div>
+              </div>
+
+              <p className="text-sm leading-relaxed" dir="rtl" style={{ color: PROFILE_DESIGN.text }}>
+                הנך מצהיר כי תאריך הלידה שהוזן נכון ומדויק.
+              </p>
+
+              <p className="text-xs" dir="rtl" style={{ color: PROFILE_DESIGN.textMuted }}>
+                המערכת משתמשת במידע זה לצורך הצגת עבודות והפעלת מגבלות גיל בהתאם לחוק.
+                שינוי תאריך לידה מוגבל לפעם ב-30 יום.
+              </p>
+
+              {/* Declaration checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={bdDeclared}
+                  onChange={(e) => setBdDeclared(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
+                />
+                <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי הפרטים נכונים</span>
+              </label>
+
+              <div className="flex gap-3">
+                <AppButton
+                  variant="outline"
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => { setBdConfirmOpen(false); setBdDeclared(false); }}
+                  disabled={updateBirthDateMutation.isPending}
+                >
+                  ביטול
+                </AppButton>
+                <AppButton
+                  variant="brand"
+                  size="lg"
+                  className="flex-1"
+                  disabled={!bdDeclared || updateBirthDateMutation.isPending}
+                  onClick={() => {
+                    if (!bdDeclared) return;
+                    updateBirthDateMutation.mutate({ birthDate: bdEditDate, declarationConfirmed: true });
+                  }}
+                >
+                  {updateBirthDateMutation.isPending ? <BrandLoader size="sm" /> : "אישור"}
+                </AppButton>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {navBlock}
         </div>
         )}
 
         {/* ── TAB: עבודה ─────────────────────────────────────────────── */}
         {activeTab === "work" && (
         <div className="space-y-4">
-        {/* ── Work Preferences Card ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        <div className="p-6 space-y-5" style={profileCardStyle}>
 
-          {/* ── Sub-section: תחומי עיסוק מועדפים ── */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => toggleSection("work-categories")}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-categories")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
-          >
-            <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Briefcase className="h-3 w-3" style={{ color: "#4F583B" }} />
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={profileIconStyle}>
+              <Briefcase className="h-3.5 w-3.5" />
             </div>
-            <span className="font-bold text-foreground text-sm flex-1">תחומי עיסוק מועדפים</span>
-            {selectedCategories.length > 0 && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "oklch(0.92 0.04 122)", color: "#4F583B" }}>
-                {selectedCategories.length}
-              </span>
-            )}
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["work-categories"] ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
+            <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>עבודה ואזור</h2>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateRows: openSections["work-categories"] ? "1fr" : "0fr",
-              transition: "grid-template-rows 0.25s ease",
-            }}
-          >
-          <div className="overflow-hidden">
-          <div className="px-5 pb-5 space-y-4 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }}>
+
+          {/* ── תחומי עיסוק מועדפים ── */}
+          <div className="space-y-4">
             {/* Preference text */}
-            <div className="pt-4">
+            <div>
               <AppLabel style={{ display: "flex", alignItems: "center", gap: 6 }}><FileText className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />תיאור חופשי</AppLabel>
               <AppTextarea
                 value={preferenceText}
@@ -1503,11 +1178,11 @@ export default function WorkerProfile() {
                     <button
                       key={cat.value}
                       onClick={() => toggleCategory(cat.value)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
-                        isSelected
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
-                      }`}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                      style={isSelected
+                        ? { background: PROFILE_DESIGN.primary, color: "#ffffff" }
+                        : { background: PROFILE_DESIGN.surfaceBright, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                      }
                     >
                       {cat.icon} {cat.label}
                     </button>
@@ -1516,53 +1191,13 @@ export default function WorkerProfile() {
               </div>
             </div>
           </div>
-          </div>
-          </div>
 
-          {/* ── Divider ── */}
-          <div style={{ borderTop: "1px solid oklch(0.94 0.02 100)" }} />
+          <div className="border-t" style={{ borderColor: PROFILE_DESIGN.ghostBorder }} />
 
-          {/* ── Sub-section: מצב חיפוש עבודה ── */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => toggleSection("work-location")}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleSection("work-location")}
-            className="w-full flex items-center gap-2 px-5 py-4 text-right cursor-pointer select-none"
-          >
-            <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <MapPin className="h-3 w-3" style={{ color: "#4F583B" }} />
-            </div>
-            <span className="font-bold text-foreground text-sm">מצב חיפוש עבודה</span>
-            <span
-              className="flex-1 text-xs text-muted-foreground truncate text-right"
-              style={{
-                opacity: openSections["work-location"] ? 0 : 1,
-                transition: "opacity 0.2s ease",
-                pointerEvents: "none",
-              }}
-            >
-              {locationMode === "radius"
-                ? `לפי רדיוס · ${searchRadiusKm} ק"מ`
-                : preferredCities.length === 0
-                ? "לפי עיר"
-                : `לפי עיר · ${(citiesQuery.data ?? []).filter((c) => preferredCities.includes(c.id)).map((c) => c.nameHe).join(", ")}`}
-            </span>
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              style={{ transform: openSections["work-location"] ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateRows: openSections["work-location"] ? "1fr" : "0fr",
-              transition: "grid-template-rows 0.25s ease",
-            }}
-          >
-          <div className="overflow-hidden">
-          <div className="px-5 pb-5 border-t" style={{ borderColor: "oklch(0.94 0.02 100)" }} onClick={(e) => e.stopPropagation()}>
-            <div className="grid grid-cols-2 gap-2 mt-4 mb-3">
+          {/* ── מצב חיפוש עבודה ── */}
+          <div>
+            <AppLabel style={{ display: "flex", alignItems: "center", gap: 6 }}><MapPin className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />מצב חיפוש עבודה</AppLabel>
+            <div className="grid grid-cols-2 gap-2 mt-3 mb-3">
               <button
                 type="button"
                 onClick={() => {
@@ -1571,11 +1206,11 @@ export default function WorkerProfile() {
                     setPreferredCities([]);
                   }
                 }}
-                className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                  locationMode === "radius"
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border text-muted-foreground hover:border-primary/50"
-                }`}
+                className="relative flex items-center justify-center gap-2 p-3 rounded-xl text-sm font-semibold transition-all"
+                style={locationMode === "radius"
+                  ? { background: PROFILE_DESIGN.primary, color: "#ffffff" }
+                  : { background: PROFILE_DESIGN.surfaceBright, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                }
               >
                 <Crosshair className="h-4 w-4" />
                 לפי רדיוס
@@ -1588,11 +1223,11 @@ export default function WorkerProfile() {
                     setSearchRadiusKm(10);
                   }
                 }}
-                className={`relative flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                  locationMode === "city"
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border text-muted-foreground hover:border-primary/50"
-                }`}
+                className="relative flex items-center justify-center gap-2 p-3 rounded-xl text-sm font-semibold transition-all"
+                style={locationMode === "city"
+                  ? { background: PROFILE_DESIGN.primary, color: "#ffffff" }
+                  : { background: PROFILE_DESIGN.surfaceBright, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                }
               >
                 <Building2 className="h-4 w-4" />
                 לפי עיר
@@ -1615,11 +1250,11 @@ export default function WorkerProfile() {
                         key={r}
                         type="button"
                         onClick={() => setSearchRadiusKm(r)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
-                          searchRadiusKm === r
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border text-muted-foreground"
-                        }`}
+                        className="flex-1 py-2 rounded-full text-xs font-bold transition-all"
+                        style={searchRadiusKm === r
+                          ? { background: PROFILE_DESIGN.primary, color: "#ffffff" }
+                          : { background: PROFILE_DESIGN.surfaceBright, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                        }
                       >
                         {r} ק"מ
                       </button>
@@ -1649,11 +1284,11 @@ export default function WorkerProfile() {
                       );
                     }}
                     disabled={geoLoading}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all disabled:opacity-60"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-60"
                     style={{
-                      borderColor: workerLatitude ? "oklch(0.55 0.14 145)" : "oklch(0.88 0.03 122)",
-                      background: workerLatitude ? "oklch(0.97 0.03 145)" : "oklch(0.98 0.01 122)",
-                      color: workerLatitude ? "oklch(0.35 0.12 145)" : "#4F583B",
+                      background: workerLatitude ? PROFILE_DESIGN.primaryFixed : PROFILE_DESIGN.surfaceBright,
+                      color: workerLatitude ? PROFILE_DESIGN.primaryDark : PROFILE_DESIGN.primary,
+                      boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}`,
                     }}
                   >
                     {geoLoading ? (
@@ -1706,53 +1341,20 @@ export default function WorkerProfile() {
               </div>
             </div>
           </div>
-          </div>
-          </div>
         </div>
-        {/* Save button for work tab */}
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <AppButton
-              variant="cta"
-              size="lg"
-              className="w-full"
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-              שמור
-            </AppButton>
-            {isDirty && !updateMutation.isPending && (
-              <span
-                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
-                style={{ background: "oklch(0.72 0.18 50)" }}
-                title="יש שינויים שלא נשמרו"
-              />
-            )}
-          </div>
-          <button
-            onClick={() => window.history.back()}
-            disabled={updateMutation.isPending}
-            type="button"
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-            style={{ color: "oklch(0.35 0.08 122)" }}
-          >
-            <ArrowRight className="h-4 w-4" />
-            יציאה ללא שמירה
-          </button>
-        </div>
+        {navBlock}
         </div>
         )}
 
         {/* ── TAB: זמינות ─────────────────────────────────────────────── */}
         {activeTab === "schedule" && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+          <div className="p-6" style={profileCardStyle}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={profileIconStyle}>
+              <Bell className="h-3.5 w-3.5" />
             </div>
-            <h2 className="font-bold text-foreground text-sm">זמינות לעבודה</h2>
+            <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>זמינות לעבודה</h2>
           </div>
 
           {/* Preferred Schedule */}
@@ -1777,11 +1379,11 @@ export default function WorkerProfile() {
                           : [...prev, day.value]
                       )
                     }
-                    className={`w-10 h-10 rounded-full text-sm font-bold border-2 transition-all ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "border-border text-muted-foreground hover:border-primary hover:text-primary bg-background"
-                    }`}
+                    className="w-10 h-10 rounded-full text-sm font-bold transition-all"
+                    style={isSelected
+                      ? { background: PROFILE_DESIGN.primary, color: "#ffffff" }
+                      : { background: PROFILE_DESIGN.surfaceLow, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                    }
                   >
                     {day.label}
                   </button>
@@ -1804,11 +1406,11 @@ export default function WorkerProfile() {
                           : [...prev, slot.value]
                       )
                     }
-                    className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      isSelected
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                    }`}
+                    className="flex items-center gap-2 p-3 rounded-xl text-sm font-semibold transition-all"
+                    style={isSelected
+                      ? { background: PROFILE_DESIGN.primaryFixed, color: PROFILE_DESIGN.primaryDark }
+                      : { background: PROFILE_DESIGN.surfaceLow, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                    }
                   >
                     <span className="text-lg">{slot.icon}</span>
                     <div className="text-right">
@@ -1821,38 +1423,7 @@ export default function WorkerProfile() {
             </div>
           </div>
         </div>
-        {/* Save button for schedule tab */}
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <AppButton
-              variant="cta"
-              size="lg"
-              className="w-full"
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? <BrandLoader size="sm" /> : <Save className="h-4 w-4" />}
-              שמור
-            </AppButton>
-            {isDirty && !updateMutation.isPending && (
-              <span
-                className="absolute top-1.5 left-3 h-2.5 w-2.5 rounded-full animate-pulse"
-                style={{ background: "oklch(0.72 0.18 50)" }}
-                title="יש שינויים שלא נשמרו"
-              />
-            )}
-          </div>
-          <button
-            onClick={() => window.history.back()}
-            disabled={updateMutation.isPending}
-            type="button"
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-            style={{ color: "oklch(0.35 0.08 122)" }}
-          >
-            <ArrowRight className="h-4 w-4" />
-            יציאה ללא שמירה
-          </button>
-        </div>
+        {navBlock}
         </div>
         )}
 
@@ -1860,14 +1431,14 @@ export default function WorkerProfile() {
         {activeTab === "settings" && (
         <div className="space-y-4">
         {/* ── Notification Settings ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
+        <div className="p-6" style={profileCardStyle}>
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Bell className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={profileIconStyle}>
+              <Bell className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground text-sm">הגדרות התראות</h2>
-              <p className="text-xs text-muted-foreground">בחר כיצד תרצה לקבל עדכונים</p>
+              <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>הגדרות התראות</h2>
+              <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>בחר כיצד תרצה לקבל עדכונים</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -1878,11 +1449,11 @@ export default function WorkerProfile() {
                   key={opt.value}
                   onClick={() => handleNotifPrefChange(opt.value)}
                   disabled={updateNotifPrefsMutation.isPending}
-                  className={`flex flex-col items-start gap-1 p-3 rounded-lg border-2 text-right transition-all ${
-                    isActive
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-background text-muted-foreground hover:border-primary/50"
-                  }`}
+                  className="flex flex-col items-start gap-1 p-3 rounded-xl text-right transition-all"
+                  style={isActive
+                    ? { background: PROFILE_DESIGN.primaryFixed, color: PROFILE_DESIGN.primaryDark }
+                    : { background: PROFILE_DESIGN.surfaceLow, color: PROFILE_DESIGN.textMuted, boxShadow: `inset 0 0 0 1px ${PROFILE_DESIGN.ghostBorder}` }
+                  }
                 >
                   <div className="flex items-center gap-1.5 font-medium text-sm">
                     {opt.icon}
@@ -1904,194 +1475,32 @@ export default function WorkerProfile() {
             </p>
           )}
         </div>
-        {/* ── BirthDate Section ─────────────────────────────────────────── */}
-        <div id="birthdate-section" className="rounded-2xl p-5" style={{ background: "white", border: "1px solid oklch(0.92 0.02 100)", boxShadow: "0 1px 4px rgba(79,88,59,0.06)" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-              <Calendar className="h-3.5 w-3.5" style={{ color: "#4F583B" }} />
-            </div>
-            <div>
-              <h2 className="font-bold text-foreground text-sm">תאריך לידה</h2>
-              <p className="text-xs text-muted-foreground">משמש לאימות גיל ולסינון משרות — משפיע על חשיפות אצל מעסיקים</p>
-            </div>
-          </div>
-
-          {/* Current value */}
-          {birthDateInfoQuery.data?.birthDate ? (
-            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.96 0.03 122)", border: "1px solid oklch(0.88 0.06 122)" }}>
-              <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#4F583B" }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium" style={{ color: "#4F583B" }}>תאריך לידה מאומת</p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(birthDateInfoQuery.data.birthDate).toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" })}
-                  {birthDateInfoQuery.data.age != null && ` · גיל ${birthDateInfoQuery.data.age}`}
-                </p>
-              </div>
-              {birthDateInfoQuery.data.lastChangedAt && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                  <Lock className="h-3 w-3" />
-                  <span>עודכן {new Date(birthDateInfoQuery.data.lastChangedAt).toLocaleDateString("he-IL")}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-start gap-2 mb-3 p-3 rounded-xl" style={{ background: "oklch(0.97 0.06 80 / 0.5)", border: "1px solid oklch(0.85 0.10 80)" }}>
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "oklch(0.55 0.12 76.7)" }} />
-              <div>
-                <p className="text-xs font-semibold" style={{ color: "oklch(0.45 0.12 76.7)" }}>תאריך לידה לא הוגדר</p>
-                <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 76.7)" }}>מעסיקים שהגדירו גיל מינימלי לא יוכלו לראות אותך ברשימת העובדים הזמינים. הוסף כדי להיות גלוי ליותר מעסיקים.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Rate-limit warning */}
-          {birthDateInfoQuery.data?.canChangeAfter && (
-            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 border border-amber-200 mb-3">
-              ⏳ ניתן לשנות תאריך לידה שוב החל מ-{new Date(birthDateInfoQuery.data.canChangeAfter).toLocaleDateString("he-IL")}
-            </p>
-          )}
-
-          {/* Date input */}
-          <div className="space-y-2">
-            <AppLabel>תאריך לידה חדש</AppLabel>
-            <input
-              type="date"
-              value={bdEditDate}
-              placeholder="DD/MM/YYYY"
-              onChange={(e) => setBdEditDate(normalizeDateInput(e.target.value))}
-              max={new Date().toISOString().split("T")[0]}
-              min="1920-01-01"
-              disabled={!!birthDateInfoQuery.data?.canChangeAfter}
-              className="w-full h-12 px-3 rounded-xl border text-base"
-              style={{
-                background: birthDateInfoQuery.data?.canChangeAfter ? "oklch(0.96 0.01 100)" : "white",
-                borderColor: bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ? "oklch(0.55 0.2 25)" : "oklch(0.88 0.04 100)",
-                color: "var(--foreground)",
-                fontSize: "16px", // prevent iOS zoom
-                direction: "ltr",
-              }}
-            />
-            {bdEditDate && !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && (
-              <p className="text-xs text-red-500" dir="rtl">פורמט לא תקין. הזן בפורמט DD/MM/YYYY</p>
-            )}
-            {bdEditDate && /^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) && bdEditDate > new Date().toISOString().split("T")[0] && (
-              <p className="text-xs text-red-500" dir="rtl">תאריך לידה לא יכול להיות בעתיד</p>
-            )}
-          </div>
-
-          <AppButton
-            variant="brand"
-            size="lg"
-            className="w-full mt-3"
-            disabled={
-              !bdEditDate ||
-              !/^\d{4}-\d{2}-\d{2}$/.test(bdEditDate) ||
-              bdEditDate > new Date().toISOString().split("T")[0] ||
-              !!birthDateInfoQuery.data?.canChangeAfter ||
-              updateBirthDateMutation.isPending
-            }
-            onClick={() => setBdConfirmOpen(true)}
-          >
-            <Calendar className="h-4 w-4" />
-            עדכן תאריך לידה
-          </AppButton>
-        </div>
-
-        {/* ── BirthDate Confirmation Dialog ─────────────────────────────────── */}
-        {bdConfirmOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.5)" }}
-            onClick={(e) => { if (e.target === e.currentTarget) { setBdConfirmOpen(false); setBdDeclared(false); } }}
-          >
-            <div
-              className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 space-y-4"
-              style={{ background: "white", boxShadow: "0 -4px 32px rgba(0,0,0,0.15)", marginBottom: 0 }}
-            >
-              {/* Handle */}
-              <div className="w-10 h-1 rounded-full mx-auto sm:hidden" style={{ background: "oklch(0.88 0.02 100)" }} />
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.92 0.04 122)" }}>
-                  <Calendar className="h-5 w-5" style={{ color: "#4F583B" }} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">שינוי תאריך לידה</h3>
-                  <p className="text-xs text-muted-foreground">{bdEditDate ? new Date(bdEditDate + "T00:00:00").toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
-                </div>
-              </div>
-
-              <p className="text-sm text-foreground leading-relaxed" dir="rtl">
-                הנך מצהיר כי תאריך הלידה שהוזן נכון ומדויק.
-              </p>
-              <p className="text-xs text-muted-foreground" dir="rtl">
-                המערכת משתמשת במידע זה לצורך הצגת עבודות והפעלת מגבלות גיל בהתאם לחוק.
-                שינוי תאריך לידה מוגבל לפעם ב-30 יום.
-              </p>
-
-              {/* Declaration checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={bdDeclared}
-                  onChange={(e) => setBdDeclared(e.target.checked)}
-                  className="mt-0.5 h-5 w-5 rounded accent-primary cursor-pointer shrink-0"
-                />
-                <span className="text-sm text-foreground" dir="rtl">אני מאשר/ת כי הפרטים נכונים</span>
-              </label>
-
-              <div className="flex gap-3">
-                <AppButton
-                  variant="outline"
-                  size="lg"
-                  className="flex-1"
-                  onClick={() => { setBdConfirmOpen(false); setBdDeclared(false); }}
-                  disabled={updateBirthDateMutation.isPending}
-                >
-                  ביטול
-                </AppButton>
-                <AppButton
-                  variant="brand"
-                  size="lg"
-                  className="flex-1"
-                  disabled={!bdDeclared || updateBirthDateMutation.isPending}
-                  onClick={() => {
-                    if (!bdDeclared) return;
-                    updateBirthDateMutation.mutate({ birthDate: bdEditDate, declarationConfirmed: true });
-                  }}
-                >
-                  {updateBirthDateMutation.isPending ? <BrandLoader size="sm" /> : "אישור"}
-                </AppButton>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* ── Account Deletion Section (Step 9) ────────────────────────── */}
-        <div className="rounded-2xl p-5" style={{ background: "#fff8f8", border: "1px solid #fecaca" }}>
+        <div className="p-6" style={{ ...profileCardStyle, background: "#fff8f8", borderColor: "rgba(186, 26, 26, 0.18)" }}>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fee2e2" }}>
-              <Trash2 className="h-3.5 w-3.5" style={{ color: "#dc2626" }} />
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "#ffdad6" }}>
+              <Trash2 className="h-3.5 w-3.5" style={{ color: PROFILE_DESIGN.error }} />
             </div>
             <div>
-              <h2 className="font-bold text-sm" style={{ color: "#dc2626" }}>מחיקת חשבון</h2>
-              <p className="text-xs text-muted-foreground">פעולה בלתי הפיכה</p>
+              <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.error, fontFamily: "var(--font-secular)" }}>מחיקת חשבון</h2>
+              <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>פעולה בלתי הפיכה</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-3" dir="rtl">
+          <p className="text-xs mb-3" dir="rtl" style={{ color: PROFILE_DESIGN.textMuted }}>
             מחיקת החשבון תמחק את כל הנתונים האישיים שלך בהתאם ל{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "#4a5d23" }}>מדיניות הפרטיות</a>.
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: PROFILE_DESIGN.primary }}>מדיניות הפרטיות</a>.
             {" "}הנתונים שנדרשים לפעילות הפלטפורמה (כמו דירוגים) עשויים להישמר בהתאם לדרישות החוק.
           </p>
           <a
-            href="mailto:info@avodanow.co.il?subject=בקשה למחיקת חשבון"
+            href="mailto:info@avoda-go.co.il?subject=בקשה למחיקת חשבון"
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl border transition-all hover:opacity-80"
-            style={{ color: "#dc2626", borderColor: "#fecaca", background: "white" }}
+            style={{ color: PROFILE_DESIGN.error, borderColor: "rgba(186, 26, 26, 0.18)", background: PROFILE_DESIGN.surfaceBright, fontFamily: "var(--font-rubik)" }}
           >
             <Trash2 className="h-3.5 w-3.5" />
             בקשה למחיקת חשבון
           </a>
         </div>
+        {navBlock}
         </div>
         )}
 
@@ -2101,6 +1510,7 @@ export default function WorkerProfile() {
       <PhoneChangeModal
         open={phoneChangeModalOpen}
         onClose={() => setPhoneChangeModalOpen(false)}
+        initialPhone={phoneVal}
         onSuccess={(newPhoneVal) => {
           // Phone verified and updated — refresh profile and update original
           setOriginalPhoneVal(newPhoneVal);

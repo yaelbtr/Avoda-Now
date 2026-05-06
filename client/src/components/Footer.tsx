@@ -110,14 +110,14 @@ export default function Footer() {
               </div>
             )}
             <a
-              href="mailto:info@avodanow.co.il"
+              href="mailto:info@avoda-go.co.il"
               className="inline-flex items-center gap-1.5 text-xs transition-colors"
               style={{ color: FG_MUTED }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_MUTED)}
             >
               <Mail className="h-3 w-3 shrink-0" />
-              <span lang="en">info@avodanow.co.il</span>
+              <span lang="en">info@avoda-go.co.il</span>
             </a>
           </div>
         </div>

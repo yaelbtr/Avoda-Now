@@ -258,7 +258,7 @@ export default function JobBottomSheet({
                 <span
                   style={{
                     display: "inline-block",
-                    background: "#E8521A",
+                    background: "var(--accent-rose)",
                     color: "#fff",
                     fontSize: 11,
                     fontWeight: 800,

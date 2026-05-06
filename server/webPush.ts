@@ -13,7 +13,7 @@ function ensureInit() {
     return;
   }
   webpush.setVapidDetails(
-    "mailto:admin@avodanow.co.il",
+    "mailto:admin@avoda-go.co.il",
     ENV.vapidPublicKey,
     ENV.vapidPrivateKey
   );

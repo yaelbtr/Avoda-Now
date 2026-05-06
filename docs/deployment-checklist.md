@@ -20,6 +20,10 @@ These are the minimum items you need for the server and database to work reliabl
   Used for signed session tokens.
 - `APP_BASE_URL`
   Used for server-generated links such as sitemap, robots, email links, and SMS links.
+  Production value: `https://avoda-go.co.il`.
+- `ALLOWED_ORIGINS`
+  Optional comma-separated CORS additions.
+  Production value: `https://avoda-go.co.il,https://www.avoda-go.co.il`.
 
 ### Required application steps
 

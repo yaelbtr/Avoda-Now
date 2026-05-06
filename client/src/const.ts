@@ -14,7 +14,7 @@ export const PROTECTED_PATHS = [
 ];
 
 /** Key used to persist the pre-login path in sessionStorage */
-const RETURN_PATH_KEY = "avodanow_return_path";
+const RETURN_PATH_KEY = "avodago_return_path";
 
 /** Save current page path before redirecting to login */
 export const saveReturnPath = (path?: string) => {

@@ -63,8 +63,8 @@ export async function sendSupportReport(payload: SupportReportPayload): Promise<
   }
 
   await transporter.sendMail({
-    from: `"YallaAvoda Support" <${ENV.smtpUser}>`,
-    to: "support@avodanow.co.il",
+    from: `"AvodaGo Support" <${ENV.smtpUser}>`,
+    to: "support@avoda-go.co.il",
     subject,
     text: bodyText,
     attachments,

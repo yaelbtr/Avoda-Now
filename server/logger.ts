@@ -43,7 +43,7 @@ export const logger = pino({
         },
       }),
   base: {
-    service: "YallaAvoda",
+    service: "AvodaGo",
     env: process.env.NODE_ENV ?? "development",
   },
 });

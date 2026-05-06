@@ -10,7 +10,7 @@ import { saveReturnPath } from "@/const";
  * Encourages login with a short benefit message and a direct CTA.
  * Once dismissed it stays hidden for the current session (sessionStorage).
  */
-const DISMISSED_KEY = "avodanow_banner_dismissed";
+const DISMISSED_KEY = "avodago_banner_dismissed";
 
 export default function GuestLoginBanner() {
   const { isAuthenticated, loading } = useAuth();

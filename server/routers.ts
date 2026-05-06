@@ -1,7 +1,7 @@
-﻿import { TRPCError } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { createInMemoryRateLimiter } from "./security";
 import { z } from "zod";
-import { COOKIE_NAME, LEGAL_DOCUMENT_VERSIONS, MAX_ACCEPTED_CANDIDATES, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
+import { COOKIE_NAME, LEGAL_DOCUMENT_PUBLISHED_AT, LEGAL_DOCUMENT_VERSIONS, MAX_ACCEPTED_CANDIDATES, MAX_ACTIVE_OFFERS, SUPPORT_REPORT_RATE_LIMIT, type LegalConsentType } from "@shared/const";
 import { isGoogleLoginMethod } from "../shared/auth";
 import { cityZodRefine } from "@shared/cityValidation";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -1395,7 +1395,7 @@ const jobsRouter = router({
       // Create application record with status "offered"
       await createJobOffer(input.workerId, input.jobId);
 
-      const jobUrl = `${input.origin ?? "https://avodanow.co.il"}/job/${input.jobId}`;
+      const jobUrl = `${input.origin ?? "https://avoda-go.co.il"}/job/${input.jobId}`;
       const employerName = ctx.user.name ?? "מעסיק";
       const jobLabel = job.category ?? job.title ?? "משרה";
 
@@ -1403,7 +1403,7 @@ const jobsRouter = router({
 
       // Send SMS if prefs allow
       if ((notifPrefs === "both" || notifPrefs === "sms_only") && worker.phone) {
-        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}.\n׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨/׳"׳—׳™׳™׳": ${jobUrl}\n\n׳׳"׳¡׳¨׳" ׳׳¨׳©׳™׳׳× ׳"׳"׳×׳¨׳׳•׳×: https://avodanow.co.il/worker-profile`;
+        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}.\n׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨/׳"׳—׳™׳™׳": ${jobUrl}\n\n׳׳"׳¡׳¨׳" ׳׳¨׳©׳™׳׳× ׳"׳"׳×׳¨׳׳•׳×: https://avoda-go.co.il/worker-profile`;
         sendSms(worker.phone, smsBody).catch(e => console.warn("[JobOffer] SMS failed:", e));
       }
 
@@ -2487,6 +2487,7 @@ const userRouter = router({
       z.object({
         // Required
         name: z.string().min(2).max(100),
+        termsAccepted: z.literal(true),
         // Optional — wizard fills these later; minimal signup sends only name
         locationMode: z.enum(["city", "radius"]).optional(),
         preferredCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
@@ -2548,6 +2549,21 @@ const userRouter = router({
           preferredCityPlaceId: input.preferredCityPlaceId,
           signupCompleted: true,
         });
+
+        // רישום הסכמה מפורשת לתקנון ומדיניות פרטיות
+        const ip = getClientIp(ctx.req);
+        const ua = ctx.req.headers["user-agent"]?.slice(0, 512);
+        await Promise.all(
+          (["terms", "privacy"] as const).map((ct) =>
+            recordUserConsent(ctx.user.id, ct, {
+              ipAddress: ip,
+              userAgent: ua,
+              documentVersion: LEGAL_DOCUMENT_VERSIONS[ct],
+            })
+          )
+        );
+        await setUserTermsAcceptedAt(ctx.user.id);
+
         void logEvent("info", "signup.complete", "Worker completed signup wizard", {
           userId: ctx.user.id,
           phone: ctx.user.phone ?? normalizedPhone,
@@ -2598,6 +2614,21 @@ const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // אכיפת הסכמה לתקנון — אם חסרה רשומת consent לגרסה הנוכחית, חסום שמירה
+      {
+        const existing = await getUserConsents(ctx.user.id);
+        const existingMap = new Map(existing.map((c) => [c.consentType, c.documentVersion]));
+        const missingConsent = (["terms", "privacy"] as const).some(
+          (type) => {
+            const v = existingMap.get(type);
+            return !v || v < LEGAL_DOCUMENT_VERSIONS[type];
+          }
+        );
+        if (missingConsent) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message: "נדרש אישור תקנון לפני שמירת הפרופיל" });
+        }
+      }
+
       // Only allow phone update for OAuth (Google) users who don't have a phone yet
       // or who logged in via OAuth (not phone OTP)
       let normalizedPhone: string | undefined = undefined;
@@ -3058,25 +3089,30 @@ const userRouter = router({
   }),
 
   /**
-   * Returns a list of consent types where the user's accepted version
-   * is older than the current LEGAL_DOCUMENT_VERSIONS.
-   * Used by the ReConsentModal to prompt re-consent (blocking modal).
+   * מחזיר רשימת סוגי מסמכים שהמשתמש צריך לאשר מחדש.
+   * תנאים להצגה:
+   * - יש רשומת consent קיימת (משתמש חדש ללא רשומה → מתעלמים)
+   * - הגרסה המאושרת ישנה מהנוכחית
+   * - תאריך פרסום הגרסה הנוכחית מאוחר מה-lastSignedIn של המשתמש
    */
   checkOutdatedConsents: protectedProcedure.query(async ({ ctx }) => {
     const existing = await getUserConsents(ctx.user.id);
     const existingMap = new Map(
       existing.map((c) => [c.consentType as LegalConsentType, c.documentVersion])
     );
+    const lastSignedIn = ctx.user.lastSignedIn;
     const outdated: LegalConsentType[] = [];
-    for (const [type, currentVersion] of Object.entries(LEGAL_DOCUMENT_VERSIONS) as [LegalConsentType, string][]) {
+    for (const type of ["terms", "privacy"] as LegalConsentType[]) {
       const acceptedVersion = existingMap.get(type);
-      // Outdated if: never accepted, OR accepted an older version
-      if (!acceptedVersion || acceptedVersion < currentVersion) {
-        // Only flag core documents (terms + privacy)  -  policy docs are informational
-        if (type === "terms" || type === "privacy") {
-          outdated.push(type);
-        }
+      if (!acceptedVersion) {
+        // ללא רשומה — נדרש אישור מפורש
+        outdated.push(type);
+        continue;
       }
+      if (acceptedVersion >= LEGAL_DOCUMENT_VERSIONS[type]) continue;
+      const publishedAt = new Date(LEGAL_DOCUMENT_PUBLISHED_AT[type]);
+      if (publishedAt <= lastSignedIn) continue;
+      outdated.push(type);
     }
     return { outdated, currentVersions: LEGAL_DOCUMENT_VERSIONS };
   }),

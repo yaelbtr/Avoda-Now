@@ -8,7 +8,7 @@ import { ChevronRight, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { getFAQPage, FAQ_PAGES } from "@/data/faqData";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 function FAQAccordionItem({
   question,
@@ -69,7 +69,7 @@ export default function FAQPage() {
           canonical: `/faq/${page.slug}`,
         }
       : {
-          title: "שאלות נפוצות | YallaAvoda",
+          title: "שאלות נפוצות | AvodaGo",
           description: "שאלות ותשובות על עבודות זמניות בישראל.",
           noIndex: true,
         }

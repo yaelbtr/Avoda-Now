@@ -4,16 +4,16 @@ import { BrandName } from "@/components/ui";
 
 const TERMS_FAQS = [
   {
-    question: "האם YallaAvoda גובה עמלות?",
-    answer: "לא. YallaAvoda היא פלטפורמה חינמית לחלוטין עבור עובדים ומעסיקים. אין עמלות, אין דמי תיווך.",
+    question: "האם AvodaGo גובה עמלות?",
+    answer: "לא. AvodaGo היא פלטפורמה חינמית לחלוטין עבור עובדים ומעסיקים. אין עמלות, אין דמי תיווך.",
   },
   {
     question: "כמה משרות אפשר לפרסם?",
     answer: "מעסיק יכול לפרסם עד 3 משרות פעילות בו-זמנית.",
   },
   {
-    question: "האם YallaAvoda אחראית להסכמי העסקה?",
-    answer: "לא. YallaAvoda מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה. כל עסקה היא בין הצדדים ישירות.",
+    question: "האם AvodaGo אחראית להסכמי העסקה?",
+    answer: "לא. AvodaGo מחברת בין עובדים למעסיקים בלבד ואינה צד בהסכמי העסקה. כל עסקה היא בין הצדדים ישירות.",
   },
   {
     question: "מה קורה אם משרה מקבלת דיווחים?",
@@ -21,7 +21,7 @@ const TERMS_FAQS = [
   },
   {
     question: "כיצד יוצרים קשר עם התמיכה?",
-    answer: "ניתן לפנות אלינו בכתובת info@avodanow.co.il לכל שאלה או בעיה.",
+    answer: "ניתן לפנות אלינו בכתובת info@avoda-go.co.il לכל שאלה או בעיה.",
   },
 ];
 
@@ -79,7 +79,7 @@ const SECTIONS = [
   { id: "entire-agreement", title: "36. ההסכם המלא", content: "תנאים אלו מהווים את ההסכם המלא בין המשתמש לבין הפלטפורמה." },
   { id: "updates", title: "37. שינוי תנאי שימוש", content: "הפלטפורמה רשאית לעדכן תנאים אלו מעת לעת." },
   { id: "jurisdiction", title: "38. סמכות שיפוט", content: "תנאים אלו כפופים לדיני מדינת ישראל." },
-  { id: "contact", title: "39. יצירת קשר", content: "לשאלות ניתן לפנות אל: info@avodanow.co.il" },
+  { id: "contact", title: "39. יצירת קשר", content: "לשאלות ניתן לפנות אל: info@avoda-go.co.il" },
 ];
 
 export default function Terms() {

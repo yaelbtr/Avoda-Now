@@ -300,12 +300,12 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
               {/* Contact row */}
               <div className="flex gap-1.5">
                 <a
-                  href="mailto:info@avodanow.co.il"
+                  href="mailto:info@avoda-go.co.il"
                   className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-all"
                   style={{ color: COLOR_DIM, background: "oklch(0.42 0.07 124.9 / 0.25)", border: "1px solid oklch(0.42 0.07 124.9 / 0.35)", textDecoration: "none" }}
                 >
                   <Mail className="h-3 w-3 shrink-0" style={{ color: "var(--citrus)" }} />
-                  <span className="truncate" lang="en">info@avodanow.co.il</span>
+                  <span className="truncate" lang="en">info@avoda-go.co.il</span>
                 </a>
                 <button
                   onClick={() => { onReportOpen?.(); onClose(); }}

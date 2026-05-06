@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import yallaAvodaLogo from "@/assets/לוגו - source.svg";
+import LogoLight from "@/assets/logo-light.svg";
 
 interface AppLogoProps {
   variant?: "dark" | "light";
@@ -9,9 +9,9 @@ interface AppLogoProps {
 }
 
 const SIZE_MAP = {
-  xs: { width: 320, height: 32 },
-  sm: { width: 370, height: 47 },
-  md: { width: 420, height: 58 },
+  xs: { width: 150, height: 26 },
+  sm: { width: 178, height: 32 },
+  md: { width: 220, height: 40 },
 } as const;
 
 export function AppLogo({
@@ -30,12 +30,11 @@ export function AppLogo({
       style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px`, maxWidth: "100%" }}
     >
       <img
-        src={yallaAvodaLogo}
-        alt="Yalla Avoda"
-        className="absolute inset-0 h-full w-full select-none object-cover"
+        src={LogoLight}
+        alt="AvodaGo"
+        className="absolute inset-0 h-full w-full select-none object-contain"
         style={{
           objectPosition: "center center",
-          transform: "scale(1.27)",
           transformOrigin: "center center",
           filter,
         }}

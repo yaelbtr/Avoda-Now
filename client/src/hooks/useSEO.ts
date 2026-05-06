@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 const DEFAULT_OG_IMAGE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png";
 
 interface SEOOptions {
@@ -45,8 +45,8 @@ export function useSEO({
 }: SEOOptions) {
   useEffect(() => {
     const fullTitle = title
-      ? `${title} | YallaAvoda`
-      : "YallaAvoda | מוצאים עבודה זמנית או עובדים – תוך דקות";
+      ? `${title} | AvodaGo`
+      : "AvodaGo | מוצאים עבודה זמנית או עובדים – תוך דקות";
     const fullDescription =
       description ?? "הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך ללא עמלות.";
     const fullOgImage = ogImage ?? DEFAULT_OG_IMAGE;
@@ -68,7 +68,7 @@ export function useSEO({
     setMeta("og:url", canonicalUrl, "property");
     setMeta("og:type", "website", "property");
     setMeta("og:locale", "he_IL", "property");
-    setMeta("og:site_name", "YallaAvoda", "property");
+    setMeta("og:site_name", "AvodaGo", "property");
 
     // Twitter Card
     setMeta("twitter:card", "summary_large_image");

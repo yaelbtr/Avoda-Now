@@ -36,7 +36,7 @@ import {
 } from "@/lib/colors";
 import { NavPill } from "@/components/ui/NavPill";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -84,7 +84,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "YallaAvoda",
+      name: "AvodaGo",
       sameAs: BASE_URL,
     },
     ...(salaryNum && job.salaryType !== "volunteer"
@@ -201,7 +201,7 @@ export default function KeywordLandingPage() {
           canonical: `/${page.slug}`,
           keywords: `${page.h1}, עבודה זמנית, משרות, ישראל`,
         }
-      : { title: "YallaAvoda | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
+      : { title: "AvodaGo | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
   );
 
   // ── JSON-LD injection ─────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ export default function KeywordLandingPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
         },
         // ItemList of JobPosting
         ...(rawJobs.length > 0

@@ -87,7 +87,7 @@ export async function sendWelcomeEmail(params: {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ברוכים הבאים ל-YallaAvoda</title>
+  <title>ברוכים הבאים ל-AvodaGo</title>
   <style>
     body { margin: 0; padding: 0; background-color: #f5f5f0; font-family: Arial, Helvetica, sans-serif; direction: rtl; }
     .wrapper { max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
@@ -106,13 +106,13 @@ export async function sendWelcomeEmail(params: {
 <body>
   <div class="wrapper">
     <div class="header">
-      <h1>YallaAvoda - עבודה עכשיו</h1>
+      <h1>AvodaGo - עבודה עכשיו</h1>
       <p>פלטפורמת העבודה הזמנית המובילה בישראל</p>
     </div>
     <div class="body">
       <h2>ברוכים הבאים, ${displayName}!</h2>
       <p>
-        שמחים שהצטרפת ל-YallaAvoda - המקום שבו מוצאים עבודה זמנית ומתנדבים
+        שמחים שהצטרפת ל-AvodaGo - המקום שבו מוצאים עבודה זמנית ומתנדבים
         בקרבת מקום, בקלות ובמהירות.
       </p>
       <p>
@@ -122,11 +122,11 @@ export async function sendWelcomeEmail(params: {
       <a class="cta" href="${baseUrl}/find-jobs">מצא/י עבודה עכשיו</a>
       <p style="font-size:13px; color:#888;">
         לשאלות ותמיכה ניתן לפנות אלינו בכתובת
-        <a href="mailto:info@avodanow.co.il" style="color:#4a5c3f;">info@avodanow.co.il</a>
+        <a href="mailto:info@avoda-go.co.il" style="color:#4a5c3f;">info@avoda-go.co.il</a>
       </p>
     </div>
     <div class="footer">
-      <p>YallaAvoda &copy; ${new Date().getFullYear()} - כל הזכויות שמורות</p>
+      <p>AvodaGo &copy; ${new Date().getFullYear()} - כל הזכויות שמורות</p>
       <p>
         <a href="${baseUrl}/terms">תנאי שימוש</a>
         &nbsp;|&nbsp;
@@ -142,7 +142,7 @@ export async function sendWelcomeEmail(params: {
 
   const sent = await sendEmail({
     to: email,
-    subject: `ברוכים הבאים ל-YallaAvoda, ${displayName}!`,
+    subject: `ברוכים הבאים ל-AvodaGo, ${displayName}!`,
     html,
   });
 

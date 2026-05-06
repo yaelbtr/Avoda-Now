@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import BrandLoader from "@/components/BrandLoader";
 import { getLoginUrl } from "@/const";
 
-const SITE_URL = "https://avodanow.co.il";
+const SITE_URL = "https://avoda-go.co.il";
 
 export default function MyReferrals() {
   const { user, isAuthenticated } = useAuth();
@@ -34,7 +34,7 @@ export default function MyReferrals() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: "הצטרף ל-YallaAvoda",
+        title: "הצטרף ל-AvodaGo",
         text: "מצא עבודה זמנית קרובה אליך!",
         url: referralLink,
       }).catch(() => {});

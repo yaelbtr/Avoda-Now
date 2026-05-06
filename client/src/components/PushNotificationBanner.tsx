@@ -66,44 +66,44 @@ export function PushNotificationBanner({
     return (
       <div
         dir="rtl"
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl ${className}`}
+        className={`flex items-center justify-between gap-4 px-4 py-4 rounded-2xl ${className}`}
         style={{
-          background: "oklch(0.96 0.04 122)",
-          border: "1.5px solid oklch(0.70 0.12 122 / 0.5)",
+          background: "var(--editorial-surface-container-lowest)",
+          border: "1px solid rgb(199 199 186 / 0.20)",
+          boxShadow: "0 14px 28px rgb(27 28 26 / 0.06)",
+          fontFamily: "var(--font-editorial-ui)",
         }}
       >
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: "oklch(0.35 0.08 122)" }}
-        >
-          <Bell className="h-4 w-4" style={{ color: "white" }} />
+        <div className="flex items-center gap-3">
+          <div
+            className="w-11 h-11 flex items-center justify-center shrink-0"
+            style={{ background: "var(--editorial-primary)", borderRadius: 16 }}
+          >
+            <Bell className="h-4 w-4" style={{ color: "white" }} />
+          </div>
+          <div>
+            <p className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>הפעל התראות משרות</p>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{contextText}</p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ color: "oklch(0.22 0.03 122.3)" }}>
-            הפעל התראות משרות
-          </p>
-          <p className="text-[11px] truncate" style={{ color: "oklch(0.45 0.05 122)" }}>
-            {contextText}
-          </p>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={push.subscribe}
+            disabled={push.isLoading}
+            className="px-4 py-2 text-xs font-semibold"
+            style={{ background: "var(--editorial-primary)", color: "white", border: "none", borderRadius: 999, fontFamily: "var(--font-editorial-ui)", boxShadow: "0 10px 20px rgb(49 59 21 / 0.12)" }}
+          >
+            {push.isLoading ? "..." : "הפעל"}
+          </button>
+          <button
+            onClick={handleDismiss}
+            aria-label="סגור"
+            className="text-[16px] leading-none"
+            style={{ color: "var(--editorial-on-surface-variant)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            ×
+          </button>
         </div>
-        <button
-          onClick={push.subscribe}
-          disabled={push.isLoading}
-          className="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all hover:opacity-90 disabled:opacity-50"
-          style={{
-            background: "oklch(0.35 0.08 122)",
-            color: "oklch(0.96 0.04 80)",
-          }}
-        >
-          {push.isLoading ? "..." : "הפעל"}
-        </button>
-        <button
-          onClick={handleDismiss}
-          className="shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors"
-          aria-label="סגור"
-        >
-          <X className="h-3.5 w-3.5" style={{ color: "oklch(0.55 0.04 122)" }} />
-        </button>
       </div>
     );
   }

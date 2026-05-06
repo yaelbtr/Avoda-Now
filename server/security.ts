@@ -36,15 +36,24 @@ function addOrigin(target: string[], value: string | undefined): void {
   }
 }
 
+function readAllowedOrigins(): string[] {
+  const origins: string[] = [];
+  for (const value of ENV.allowedOrigins) {
+    if (value === "*") continue;
+    addOrigin(origins, value);
+  }
+  return origins;
+}
+
 // ── Allowed CORS origins ──────────────────────────────────────────────────────
 // Single source of truth for all allowed origins.
 // Add new domains here when deploying to new environments.
 const ALLOWED_ORIGINS = [
   ...Array.from(new Set([
-    "https://avodanow.co.il",
-    "https://www.avodanow.co.il",
-    "https://avoda-now.onrender.com",
+    "https://avoda-go.co.il",
+    "https://www.avoda-go.co.il",
     ENV.appOrigin,
+    ...readAllowedOrigins(),
   ])).filter(Boolean),
   // Dev: allow localhost on any port
   /^http:\/\/localhost:\d+$/,

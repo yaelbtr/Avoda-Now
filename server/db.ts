@@ -271,7 +271,6 @@ export async function createUserByGoogle(params: {
     email: params.email,
     loginMethod: params.loginMethod ?? "google",
     lastSignedIn: new Date(),
-    termsAcceptedAt: new Date(),
     signupCompleted: true,
   });
 

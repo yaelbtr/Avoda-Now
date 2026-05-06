@@ -24,7 +24,7 @@ export function buildAuthLoginRedirectPath(
   req: Request,
   authError?: AuthLoginErrorCode
 ): string {
-  const url = new URL("/", "http://local.avodanow");
+  const url = new URL("/", "http://local.avodago");
   url.searchParams.set("auth", "login");
 
   const returnTo = resolveAuthRedirectPath(req);

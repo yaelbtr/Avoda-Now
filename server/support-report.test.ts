@@ -25,7 +25,7 @@ async function makeCaller(userOverride?: { id: number; phone: string; role: stri
 
 const BASE_INPUT = {
   message: "כפתור שליחה לא עובד",
-  pageUrl: "https://avodanow.co.il/jobs",
+  pageUrl: "https://avoda-go.co.il/jobs",
   userAgent: "Mozilla/5.0",
   timestamp: new Date().toISOString(),
 };

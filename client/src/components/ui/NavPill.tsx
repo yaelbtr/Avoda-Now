@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type NavPillProps = {
@@ -8,10 +8,11 @@ type NavPillProps = {
   active?: boolean;
   external?: boolean;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
 };
 
-export function NavPill({ href, icon, active, external, className, children }: NavPillProps) {
+export function NavPill({ href, icon, active, external, className, style, children }: NavPillProps) {
   const cls = cn("nav-pill", active && "is-active", className);
   const content = (
     <>
@@ -20,6 +21,6 @@ export function NavPill({ href, icon, active, external, className, children }: N
     </>
   );
   return external
-    ? <a href={href} className={cls}>{content}</a>
-    : <Link href={href} className={cls}>{content}</Link>;
+    ? <a href={href} className={cls} style={style}>{content}</a>
+    : <Link href={href} className={cls} style={style}>{content}</Link>;
 }

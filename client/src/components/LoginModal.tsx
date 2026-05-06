@@ -261,7 +261,7 @@ export default function LoginModal({
             <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
               <div className="w-8" />
               <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>
-                ברוכים הבאים ל-YallaAvoda
+                ברוכים הבאים ל-AvodaGo
               </h2>
               <button
                 onClick={onClose}

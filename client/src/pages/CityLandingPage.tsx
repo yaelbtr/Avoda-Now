@@ -22,7 +22,7 @@ import { getCityLandingPage } from "@/data/cityLandingData";
 import { buildJobPath } from "@/lib/jobSlug";
 import { MapPin, ChevronLeft, Search, HelpCircle } from "lucide-react";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 // ── Design tokens (shared with KeywordLandingPage) ─────────────────────────
 const T = {
@@ -132,7 +132,7 @@ export default function CityLandingPage() {
           employmentType: "TEMPORARY",
           hiringOrganization: {
             "@type": "Organization",
-            name: job.businessName ?? "YallaAvoda",
+            name: job.businessName ?? "AvodaGo",
             sameAs: BASE_URL,
           },
           jobLocation: {
@@ -167,7 +167,7 @@ export default function CityLandingPage() {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "YallaAvoda", item: BASE_URL },
+          { "@type": "ListItem", position: 1, name: "AvodaGo", item: BASE_URL },
           { "@type": "ListItem", position: 2, name: "עבודה זמנית", item: `${BASE_URL}/עבודה-זמנית` },
           { "@type": "ListItem", position: 3, name: page.h1, item: `${BASE_URL}/עבודה-זמנית/${page.slug}` },
         ],
@@ -195,7 +195,7 @@ export default function CityLandingPage() {
           keywords: `עבודה זמנית ${page.cityName}, עבודה מיידית ${page.cityName}, משרות זמניות ${page.cityName}, עבודה ${page.cityName}, חיפוש עבודה ${page.cityName}`,
           canonical: `/עבודה-זמנית/${page.slug}`,
         }
-      : { title: "עבודה זמנית | YallaAvoda", noIndex: true }
+      : { title: "עבודה זמנית | AvodaGo", noIndex: true }
   );
 
   const requireLogin = (msg: string) => {

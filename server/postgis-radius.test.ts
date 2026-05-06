@@ -72,7 +72,7 @@ function makeCtx(overrides: Partial<TrpcContext["user"]> = {}): TrpcContext {
   const user: NonNullable<TrpcContext["user"]> = {
     id: 42,
     openId: "test-postgis",
-    email: "test@avodanow.co.il",
+    email: "test@avoda-go.co.il",
     name: "PostGIS Tester",
     phone: "+972501234567",
     loginMethod: "phone_otp",

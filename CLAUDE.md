@@ -28,7 +28,7 @@ When operating in **plan mode**, follow these rules strictly:
 ## Claude Setup & initialization
 
 - Always consult the notebook before answering strategy questions.
-- Notebook: **YallaAvoda** (ID: `9f1e4257-b7a7-4622-af3c-7b52b8142fd8`)
+- Notebook: **AvodaGo** (ID: `9f1e4257-b7a7-4622-af3c-7b52b8142fd8`)
 - CLI location: `C:\Users\User\.agents\skills\notebooklm`
 - Save important session notes with:
   ```

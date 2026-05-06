@@ -479,7 +479,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="worker"
                     image={WORKER_IMG}
                     icon={<HardHat className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title="מחפש עבודה זמנית?"
+                    title="מחפש עבודות מזדמנות?"
                     subtitle="לעובדים"
                     description={`מצא עבודות בקרבתך תוך דקות.
 בלי עמלות ועם קשר ישיר למעסיקים.`}

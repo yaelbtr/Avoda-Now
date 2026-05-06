@@ -3,6 +3,7 @@ import {
   buildGoogleLoginUrl,
   buildLocalLoginUrl,
   isGoogleLoginEnabled,
+  logGoogleAuthDiagnostics,
 } from "../const";
 
 describe("auth URL helpers", () => {
@@ -21,6 +22,18 @@ describe("auth URL helpers", () => {
         VITE_ENABLE_GOOGLE_LOGIN: "true",
       })
     ).toBe(true);
+  });
+
+  it("enables Google login when a public Google client id is configured", () => {
+    expect(
+      isGoogleLoginEnabled({
+        VITE_GOOGLE_CLIENT_ID: "client-id.apps.googleusercontent.com",
+      })
+    ).toBe(true);
+  });
+
+  it("does not log Google diagnostics outside development", () => {
+    expect(() => logGoogleAuthDiagnostics({})).not.toThrow();
   });
 
   it("builds a local login URL with a preserved return path", () => {

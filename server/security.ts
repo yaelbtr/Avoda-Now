@@ -116,6 +116,8 @@ export function buildCspDirectives(
 
   const scriptSrc: string[] = [
     "'self'",
+    // Google OAuth / Identity Services
+    "https://accounts.google.com",
     // Maps JS API loaded from Google CDN (required by Maps SDK)
     "https://maps.googleapis.com",
     "https://maps.gstatic.com",
@@ -138,6 +140,7 @@ export function buildCspDirectives(
 
   const connectSrc: string[] = [
     "'self'",
+    "https://accounts.google.com",
     // Google Maps API (direct calls from Maps SDK)
     "https://maps.googleapis.com",
     // Browser Web Push subscriptions (endpoint is dynamic per browser)
@@ -203,8 +206,8 @@ export function buildCspDirectives(
     // Manifest for PWA
     manifestSrc: ["'self'"],
 
-    // No iframes allowed (prevents clickjacking)
-    frameSrc: ["'none'"],
+    // Google Identity Services may use a secure iframe for account selection.
+    frameSrc: ["https://accounts.google.com"],
 
     // No plugins (Flash, Java applets, etc.)
     objectSrc: ["'none'"],
@@ -227,6 +230,7 @@ export const securityHeaders = helmet({
           defaultSrc: ["'self'"],
           scriptSrc: [
             "'self'",
+            "https://accounts.google.com",
             // Google Maps JS API
             "https://maps.googleapis.com",
             "https://maps.gstatic.com",
@@ -253,10 +257,11 @@ export const securityHeaders = helmet({
           ],
           connectSrc: [
             "'self'",
+            "https://accounts.google.com",
             "https://maps.googleapis.com",
             "wss:",  // WebSocket for Vite HMR in dev (noop in prod)
           ],
-          frameSrc: ["'none'"],
+          frameSrc: ["https://accounts.google.com"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],

@@ -72,16 +72,40 @@ function decodeGoogleState(state: string): GoogleStatePayload | null {
   }
 }
 
-function getGoogleCallbackUrl(): string {
-  return `${ENV.appBaseUrl}/api/auth/google/callback`;
+function getForwardedValue(value: string | string[] | undefined): string | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw?.split(",")[0]?.trim();
 }
 
-async function exchangeGoogleCode(code: string) {
+function getTrustedRequestOrigin(req: Request): string {
+  const forwardedHost = getForwardedValue(req.headers["x-forwarded-host"]);
+  const forwardedProto = getForwardedValue(req.headers["x-forwarded-proto"]);
+  const host = forwardedHost ?? req.headers.host;
+  if (!host) return ENV.appBaseUrl;
+
+  const hostname = host.split(":")[0]?.toLowerCase();
+  const allowedHosts = new Set([
+    "avoda-go.co.il",
+    "www.avoda-go.co.il",
+  ]);
+  if (!hostname || !allowedHosts.has(hostname)) return ENV.appBaseUrl;
+
+  const proto = forwardedProto === "https" || req.protocol === "https"
+    ? "https"
+    : "http";
+  return `${proto}://${host}`;
+}
+
+function getGoogleCallbackUrl(req: Request): string {
+  return `${getTrustedRequestOrigin(req)}/api/auth/google/callback`;
+}
+
+async function exchangeGoogleCode(code: string, redirectUri: string) {
   const body = new URLSearchParams({
     code,
     client_id: ENV.googleClientId,
     client_secret: ENV.googleClientSecret,
-    redirect_uri: getGoogleCallbackUrl(),
+    redirect_uri: redirectUri,
     grant_type: "authorization_code",
   });
 
@@ -148,7 +172,7 @@ export function registerGoogleAuthRoutes(app: Express) {
 
     const url = new URL(GOOGLE_AUTH_URL);
     url.searchParams.set("client_id", ENV.googleClientId);
-    url.searchParams.set("redirect_uri", getGoogleCallbackUrl());
+    url.searchParams.set("redirect_uri", getGoogleCallbackUrl(req));
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", "openid email profile");
     url.searchParams.set("prompt", "select_account");
@@ -174,7 +198,7 @@ export function registerGoogleAuthRoutes(app: Express) {
 
     try {
       console.log("[GoogleAuth] step=exchange_code");
-      const tokenResponse = await exchangeGoogleCode(code);
+      const tokenResponse = await exchangeGoogleCode(code, getGoogleCallbackUrl(req));
       if (!tokenResponse.id_token) {
         throw new Error("Google id_token missing");
       }

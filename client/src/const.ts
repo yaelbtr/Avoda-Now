@@ -31,6 +31,7 @@ export const popReturnPath = (): string | null => {
 
 type AuthEnv = {
   VITE_ENABLE_GOOGLE_LOGIN?: string;
+  VITE_GOOGLE_CLIENT_ID?: string;
 };
 
 function normalizeReturnPath(returnPath?: string | null): string | null {
@@ -44,7 +45,20 @@ function normalizeReturnPath(returnPath?: string | null): string | null {
 export function isGoogleLoginEnabled(
   env: AuthEnv = import.meta.env as AuthEnv
 ): boolean {
-  return env.VITE_ENABLE_GOOGLE_LOGIN === "true";
+  return env.VITE_ENABLE_GOOGLE_LOGIN === "true" || !!env.VITE_GOOGLE_CLIENT_ID?.trim();
+}
+
+export function logGoogleAuthDiagnostics(
+  env: AuthEnv = import.meta.env as AuthEnv
+): void {
+  if (import.meta.env.MODE !== "development") return;
+
+  console.info("[auth] Google login config", {
+    enabled: isGoogleLoginEnabled(env),
+    hasViteGoogleClientId: !!env.VITE_GOOGLE_CLIENT_ID?.trim(),
+    featureFlag: env.VITE_ENABLE_GOOGLE_LOGIN ?? "(unset)",
+    mode: import.meta.env.MODE,
+  });
 }
 
 export function buildLocalLoginUrl(options: {

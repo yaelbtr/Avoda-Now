@@ -64,7 +64,7 @@ const SECTIONS = [
   {
     id: "contact",
     title: "13. יצירת קשר",
-    content: "לשאלות או פניות בנושא בטיחות ניתן לפנות אל: info@avodanow.co.il",
+    content: "לשאלות או פניות בנושא בטיחות ניתן לפנות אל: info@avoda-go.co.il",
   },
 ];
 

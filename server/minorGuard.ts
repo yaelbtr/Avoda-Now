@@ -18,8 +18,8 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { calcAge, isMinor, isTooYoung, isJobAccessibleToMinor } from "@shared/ageUtils";
-import { getWorkerBirthDate, getCategoryBySlug } from "./db";
+import { calcAge, isMinor, isTooYoung } from "@shared/ageUtils";
+import { getWorkerBirthDate } from "./db";
 
 export interface JobEligibilityInput {
   /** The job's category slug (e.g. "security", "bar") */
@@ -59,23 +59,12 @@ export async function assertMinorEligible(
     });
   }
 
-  // 3 & 4. Minor-specific checks (age 16–17)
+  // 3. Minor (age 16–17) — blocked until parental approval feature is live
   if (isMinor(age)) {
-    // 3. Category restriction
-    const categoryRecord = await getCategoryBySlug(job.category);
-    if (categoryRecord && categoryRecord.allowedForMinors === false) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: `משרה בקטגוריה "${categoryRecord.name}" אינה מותרת לעובדים מתחת לגיל 18`,
-      });
-    }
-
-    // 4. Late-night hours restriction
-    if (!isJobAccessibleToMinor(job.workEndTime)) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "משרה זו מסתיימת לאחר 22:00 ולכן לא מתאימה לעובדים מתחת לגיל 18",
-      });
-    }
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "דרוש אישור הורי — הפיצ'ר יושק בקרוב",
+      cause: { code: "parental_approval_required" },
+    });
   }
 }

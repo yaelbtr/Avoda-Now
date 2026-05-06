@@ -1,5 +1,5 @@
 /**
- * BrandName — renders "YallaAvoda" with the brand typography:
+ * BrandName — renders "AvodaGo" with the brand typography:
  *   "Avoda" → dark olive (light bg) / near-white (dark bg)
  *   "Now"   → citrus gold (always)
  *

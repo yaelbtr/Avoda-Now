@@ -11,6 +11,7 @@
  */
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { ChevronRight, Star, Briefcase, ExternalLink } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { getBestJobsPage, BEST_JOBS_PAGES } from "@/data/bestJobsData";
@@ -18,7 +19,7 @@ import { trpc } from "@/lib/trpc";
 import { buildJobPath } from "@/lib/jobSlug";
 import { getCategoryLabel } from "@shared/categories";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 function buildJobPosting(job: {
   id: number;
@@ -51,7 +52,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "YallaAvoda",
+      name: "AvodaGo",
       sameAs: BASE_URL,
     },
     ...(salaryNum
@@ -94,7 +95,7 @@ export default function BestJobsPage() {
           canonical: `/best/${page.slug}`,
         }
       : {
-          title: "משרות מומלצות | YallaAvoda",
+          title: "משרות מומלצות | AvodaGo",
           description: "רשימת המשרות הטובות ביותר בישראל.",
           noIndex: true,
         }
@@ -121,7 +122,7 @@ export default function BestJobsPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/best/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
         },
         ...(jobs.length > 0
           ? [
@@ -381,13 +382,9 @@ export default function BestJobsPage() {
             <h2 className="text-sm font-bold text-gray-700 mb-3">קישורים קשורים</h2>
             <div className="flex flex-wrap gap-2">
               {page.relatedLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:border-amber-300 hover:text-amber-700 transition-colors"
-                >
+                <NavPill key={link.href} href={link.href}>
                   {link.label}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>

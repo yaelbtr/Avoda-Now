@@ -4,7 +4,7 @@
  * Covers:
  * - checkEmailAvailable procedure logic (available / taken)
  * - Email format validation (mirrors the frontend validateEmail)
- * - loginMethod discrimination (google_oauth vs phone)
+ * - loginMethod discrimination (google vs phone)
  * - Edge cases: case-insensitive matching, whitespace, invalid formats
  * - Pre-redirect guard: googleCheckLoading state machine behavior
  */
@@ -77,7 +77,7 @@ describe("validateEmail (frontend mirror)", () => {
 describe("checkEmailAvailable — availability logic", () => {
   const users: UserRow[] = [
     { id: 1, email: "existing@example.com", loginMethod: "phone" },
-    { id: 2, email: "google@example.com", loginMethod: "google_oauth" },
+    { id: 2, email: "google@example.com", loginMethod: "google" },
     { id: 3, email: "nologin@example.com", loginMethod: null },
   ];
 
@@ -95,11 +95,11 @@ describe("checkEmailAvailable — availability logic", () => {
     }
   });
 
-  it("returns available=false with loginMethod=google_oauth for Google accounts", () => {
+  it("returns available=false with loginMethod=google for Google accounts", () => {
     const result = checkEmailAvailable("google@example.com", users);
     expect(result.available).toBe(false);
     if (!result.available) {
-      expect(result.loginMethod).toBe("google_oauth");
+      expect(result.loginMethod).toBe("google");
     }
   });
 
@@ -169,7 +169,7 @@ describe("Google button pre-redirect guard", () => {
 
       if (!result.available) {
         const methodLabel =
-          result.loginMethod === "google_oauth" ? "Google" :
+          result.loginMethod === "google" ? "Google" :
           result.loginMethod === "phone" ? "SMS" :
           "מספר טלפון";
         errorMessage = `כתובת המייל כבר רשומה במערכת עם ${methodLabel}. נסה להתחבר במקום להירשם.`;
@@ -208,10 +208,10 @@ describe("Google button pre-redirect guard", () => {
     expect(errorMessage).toContain("SMS");
   });
 
-  it("shows inline error when email is taken (google_oauth)", async () => {
+  it("shows inline error when email is taken (google)", async () => {
     const { finalAction, errorMessage } = await simulateGoogleClick({
       emailAvailable: false,
-      loginMethod: "google_oauth",
+      loginMethod: "google",
     });
     expect(finalAction).toBe("show_error");
     expect(errorMessage).toContain("Google");

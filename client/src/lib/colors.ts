@@ -1,5 +1,5 @@
 /**
- * YallaAvoda — Centralized Color Palette
+ * AvodaGo — Centralized Color Palette
  * ─────────────────────────────────────
  * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
  *

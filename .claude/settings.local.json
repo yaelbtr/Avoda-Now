@@ -6,7 +6,21 @@
       "Bash(pnpm check:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(node -e ' *)",
+      "Bash(file avodanow-design.skill)",
+      "Bash(python3 -c ' *)",
+      "Bash(zip -r /tmp/avodanow-design.skill SKILL.md references/ scripts/ templates/)",
+      "Read(//c/tmp/**)",
+      "Bash(mkdir -p skill_verify)",
+      "Bash(unzip -o \"c:/Users/User/Desktop/Work-Now/AvodaNow/skill/avodanow-design.skill\" -d skill_verify)",
+      "Bash(rm -rf skill_final)",
+      "Bash(mkdir skill_final)",
+      "Bash(unzip -o \"c:/Users/User/Desktop/Work-Now/AvodaNow/skill/avodanow-design.skill\" -d skill_final)",
+      "PowerShell(Compress-Archive -Path \"C:\\\\tmp\\\\skill_edit\\\\SKILL.md\" -DestinationPath \"C:\\\\Users\\\\User\\\\Desktop\\\\Work-Now\\\\AvodaNow\\\\skill\\\\avodanow-design.skill\" -Force)",
+      "Bash(python scripts/search.py \"job marketplace mobile app premium modern\" --design-system -p \"AvodaNow\" -f markdown)",
+      "Bash(python scripts/search.py \"premium hero animation entrance stagger spring\" --domain ux)",
+      "Bash(claude mcp *)"
     ]
   }
 }

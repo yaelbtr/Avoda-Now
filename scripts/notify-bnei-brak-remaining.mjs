@@ -16,7 +16,7 @@ const JOBS = [
   { id: 60015, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '80', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח — פרדס כץ' },
 ];
 
-const APP_URL = 'https://avodanow.co.il';
+const APP_URL = 'https://avoda-go.co.il';
 
 function buildJobMessage(jobs) {
   const lines = jobs.map(j => `• ${j.title} — ${j.city} | ₪${j.hourlyRate}/שעה | ${j.jobDate}`);
@@ -32,7 +32,7 @@ async function sendPushNotification(subscription, payload) {
   const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
   if (!vapidPublicKey || !vapidPrivateKey) return { success: false, error: 'VAPID keys not configured' };
 
-  webpush.setVapidDetails('mailto:admin@avodanow.co.il', vapidPublicKey, vapidPrivateKey);
+  webpush.setVapidDetails('mailto:admin@avoda-go.co.il', vapidPublicKey, vapidPrivateKey);
   try {
     await webpush.sendNotification(
       { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },

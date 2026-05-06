@@ -78,7 +78,7 @@ export interface JobCardProps {
   activeCategories?: string[];
 }
 
-const SITE_URL = "https://avodanow.co.il";
+const SITE_URL = "https://avoda-go.co.il";
 
 // ── Share helpers (exported for use in other components) ──────────────────────
 
@@ -161,7 +161,7 @@ export function copyJobLink(jobId: number, jobTitle?: string, city?: string | nu
 export function contactViaWhatsApp(phone: string, jobTitle: string) {
   const clean = phone.replace(/\D/g, "");
   const intl = clean.startsWith("0") ? "972" + clean.slice(1) : clean;
-  const text = encodeURIComponent(`שלום, ראיתי את המשרה "${jobTitle}" באתר YallaAvoda ואני מעוניין/ת.`);
+  const text = encodeURIComponent(`שלום, ראיתי את המשרה "${jobTitle}" באתר AvodaGo ואני מעוניין/ת.`);
   window.open(`https://wa.me/${intl}?text=${text}`, "_blank");
 }
 
@@ -453,7 +453,7 @@ export function JobCard({
           {job.isUrgent && (
             <span
               className="absolute top-2 right-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold"
-              style={{ background: C_DANGER_HEX, color: "#fff" }}
+              style={{ background: "var(--accent-rose)", color: "#fff" }}
             >
               <Zap className="h-2.5 w-2.5" />דחוף
             </span>
@@ -763,8 +763,8 @@ export function JobCard({
         {(job.isUrgent || isJobDateToday || (isToday && !isJobDateToday) || isHighMatch || isWartime || isSeasonal || isNew || job.minAge) && (
           <div className="flex items-center gap-2 flex-wrap -mt-2">
             {job.isUrgent && (
-              <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0"
-                style={{ background: "#FFF4F2", color: "#E53935" }}>
+              <span className="inline-flex items-center gap-0.5 shrink-0"
+                style={{ background: "var(--accent-rose-light)", color: "var(--accent-rose)", border: "1px solid var(--accent-rose)", borderRadius: "999px", padding: "2px 8px", fontSize: "11px", fontWeight: 700 }}>
                 דחוף
               </span>
             )}

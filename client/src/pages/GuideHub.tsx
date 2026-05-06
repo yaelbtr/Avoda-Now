@@ -21,10 +21,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function GuideHub() {
   useSEO({
-    title: "מדריך עבודות זמניות — כל מה שצריך לדעת | YallaAvoda",
+    title: "מדריך עבודות זמניות — כל מה שצריך לדעת | AvodaGo",
     description:
       "המדריך המקיף לעבודות זמניות בישראל: שליחויות, מטבח, ניקיון, בנייה, טיפול בילדים ועוד. טיפים מעשיים, שכר ריאלי ולינקים למשרות פעילות.",
-    canonical: "https://avodanow.co.il/guide/temporary-jobs",
+    canonical: "https://avoda-go.co.il/guide/temporary-jobs",
   });
 
   return (

@@ -1,0 +1,18 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e4]: AvodaNow
+    - generic [ref=e6]:
+      - generic [ref=e7]: הפלטפורמה לעבודות זמניות בישראל ⚡
+      - heading [level=1] [ref=e8]: מצא עבודה או עובדים עכשיו
+      - paragraph [ref=e9]: חיבור ישיר בין עובדים למעסיקים — ללא עמלות, ללא מתווכים
+      - generic [ref=e10]:
+        - link [ref=e11] [cursor=pointer]:
+          - /url: /find-jobs
+          - text: מצא עבודה עכשיו ←
+        - link [ref=e12] [cursor=pointer]:
+          - /url: /post-job
+          - text: פרסם משרה
+      - generic [ref=e13]: טוען...
+  - generic [ref=e17]:
+    - region "Notifications alt+T"

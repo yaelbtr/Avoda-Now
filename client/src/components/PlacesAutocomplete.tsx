@@ -1,20 +1,9 @@
 /**
  * PlacesAutocomplete
  *
- * A styled address search input backed by google.maps.places.Autocomplete.
- * When the user selects a suggestion:
- *   - onPlaceSelect is called with { lat, lng, formattedAddress }
- *
- * The component lazy-loads the Maps SDK via the shared ensureMapsLoaded()
- * singleton — no duplicate script injection.
- *
- * Usage:
- *   <PlacesAutocomplete
- *     value={address}
- *     onChange={setAddress}
- *     onPlaceSelect={({ lat, lng, formattedAddress }) => { ... }}
- *     placeholder="חפש כתובת..."
- *   />
+ * A styled address input backed by google.maps.places.Autocomplete.
+ * The Maps JS API is loaded through the shared singleton loader, and place
+ * details are read only after the user selects a Google suggestion.
  */
 
 /// <reference types="@types/google.maps" />
@@ -24,9 +13,16 @@ import { Search, X } from "lucide-react";
 import { ensureMapsLoaded } from "@/lib/mapsLoader";
 import { cn } from "@/lib/utils";
 
-export interface PlaceResult {
+export interface PlaceAddressParts {
+  city?: string;
+  street?: string;
+  houseNumber?: string;
+}
+
+export interface PlaceResult extends PlaceAddressParts {
   lat: number;
   lng: number;
+  placeId: string;
   formattedAddress: string;
 }
 
@@ -38,6 +34,38 @@ interface PlacesAutocompleteProps {
   className?: string;
   error?: string;
   disabled?: boolean;
+}
+
+const AUTOCOMPLETE_FIELDS: Array<keyof google.maps.places.PlaceResult> = [
+  "place_id",
+  "formatted_address",
+  "geometry",
+  "address_components",
+];
+
+function getAddressComponent(
+  components: google.maps.GeocoderAddressComponent[] | undefined,
+  types: string[],
+): string | undefined {
+  const component = components?.find((item) =>
+    types.some((type) => item.types.includes(type)),
+  );
+  return component?.long_name;
+}
+
+export function parseAddressParts(
+  components: google.maps.GeocoderAddressComponent[] | undefined,
+): PlaceAddressParts {
+  return {
+    city: getAddressComponent(components, [
+      "locality",
+      "postal_town",
+      "administrative_area_level_2",
+      "administrative_area_level_1",
+    ]),
+    street: getAddressComponent(components, ["route"]),
+    houseNumber: getAddressComponent(components, ["street_number"]),
+  };
 }
 
 export function PlacesAutocomplete({
@@ -53,31 +81,51 @@ export function PlacesAutocomplete({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Initialise Autocomplete once the Maps SDK is available
   useEffect(() => {
     let cancelled = false;
-    ensureMapsLoaded().then(() => {
-      if (cancelled || !inputRef.current) return;
-      const ac = new google.maps.places.Autocomplete(inputRef.current, {
-        // Bias results toward Israel
-        componentRestrictions: { country: "il" },
-        fields: ["geometry", "formatted_address"],
-        types: ["address"],
+
+    ensureMapsLoaded()
+      .then(() => {
+        if (cancelled || !inputRef.current || autocompleteRef.current) return;
+
+        const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+          componentRestrictions: { country: "il" },
+          fields: AUTOCOMPLETE_FIELDS,
+          types: ["address"],
+        });
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          const location = place.geometry?.location;
+
+          if (!place.place_id || !location) return;
+
+          const formattedAddress =
+            place.formatted_address?.trim() || inputRef.current?.value.trim() || "";
+          const result: PlaceResult = {
+            ...parseAddressParts(place.address_components),
+            lat: location.lat(),
+            lng: location.lng(),
+            placeId: place.place_id,
+            formattedAddress,
+          };
+
+          onChange(formattedAddress);
+          onPlaceSelect(result);
+        });
+
+        autocompleteRef.current = autocomplete;
+        setReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(false);
       });
-      ac.addListener("place_changed", () => {
-        const place = ac.getPlace();
-        if (!place.geometry?.location) return;
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const formattedAddress = place.formatted_address ?? "";
-        onChange(formattedAddress);
-        onPlaceSelect({ lat, lng, formattedAddress });
-      });
-      autocompleteRef.current = ac;
-      setReady(true);
-    });
-    return () => { cancelled = true; };
-  // onPlaceSelect / onChange are stable refs — intentionally excluded
+
+    return () => {
+      cancelled = true;
+    };
+  // onPlaceSelect / onChange are intentionally excluded because the autocomplete
+  // listener is registered once per input element.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -92,17 +140,14 @@ export function PlacesAutocomplete({
         כתובת <span className="text-destructive">*</span>
       </label>
       <div className="relative">
-        {/* Search icon */}
-        <Search
-          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-        />
+        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={ready ? placeholder : "טוען..."}
-          disabled={disabled || !ready}
+          placeholder={ready ? placeholder : "טוען כתובות Google..."}
+          disabled={disabled}
           dir="rtl"
           className={cn(
             "w-full rounded-md border bg-background px-9 py-2 text-sm text-foreground",
@@ -113,7 +158,6 @@ export function PlacesAutocomplete({
             error ? "border-destructive focus:ring-destructive" : "border-input",
           )}
         />
-        {/* Clear button */}
         {value && !disabled && (
           <button
             type="button"

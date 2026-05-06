@@ -1,5 +1,5 @@
-# AvodaNow robots.txt
-# https://avodanow.co.il
+# AvodaGo robots.txt
+# https://avoda-go.co.il
 
 User-agent: *
 
@@ -20,4 +20,4 @@ Disallow: /api/
 Allow: /
 
 # Sitemap
-Sitemap: https://avodanow.co.il/sitemap.xml
+Sitemap: https://avoda-go.co.il/sitemap.xml

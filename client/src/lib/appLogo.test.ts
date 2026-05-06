@@ -5,32 +5,32 @@ type LogoSize = "xs" | "sm" | "md";
 
 function resolveLogoAsset(variant: LogoVariant): string {
   return variant === "light"
-    ? "@/assets/לוגו - source.svg"
-    : "@/assets/לוגו - source.svg";
+    ? "@/assets/logo-light.svg"
+    : "@/assets/logo-light.svg";
 }
 
 function resolveLogoWidth(size: LogoSize): number {
   switch (size) {
     case "xs":
-      return 132;
+      return 150;
     case "sm":
-      return 192;
+      return 178;
     default:
-      return 250;
+      return 220;
   }
 }
 
 function resolveLogoScale(): number {
-  return 1.27;
+  return 1;
 }
 
 describe("AppLogo presentation", () => {
   it("uses the exact uploaded SVG for the dark variant", () => {
-    expect(resolveLogoAsset("dark")).toBe("@/assets/לוגו - source.svg");
+    expect(resolveLogoAsset("dark")).toBe("@/assets/logo-light.svg");
   });
 
   it("uses the exact uploaded SVG for the light variant too", () => {
-    expect(resolveLogoAsset("light")).toBe("@/assets/לוגו - source.svg");
+    expect(resolveLogoAsset("light")).toBe("@/assets/logo-light.svg");
   });
 
   it("renders the small size narrower than the default size", () => {
@@ -41,7 +41,7 @@ describe("AppLogo presentation", () => {
     expect(resolveLogoWidth("xs")).toBeLessThan(resolveLogoWidth("sm"));
   });
 
-  it("applies display-only scaling to crop the empty canvas", () => {
-    expect(resolveLogoScale()).toBe(1.27);
+  it("renders the uploaded logo without display-only scaling", () => {
+    expect(resolveLogoScale()).toBe(1);
   });
 });

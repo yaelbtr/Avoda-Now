@@ -16,7 +16,7 @@ import { MapPin, Users, CheckCircle2, Clock, ChevronLeft, Star, Zap } from "luci
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 
-const SITE_URL = "https://avodanow.co.il";
+const SITE_URL = "https://avoda-go.co.il";
 
 // ── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ current, required }: { current: number; required: number }) {
@@ -89,11 +89,11 @@ export default function WorkerLandingPage() {
 
   useSEO({
     title: region
-      ? `הצטרף לעובדים ב${region.name} | YallaAvoda`
-      : "הצטרף כעובד | YallaAvoda",
+      ? `הצטרף לעובדים ב${region.name} | AvodaGo`
+      : "הצטרף כעובד | AvodaGo",
     description: region
       ? `הצטרף לרשימת העובדים ב${region.name} ותהיה הראשון לקבל הצעות עבודה כשהאזור נפתח.`
-      : "הצטרף לפלטפורמת YallaAvoda וקבל עבודות קרוב אליך.",
+      : "הצטרף לפלטפורמת AvodaGo וקבל עבודות קרוב אליך.",
     canonical: `/work/${slug}`,
   });
 

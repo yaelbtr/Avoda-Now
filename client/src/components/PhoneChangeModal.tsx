@@ -10,11 +10,13 @@ interface PhoneChangeModalProps {
   onClose: () => void;
   /** Called after phone is successfully verified and updated in DB */
   onSuccess: (newPhoneVal: PhoneValue) => void;
+  /** ערך התחלתי לשדה הטלפון בתוך המודאל — חוסך הקלדה כפולה */
+  initialPhone?: PhoneValue;
 }
 
 type Step = "enter_phone" | "enter_otp" | "sms_failed" | "locked";
 
-export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalProps) {
+export function PhoneChangeModal({ open, onClose, onSuccess, initialPhone }: PhoneChangeModalProps) {
   const [step, setStep] = useState<Step>("enter_phone");
   const [phoneVal, setPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
   const [normalizedPhone, setNormalizedPhone] = useState("");
@@ -40,7 +42,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
   useEffect(() => {
     if (open) {
       setStep("enter_phone");
-      setPhoneVal({ prefix: "", number: "" });
+      setPhoneVal(initialPhone ?? { prefix: "", number: "" });
       setNormalizedPhone("");
       setOtp(["", "", "", "", "", ""]);
       setCountdown(0);
@@ -48,6 +50,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess }: PhoneChangeModalP
       setMaskedEmail("");
       setHasEmailFallback(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;

@@ -57,13 +57,12 @@ jobs:
           POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
           SENDGRID_API_KEY: SG.test-fake-key
           EMAIL_FROM: test@test.invalid
+          VITE_ENABLE_GOOGLE_LOGIN: true
           TWILIO_ACCOUNT_SID: ACtest000000000000000000000000000000
           TWILIO_AUTH_TOKEN: test-auth-token-fake
           TWILIO_VERIFY_SERVICE_SID: VAtest000000000000000000000000000000
-          VITE_APP_ID: test-app-id
-          OAUTH_SERVER_URL: http://localhost:9999
-          VITE_OAUTH_PORTAL_URL: http://localhost:9999
-          OWNER_OPEN_ID: test-owner
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
           OWNER_NAME: Test Owner
           BUILT_IN_FORGE_API_URL: http://localhost:9999
           BUILT_IN_FORGE_API_KEY: test-forge-key
@@ -96,13 +95,12 @@ jobs:
           POSTGRES_URL: postgresql://test_user:test_password@localhost:5432/jobnow_test
           SENDGRID_API_KEY: SG.test-fake-key
           EMAIL_FROM: test@test.invalid
+          VITE_ENABLE_GOOGLE_LOGIN: true
           TWILIO_ACCOUNT_SID: ACtest000000000000000000000000000000
           TWILIO_AUTH_TOKEN: test-auth-token-fake
           TWILIO_VERIFY_SERVICE_SID: VAtest000000000000000000000000000000
-          VITE_APP_ID: test-app-id
-          OAUTH_SERVER_URL: http://localhost:9999
-          VITE_OAUTH_PORTAL_URL: http://localhost:9999
-          OWNER_OPEN_ID: test-owner
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
           OWNER_NAME: Test Owner
           BUILT_IN_FORGE_API_URL: http://localhost:9999
           BUILT_IN_FORGE_API_KEY: test-forge-key

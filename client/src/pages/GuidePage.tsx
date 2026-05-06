@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { ChevronRight, Lightbulb, ArrowLeft, Briefcase, BookOpen } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { getGuideEntry, GUIDE_ENTRIES } from "@/data/guideContent";
@@ -29,12 +30,12 @@ export default function GuidePage() {
   useSEO(
     entry
       ? {
-          title: `${entry.title} | YallaAvoda`,
+          title: `${entry.title} | AvodaGo`,
           description: entry.metaDescription,
-          canonical: `https://avodanow.co.il/guide/temporary-jobs/${entry.slug}`,
+          canonical: `https://avoda-go.co.il/guide/temporary-jobs/${entry.slug}`,
         }
       : {
-          title: "מדריך לא נמצא | YallaAvoda",
+          title: "מדריך לא נמצא | AvodaGo",
           description: "הדף המבוקש לא נמצא.",
           noIndex: true,
         }
@@ -58,15 +59,15 @@ export default function GuidePage() {
           "@type": "Article",
           headline: entry.title,
           description: entry.metaDescription,
-          url: `https://avodanow.co.il/guide/temporary-jobs/${entry.slug}`,
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: "https://avodanow.co.il" },
+          url: `https://avoda-go.co.il/guide/temporary-jobs/${entry.slug}`,
+          publisher: { "@type": "Organization", name: "AvodaGo", url: "https://avoda-go.co.il" },
         },
         {
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "בית", item: "https://avodanow.co.il" },
-            { "@type": "ListItem", position: 2, name: "מדריכים", item: "https://avodanow.co.il/guide/temporary-jobs" },
-            { "@type": "ListItem", position: 3, name: entry.title, item: `https://avodanow.co.il/guide/temporary-jobs/${entry.slug}` },
+            { "@type": "ListItem", position: 1, name: "בית", item: "https://avoda-go.co.il" },
+            { "@type": "ListItem", position: 2, name: "מדריכים", item: "https://avoda-go.co.il/guide/temporary-jobs" },
+            { "@type": "ListItem", position: 3, name: entry.title, item: `https://avoda-go.co.il/guide/temporary-jobs/${entry.slug}` },
           ],
         },
       ],
@@ -199,13 +200,9 @@ export default function GuidePage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {SEO_CITIES.map((city) => (
-              <Link
-                key={city}
-                href={`/jobs/${entry.category}/${encodeURIComponent(city)}`}
-                className="city-chip"
-              >
+              <NavPill key={city} href={`/jobs/${entry.category}/${encodeURIComponent(city)}`} icon="📍">
                 {`${label} ב${city}`}
-              </Link>
+              </NavPill>
             ))}
           </div>
         </div>

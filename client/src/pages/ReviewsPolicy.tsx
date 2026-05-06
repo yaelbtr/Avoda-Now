@@ -49,7 +49,7 @@ const SECTIONS = [
   {
     id: "contact",
     title: "10. יצירת קשר",
-    content: "לשאלות בנושא דירוגים וביקורות ניתן לפנות אל: info@avodanow.co.il",
+    content: "לשאלות בנושא דירוגים וביקורות ניתן לפנות אל: info@avoda-go.co.il",
   },
 ];
 

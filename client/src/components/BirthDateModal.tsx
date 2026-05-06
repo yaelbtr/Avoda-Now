@@ -16,7 +16,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AppInput } from "@/components/ui";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, Calendar, ShieldCheck, X } from "lucide-react";
@@ -162,31 +162,19 @@ export function BirthDateModal({ isOpen, onClose, onSuccess, jobId }: BirthDateM
               </p>
             </div>
 
-            {/* Birth date input */}
             <div style={{ marginBottom: 16 }}>
-              <Label
-                htmlFor="birth-date-mobile"
-                style={{ display: "block", textAlign: "right", fontSize: 14, fontWeight: 600, marginBottom: 8 }}
-              >
-                תאריך לידה
-              </Label>
-              <Input
+              <AppInput
                 id="birth-date-mobile"
+                label="תאריך לידה"
                 type="date"
                 value={birthDate}
+                placeholder="DD/MM/YYYY"
                 max={maxDate}
                 onChange={(e) => {
                   setBirthDate(e.target.value);
                   setLocalError(null);
                 }}
                 dir="ltr"
-                style={{
-                  width: "100%",
-                  height: 48,
-                  fontSize: 16, // prevents iOS zoom
-                  textAlign: "right",
-                  borderRadius: 12,
-                }}
               />
             </div>
 

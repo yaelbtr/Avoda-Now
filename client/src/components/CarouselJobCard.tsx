@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { shareJobOnWhatsApp, shareJobByEmail, shareJobOnFacebook, shareJobOnTelegram, copyJobLink } from "@/components/JobCard";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface CarouselJob {
@@ -218,6 +219,9 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired,
@@ -239,10 +243,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
         borderRadius: 20,
         overflow: "hidden",
         background: "#ffffff",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
+        boxShadow: "0px 1px 0px oklch(0.38 0.07 125 / 0.08), 0px 4px 16px oklch(0.38 0.07 125 / 0.06)",
         cursor: "pointer",
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         position: "relative",
+        borderTop: isUrgent ? "3px solid var(--accent-rose)" : undefined,
       }}
       onClick={() => onCardClick?.(job)}
       onMouseEnter={e => {
@@ -283,13 +288,13 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
               position: "absolute",
               top: 10,
               right: 10,
-              background: "#E8521A",
+              background: "var(--accent-rose)",
               color: "#fff",
               fontSize: 11,
               fontWeight: 800,
               padding: "4px 12px",
               borderRadius: 20,
-              boxShadow: "0 2px 6px rgba(232,82,26,0.4)",
+              boxShadow: "0 2px 6px var(--accent-rose-light)",
             }}
           >
             דחוף ביותר
@@ -536,6 +541,11 @@ export default function CarouselJobCard({ job, badge, onLoginRequired, onCardCli
         </div>
       </div>
     </div>
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* Age-gate modal */}
       <BirthDateModal
         isOpen={birthDateModalOpen}

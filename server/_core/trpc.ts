@@ -72,6 +72,9 @@ const requirePhone = t.middleware(async opts => {
 /** Requires both authentication AND a phone number on the account. */
 export const phoneRequiredProcedure = t.procedure.use(requirePhone);
 
+// כינוי תואם-לאחור לשם הישן שבו הראוטרים משתמשים.
+export const registeredProcedure = phoneRequiredProcedure;
+
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;

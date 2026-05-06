@@ -140,6 +140,23 @@ function makeCtx(user: TrpcContext["user"] = null): TrpcContext {
   return { user } as TrpcContext;
 }
 
+function makeAuthUser(overrides: Partial<NonNullable<TrpcContext["user"]>> = {}): NonNullable<TrpcContext["user"]> {
+  return {
+    id: 5,
+    openId: "test-user",
+    email: null,
+    name: "עובד",
+    phone: "+972501234567",
+    loginMethod: "phone_otp",
+    role: "user",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
+    ...overrides,
+  } as NonNullable<TrpcContext["user"]>;
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("Job Details Bottom Sheet — getById procedure", () => {
@@ -194,8 +211,8 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
     vi.mocked(db.getJobById).mockResolvedValue(mockJob as any);
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue(null as any);
     vi.mocked(db.createApplication).mockResolvedValue({ id: 10 } as any);
-    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", phone: "+972501234567", role: "user" } as any));
-    const result = await caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" });
+    const caller = appRouter.createCaller(makeCtx(makeAuthUser({ id: 5 })));
+    const result = await caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" });
     expect(result.success).toBe(true);
     // createApplication is called with positional args: (workerId, jobId, message)
     expect(db.createApplication).toHaveBeenCalledWith(5, 42, undefined);
@@ -204,16 +221,16 @@ describe("Job Details Bottom Sheet — applyToJob procedure", () => {
   it("throws CONFLICT when user already applied", async () => {
     vi.mocked(db.getJobById).mockResolvedValue(mockJob as any);
     vi.mocked(db.getApplicationByWorkerAndJob).mockResolvedValue({ id: 1 } as any);
-    const caller = appRouter.createCaller(makeCtx({ id: 5, name: "עובד", phone: "+972501234567", role: "user" } as any));
+    const caller = appRouter.createCaller(makeCtx(makeAuthUser({ id: 5 })));
     await expect(
-      caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" })
+      caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" })
     ).rejects.toThrow(TRPCError);
   });
 
   it("throws UNAUTHORIZED when user is not authenticated", async () => {
     const caller = appRouter.createCaller(makeCtx(null));
     await expect(
-      caller.jobs.applyToJob({ jobId: 42, origin: "https://avodanow.co.il" })
+      caller.jobs.applyToJob({ jobId: 42, origin: "https://avoda-go.co.il" })
     ).rejects.toThrow(TRPCError);
   });
 });

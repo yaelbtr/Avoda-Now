@@ -7,22 +7,16 @@ export const FIND_JOBS_OPEN = true;
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 /**
- * sessionStorage key used to persist pending Google registration data
- * (name, phone, termsAccepted, age18Accepted) across the OAuth redirect.
- * Consumed once by PostGoogleRegistration after the OAuth callback.
- */
-export const PENDING_GOOGLE_REG_KEY = "avodanow_pending_google_reg";
-/**
  * localStorage key for persisting the UTM/referral source captured at first visit.
  * Set once on landing (fbclid → "facebook", gclid → "google", utm_source → raw value).
  * Read at OTP verification time and sent to the server as `referralSource`.
  * Cleared after successful registration.
  */
-export const REFERRAL_SOURCE_KEY = "avodanow_referral_source";
+export const REFERRAL_SOURCE_KEY = "avodago_referral_source";
 /** localStorage key for utm_campaign captured on first visit (e.g. "summer_promo"). Cleared after registration. */
-export const UTM_CAMPAIGN_KEY = "avodanow_utm_campaign";
+export const UTM_CAMPAIGN_KEY = "avodago_utm_campaign";
 /** localStorage key for utm_medium captured on first visit (e.g. "cpc", "social"). Cleared after registration. */
-export const UTM_MEDIUM_KEY = "avodanow_utm_medium";
+export const UTM_MEDIUM_KEY = "avodago_utm_medium";
 export const AXIOS_TIMEOUT_MS = 30_000;
 /** Max support reports per IP/user per hour to prevent abuse */
 export const SUPPORT_REPORT_RATE_LIMIT = 5;
@@ -46,14 +40,14 @@ export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
  * Frontend should intercept this and open the registration/phone-entry flow.
  */
 export const PHONE_REQUIRED_ERR_MSG = 'Phone number required (10003)';
+export const SIGNUP_REQUIRED_ERR_MSG = 'Registration required (10004)';
 
 /**
  * Single source of truth for legal document versions.
- * When a document is updated, bump its version string here.
- * The TermsUpdateBanner will automatically prompt users who accepted
- * an older version to re-consent.
- *
  * Version format: "YYYY-MM" (year-month of last update)
+ *
+ * כשמעדכנים גרסה: חובה לעדכן גם את LEGAL_DOCUMENT_PUBLISHED_AT
+ * עם תאריך הפרסום בפועל — הוא נמדד מול users.lastSignedIn לצורך re-consent.
  */
 export const LEGAL_DOCUMENT_VERSIONS = {
   terms: "2026-03",
@@ -66,6 +60,24 @@ export const LEGAL_DOCUMENT_VERSIONS = {
 } as const;
 
 export type LegalConsentType = keyof typeof LEGAL_DOCUMENT_VERSIONS;
+
+/**
+ * תאריך פרסום של כל גרסה נוכחית (ISO string, UTC).
+ * משמש בשרת להשוות מול users.lastSignedIn:
+ * אם publishedAt > lastSignedIn — המשתמש לא ראה את הגרסה הזו עדיין.
+ *
+ * הערך המקורי 2026-03-01 מבטיח שמשתמשים שנכנסו אחרי מרץ 2026
+ * לא יוצגו להם re-consent על הגרסה הנוכחית.
+ */
+export const LEGAL_DOCUMENT_PUBLISHED_AT: Record<LegalConsentType, string> = {
+  terms: "2026-03-01T00:00:00Z",
+  privacy: "2026-03-01T00:00:00Z",
+  age_18: "2026-03-01T00:00:00Z",
+  job_posting_policy: "2026-03-01T00:00:00Z",
+  safety_policy: "2026-03-01T00:00:00Z",
+  user_content_policy: "2026-03-01T00:00:00Z",
+  reviews_policy: "2026-03-01T00:00:00Z",
+};
 
 /**
  * Human-readable labels for each consent type (used in the banner UI).
@@ -157,7 +169,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "הגיש בקשה",
     color: "oklch(0.38 0.07 125.0)",
     bg:    "oklch(0.50 0.14 85 / 0.08)",
-    workerTooltip:   "הגשת בקשה למשרה זו — המעסיק טרם צפה בה",
+    workerTooltip:   "הגשת בקשה למשרה זו - המעסיק טרם צפה בה",
     employerTooltip: "העובד הגיש בקשה והיא עדיין לא נצפתה",
   },
   viewed: {
@@ -189,7 +201,7 @@ export const APPLICATION_STATUS_LABELS: Record<
     employerLabel:  "ממתין לתשובת עובד",
     color: "oklch(0.45 0.16 260)",
     bg:    "oklch(0.45 0.16 260 / 0.08)",
-    workerTooltip:   "קיבלת הצעת עבודה — אשר או דחה",
+    workerTooltip:   "קיבלת הצעת עבודה - אשר או דחה",
     employerTooltip: "שלחת הצעת עבודה לעובד והוא טרם הגיב או דחה",
   },
   offer_rejected: {

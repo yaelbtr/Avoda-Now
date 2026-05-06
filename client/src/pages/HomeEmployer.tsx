@@ -11,7 +11,7 @@ import { saveReturnPath } from "@/const";
 import {
   Zap, Users, Briefcase, HardHat, ChevronLeft,
   Plus, CheckCircle2, Phone, MessageCircle, Eye, Pencil,
-  Star, Clock, MapPin, Bell, BellOff, Search,
+  Star, Clock, MapPin, Bell, BellOff, Search, Home,
 } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import WorkerCarouselCard from "@/components/WorkerCarouselCard";
@@ -96,11 +96,13 @@ function StatsRow({ activeJobs, workers, registeredWorkers }: { activeJobs: numb
             alignItems: "center",
             justifyContent: "center",
             gap: 4,
-            padding: "12px 4px",
-            borderRadius: 14,
-            background: "oklch(0.97 0.02 122)",
-            border: "1px solid oklch(0.88 0.05 122)",
-            boxShadow: "0 1px 4px oklch(0.28 0.06 122 / 0.10)",
+            padding: "14px 6px",
+            borderRadius: 18,
+            background: "oklch(1 0 0 / 0.70)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid oklch(1 0 0 / 0.80)",
+            boxShadow: "0 8px 28px oklch(0.28 0.06 122 / 0.09), inset 0 1px 0 oklch(1 0 0 / 0.90)",
           }}
         >
           <Icon style={{ width: 18, height: 18, color: "oklch(0.42 0.10 122)", flexShrink: 0 }} />
@@ -123,6 +125,7 @@ export default function HomeEmployer() {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [activeWorkerIdx, setActiveWorkerIdx] = useState(0);
+  const [employerCtaHovered, setEmployerCtaHovered] = useState(false);
   const workerAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const workerPausedRef = useRef(false);
 
@@ -208,7 +211,7 @@ export default function HomeEmployer() {
         {/* Background image */}
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt="מעסיק מוצא עובדים זמינים דרך YallaAvoda"
+          alt="מעסיק מוצא עובדים זמינים דרך AvodaGo"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -273,16 +276,24 @@ export default function HomeEmployer() {
         >
           <motion.button
             onClick={handlePostJob}
+            onHoverStart={() => setEmployerCtaHovered(true)}
+            onHoverEnd={() => setEmployerCtaHovered(false)}
             className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full font-bold text-[15px] overflow-hidden relative"
             style={{
-              background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+              background: "linear-gradient(135deg, oklch(0.37 0.09 122) 0%, oklch(0.28 0.06 122) 100%)",
               color: "oklch(0.96 0.04 80)",
-              boxShadow: "0 4px 24px oklch(0.28 0.06 122 / 0.45)",
+              boxShadow: "0 6px 24px oklch(0.28 0.06 122 / 0.42), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.025, boxShadow: "0 10px 32px oklch(0.28 0.06 122 / 0.50), inset 0 1px 0 rgba(255,255,255,0.26)" }}
+            whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
+            <motion.span
+              aria-hidden
+              animate={{ x: employerCtaHovered ? "220%" : "-110%", opacity: employerCtaHovered ? 1 : 0 }}
+              transition={{ duration: 0.55, ease: "easeInOut" }}
+              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(105deg, transparent 28%, oklch(1 0 0 / 0.24) 50%, transparent 72%)", pointerEvents: "none" }}
+            />
             <Zap size={15} />
             פרסם עכשיו
             <motion.span
@@ -381,7 +392,7 @@ export default function HomeEmployer() {
       >
         <img
           src="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/hero-employer-home-Nz6T35ajGeAYqVG4hwBYdk.webp"
-          alt="מעסיק מוצא עובדים זמינים דרך YallaAvoda"
+          alt="מעסיק מוצא עובדים זמינים דרך AvodaGo"
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -509,8 +520,8 @@ export default function HomeEmployer() {
           whileTap={{ scale: 0.98 }}
           className="relative z-10 mx-4 mb-6 w-[calc(100%-2rem)] max-w-lg flex items-center gap-3 px-5 py-3.5 rounded-2xl overflow-hidden text-right"
           style={{
-            background: "linear-gradient(135deg, oklch(0.28 0.07 250) 0%, oklch(0.35 0.10 255) 100%)",
-            boxShadow: "0 4px 20px oklch(0.30 0.10 250 / 0.35), 0 1px 4px oklch(0.30 0.10 250 / 0.20)",
+            background: "linear-gradient(135deg, oklch(0.35 0.08 122) 0%, oklch(0.28 0.06 122) 100%)",
+            boxShadow: "0 4px 20px oklch(0.28 0.06 122 / 0.38), 0 1px 4px oklch(0.28 0.06 122 / 0.20)",
           }}
         >
           {/* Animated glow pulse */}
@@ -518,20 +529,20 @@ export default function HomeEmployer() {
             className="absolute inset-0 rounded-2xl pointer-events-none"
             animate={{ opacity: [0.0, 0.12, 0.0] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            style={{ background: "oklch(0.75 0.18 255)" }}
+            style={{ background: "oklch(0.82 0.15 80.8)" }}
           />
           {/* Icon */}
           <div
             className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: "oklch(0.45 0.12 255 / 0.40)", border: "1px solid oklch(0.65 0.15 255 / 0.35)" }}
+            style={{ background: "oklch(1 0 0 / 0.18)", border: "1px solid oklch(1 0 0 / 0.28)" }}
           >
-            <Briefcase className="h-4 w-4" style={{ color: "oklch(0.85 0.14 255)" }} />
+            <Briefcase className="h-4 w-4" style={{ color: "oklch(0.90 0.12 88)" }} />
           </div>
           {/* Text */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="text-[13px] font-black leading-tight" style={{ color: "oklch(0.97 0.03 80)" }}>
-                <span className="text-[17px] font-black" style={{ color: "oklch(0.85 0.14 255)", fontFamily: "'Heebo', sans-serif" }}>
+                <span className="text-[17px] font-black" style={{ color: "oklch(0.90 0.12 88)", fontFamily: "'Heebo', sans-serif" }}>
                   {activeJobs}
                 </span>
                 {" "}משרות פעילות שלך
@@ -943,7 +954,10 @@ export default function HomeEmployer() {
         }}
       >
         <div className="max-w-lg mx-auto">
-          <p className="text-[13px] font-black mb-3" style={{ color: "var(--brand)" }}>🧹 שירותי בית וניקיון</p>
+          <div className="flex items-center gap-2 mb-3">
+            <Home size={13} style={{ color: "var(--brand)" }} />
+            <p className="text-[13px] font-black" style={{ color: "var(--brand)" }}>שירותי בית וניקיון</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             {([
               { label: "מנקה לבית", href: "/מנקה-לבית" },
@@ -1027,13 +1041,13 @@ export default function HomeEmployer() {
       </BelowFold>
 
       {/* ── Related Articles (AEO internal linking) ──────────────────────────────────────────── */}
-      <section dir="rtl" className="px-4 py-6 border-t border-gray-100">
+      <section dir="rtl" className="px-4 py-6">
         <h2 className="text-[15px] font-bold mb-3" style={{ color: "var(--brand)" }}>מדריכים למעסיקים</h2>
         <ul className="flex flex-col gap-2">
-          <li><a href="/guide/איך-לפרסם-משרה" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לפרסם משרה שתגיע לעובדים הנכונים?</a></li>
-          <li><a href="/guide/איך-לבחור-עובד-אמין" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">איך לבחור עובד אמין לעבודה זמנית?</a></li>
-          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו מול קבוצות פייסבוק — מה יותר יעיל?</a></li>
-          <li><a href="/for/מעסיקים" className="text-[14px] text-blue-700 underline-offset-2 hover:underline">אוודאנאו למעסיקים — כל מה שצריך לדעת</a></li>
+          <li><a href="/guide/איך-לפרסם-משרה" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>איך לפרסם משרה שתגיע לעובדים הנכונים?</a></li>
+          <li><a href="/guide/איך-לבחור-עובד-אמין" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>איך לבחור עובד אמין לעבודה זמנית?</a></li>
+          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו מול קבוצות פייסבוק — מה יותר יעיל?</a></li>
+          <li><a href="/for/מעסיקים" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו למעסיקים — כל מה שצריך לדעת</a></li>
         </ul>
       </section>
 

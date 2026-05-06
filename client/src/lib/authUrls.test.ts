@@ -1,28 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildGoogleLoginUrl,
   buildLocalLoginUrl,
-  buildOAuthLoginUrl,
-  isOAuthLoginEnabled,
+  isGoogleLoginEnabled,
 } from "../const";
 
 describe("auth URL helpers", () => {
-  it("treats OAuth login as disabled by default", () => {
-    expect(isOAuthLoginEnabled({})).toBe(false);
+  it("treats Google login as disabled by default", () => {
+    expect(isGoogleLoginEnabled({})).toBe(false);
     expect(
-      isOAuthLoginEnabled({
-        VITE_ENABLE_OAUTH_LOGIN: "false",
-        VITE_OAUTH_PORTAL_URL: "https://oauth.example.com",
-        VITE_APP_ID: "app_123",
+      isGoogleLoginEnabled({
+        VITE_ENABLE_GOOGLE_LOGIN: "false",
       })
     ).toBe(false);
   });
 
-  it("enables OAuth login only when flag and required values are present", () => {
+  it("enables Google login only when the feature flag is true", () => {
     expect(
-      isOAuthLoginEnabled({
-        VITE_ENABLE_OAUTH_LOGIN: "true",
-        VITE_OAUTH_PORTAL_URL: "https://oauth.example.com",
-        VITE_APP_ID: "app_123",
+      isGoogleLoginEnabled({
+        VITE_ENABLE_GOOGLE_LOGIN: "true",
       })
     ).toBe(true);
   });
@@ -41,25 +37,16 @@ describe("auth URL helpers", () => {
     expect(url.searchParams.get("returnTo")).toBe("/my-referrals?tab=stats");
   });
 
-  it("builds an OAuth login URL without treating returnPath as provider", () => {
+  it("builds a Google login URL through the local backend route", () => {
     const url = new URL(
-      buildOAuthLoginUrl({
+      buildGoogleLoginUrl({
         currentOrigin: "https://app.example.com",
-        oauthPortalUrl: "https://oauth.example.com",
-        appId: "app_123",
-        provider: "google",
         returnPath: "/applications/42",
       })
     );
 
-    expect(url.origin).toBe("https://oauth.example.com");
-    expect(url.pathname).toBe("/app-auth");
-    expect(url.searchParams.get("appId")).toBe("app_123");
-    expect(url.searchParams.get("provider")).toBe("google");
-
-    const redirectUri = new URL(url.searchParams.get("redirectUri")!);
-    expect(redirectUri.origin).toBe("https://app.example.com");
-    expect(redirectUri.pathname).toBe("/api/oauth/callback");
-    expect(redirectUri.searchParams.get("returnTo")).toBe("/applications/42");
+    expect(url.origin).toBe("https://app.example.com");
+    expect(url.pathname).toBe("/api/auth/google/start");
+    expect(url.searchParams.get("returnTo")).toBe("/applications/42");
   });
 });

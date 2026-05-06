@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { shareJobOnWhatsApp } from "@/components/JobCard";
 import { BirthDateModal } from "@/components/BirthDateModal";
+import { RealActionConsentModal } from "@/components/RealActionConsentModal";
 import { useApplyWithAgeGate } from "@/hooks/useApplyWithAgeGate";
 
 interface SearchJob {
@@ -88,6 +89,9 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
     birthDateModalOpen,
     handleBirthDateSuccess,
     closeBirthDateModal,
+    consentModalOpen,
+    handleConsentConfirm,
+    closeConsentModal,
   } = useApplyWithAgeGate({
     isAuthenticated,
     onLoginRequired,
@@ -111,13 +115,14 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
         borderRadius: 20,
         overflow: "hidden",
         background: "#ffffff",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+        boxShadow: "0px 1px 0px oklch(0.38 0.07 125 / 0.08), 0px 4px 16px oklch(0.38 0.07 125 / 0.06)",
         cursor: "pointer",
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         position: "relative",
         display: "flex",
         flexDirection: "row",
         height: 120,
+        borderTop: job.isUrgent ? "3px solid var(--accent-rose)" : undefined,
       }}
       onClick={() => onCardClick?.(job)}
       onMouseEnter={e => {
@@ -161,13 +166,13 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
               position: "absolute",
               top: 8,
               right: 8,
-              background: "#E8521A",
+              background: "var(--accent-rose)",
               color: "#fff",
               fontSize: 10,
               fontWeight: 800,
               padding: "3px 8px",
               borderRadius: 20,
-              boxShadow: "0 2px 6px rgba(232,82,26,0.4)",
+              boxShadow: "0 2px 6px var(--accent-rose-light)",
               whiteSpace: "nowrap",
             }}
           >
@@ -429,6 +434,11 @@ export default function SearchJobCard({ job, showDistance, isSaved, isApplied: i
       )}
     </div>
 
+      <RealActionConsentModal
+        open={consentModalOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={closeConsentModal}
+      />
       {/* Age-gate modal */}
       <BirthDateModal
         isOpen={birthDateModalOpen}

@@ -44,7 +44,7 @@ const SECTIONS = [
   {
     id: "contact",
     title: "9. יצירת קשר",
-    content: "לשאלות בנושא מדיניות תוכן ניתן לפנות אל: info@avodanow.co.il",
+    content: "לשאלות בנושא מדיניות תוכן ניתן לפנות אל: info@avoda-go.co.il",
   },
 ];
 

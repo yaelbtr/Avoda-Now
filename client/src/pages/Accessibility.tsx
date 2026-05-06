@@ -50,8 +50,8 @@ export default function Accessibility() {
             <p><strong>שם:</strong> צוות <BrandName /></p>
             <p>
               <strong>דוא"ל:</strong>{" "}
-              <a href="mailto:info@avodanow.co.il" className="text-primary underline">
-                info@avodanow.co.il
+              <a href="mailto:info@avoda-go.co.il" className="text-primary underline">
+                info@avoda-go.co.il
               </a>
             </p>
             <p><strong>זמן מענה:</strong> עד 5 ימי עסקים</p>

@@ -34,8 +34,9 @@ import { toast } from "sonner";
 import {
   C_BRAND_HEX, C_BORDER, C_PAGE_BG_HEX,
 } from "@/lib/colors";
+import { NavPill } from "@/components/ui/NavPill";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -83,7 +84,7 @@ function buildJobPosting(job: {
       : undefined,
     hiringOrganization: {
       "@type": "Organization",
-      name: "YallaAvoda",
+      name: "AvodaGo",
       sameAs: BASE_URL,
     },
     ...(salaryNum && job.salaryType !== "volunteer"
@@ -200,7 +201,7 @@ export default function KeywordLandingPage() {
           canonical: `/${page.slug}`,
           keywords: `${page.h1}, עבודה זמנית, משרות, ישראל`,
         }
-      : { title: "YallaAvoda | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
+      : { title: "AvodaGo | עבודה זמנית", description: "מצא עבודה זמנית בישראל", noIndex: true }
   );
 
   // ── JSON-LD injection ─────────────────────────────────────────────────────
@@ -219,7 +220,7 @@ export default function KeywordLandingPage() {
           description: page.metaDescription,
           url: `${BASE_URL}/${page.slug}`,
           inLanguage: "he",
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
         },
         // ItemList of JobPosting
         ...(rawJobs.length > 0
@@ -453,18 +454,9 @@ export default function KeywordLandingPage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {page.relatedLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors hover:opacity-80"
-                style={{
-                  background: "oklch(0.94 0.04 122)",
-                  color: T.brand,
-                  border: `1px solid oklch(0.85 0.06 122)`,
-                }}
-              >
+              <NavPill key={link.href} href={link.href}>
                 {link.label}
-              </Link>
+              </NavPill>
             ))}
           </div>
         </section>

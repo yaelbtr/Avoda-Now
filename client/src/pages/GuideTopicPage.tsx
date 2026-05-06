@@ -10,7 +10,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { getGuideTopic, GUIDE_TOPICS } from "@/data/guideTopics";
 import { getCategoryLabel } from "@shared/categories";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 export default function GuideTopicPage() {
   const { topic } = useParams<{ topic: string }>();
@@ -25,7 +25,7 @@ export default function GuideTopicPage() {
           keywords: entry.keywords?.join(", "),
         }
       : {
-          title: "מדריך לא נמצא | YallaAvoda",
+          title: "מדריך לא נמצא | AvodaGo",
           description: "הדף המבוקש לא נמצא.",
           noIndex: true,
         }
@@ -48,7 +48,7 @@ export default function GuideTopicPage() {
         headline: entry.title,
         description: entry.metaDescription,
         url: `${BASE_URL}/guide/${entry.slug}`,
-        publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+        publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
         inLanguage: "he",
         keywords: entry.keywords?.join(", "),
       },

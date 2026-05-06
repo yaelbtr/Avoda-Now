@@ -69,6 +69,7 @@ function makeCtx(overrides: Partial<AuthUser> = {}): TrpcContext {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
+    termsAcceptedAt: new Date(),
     ...overrides,
   };
   return {
@@ -186,7 +187,7 @@ describe("auth.logout", () => {
 describe("jobs.sendJobOffer — active offer limit", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  const offerInput = { jobId: 10, workerId: 20, origin: "https://avodanow.co.il" };
+  const offerInput = { jobId: 10, workerId: 20, origin: "https://avoda-go.co.il" };
 
   it("sends offer successfully when active count is below limit", async () => {
     vi.mocked(db.getJobById).mockResolvedValue({ id: 10, postedBy: 1, category: "delivery", title: "שליח" } as never);

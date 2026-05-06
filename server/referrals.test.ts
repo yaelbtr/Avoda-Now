@@ -68,25 +68,25 @@ describe("Referral system", () => {
   describe("referral link format", () => {
     it("generates correct referral URL with user ID", () => {
       const userId = 42;
-      const siteUrl = "https://avodanow.co.il";
+      const siteUrl = "https://avoda-go.co.il";
       const referralLink = `${siteUrl}/?ref=${userId}`;
-      expect(referralLink).toBe("https://avodanow.co.il/?ref=42");
+      expect(referralLink).toBe("https://avoda-go.co.il/?ref=42");
     });
 
     it("appends ref param to job URL correctly", () => {
-      const siteUrl = "https://avodanow.co.il";
+      const siteUrl = "https://avoda-go.co.il";
       const jobPath = "/job/123-שליח-בתל-אביב";
       const referrerId = 7;
       const jobUrl = `${siteUrl}${jobPath}?ref=${referrerId}`;
-      expect(jobUrl).toBe("https://avodanow.co.il/job/123-שליח-בתל-אביב?ref=7");
+      expect(jobUrl).toBe("https://avoda-go.co.il/job/123-שליח-בתל-אביב?ref=7");
     });
 
     it("does not append ref param when referrerId is null", () => {
-      const siteUrl = "https://avodanow.co.il";
+      const siteUrl = "https://avoda-go.co.il";
       const jobPath = "/job/123-שליח-בתל-אביב";
       const referrerId = null;
       const jobUrl = `${siteUrl}${jobPath}${referrerId ? `?ref=${referrerId}` : ""}`;
-      expect(jobUrl).toBe("https://avodanow.co.il/job/123-שליח-בתל-אביב");
+      expect(jobUrl).toBe("https://avoda-go.co.il/job/123-שליח-בתל-אביב");
     });
 
     it("validates ref param is numeric before storing", () => {

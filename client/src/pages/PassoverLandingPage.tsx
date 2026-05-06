@@ -13,6 +13,7 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
+import { NavPill } from "@/components/ui/NavPill";
 import { useSEO } from "@/hooks/useSEO";
 import { useBreadcrumbSchema } from "@/hooks/useStructuredData";
 import { trpc } from "@/lib/trpc";
@@ -27,7 +28,7 @@ import { toast } from "sonner";
 import { saveReturnPath } from "@/const";
 import { PushNotificationBanner } from "@/components/PushNotificationBanner";
 
-const BASE_URL = "https://avodanow.co.il";
+const BASE_URL = "https://avoda-go.co.il";
 
 // ─── FAQ data shared across both keyword variants ─────────────────────────────
 const PASSOVER_FAQ = [
@@ -45,7 +46,7 @@ const PASSOVER_FAQ = [
   },
   {
     question: "איפה מוצאים עבודות ניקיון לפסח?",
-    answer: "אפשר למצוא עבודות ניקיון לפסח באתר YallaAvoda, בחברות ניקיון מקומיות, ובדפי מדיה חברתיים. הירשמו מוקדם כי העבודות מתמלאות מהר.",
+    answer: "אפשר למצוא עבודות ניקיון לפסח באתר AvodaGo, בחברות ניקיון מקומיות, ובדפי מדיה חברתיים. הירשמו מוקדם כי העבודות מתמלאות מהר.",
   },
   {
     question: "כמה שעות עובדים בניקיון לפסח?",
@@ -82,7 +83,7 @@ const SLUG_CONTENT: Record<PassoverSlug, SlugContent> = {
   },
   "מנקה-לפסח": {
     h1: "דרוש/ה מנקה לפסח",
-    title: "מנקה לפסח — דרושים | YallaAvoda",
+    title: "מנקה לפסח — דרושים | AvodaGo",
     description: "דרוש/ה מנקה לפסח? מצא עבודות ניקיון לפסח קרוב אליך. שכר 45–90 ₪ לשעה, עבודה מיידית. הירשם עכשיו — ללא עמלות.",
     keywords: "מנקה לפסח, דרוש מנקה לפסח, דרושה מנקה לפסח, עוזרת בית לפסח, עבודות מנקה לפסח",
     canonical: "/jobs/מנקה-לפסח",
@@ -148,7 +149,7 @@ export default function PassoverLandingPage() {
           headline: content.h1,
           description: content.description,
           url: `${BASE_URL}${content.canonical}`,
-          publisher: { "@type": "Organization", name: "YallaAvoda", url: BASE_URL },
+          publisher: { "@type": "Organization", name: "AvodaGo", url: BASE_URL },
           inLanguage: "he",
           keywords: content.keywords,
         },
@@ -313,20 +314,16 @@ export default function PassoverLandingPage() {
         </div>
 
         {/* ── Internal SEO links ── */}
-        <div className="border-t border-gray-200 pt-8">
+        <div className="pt-8">
 
           {/* Passover cities */}
           <div className="mb-8">
             <h2 className="text-sm font-bold text-gray-700 mb-3">ניקיון לפסח לפי עיר</h2>
             <div className="flex flex-wrap gap-2">
               {PASSOVER_CITIES.map((city) => (
-                <Link
-                  key={city}
-                  href={`/jobs/cleaning/${encodeURIComponent(city)}`}
-                  className="city-chip"
-                >
+                <NavPill key={city} href={`/jobs/cleaning/${encodeURIComponent(city)}`} icon="📍">
                   ניקיון לפסח ב{city}
-                </Link>
+                </NavPill>
               ))}
             </div>
           </div>

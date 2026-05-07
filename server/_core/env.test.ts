@@ -24,6 +24,17 @@ describe("ENV.appBaseUrl", () => {
     expect(ENV.appBaseUrl).toBe("https://avoda-go.co.il");
   });
 
+  it("uses the production domain when NODE_ENV is not configured", async () => {
+    delete process.env.APP_BASE_URL;
+    delete process.env.FRONTEND_URL;
+    delete process.env.CLIENT_URL;
+    delete process.env.NODE_ENV;
+
+    const { ENV } = await loadEnv();
+
+    expect(ENV.appBaseUrl).toBe("https://avoda-go.co.il");
+  });
+
   it("keeps localhost as the development fallback", async () => {
     delete process.env.APP_BASE_URL;
     delete process.env.FRONTEND_URL;

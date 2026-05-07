@@ -5,8 +5,8 @@ type LogoSize = "xs" | "sm" | "md";
 
 function resolveLogoAsset(variant: LogoVariant): string {
   return variant === "light"
-    ? "@/assets/logo-light.svg"
-    : "@/assets/logo-light.svg";
+    ? "@/assets/full logo1.svg"
+    : "@/assets/full logo1.svg";
 }
 
 function resolveLogoWidth(size: LogoSize): number {
@@ -16,21 +16,28 @@ function resolveLogoWidth(size: LogoSize): number {
     case "sm":
       return 178;
     default:
-      return 220;
+      return 230;
   }
 }
 
-function resolveLogoScale(): number {
-  return 1;
+function resolveLogoScale(size: LogoSize): number {
+  switch (size) {
+    case "xs":
+      return 1.55;
+    case "sm":
+      return 1.65;
+    default:
+      return 1.55;
+  }
 }
 
 describe("AppLogo presentation", () => {
   it("uses the exact uploaded SVG for the dark variant", () => {
-    expect(resolveLogoAsset("dark")).toBe("@/assets/logo-light.svg");
+    expect(resolveLogoAsset("dark")).toBe("@/assets/full logo1.svg");
   });
 
   it("uses the exact uploaded SVG for the light variant too", () => {
-    expect(resolveLogoAsset("light")).toBe("@/assets/logo-light.svg");
+    expect(resolveLogoAsset("light")).toBe("@/assets/full logo1.svg");
   });
 
   it("renders the small size narrower than the default size", () => {
@@ -41,7 +48,7 @@ describe("AppLogo presentation", () => {
     expect(resolveLogoWidth("xs")).toBeLessThan(resolveLogoWidth("sm"));
   });
 
-  it("renders the uploaded logo without display-only scaling", () => {
-    expect(resolveLogoScale()).toBe(1);
+  it("enlarges the uploaded logo artwork inside the SVG canvas", () => {
+    expect(resolveLogoScale("sm")).toBeGreaterThan(1.5);
   });
 });

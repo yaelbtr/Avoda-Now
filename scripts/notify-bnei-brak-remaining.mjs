@@ -50,7 +50,7 @@ async function sendSmsViaTwilio(phone, message) {
   const fromNumber = process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER;
   if (!accountSid || !authToken) return { success: false, error: 'Twilio not configured' };
 
-  const body = new URLSearchParams({ From: fromNumber || 'AvodaNow', To: phone, Body: message });
+  const body = new URLSearchParams({ From: fromNumber || 'AvodaGo', To: phone, Body: message });
   try {
     const resp = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,

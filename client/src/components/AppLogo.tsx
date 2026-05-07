@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import LogoLight from "@/assets/logo-light.svg";
+import FullLogo from "@/assets/full logo1.svg";
 
 interface AppLogoProps {
   variant?: "dark" | "light";
@@ -9,9 +9,9 @@ interface AppLogoProps {
 }
 
 const SIZE_MAP = {
-  xs: { width: 150, height: 26 },
-  sm: { width: 178, height: 32 },
-  md: { width: 220, height: 40 },
+  xs: { width: 150, height: 34, scale: 1.55 },
+  sm: { width: 178, height: 38, scale: 1.65 },
+  md: { width: 230, height: 48, scale: 1.55 },
 } as const;
 
 export function AppLogo({
@@ -30,12 +30,13 @@ export function AppLogo({
       style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px`, maxWidth: "100%" }}
     >
       <img
-        src={LogoLight}
+        src={FullLogo}
         alt="AvodaGo"
         className="absolute inset-0 h-full w-full select-none object-contain"
         style={{
           objectPosition: "center center",
           transformOrigin: "center center",
+          transform: `scale(${dimensions.scale})`,
           filter,
         }}
         data-variant={variant}

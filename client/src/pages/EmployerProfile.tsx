@@ -65,7 +65,7 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: React.ElementTyp
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function EmployerProfile() {
   useSEO({ title: "פרופיל מעסיק | AvodaGo" });
-  const { user } = useAuth();
+  const { user, refetch: refetchAuth } = useAuth();
   const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
 
@@ -843,6 +843,7 @@ export default function EmployerProfile() {
           setOriginalPhoneVal(newPhoneVal);
           setPhoneVal(newPhoneVal);
           profileQuery.refetch();
+          refetchAuth();
           setPhoneChangeModalOpen(false);
           updateMutation.mutate({
             name: name.trim() || undefined,

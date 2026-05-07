@@ -108,8 +108,8 @@ export function PhoneChangeModal({ open, onClose, onSuccess, initialPhone }: Pho
         useEmail,
       });
       toast.success("מספר הטלפון עודכן בהצלחה!");
-      onSuccess(phoneVal);
       onClose();
+      onSuccess(phoneVal);
     } catch (err: any) {
       if (err?.data?.code === "TOO_MANY_REQUESTS" && err?.message?.includes("נעול")) {
         setStep("locked");

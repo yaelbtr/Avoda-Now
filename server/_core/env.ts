@@ -1,8 +1,8 @@
 function normalizeBaseUrl(value: string | undefined): string {
   const fallback =
-    process.env.NODE_ENV === "production"
-      ? "https://avoda-go.co.il"
-      : "http://localhost:3000";
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "https://avoda-go.co.il";
   const raw = value?.trim() || fallback;
   return raw.replace(/\/+$/, "");
 }

@@ -80,7 +80,7 @@ const profileIconStyle: React.CSSProperties = {
 };
 
 export default function WorkerProfile() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, refetch: refetchAuth } = useAuth();
   const authQuery = useAuthQuery();
   const [, navigate] = useLocation();
 
@@ -1516,6 +1516,7 @@ export default function WorkerProfile() {
           setOriginalPhoneVal(newPhoneVal);
           setPhoneVal(newPhoneVal);
           profileQuery.refetch();
+          refetchAuth();
           setPhoneChangeModalOpen(false);
           // Now save the rest of the profile (without phone payload)
           updateMutation.mutate({

@@ -110,5 +110,8 @@ temp/
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
 
-# Claude local worktrees
-.claude/worktrees/
+# Claude local configuration and worktrees
+.claude/
+
+# Local agent configuration and skill files
+.agents/

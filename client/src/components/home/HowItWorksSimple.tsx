@@ -1,208 +1,113 @@
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { UserPlus, Bell, CheckCircle } from "lucide-react";
+import React from "react";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 
-const STEPS = [
+const HOW_IT_WORKS_WORKER = [
   {
-    id: 1,
-    icon: UserPlus,
-    color: "#313b15",
-    bg: "#dce8b3",
-    stepLabel: "שלב 1",
+    step: "01",
     title: "נרשמים ויוצרים פרופיל",
-    description: "30 שניות. בוחרים תחומים ואזור - ואתם כבר על המפה.",
+    desc: "30 שניות. בוחרים תחומים ואזור - ואתם כבר על המפה.",
+    imgUrl:
+      "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step1_3045eee6.webp",
+    reverse: false,
   },
   {
-    id: 2,
-    icon: Bell,
-    color: "#795900",
-    bg: "#ffdfa0",
-    stepLabel: "שלב 2",
+    step: "02",
     title: "אנחנו מתאימים לכם עבודות",
-    description: "מעסיקים באזורכם רואים אתכם ראשונים. ההתאמה אוטומטית.",
+    desc: "מעסיקים באזורכם רואים אתכם ראשונים. ההתאמה אוטומטית.",
+    imgUrl:
+      "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
+    reverse: true,
   },
   {
-    id: 3,
-    icon: CheckCircle,
-    color: "#492e49",
-    bg: "#fed6fa",
-    stepLabel: "שלב 3",
+    step: "03",
     title: "המעסיק יוצר קשר ישיר",
-    description: "אתם בוחרים, מאשרים ויוצאים לעבוד. פשוט.",
+    desc: "אתם בוחרים, מאשרים ויוצאים לעבוד. פשוט.",
+    imgUrl:
+      "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step3_76fe12ce.webp",
+    reverse: false,
   },
 ];
 
-function StepCard({
-  step,
-  index,
-}: {
-  step: (typeof STEPS)[0];
-  index: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -60px 0px" });
-  const Icon = step.icon;
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-      transition={{
-        duration: 0.55,
-        delay: index * 0.12,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      dir="rtl"
-      style={{
-        background: "var(--editorial-surface)",
-        border: "1.5px solid var(--editorial-outline-ghost)",
-        borderRadius: 24,
-        padding: "22px 20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        boxShadow: "0 2px 12px rgb(27 28 26 / 0.06)",
-        position: "relative",
-        overflow: "hidden",
-        cursor: "default",
-      }}
-      whileHover={{
-        y: -5,
-        boxShadow: "0 18px 40px rgb(27 28 26 / 0.13)",
-        borderColor: step.color,
-        transition: { type: "spring", stiffness: 360, damping: 22 },
-      }}
-    >
-      {/* Glow blob */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: -24,
-          right: -24,
-          width: 96,
-          height: 96,
-          borderRadius: "50%",
-          background: step.bg,
-          opacity: 0.38,
-          filter: "blur(28px)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Icon + badge row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        
-
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: step.color,
-            background: step.bg,
-            padding: "3px 10px",
-            borderRadius: 999,
-            fontFamily: "var(--font-editorial-ui)",
-          }}
-        >
-          {step.stepLabel}
-        </span>
-      </div>
-
-      {/* Text */}
-      <div>
-        <h3
-          style={{
-            fontSize: 17,
-            fontWeight: 800,
-            color: "var(--editorial-on-surface)",
-            fontFamily: "var(--font-editorial-headline)",
-            margin: "0 0 6px",
-            lineHeight: 1.3,
-          }}
-        >
-          {step.title}
-        </h3>
-        <p
-          style={{
-            fontSize: 13.5,
-            color: "var(--editorial-on-surface-variant)",
-            lineHeight: 1.6,
-            margin: 0,
-            fontFamily: "var(--font-editorial-ui)",
-          }}
-        >
-          {step.description}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
 export function HowItWorksSimple() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const headerInView = useInView(headerRef, { once: true });
-
   return (
     <section
+      className="relative z-10 mx-6 mb-12 rounded-[28px] p-7 max-w-lg"
       dir="rtl"
       style={{
-        background: "var(--editorial-background)",
-        marginTop: -12,
-        padding: "52px 20px 32px",
+        background: "white",
+        boxShadow:
+          "0 4px 24px oklch(0.38 0.07 125.0 / 0.10), 0 1px 4px oklch(0.38 0.07 125.0 / 0.06)",
+        border: "none",
+        marginTop: "28px",
         fontFamily: "var(--font-editorial-ui)",
-        position: "relative",
-        zIndex: 11,
       }}
     >
-      {/* Header */}
-      <motion.div
-        ref={headerRef}
-        initial={{ opacity: 0, y: 20 }}
-        animate={headerInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.5 }}
-        style={{ marginBottom: 24 }}
-      >
-        
-        <h2
-          style={{
-          fontSize: 20,
-          fontWeight: 600,
-          color: "#332a2c",
-          fontFamily: "var(--font-editorial-headline)",
-          letterSpacing: 0,
-          }}
+      <div className="flex items-center justify-center gap-2 mb-7">
+        <div
+          className="w-7 h-7 rounded-xl flex items-center justify-center"
+          style={{ background: "oklch(0.75 0.12 76.7 / 0.15)" }}
         >
-          איך זה עובד
-        </h2>
-      </motion.div>
-
-      {/* Step cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {STEPS.map((step, i) => (
-          <StepCard key={step.id} step={step} index={i} />
-        ))}
+          <Star className="h-4 w-4" style={{ color: "var(--amber)" }} />
+        </div>
+        <div>
+          <h3 className="text-lg font-black" style={{ color: "var(--brand)" }}>
+            איך זה עובד
+          </h3>
+        </div>
       </div>
 
-      {/* Bottom divider line */}
-      <motion.div
-        initial={{ scaleY: 0 }}
-        whileInView={{ scaleY: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8, delay: 0.5 }}
-        style={{
-          width: 2,
-          background:
-            "linear-gradient(to bottom, var(--editorial-primary-fixed), transparent)",
-          borderRadius: 999,
-          margin: "16px auto 0",
-          height: 32,
-          transformOrigin: "top",
-        }}
-      />
+      <div className="space-y-3">
+        {HOW_IT_WORKS_WORKER.map(({ step, title, desc, imgUrl, reverse }, idx) => (
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: reverse ? -24 : 24, y: 12 }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: idx * 0.12, duration: 0.45, ease: "easeOut" }}
+            whileHover={{
+              y: -3,
+              boxShadow:
+                "0 8px 28px oklch(0.38 0.07 125.0 / 0.18), 0 2px 8px oklch(0.38 0.07 125.0 / 0.10)",
+            }}
+            whileTap={{ scale: 0.98 }}
+            className={"flex items-center gap-4 p-4 rounded-2xl overflow-hidden" + (reverse ? " flex-row-reverse" : "")}
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.97 0.015 122.3) 0%, oklch(0.95 0.02 91.6) 100%)",
+              border: "1px solid oklch(0.89 0.05 84.0)",
+            }}
+          >
+            <div
+              className="flex-shrink-0 w-24 h-20 text-center text-[42px]  leading-none select-none flex items-center justify-center"
+              style={
+                {
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "#d9dfbc",
+                  // backgroundImage: `url("${imgUrl}")`,
+                  // backgroundSize: "cover",
+                  // backgroundPosition: "center",
+                  filter: "saturate(1.4) contrast(1.1) brightness(0.85)",
+                } as React.CSSProperties
+              }
+            >
+              {step}
+            </div>
+            <div className="flex-1 text-right">
+              <h4 className="text-[16px]   mb-1" style={{ fontWeight:"800", color: "var(--brand)" }}>
+                {title}
+              </h4>
+              <p
+                className="text-[12px] font-medium leading-relaxed"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {desc}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </section>
   );
 }

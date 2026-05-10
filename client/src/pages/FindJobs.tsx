@@ -51,9 +51,9 @@ const FILTER_PREFS_KEY = "findJobs_filters";
 
 // ── Filter persistence helpers ────────────────────────────────────────────────
 interface SavedFilters {
-  category: string;               // legacy — kept for backward-compat (first of selectedCategories)
+  category: string;               // legacy - kept for backward-compat (first of selectedCategories)
   selectedCategories: string[];   // multi-category filter (primary)
-  selectedCity: string | null;    // legacy — kept for backward-compat
+  selectedCity: string | null;    // legacy - kept for backward-compat
   selectedCities: string[];       // multi-city filter (primary)
   selectedTimeSlots: string[];
   selectedDays: string[];
@@ -318,7 +318,7 @@ function SmartEmptyState({
         onExpandRadius={onExpandRadius}
       />
 
-      {/* Active filter pills — quick remove */}
+      {/* Active filter pills - quick remove */}
       {hasAnyFilter && (
         <div className="mb-5">
           <p className="text-xs font-bold mb-2 text-center" style={{ color: C_TEXT_MUTED }}>סינונים פעילים:</p>
@@ -373,7 +373,7 @@ function SmartEmptyState({
               </button>
             )}
           </div>
-          {/* Clear all — below the active filter pills */}
+          {/* Clear all - below the active filter pills */}
           <div className="flex justify-center mt-3">
             <button
               onClick={onClearAllFilters}
@@ -465,7 +465,7 @@ export default function FindJobs() {
     enabled: isMounted && isAuthenticated,
   });
   const isCurrentUserMinor = birthDateInfoQuery.data?.isMinor === true;
-  // Categories visible in the filter panel — hide allowedForMinors=false for minors
+  // Categories visible in the filter panel - hide allowedForMinors=false for minors
   const visibleCategories = isCurrentUserMinor
     ? dbCategories.filter(c => c.allowedForMinors !== false)
     : dbCategories;
@@ -500,7 +500,7 @@ export default function FindJobs() {
   });
   const _snap = restoreSnapshot(_initialFilterKey);
 
-  const [category, setCategory] = useState(resolvedCategory); // legacy — kept for SEO/URL/SmartEmptyState
+  const [category, setCategory] = useState(resolvedCategory); // legacy - kept for SEO/URL/SmartEmptyState
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories); // multi-category (primary)
   const [radiusKm, setRadiusKm] = useState(10);
   const [showRadiusPicker, setShowRadiusPicker] = useState(false);
@@ -511,8 +511,8 @@ export default function FindJobs() {
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [showCityInput, setShowCityInput] = useState(false);
-  const [searchText, setSearchText] = useState(""); // raw input — bound to <input>
-  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // debounced — used for filtering
+  const [searchText, setSearchText] = useState(""); // raw input - bound to <input>
+  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // debounced - used for filtering
   // Step 7 (perf skill): wrap debounced update in startTransition so typing stays urgent
   // and the filter re-computation (O(n log n)) is deferred as a non-urgent update.
   useEffect(() => {
@@ -645,10 +645,10 @@ export default function FindJobs() {
   }, []);
   const [currentPage, setCurrentPage] = useState(_snap?.page ?? 1);
   const PAGE_SIZE = 10;
-  // AnyJob type — defined here so it can be used in state declarations below
+  // AnyJob type - defined here so it can be used in state declarations below
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type AnyJob = { id: number; title: string; description: string; category: string; address: string; city?: string | null; salary?: string | null; salaryType: string; contactPhone: null; businessName?: string | null; startTime: string; startDateTime?: Date | string | null; isUrgent?: boolean | null; workersNeeded: number; createdAt: Date | string; expiresAt?: Date | string | null; distance?: number; latitude?: number | string | null; longitude?: number | string | null; workingHours?: string | null; jobDate?: string | null; images?: string[] | null };
-  // Accumulated jobs across pages for infinite scroll — משוחזר מה-snapshot אם קיים
+  // Accumulated jobs across pages for infinite scroll - משוחזר מה-snapshot אם קיים
   const [accumulatedJobs, setAccumulatedJobs] = useState<AnyJob[]>((_snap?.jobs as AnyJob[]) ?? []);
   // pendingReset: when true, the next activeQueryData change will replace (not append) the list.
   // This avoids the stale-data race where setAccumulatedJobs([]) runs before the new query
@@ -660,13 +660,13 @@ export default function FindJobs() {
   const radiusPickerRef = useRef<HTMLDivElement | null>(null);
   const [chipRowCanScrollLeft, setChipRowCanScrollLeft] = useState(false);
   const [openFilterSection, setOpenFilterSection] = useState<"categories" | "location" | "hours" | "days" | "date" | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy — kept for SEO/URL
+  const [selectedCity, setSelectedCity] = useState<string | null>(initialCity); // legacy - kept for SEO/URL
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCities); // multi-city (primary)
   // Keep selectedCity in sync with selectedCities[0] for SEO/URL/legacy usage
   // Computed: whether current filters match saved filters (for UI indicator)
   const hasSavedFilters = (selectedCategories.length > 0 || selectedCities.length > 0 || selectedTimeSlots.length > 0 || selectedDays.length > 0 || sortBy !== "default") && loadSavedFilters() !== null;
 
-  // ── Filter key — מזהה ייחודי של הפילטרים הפעילים ──────────────────────────
+  // ── Filter key - מזהה ייחודי של הפילטרים הפעילים ──────────────────────────
   const activeFilterKey = useMemo(() => computeFilterKey({
     categories: selectedCategories,
     cities: selectedCities,
@@ -686,8 +686,8 @@ export default function FindJobs() {
   const seoDescription = selectedCity
     ? `מצא עבודות זמניות ב${selectedCity}. משרות להיום, שליחויות, מחסן, מטבח ועוד.`
     : category !== "all"
-    ? `עובדים ל${catName} זמינים תוך דקות — הגדר זמינות וקבל פנייה ישירות.`
-    : "AvodaGo — עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד — הגדר זמינות וקבל עבודה.";
+    ? `עובדים ל${catName} זמינים תוך דקות - הגדר זמינות וקבל פנייה ישירות.`
+    : "AvodaGo - עובדים לבית ואירועים תוך דקות. ניקיון, שירותי אירועים, תיקונים ועוד - הגדר זמינות וקבל עבודה.";
   const seoCanonical = selectedCity
     ? `/find-jobs?city=${encodeURIComponent(selectedCity)}`
     : category !== "all" ? `/find-jobs?category=${encodeURIComponent(category)}` : "/find-jobs";
@@ -695,7 +695,7 @@ export default function FindJobs() {
   const [noIndexReady, setNoIndexReady] = useState(false);
   useSEO({ title: seoTitle, description: seoDescription, canonical: seoCanonical, noIndex: noIndexReady });
 
-  // Deferred: profileQuery fires after first paint — profile data is non-critical for initial render
+  // Deferred: profileQuery fires after first paint - profile data is non-critical for initial render
   const profileQuery = trpc.user.getProfile.useQuery(undefined, {
     ...authQuery({ staleTime: 5 * 60 * 1000 }),
     enabled: isMounted,
@@ -724,7 +724,7 @@ export default function FindJobs() {
       });
     }
     prevPathRef.current = currentPath;
-  // utilsFj is stable — intentionally omitted from deps
+  // utilsFj is stable - intentionally omitted from deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPath]);
 
@@ -734,14 +734,14 @@ export default function FindJobs() {
   useEffect(() => {
     if (!isMounted) return;
     if (filterInitialized.current) return;
-    // If auth is still loading, wait — but do NOT block the page render
+    // If auth is still loading, wait - but do NOT block the page render
     if (authLoading) return;
     const markInitialized = () => {
       filterInitialized.current = true;
       try { sessionStorage.setItem(FILTER_INIT_KEY, "1"); } catch {}
     };
     if (!isAuthenticated) { markInitialized(); setFilterOpen(true); return; }
-    // Profile query is deferred (enabled: isMounted) — wait for it to resolve
+    // Profile query is deferred (enabled: isMounted) - wait for it to resolve
     if (profileQuery.isLoading) return;
     const profile = profileQuery.data;
     const hasProfile = (profile?.preferredCategories && profile.preferredCategories.length > 0) || !!profile?.preferredCity;
@@ -750,7 +750,7 @@ export default function FindJobs() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted, authLoading, isAuthenticated, profileQuery.isLoading, profileQuery.data]);
 
-  // Deferred: city list is only needed when filter panel opens — not on initial render
+  // Deferred: city list is only needed when filter panel opens - not on initial render
   const activeCitiesQuery = trpc.regions.getActiveCities.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     enabled: isMounted,
@@ -771,7 +771,7 @@ export default function FindJobs() {
           setGeoCity(null); saveLocationCache(latitude, longitude);
           toast.success("מיקום נמצא");
         },
-        () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום — הזן עיר ידנית"); }
+        () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום - הזן עיר ידנית"); }
       );
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -782,7 +782,7 @@ export default function FindJobs() {
   // location-based results using the user’s saved coordinates from their profile.
   useEffect(() => {
     if (profileQuery.isLoading) return;
-    if (userLat !== null) return; // already have a location — cache or GPS took priority
+    if (userLat !== null) return; // already have a location - cache or GPS took priority
     const profile = profileQuery.data;
     if (!profile) return;
     const lat = profile.workerLatitude ? Number(profile.workerLatitude) : null;
@@ -807,7 +807,7 @@ export default function FindJobs() {
         setGeoCity(null); saveLocationCache(latitude, longitude);
         toast.success("מיקום נמצא");
       },
-      () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום — הזן עיר ידנית"); }
+      () => { setLocating(false); setLocationDenied(true); setShowCityInput(true); toast.error("לא ניתן לאתר מיקום - הזן עיר ידנית"); }
     );
   };
 
@@ -850,7 +850,7 @@ export default function FindJobs() {
     { category: legacyCategoryParam, limit: 50 },
     { enabled: showUrgentToday }
   );
-  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with HomeWorker)
+  // savedIds + save/unsave come from WorkerJobsContext (DRY - shared with HomeWorker)
   const { savedIds, toggleSave } = useWorkerJobs();
   const utilsFj = trpc.useUtils();
   const myAppsQueryFj = trpc.jobs.myApplications.useQuery(undefined, {
@@ -889,7 +889,7 @@ export default function FindJobs() {
     const icon  = getCategoryIcon(categorySlug);
     setSelectedCategories(prev => {
       if (prev.includes(categorySlug)) {
-        // Already active — inform the user instead of silently doing nothing
+        // Already active - inform the user instead of silently doing nothing
         toast(`${icon} כבר מסנן לפי: ${label}`, { duration: 2000 });
         return prev;
       }
@@ -913,7 +913,7 @@ export default function FindJobs() {
   //
   // IMPORTANT: On component mount (e.g. navigating back from worker home), activeQueryData may
   // already be populated from the tRPC cache. In that case the effect below would NOT fire because
-  // activeQueryData hasn’t “changed” — it was already set when the component first rendered.
+  // activeQueryData hasn’t “changed” - it was already set when the component first rendered.
   // We handle this with a separate mount-time effect that seeds the list from the cached data.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
@@ -922,7 +922,7 @@ export default function FindJobs() {
       pendingResetRef.current = false;
       setAccumulatedJobs(currentPageJobs as AnyJob[]);
     }
-  // Run only once on mount — intentionally empty deps
+  // Run only once on mount - intentionally empty deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -949,7 +949,7 @@ export default function FindJobs() {
   const showRefetchOverlay = !isLoading && isFetching;
 
   // Step 5+7 (perf skill): memoize the full sort/filter pipeline.
-  // Without useMemo this runs O(n log n) on every render — including unrelated state changes
+  // Without useMemo this runs O(n log n) on every render - including unrelated state changes
   // like opening a modal, hovering a button, or toggling a filter panel.
   const jobs = useMemo(() => {
     let result: AnyJob[] = accumulatedJobs;
@@ -1127,7 +1127,7 @@ export default function FindJobs() {
           minHeight: 400,
         }}
       >
-        {/* Hero background image — same treatment as MyApplications */}
+        {/* Hero background image - same treatment as MyApplications */}
         <img
           src={HERO_IMG}
           alt="עובד מחפש עבודה זמנית בישראל"
@@ -1162,7 +1162,7 @@ export default function FindJobs() {
         />
         {/* Content */}
         <div className="relative z-10 max-w-lg mx-auto px-4 pt-8 pb-10">
-          {/* Profile completion icon — top-left of hero, only when profile score < 100% */}
+          {/* Profile completion icon - top-left of hero, only when profile score < 100% */}
           {isAuthenticated && !profileQuery.isLoading && (() => {
             const profile = profileQuery.data;
             const score = calcProfileScore(profile as Parameters<typeof calcProfileScore>[0]);
@@ -1281,7 +1281,7 @@ export default function FindJobs() {
                   </div>
                 )}
 
-                {/* CTA button — full row below chips */}
+                {/* CTA button - full row below chips */}
                 <Link href="/worker-profile" className="block w-full mt-3">
                   <button
                     onClick={() => setProfilePanelOpen(false)}
@@ -1384,7 +1384,7 @@ export default function FindJobs() {
             transition: "background 0.25s ease",
           }}
         >
-          {/* Quick filter chip pills — full-bleed scroll so pills never get clipped on mobile */}
+          {/* Quick filter chip pills - full-bleed scroll so pills never get clipped on mobile */}
           {/* Outer wrapper: relative + mask-image fade on left edge when scrolled */}
           <div
             className="relative -mx-4"
@@ -1398,7 +1398,7 @@ export default function FindJobs() {
             }}
           >
           <div ref={chipRowRef} className="flex items-center gap-2 pb-3 overflow-x-auto px-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
-            {/* קרוב אלי — with inline radius pills when active */}
+            {/* קרוב אלי - with inline radius pills when active */}
             <div ref={radiusPickerRef} className="shrink-0 flex items-center gap-1.5">
               <button
                 onClick={() => {
@@ -1420,7 +1420,7 @@ export default function FindJobs() {
                   <X className="h-3 w-3 opacity-70" onClick={e => { e.stopPropagation(); setUserLat(null); setUserLng(null); clearLocationCache(); setAutoExpandedRadius(false); setShowRadiusPicker(false); }} />
                 )}
               </button>
-              {/* Inline radius pills — visible when geo is active and picker is open */}
+              {/* Inline radius pills - visible when geo is active and picker is open */}
               <AnimatePresence>
                 {userLat && showRadiusPicker && RADIUS_OPTIONS.map((r, i) => (
                   <motion.button
@@ -1453,7 +1453,7 @@ export default function FindJobs() {
               <span>דחוף</span>
             </button>
 
-            {/* Date picker button — opens bottom sheet on mobile, Popover on desktop */}
+            {/* Date picker button - opens bottom sheet on mobile, Popover on desktop */}
             <button
               className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all"
               style={dateFilter
@@ -1509,11 +1509,11 @@ export default function FindJobs() {
         </AnimatePresence>
 
 
-        {/* —— (profile banner moved above search bar) —— */}
+        {/* -- (profile banner moved above search bar) -- */}
 
-        {/* Results count + sort chips — single row: chips right, count left (LTR order) */}
+        {/* Results count + sort chips - single row: chips right, count left (LTR order) */}
         <div className="flex items-center gap-2 mb-3">
-          {/* Sort chips — right side (first in DOM = right in LTR) */}
+          {/* Sort chips - right side (first in DOM = right in LTR) */}
           <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {([
               { value: "date",    label: "תאריך" },
@@ -1562,7 +1562,7 @@ export default function FindJobs() {
 
         </div>
 
-        {/* Job list — wrapped for refetch overlay */}
+        {/* Job list - wrapped for refetch overlay */}
         <div className="relative">
           {/* Refetch overlay: subtle opacity fade when filter changes but data exists */}
           {showRefetchOverlay && (
@@ -1624,7 +1624,7 @@ export default function FindJobs() {
           {isFallback && (
             <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-2" dir="rtl">
               <span className="mt-0.5 shrink-0 text-base">📍</span>
-              <span>לא נמצאו משרות בסביבתך — מציגים משרות ממקומות אחרים בישראל</span>
+              <span>לא נמצאו משרות בסביבתך - מציגים משרות ממקומות אחרים בישראל</span>
             </div>
           )}
           {/* Virtualize when list is large (>15 jobs) to avoid rendering all DOM nodes at once.
@@ -1903,7 +1903,7 @@ export default function FindJobs() {
                   ) : null;
                 })()}
 
-                {/* Categories section — multi-select */}
+                {/* Categories section - multi-select */}
                 <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
                   <button type="button" onClick={() => setOpenFilterSection(s => s === "categories" ? null : "categories")}
                     className="w-full flex items-center gap-2 py-2 text-right">
@@ -2062,7 +2062,7 @@ export default function FindJobs() {
                   </div>
                 </div>
 
-                {/* Date filter — collapsible */}
+                {/* Date filter - collapsible */}
                 <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
                   <button type="button" onClick={() => setOpenFilterSection(s => s === "date" ? null : "date")}
                     className="w-full flex items-center gap-2 py-2 text-right">
@@ -2135,7 +2135,7 @@ export default function FindJobs() {
                   </div>
                 </div>
 
-                {/* Time of day — collapsible */}
+                {/* Time of day - collapsible */}
                 <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
                   <button type="button" onClick={() => setOpenFilterSection(s => s === "hours" ? null : "hours")}
                     className="w-full flex items-center gap-2 py-2 text-right">
@@ -2183,7 +2183,7 @@ export default function FindJobs() {
                   </div>
                 </div>
 
-                {/* Days of week — collapsible */}
+                {/* Days of week - collapsible */}
                 <div style={{ borderBottom: "1px solid oklch(0.94 0.02 100)" }} className="pb-4 mb-4">
                   <button type="button" onClick={() => setOpenFilterSection(s => s === "days" ? null : "days")}
                     className="w-full flex items-center gap-2 py-2 text-right">
@@ -2362,7 +2362,7 @@ export default function FindJobs() {
           </>
         )}
     </AnimatePresence>, getMobileRoot())}
-    {/* Coming-soon overlay — covers only this page when FIND_JOBS_OPEN is false */}
+    {/* Coming-soon overlay - covers only this page when FIND_JOBS_OPEN is false */}
     {!FIND_JOBS_OPEN && createPortal(<FindJobsComingSoonOverlay />, getMobileRoot())}
     </>
   );

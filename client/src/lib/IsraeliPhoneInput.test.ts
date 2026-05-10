@@ -29,7 +29,7 @@ describe("isValidPhoneValue", () => {
     expect(isValidPhoneValue({ prefix: "058", number: "1234567" })).toBe(true);
   });
 
-  it("accepts 2-digit landline prefix (02) — regression for wizard bug", () => {
+  it("accepts 2-digit landline prefix (02) - regression for wizard bug", () => {
     // This was the bug: prefix.length === 3 check would reject 2-digit prefixes
     expect(isValidPhoneValue({ prefix: "02", number: "1234567" })).toBe(true);
   });

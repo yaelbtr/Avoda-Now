@@ -23,26 +23,26 @@ describe("isOvernightShift", () => {
 });
 
 describe("isEndTimeInvalid", () => {
-  // Normal same-day shifts — valid
+  // Normal same-day shifts - valid
   it("08:00 → 16:00 is valid", () => expect(isEndTimeInvalid("08:00", "16:00")).toBe(false));
   it("06:00 → 14:00 is valid", () => expect(isEndTimeInvalid("06:00", "14:00")).toBe(false));
   it("12:00 → 20:00 is valid", () => expect(isEndTimeInvalid("12:00", "20:00")).toBe(false));
   it("16:00 → 22:00 is valid", () => expect(isEndTimeInvalid("16:00", "22:00")).toBe(false));
 
-  // Overnight shifts — valid (end < start but duration >= 1 h)
+  // Overnight shifts - valid (end < start but duration >= 1 h)
   it("22:00 → 06:00 overnight is valid", () => expect(isEndTimeInvalid("22:00", "06:00")).toBe(false));
   it("23:00 → 07:00 overnight is valid", () => expect(isEndTimeInvalid("23:00", "07:00")).toBe(false));
   it("20:00 → 04:00 overnight is valid", () => expect(isEndTimeInvalid("20:00", "04:00")).toBe(false));
 
-  // Zero-duration — invalid
+  // Zero-duration - invalid
   it("09:00 → 09:00 zero-duration is invalid", () => expect(isEndTimeInvalid("09:00", "09:00")).toBe(true));
   it("14:00 → 14:00 zero-duration is invalid", () => expect(isEndTimeInvalid("14:00", "14:00")).toBe(true));
 
-  // End < start but very short overnight (< 1 h) — invalid
+  // End < start but very short overnight (< 1 h) - invalid
   it("09:00 → 08:45 (15 min 'overnight') is invalid", () => expect(isEndTimeInvalid("09:00", "08:45")).toBe(true));
   it("10:00 → 09:30 (30 min 'overnight') is invalid", () => expect(isEndTimeInvalid("10:00", "09:30")).toBe(true));
 
-  // Null/empty inputs — not invalid (no data to validate)
+  // Null/empty inputs - not invalid (no data to validate)
   it("null inputs are not flagged as invalid", () => expect(isEndTimeInvalid(null, null)).toBe(false));
   it("empty strings are not flagged as invalid", () => expect(isEndTimeInvalid("", "")).toBe(false));
 });

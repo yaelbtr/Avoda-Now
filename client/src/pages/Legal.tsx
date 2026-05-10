@@ -3,7 +3,7 @@ import { BrandName } from "@/components/ui";
 import { Scale, Shield, FileText, Star, AlertTriangle, Users } from "lucide-react";
 
 /**
- * /legal — Central legal hub page
+ * /legal - Central legal hub page
  * Shows table of contents for all 6 legal documents with anchor links.
  * Useful for SEO (Google indexes this as a structured legal directory)
  * and for accessibility (single entry point for all legal content).
@@ -38,7 +38,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/job-posting-policy",
     title: "מדיניות פרסום משרות",
-    description: "הכללים לפרסום משרות בפלטפורמה — מה מותר, מה אסור, ומה קורה בהפרה.",
+    description: "הכללים לפרסום משרות בפלטפורמה - מה מותר, מה אסור, ומה קורה בהפרה.",
     icon: <Users className="h-5 w-5" />,
     sections: ["כללי", "תוכן מותר", "תוכן אסור", "אחריות המפרסם", "מגבלות פרסום", "אכיפה"],
     lastUpdated: "מרץ 2026",
@@ -46,7 +46,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/safety-policy",
     title: "מדיניות בטיחות",
-    description: "כללי הבטיחות שחלים על כל המשתמשים — עובדים ומעסיקים כאחד.",
+    description: "כללי הבטיחות שחלים על כל המשתמשים - עובדים ומעסיקים כאחד.",
     icon: <AlertTriangle className="h-5 w-5" />,
     sections: ["אחריות נותן השירות", "בטיחות בעבודה", "פגישה ראשונה", "דיווח על תקריות", "הגבלת אחריות"],
     lastUpdated: "מרץ 2026",
@@ -54,7 +54,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/user-content-policy",
     title: "מדיניות תוכן משתמשים",
-    description: "הכללים לגבי תוכן שמשתמשים מפרסמים — פרופילים, תיאורים ומידע אישי.",
+    description: "הכללים לגבי תוכן שמשתמשים מפרסמים - פרופילים, תיאורים ומידע אישי.",
     icon: <Scale className="h-5 w-5" />,
     sections: ["אחריות המשתמש", "תוכן אסור", "דיוק המידע בפרופיל", "קניין רוחני", "הסרת תוכן"],
     lastUpdated: "מרץ 2026",
@@ -62,7 +62,7 @@ const LEGAL_DOCUMENTS: LegalDocument[] = [
   {
     href: "/reviews-policy",
     title: "מדיניות ביקורות",
-    description: "הכללים לכתיבת ביקורות על עובדים — אמינות, תוכן מותר ותהליך הסרה.",
+    description: "הכללים לכתיבת ביקורות על עובדים - אמינות, תוכן מותר ותהליך הסרה.",
     icon: <Star className="h-5 w-5" />,
     sections: ["ביקורות אמיתיות בלבד", "תוכן הביקורת", "הסרת ביקורות", "אחריות", "יצירת קשר"],
     lastUpdated: "מרץ 2026",

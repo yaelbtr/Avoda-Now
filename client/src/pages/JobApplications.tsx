@@ -41,7 +41,7 @@ function isNew(createdAt: Date | string): boolean {
   return Date.now() - new Date(createdAt).getTime() < 24 * 60 * 60 * 1000;
 }
 
-// STATUS_CONFIG removed — use getApplicationStatusLabel from @shared/const instead
+// STATUS_CONFIG removed - use getApplicationStatusLabel from @shared/const instead
 
 // ── Star rating display ─────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ function MiniStars({ rating }: { rating: number }) {
   );
 }
 
-// ── Applicant card — mirrors MyApplications card structure exactly ────────────
+// ── Applicant card - mirrors MyApplications card structure exactly ────────────
 
 function ApplicantCard({
   app,
@@ -98,7 +98,7 @@ function ApplicantCard({
   onReject: (id: number) => void;
   isPending: boolean;
   idx: number;
-  /** When true the accept button is hidden — job cap already reached */
+  /** When true the accept button is hidden - job cap already reached */
   isCapReached?: boolean;
 }) {
   const [rateOpen, setRateOpen] = useState(false);
@@ -114,7 +114,7 @@ function ApplicantCard({
   const phone = app.workerPhone ?? "";
   const rating = app.workerRating ? parseFloat(app.workerRating) : null;
 
-  // Card style — identical logic to MyApplications
+  // Card style - identical logic to MyApplications
   const cardStyle: React.CSSProperties = {
     background: isAccepted || isOfferedAccepted
       ? "oklch(0.65 0.22 160 / 0.05)"
@@ -134,7 +134,7 @@ function ApplicantCard({
     opacity: isRejected ? 0.70 : 1,
   };
 
-  // Avatar bg — same as MyApplications
+  // Avatar bg - same as MyApplications
   const avatarBg = isAccepted || isOfferedAccepted
     ? "oklch(0.65 0.22 160 / 0.12)"
     : isOfferedPending
@@ -167,7 +167,7 @@ function ApplicantCard({
           }}
         >
           <Gift className="h-4 w-4 shrink-0" />
-          <span>שלחת הצעת עבודה לעובד זה — ממתין לתשובה</span>
+          <span>שלחת הצעת עבודה לעובד זה - ממתין לתשובה</span>
         </div>
       )}
 
@@ -237,7 +237,7 @@ function ApplicantCard({
           )}
         </div>
 
-        {/* Status badge — Radix Tooltip via shared StatusBadge */}
+        {/* Status badge - Radix Tooltip via shared StatusBadge */}
         <StatusBadge
           status={app.status}
           effectiveStatus={effectiveStatus}
@@ -266,7 +266,7 @@ function ApplicantCard({
         </p>
       )}
 
-      {/* ── Message — identical quote style to MyApplications ── */}
+      {/* ── Message - identical quote style to MyApplications ── */}
       {app.message && (
         <p
           className="text-xs italic mb-2 line-clamp-2 px-3 py-2 rounded-lg"
@@ -377,7 +377,7 @@ function ApplicantCard({
               ✓ העובד אישר את ההצעה!
             </p>
             <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.10 150)" }}>
-              הטלפון של העובד גלוי — צור קשר עכשיו
+              הטלפון של העובד גלוי - צור קשר עכשיו
             </p>
           </div>
           {phone && (
@@ -405,7 +405,7 @@ function ApplicantCard({
         </>
       )}
 
-      {/* ── Bottom row: view profile link + share — mirrors MyApplications ── */}
+      {/* ── Bottom row: view profile link + share - mirrors MyApplications ── */}
       <div className="mt-2 flex items-center gap-2">
         <button
           onClick={async () => {
@@ -601,7 +601,7 @@ export default function JobApplications() {
             <CheckCircle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "oklch(0.45 0.18 160)" }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.14 160)" }}>
-                המשרה הושלמה — קיבלת 3 מועמדים
+                המשרה הושלמה - קיבלת 3 מועמדים
               </p>
               <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 160)" }}>
                 המשרה נסגרה אוטומטית. לא ניתן לשלוח הצעות נוספות.
@@ -733,7 +733,7 @@ export default function JobApplications() {
               {offered.length > 0 && (
                 <section key="offered">
                   <SectionHeader
-                    title="הצעות שנשלחו — ממתינות לתשובת העובד"
+                    title="הצעות שנשלחו - ממתינות לתשובת העובד"
                     count={offered.length}
                     bg="oklch(0.55 0.18 260 / 0.10)"
                     color="oklch(0.45 0.18 260)"
@@ -758,7 +758,7 @@ export default function JobApplications() {
               {offerAccepted.length > 0 && (
                 <section key="offer-accepted">
                   <SectionHeader
-                    title="אישרו הצעה — טלפון העובד גלוי"
+                    title="אישרו הצעה - טלפון העובד גלוי"
                     count={offerAccepted.length}
                     bg="oklch(0.65 0.22 160 / 0.12)"
                     color="oklch(0.52 0.22 150)"

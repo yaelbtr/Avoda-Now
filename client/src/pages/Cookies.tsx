@@ -1,5 +1,5 @@
 /**
- * Cookies.tsx — מדיניות עוגיות
+ * Cookies.tsx - מדיניות עוגיות
  * Follows the same layout pattern as Privacy.tsx and Terms.tsx.
  */
 
@@ -27,13 +27,13 @@ export default function Cookies() {
         <section id="cookie-types" className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-base font-semibold mb-2">2. סוגי עוגיות בהן אנו משתמשים</h2>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{`עוגיות חיוניות (תמיד פעילות):
-• עוגיית session — שומרת את מצב ההתחברות שלך לאורך הביקור.
-• JWT cookie — מאמתת את זהותך מול השרת בכל בקשה.
-• CSRF token — מגנה על פעולות טפסים מפני התקפות.
+• עוגיית session - שומרת את מצב ההתחברות שלך לאורך הביקור.
+• JWT cookie - מאמתת את זהותך מול השרת בכל בקשה.
+• CSRF token - מגנה על פעולות טפסים מפני התקפות.
 אין אפשרות לבטל עוגיות אלו, שכן הן נדרשות לתפעול הפלטפורמה.
 
 עוגיות אנליטיקה (ניתנות לביטול):
-• Umami Analytics — מודד צפיות בדפים, מקורות תנועה וזמן שהייה.
+• Umami Analytics - מודד צפיות בדפים, מקורות תנועה וזמן שהייה.
   אינו אוסף מידע אישי מזהה ואינו משתמש ב-fingerprinting.
   ניתן לבטל עוגיות אלו בהגדרות העוגיות.`}</p>
         </section>
@@ -48,9 +48,9 @@ export default function Cookies() {
 
         <section id="retention" className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-base font-semibold mb-2">4. משך חיי העוגיות</h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{`• עוגיות session — פוקעות עם סגירת הדפדפן.
-• עוגיית אימות (JWT) — תוקף של 30 יום, מתחדשת בכל כניסה.
-• הגדרות הסכמה (cookieConsent) — נשמרות ב-localStorage ללא תפוגה, עד לניקוי ידני.`}</p>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{`• עוגיות session - פוקעות עם סגירת הדפדפן.
+• עוגיית אימות (JWT) - תוקף של 30 יום, מתחדשת בכל כניסה.
+• הגדרות הסכמה (cookieConsent) - נשמרות ב-localStorage ללא תפוגה, עד לניקוי ידני.`}</p>
         </section>
 
         <section id="manage" className="bg-card rounded-xl border border-border p-5">
@@ -65,9 +65,9 @@ export default function Cookies() {
         <section id="gdpr" className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-base font-semibold mb-2">6. זכויותיך (GDPR / חוק הגנת הפרטיות)</h2>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{`בהתאם לחוק הגנת הפרטיות ולתקנות GDPR, עומדות לך הזכויות הבאות:
-• זכות לגישה — לדעת אילו עוגיות נאספות ולמה.
-• זכות לביטול הסכמה — לשנות העדפות בכל עת.
-• זכות למחיקה — לנקות את כל נתוני העוגיות.
+• זכות לגישה - לדעת אילו עוגיות נאספות ולמה.
+• זכות לביטול הסכמה - לשנות העדפות בכל עת.
+• זכות למחיקה - לנקות את כל נתוני העוגיות.
 
 לפניות בנושא פרטיות ועוגיות, ניתן לפנות אלינו דרך דף יצירת הקשר.`}</p>
         </section>

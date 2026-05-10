@@ -1,5 +1,5 @@
 /**
- * jobSlug.ts — utilities for generating and parsing slug-based job URLs.
+ * jobSlug.ts - utilities for generating and parsing slug-based job URLs.
  *
  * Format: /job/{id}-{slug}
  * Examples:

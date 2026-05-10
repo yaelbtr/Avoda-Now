@@ -44,7 +44,7 @@ function mockRes() {
   return res as unknown as Response & { statusCode: number; body: unknown };
 }
 
-describe("trpcPathTraversalGuard — CWE-22 path traversal protection", () => {
+describe("trpcPathTraversalGuard - CWE-22 path traversal protection", () => {
   // ── 1. Legitimate tRPC batch URLs must pass ──────────────────────────────
   it("allows legitimate single procedure path", () => {
     const req = mockReq("/jobs.list");

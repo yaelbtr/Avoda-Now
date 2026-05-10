@@ -1,28 +1,28 @@
 /**
- * AppButton — מערכת כפתורים מרכזית
+ * AppButton - מערכת כפתורים מרכזית
  *
  * כל הכפתורים באפליקציה משתמשים בקומפוננט זה.
- * כדי לשנות עיצוב כפתור — שנה רק כאן.
+ * כדי לשנות עיצוב כפתור - שנה רק כאן.
  *
  * Variants:
- *   primary      — כחול ראשי (CTA, שמירה, פרסום)
- *   secondary    — אפור / לבן (פעולות משניות)
- *   outline      — מסגרת בלבד
- *   ghost        — שקוף, ללא מסגרת
- *   destructive  — אדום (מחיקה, דיווח)
- *   success      — ירוק (אישור, WhatsApp)
- *   whatsapp     — ירוק WhatsApp עם גרדיאנט
- *   brand        — גרדיאנט כחול ראשי (hero CTA)
- *   cta          — כפתור ראשי כהה ("המשך כעובד" style): גרדיאנט זית כהה, טקסט לבן, font-black, צל עמוק
- *   cta-outline  — כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
- *   link         — טקסט בלבד כמו קישור
+ *   primary      - כחול ראשי (CTA, שמירה, פרסום)
+ *   secondary    - אפור / לבן (פעולות משניות)
+ *   outline      - מסגרת בלבד
+ *   ghost        - שקוף, ללא מסגרת
+ *   destructive  - אדום (מחיקה, דיווח)
+ *   success      - ירוק (אישור, WhatsApp)
+ *   whatsapp     - ירוק WhatsApp עם גרדיאנט
+ *   brand        - גרדיאנט כחול ראשי (hero CTA)
+ *   cta          - כפתור ראשי כהה ("המשך כעובד" style): גרדיאנט זית כהה, טקסט לבן, font-black, צל עמוק
+ *   cta-outline  - כפתור ניגודי ל-cta: רקע לבן, טקסט זית כהה, מסגרת זית כהה
+ *   link         - טקסט בלבד כמו קישור
  *
  * Sizes:
- *   xs   — טקסט קטן מאוד (פילטרים, תגיות)
- *   sm   — כפתור קטן
- *   md   — ברירת מחדל
- *   lg   — גדול (hero, submit)
- *   icon — ריבוע / עגול לאייקון בלבד
+ *   xs   - טקסט קטן מאוד (פילטרים, תגיות)
+ *   sm   - כפתור קטן
+ *   md   - ברירת מחדל
+ *   lg   - גדול (hero, submit)
+ *   icon - ריבוע / עגול לאייקון בלבד
  */
 
 import * as React from "react";
@@ -109,7 +109,7 @@ function getInlineStyle(variant: string | null | undefined, hovered = false): Re
       // On hover: slightly darker cream bg, border darkens a touch
       if (hovered) {
         return {
-          background: "oklch(0.9700 0.0200 91.0)",  // warm linen — slightly darker on hover
+          background: "oklch(0.9700 0.0200 91.0)",  // warm linen - slightly darker on hover
           color: C_BRAND_HEX,
           border: `1px solid ${C_BORDER}`,
           boxShadow: "0 1px 4px rgba(0,0,0,0.08)",

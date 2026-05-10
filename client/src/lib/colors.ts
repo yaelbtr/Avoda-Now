@@ -1,17 +1,17 @@
 /**
- * AvodaGo — Centralized Color Palette
+ * AvodaGo - Centralized Color Palette
  * ─────────────────────────────────────
  * Palette: Olive Grove / Amber Harvest / Sun-Kissed Citrus / Honey Wheat / Vanilla Linen
  *
  * All brand colors live here. To swap the palette, edit only this file.
  *
  * Convention:
- *   C.<TOKEN>        — raw oklch / hex string for use in inline `style={}`
- *   CSS custom props — defined in index.css under :root { --brand-* }
+ *   C.<TOKEN>        - raw oklch / hex string for use in inline `style={}`
+ *   CSS custom props - defined in index.css under :root { --brand-* }
  *                      for use in Tailwind classes (bg-[var(--brand-primary)] etc.)
  */
 
-// ─── Primary brand — Olive Grove #4F583B ─────────────────────────────────────
+// ─── Primary brand - Olive Grove #4F583B ─────────────────────────────────────
 export const C_BRAND           = "oklch(0.38 0.07 125.0)";   // deep rich olive
 export const C_BRAND_DARK      = "oklch(0.30 0.07 125.0)";   // very dark olive
 export const C_BRAND_MID       = "oklch(0.50 0.07 125.0)";   // mid olive tint
@@ -22,24 +22,24 @@ export const C_BRAND_SUBTLE    = "oklch(0.44 0.07 125.0)";   // slightly brighte
 export const C_BRAND_HEX       = "#3d4a28";                  // deep rich olive
 export const C_BRAND_DARK_HEX  = "#2e3a1c";                  // very dark olive
 
-// ─── Accent — Amber Harvest #D9A450 ──────────────────────────────────────────
+// ─── Accent - Amber Harvest #D9A450 ──────────────────────────────────────────
 export const C_AMBER           = "oklch(0.75 0.12 76.7)";    // Amber Harvest
 export const C_AMBER_DARK      = "oklch(0.65 0.13 76.7)";    // darker amber
 export const C_AMBER_LIGHT     = "oklch(0.75 0.12 76.7 / 0.15)";
 export const C_AMBER_HEX       = "#D9A450";
 
-// ─── Highlight — Sun-Kissed Citrus #F4B840 ───────────────────────────────────
+// ─── Highlight - Sun-Kissed Citrus #F4B840 ───────────────────────────────────
 export const C_CITRUS          = "oklch(0.82 0.15 80.8)";    // Sun-Kissed Citrus
 export const C_CITRUS_DARK     = "oklch(0.72 0.15 80.8)";    // darker citrus
 export const C_CITRUS_LIGHT    = "oklch(0.82 0.15 80.8 / 0.15)";
 export const C_CITRUS_HEX      = "#F4B840";
 
-// ─── Neutral warm — Honey Wheat #EAD7B2 ──────────────────────────────────────
+// ─── Neutral warm - Honey Wheat #EAD7B2 ──────────────────────────────────────
 export const C_HONEY           = "oklch(0.89 0.05 84.0)";    // Honey Wheat
 export const C_HONEY_DARK      = "oklch(0.80 0.06 84.0)";
 export const C_HONEY_HEX       = "#EAD7B2";
 
-// ─── Background — Vanilla Linen #F8F4E8 ──────────────────────────────────────
+// ─── Background - Vanilla Linen #F8F4E8 ──────────────────────────────────────
 export const C_LINEN           = "oklch(0.97 0.02 91.6)";    // Vanilla Linen
 export const C_LINEN_HEX       = "#F8F4E8";
 

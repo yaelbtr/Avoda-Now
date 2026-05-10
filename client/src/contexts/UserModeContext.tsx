@@ -23,7 +23,7 @@ function loadRoleFromStorage(currentUserId?: number): UserMode {
       savedUserId !== null &&
       Number(savedUserId) !== currentUserId
     ) {
-      // Different user — clear stale data
+      // Different user - clear stale data
       localStorage.removeItem(LS_KEY);
       localStorage.removeItem(LS_USER_KEY);
       return null;
@@ -92,7 +92,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   const authQuery = useAuthQuery();
   const userId = user?.id;
 
-  // Initialise from localStorage — but only if it belongs to the current user.
+  // Initialise from localStorage - but only if it belongs to the current user.
   // We can't know userId synchronously on first render, so start with null and
   // let the effect below set it once auth resolves.
   const [localMode, setLocalMode] = useState<UserMode>(null);
@@ -122,7 +122,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   // When user authenticates, promote guest role to authenticated storage and clear session
   useEffect(() => {
     if (isAuthenticated && guestMode) {
-      // Guest just logged in — carry their session role over to authenticated storage
+      // Guest just logged in - carry their session role over to authenticated storage
       saveRoleToStorage(guestMode, userId);
       setLocalMode(guestMode);
       clearGuestRole();
@@ -166,14 +166,14 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
   // After the first server fetch completes:
   // - If server has a mode → use it (and sync to localStorage)
   // - If server has null AND no mutation is pending → clear stale localStorage
-  //   (don't clear if setMode mutation is in-flight — server hasn't saved yet)
+  //   (don't clear if setMode mutation is in-flight - server hasn't saved yet)
   useEffect(() => {
     if (!hasChecked) return;
     if (serverMode) {
       setLocalMode(serverMode);
       saveRoleToStorage(serverMode, userId);
     } else if (!setModeMutation.isPending) {
-      // Server explicitly says no mode and no mutation in-flight — clear stale local value
+      // Server explicitly says no mode and no mutation in-flight - clear stale local value
       setLocalMode(null);
       clearRoleFromStorage();
     }
@@ -210,7 +210,7 @@ export function UserModeProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Sets local mode only (no server mutation) — used when RoleSelectionScreen
+  // Sets local mode only (no server mutation) - used when RoleSelectionScreen
   // already sent the mutation itself and we just need to update local state.
   const setLocalModeOnly = (mode: "worker" | "employer") => {
     if (isAuthenticated) {

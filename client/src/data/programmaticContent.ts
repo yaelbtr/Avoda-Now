@@ -1,7 +1,7 @@
 /**
  * Programmatic SEO/AEO Content Engine
  * Generates 180+ pages from category × city × intent combinations.
- * Single source of truth — all text, meta, FAQ, and internal links
+ * Single source of truth - all text, meta, FAQ, and internal links
  * are derived from this file. Never duplicate logic in page components.
  */
 
@@ -150,7 +150,7 @@ function buildHowToPage(cat: CategoryDef, city: CityDef): Omit<ProgrammaticPage,
       },
     ],
     faq: buildFAQ(cat, city, "how_to"),
-    metaTitle: `איך למצוא ${cat.nameHeWithArticle} ב${city.name} — AvodaGo`,
+    metaTitle: `איך למצוא ${cat.nameHeWithArticle} ב${city.name} - AvodaGo`,
     metaDescription: `מצא ${cat.nameHeWithArticle} זמין ב${city.name} במהירות. עובדים לפי אזור, זמינות מיידית, ויצירת קשר ישיר. ${cat.avgPrice}.`,
     schemaType: "HowTo",
   };
@@ -161,8 +161,8 @@ function buildUrgentPage(cat: CategoryDef, city: CityDef): Omit<ProgrammaticPage
     category: cat,
     city,
     intent: "urgent",
-    h1: `${cat.nameHeWithArticle} בדחיפות ב${city.name} — מהיום להיום`,
-    intro: `כשצריך ${cat.nameHeWithArticle} בדחיפות ב${city.name}, כל דקה חשובה. הדרך המהירה ביותר היא פלטפורמה עם עובדים שמסמנים זמינות בזמן אמת — ניתן לראות מי זמין עכשיו ולתאם תוך דקות.`,
+    h1: `${cat.nameHeWithArticle} בדחיפות ב${city.name} - מהיום להיום`,
+    intro: `כשצריך ${cat.nameHeWithArticle} בדחיפות ב${city.name}, כל דקה חשובה. הדרך המהירה ביותר היא פלטפורמה עם עובדים שמסמנים זמינות בזמן אמת - ניתן לראות מי זמין עכשיו ולתאם תוך דקות.`,
     sections: [
       {
         title: `איך למצוא ${cat.nameHeWithArticle} בהתראה קצרה`,
@@ -178,7 +178,7 @@ function buildUrgentPage(cat: CategoryDef, city: CityDef): Omit<ProgrammaticPage
       },
     ],
     faq: buildFAQ(cat, city, "urgent"),
-    metaTitle: `${cat.nameHeWithArticle} בדחיפות ב${city.name} — מהיום להיום | AvodaGo`,
+    metaTitle: `${cat.nameHeWithArticle} בדחיפות ב${city.name} - מהיום להיום | AvodaGo`,
     metaDescription: `מצא ${cat.nameHeWithArticle} בדחיפות ב${city.name}. עובדים זמינים עכשיו, יצירת קשר מיידית. ${cat.avgPrice}.`,
     schemaType: "FAQPage",
   };
@@ -206,7 +206,7 @@ function buildPricePage(cat: CategoryDef, city: CityDef): Omit<ProgrammaticPage,
       },
     ],
     faq: buildFAQ(cat, city, "price"),
-    metaTitle: `כמה עולה ${cat.nameHeWithArticle} ב${city.name} — מחירים ועלויות | AvodaGo`,
+    metaTitle: `כמה עולה ${cat.nameHeWithArticle} ב${city.name} - מחירים ועלויות | AvodaGo`,
     metaDescription: `מחיר ${cat.nameHe} ב${city.name}: ${cat.avgPrice}. מה משפיע על המחיר ואיך לקבל הצעה הוגנת.`,
     schemaType: "FAQPage",
   };

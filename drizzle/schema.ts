@@ -46,7 +46,7 @@ export const notificationPrefsEnum = pgEnum("notification_prefs", [
   "none",
 ]);
 // NOTE: category is stored as a free-form varchar that matches the `categories.slug` column.
-// Do NOT use a pgEnum here — the categories table is the single source of truth for valid slugs.
+// Do NOT use a pgEnum here - the categories table is the single source of truth for valid slugs.
 export const JOB_CATEGORY_SLUGS = [
   "delivery",
   "warehouse",
@@ -142,7 +142,7 @@ export const consentTypeEnum = pgEnum("consent_type", [
 
 /**
  * Users authenticated via Twilio SMS OTP.
- * phone is the primary identity — stored in E.164 format (+972XXXXXXXXX).
+ * phone is the primary identity - stored in E.164 format (+972XXXXXXXXX).
  * openId is kept for backward-compat with the OAuth context layer but is
  * set to the phone number for phone-auth users.
  */
@@ -170,7 +170,7 @@ export const users = pgTable("users", {
   preferredCategories: json("preferredCategories").$type<string[]>(),
   /** Worker's preferred city / area (legacy single city) */
   preferredCity: varchar("preferredCity", { length: 100 }),
-  /** Google Maps place_id for the worker's preferred city — canonical city identifier */
+  /** Google Maps place_id for the worker's preferred city - canonical city identifier */
   preferredCityPlaceId: varchar("preferredCityPlaceId", { length: 100 }),
   /** Worker's preferred cities (JSON array of city IDs from the cities table) */
   preferredCities: json("preferredCities").$type<number[]>(),
@@ -181,7 +181,7 @@ export const users = pgTable("users", {
   /** Worker's GPS longitude for radius-based matching */
   workerLongitude: numeric("workerLongitude", { precision: 10, scale: 7 }),
   /**
-   * PostGIS Point geometry (SRID 4326) — auto-computed from workerLatitude/workerLongitude.
+   * PostGIS Point geometry (SRID 4326) - auto-computed from workerLatitude/workerLongitude.
    * Used for ST_DWithin radius queries; faster than Haversine at scale.
    * Populated by updateWorkerProfile whenever lat/lng are saved.
    */
@@ -233,12 +233,12 @@ export const users = pgTable("users", {
   forcedLogoutAt: bigint("forcedLogoutAt", { mode: "number" }),
 
   // ── Employer-specific profile fields ─────────────────────────────────────
-  /** Company name (optional) — displayed on job cards and employer profile */
+  /** Company name (optional) - displayed on job cards and employer profile */
   companyName: varchar("companyName", { length: 120 }),
   /** Short bio / description for the employer */
   employerBio: text("employerBio"),
   /**
-   * Default job location city ID — pre-filled when posting a new job.
+   * Default job location city ID - pre-filled when posting a new job.
    * References the cities table.
    */
   defaultJobCityId: integer("defaultJobCityId"),
@@ -249,7 +249,7 @@ export const users = pgTable("users", {
   /** Default job longitude for map display */
   defaultJobLongitude: numeric("defaultJobLongitude", { precision: 10, scale: 7 }),
   /**
-   * Employer preferred worker search city — used to filter available workers.
+   * Employer preferred worker search city - used to filter available workers.
    */
   workerSearchCity: varchar("workerSearchCity", { length: 100 }),
   /** Worker search city ID */
@@ -270,7 +270,7 @@ export const users = pgTable("users", {
   /**
    * UTM / referral source captured at first visit and saved at registration.
    * Values: "facebook" (fbclid), "google" (gclid), "organic", or raw utm_source.
-   * Set once at signup — never overwritten on subsequent logins.
+   * Set once at signup - never overwritten on subsequent logins.
    */
   referralSource: varchar("referralSource", { length: 64 }),
   /** utm_campaign value captured on first visit (e.g. "summer_promo") */
@@ -297,7 +297,7 @@ export const otpRateLimit = pgTable("otp_rate_limit", {
   sendCount: integer("sendCount").default(1).notNull(),
   /** Number of verification attempts (wrong code) */
   verifyAttempts: integer("verifyAttempts").default(0).notNull(),
-  /** Window start — reset after 1 hour */
+  /** Window start - reset after 1 hour */
   windowStart: timestamp("windowStart", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -308,11 +308,11 @@ export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull(),
-  /** Category slug — matches categories.slug (free-form varchar, not enum) */
+  /** Category slug - matches categories.slug (free-form varchar, not enum) */
   category: varchar("category", { length: 64 }).notNull(),
   address: varchar("address", { length: 300 }).notNull(),
   city: varchar("city", { length: 100 }),
-  /** Google Maps place_id for the job's city — canonical city identifier for matching */
+  /** Google Maps place_id for the job's city - canonical city identifier for matching */
   cityPlaceId: varchar("cityPlaceId", { length: 100 }),
   latitude: numeric("latitude", { precision: 10, scale: 7 }).notNull(),
   longitude: numeric("longitude", { precision: 10, scale: 7 }).notNull(),
@@ -369,7 +369,7 @@ export const jobs = pgTable("jobs", {
   imageUrls: json("imageUrls").$type<string[]>(),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
-  /** PostGIS Point geometry (SRID 4326) — populated from latitude/longitude for spatial queries */
+  /** PostGIS Point geometry (SRID 4326) - populated from latitude/longitude for spatial queries */
   location: geometry("location"),
 });
 
@@ -377,7 +377,7 @@ export type Job = typeof jobs.$inferSelect;
 export type InsertJob = typeof jobs.$inferInsert;
 
 /**
- * Job applications — tracks when a worker applies to a job.
+ * Job applications - tracks when a worker applies to a job.
  * Prevents duplicate applications and provides employer with applicant details.
  */
 export const applications = pgTable("applications", {
@@ -432,7 +432,7 @@ export const workerAvailability = pgTable("worker_availability", {
   reminderSentAt: timestamp("reminderSentAt", { withTimezone: true }),
   createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
-  /** PostGIS Point geometry (SRID 4326) — populated from latitude/longitude for spatial queries */
+  /** PostGIS Point geometry (SRID 4326) - populated from latitude/longitude for spatial queries */
   location: geometry("location"),
 });
 
@@ -644,7 +644,7 @@ export type Region = typeof regions.$inferSelect;
 export type InsertRegion = typeof regions.$inferInsert;
 
 /**
- * worker_regions — many-to-many mapping between workers and regions.
+ * worker_regions - many-to-many mapping between workers and regions.
  * A worker can belong to multiple regions:
  *   1. Any region whose center is within the worker's GPS radius.
  *   2. Any region whose centerCity matches one of the worker's preferredCities.
@@ -666,7 +666,7 @@ export type WorkerRegion = typeof workerRegions.$inferSelect;
 export type InsertWorkerRegion = typeof workerRegions.$inferInsert;
 
 /**
- * region_notification_requests — stores requests from users (workers or employers)
+ * region_notification_requests - stores requests from users (workers or employers)
  * who want to be notified when a region becomes active.
  * Unique per user + region combination.
  */
@@ -686,7 +686,7 @@ export type RegionNotificationRequest = typeof regionNotificationRequests.$infer
 export type InsertRegionNotificationRequest = typeof regionNotificationRequests.$inferInsert;
 
 /**
- * System settings — key/value store for global configuration flags.
+ * System settings - key/value store for global configuration flags.
  * Examples: maintenanceMode = "true" | "false"
  */
 export const systemSettings = pgTable("system_settings", {
@@ -697,7 +697,7 @@ export const systemSettings = pgTable("system_settings", {
 export type SystemSetting = typeof systemSettings.$inferSelect;
 
 /**
- * user_consents — records explicit user consent to legal documents.
+ * user_consents - records explicit user consent to legal documents.
  * Stores one row per user per consent type with the document version they agreed to.
  * Used for GDPR/legal compliance audit trail.
  */
@@ -722,7 +722,7 @@ export type UserConsent = typeof userConsents.$inferSelect;
 export type InsertUserConsent = typeof userConsents.$inferInsert;
 
 /**
- * legal_acknowledgements — audit log for legal confirmations.
+ * legal_acknowledgements - audit log for legal confirmations.
  * Currently used to record when a worker submits their birth date
  * and declares the information is accurate (ack_type = "birth_date_declaration").
  * Future use: employer confirmation when hiring a minor worker.
@@ -737,8 +737,8 @@ export const legalAcknowledgements = pgTable("legal_acknowledgements", {
   jobId: integer("job_id").references(() => jobs.id, { onDelete: "set null" }),
   /**
    * Type of acknowledgement:
-   * - "birth_date_declaration" — worker confirmed their birth date is accurate
-   * - "minor_employment_confirmation" — employer confirmed compliance with Youth Employment Law
+   * - "birth_date_declaration" - worker confirmed their birth date is accurate
+   * - "minor_employment_confirmation" - employer confirmed compliance with Youth Employment Law
    */
   ackType: varchar("ack_type", { length: 64 }).notNull(),
   approved: boolean("approved").default(true).notNull(),
@@ -748,7 +748,7 @@ export type LegalAcknowledgement = typeof legalAcknowledgements.$inferSelect;
 export type InsertLegalAcknowledgement = typeof legalAcknowledgements.$inferInsert;
 
 /**
- * birthdate_changes — immutable audit log for every birthDate update.
+ * birthdate_changes - immutable audit log for every birthDate update.
  * Provides a forensic trail for legal/compliance purposes.
  * Rate-limiting: check this table to enforce max 1 change per 30 days.
  */
@@ -770,7 +770,7 @@ export type InsertBirthdateChange = typeof birthdateChanges.$inferInsert;
 
 // ─── System Logs ──────────────────────────────────────────────────────────────
 /**
- * system_logs — centralised event/error log for debugging and support.
+ * system_logs - centralised event/error log for debugging and support.
  *
  * level:  "info" | "warn" | "error"
  * event:  machine-readable key, e.g. "otp.send", "otp.verify.fail", "signup.complete"
@@ -795,7 +795,7 @@ export type SystemLog = typeof systemLogs.$inferSelect;
 export type InsertSystemLog = typeof systemLogs.$inferInsert;
 
 /**
- * email_verifications — stores hashed OTP codes for email-based authentication.
+ * email_verifications - stores hashed OTP codes for email-based authentication.
  * - codeHash: SHA-256 of the 6-digit code (never store raw code)
  * - expiresAt: 5 minutes from creation
  * - attempts: incremented on each wrong guess; blocked after 5
@@ -816,7 +816,7 @@ export type EmailVerification = typeof emailVerifications.$inferSelect;
 export type InsertEmailVerification = typeof emailVerifications.$inferInsert;
 
 /**
- * email_unsubscribes — tracks users who have opted out of marketing emails.
+ * email_unsubscribes - tracks users who have opted out of marketing emails.
  * - token: a unique random token used in the unsubscribe link (no auth required)
  * - unsubscribedAt: set when the user confirms unsubscribe; null = token created but not yet confirmed
  */
@@ -838,7 +838,7 @@ export type EmailUnsubscribe = typeof emailUnsubscribes.$inferSelect;
 export type InsertEmailUnsubscribe = typeof emailUnsubscribes.$inferInsert;
 
 /**
- * referral_links — admin-managed trackable referral links.
+ * referral_links - admin-managed trackable referral links.
  * Each link has a unique short code (e.g. "fb-jan26") that redirects to the
  * homepage while recording a click. When a user registers after clicking the
  * link (referralSource matches the code), the registration is attributed.
@@ -870,7 +870,7 @@ export type InsertReferralLink = typeof referralLinks.$inferInsert;
 
 // ─── Notification Logs ────────────────────────────────────────────────────────
 /**
- * notification_logs — per-worker delivery record for every notification dispatch.
+ * notification_logs - per-worker delivery record for every notification dispatch.
  * One row per worker per batch. Enables the admin panel to show exactly who was
  * notified, via which channel, and whether delivery succeeded.
  *

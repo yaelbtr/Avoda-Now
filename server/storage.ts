@@ -114,7 +114,7 @@ export async function storageDelete(relKey: string): Promise<void> {
     method: "DELETE",
     headers: buildAuthHeaders(apiKey),
   });
-  // 404 means the file is already gone — treat as success
+  // 404 means the file is already gone - treat as success
   if (!response.ok && response.status !== 404) {
     const message = await response.text().catch(() => response.statusText);
     throw new Error(

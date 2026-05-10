@@ -1,5 +1,5 @@
 /**
- * cityValidation.ts — Single source of truth for city name validation.
+ * cityValidation.ts - Single source of truth for city name validation.
  *
  * Used by:
  *  - CityAutocomplete (client-side inline error)
@@ -37,10 +37,10 @@ export const CITY_MAX_LENGTH = 40;
  * Keyword → localities that contain it:
  *  שדרות  → שדרות (city in Negev)
  *  כיכר   → כיכר המדינה (neighbourhood/area used as a city reference)
- *  דרך    → (no standalone locality named "דרך X" — kept for safety)
+ *  דרך    → (no standalone locality named "דרך X" - kept for safety)
  *  מעלה   → מעלה אדומים, מעלה גלבוע, מעלה עירון, מעלה אפרים, מעלה מכמש,
  *            מעלה שומרון, מעלה זיתים, מעלה לבונה, מעלה חמישה
- *  מורד   → (no known locality — kept for safety)
+ *  מורד   → (no known locality - kept for safety)
  *  שכונת  → (prefix, not a locality name)
  */
 export const CITY_ALLOWLIST: ReadonlySet<string> = new Set([
@@ -148,7 +148,7 @@ export function validateCityName(
     };
   }
 
-  // Rule 5: address keyword guard — skip for allowlisted locality names.
+  // Rule 5: address keyword guard - skip for allowlisted locality names.
   // Normalise to trimmed lowercase for a case-insensitive comparison.
   const normalised = trimmed.toLowerCase();
   const isAllowlisted = Array.from(CITY_ALLOWLIST).some(
@@ -167,7 +167,7 @@ export function validateCityName(
 
 /**
  * Zod-compatible refine function for use in server-side schemas.
- * Returns true when the value is valid (or empty/undefined — let `.optional()`
+ * Returns true when the value is valid (or empty/undefined - let `.optional()`
  * handle the required check separately).
  *
  * Usage:

@@ -22,8 +22,8 @@ import BelowFold from "@/components/BelowFold";
 import { toast } from "sonner";
 import { useCountdown } from "@/hooks/useCountdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import workerHeroCollage from "@/assets/homeWork.png";
-// סקציות חדשות — שלב collecting workers
+import workerHeroCollage from "@/assets/homeWork2.png";
+// סקציות חדשות - שלב collecting workers
 import { HowItWorksSimple } from "@/components/home/HowItWorksSimple";
 // Lazy: נטען רק אחרי גלילה
 const StickyBottomCta = lazy(() =>
@@ -96,22 +96,23 @@ const editorial = {
 };
 
 function renderHighlightedSubtitle(text: string) {
-  return text.split(/(עכשיו|ללא עמלות|ללא עמלה)/g).map((part, index) => {
-    const isHighlight = part === "עכשיו" || part === "ללא עמלות" || part === "ללא עמלה";
+  return text.split(/(עכשיו|ללא עמלות|ללא עמלה|חינם)/g).map((part, index) => {
+    const isHighlight = part === "עכשיו" || part === "ללא עמלות" || part === "ללא עמלה" || part === "חינם";
     if (!isHighlight) return part;
 
     return (
       <span
         key={`${part}-${index}`}
         style={{
-          color: "#7A3E06",
-          fontWeight: 900,
-          textDecoration: "underline",
-          textDecorationColor: "rgb(122 62 6 / 0.50)",
+          color: "oklch(0.91 0.21 98.84 / 0.98)",
+          fontWeight: 700,
+          fontSize:"19px",
+          // textDecoration: "underline",
+          // textDecorationColor: "rgb(122 62 6 / 0.50)",
           textDecorationThickness: 2,
-          textUnderlineOffset: 3,
-          textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
-          background: "rgb(184 105 20 / 0.11)",
+        //    textUnderlineOffset: 3,
+          // textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
+          // background: "rgb(184 105 20 / 0.11)",
           borderRadius: 4,
           padding: "0 3px",
         }}
@@ -216,7 +217,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "קבל הצעות עבודה ממעסיקים",
-    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה — אתה מחליט אם לאשר.",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה - אתה מחליט אם לאשר.",
     imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
     reverse: true,
   },
@@ -249,7 +250,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [customHours, setCustomHours] = useState<string>("");
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const [ctaHovered, setCtaHovered] = useState(false);
-  // Sticky CTA — נטען רק אחרי גלילה כדי לחסוך באנדל
+  // Sticky CTA - נטען רק אחרי גלילה כדי לחסוך באנדל
   const [showStickyCta, setShowStickyCta] = useState(false);
   // כותרת משנית מתחלפת
   const [subtitleIndex, setSubtitleIndex] = useState(0);
@@ -275,13 +276,13 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     navigate("/worker-profile");
   };
   useSEO({
-    title: "AvodaGo — עבודות זמניות בישראל",
-    description: "הצטרפו לאלפי עובדים שכבר רשומים. בחרו תחומים ואזור — וקבלו הצעות ממעסיקים ישירות. ללא עמלות.",
+    title: "AvodaGo - עבודות זמניות בישראל",
+    description: "הצטרפו לאלפי עובדים שכבר רשומים. בחרו תחומים ואזור - וקבלו הצעות ממעסיקים ישירות. ללא עמלות.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
   });
 
-  // ── Sticky CTA scroll detection — ההורה שולט מתי לטעון את הצ'אנק ──
+  // ── Sticky CTA scroll detection - ההורה שולט מתי לטעון את הצ'אנק ──
   useEffect(() => {
     if (showStickyCta) return;
     const onScroll = () => {
@@ -395,7 +396,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               color: "white",
               fontFamily: editorial.displayFont,
               letterSpacing: 0,
-              textShadow: "0 2px 18px rgb(0 0 0 / 0.34)",
+              textShadow: "rgb(0 0 0) 0px 2px 18px",
 
             }}
           >
@@ -412,7 +413,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 exit={{ opacity: 0, y: -14 }}
                 transition={{ duration: 0.38, ease: "easeInOut" }}
                 style={{
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: 700,
                   color: "rgb(27 28 26 / 0.94)",
                   fontFamily: editorial.uiFont,
@@ -451,7 +452,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               transform: "scale(1.024)",
             }}
           />
-          <div aria-hidden style={{
+          {/* <div aria-hidden style={{
             position: "absolute", inset: 0,
             background: "rgb(27 28 26 / 0.07)",
             zIndex: 1,
@@ -462,8 +463,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             background: "linear-gradient(90deg, rgb(27 28 26 / 0.18) 0%, rgb(27 28 26 / 0.06) 20%, transparent 38%, transparent 62%, rgb(27 28 26 / 0.08) 80%, rgb(27 28 26 / 0.20) 100%)",
             zIndex: 2,
             pointerEvents: "none",
-          }} />
-          <div aria-hidden style={{
+          }} />   */}
+          {/* <div aria-hidden style={{
             position: "absolute",
             top: 0,
             bottom: 0,
@@ -472,8 +473,8 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             background: "linear-gradient(to right, rgb(27 28 26 / 0.30) 0%, rgb(27 28 26 / 0.16) 42%, transparent 100%)",
             zIndex: 2,
             pointerEvents: "none",
-          }} />
-          <div aria-hidden style={{
+          }} /> */}
+          {/* <div aria-hidden style={{
             position: "absolute",
             top: 0,
             bottom: 0,
@@ -485,7 +486,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             WebkitMaskImage: "linear-gradient(to left, black 20%, transparent 100%)",
             zIndex: 2,
             pointerEvents: "none",
-          }} />
+          }} /> */}
           <img
             src={workerHeroCollage}
             alt={WORKER_HOME_HERO_ALT}
@@ -501,11 +502,11 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               objectFit: "cover",
               objectPosition: "center 32%",
               zIndex: 3,
-              WebkitMaskImage: "radial-gradient(ellipse 42% 35% at 50% 54%, #000 0 58%, rgb(0 0 0 / 0.66) 68%, transparent 83%)",
-              maskImage: "radial-gradient(ellipse 42% 35% at 50% 54%, #000 0 58%, rgb(0 0 0 / 0.66) 68%, transparent 83%)",
+              WebkitMaskImage: "radial-gradient(47% 55% at 50% 54%, rgb(250 249 245) 0px, rgb(0 0 0) 58%, rgb(0 0 0 / 84%) 68%, #0000003b 83%)",
+              maskImage: "radial-gradient(47% 55% at 50% 54%, rgb(250 249 245) 0px, rgb(0 0 0) 58%, rgb(0 0 0 / 84%) 68%, #0000003b 83%)",
             }}
           />
-          <div aria-hidden style={{
+          {/* <div aria-hidden style={{
             position: "absolute",
             left: "18%", top: "28%",
             width: "58%", height: "34%",
@@ -513,26 +514,18 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             mixBlendMode: "soft-light",
             zIndex: 4,
             pointerEvents: "none",
-          }} />
-          {/* Fade top of image into bg — מכסה את אזור הטקסט */}
+          }} /> */}
+          {/* Fade top of image into bg - מכסה את אזור הטקסט */}
           <div aria-hidden style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: "50%",
+            position: "absolute", top: 0, left: 0, right: 0, height: "35%",
             background: [
-              "linear-gradient(to bottom,",
-              "rgb(0 0 0 / 0.48) 0%,",
-              "rgb(0 0 0 / 0.28) 34%,",
-              "rgb(0 0 0 / 0) 100%)",
-              ",",
-              "linear-gradient(to bottom,",
-              "rgb(250 249 245 / 0.62) 0%,",
-              "rgb(250 249 245 / 0.26) 44%,",
-              "transparent 100%)",
+              "linear-gradient(rgb(250 249 245) 0%, rgb(250 249 245) 34%, rgb(250 249 245 / 0%) 100%), linear-gradient(rgba(250, 249, 245, 0.62) 0%, rgba(250, 249, 245, 0.26) 44%, #faf9f500 100%)",
             ].join(" "),
             zIndex: 5, pointerEvents: "none",
           }} />
-          {/* Fade bottom of image into bg — מכסה את אזור הכפתורים */}
+          {/* Fade bottom of image into bg - מכסה את אזור הכפתורים */}
           <div aria-hidden style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: "46%",
+            position: "absolute", bottom: 0, left: 0, right: 0, height: "26%",
             background: [
               "linear-gradient(to top,",
               `${editorial.background} 0%,`,
@@ -567,29 +560,29 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               }}
             >
               <div style={{
-                color: "#7A3E06",
+                color: "white",
                 fontWeight: 900,
-                
+                fontSize:"22px",
                 textDecorationColor: "rgb(122 62 6 / 0.50)",
                 textDecorationThickness: 2,
                 textUnderlineOffset: 3,
-                textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
+              //  . textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
               }}>
                 <TextMarquee
                   baseVelocity={-3}
                   delay={400}
                   startFromRight
-                  clasname="text-[14px] font-semibold tracking-normal leading-[34px]"
+                  clasname="text-[17px] font-semibold tracking-normal leading-[34px]"
                 >
                   <motion.span
                     style={{ display: "inline-block", transformOrigin: "top center" }}
                     animate={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0], scale: [1, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1] }}
                     transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
-                  >🔔</motion.span>{" נרשמים עכשיו ומקבלים עדיפות לעבודות ראשונות ✦ "}<motion.span
+                  >🔔</motion.span>{" נרשמים עכשיו ומקבלים עדיפות לעבודות ראשונות "}<motion.span
                     style={{ display: "inline-block", transformOrigin: "top center" }}
                     animate={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0], scale: [1, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1] }}
                     transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut", delay: 1.4 }}
-                  >🔔</motion.span>{" נשלח לך ברגע שעולה עבודה באזור שלך ✦"}
+                  >🔔</motion.span>{" נשלח לך ברגע שעולה עבודה באזור שלך "}
                 </TextMarquee>
               
               {/* <TextMarquee
@@ -666,12 +659,12 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 color: "white",
                 borderRadius: 22, fontSize: 14, fontWeight: 700,
                 border: "none",
-                boxShadow: "0 12px 32px rgba(184,105,20,0.35)",
+                // boxShadow: "0 12px 32px rgba(184,105,20,0.35)",
                 cursor: "pointer", letterSpacing: "-0.2px",
                 fontFamily: editorial.uiFont,
                 transform: "translateY(0)",
               }}
-              whileHover={{ scale: 1.02, backgroundColor: "#9E5F10", y: -1 }}
+              whileHover={{ scale: 1.02, backgroundColor: "#d2d81c", y: -1 }}
               whileTap={{ scale: 0.95, y: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
@@ -679,7 +672,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 aria-hidden
                 animate={{ x: ctaHovered ? "220%" : "-110%", opacity: ctaHovered ? 1 : 0 }}
                 transition={{ duration: 0.58, ease: "easeInOut" }}
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(105deg, transparent 28%, rgb(255 255 255 / 0.26) 50%, transparent 72%)", pointerEvents: "none", zIndex: 1 }}
+                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(105deg, transparent 28%, yellow 50%, transparent 72%)", pointerEvents: "none", zIndex: 1 }}
               />
               <UserPlus size={14} />
               צור פרופיל והתפרסם
@@ -701,9 +694,9 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             position: "absolute",
             left: 0,
             right: 0,
-            bottom: -2,
+            bottom: -12,
             height: 128,
-            background: `linear-gradient(to top, ${editorial.background} 0%, ${editorial.background} 70%, transparent 100%)`,
+            background: ` linear-gradient(to top, rgb(250 249 245) 0%, rgb(250 249 245) 70%, rgba(0, 0, 0, 0) 100%)   `,
             zIndex: 6,
             pointerEvents: "none",
           }}
@@ -752,7 +745,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, var(--editorial-surface-container) 100%)" }}
         />
 
-        {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
+        {/* Content - text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
         <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "460px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -765,7 +758,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             <Zap className="h-3 w-3" style={{ color: editorial.primary }} />
             <span className="text-[11px] font-bold" style={{ color: editorial.primary, letterSpacing: 0, fontFamily: editorial.uiFont }}>
-              עבודות בית ואירועים — תוך דקות
+              עבודות בית ואירועים - תוך דקות
             </span>
           </motion.div>
 
@@ -780,7 +773,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               textShadow: "0 1px 0 rgb(255 255 255 / 0.90), 0 14px 30px rgb(27 28 26 / 0.18)",
             }}
           >
-            הגדר זמינות —<br />
+            הגדר זמינות -<br />
             <span style={{ color: editorial.primary, textShadow: "0 1px 0 rgb(255 255 255 / 0.80), 0 12px 26px rgb(49 59 21 / 0.22)" }}>
               קבל פניות ממעסיקים
             </span>
@@ -913,7 +906,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
        {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────── */}
 
 
-      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      {/* ── Region Landing Pages CTA + SEO sections (deferred - below fold) ─── */}
       <BelowFold minHeight="120px" rootMargin="400px 0px">
       <section
         dir="rtl"

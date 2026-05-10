@@ -3,7 +3,7 @@ import { TRPCClientError } from "@trpc/client";
 /**
  * Determine whether a failed query should be retried.
  *
- * Retry policy (single source of truth — applied to all tRPC queries):
+ * Retry policy (single source of truth - applied to all tRPC queries):
  *  - 4xx (client errors: auth, not-found, bad-request, rate-limit) → NEVER retry
  *  - 5xx tRPC errors (INTERNAL_SERVER_ERROR etc.)                  → retry up to 3×
  *  - 502 / 503 gateway errors (sandbox wake-up, proxy blip)        → retry up to 4×
@@ -16,7 +16,7 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   if (error instanceof TRPCClientError) {
     const httpStatus = (error.data as { httpStatus?: number } | undefined)?.httpStatus;
 
-    // 4xx — deterministic client errors, never retry
+    // 4xx - deterministic client errors, never retry
     if (httpStatus && httpStatus >= 400 && httpStatus < 500) return false;
 
     // 502/503 detected via tRPC's transform-failure message (non-JSON gateway response)
@@ -29,7 +29,7 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
     if (isGatewayError) return failureCount < 4; // extra attempt for cold-start
   }
 
-  // Generic network / 5xx — retry up to 3 times
+  // Generic network / 5xx - retry up to 3 times
   return failureCount < 3;
 }
 

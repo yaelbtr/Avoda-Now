@@ -122,7 +122,7 @@ export function RateWorkerModal({ open, onClose, workerId, workerName, applicati
               <p className="text-xs text-muted-foreground text-left mt-1">{comment.length}/500</p>
             </div>
 
-            {/* Legal notice — review */}
+            {/* Legal notice - review */}
             <p className="text-xs text-muted-foreground text-center" dir="rtl">
               בשליחת הדירוג אתה מאשר/ת כי הביקורת נכונה ועומדת ב{" "}
               <a href="/reviews-policy" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">כללי הביקורות</a>

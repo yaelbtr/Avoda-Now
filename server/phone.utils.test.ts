@@ -46,10 +46,10 @@ describe("applyPhoneMask", () => {
   it("masks a full 9-digit landline (03)", () => {
     expect(applyPhoneMask("031234567")).toBe("03-123-4567");
   });
-  it("masks partial input — prefix only", () => {
+  it("masks partial input - prefix only", () => {
     expect(applyPhoneMask("054")).toBe("054");
   });
-  it("masks partial input — prefix + 2 digits", () => {
+  it("masks partial input - prefix + 2 digits", () => {
     expect(applyPhoneMask("05412")).toBe("054-12");
   });
   it("handles empty string", () => {

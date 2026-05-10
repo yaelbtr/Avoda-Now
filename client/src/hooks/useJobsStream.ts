@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { notifyNewJob, type CachedJob } from "@/services/jobsStore";
 
 // ── SSE subscription hook ────────────────────────────────────────────────────
-// Singleton — חיבור אחד לכל האפליקציה, מותקן פעם אחת ב-App.tsx.
+// Singleton - חיבור אחד לכל האפליקציה, מותקן פעם אחת ב-App.tsx.
 // מאזין ל-/api/jobs/stream ומעדכן את jobsStore כאשר נכנסת משרה חדשה.
 
 export function useJobsStream(): void {
@@ -20,7 +20,7 @@ export function useJobsStream(): void {
           const job = JSON.parse(event.data) as CachedJob;
           notifyNewJob(job);
         } catch {
-          // נתונים שגויים — מדלגים
+          // נתונים שגויים - מדלגים
         }
       });
 

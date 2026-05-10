@@ -1,5 +1,5 @@
 /**
- * BrandName — renders "AvodaGo" with the brand typography:
+ * BrandName - renders "AvodaGo" with the brand typography:
  *   "Avoda" → dark olive (light bg) / near-white (dark bg)
  *   "Go"   → citrus gold (always)
  *

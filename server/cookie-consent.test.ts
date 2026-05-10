@@ -56,12 +56,12 @@ describe("Cookie Consent Banner logic", () => {
   });
 
   // ── Test Case 1 ──────────────────────────────────────────────────────────
-  it("Case 1: first visit — banner is visible when no consent stored", () => {
+  it("Case 1: first visit - banner is visible when no consent stored", () => {
     expect(shouldShowBanner(storage)).toBe(true);
   });
 
   // ── Test Case 2 ──────────────────────────────────────────────────────────
-  it("Case 2: click Accept — banner disappears and consent is stored", () => {
+  it("Case 2: click Accept - banner disappears and consent is stored", () => {
     storage = acceptAll(storage);
     expect(storage[LS_CONSENT]).toBe("accepted");
     expect(storage[LS_ANALYTICS]).toBe("true");
@@ -69,14 +69,14 @@ describe("Cookie Consent Banner logic", () => {
   });
 
   // ── Test Case 3 ──────────────────────────────────────────────────────────
-  it("Case 3: refresh page — banner not shown when consent already stored", () => {
+  it("Case 3: refresh page - banner not shown when consent already stored", () => {
     // Simulate a previous accept persisted in storage
     storage = { [LS_CONSENT]: "accepted", [LS_ANALYTICS]: "true" };
     expect(shouldShowBanner(storage)).toBe(false);
   });
 
   // ── Test Case 4 ──────────────────────────────────────────────────────────
-  it("Case 4: clear localStorage — banner appears again", () => {
+  it("Case 4: clear localStorage - banner appears again", () => {
     // Start with consent stored
     storage = { [LS_CONSENT]: "accepted", [LS_ANALYTICS]: "true" };
     expect(shouldShowBanner(storage)).toBe(false);

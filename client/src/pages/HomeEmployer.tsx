@@ -130,7 +130,7 @@ export default function HomeEmployer() {
   const workerPausedRef = useRef(false);
 
   useSEO({
-    title: "מעסיקים — קבל עובדים תוך דקות",
+    title: "מעסיקים - קבל עובדים תוך דקות",
     description: "הפלטפורמה לעבודות זמניות בישראל. פרסם מודעה וקבל עובדים זמינים באזורך ישירות ללא עמלות.",
     canonical: "/",
   });
@@ -220,7 +220,7 @@ export default function HomeEmployer() {
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "55% 25%" }}
         />
-        {/* Gradient overlay — lighter to show image better */}
+        {/* Gradient overlay - lighter to show image better */}
         <div
           className="absolute inset-0"
           style={{
@@ -228,7 +228,7 @@ export default function HomeEmployer() {
           }}
         />
 
-        {/* Content — centered */}
+        {/* Content - centered */}
         <div className="relative z-10 flex flex-col justify-start items-center text-center px-5 pt-20 pb-8" style={{ minHeight: "480px" }}>
           {/* Badge */}
           <motion.div
@@ -261,7 +261,7 @@ export default function HomeEmployer() {
             className="text-[13px] font-semibold leading-relaxed mb-5"
             style={{ color: "oklch(0.95 0.02 80 / 0.85)", maxWidth: "280px", textShadow: "0 1px 8px oklch(0.10 0.06 122 / 0.60)" }}
           >
-            ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
+            ניקיון, אירועים, תיקונים ועוד - עובדים מגיעים תוך דקות
           </motion.p>
 
         </div>
@@ -414,7 +414,7 @@ export default function HomeEmployer() {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
         />
 
-        {/* Content — text on RIGHT side (RTL: visually right = start) */}
+        {/* Content - text on RIGHT side (RTL: visually right = start) */}
         <div className="relative z-10 flex flex-col justify-center items-end text-right px-8 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "500px", marginLeft: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -447,7 +447,7 @@ export default function HomeEmployer() {
             className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[300px]"
             style={{ color: "oklch(0.90 0.03 80 / 0.80)", textShadow: "0 1px 8px oklch(0.12 0.06 122 / 0.50)" }}
           >
-            ניקיון, אירועים, תיקונים ועוד — עובדים מגיעים תוך דקות
+            ניקיון, אירועים, תיקונים ועוד - עובדים מגיעים תוך דקות
           </motion.p>
 
           <StatsRow activeJobs={activeJobs} workers={workers.length} registeredWorkers={registeredWorkers} />
@@ -1046,8 +1046,8 @@ export default function HomeEmployer() {
         <ul className="flex flex-col gap-2">
           <li><a href="/guide/איך-לפרסם-משרה" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>איך לפרסם משרה שתגיע לעובדים הנכונים?</a></li>
           <li><a href="/guide/איך-לבחור-עובד-אמין" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>איך לבחור עובד אמין לעבודה זמנית?</a></li>
-          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו מול קבוצות פייסבוק — מה יותר יעיל?</a></li>
-          <li><a href="/for/מעסיקים" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו למעסיקים — כל מה שצריך לדעת</a></li>
+          <li><a href="/compare/אוודאנאו-מול-פייסבוק" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו מול קבוצות פייסבוק - מה יותר יעיל?</a></li>
+          <li><a href="/for/מעסיקים" className="text-[14px] underline-offset-2 hover:underline" style={{ color: "var(--brand)" }}>אוודאנאו למעסיקים - כל מה שצריך לדעת</a></li>
         </ul>
       </section>
 

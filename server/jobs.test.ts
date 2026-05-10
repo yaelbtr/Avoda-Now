@@ -48,7 +48,7 @@ vi.mock("./db", () => ({
   withdrawApplication: vi.fn().mockResolvedValue(undefined),
   getWorkerBirthDate: vi.fn().mockResolvedValue(null),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
-  // Candidate cap helpers — default to 0 accepted (cap not reached)
+  // Candidate cap helpers - default to 0 accepted (cap not reached)
   countAcceptedCandidates: vi.fn().mockResolvedValue(0),
   autoCloseJobIfCapReached: vi.fn().mockResolvedValue(false),
 }));
@@ -184,7 +184,7 @@ describe("auth.logout", () => {
   });
 });
 
-describe("jobs.sendJobOffer — active offer limit", () => {
+describe("jobs.sendJobOffer - active offer limit", () => {
   beforeEach(() => vi.clearAllMocks());
 
   const offerInput = { jobId: 10, workerId: 20, origin: "https://avoda-go.co.il" };

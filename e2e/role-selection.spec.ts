@@ -67,7 +67,7 @@ async function loginWithTestUser(page: Page): Promise<void> {
   const firstOtpInput = page.locator('input[inputmode="numeric"][maxlength="1"]').first();
   await firstOtpInput.waitFor({ state: "visible", timeout: 10_000 });
 
-  // Step 6: Fill each OTP digit — the last digit triggers auto-submit
+  // Step 6: Fill each OTP digit - the last digit triggers auto-submit
   const otpDigits = TEST_OTP_CODE.split("");
   const otpInputs = page.locator('input[inputmode="numeric"][maxlength="1"]');
   for (let i = 0; i < OTP_LENGTH; i++) {
@@ -128,7 +128,7 @@ async function logout(page: Page): Promise<void> {
   await logoutItem.waitFor({ state: "visible", timeout: 5_000 });
   await logoutItem.click();
 
-  // Wait for auth state to clear — the login button should reappear
+  // Wait for auth state to clear - the login button should reappear
   await page.waitForSelector('button[aria-label="כניסה"]', { timeout: 8_000 });
 }
 

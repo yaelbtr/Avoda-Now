@@ -1,9 +1,9 @@
 /**
- * emailOtp.ts — Email OTP authentication helpers.
+ * emailOtp.ts - Email OTP authentication helpers.
  *
  * Security design:
  * - 6-digit code generated with crypto.randomInt (cryptographically secure)
- * - Only SHA-256 hash stored in DB — raw code never persisted
+ * - Only SHA-256 hash stored in DB - raw code never persisted
  * - 5-minute expiry
  * - Max 5 wrong attempts before record is invalidated
  * - 60-second cooldown between sends (enforced via createdAt check)
@@ -33,7 +33,7 @@ export function hashEmailCode(code: string): string {
 export async function sendEmailOtp(to: string, code: string): Promise<void> {
   const sent = await sendEmail({
     to,
-    subject: "קוד האימות שלך — AvodaGo",
+    subject: "קוד האימות שלך - AvodaGo",
     text: `קוד האימות שלך הוא: ${code}\n\nהקוד תקף ל-5 דקות.`,
     html: `
       <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
@@ -192,7 +192,7 @@ export async function sendWelcomeEmail(params: {
 }): Promise<void> {
   const unsubscribed = await isEmailUnsubscribed(params.to);
   if (unsubscribed) {
-    console.info(`[sendWelcomeEmail] Skipping — ${params.to} is unsubscribed`);
+    console.info(`[sendWelcomeEmail] Skipping - ${params.to} is unsubscribed`);
     return;
   }
 
@@ -221,7 +221,7 @@ export async function sendWelcomeEmail(params: {
           <ul style="color: #555; font-size: 15px; line-height: 2; margin: 0; padding-right: 20px;">
             <li>הגדר את הזמינות שלך כדי שמעסיקים יוכלו למצוא אותך</li>
             <li>עדכן את הקטגוריות המועדפות עליך</li>
-            <li>הוסף תמונת פרופיל — עובדים עם תמונה מקבלים פי 3 יותר פניות</li>
+            <li>הוסף תמונת פרופיל - עובדים עם תמונה מקבלים פי 3 יותר פניות</li>
           </ul>
         </div>
 
@@ -246,7 +246,7 @@ export async function sendWelcomeEmail(params: {
   if (sent) {
     console.log(`[sendWelcomeEmail] Welcome email sent to ${params.to}`);
   } else {
-    console.warn(`[sendWelcomeEmail] Forge API returned false for ${params.to} — falling back to owner notification`);
+    console.warn(`[sendWelcomeEmail] Forge API returned false for ${params.to} - falling back to owner notification`);
     try {
       const { notifyOwner } = await import("./_core/notification");
       await notifyOwner({

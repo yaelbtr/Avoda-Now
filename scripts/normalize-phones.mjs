@@ -7,7 +7,7 @@
  * Safe to run multiple times (idempotent):
  *   - Phones already in +972 format are skipped.
  *   - Duplicate collisions (two rows that would normalize to the same number)
- *     are reported and left untouched — manual review required.
+ *     are reported and left untouched - manual review required.
  *
  * Usage:
  *   node scripts/normalize-phones.mjs
@@ -39,7 +39,7 @@ function normalizeIsraeliPhone(raw) {
     return `+972${digits}`;
   }
 
-  return null; // Cannot normalize — leave as-is
+  return null; // Cannot normalize - leave as-is
 }
 
 function isE164(phone) {
@@ -72,7 +72,7 @@ try {
   for (const row of rows) {
     const { id, phone } = row;
 
-    // Already in E.164 — skip
+    // Already in E.164 - skip
     if (isE164(phone)) {
       skipped++;
       continue;
@@ -81,7 +81,7 @@ try {
     const normalized = normalizeIsraeliPhone(phone);
 
     if (!normalized) {
-      console.warn(`⚠️  id=${id}: Cannot normalize "${phone}" — skipping`);
+      console.warn(`⚠️  id=${id}: Cannot normalize "${phone}" - skipping`);
       failed++;
       continue;
     }
@@ -94,7 +94,7 @@ try {
 
     if (existing.length > 0) {
       console.error(
-        `💥 COLLISION id=${id}: "${phone}" → "${normalized}" already belongs to id=${existing[0].id} — SKIPPING (manual review needed)`
+        `💥 COLLISION id=${id}: "${phone}" → "${normalized}" already belongs to id=${existing[0].id} - SKIPPING (manual review needed)`
       );
       collisions++;
       continue;

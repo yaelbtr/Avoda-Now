@@ -25,7 +25,9 @@
       "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\Desktop\\\\Work-Now\\\\AvodaNow\\\\client\\\\src\\\\components\\\\ui\\\\glassmorphism-trust-hero.tsx\")",
       "Bash(node -e \"try { const w = require\\('@motionone/utils'\\); console.log\\('exists:', typeof w.wrap\\); } catch\\(e\\) { console.log\\('missing'\\); }\")",
       "Bash(node -e \"try { require\\('motion/react'\\); console.log\\('motion/react ok'\\); } catch\\(e\\) { console.log\\('missing:', e.message.split\\('\\\\n'\\)[0]\\); }\")",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "additionalDirectories": [
       "C:\\Users\\User\\Downloads\\hug-alefalefalef-extracted\\HugAlefAlefAlef\\web",

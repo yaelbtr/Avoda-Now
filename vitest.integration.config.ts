@@ -6,7 +6,7 @@
  *
  * Key differences from the default vitest.config.ts:
  *  - Uses TEST_DATABASE_URL (local PostgreSQL) instead of POSTGRES_URL (Neon)
- *  - Loads .env.test — no production credentials
+ *  - Loads .env.test - no production credentials
  *  - globalSetup runs seed-test-db.mjs before all tests
  *  - Runs files matching *.integration.test.ts
  *  - Single-threaded (forks: 1) to avoid DB race conditions
@@ -25,7 +25,7 @@ export default defineConfig({
     include: ["server/**/*.integration.test.ts"],
     exclude: ["node_modules/**", "client/**"],
 
-    // Load .env.test — overrides any existing env vars for this test run
+    // Load .env.test - overrides any existing env vars for this test run
     env: {
       NODE_ENV: "test",
     },

@@ -4,7 +4,7 @@
  * Integration tests for user-related DB operations.
  *
  * These tests run against the ISOLATED local test database (jobnow_test).
- * They use real Drizzle queries — no mocks for DB layer.
+ * They use real Drizzle queries - no mocks for DB layer.
  *
  * Run with:
  *   pnpm test:integration
@@ -40,7 +40,7 @@ describe("Integration: Test DB isolation", () => {
       .select({ email: schema.users.email })
       .from(schema.users);
 
-    // All emails must use .invalid TLD (RFC 2606) — never real inboxes
+    // All emails must use .invalid TLD (RFC 2606) - never real inboxes
     for (const user of users) {
       if (user.email) {
         expect(user.email).toMatch(/\.invalid$/);
@@ -50,7 +50,7 @@ describe("Integration: Test DB isolation", () => {
 
   it("contains only synthetic test phone numbers in seeded users", async () => {
     const db = getTestDb();
-    // Only check seeded users (openId starts with 'test-') — not transient test users
+    // Only check seeded users (openId starts with 'test-') - not transient test users
     const users = await db
       .select({ phone: schema.users.phone })
       .from(schema.users)
@@ -68,7 +68,7 @@ describe("Integration: Test DB isolation", () => {
 describe("Integration: Users table", () => {
   it("has exactly 5 seeded test users (openId starts with 'test-')", async () => {
     const db = getTestDb();
-    // Filter only seeded users — transient test users from other test files are excluded
+    // Filter only seeded users - transient test users from other test files are excluded
     const users = await db
       .select()
       .from(schema.users)
@@ -129,7 +129,7 @@ describe("Integration: Users table", () => {
 
     expect(inserted[0].openId).toBe("test-transient-user-999");
 
-    // Cleanup — remove transient test user
+    // Cleanup - remove transient test user
     await db
       .delete(schema.users)
       .where(eq(schema.users.openId, "test-transient-user-999"));

@@ -96,7 +96,7 @@ describe("isTooYoung", () => {
     expect(isTooYoung(18)).toBe(false);
   });
 
-  it("returns false for null (unknown age — not blocked)", () => {
+  it("returns false for null (unknown age - not blocked)", () => {
     expect(isTooYoung(null)).toBe(false);
   });
 });
@@ -130,7 +130,7 @@ describe("isJobAccessibleToMinor", () => {
     expect(isJobAccessibleToMinor("23:00")).toBe(false);
   });
 
-  it("returns false for midnight (00:00 treated as next day — 24:00 > 22:00)", () => {
+  it("returns false for midnight (00:00 treated as next day - 24:00 > 22:00)", () => {
     // Note: "00:00" < "22:00" lexicographically, so it IS accessible
     // This is intentional: midnight is treated as start of day, not end
     expect(isJobAccessibleToMinor("00:00")).toBe(true);
@@ -173,7 +173,7 @@ describe("meetsMinAgeRequirement", () => {
   it("returns true when minAge is 0 (no restriction)", () => {
     expect(meetsMinAgeRequirement(16, 0)).toBe(true);
   });
-  it("returns false when age is null (unknown — block by default)", () => {
+  it("returns false when age is null (unknown - block by default)", () => {
     expect(meetsMinAgeRequirement(null, 18)).toBe(false);
   });
   it("returns true when worker age equals minAge (16 >= 16)", () => {
@@ -230,7 +230,7 @@ describe("constants", () => {
 
 // ─── queryJobs age-gate integration: verify the SQL filter logic ──────────────
 // These tests validate the filter predicate used inside queryJobs() without
-// hitting the database — they mirror the exact condition:
+// hitting the database - they mirror the exact condition:
 //   WHERE (jobs.minAge IS NULL OR jobs.minAge <= workerAge)
 describe("queryJobs age-gate predicate (unit)", () => {
   /** Mirrors the server-side filter condition */
@@ -240,7 +240,7 @@ describe("queryJobs age-gate predicate (unit)", () => {
     return minAge <= workerAge;
   }
 
-  it("guest (no workerAge) always passes — filter is skipped", () => {
+  it("guest (no workerAge) always passes - filter is skipped", () => {
     expect(passesAgeGate(18, null)).toBe(true);
     expect(passesAgeGate(18, undefined)).toBe(true);
     expect(passesAgeGate(16, null)).toBe(true);

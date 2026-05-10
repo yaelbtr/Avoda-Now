@@ -77,7 +77,7 @@ export async function getDb() {
         keepAliveInitialDelayMillis: 10_000,  // start keepalive after 10s of inactivity
       });
       // Swallow pool-level errors (e.g. idle connection terminated by server)
-      // so they don't crash the process — individual queries will retry on next call
+      // so they don't crash the process - individual queries will retry on next call
       _pool.on("error", (err) => {
         console.warn("[Database] Pool connection error (will reconnect):", err.message);
         // Reset cached db so next getDb() call re-initialises if needed
@@ -172,7 +172,7 @@ export async function getUserByNormalizedPhone(
   const db = await getDb();
   if (!db) return undefined;
 
-  // Try exact match first (most common path — phone is already E.164)
+  // Try exact match first (most common path - phone is already E.164)
   const exact = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
   if (exact[0]) return exact[0];
 
@@ -792,7 +792,7 @@ export async function getJobById(id: number) {
  * getUrgentJobs, and getTodayJobs with a single, self-documenting options object.
  */
 export interface QueryJobsOptions {
-  /** Query mode — determines which extra conditions and ordering are applied */
+  /** Query mode - determines which extra conditions and ordering are applied */
   mode?: "list" | "nearby" | "urgent" | "today";
 
   // ── Geo (mode="nearby" only) ────────────────────────────────────────────────
@@ -801,13 +801,13 @@ export interface QueryJobsOptions {
   radiusKm?: number;
 
   // ── Taxonomy filters ────────────────────────────────────────────────────────
-  /** Single category — ignored when `categories` is provided */
+  /** Single category - ignored when `categories` is provided */
   category?: string;
-  /** Multi-category filter — takes precedence over `category` */
+  /** Multi-category filter - takes precedence over `category` */
   categories?: string[];
-  /** Single city — ignored when `cities` is provided */
+  /** Single city - ignored when `cities` is provided */
   city?: string;
-  /** Multi-city filter — takes precedence over `city` */
+  /** Multi-city filter - takes precedence over `city` */
   cities?: string[];
 
   // ── Date / time filters ─────────────────────────────────────────────────────
@@ -1003,7 +1003,7 @@ export async function queryJobs(opts: QueryJobsOptions): Promise<QueryJobsListRe
   // Workers under 18 may not work past 22:00 (Israeli youth employment law).
   // Exclude jobs where:
   //   a) workEndTime > '22:00'  (late same-day shift), OR
-  //   b) workEndTime < workStartTime (overnight shift — end wraps past midnight)
+  //   b) workEndTime < workStartTime (overnight shift - end wraps past midnight)
   // Jobs with no workEndTime set are always shown (no restriction).
   if (workerAge != null && workerAge < 18) {
     conditions.push(
@@ -1579,7 +1579,7 @@ export async function getWorkersMatchingJob(
 
   // Radius-mode filter: worker's workerLocation must be within their searchRadiusKm of the job.
   // Workers with locationMode='radius' but no workerLocation (null) are included as a fallback
-  // because we cannot determine their distance — they should not be silently excluded.
+  // because we cannot determine their distance - they should not be silently excluded.
   // Falls back to including all radius-mode workers when the job has no coordinates.
   const radiusCondition = jobPoint
     ? sql`(
@@ -1923,7 +1923,7 @@ export async function respondToJobOffer(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   if (action === "accept") {
-    // Keep status as "offered" — contactRevealed=true signals the worker accepted.
+    // Keep status as "offered" - contactRevealed=true signals the worker accepted.
     // This lets the employer distinguish offer-accepted from regular accepted applications.
     await db
       .update(applications)
@@ -1968,7 +1968,7 @@ export async function getPublicWorkerProfile(userId: number) {
     .limit(1);
   if (!result[0]) return null;
   const { birthDate: _bd, ...rest } = result[0];
-  // Compute isMinor server-side — never expose birthDate publicly
+  // Compute isMinor server-side - never expose birthDate publicly
   return { ...rest, isMinor: calcIsMinor(calcAge(_bd)) };
 }
 
@@ -2130,7 +2130,7 @@ export async function getApplicationsForJob(jobId: number) {
       revealedAt: applications.revealedAt,
       createdAt: applications.createdAt,
       workerName: users.name,
-      // Phone only returned if contactRevealed — caller must filter
+      // Phone only returned if contactRevealed - caller must filter
       workerPhone: users.phone,
       workerBio: users.workerBio,
       workerPreferredCity: users.preferredCity,
@@ -2149,7 +2149,7 @@ export async function getApplicationsForJob(jobId: number) {
 /**
  * Returns applications for a job with worker location (from workerAvailability if present)
  * and Haversine distance from the job's lat/lng. Sorted: closest first, nulls last.
- * Phone is included — caller must strip if contactRevealed=false.
+ * Phone is included - caller must strip if contactRevealed=false.
  */
 export async function getApplicationsForJobWithDistance(
   jobId: number,
@@ -2305,7 +2305,7 @@ export async function incrementBatchCount(batchId: number) {
 }
 
 /**
- * Marks a batch as sent (idempotent — safe to call multiple times).
+ * Marks a batch as sent (idempotent - safe to call multiple times).
  * Only updates rows that are still "pending" to prevent double-send.
  */
 export async function markBatchSent(batchId: number) {
@@ -2583,7 +2583,7 @@ export async function rateWorker(
   return { isNew, newAverage };
 }
 
-/** Returns job counts grouped by city and category — used for dynamic SEO sitemap */
+/** Returns job counts grouped by city and category - used for dynamic SEO sitemap */
 export async function getJobCountByCityAndCategory(): Promise<
   Array<{ city: string | null; category: string | null; cnt: number }>
 > {
@@ -2744,7 +2744,7 @@ export async function seedCategoriesIfEmpty() {
 
 /**
  * Inserts any seed categories that are missing from the DB (by slug).
- * Safe to run on a live DB — uses ON CONFLICT DO NOTHING.
+ * Safe to run on a live DB - uses ON CONFLICT DO NOTHING.
  * Returns the list of newly inserted slugs.
  */
 export async function syncMissingCategories(): Promise<string[]> {
@@ -3068,13 +3068,13 @@ async function _notifyRegionWorkers(
         url: "/find-jobs",
       });
     } catch {
-      // Non-critical — skip failed subscriptions
+      // Non-critical - skip failed subscriptions
     }
   }
 }
 
 /**
- * Legacy shim — kept so existing callers in routers.ts don't break.
+ * Legacy shim - kept so existing callers in routers.ts don't break.
  * Delegates to syncWorkerRegions with GPS-only mode.
  * @deprecated Use syncWorkerRegions directly.
  */
@@ -3495,7 +3495,7 @@ export async function getHeroStats(): Promise<{
 // ─── User Consents ────────────────────────────────────────────────────────────
 
 /**
- * Records a user consent event. Uses INSERT IGNORE to be idempotent —
+ * Records a user consent event. Uses INSERT IGNORE to be idempotent -
  * re-consenting to the same type is a no-op (the first consent is the record).
  */
 export async function recordUserConsent(
@@ -3544,14 +3544,14 @@ export async function hasRequiredConsents(
  * and name on the user record. Called once after the OAuth callback when
  * the user chose "Continue with Google" from the channel-selection screen.
  *
- * Uses WHERE termsAcceptedAt IS NULL to be idempotent — safe to call multiple
+ * Uses WHERE termsAcceptedAt IS NULL to be idempotent - safe to call multiple
  * times; only updates the record if it hasn't been completed yet.
  */
 // ─── Minor Worker / Age Verification ─────────────────────────────────────────
 
 /**
  * Save a worker's birth date. Validates that the date is a valid YYYY-MM-DD
- * string. Does NOT enforce age rules here — that is the router's responsibility.
+ * string. Does NOT enforce age rules here - that is the router's responsibility.
  */
 export async function saveBirthDate(userId: number, birthDate: string): Promise<void> {
   const db = await getDb();
@@ -3648,7 +3648,7 @@ export async function logLegalAcknowledgement(params: {
   return result[0];
 }
 
-/** Get isMinor status for a list of worker IDs — used by MatchedWorkers page */
+/** Get isMinor status for a list of worker IDs - used by MatchedWorkers page */
 export async function getWorkersMinorStatus(workerIds: number[]): Promise<Record<number, boolean>> {
   const db = await getDb();
   if (!db || workerIds.length === 0) return {};
@@ -3666,7 +3666,7 @@ export async function getWorkersMinorStatus(workerIds: number[]): Promise<Record
 // ─── System Logs ─────────────────────────────────────────────────────────────
 
 /**
- * logEvent — fire-and-forget structured event logger.
+ * logEvent - fire-and-forget structured event logger.
  *
  * Designed to never throw: if the DB is unavailable the error is silently
  * swallowed so logging never breaks the primary request path.
@@ -3694,12 +3694,12 @@ export async function logEvent(
       meta: opts?.meta ?? null,
     });
   } catch {
-    // Intentionally silent — logging must never crash the caller
+    // Intentionally silent - logging must never crash the caller
   }
 }
 
 /**
- * getLogs — paginated query for the admin logs panel.
+ * getLogs - paginated query for the admin logs panel.
  *
  * Filters: phone (partial match), level, event prefix.
  * Returns rows newest-first.

@@ -583,7 +583,7 @@ const authRouter = router({
       const isNewUser = !user;
 
       if (!user) {
-        // משתמש חדש — יצירת חשבון ללא הסכמה (תבוא בפעולה אמיתית ראשונה)
+        // משתמש חדש - יצירת חשבון ללא הסכמה (תבוא בפעולה אמיתית ראשונה)
         user = await createUserByEmail(email);
         void logEvent("info", "email_otp.verify.new_user", "New user created via email OTP", { userId: user.id, meta: { email } });
 
@@ -597,7 +597,7 @@ const authRouter = router({
               const split = splitIsraeliE164Phone(normalizedPhone);
               if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
             } catch {
-              // טלפון לא תקין — מדלג בשקט
+              // טלפון לא תקין - מדלג בשקט
             }
           }
           await updateWorkerProfile(user.id, {
@@ -687,7 +687,7 @@ const jobInputSchema = z.object({
 
 // ג"€ג"€ helpers: resolve effective filter values for jobs.list / jobs.search ג"€ג"€ג"€ג"€ג"€ג"€
 
-/** ׳׳—׳–׳™׳¨ ׳׳× ׳§׳˜׳’׳•׳¨׳™׳•׳× ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳× ׳"׳¢׳"׳₪׳•׳× ׳"׳₪׳¨׳•׳₪׳™׳ ׳©׳ ׳"׳׳©׳×׳׳© */
+/** ׳׳-׳–׳™׳¨ ׳׳× ׳§׳˜׳’׳•׳¨׳™׳•׳× ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳-׳¨׳× ׳׳× ׳"׳¢׳"׳₪׳•׳× ׳"׳₪׳¨׳•׳₪׳™׳ ׳©׳ ׳"׳׳©׳×׳׳© */
 function resolveEffectiveCategories(
   uiCategories: string[] | undefined,
   user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
@@ -697,7 +697,7 @@ function resolveEffectiveCategories(
   return prefs?.length ? prefs : undefined;
 }
 
-/** ׳׳—׳–׳™׳¨ ׳׳× ׳¢׳¨׳™ ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳—׳¨׳× ׳׳׳™׳¨ ׳׳× IDs ׳׳"׳₪׳¨׳•׳₪׳™׳ ׳׳©׳׳•׳× ׳¢׳‘׳¨׳™ */
+/** ׳׳-׳–׳™׳¨ ׳׳× ׳¢׳¨׳™ ׳"-UI ׳׳ ׳§׳™׳™׳׳•׳×, ׳׳-׳¨׳× ׳׳׳™׳¨ ׳׳× IDs ׳׳"׳₪׳¨׳•׳₪׳™׳ ׳׳©׳׳•׳× ׳¢׳‘׳¨׳™ */
 async function resolveEffectiveCities(
   uiCities: string[] | undefined,
   user: { preferredCategories?: unknown; preferredCities?: unknown } | null,
@@ -958,7 +958,7 @@ const jobsRouter = router({
         if (!regionCheck.allowed) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: `׳"׳׳–׳•׳¨ ׳¢׳"׳™׳™׳ ׳‘׳"׳¨׳¦׳" ׳•׳ ׳₪׳×׳— ׳‘׳§׳¨׳•׳‘ ׳׳׳¢׳¡׳™׳§׳™׳.`,
+            message: `׳"׳׳–׳•׳¨ ׳¢׳"׳™׳™׳ ׳‘׳"׳¨׳¦׳" ׳•׳ ׳₪׳×׳- ׳‘׳§׳¨׳•׳‘ ׳׳׳¢׳¡׳™׳§׳™׳.`,
             cause: {
               regionId: regionCheck.regionId,
               regionName: regionCheck.regionName,
@@ -1037,7 +1037,7 @@ const jobsRouter = router({
         minAge: input.minAge ?? null,
         cityPlaceId: input.cityPlaceId ?? null,
       });
-      // ׳©׳™׳"׳•׳¨ ׳"׳׳©׳¨׳" ׳"׳—׳"׳©׳" ׳׳›׳ ׳"׳׳§׳•׳—׳•׳× ׳"׳׳—׳•׳‘׳¨׳™׳ ׳-SSE
+      // ׳©׳™׳"׳•׳¨ ׳"׳׳©׳¨׳" ׳"׳-׳"׳©׳" ׳׳›׳ ׳"׳׳§׳•׳-׳•׳× ׳"׳׳-׳•׳‘׳¨׳™׳ ׳-SSE
       const { emitNewJob } = await import("./jobsSSE");
       emitNewJob({
         id: job.id,
@@ -1375,7 +1375,7 @@ const jobsRouter = router({
       if (activeOfferCount >= MAX_ACTIVE_OFFERS) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `׳׳ ׳ ׳™׳×׳ ׳׳©׳׳•׳— ׳™׳•׳×׳¨ ׳-${MAX_ACTIVE_OFFERS} ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳" ׳₪׳¢׳™׳׳•׳× ׳‘׳•-׳–׳׳ ׳™׳× ׳׳׳©׳¨׳" ׳–׳•. ׳"׳׳×׳ ׳׳×׳’׳•׳‘׳× ׳"׳¢׳•׳‘׳"׳™׳ ׳©׳›׳‘׳¨ ׳§׳™׳‘׳׳• ׳"׳¦׳¢׳".`,
+          message: `׳׳ ׳ ׳™׳×׳ ׳׳©׳׳•׳- ׳™׳•׳×׳¨ ׳-${MAX_ACTIVE_OFFERS} ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳" ׳₪׳¢׳™׳׳•׳× ׳‘׳•-׳–׳׳ ׳™׳× ׳׳׳©׳¨׳" ׳–׳•. ׳"׳׳×׳ ׳׳×׳’׳•׳‘׳× ׳"׳¢׳•׳‘׳"׳™׳ ׳©׳›׳‘׳¨ ׳§׳™׳‘׳׳• ׳"׳¦׳¢׳".`,
         });
       }
 
@@ -1403,7 +1403,7 @@ const jobsRouter = router({
 
       // Send SMS if prefs allow
       if ((notifPrefs === "both" || notifPrefs === "sms_only") && worker.phone) {
-        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}.\n׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨/׳"׳—׳™׳™׳": ${jobUrl}\n\n׳׳"׳¡׳¨׳" ׳׳¨׳©׳™׳׳× ׳"׳"׳×׳¨׳׳•׳×: https://avoda-go.co.il/worker-profile`;
+        const smsBody = `׳©׳׳•׳ ${worker.name ?? ""},\n${employerName} ׳©׳׳- ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}.\n׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨/׳"׳-׳™׳™׳": ${jobUrl}\n\n׳׳"׳¡׳¨׳" ׳׳¨׳©׳™׳׳× ׳"׳"׳×׳¨׳׳•׳×: https://avoda-go.co.il/worker-profile`;
         sendSms(worker.phone, smsBody).catch(e => console.warn("[JobOffer] SMS failed:", e));
       }
 
@@ -1411,7 +1411,7 @@ const jobsRouter = router({
       if (notifPrefs === "both" || notifPrefs === "push_only") {
         sendPushToUser(input.workerId, {
           title: `נ’¼ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳": ${jobLabel}`,
-          body: `${employerName} ׳©׳׳— ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳". ׳׳—׳¥ ׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨.`,
+          body: `${employerName} ׳©׳׳- ׳׳ ׳"׳¦׳¢׳× ׳¢׳‘׳•׳"׳". ׳׳-׳¥ ׳׳¦׳₪׳™׳™׳" ׳•׳׳™׳©׳•׳¨.`,
           url: "/my-applications",
         }).catch(e => console.warn("[JobOffer] Push failed:", e));
       }
@@ -1813,7 +1813,7 @@ const jobsRouter = router({
         await sendEmailOtp(email, code);
         return { channel: "email" as const, maskedTarget: email.replace(/(.{2}).*(@.*)/, "$1***$2") };
       } else {
-        // משתמש עם טלפון קיים — שולח לטלפון הרשום; אחרת — לטלפון שהוזן בטופס
+        // משתמש עם טלפון קיים - שולח לטלפון הרשום; אחרת - לטלפון שהוזן בטופס
         let targetPhone: string;
         if (user.phone) {
           targetPhone = user.phone;
@@ -1889,7 +1889,7 @@ const jobsRouter = router({
         }
       }
 
-      // ── אם למשתמש לא היה טלפון — שמור את הטלפון (והשם) בחשבון ──────────────────
+      // ── אם למשתמש לא היה טלפון - שמור את הטלפון (והשם) בחשבון ──────────────────
       if (!user.phone) {
         const existing = await getUserByNormalizedPhone(resolvedPhone, normalizeIsraeliPhone);
         if (existing && existing.id !== user.id) {
@@ -1904,7 +1904,7 @@ const jobsRouter = router({
         });
       }
 
-      // ── OTP valid — create the job (same logic as jobs.create) ────────────────
+      // ── OTP valid - create the job (same logic as jobs.create) ────────────────
       const jobInput = input.jobData;
 
       if (user.role !== "admin") {
@@ -2488,7 +2488,7 @@ const userRouter = router({
         // Required
         name: z.string().min(2).max(100),
         termsAccepted: z.literal(true),
-        // Optional — wizard fills these later; minimal signup sends only name
+        // Optional - wizard fills these later; minimal signup sends only name
         locationMode: z.enum(["city", "radius"]).optional(),
         preferredCity: z.string().max(100).nullable().optional().superRefine((v, ctx) => { if (v) cityZodRefine(v, ctx); }),
         workerLatitude: z.string().nullable().optional(),
@@ -2614,7 +2614,7 @@ const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // אכיפת הסכמה לתקנון — אם חסרה רשומת consent לגרסה הנוכחית, חסום שמירה
+      // אכיפת הסכמה לתקנון - אם חסרה רשומת consent לגרסה הנוכחית, חסום שמירה
       {
         const existing = await getUserConsents(ctx.user.id);
         const existingMap = new Map(existing.map((c) => [c.consentType, c.documentVersion]));
@@ -2895,7 +2895,7 @@ const userRouter = router({
       if (recentFailures >= 5) {
         await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
         // Notify owner about lockout
-        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
+        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳-׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳-׳¡׳ ׳׳׳-׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
@@ -2973,7 +2973,7 @@ const userRouter = router({
       const recentFailures = await countRecentPhoneChangeFailures(ctx.user.id);
       if (recentFailures >= 5) {
         await logPhoneChange({ userId: ctx.user.id, oldPhone: ctx.user.phone, newPhone: normalized, ipAddress: ip, result: "locked" });
-        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳—׳¡׳ ׳׳׳—׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
+        notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳-׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳ ׳-׳¡׳ ׳׳׳-׳¨ 5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳. IP: ${ip}` }).catch(() => {});
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "שגיאה" });
       }
 
@@ -2997,8 +2997,8 @@ const userRouter = router({
         // Check if now locked out
         const failuresAfter = await countRecentPhoneChangeFailures(ctx.user.id);
         if (failuresAfter >= 5) {
-          notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳—׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳"׳’׳™׳¢ ׳-5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳ ׳•׳ ׳¢׳§׳¨ ׳׳©׳¢׳". IP: ${ip}` }).catch(() => {});
-          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳§׳•׳" ׳©׳’׳•׳™. ׳"׳—׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳׳©׳¢׳" ׳׳׳—׳¨ ${failuresAfter} ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳.` });
+          notifyOwner({ title: "׳ ׳¢׳™׳׳× ׳-׳©׳‘׳•׳  -  ׳©׳™׳ ׳•׳™ ׳˜׳׳₪׳•׳", content: `׳׳©׳×׳׳© ${ctx.user.id} (${ctx.user.phone ?? "unknown"}) ׳"׳’׳™׳¢ ׳-5 ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳ ׳•׳ ׳¢׳§׳¨ ׳׳©׳¢׳". IP: ${ip}` }).catch(() => {});
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `׳§׳•׳" ׳©׳’׳•׳™. ׳"׳-׳©׳‘׳•׳ ׳ ׳¢׳•׳ ׳׳©׳¢׳" ׳׳׳-׳¨ ${failuresAfter} ׳ ׳™׳¡׳™׳•׳ ׳•׳× ׳›׳•׳©׳׳™׳.` });
         }
         const remaining = 5 - failuresAfter;
         throw new TRPCError({ code: "BAD_REQUEST", message: `׳§׳•׳" ׳"׳׳™׳׳•׳× ׳©׳’׳•׳™ ׳׳• ׳₪׳’ ׳×׳•׳§׳₪׳•. ׳ ׳•׳×׳¨׳• ׳¢׳•׳" ${remaining} ׳ ׳™׳¡׳™׳•׳ ׳•׳×.` });
@@ -3064,7 +3064,7 @@ const userRouter = router({
   /**
    * הצהרת הסכמה לפני פעולה אמיתית ראשונה (apply / פרסום מודעה).
    * מגדירה termsAcceptedAt ורושמת records ב-user_consents.
-   * אידמפוטנטי — קריאה חוזרת לאחר הסכמה קיימת היא no-op.
+   * אידמפוטנטי - קריאה חוזרת לאחר הסכמה קיימת היא no-op.
    */
   acceptRealActionConsent: protectedProcedure
     .mutation(async ({ ctx }) => {
@@ -3105,7 +3105,7 @@ const userRouter = router({
     for (const type of ["terms", "privacy"] as LegalConsentType[]) {
       const acceptedVersion = existingMap.get(type);
       if (!acceptedVersion) {
-        // ללא רשומה — נדרש אישור מפורש
+        // ללא רשומה - נדרש אישור מפורש
         outdated.push(type);
         continue;
       }
@@ -3684,10 +3684,10 @@ const regionsRouter = router({
       for (const sub of subscribers) {
         try {
           const msg = sub.type === "employer"
-            ? `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳›׳¢׳× ׳×׳•׳›׳ ׳׳₪׳¨׳¡׳ ׳׳©׳¨׳•׳× ׳•׳׳׳¦׳•׳ ׳¢׳•׳‘׳"׳™׳.`
-            : `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳—! ׳׳¢׳¡׳™׳§׳™׳ ׳׳—׳₪׳©׳™׳ ׳¢׳›׳©׳™׳•  -  ׳‘׳"׳•׳§ ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳".`;
+            ? `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳-! ׳›׳¢׳× ׳×׳•׳›׳ ׳׳₪׳¨׳¡׳ ׳׳©׳¨׳•׳× ׳•׳׳׳¦׳•׳ ׳¢׳•׳‘׳"׳™׳.`
+            : `׳"׳׳–׳•׳¨ "${region.name}" ׳ ׳₪׳×׳-! ׳׳¢׳¡׳™׳§׳™׳ ׳׳-׳₪׳©׳™׳ ׳¢׳›׳©׳™׳•  -  ׳‘׳"׳•׳§ ׳"׳¦׳¢׳•׳× ׳¢׳‘׳•׳"׳".`;
           await sendPushToUser(sub.userId, {
-            title: `נ‰ ׳"׳׳–׳•׳¨ ${region.name} ׳ ׳₪׳×׳—!`,
+            title: `נ‰ ׳"׳׳–׳•׳¨ ${region.name} ׳ ׳₪׳×׳-!`,
             body: msg,
             url: sub.type === "employer" ? "/post-job" : "/find-jobs",
           });

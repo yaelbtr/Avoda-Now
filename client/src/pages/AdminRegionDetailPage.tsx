@@ -1,5 +1,5 @@
 /**
- * AdminRegionDetailPage — /admin/regions/:id
+ * AdminRegionDetailPage - /admin/regions/:id
  *
  * Shows region details, activation progress bar, and the list of
  * workers associated with this region via worker_regions.
@@ -84,7 +84,7 @@ export default function AdminRegionDetailPage() {
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Shield className="w-10 h-10 text-destructive mx-auto" />
-            <p className="font-semibold">גישה מוגבלת — אדמינים בלבד</p>
+            <p className="font-semibold">גישה מוגבלת - אדמינים בלבד</p>
             <Link href="/admin/regions">
               <AppButton variant="secondary">חזרה לאזורים</AppButton>
             </Link>
@@ -238,10 +238,10 @@ export default function AdminRegionDetailPage() {
             <p className="text-sm text-muted-foreground text-center">
               {pct}% מהיעד
               {status === "collecting_workers" && pct < 100 && (
-                <> — עוד {region.minWorkersRequired - region.currentWorkers} עובדים לפתיחה</>
+                <> - עוד {region.minWorkersRequired - region.currentWorkers} עובדים לפתיחה</>
               )}
               {pct >= 100 && status === "collecting_workers" && (
-                <> — <span className="text-green-600 font-medium">ניתן להפעיל!</span></>
+                <> - <span className="text-green-600 font-medium">ניתן להפעיל!</span></>
               )}
             </p>
           </CardContent>
@@ -288,12 +288,12 @@ export default function AdminRegionDetailPage() {
                                 {w.name?.[0] ?? "?"}
                               </div>
                             )}
-                            <span className="font-medium text-sm">{w.name ?? "—"}</span>
+                            <span className="font-medium text-sm">{w.name ?? "-"}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{w.preferredCity ?? "—"}</TableCell>
+                        <TableCell className="text-sm">{w.preferredCity ?? "-"}</TableCell>
                         <TableCell className="text-sm">
-                          {w.distanceKm ? `${parseFloat(w.distanceKm).toFixed(1)} ק"מ` : "—"}
+                          {w.distanceKm ? `${parseFloat(w.distanceKm).toFixed(1)} ק"מ` : "-"}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">

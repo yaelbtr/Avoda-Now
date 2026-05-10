@@ -1,15 +1,15 @@
 /**
- * PushNotificationBanner — reusable banner that prompts workers to enable
+ * PushNotificationBanner - reusable banner that prompts workers to enable
  * Web Push notifications for new job alerts.
  *
  * Usage:
  *   <PushNotificationBanner category="food" city="תל אביב" />
  *
  * Props:
- *   category  — optional category label shown in the prompt text
- *   city      — optional city label shown in the prompt text
- *   compact   — render a smaller inline variant (default: false)
- *   className — additional CSS classes
+ *   category  - optional category label shown in the prompt text
+ *   city      - optional city label shown in the prompt text
+ *   compact   - render a smaller inline variant (default: false)
+ *   className - additional CSS classes
  */
 import { Bell, BellOff, X } from "lucide-react";
 import { useState } from "react";
@@ -183,7 +183,7 @@ export function PushNotificationBanner({
 }
 
 /**
- * PushNotificationToggle — a compact icon button to toggle push subscription.
+ * PushNotificationToggle - a compact icon button to toggle push subscription.
  * Used in page headers / toolbars.
  */
 export function PushNotificationToggle({ className = "" }: { className?: string }) {

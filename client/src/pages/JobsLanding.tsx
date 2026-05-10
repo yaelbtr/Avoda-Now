@@ -1,5 +1,5 @@
 /**
- * JobsLanding — SEO landing page for all /jobs/* routes.
+ * JobsLanding - SEO landing page for all /jobs/* routes.
  *
  * Route patterns (handled in App.tsx):
  *   /jobs/:slug              → city name or category slug
@@ -79,32 +79,32 @@ function buildH1(city?: string, category?: string, time?: TimeFilter): string {
 function buildDescription(city?: string, category?: string, time?: TimeFilter): string {
   if (time === "today") {
     return city
-      ? `מצא עבודות דחופות להיום ב${city}. משרות שמתחילות היום — שליחויות, מטבח, מחסן ועוד.`
-      : "משרות דחופות שמתחילות היום. לוח דרושים מהיר ופשוט — ללא עמלות.";
+      ? `מצא עבודות דחופות להיום ב${city}. משרות שמתחילות היום - שליחויות, מטבח, מחסן ועוד.`
+      : "משרות דחופות שמתחילות היום. לוח דרושים מהיר ופשוט - ללא עמלות.";
   }
   if (time === "evening") {
     return city
-      ? `עבודות ערב ב${city} — משמרות ערב, שירות, אירועים ועוד. מצא עבודה לשעות הערב.`
-      : "עבודות ערב בכל הארץ — משמרות ערב, שירות, אירועים ועוד. לוח דרושים מהיר.";
+      ? `עבודות ערב ב${city} - משמרות ערב, שירות, אירועים ועוד. מצא עבודה לשעות הערב.`
+      : "עבודות ערב בכל הארץ - משמרות ערב, שירות, אירועים ועוד. לוח דרושים מהיר.";
   }
   if (time === "weekend") {
     return city
-      ? `עבודות סוף שבוע ב${city} — עבודות לשישי ושבת, אירועים, מסעדות ועוד.`
-      : "עבודות סוף שבוע בכל הארץ — עבודות לשישי ושבת, אירועים, מסעדות ועוד.";
+      ? `עבודות סוף שבוע ב${city} - עבודות לשישי ושבת, אירועים, מסעדות ועוד.`
+      : "עבודות סוף שבוע בכל הארץ - עבודות לשישי ושבת, אירועים, מסעדות ועוד.";
   }
   if (time === "immediate") {
     return city
-      ? `עבודות מיידיות ב${city} — מעסיקים שצריכים עובד עכשיו. התחל לעבוד היום.`
-      : "עבודות מיידיות — מעסיקים שצריכים עובד עכשיו. מצא עבודה ותתחיל היום.";
+      ? `עבודות מיידיות ב${city} - מעסיקים שצריכים עובד עכשיו. התחל לעבוד היום.`
+      : "עבודות מיידיות - מעסיקים שצריכים עובד עכשיו. מצא עבודה ותתחיל היום.";
   }
   if (city && category) {
-    return `מצא עבודות ${getCategoryLabel(category)} ב${city}. לוח דרושים מהיר ופשוט — משרות להיום, ללא עמלות.`;
+    return `מצא עבודות ${getCategoryLabel(category)} ב${city}. לוח דרושים מהיר ופשוט - משרות להיום, ללא עמלות.`;
   }
   if (city) {
-    return `מצא עבודות זמניות ב${city}. שליחויות, מחסן, מטבח, ניקיון ועוד — לוח דרושים מהיר.`;
+    return `מצא עבודות זמניות ב${city}. שליחויות, מחסן, מטבח, ניקיון ועוד - לוח דרושים מהיר.`;
   }
   if (category) {
-    return `מצא עבודות ${getCategoryLabel(category)} קרוב אליך. לוח דרושים מהיר ופשוט — ללא עמלות.`;
+    return `מצא עבודות ${getCategoryLabel(category)} קרוב אליך. לוח דרושים מהיר ופשוט - ללא עמלות.`;
   }
   return "לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך.";
 }
@@ -144,7 +144,7 @@ export default function JobsLanding() {
       }
       return { resolvedCity: params.city, resolvedCategory: params.category, resolvedTime: undefined };
     }
-    // Pattern: /jobs/:slug — could be city, category, or time filter
+    // Pattern: /jobs/:slug - could be city, category, or time filter
     if (params.slug) {
       if (isTimeSlug(params.slug)) {
         return { resolvedCity: undefined, resolvedCategory: undefined, resolvedTime: params.slug };

@@ -1,5 +1,5 @@
 /**
- * Regression tests for verifyEmailCode procedure — name and phone saving.
+ * Regression tests for verifyEmailCode procedure - name and phone saving.
  *
  * Bug: verifyEmailCode did not accept `name` or `phone` in its input schema,
  * so new email_otp users were created with name=null and phone=null even when
@@ -63,7 +63,7 @@ import { normalizeIsraeliPhone, splitIsraeliE164Phone } from "./smsProvider";
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("verifyEmailCode — name and phone saving (regression)", () => {
+describe("verifyEmailCode - name and phone saving (regression)", () => {
   const mockUser = {
     id: 42,
     openId: "test-open-id",
@@ -150,7 +150,7 @@ describe("verifyEmailCode — name and phone saving (regression)", () => {
   });
 
   it("does NOT call updateWorkerProfile for existing (returning) user", async () => {
-    // Existing user login — updateWorkerProfile should not be called
+    // Existing user login - updateWorkerProfile should not be called
     (getUserByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser);
 
     const existingUser = await getUserByEmail("test@example.com");

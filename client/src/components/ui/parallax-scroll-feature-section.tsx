@@ -11,7 +11,7 @@ interface ParallaxFeatureItem {
   reverse: boolean;
 }
 
-// קומפוננט נפרד לכל שלב — פותר את בעיית hooks בתוך לולאה
+// קומפוננט נפרד לכל שלב - פותר את בעיית hooks בתוך לולאה
 function ParallaxStep({ item }: { item: ParallaxFeatureItem }) {
   const ref = useRef<HTMLDivElement>(null);
 

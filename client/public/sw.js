@@ -1,4 +1,4 @@
-// Service Worker for Web Push Notifications — Job-Now
+// Service Worker for Web Push Notifications - Job-Now
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;

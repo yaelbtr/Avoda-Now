@@ -20,7 +20,7 @@
 import { describe, it, expect } from "vitest";
 import { buildCspDirectives } from "./security";
 
-describe("buildCspDirectives — Content-Security-Policy builder", () => {
+describe("buildCspDirectives - Content-Security-Policy builder", () => {
   // ── 1. All required directives are present ────────────────────────────────
   it("returns all required CSP directives", () => {
     const directives = buildCspDirectives();

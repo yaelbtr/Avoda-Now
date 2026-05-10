@@ -33,7 +33,7 @@ export function IdleLogoutManager() {
     try {
       await logout.mutateAsync();
     } catch {
-      // Session may already be expired — proceed to redirect regardless
+      // Session may already be expired - proceed to redirect regardless
     }
     navigate("/");
   }, [logout, navigate]);

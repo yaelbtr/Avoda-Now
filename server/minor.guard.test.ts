@@ -2,9 +2,9 @@
  * minor.guard.test.ts
  *
  * Tests for:
- *   1. assertMinorEligible (unit) — all four rules
- *   2. applyToJob integration — guard called, minAge check still works
- *   3. updateApplicationStatus "accept" integration — guard called for worker
+ *   1. assertMinorEligible (unit) - all four rules
+ *   2. applyToJob integration - guard called, minAge check still works
+ *   3. updateApplicationStatus "accept" integration - guard called for worker
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TRPCError } from "@trpc/server";
@@ -39,7 +39,7 @@ vi.mock("./db", () => ({
   getApplicationsForJob: vi.fn().mockResolvedValue([]),
   getApplicationsForJobWithDistance: vi.fn().mockResolvedValue([]),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
-  // Candidate cap helpers — default to 0 accepted (cap not reached)
+  // Candidate cap helpers - default to 0 accepted (cap not reached)
   countAcceptedCandidates: vi.fn().mockResolvedValue(0),
   autoCloseJobIfCapReached: vi.fn().mockResolvedValue(false),
   logLegalAcknowledgement: vi.fn().mockResolvedValue(undefined),
@@ -136,7 +136,7 @@ describe("assertMinorEligible", () => {
 // ── 2. applyToJob integration ─────────────────────────────────────────────────
 import { appRouter } from "./routers";
 
-describe("applyToJob — minor guard integration", () => {
+describe("applyToJob - minor guard integration", () => {
   beforeEach(() => vi.clearAllMocks());
 
   const activeJob = {
@@ -168,7 +168,7 @@ describe("applyToJob — minor guard integration", () => {
 });
 
 // ── 3. updateApplicationStatus "accept" integration ──────────────────────────
-describe("updateApplicationStatus accept — minor guard integration", () => {
+describe("updateApplicationStatus accept - minor guard integration", () => {
   beforeEach(() => vi.clearAllMocks());
 
   const baseApp = {

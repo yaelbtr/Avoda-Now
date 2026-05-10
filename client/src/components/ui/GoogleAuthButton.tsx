@@ -1,15 +1,15 @@
 /**
- * GoogleAuthButton — Shared Google OAuth button.
+ * GoogleAuthButton - Shared Google OAuth button.
  *
  * Single source of truth for the Google sign-in/sign-up button used across
  * the login and registration flows. Keeps the Google logo SVG, border style,
  * hover state, and disabled state in one place.
  *
  * Props:
- *   label    — button text (e.g. "כניסה עם Google" / "הרשמה עם Google")
- *   onClick  — click handler (caller decides whether to check terms, etc.)
- *   disabled — when true: grayed-out, cursor-not-allowed, opacity-60
- *   size     — "default" (py-2.5, 18px icon) | "sm" (py-2, 16px icon)
+ *   label    - button text (e.g. "כניסה עם Google" / "הרשמה עם Google")
+ *   onClick  - click handler (caller decides whether to check terms, etc.)
+ *   disabled - when true: grayed-out, cursor-not-allowed, opacity-60
+ *   size     - "default" (py-2.5, 18px icon) | "sm" (py-2, 16px icon)
  *              defaults to "default"
  */
 
@@ -21,7 +21,7 @@ interface GoogleAuthButtonProps {
   className?: string;
 }
 
-/** Google G logo as an inline SVG — 48×48 viewBox, scaled via width/height */
+/** Google G logo as an inline SVG - 48×48 viewBox, scaled via width/height */
 function GoogleLogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" focusable="false">

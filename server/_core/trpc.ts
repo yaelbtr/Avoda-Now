@@ -54,9 +54,9 @@ export const protectedProcedure = t.procedure.use(requireUser);
  * and redirect the user to the phone-entry / registration flow.
  *
  * Exempt routes (use plain protectedProcedure instead):
- *  - auth.me, auth.logout — needed to read/clear session
- *  - user.completeSignup  — the route that sets the phone in the first place
- *  - user.updateProfile   — allows updating phone
+ *  - auth.me, auth.logout - needed to read/clear session
+ *  - user.completeSignup  - the route that sets the phone in the first place
+ *  - user.updateProfile   - allows updating phone
  */
 const requirePhone = t.middleware(async opts => {
   const { ctx, next } = opts;

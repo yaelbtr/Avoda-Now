@@ -1,7 +1,7 @@
 /**
  * Tests for job image upload endpoint logic.
  * Covers: file type validation, size limit, S3 key format, auth guard.
- * These are pure-logic tests — no HTTP server or S3 calls are made.
+ * These are pure-logic tests - no HTTP server or S3 calls are made.
  */
 import { describe, it, expect } from "vitest";
 
@@ -34,7 +34,7 @@ function isWithinClientLimit(sizeBytes: number): boolean {
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────────
-describe("Job image upload — MIME type validation", () => {
+describe("Job image upload - MIME type validation", () => {
   it("accepts image/jpeg", () => {
     expect(isAllowedMimeType("image/jpeg")).toBe(true);
   });
@@ -60,7 +60,7 @@ describe("Job image upload — MIME type validation", () => {
   });
 });
 
-describe("Job image upload — extension mapping", () => {
+describe("Job image upload - extension mapping", () => {
   it("maps image/png → png", () => {
     expect(getExtension("image/png")).toBe("png");
   });
@@ -78,7 +78,7 @@ describe("Job image upload — extension mapping", () => {
   });
 });
 
-describe("Job image upload — S3 key format", () => {
+describe("Job image upload - S3 key format", () => {
   it("key starts with job-images/ prefix", () => {
     const key = buildS3Key(42, "ts-suffix", "image/jpeg");
     expect(key.startsWith("job-images/")).toBe(true);
@@ -100,7 +100,7 @@ describe("Job image upload — S3 key format", () => {
   });
 });
 
-describe("Job image upload — size limits", () => {
+describe("Job image upload - size limits", () => {
   it("4MB file passes client limit", () => {
     expect(isWithinClientLimit(4 * 1024 * 1024)).toBe(true);
   });

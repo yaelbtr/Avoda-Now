@@ -310,7 +310,7 @@ export default function Admin() {
     onError: (e) => toast.error(e.message),
   });
   const forceLogoutUser = trpc.admin.forceLogoutUser.useMutation({
-    onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("המשתמש נותק בהצלחה — הסשן שלו יפוג בבקשה הבאה"); },
+    onSuccess: () => { utils.admin.listUsers.invalidate(); toast.success("המשתמש נותק בהצלחה - הסשן שלו יפוג בבקשה הבאה"); },
     onError: (e) => toast.error(e.message),
   });
   const setUserRole = trpc.admin.setUserRole.useMutation({
@@ -915,7 +915,7 @@ export default function Admin() {
                           }`}
                         >
                           <td className="px-3 py-2.5 font-medium">{u.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
-                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{u.phone ?? "—"}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{u.phone ?? "-"}</td>
                           <td className="px-3 py-2.5">
                             <Badge
                               variant={u.role === "admin" ? "default" : u.role === "test" ? "outline" : "secondary"}
@@ -928,13 +928,13 @@ export default function Admin() {
                             {u.role === "test" && u.phone ? (
                               <span
                                 className="font-mono text-xs font-bold px-2 py-1 rounded bg-orange-50 border border-orange-200 text-orange-700 select-all cursor-pointer"
-                                title="קוד כניסה — לחץ להעתק"
+                                title="קוד כניסה - לחץ להעתק"
                                 onClick={() => { navigator.clipboard.writeText(u.phone!.replace(/\D/g, "").slice(0, 6)); toast.success("קוד הועתק"); }}
                               >
                                 {u.phone.replace(/\D/g, "").slice(0, 6)}
                               </span>
                             ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
+                              <span className="text-muted-foreground text-xs">-</span>
                             )}
                           </td>
                           <td className="px-3 py-2.5">
@@ -1182,7 +1182,7 @@ export default function Admin() {
                           }`}
                         >
                           <td className="px-3 py-2.5 font-medium">{e.name ?? <span className="text-muted-foreground italic">ללא שם</span>}</td>
-                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{e.phone ?? "—"}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{e.phone ?? "-"}</td>
                           <td className="px-3 py-2.5">
                             {e.status === "suspended"
                               ? <Badge variant="destructive" className="text-xs">חסום</Badge>
@@ -1336,7 +1336,7 @@ export default function Admin() {
             </div>
             <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
               <Bell className="w-4 h-4 inline ml-2" />
-              <strong>לוגיקת batching:</strong> כל הגשת מועמדות פותחת חלון של 10 דקות. אם מגיעים 3 מועמדים — ההודעה נשלחת מיידית. אחרת — נשלחת בסוף החלון.
+              <strong>לוגיקת batching:</strong> כל הגשת מועמדות פותחת חלון של 10 דקות. אם מגיעים 3 מועמדים - ההודעה נשלחת מיידית. אחרת - נשלחת בסוף החלון.
             </div>
             {batchesQuery.isLoading ? (
               <div className="space-y-3">
@@ -1486,7 +1486,7 @@ export default function Admin() {
                       {maintenanceModeQuery.isLoading
                         ? "טוען..."
                         : maintenanceModeQuery.data?.active
-                        ? "מצב תחזוקה פעיל — האתר נעול למשתמשים רגילים"
+                        ? "מצב תחזוקה פעיל - האתר נעול למשתמשים רגילים"
                         : "האתר פתוח לכלל הציבור"}
                     </span>
                   </div>
@@ -1588,7 +1588,7 @@ export default function Admin() {
                       {employerLockQuery.isLoading
                         ? "טוען..."
                         : employerLockQuery.data?.active
-                        ? "נעילת מעסיקים פעילה — הפלטפורמה פתוחה לעובדים בלבד"
+                        ? "נעילת מעסיקים פעילה - הפלטפורמה פתוחה לעובדים בלבד"
                         : "הפלטפורמה פתוחה לכלל המשתמשים (עובדים ומעסיקים)"}
                     </span>
                   </div>
@@ -1636,7 +1636,7 @@ export default function Admin() {
                 <div>
                   <h2 className="text-lg font-semibold">יומן שינויי תאריך לידה</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    רשומות ביקורת לכל שינוי תאריך לידה — כולל IP, תאריך ישן וחדש.
+                    רשומות ביקורת לכל שינוי תאריך לידה - כולל IP, תאריך ישן וחדש.
                   </p>
                 </div>
                 <AppButton
@@ -1691,7 +1691,7 @@ export default function Admin() {
                               <tr key={row.id} className={`border-b last:border-0 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}>
                                 <td className="px-4 py-3 text-muted-foreground">{row.id}</td>
                                 <td className="px-4 py-3">
-                                  <div className="font-medium">{row.userName ?? <span className="text-muted-foreground">—</span>}</div>
+                                  <div className="font-medium">{row.userName ?? <span className="text-muted-foreground">-</span>}</div>
                                   <div className="text-xs text-muted-foreground">ID: {row.userId}</div>
                                 </td>
                                 <td className="px-4 py-3 font-mono text-sm">
@@ -1703,17 +1703,17 @@ export default function Admin() {
                                 <td className="px-4 py-3 font-mono text-sm font-semibold">
                                   {row.newBirthDate
                                     ? new Date(row.newBirthDate + "T00:00:00").toLocaleDateString("he-IL")
-                                    : <span className="text-muted-foreground text-xs">—</span>
+                                    : <span className="text-muted-foreground text-xs">-</span>
                                   }
                                 </td>
                                 <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                                   {row.changedAt
                                     ? new Date(row.changedAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
-                                    : "—"
+                                    : "-"
                                   }
                                 </td>
                                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                                  {row.ipAddress ?? "—"}
+                                  {row.ipAddress ?? "-"}
                                 </td>
                               </tr>
                             ))
@@ -1751,7 +1751,7 @@ export default function Admin() {
                 <div>
                   <h2 className="text-lg font-semibold">לוגים כלליים</h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    כל אירועי המערכת — שגיאות שרת, אזהרות, ואירועי מידע. לחץ על שורה לפרטים מלאים וstack trace.
+                    כל אירועי המערכת - שגיאות שרת, אזהרות, ואירועי מידע. לחץ על שורה לפרטים מלאים וstack trace.
                   </p>
                 </div>
                 <AppButton
@@ -1887,7 +1887,7 @@ export default function Admin() {
                                   )}
                                 </td>
                                 <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground max-w-[160px] truncate">{row.event}</td>
-                                <td className="px-3 py-2.5 font-mono text-xs">{row.phone ?? <span className="text-muted-foreground">—</span>}</td>
+                                <td className="px-3 py-2.5 font-mono text-xs">{row.phone ?? <span className="text-muted-foreground">-</span>}</td>
                                 <td className="px-3 py-2.5 text-sm max-w-[280px] truncate">{row.message}</td>
                                 <td className="px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap">
                                   {new Date(row.createdAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}

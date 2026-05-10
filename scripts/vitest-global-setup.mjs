@@ -1,7 +1,7 @@
 /**
  * vitest-global-setup.mjs
  *
- * Vitest globalSetup — runs ONCE before all integration tests.
+ * Vitest globalSetup - runs ONCE before all integration tests.
  *
  * Responsibilities:
  *  1. Load .env.test into process.env
@@ -62,6 +62,6 @@ export async function setup() {
 
 export async function teardown() {
   // Optional: clean up after all tests
-  // We leave data in place for debugging — re-seed on next run wipes it
+  // We leave data in place for debugging - re-seed on next run wipes it
   console.log("\n🧹 Integration test teardown complete.");
 }

@@ -29,7 +29,7 @@ const DIVIDER: React.CSSProperties = {
   margin: "4px 12px",
 };
 
-// Single nav item style — py-1.5 keeps items compact but tappable
+// Single nav item style - py-1.5 keeps items compact but tappable
 const ITEM = "flex items-center gap-3 w-full text-right px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer hover:bg-white/5 active:scale-95 active:bg-white/10";
 
 export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen }: MobileDrawerProps) {
@@ -223,7 +223,7 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
 
             <div style={DIVIDER} />
 
-            {/* ── Nav + account — scrollable, pushes footer down ─────────── */}
+            {/* ── Nav + account - scrollable, pushes footer down ─────────── */}
             <div className="flex-1 overflow-y-auto" role="navigation" aria-label="תפריט ניווט נייד">
 
             {/* ── Section 2: Main navigation ────────────────────────────────── */}
@@ -272,10 +272,10 @@ export default function MobileDrawer({ open, onClose, onLoginOpen, onReportOpen 
 
             </div>{/* end scrollable nav+account */}
 
-            {/* ── Section 4: Footer — pinned to bottom ──────────────────────── */}
+            {/* ── Section 4: Footer - pinned to bottom ──────────────────────── */}
             <div style={DIVIDER} />
             <div className="px-2 py-1.5 shrink-0">
-              {/* Legal links — inline row */}
+              {/* Legal links - inline row */}
               <div className="flex gap-1 mb-1.5">
                 <Link href="/terms" className="flex-1">
                   <span className={ITEM} style={{ color: COLOR_DIM, border: "1px solid transparent", borderRadius: "0.75rem", justifyContent: "center" }} onClick={() => setTimeout(onClose, 150)}>

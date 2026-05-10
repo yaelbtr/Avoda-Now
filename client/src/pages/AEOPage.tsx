@@ -1,5 +1,5 @@
 /**
- * AEOPage — universal template for all AEO/SEO content pages.
+ * AEOPage - universal template for all AEO/SEO content pages.
  *
  * Handles:
  *   - /questions/:slug
@@ -149,7 +149,7 @@ export default function AEOPageComponent({ page }: { page: AEOPage }) {
       url: BASE_URL,
       logo: `${BASE_URL}/logo.png`,
       description:
-        "AvodaGo — הפלטפורמה הישראלית לעבודה זמנית. מחברת בין עובדים זמינים למעסיקים שצריכים אותם.",
+        "AvodaGo - הפלטפורמה הישראלית לעבודה זמנית. מחברת בין עובדים זמינים למעסיקים שצריכים אותם.",
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer support",
@@ -224,7 +224,7 @@ export default function AEOPageComponent({ page }: { page: AEOPage }) {
             >
               {page.h1}
             </h1>
-            {/* Direct answer — most important for AEO */}
+            {/* Direct answer - most important for AEO */}
             <div className="bg-blue-50 border-r-4 border-blue-500 rounded-lg px-5 py-4">
               <p className="text-sm md:text-base text-gray-800 leading-relaxed">
                 {page.intro}
@@ -251,7 +251,7 @@ export default function AEOPageComponent({ page }: { page: AEOPage }) {
           {/* ── CTA ──────────────────────────────────────────────────── */}
           <div className="bg-gradient-to-l from-blue-600 to-blue-700 rounded-2xl p-6 mb-10 text-white text-center">
             <p className="text-sm font-medium mb-3 opacity-90">
-              AvodaGo — הפלטפורמה הישראלית לעבודה זמנית
+              AvodaGo - הפלטפורמה הישראלית לעבודה זמנית
             </p>
             <Link
               href={page.cta.href}

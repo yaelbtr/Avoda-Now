@@ -64,7 +64,7 @@ const EMPTY_FORM = {
   sortOrder: 0,
 };
 
-/** Embeddable categories management panel — used as a tab inside Admin.tsx */
+/** Embeddable categories management panel - used as a tab inside Admin.tsx */
 export function AdminCategoriesTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -452,7 +452,7 @@ export function AdminCategoriesTab() {
   );
 }
 
-/** Legacy standalone page — kept for backward compatibility, redirects to admin panel */
+/** Legacy standalone page - kept for backward compatibility, redirects to admin panel */
 export default function AdminCategories() {
   return <AdminCategoriesTab />;
 }

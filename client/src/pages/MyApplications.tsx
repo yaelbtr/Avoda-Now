@@ -25,7 +25,7 @@ import { JobCard } from "@/components/JobCard";
 import JobCardSkeleton from "@/components/JobCardSkeleton";
 import JobBottomSheet from "@/components/JobBottomSheet";
 
-// STATUS_CONFIG removed — using shared StatusBadge component instead
+// STATUS_CONFIG removed - using shared StatusBadge component instead
 
 type MyApplication = {
   id: number;
@@ -638,7 +638,7 @@ export default function MyApplications() {
                       opacity: (isRejected || isOfferRejected) ? 0.70 : 1,
                     }}
                   >
-                    {/* Offered banner — only shown before the worker accepts (contactRevealed=false) */}
+                    {/* Offered banner - only shown before the worker accepts (contactRevealed=false) */}
                     {isOffered && !app.contactRevealed && (
                       <div
                         className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3 text-xs font-semibold"
@@ -691,7 +691,7 @@ export default function MyApplications() {
                           </p>
                         )}
                       </div>
-                      {/* Status badge — uses shared StatusBadge for consistent display.
+                      {/* Status badge - uses shared StatusBadge for consistent display.
                            When status=offered AND contactRevealed=true the worker has accepted,
                            so we pass effectiveStatus='offered_accepted' to override the label. */}
                       <StatusBadge
@@ -772,7 +772,7 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Accepted but contact not yet revealed — covered by the universal banner below */}
+                    {/* Accepted but contact not yet revealed - covered by the universal banner below */}
 
                     {/* Job closed due to cap_reached: show banner instead of accept/reject buttons */}
                     {isOffered && !app.contactRevealed && app.jobClosedReason === "cap_reached" && (
@@ -786,7 +786,7 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Offered: accept or reject buttons — only show when worker hasn't responded yet and job is still open */}
+                    {/* Offered: accept or reject buttons - only show when worker hasn't responded yet and job is still open */}
                     {isOffered && !app.contactRevealed && app.jobClosedReason !== "cap_reached" && (
                       <div className="flex gap-2 mt-3">
                         <button
@@ -825,7 +825,7 @@ export default function MyApplications() {
                       </div>
                     )}
 
-                    {/* Universal status banner — shown for every status using worker-perspective text */}
+                    {/* Universal status banner - shown for every status using worker-perspective text */}
                     {(() => {
                       // Determine the effective status key (offered+contactRevealed → offered_accepted)
                       const effectiveKey =
@@ -1009,7 +1009,7 @@ export default function MyApplications() {
               </div>
             )}
 
-            {/* Push notification prompt — saved tab */}
+            {/* Push notification prompt - saved tab */}
             {push.isSupported && !push.isSubscribed && push.permission !== "denied" && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}

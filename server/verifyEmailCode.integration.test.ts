@@ -4,14 +4,14 @@
  * Integration tests for the verifyEmailCode flow.
  *
  * Tests run against the ISOLATED local test database (jobnow_test).
- * External services (SendGrid, JWT signing) are mocked — no real emails sent.
+ * External services (SendGrid, JWT signing) are mocked - no real emails sent.
  *
  * Coverage:
  *  1. New user created with name and phone on first OTP verification
  *  2. New user created with name only (no phone)
  *  3. New user created with phone only (no name)
  *  4. New user created with no name/phone (bare email registration)
- *  5. Existing user login — no duplicate user created, lastSignedInAt updated
+ *  5. Existing user login - no duplicate user created, lastSignedInAt updated
  *  6. Invalid OTP code → BAD_REQUEST error
  *  7. Expired OTP → BAD_REQUEST error
  *  8. Max attempts exceeded → TOO_MANY_REQUESTS error
@@ -57,7 +57,7 @@ vi.mock("@sendgrid/mail", () => ({
   },
 }));
 
-// Mock JWT signing (sdk.signSession) — returns a fake token
+// Mock JWT signing (sdk.signSession) - returns a fake token
 vi.mock("./_core/auth", () => ({
   sdk: {
     signSession: vi.fn().mockResolvedValue("fake-jwt-token-for-testing"),
@@ -211,7 +211,7 @@ async function simulateVerifyEmailCode(input: {
           const split = splitIsraeliE164Phone(normalizedPhone);
           if (split) phoneParts = { phonePrefix: split.prefix, phoneNumber: split.number };
         } catch {
-          // invalid phone — skip silently
+          // invalid phone - skip silently
         }
       }
       await updateWorkerProfile(user.id, {
@@ -252,7 +252,7 @@ afterAll(async () => {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe("Integration: verifyEmailCode — new user creation", () => {
+describe("Integration: verifyEmailCode - new user creation", () => {
   it("creates a new user with name and phone on first OTP verification", async () => {
     const email = `${TEST_EMAIL_BASE}.full@test.invalid`;
     await cleanupTestUser(email);
@@ -350,7 +350,7 @@ describe("Integration: verifyEmailCode — new user creation", () => {
   });
 });
 
-describe("Integration: verifyEmailCode — phone normalization", () => {
+describe("Integration: verifyEmailCode - phone normalization", () => {
   it("normalizes 0501234567 → +972501234567", async () => {
     const email = `${TEST_EMAIL_BASE}.norm1@test.invalid`;
     await cleanupTestUser(email);
@@ -395,7 +395,7 @@ describe("Integration: verifyEmailCode — phone normalization", () => {
     await cleanupTestUser(email);
   });
 
-  it("silently ignores invalid phone — user created, phone stays null", async () => {
+  it("silently ignores invalid phone - user created, phone stays null", async () => {
     const email = `${TEST_EMAIL_BASE}.invalid-phone@test.invalid`;
     await cleanupTestUser(email);
 
@@ -413,19 +413,19 @@ describe("Integration: verifyEmailCode — phone normalization", () => {
   });
 });
 
-describe("Integration: verifyEmailCode — existing user login", () => {
+describe("Integration: verifyEmailCode - existing user login", () => {
   it("does NOT create a duplicate user on second login", async () => {
     const email = `${TEST_EMAIL_BASE}.returning@test.invalid`;
     await cleanupTestUser(email);
 
-    // First login — creates user
+    // First login - creates user
     const code1 = await seedOtp(email);
     const first = await simulateVerifyEmailCode({
       email, code: code1, name: "Returning User", phone: "0501234567",
     });
     expect(first.isNewUser).toBe(true);
 
-    // Second login — should NOT create duplicate
+    // Second login - should NOT create duplicate
     const code2 = await seedOtp(email);
     const second = await simulateVerifyEmailCode({ email, code: code2 });
     expect(second.isNewUser).toBe(false);
@@ -445,13 +445,13 @@ describe("Integration: verifyEmailCode — existing user login", () => {
     const email = `${TEST_EMAIL_BASE}.preserve@test.invalid`;
     await cleanupTestUser(email);
 
-    // First login — creates user with name and phone
+    // First login - creates user with name and phone
     const code1 = await seedOtp(email);
     await simulateVerifyEmailCode({
       email, code: code1, name: "Original Name", phone: "0501234567",
     });
 
-    // Second login — no name/phone provided
+    // Second login - no name/phone provided
     const code2 = await seedOtp(email);
     const second = await simulateVerifyEmailCode({ email, code: code2 });
 
@@ -463,7 +463,7 @@ describe("Integration: verifyEmailCode — existing user login", () => {
   });
 });
 
-describe("Integration: verifyEmailCode — OTP validation errors", () => {
+describe("Integration: verifyEmailCode - OTP validation errors", () => {
   it("throws BAD_REQUEST for wrong OTP code", async () => {
     const email = `${TEST_EMAIL_BASE}.wrong-code@test.invalid`;
     await cleanupTestUser(email);
@@ -513,7 +513,7 @@ describe("Integration: verifyEmailCode — OTP validation errors", () => {
   });
 });
 
-describe("Integration: verifyEmailCode — welcome email", () => {
+describe("Integration: verifyEmailCode - welcome email", () => {
   // Track sendWelcomeEmail calls by monitoring the emailOtp module directly
   // We check whether the new user path was taken (isNewUser) rather than
   // trying to spy on sgMail.send which may be called for unsubscribe tokens too.
@@ -535,12 +535,12 @@ describe("Integration: verifyEmailCode — welcome email", () => {
     const email = `${TEST_EMAIL_BASE}.welcome-ret@test.invalid`;
     await cleanupTestUser(email);
 
-    // First login — creates user
+    // First login - creates user
     const code1 = await seedOtp(email);
     const first = await simulateVerifyEmailCode({ email, code: code1, name: "Existing User" });
     expect(first.isNewUser).toBe(true);
 
-    // Second login — returning user
+    // Second login - returning user
     const code2 = await seedOtp(email);
     const second = await simulateVerifyEmailCode({ email, code: code2 });
 

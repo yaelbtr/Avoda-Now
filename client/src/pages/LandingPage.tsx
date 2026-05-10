@@ -44,12 +44,12 @@ const WORKER_STEPS = [
   {
     icon: <Phone className="w-6 h-6" />,
     title: "נרשמים תוך שניות",
-    desc: "הכנסת מספר טלפון ואישור — ללא שם משתמש וסיסמה.",
+    desc: "הכנסת מספר טלפון ואישור - ללא שם משתמש וסיסמה.",
   },
   {
     icon: <Search className="w-6 h-6" />,
     title: "מגלים עבודות קרובות",
-    desc: "רואים משרות לפי מיקום, שעה ושכר — בלחיצה אחת.",
+    desc: "רואים משרות לפי מיקום, שעה ושכר - בלחיצה אחת.",
   },
   {
     icon: <CheckCircle className="w-6 h-6" />,
@@ -62,7 +62,7 @@ const EMPLOYER_STEPS = [
   {
     icon: <Briefcase className="w-6 h-6" />,
     title: "מפרסמים משרה",
-    desc: "כותבים תיאור, מגדירים שכר ושעות — תוך 2 דקות.",
+    desc: "כותבים תיאור, מגדירים שכר ושעות - תוך 2 דקות.",
   },
   {
     icon: <Bell className="w-6 h-6" />,
@@ -86,7 +86,7 @@ const FEATURES = [
   {
     icon: <MapPin className="w-7 h-7" />,
     title: "לפי מיקום",
-    desc: "התאמה לפי קרבה גיאוגרפית — רק עובדים שבאזורך.",
+    desc: "התאמה לפי קרבה גיאוגרפית - רק עובדים שבאזורך.",
   },
   {
     icon: <ShieldCheck className="w-7 h-7" />,
@@ -145,7 +145,7 @@ export default function LandingPage() {
               }}
             >
               <Zap className="w-3.5 h-3.5" />
-              עבודות זמניות — קרוב אליך
+              עבודות זמניות - קרוב אליך
             </span>
           </motion.div>
 
@@ -164,7 +164,7 @@ export default function LandingPage() {
             className="mb-10 text-lg leading-relaxed"
             style={{ color: "var(--text-secondary)" }}
           >
-            AvodaGo מחברת בין עובדים למעסיקים לעבודות זמניות — ניקיון, בייביסיטינג,
+            AvodaGo מחברת בין עובדים למעסיקים לעבודות זמניות - ניקיון, בייביסיטינג,
             הובלות, אירועים ועוד. מהיר, פשוט, בלי עמלות.
           </motion.p>
 
@@ -323,7 +323,7 @@ export default function LandingPage() {
             מוכן/ת להתחיל?
           </h2>
           <p className="mb-7 text-sm leading-relaxed opacity-80">
-            הצטרפות חינמית — ללא כרטיס אשראי, ללא עמלות. עשרות עבודות מחכות לך עכשיו.
+            הצטרפות חינמית - ללא כרטיס אשראי, ללא עמלות. עשרות עבודות מחכות לך עכשיו.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button

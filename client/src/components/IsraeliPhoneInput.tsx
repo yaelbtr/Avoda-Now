@@ -17,7 +17,7 @@ interface IsraeliPhoneInputProps {
   readOnly?: boolean;
   /** Error message to display below the field */
   error?: string;
-  /** Label text — defaults to "מספר טלפון" */
+  /** Label text - defaults to "מספר טלפון" */
   label?: string;
   /** Show the label above the field */
   showLabel?: boolean;
@@ -247,7 +247,7 @@ export function IsraeliPhoneInput({
           transition: "border-color 0.15s, box-shadow 0.15s",
         }}
       >
-        {/* Country picker — rightmost in RTL */}
+        {/* Country picker - rightmost in RTL */}
         <div
           style={{
             display: "flex",

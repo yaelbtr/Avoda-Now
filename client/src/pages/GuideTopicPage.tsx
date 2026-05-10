@@ -1,5 +1,5 @@
 /**
- * GuideTopicPage — renders /guide/:topic pages.
+ * GuideTopicPage - renders /guide/:topic pages.
  * These are standalone guide pages (student-jobs, delivery-salary, passover-jobs, etc.)
  * that are NOT tied to a specific job category.
  */
@@ -160,7 +160,7 @@ export default function GuideTopicPage() {
           style={{ background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)" }}
         >
           <p className="font-bold text-lg mb-1">מוכן להתחיל לעבוד?</p>
-          <p className="text-sm opacity-90 mb-4">מצא עבודות זמניות קרוב אליך — ללא עמלות</p>
+          <p className="text-sm opacity-90 mb-4">מצא עבודות זמניות קרוב אליך - ללא עמלות</p>
           <Link
             href={entry.ctaPath}
             className="inline-block bg-white text-blue-600 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-50 transition-colors"

@@ -445,7 +445,7 @@ export default function PublicWorkerProfile() {
         </div>
       )}
 
-      {/* Empty reviews state — show only if no reviews yet */}
+      {/* Empty reviews state - show only if no reviews yet */}
       {reviews.length === 0 && !reviewsQuery.isLoading && (
         <div style={{
           background: "#f9f7f3",
@@ -460,7 +460,7 @@ export default function PublicWorkerProfile() {
         }}>
           <MessageSquare size={16} color="#bbb" style={{ flexShrink: 0 }} />
           <p style={{ color: "#aaa", fontSize: 13, margin: 0 }}>
-            אין ביקורות עדיין — היה הראשון לדרג עובד זה לאחר השלמת עבודה
+            אין ביקורות עדיין - היה הראשון לדרג עובד זה לאחר השלמת עבודה
           </p>
         </div>
       )}

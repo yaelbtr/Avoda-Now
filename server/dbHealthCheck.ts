@@ -8,7 +8,7 @@
  * ─────────────────
  * • Single source of truth: the table list is derived from the Drizzle schema
  *   objects at runtime, so it automatically stays in sync when new tables are
- *   added to schema.ts — no manual maintenance required.
+ *   added to schema.ts - no manual maintenance required.
  * • Non-blocking by default: `checkDbHealth()` returns a structured result
  *   instead of throwing, so callers decide whether to hard-fail or warn.
  * • Fail-fast at startup: `assertDbHealth()` wraps `checkDbHealth()` and

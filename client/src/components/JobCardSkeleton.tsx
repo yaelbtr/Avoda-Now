@@ -51,7 +51,7 @@ function Shimmer({
   );
 }
 
-// ── Full JobCard skeleton — mirrors the "default" card variant (new 2×2 design) ──
+// ── Full JobCard skeleton - mirrors the "default" card variant (new 2×2 design) ──
 export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
     <motion.div
@@ -68,7 +68,7 @@ export default function JobCardSkeleton({ delay = 0 }: { delay?: number }) {
       dir="rtl"
     >
       <div className="p-5 flex flex-col gap-4">
-        {/* ── Row 1: Header — title + badges + action icons ── */}
+        {/* ── Row 1: Header - title + badges + action icons ── */}
         <div className="flex items-start justify-between gap-3">
           {/* Right: title + badge row */}
           <div className="flex-1 min-w-0 space-y-2">

@@ -1,5 +1,5 @@
 /**
- * FAQPage — renders /faq/:slug pages.
+ * FAQPage - renders /faq/:slug pages.
  * Includes FAQPage JSON-LD schema for AI/Google rich results.
  */
 import { useEffect, useState } from "react";
@@ -243,7 +243,7 @@ export default function FAQPage() {
           style={{ background: "linear-gradient(135deg, #3c83f6 0%, #2563eb 100%)" }}
         >
           <p className="font-bold text-lg mb-1">מוכן להתחיל לעבוד?</p>
-          <p className="text-sm opacity-90 mb-4">מצא עבודות זמניות קרוב אליך — ללא עמלות</p>
+          <p className="text-sm opacity-90 mb-4">מצא עבודות זמניות קרוב אליך - ללא עמלות</p>
           <Link
             href="/find-jobs"
             className="inline-block bg-white text-blue-600 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-50 transition-colors"

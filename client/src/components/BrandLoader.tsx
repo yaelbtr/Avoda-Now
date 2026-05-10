@@ -18,7 +18,7 @@ interface BrandLoaderProps {
 /**
  * Branded AvodaGo loading indicator.
  * - sm: inline spinner replacement (32px)
- * - md: section loader (56px) — default
+ * - md: section loader (56px) - default
  * - lg: full-page loader (80px)
  */
 export default function BrandLoader({ size = "md", label, fullPage = false }: BrandLoaderProps) {

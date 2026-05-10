@@ -35,7 +35,7 @@ describe("Email transport configuration", () => {
     const sendgridConfigured = !!process.env.SENDGRID_API_KEY;
 
     if (!smtpConfigured && !sendgridConfigured) {
-      console.warn("Skipping live call — no email transport configured");
+      console.warn("Skipping live call - no email transport configured");
       return;
     }
     if (process.env.CI) {

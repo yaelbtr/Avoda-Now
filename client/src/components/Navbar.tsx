@@ -92,7 +92,7 @@ export default function Navbar() {
     url.searchParams.delete("authError");
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 
-    // משתמש מחובר — אין צורך במודל, נווט ישירות ל-returnTo
+    // משתמש מחובר - אין צורך במודל, נווט ישירות ל-returnTo
     if (isAuthenticated) {
       if (returnTo?.startsWith("/")) navigate(returnTo);
       return;
@@ -272,7 +272,7 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
               </motion.button>
-              {/* User icon — always visible; opens login for guests, navigates for auth users */}
+              {/* User icon - always visible; opens login for guests, navigates for auth users */}
               {isAuthenticated ? (
                 <Link href={userMode === "worker" ? "/worker-profile" : "/employer-profile"}>
                   <motion.button

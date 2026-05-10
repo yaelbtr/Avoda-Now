@@ -1,5 +1,5 @@
 /**
- * WorkerRegionBanner — shown on the worker homepage when ALL of the worker's
+ * WorkerRegionBanner - shown on the worker homepage when ALL of the worker's
  * associated regions are inactive (collecting_workers or paused).
  *
  * Displays a friendly message and lets the worker subscribe for a push
@@ -112,7 +112,7 @@ export function WorkerRegionBanner() {
                       <Bell className="w-3 h-3" />
                     )}
                     {region.name}
-                    {subscribed ? " — בטל התראה" : " — הודע לי"}
+                    {subscribed ? " - בטל התראה" : " - הודע לי"}
                   </button>
                 );
               })}

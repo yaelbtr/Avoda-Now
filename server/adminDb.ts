@@ -172,7 +172,7 @@ export async function adminDeleteUser(userId: number) {
 
   // 0. Delete profile photo from S3 (if any) before removing DB rows.
   //    profilePhoto is stored as a full CDN URL; extract the relative key by
-  //    stripping the CDN origin prefix.  Failure is non-fatal — log and continue.
+  //    stripping the CDN origin prefix.  Failure is non-fatal - log and continue.
   const userRow = await db
     .select({ profilePhoto: users.profilePhoto })
     .from(users)
@@ -200,7 +200,7 @@ export async function adminDeleteUser(userId: number) {
   // 1. Applications where this user is the worker
   await db.delete(applications).where(eq(applications.workerId, userId));
 
-  // 2. Jobs posted by this user — delete all child rows that reference jobs.id
+  // 2. Jobs posted by this user - delete all child rows that reference jobs.id
   //    before deleting the jobs themselves (FK constraints without CASCADE).
   const userJobs = await db
     .select({ id: jobs.id })

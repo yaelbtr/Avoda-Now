@@ -1,15 +1,15 @@
 /**
- * useStructuredData — injects / removes JSON-LD <script> tags in <head>.
+ * useStructuredData - injects / removes JSON-LD <script> tags in <head>.
  *
  * Each hook is keyed by a unique script ID so multiple schemas coexist on
  * the same page without conflicts.
  *
  * Available hooks:
- *   useJobPostingSchema   — single job page (/job/:id)
- *   useJobListingSchema   — listing / SEO landing pages (/jobs/*)
- *   useBreadcrumbSchema   — breadcrumb trail for any page
- *   useOrganizationSchema — site-wide Organization (homepage)
- *   useFAQSchema          — FAQ accordion (terms / help pages)
+ *   useJobPostingSchema   - single job page (/job/:id)
+ *   useJobListingSchema   - listing / SEO landing pages (/jobs/*)
+ *   useBreadcrumbSchema   - breadcrumb trail for any page
+ *   useOrganizationSchema - site-wide Organization (homepage)
+ *   useFAQSchema          - FAQ accordion (terms / help pages)
  */
 import { useEffect } from "react";
 
@@ -50,7 +50,7 @@ export interface JobPostingSchema {
   createdAt?: Date | string | null;
   expiresAt?: Date | string | null;
   isUrgent?: boolean;
-  /** Hourly rate — used as baseSalary when salary is not set */
+  /** Hourly rate - used as baseSalary when salary is not set */
   hourlyRate?: string | number | null;
 }
 
@@ -143,7 +143,7 @@ export function useJobPostingSchema(job: JobPostingSchema | null | undefined) {
   }, [job?.id, job?.title, job?.description, job?.expiresAt]);
 }
 
-// ── Hook: listing page (/jobs/*) — ItemList of JobPosting ────────────────────
+// ── Hook: listing page (/jobs/*) - ItemList of JobPosting ────────────────────
 
 export function useJobListingSchema(
   jobs: JobPostingSchema[],
@@ -223,7 +223,7 @@ export function useOrganizationSchema() {
         BASE_URL,
       ],
       description:
-        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+        "AvodaGo - לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
       foundingLocation: {
         "@type": "Place",
         addressCountry: "IL",
@@ -272,7 +272,7 @@ export function useWebSiteSchema() {
       name: SITE_NAME,
       url: BASE_URL,
       description:
-        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+        "AvodaGo - לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
       inLanguage: "he",
       potentialAction: {
         "@type": "SearchAction",
@@ -301,7 +301,7 @@ export function useLocalBusinessSchema() {
       logo: LOGO_URL,
       image: LOGO_URL,
       description:
-        "AvodaGo — לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
+        "AvodaGo - לוח דרושים מהיר ופשוט. מצא עבודות זמניות קרוב אליך ללא עמלות.",
       email: "info@avoda-go.co.il",
       areaServed: {
         "@type": "Country",

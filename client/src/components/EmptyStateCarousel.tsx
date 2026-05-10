@@ -104,7 +104,7 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.06 65) 0%, oklch(0.90 0.08 55) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.55 0.14 65 / 0.20)",
       headline: "אין משרות דחופות כרגע",
-      subtitle: "משרות דחופות מתפרסמות לעתים קרובות — נסה להרחיב את החיפוש",
+      subtitle: "משרות דחופות מתפרסמות לעתים קרובות - נסה להרחיב את החיפוש",
       actions: [
         { id: "tomorrow", label: "משרות מחר", onClick: onShowTomorrow, variant: "primary" },
         { id: "week", label: "משרות השבוע", onClick: onShowThisWeek, variant: "secondary" },
@@ -117,7 +117,7 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.04 91) 0%, oklch(0.90 0.06 80) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.50 0.10 91 / 0.18)",
       headline: "אין משרות להיום כרגע",
-      subtitle: "משרות חדשות מתפרסמות בכל רגע — בדוק מחר או בשבוע",
+      subtitle: "משרות חדשות מתפרסמות בכל רגע - בדוק מחר או בשבוע",
       actions: [
         { id: "tomorrow", label: "משרות מחר", onClick: onShowTomorrow, variant: "primary" },
         { id: "week", label: "משרות השבוע", onClick: onShowThisWeek, variant: "secondary" },
@@ -130,7 +130,7 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.04 122) 0%, oklch(0.90 0.06 91) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)",
       headline: `לא נמצאו תוצאות`,
-      subtitle: `לא נמצאו משרות עבור "${searchText}" — נסה מילים אחרות`,
+      subtitle: `לא נמצאו משרות עבור "${searchText}" - נסה מילים אחרות`,
       actions: hasAnyFilter
         ? [{ id: "clear", label: "נקה כל הסינונים", onClick: onClearAllFilters, variant: "primary" }]
         : [],
@@ -195,7 +195,7 @@ export default function EmptyStateCarousel({
       headline: "לא נמצאו משרות",
       subtitle: hasAnyFilter
         ? "נסה לשנות את הסינון או לחפש בעיר אחרת"
-        : "אין כרגע משרות זמינות — בדוק שוב מחר או שנה קטגוריה",
+        : "אין כרגע משרות זמינות - בדוק שוב מחר או שנה קטגוריה",
       actions: [{ id: "clear", label: "נקה סינון", onClick: onClearAllFilters, variant: "primary" }],
     });
   }
@@ -208,7 +208,7 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.04 91) 0%, oklch(0.90 0.06 80) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.50 0.10 91 / 0.18)",
       headline: "נסה תאריך אחר",
-      subtitle: "משרות חדשות מתפרסמות כל יום — בדוק מחר או בשבוע",
+      subtitle: "משרות חדשות מתפרסמות כל יום - בדוק מחר או בשבוע",
       actions: [
         { id: "tomorrow", label: "משרות מחר", onClick: onShowTomorrow, variant: "primary" },
         { id: "week", label: "משרות השבוע", onClick: onShowThisWeek, variant: "secondary" },
@@ -224,7 +224,7 @@ export default function EmptyStateCarousel({
       bubbleBg: "linear-gradient(135deg, oklch(0.94 0.04 122) 0%, oklch(0.90 0.06 91) 100%)",
       bubbleShadow: "0 4px 16px oklch(0.38 0.07 122 / 0.12)",
       headline: "נסה קטגוריה רחבה יותר",
-      subtitle: `כרגע מסננים לפי "${catName}" — הצג כל הקטגוריות`,
+      subtitle: `כרגע מסננים לפי "${catName}" - הצג כל הקטגוריות`,
       actions: [
         { id: "allCats", label: "הצג כל הקטגוריות", onClick: onClearCategory, variant: "primary" },
       ],
@@ -283,13 +283,13 @@ export default function EmptyStateCarousel({
     setActiveIdx((i) => (i + 1) % total);
   }, [total]);
 
-  /** Called after a drag ends — decide whether to advance/retreat based on offset */
+  /** Called after a drag ends - decide whether to advance/retreat based on offset */
   const handleDragEnd = useCallback(
     (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
       const { offset, velocity } = info;
       const SWIPE_THRESHOLD = 50; // px
       const VELOCITY_THRESHOLD = 300; // px/s
-      const isRTL = true; // app is RTL — positive x = swipe toward start (previous)
+      const isRTL = true; // app is RTL - positive x = swipe toward start (previous)
 
       // In RTL: dragging left (negative x) = advancing forward
       const shouldAdvance =
@@ -366,7 +366,7 @@ export default function EmptyStateCarousel({
             className="p-5 flex flex-col items-center text-center cursor-grab active:cursor-grabbing"
             style={{ touchAction: "pan-y" }}
           >
-            {/* Illustration emoji — scale-in on each slide entry */}
+            {/* Illustration emoji - scale-in on each slide entry */}
             <motion.span
               key={slide.id + "-emoji"}
               initial={{ scale: 0.55, opacity: 0 }}
@@ -388,7 +388,7 @@ export default function EmptyStateCarousel({
               {slide.subtitle}
             </p>
 
-            {/* Actions — uniform height, full width */}
+            {/* Actions - uniform height, full width */}
             {slide.actions.length > 0 && (
               <div className="flex gap-2.5 w-full">
                 {slide.actions.map((action) =>

@@ -30,7 +30,7 @@ interface Props {
   /** Category slug as used in the URL (e.g. "cleaning", "dog-walker") */
   categorySlug: string;
   /**
-   * Raw city slug from the URL param — may include an intent suffix:
+   * Raw city slug from the URL param - may include an intent suffix:
    *   "תל-אביב"          → how_to
    *   "תל-אביב-בדחיפות"  → urgent
    *   "תל-אביב-מחיר"     → price

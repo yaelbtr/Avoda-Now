@@ -236,7 +236,7 @@ export function registerGoogleAuthRoutes(app: Express) {
           loginMethod: "google",
         });
       } else {
-        // merge רק אם המשתמש עוד לא קיים כ-Google user — כדי להימנע מ-unique constraint על openId
+        // merge רק אם המשתמש עוד לא קיים כ-Google user - כדי להימנע מ-unique constraint על openId
         if (!existingByOpenId && existingByEmail && existingByEmail.openId !== googleOpenId) {
           console.log("[GoogleAuth] step=merge_account oldOpenId=%s", existingByEmail.openId);
           await db.mergeAccountToGoogleOpenId(
@@ -255,7 +255,7 @@ export function registerGoogleAuthRoutes(app: Express) {
           lastSignedIn: new Date(),
         });
 
-        // אחרי merge לחשבון Google — signupCompleted חייב להיות true
+        // אחרי merge לחשבון Google - signupCompleted חייב להיות true
         if (!existingUser.signupCompleted) {
           console.log("[GoogleAuth] step=set_signup_completed userId=%s", existingUser.id);
           await db.setSignupCompleted(existingUser.id);

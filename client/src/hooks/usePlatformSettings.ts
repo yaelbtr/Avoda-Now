@@ -1,8 +1,8 @@
 /**
- * usePlatformSettings — fetches public platform settings from the server.
+ * usePlatformSettings - fetches public platform settings from the server.
  *
  * Currently exposes:
- *  - employerLock: boolean — when true, all employer-facing routes/actions are blocked.
+ *  - employerLock: boolean - when true, all employer-facing routes/actions are blocked.
  *    Admins and test users always receive false (bypass handled server-side).
  *
  * The query is cached for 60 seconds to avoid hammering the server on every render.

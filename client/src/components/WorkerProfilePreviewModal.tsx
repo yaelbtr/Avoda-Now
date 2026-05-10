@@ -25,7 +25,7 @@ interface PreviewProps {
   distanceKm?: number | null;
 }
 
-// RTL tag row — tags start from the right edge and wrap downward
+// RTL tag row - tags start from the right edge and wrap downward
 const TagRow = ({ children }: { children: React.ReactNode }) => (
   <div style={{
     display: "flex",
@@ -157,7 +157,7 @@ export function WorkerProfilePreviewModal({
             onClick={onClose}
           />
 
-          {/* Bottom Sheet — dir="rtl" on the root so every child inherits RTL */}
+          {/* Bottom Sheet - dir="rtl" on the root so every child inherits RTL */}
           <motion.div
             dir="rtl"
             className="relative w-full"
@@ -216,7 +216,7 @@ export function WorkerProfilePreviewModal({
                 border: "1px solid oklch(0.92 0.02 100)",
                 boxShadow: "0 2px 12px rgba(79,88,59,0.08)",
               }}>
-                {/* Avatar on right, text block on left — natural RTL row */}
+                {/* Avatar on right, text block on left - natural RTL row */}
                 <div style={{
                   display: "flex",
                   alignItems: "flex-start",
@@ -224,7 +224,7 @@ export function WorkerProfilePreviewModal({
                   padding: 16,
                   borderBottom: "1px solid oklch(0.95 0.02 100)",
                 }}>
-                  {/* Avatar — first child in RTL = rightmost */}
+                  {/* Avatar - first child in RTL = rightmost */}
                   {photo ? (
                     <img
                       src={photo}
@@ -249,7 +249,7 @@ export function WorkerProfilePreviewModal({
                     </div>
                   )}
 
-                  {/* Text block — inherits RTL, text aligns right automatically */}
+                  {/* Text block - inherits RTL, text aligns right automatically */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontSize: 18, fontWeight: 900, color: "#4F583B", margin: 0, lineHeight: 1.2 }}>
                       {name || "שם לא הוזן"}
@@ -265,7 +265,7 @@ export function WorkerProfilePreviewModal({
                       </p>
                     )}
 
-                    {/* Stats row — flex row in RTL = starts from right */}
+                    {/* Stats row - flex row in RTL = starts from right */}
                     <div style={{
                       display: "flex",
                       flexWrap: "wrap",
@@ -414,7 +414,7 @@ export function WorkerProfilePreviewModal({
                 background: "white",
                 border: "1px solid oklch(0.92 0.02 100)",
               }}>
-                {/* Title on right, percentage on left — natural RTL */}
+                {/* Title on right, percentage on left - natural RTL */}
                 <div style={{
                   display: "flex",
                   alignItems: "center",
@@ -432,7 +432,7 @@ export function WorkerProfilePreviewModal({
                   </span>
                 </div>
 
-                {/* Progress bar — fills from right in RTL, clipped to container */}
+                {/* Progress bar - fills from right in RTL, clipped to container */}
                 <div style={{ width: "100%", height: 8, borderRadius: 9999, background: "oklch(0.92 0.02 100)", marginBottom: 12, position: "relative", overflow: "hidden" }}>
                   <div style={{
                     position: "absolute",
@@ -446,7 +446,7 @@ export function WorkerProfilePreviewModal({
                   }} />
                 </div>
 
-                {/* Completion items grid — RTL: icon on right, text to its left, pair is right-aligned */}
+                {/* Completion items grid - RTL: icon on right, text to its left, pair is right-aligned */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 8px" }}>
                   {completionItems.map((item) => (
                     <div key={item.label} style={{

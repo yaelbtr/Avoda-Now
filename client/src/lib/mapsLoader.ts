@@ -23,7 +23,7 @@ export function ensureMapsLoaded(): Promise<void> {
   // Already loaded
   if (window.google?.maps?.places) return Promise.resolve();
 
-  // In-flight — return the same promise so only one <script> is injected
+  // In-flight - return the same promise so only one <script> is injected
   if (_mapsLoadPromise) return _mapsLoadPromise;
 
   _mapsLoadPromise = new Promise<void>((resolve, reject) => {

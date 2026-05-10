@@ -4,15 +4,15 @@
  * and path traversal (CWE-22) on tRPC batch endpoints.
  *
  * Exports:
- *   securityHeaders       — Helmet with CSP (enabled in production)
- *   corsMiddleware        — CORS restricted to allowed origins
- *   globalRateLimit       — 60 req/min per IP
- *   jobsListRateLimit     — 20 req/min per IP (anti-scraping)
- *   otpRateLimit          — 5 req/hour per IP
- *   botDetection          — block known scraper User-Agents
- *   antiEnumeration       — detect sequential ID scanning
- *   trpcPathTraversalGuard — block path traversal patterns in tRPC batch URLs (CWE-22)
- *   buildCspDirectives     — nonce-aware CSP directive builder (used by serveStatic for per-request nonce injection)
+ *   securityHeaders       - Helmet with CSP (enabled in production)
+ *   corsMiddleware        - CORS restricted to allowed origins
+ *   globalRateLimit       - 60 req/min per IP
+ *   jobsListRateLimit     - 20 req/min per IP (anti-scraping)
+ *   otpRateLimit          - 5 req/hour per IP
+ *   botDetection          - block known scraper User-Agents
+ *   antiEnumeration       - detect sequential ID scanning
+ *   trpcPathTraversalGuard - block path traversal patterns in tRPC batch URLs (CWE-22)
+ *   buildCspDirectives     - nonce-aware CSP directive builder (used by serveStatic for per-request nonce injection)
  */
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
@@ -61,7 +61,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 /**
- * CORS middleware — restricts cross-origin requests to the allowed origins list.
+ * CORS middleware - restricts cross-origin requests to the allowed origins list.
  * Applied globally before tRPC and API routes.
  */
 export const corsMiddleware = cors({
@@ -74,7 +74,7 @@ export const corsMiddleware = cors({
     if (allowed) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS: origin not allowed — ${origin}`));
+      callback(new Error(`CORS: origin not allowed - ${origin}`));
     }
   },
   credentials: true,           // allow cookies (session cookie)
@@ -89,7 +89,7 @@ export const corsMiddleware = cors({
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
- * buildCspDirectives — returns a complete, nonce-aware CSP directive map.
+ * buildCspDirectives - returns a complete, nonce-aware CSP directive map.
  *
  * Design decisions:
  *  - 'unsafe-inline' is REMOVED from script-src in production; replaced by nonce + 'strict-dynamic'.
@@ -97,7 +97,7 @@ const isProduction = process.env.NODE_ENV === "production";
  *  - img-src uses explicit CDN hostnames instead of 'https:' wildcard.
  *  - connect-src covers: tRPC (self), Forge proxy (Maps/LLM), Google Maps, Umami, Push.
  *  - worker-src 'self' blob: covers /sw.js service worker.
- *  - frame-src / object-src: 'none' — clickjacking + plugin protection.
+ *  - frame-src / object-src: 'none' - clickjacking + plugin protection.
  *
  * @param nonce - Per-request cryptographic nonce (base64). Injected into script-src
  *                alongside 'strict-dynamic' to allow SSR shell inline scripts.
@@ -134,7 +134,7 @@ export function buildCspDirectives(
 
   if (dev) {
     // Vite HMR injects inline scripts and uses eval() for hot-module replacement.
-    // These are only safe in a local development environment — NEVER in production.
+    // These are only safe in a local development environment - NEVER in production.
     scriptSrc.push("'unsafe-inline'", "'unsafe-eval'");
   }
 
@@ -163,7 +163,7 @@ export function buildCspDirectives(
     // JavaScript sources
     scriptSrc,
 
-    // CSS sources — 'unsafe-inline' required for Tailwind + Radix UI runtime styles
+    // CSS sources - 'unsafe-inline' required for Tailwind + Radix UI runtime styles
     styleSrc: [
       "'self'",
       "'unsafe-inline'",
@@ -177,7 +177,7 @@ export function buildCspDirectives(
       "data:",
     ],
 
-    // Images — explicit CDN hostnames (no wildcard 'https:')
+    // Images - explicit CDN hostnames (no wildcard 'https:')
     imgSrc: [
       "'self'",
       "data:",
@@ -218,7 +218,7 @@ export function buildCspDirectives(
     // Form submissions only to same origin
     formAction: ["'self'"],
 
-    // Force all HTTP sub-resources to HTTPS (skipped in dev — localhost is HTTP)
+    // Force all HTTP sub-resources to HTTPS (skipped in dev - localhost is HTTP)
     ...(dev ? {} : { upgradeInsecureRequests: [] }),
   };
 }
@@ -268,7 +268,7 @@ export const securityHeaders = helmet({
           upgradeInsecureRequests: [],
         },
       }
-    : false,  // CSP off in development — Vite HMR requires relaxed policy
+    : false,  // CSP off in development - Vite HMR requires relaxed policy
   crossOriginEmbedderPolicy: false,  // Required for Google Maps
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   xFrameOptions: { action: "deny" },
@@ -319,7 +319,7 @@ export function botDetection(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-// ── Global rate limiter — 60 req/min per IP ──────────────────────────────────
+// ── Global rate limiter - 60 req/min per IP ──────────────────────────────────
 export const globalRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
@@ -329,7 +329,7 @@ export const globalRateLimit = rateLimit({
   skip: (req) => req.path.startsWith("/api/auth/google"),
 });
 
-// ── Jobs list rate limiter — 20 req/min per IP (anti-scraping) ───────────────
+// ── Jobs list rate limiter - 20 req/min per IP (anti-scraping) ───────────────
 export const jobsListRateLimit = rateLimit({
   windowMs: 60 * 1000,
   // 60 req/min: generous enough for infinite-scroll pagination (10 items/page × up to 6 pages)
@@ -353,7 +353,7 @@ export const jobsListRateLimit = rateLimit({
   },
 });
 
-// ── OTP rate limiter — 5 req/hour per IP (already in smsProvider, extra layer) ─
+// ── OTP rate limiter - 5 req/hour per IP (already in smsProvider, extra layer) ─
 // Express-level OTP guard: high ceiling (50/hour) to catch only extreme abuse.
 // Fine-grained per-phone limits (5/hour for regular users, unlimited for admins)
 // are enforced inside the tRPC sendOtp procedure via checkAndIncrementSendRate.
@@ -547,7 +547,7 @@ export function trpcPathTraversalGuard(
 
   // 2. Validate the procedure name segment (everything after /api/trpc/)
   //    req.path in Express strips the mount prefix, so for /api/trpc/jobs.list
-  //    req.path is /jobs.list — strip the leading slash.
+  //    req.path is /jobs.list - strip the leading slash.
   const procedurePath = req.path.replace(/^\//, "");
   if (procedurePath && !TRPC_PROCEDURE_ALLOWLIST.test(procedurePath)) {
     res.status(400).json({ error: "Bad Request", code: "INVALID_PROCEDURE" });
@@ -562,7 +562,7 @@ export function trpcPathTraversalGuard(
     try {
       decoded = decodeURIComponent(rawInput);
     } catch {
-      // malformed encoding — treat as suspicious
+      // malformed encoding - treat as suspicious
       res.status(400).json({ error: "Bad Request", code: "INVALID_INPUT_ENCODING" });
       return;
     }

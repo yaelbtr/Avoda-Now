@@ -1,15 +1,15 @@
 /**
- * server/sanitize.ts — Centralized XSS Sanitization Utility
+ * server/sanitize.ts - Centralized XSS Sanitization Utility
  * ─────────────────────────────────────────────────────────────
  * Single source of truth for all user-generated text sanitization.
  *
  * Usage:
  *   import { sanitizeText, sanitizeRichText } from "./sanitize";
  *
- *   sanitizeText(input)      — strips ALL HTML tags (plain text fields)
- *   sanitizeRichText(input)  — allows safe subset of HTML (descriptions)
+ *   sanitizeText(input)      - strips ALL HTML tags (plain text fields)
+ *   sanitizeRichText(input)  - allows safe subset of HTML (descriptions)
  *
- * Never sanitize on the client — always sanitize server-side before DB writes.
+ * Never sanitize on the client - always sanitize server-side before DB writes.
  */
 
 import sanitizeHtml from "sanitize-html";

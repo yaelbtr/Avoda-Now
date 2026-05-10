@@ -3,7 +3,7 @@
  *
  * Typed database helper for integration tests.
  *
- * Uses TEST_DATABASE_URL (local jobnow_test PostgreSQL) — completely isolated
+ * Uses TEST_DATABASE_URL (local jobnow_test PostgreSQL) - completely isolated
  * from the production Neon database.
  *
  * Usage in integration tests:

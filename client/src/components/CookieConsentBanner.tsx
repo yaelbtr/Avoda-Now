@@ -2,7 +2,7 @@
  * CookieConsentBanner
  *
  * Styled to match the AvodaGo design language:
- *   - Banner bar: dark nav bg `oklch(0.28 0.06 122.3)` — same as Navbar
+ *   - Banner bar: dark nav bg `oklch(0.28 0.06 122.3)` - same as Navbar
  *   - Settings modal: glass-modal + brand tokens
  *   - Buttons: AppButton cta / cta-outline variants
  *   - Typography: Heebo, RTL, brand label color
@@ -34,7 +34,7 @@ const LS_VERSION = "cookieConsentVersion";
  */
 export const CURRENT_COOKIE_VERSION = "2026-03";
 
-// טוקני עיצוב — CSS variables מה-index.css
+// טוקני עיצוב - CSS variables מה-index.css
 const DARK_NAV = "var(--brand-dark)";
 const BRAND_OLIVE = "var(--editorial-primary)";
 const CITRUS = "var(--citrus)";
@@ -119,7 +119,7 @@ export function useCookieConsent() {
 
   return { consent, consentVersion, analyticsConsent, isConsentCurrent, accept, saveCustom };
 }
-// SettingsModal removed — use CookieSettingsModal from @/components/CookieSettingsModal (DRY)
+// SettingsModal removed - use CookieSettingsModal from @/components/CookieSettingsModal (DRY)
 
 // ── Main Banner ────────────────────────────────────────────────────────────────
 export default function CookieConsentBanner() {
@@ -161,7 +161,7 @@ export default function CookieConsentBanner() {
         />
       )}
 
-      {/* Banner — dark nav bg, above mobile bottom nav */}
+      {/* Banner - dark nav bg, above mobile bottom nav */}
       <div
         role="region"
         aria-live="polite"
@@ -230,7 +230,7 @@ function BannerBar({
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-        {/* Settings — cta-outline style but adapted for dark bg */}
+        {/* Settings - cta-outline style but adapted for dark bg */}
         <button
           onClick={onSettings}
           className="flex items-center gap-1 text-sm px-3 py-2 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
@@ -245,7 +245,7 @@ function BannerBar({
           הגדרות
         </button>
 
-        {/* Accept — CTA variant */}
+        {/* Accept - CTA variant */}
         <AppButton
           variant="cta"
           size="sm"

@@ -1,14 +1,14 @@
 /**
- * WorkerJobsContext — Shared Worker Data Service
+ * WorkerJobsContext - Shared Worker Data Service
  *
  * Single source of truth for:
  *  1. All job panels on the worker home screen (urgent, today, nearby, latest)
- *  2. Saved job IDs — shared between HomeWorker and FindJobs so a save/unsave
+ *  2. Saved job IDs - shared between HomeWorker and FindJobs so a save/unsave
  *     in either page is immediately reflected everywhere without a second network call.
  *
  * Design decisions:
- * - jobs.getWorkerDashboard: staleTime=3min, gcTime=10min — survives page navigation
- * - savedIds: staleTime=5min, gcTime=15min — auth-gated, only fetches when logged in
+ * - jobs.getWorkerDashboard: staleTime=3min, gcTime=10min - survives page navigation
+ * - savedIds: staleTime=5min, gcTime=15min - auth-gated, only fetches when logged in
  * - Optimistic save/unsave: updates the local Set immediately, rolls back on error
  * - Geo input is stabilised with useMemo to prevent infinite query re-triggers
  * - DRY: save/unsave mutations defined once here, consumed by HomeWorker + FindJobs
@@ -66,7 +66,7 @@ export interface WorkerJobsState {
   refetch: () => void;
 
   // ── Saved jobs (shared between HomeWorker + FindJobs) ───────────────────────
-  /** Memoised Set of saved job IDs — O(1) lookup */
+  /** Memoised Set of saved job IDs - O(1) lookup */
   savedIds: Set<number>;
   isSavedLoading: boolean;
   /** Toggle save state optimistically. Requires authentication. */
@@ -87,7 +87,7 @@ export function WorkerJobsProvider({ children }: { children: React.ReactNode }) 
   const [lng, setLng] = useState<number | undefined>(undefined);
   const [nearbyRadius, setNearbyRadius] = useState(10);
 
-  // Stabilise query input — new object on every render would cause infinite re-fetches
+  // Stabilise query input - new object on every render would cause infinite re-fetches
   const dashboardInput = useMemo(
     () => ({ lat, lng, radiusKm: nearbyRadius }),
     [lat, lng, nearbyRadius]
@@ -111,7 +111,7 @@ export function WorkerJobsProvider({ children }: { children: React.ReactNode }) 
     throwOnError: false,
   });
 
-  // Memoised Set — O(1) lookup, stable reference when data hasn't changed
+  // Memoised Set - O(1) lookup, stable reference when data hasn't changed
   const savedIds = useMemo(
     () => new Set<number>(savedIdsQuery.data?.ids ?? []),
     [savedIdsQuery.data]
@@ -222,9 +222,9 @@ export function WorkerJobsProvider({ children }: { children: React.ReactNode }) 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 /**
- * useWorkerJobs — consume the shared worker data service.
+ * useWorkerJobs - consume the shared worker data service.
  * Must be used inside <WorkerJobsProvider>.
- * Returns stable references — safe to use as useEffect/useMemo dependencies.
+ * Returns stable references - safe to use as useEffect/useMemo dependencies.
  */
 export function useWorkerJobs(): WorkerJobsState {
   const ctx = useContext(WorkerJobsContext);

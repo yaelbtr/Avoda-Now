@@ -2,7 +2,7 @@
  * find-jobs-perf.test.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Verifies the server-side infrastructure that supports FindJobs performance:
- *  1. jobs.list is a public procedure — no auth required (unblocked render)
+ *  1. jobs.list is a public procedure - no auth required (unblocked render)
  *  2. jobs.list respects the limit parameter (pagination)
  *  3. jobs.list returns total count for pagination metadata
  *  4. jobs.list with dateFilter=today does not throw
@@ -12,14 +12,14 @@
 import { describe, it, expect } from "vitest";
 import { appRouter } from "./routers";
 
-// All DB tests use 15s timeout — cold connection pool can take ~8s on first call
+// All DB tests use 15s timeout - cold connection pool can take ~8s on first call
 const DB_TIMEOUT = 15_000;
 
 function publicCaller() {
   return appRouter.createCaller({ user: null } as never);
 }
 
-describe("FindJobs performance — server-side", () => {
+describe("FindJobs performance - server-side", () => {
   // ── 1. jobs.list is a public procedure (no auth required) ──────────────────
   it("jobs.list returns an array without authentication", async () => {
     const caller = publicCaller();

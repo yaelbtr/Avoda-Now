@@ -118,7 +118,7 @@ export default function WorkerProfile() {
     : birthDateIsFuture
       ? "תאריך לידה לא יכול להיות בעתיד"
       : undefined;
-  // saveBirthDate — used in the wizard gate (first-time entry, no rate limit)
+  // saveBirthDate - used in the wizard gate (first-time entry, no rate limit)
   const saveBirthDateMutation = trpc.user.saveBirthDate.useMutation({
     onSuccess: () => {
       toast.success("תאריך לידה נשמר בהצלחה");
@@ -126,7 +126,7 @@ export default function WorkerProfile() {
     },
     onError: (err) => toast.error(err.message),
   });
-  // updateBirthDate — used in edit mode (change existing, 30-day rate limit)
+  // updateBirthDate - used in edit mode (change existing, 30-day rate limit)
   const updateBirthDateMutation = trpc.user.updateBirthDate.useMutation({
     onSuccess: () => {
       toast.success("תאריך לידה עודכן בהצלחה");
@@ -201,9 +201,9 @@ export default function WorkerProfile() {
   const [phoneChangeModalOpen, setPhoneChangeModalOpen] = useState(false);
   // Track original phone to detect changes
   const [originalPhoneVal, setOriginalPhoneVal] = useState<PhoneValue>({ prefix: "", number: "" });
-  // שגיאות שדות חובה — מוצגות רק לאחר ניסיון שמירה
+  // שגיאות שדות חובה - מוצגות רק לאחר ניסיון שמירה
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; birthDate?: string }>({});
-  // הסכמה לתקנון — נדרש כשחסרה רשומת consent
+  // הסכמה לתקנון - נדרש כשחסרה רשומת consent
   const [consentChecked, setConsentChecked] = useState<Record<string, boolean>>({});
 
   // ── Dirty-state tracking ─────────────────────────────────────────────────────
@@ -255,10 +255,10 @@ export default function WorkerProfile() {
   };
 
   const [showPreview, setShowPreview] = useState(false);
-  // Collapsible sections — default collapsed
+  // Collapsible sections - default collapsed
 
 
-  // Populate from server — only initialise once to avoid overwriting user-entered values
+  // Populate from server - only initialise once to avoid overwriting user-entered values
   useEffect(() => {
     if (profileQuery.data) {
       const d = profileQuery.data;
@@ -285,7 +285,7 @@ export default function WorkerProfile() {
       }
 
       // Always prefer server data over blank defaults, but NEVER overwrite
-      // values the user has already typed — regardless of whether this is the
+      // values the user has already typed - regardless of whether this is the
       // first load or a subsequent refetch.
       // Rule: only apply a server value when (a) it is non-empty AND (b) the
       // current state is still the initial blank/default value.
@@ -351,7 +351,7 @@ export default function WorkerProfile() {
     );
   };
 
-  // ── Profile completion score — uses shared utility (single source of truth) ──
+  // ── Profile completion score - uses shared utility (single source of truth) ──
   const completionScore = () => calcProfileScore({
     name,
     profilePhoto,
@@ -379,7 +379,7 @@ export default function WorkerProfile() {
     }
     setFieldErrors({});
 
-    // אכיפת הסכמה לתקנון — אחיד לכל המצבים
+    // אכיפת הסכמה לתקנון - אחיד לכל המצבים
     const consentTypes: LegalConsentType[] = !signupCompleted
       ? ["terms", "privacy"]
       : (outdatedConsentsQuery.data?.outdated ?? []) as LegalConsentType[];
@@ -395,7 +395,7 @@ export default function WorkerProfile() {
       return;
     }
 
-    // משתמש חדש — completeSignup (כולל רישום consent בשרת)
+    // משתמש חדש - completeSignup (כולל רישום consent בשרת)
     if (!signupCompleted) {
       const hasFullPhoneVal = isValidPhoneValue(phoneVal);
       const combinedPhone = hasFullPhoneVal ? combinePhone(phoneVal) : (phone.trim() || undefined);
@@ -423,7 +423,7 @@ export default function WorkerProfile() {
       return;
     }
 
-    // משתמש קיים — רישום consent לסוגים outdated, ואז updateProfile
+    // משתמש קיים - רישום consent לסוגים outdated, ואז updateProfile
     const outdated = outdatedConsentsQuery.data?.outdated ?? [];
     const currentVersions = outdatedConsentsQuery.data?.currentVersions;
     if (outdated.length > 0) {
@@ -489,7 +489,7 @@ export default function WorkerProfile() {
     );
   }
 
-  // ── Error state (transient server error — show retry instead of broken page) ──
+  // ── Error state (transient server error - show retry instead of broken page) ──
   if (profileQuery.isError) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center px-4" dir="rtl">
@@ -617,7 +617,7 @@ export default function WorkerProfile() {
 
   return (
     <div className="min-h-screen" dir="rtl" style={{ backgroundColor: PROFILE_DESIGN.background, color: PROFILE_DESIGN.text }}>
-      {/* ── שער תאריך לידה — חוסם עד הזנה ─────────────────────────────────── */}
+      {/* ── שער תאריך לידה - חוסם עד הזנה ─────────────────────────────────── */}
       {!birthDateLoading && !hasBirthDate && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
@@ -963,7 +963,7 @@ export default function WorkerProfile() {
                 label="אודות"
                 value={workerBio}
                 onChange={(e) => setWorkerBio(e.target.value)}
-                placeholder="ספר קצת על עצמך — ניסיון, כישורים, זמינות..."
+                placeholder="ספר קצת על עצמך - ניסיון, כישורים, זמינות..."
                 dir="rtl"
                 rows={3}
                 maxLength={500}
@@ -988,7 +988,7 @@ export default function WorkerProfile() {
             </div>
             <div>
               <h2 className="font-semibold text-xl" style={{ color: PROFILE_DESIGN.text, fontFamily: "var(--font-secular)" }}>תאריך לידה <span style={{ color: PROFILE_DESIGN.error }}>*</span></h2>
-              <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>משמש לאימות גיל ולסינון משרות — משפיע על חשיפות אצל מעסיקים</p>
+              <p className="text-xs" style={{ color: PROFILE_DESIGN.textMuted }}>משמש לאימות גיל ולסינון משרות - משפיע על חשיפות אצל מעסיקים</p>
             </div>
           </div>
 
@@ -1030,7 +1030,7 @@ export default function WorkerProfile() {
             </p>
           )}
 
-          {/* שדה תאריך — מוסתר כשיש חסימת rate-limit */}
+          {/* שדה תאריך - מוסתר כשיש חסימת rate-limit */}
           {!birthDateInfoQuery.data?.canChangeAfter && (
             <>
               <AppInput
@@ -1294,7 +1294,7 @@ export default function WorkerProfile() {
                     {geoLoading ? (
                       <><BrandLoader size="sm" /> מאתר...’</>
                     ) : workerLatitude ? (
-                      <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר — לחץ לעדכון</>
+                      <><CheckCircle2 className="h-3.5 w-3.5" /> מיקום נשמר - לחץ לעדכון</>
                     ) : (
                       <><Crosshair className="h-3.5 w-3.5" /> השתמש במיקום הנוכחי שלי</>
                     )}
@@ -1512,7 +1512,7 @@ export default function WorkerProfile() {
         onClose={() => setPhoneChangeModalOpen(false)}
         initialPhone={phoneVal}
         onSuccess={(newPhoneVal) => {
-          // Phone verified and updated — refresh profile and update original
+          // Phone verified and updated - refresh profile and update original
           setOriginalPhoneVal(newPhoneVal);
           setPhoneVal(newPhoneVal);
           profileQuery.refetch();

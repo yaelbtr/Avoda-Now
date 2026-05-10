@@ -1,6 +1,6 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-/** Routes that require authentication — redirect to home on logout */
+/** Routes that require authentication - redirect to home on logout */
 export const PROTECTED_PATHS = [
   "/my-jobs",
   "/worker-profile",

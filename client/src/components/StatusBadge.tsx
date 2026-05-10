@@ -1,5 +1,5 @@
 /**
- * StatusBadge — shared component for application/offer status display.
+ * StatusBadge - shared component for application/offer status display.
  *
  * Wraps the coloured badge in a Radix Tooltip so the descriptive text is
  * accessible on both desktop (hover) and mobile (long-press), replacing the
@@ -21,7 +21,7 @@ interface StatusBadgeProps {
    */
   status: string;
   /**
-   * Override the lookup key — useful when the displayed status differs from
+   * Override the lookup key - useful when the displayed status differs from
    * the raw DB value (e.g. "offered" + contactRevealed → "offered_accepted").
    */
   effectiveStatus?: string;

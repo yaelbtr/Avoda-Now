@@ -2,7 +2,7 @@
  * usePostJobDraft
  *
  * Persists the PostJob multi-tab form to localStorage with debounced auto-save.
- * Single source of truth for draft key and schema — never duplicated in PostJob.tsx.
+ * Single source of truth for draft key and schema - never duplicated in PostJob.tsx.
  *
  * Usage:
  *   const { draft, saveDraft, clearDraft, hasDraft } = usePostJobDraft();
@@ -74,7 +74,7 @@ function writeDraft(draft: PostJobDraft): void {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, savedAt: Date.now() }));
   } catch {
-    // Storage quota exceeded or private browsing — fail silently
+    // Storage quota exceeded or private browsing - fail silently
   }
 }
 
@@ -102,9 +102,9 @@ interface UsePostJobDraftReturn {
   draft: PostJobDraft | null;
   /** Whether a non-empty draft exists in storage. */
   hasDraft: boolean;
-  /** Debounced save — call on every form change. */
+  /** Debounced save - call on every form change. */
   saveDraft: (data: PostJobDraft) => void;
-  /** Immediate save — use when navigating tabs. */
+  /** Immediate save - use when navigating tabs. */
   saveDraftNow: (data: PostJobDraft) => void;
   /** Remove draft from storage (call on successful submit or discard). */
   clearDraft: () => void;

@@ -12,14 +12,14 @@ const TARGET_IDS = [30004, 500507, 500329, 492560]; // יעל ביטרן, משה
 
 // The 2 open jobs in Bnei Brak
 const JOBS = [
-  { id: 60014, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '60', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח — פרדס כץ' },
-  { id: 60015, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '80', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח — פרדס כץ' },
+  { id: 60014, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '60', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח - פרדס כץ' },
+  { id: 60015, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '80', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח - פרדס כץ' },
 ];
 
 const APP_URL = 'https://avoda-go.co.il';
 
 function buildJobMessage(jobs) {
-  const lines = jobs.map(j => `• ${j.title} — ${j.city} | ₪${j.hourlyRate}/שעה | ${j.jobDate}`);
+  const lines = jobs.map(j => `• ${j.title} - ${j.city} | ₪${j.hourlyRate}/שעה | ${j.jobDate}`);
   return {
     title: `🔔 ${jobs.length} משרות פתוחות בבני ברק`,
     body: lines.join('\n'),
@@ -72,7 +72,7 @@ async function sendSmsViaTwilio(phone, message) {
 }
 
 async function main() {
-  console.log('=== AvodaNow — Bnei Brak Remaining 4 Workers Notification ===\n');
+  console.log('=== AvodaNow - Bnei Brak Remaining 4 Workers Notification ===\n');
 
   // Fetch the 4 workers without role/status filter
   const workersResult = await pool.query(`
@@ -142,7 +142,7 @@ async function main() {
 
     results.push(workerResult);
     const status = workerResult.sent.length > 0 ? '✅' : '❌';
-    console.log(`${status} [${worker.name}] (role=${worker.role}) prefs=${prefs} → sent: [${workerResult.sent.join(',')||'—'}] failed: [${workerResult.failed.join(',')||'—'}]`);
+    console.log(`${status} [${worker.name}] (role=${worker.role}) prefs=${prefs} → sent: [${workerResult.sent.join(',')||'-'}] failed: [${workerResult.failed.join(',')||'-'}]`);
   }
 
   const totalSent   = results.filter(r => r.sent.length > 0).length;

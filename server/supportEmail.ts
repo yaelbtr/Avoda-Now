@@ -34,22 +34,22 @@ export async function sendSupportReport(payload: SupportReportPayload): Promise<
   const transporter = buildTransporter();
 
   const subject = payload.subject
-    ? `App Support Report — ${payload.subject}`
+    ? `App Support Report - ${payload.subject}`
     : "App Support Report";
 
   const bodyText = [
     `User ID:    ${payload.userId ?? "לא מחובר"}`,
-    `Phone:      ${payload.phone ?? "—"}`,
+    `Phone:      ${payload.phone ?? "-"}`,
     `Page:       ${payload.pageUrl}`,
     `Browser:    ${payload.userAgent}`,
-    `Resolution: ${payload.screenResolution ?? "—"}`,
+    `Resolution: ${payload.screenResolution ?? "-"}`,
     `Time:       ${payload.timestamp}`,
     ``,
     `Message:`,
     payload.message,
   ].join("\n");
 
-  // Build attachments array — attach screenshot if provided
+  // Build attachments array - attach screenshot if provided
   type Attachment = NonNullable<SendMailOptions["attachments"]>[number];
   const attachments: Attachment[] = [];
   if (payload.screenshotBase64) {
@@ -72,7 +72,7 @@ export async function sendSupportReport(payload: SupportReportPayload): Promise<
 }
 
 /**
- * Lightweight SMTP connectivity test — verifies credentials without sending a mail.
+ * Lightweight SMTP connectivity test - verifies credentials without sending a mail.
  * Returns true on success, false on failure.
  */
 export async function verifySMTPConnection(): Promise<boolean> {

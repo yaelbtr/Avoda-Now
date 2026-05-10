@@ -64,7 +64,7 @@ export function useApplyWithAgeGate({
         toast.info("כבר הגשת מועמדות למשרה זו");
         onSuccess?.();
       } else if (err.message?.includes("אישור הורי")) {
-        toast.error("דרוש אישור הורי — הפיצ'ר יושק בקרוב");
+        toast.error("דרוש אישור הורי - הפיצ'ר יושק בקרוב");
       } else {
         toast.error(err.message || "שגיאה בהגשת מועמדות");
       }

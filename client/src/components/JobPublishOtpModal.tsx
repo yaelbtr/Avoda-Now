@@ -1,8 +1,8 @@
 /**
- * JobPublishOtpModal — Two-step OTP verification before publishing a job.
+ * JobPublishOtpModal - Two-step OTP verification before publishing a job.
  * Visual design mirrors LoginModal exactly (same backdrop, card, channel cards, OTP inputs).
  *
- * Step 1 (channel): User picks SMS or Email — shown as full-width radio cards.
+ * Step 1 (channel): User picks SMS or Email - shown as full-width radio cards.
  * Step 2 (otp):     User enters the 6-digit code with auto-advance inputs.
  * Step 3 (success): Animated check, then parent navigates away.
  */
@@ -33,9 +33,9 @@ interface JobPublishOtpModalProps {
   jobData: Record<string, unknown>;
   /** Called with the created job after successful OTP verification. */
   onSuccess: (job: unknown) => void;
-  /** טלפון שהמשתמש הזין בטופס — מועבר רק כשאין טלפון בחשבון */
+  /** טלפון שהמשתמש הזין בטופס - מועבר רק כשאין טלפון בחשבון */
   pendingContactPhone?: { prefix: string; number: string };
-  /** שם שהמשתמש הזין בטופס — מועבר רק כשאין שם בחשבון */
+  /** שם שהמשתמש הזין בטופס - מועבר רק כשאין שם בחשבון */
   pendingContactName?: string;
 }
 
@@ -250,7 +250,7 @@ export default function JobPublishOtpModal({
 
             {/* ── STEP: channel ── */}
             {step === "channel" && (() => {
-              // ── מסלול רגיל: יש טלפון (קיים בחשבון או הוזן בטופס) — בחירת ערוץ ──
+              // ── מסלול רגיל: יש טלפון (קיים בחשבון או הוזן בטופס) - בחירת ערוץ ──
               return (
                 <div className="p-6 space-y-5" dir="rtl">
                   {/* Header */}
@@ -267,7 +267,7 @@ export default function JobPublishOtpModal({
                     <p className="text-sm" style={{ color: "#6b7280" }}>בחר כיצד לקבל את קוד האימות</p>
                   </div>
 
-                  {/* Channel cards — full-width radio style like LoginModal */}
+                  {/* Channel cards - full-width radio style like LoginModal */}
                   <div className="space-y-3">
                     {(pendingContactPhone ? ["sms"] : ["sms", "email"] as OtpChannel[]).map((ch) => {
                       const isSelected = channel === ch;

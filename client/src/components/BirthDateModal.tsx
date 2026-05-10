@@ -8,10 +8,10 @@
  * Desktop: centered dialog (max-w-sm).
  *
  * Props:
- *   isOpen       — controls visibility
- *   onClose      — called when the modal is dismissed without saving
- *   onSuccess    — called after birth date is successfully saved; receives { age, isMinor }
- *   jobId        — optional job context for the legal acknowledgement log
+ *   isOpen       - controls visibility
+ *   onClose      - called when the modal is dismissed without saving
+ *   onSuccess    - called after birth date is successfully saved; receives { age, isMinor }
+ *   jobId        - optional job context for the legal acknowledgement log
  */
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -246,7 +246,7 @@ export function BirthDateModal({ isOpen, onClose, onSuccess, jobId }: BirthDateM
               </div>
             )}
 
-            {/* Actions — full-width stacked on mobile */}
+            {/* Actions - full-width stacked on mobile */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <Button
                 onClick={handleSubmit}

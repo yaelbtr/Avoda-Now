@@ -9,7 +9,7 @@ let initialized = false;
 function ensureInit() {
   if (initialized) return;
   if (!ENV.vapidPublicKey || !ENV.vapidPrivateKey) {
-    console.warn("[WebPush] VAPID keys not set — push notifications disabled");
+    console.warn("[WebPush] VAPID keys not set - push notifications disabled");
     return;
   }
   webpush.setVapidDetails(
@@ -59,7 +59,7 @@ export async function sendPushToUser(userId: number, payload: PushPayload): Prom
       } catch (err: unknown) {
         const status = (err as { statusCode?: number }).statusCode;
         if (status === 410 || status === 404) {
-          // Subscription expired — remove it
+          // Subscription expired - remove it
           const db2 = await getDb();
           if (db2) await db2
             .delete(pushSubscriptions)
@@ -76,7 +76,7 @@ export async function sendPushToUser(userId: number, payload: PushPayload): Prom
  * Fan-out: send a "new job" push notification to all workers whose profile
  * matches the given job category and city.
  * Uses getWorkersMatchingJob from db.ts (same matching logic as SMS alerts).
- * Fire-and-forget — errors are logged but never thrown.
+ * Fire-and-forget - errors are logged but never thrown.
  */
 export async function sendJobPushNotifications(
   workerIds: number[],

@@ -4,7 +4,7 @@
  * Shown automatically to Google OAuth users who have no phone number on file.
  * Lets them add their phone (required for job matching and contact), or skip.
  *
- * Uses the existing `user.updateProfile` tRPC mutation — no new backend needed.
+ * Uses the existing `user.updateProfile` tRPC mutation - no new backend needed.
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";

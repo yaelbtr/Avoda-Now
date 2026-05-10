@@ -30,7 +30,7 @@ interface UseIdleLogoutOptions {
   enabled: boolean;
   /** Called every second during the warning window with remaining seconds. */
   onWarning: (secondsLeft: number) => void;
-  /** Called when the idle timeout expires — perform the actual logout here. */
+  /** Called when the idle timeout expires - perform the actual logout here. */
   onLogout: () => void;
   /** Called when the user becomes active again during the warning window. */
   onResume?: () => void;

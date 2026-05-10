@@ -109,7 +109,7 @@ export default function LoginModal({
     onSuccess: async (data) => {
       if (maintenanceMode && data.user?.role !== "admin" && data.user?.role !== "test") {
         await refetch();
-        toast.error("גישה מוגבלת — המערכת בתחזוקה. רק מנהלים יכולים להיכנס כעת.");
+        toast.error("גישה מוגבלת - המערכת בתחזוקה. רק מנהלים יכולים להיכנס כעת.");
         onClose();
         onNonAdminLogin?.();
         return;

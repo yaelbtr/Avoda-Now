@@ -1,5 +1,5 @@
 /**
- * useIdleEffect — runs a side-effect when the browser is idle.
+ * useIdleEffect - runs a side-effect when the browser is idle.
  *
  * Step 6 of react-performance-optimization skill: deferred hydration.
  * Use this instead of useEffect for non-critical initializations that

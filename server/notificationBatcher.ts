@@ -49,7 +49,7 @@ function buildSmsBody(
 
 /**
  * Flushes a batch: sends the SMS and marks it as sent.
- * Safe to call multiple times — DB guard prevents double-send.
+ * Safe to call multiple times - DB guard prevents double-send.
  */
 async function flushBatch(
   batchId: number,
@@ -98,7 +98,7 @@ export async function recordApplicationAndNotify(
     let batch = await getPendingBatchForJob(jobId);
 
     if (!batch) {
-      // First application in this window — create a new batch
+      // First application in this window - create a new batch
       batch = await createNotificationBatch(jobId, employerPhone, windowMs);
       if (!batch) return; // DB unavailable
 
@@ -113,7 +113,7 @@ export async function recordApplicationAndNotify(
         `[NotificationBatcher] Created batch ${batch.id} for job ${jobId}, flush in ${windowMs / 1000}s`
       );
     } else {
-      // Existing batch — increment count
+      // Existing batch - increment count
       const updated = await incrementBatchCount(batch.id);
       if (!updated) return;
 
@@ -125,13 +125,13 @@ export async function recordApplicationAndNotify(
       // Immediate flush if threshold reached
       if (newCount >= threshold) {
         console.log(
-          `[NotificationBatcher] Threshold (${threshold}) reached for job ${jobId} — flushing immediately`
+          `[NotificationBatcher] Threshold (${threshold}) reached for job ${jobId} - flushing immediately`
         );
         await flushBatch(batch.id, jobId, employerPhone, newCount);
       }
     }
   } catch (err) {
-    // Never throw — notifications are fire-and-forget
+    // Never throw - notifications are fire-and-forget
     console.error("[NotificationBatcher] Unexpected error:", err);
   }
 }

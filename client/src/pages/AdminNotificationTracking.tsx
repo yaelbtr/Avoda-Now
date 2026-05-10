@@ -1,5 +1,5 @@
 /**
- * AdminNotificationTracking — per-job notification delivery tracking.
+ * AdminNotificationTracking - per-job notification delivery tracking.
  * Shows all jobs that have notification logs, with aggregate stats and
  * a drill-down view of per-worker delivery status (SMS / Push).
  */
@@ -169,7 +169,7 @@ function JobNotificationRow({ job }: { job: JobStats }) {
                         {log.workerName ?? `#${log.workerId}`}
                       </td>
                       <td className="py-2 text-muted-foreground" dir="ltr">
-                        {log.workerPhone ?? log.phone ?? "—"}
+                        {log.workerPhone ?? log.phone ?? "-"}
                       </td>
                       <td className="py-2">
                         <span className="inline-flex items-center gap-1">

@@ -1,5 +1,5 @@
 /**
- * AdminRegionsTab — Regions management tab for the Admin panel.
+ * AdminRegionsTab - Regions management tab for the Admin panel.
  * Lists all regions with their worker counts, status, and allows
  * admins to change status, update thresholds, and recount workers.
  */
@@ -312,8 +312,8 @@ export function AdminRegionsTab() {
                 label="סטטוס"
                 value={editDialog.status}
                 options={[
-                  { value: "collecting_workers", label: "בהרצה — אוסף עובדים" },
-                  { value: "active", label: "פעיל — מעסיקים יכולים לפרסם" },
+                  { value: "collecting_workers", label: "בהרצה - אוסף עובדים" },
+                  { value: "active", label: "פעיל - מעסיקים יכולים לפרסם" },
                   { value: "paused", label: "מושהה" },
                 ]}
                 onChange={(e) => setEditDialog((p) => ({ ...p, status: e.target.value as RegionStatus }))}

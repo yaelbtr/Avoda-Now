@@ -1,5 +1,5 @@
 /**
- * useAuthQuery — Single Source of Truth for authenticated tRPC query options.
+ * useAuthQuery - Single Source of Truth for authenticated tRPC query options.
  *
  * Combines `!authLoading && isAuthenticated` into one stable guard so every
  * protected query waits for the auth state to resolve before firing.
@@ -38,7 +38,7 @@ export function useAuthQuery() {
   /**
    * Returns a query options object with the auth guard applied.
    * @param extra  Additional tRPC query options. If `enabled` is provided it
-   *               is ANDed with the auth guard — the auth guard always wins.
+   *               is ANDed with the auth guard - the auth guard always wins.
    */
   return function authQueryOptions<T extends QueryOptions>(extra?: T): T & { enabled: boolean } {
     const callerEnabled = extra?.enabled ?? true;

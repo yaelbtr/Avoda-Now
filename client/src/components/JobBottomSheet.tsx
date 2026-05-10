@@ -150,7 +150,7 @@ export default function JobBottomSheet({
   const catLabel = getCategoryLabel(job.category);
   const isVolunteer = job.salaryType === "volunteer";
   const location = [job.businessName, job.city ?? job.address].filter(Boolean).join(", ");
-  // showPhoneNumber removed — contactPhone stripped server-side
+  // showPhoneNumber removed - contactPhone stripped server-side
 
   return (
     <>
@@ -210,7 +210,7 @@ export default function JobBottomSheet({
           <div style={{ width: 40, height: 4, borderRadius: 99, background: "#d1cdc4" }} />
         </div>
 
-        {/* Close button — must sit above the scrollable content div */}
+        {/* Close button - must sit above the scrollable content div */}
         <button
           onClick={onClose}
           aria-label="סגור פרטי משרה"
@@ -323,7 +323,7 @@ export default function JobBottomSheet({
             </div>
           )}
 
-          {/* Phone number display removed — workers contact via application only */}
+          {/* Phone number display removed - workers contact via application only */}
 
           {/* Apply message input (shown when user clicks apply) */}
           {showMessageInput && !applied && (
@@ -381,7 +381,7 @@ export default function JobBottomSheet({
             >
               <CheckCircle2 size={18} color={OLIVE} />
               <p style={{ color: OLIVE, fontSize: 13, fontWeight: 700, margin: 0 }}>
-                הגשת מועמדות למשרה זו — המעסיק יצור קשר
+                הגשת מועמדות למשרה זו - המעסיק יצור קשר
               </p>
             </div>
           )}
@@ -412,7 +412,7 @@ export default function JobBottomSheet({
           )}
         </div>
 
-        {/* Action buttons — sticky at bottom */}
+        {/* Action buttons - sticky at bottom */}
         <div
           style={{
             flexShrink: 0,
@@ -526,7 +526,7 @@ export default function JobBottomSheet({
           {/* Share row */}
           <ShareRow jobId={job.id} jobTitle={job.title} city={job.city} salary={job.salary} salaryType={job.salaryType} />
 
-          {/* Legal notice — application */}
+          {/* Legal notice - application */}
           {!applied && (
             <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: 0, lineHeight: 1.5 }} dir="rtl">
               בהגשת מועמדות אתה מאשר/ת שפרטייך ישתפו עם המעסיק. קרא/{" "}
@@ -536,7 +536,7 @@ export default function JobBottomSheet({
             </p>
           )}
 
-          {/* Call/WhatsApp buttons removed — workers contact via application only */}
+          {/* Call/WhatsApp buttons removed - workers contact via application only */}
         </div>
       </motion.div>
       </>
@@ -548,7 +548,7 @@ export default function JobBottomSheet({
         onConfirm={handleConsentConfirm}
         onCancel={closeConsentModal}
       />
-      {/* Age-gate modal — shown when user has no birthDate on record */}
+      {/* Age-gate modal - shown when user has no birthDate on record */}
       <BirthDateModal
         isOpen={birthDateModalOpen}
         onClose={closeBirthDateModal}

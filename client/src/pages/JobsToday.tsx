@@ -53,7 +53,7 @@ export default function JobsToday() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-6 text-right pr-11">
-        משרות שמתחילות תוך 24 השעות הקרובות — הזדמנויות דחופות
+        משרות שמתחילות תוך 24 השעות הקרובות - הזדמנויות דחופות
       </p>
 
       {/* Category filter */}
@@ -104,7 +104,7 @@ export default function JobsToday() {
         <div className="text-center py-16 text-muted-foreground">
           <Flame className="h-12 w-12 mx-auto mb-3 opacity-20 text-red-400" />
           <p className="font-medium">אין עבודות להיום כרגע</p>
-          <p className="text-sm mt-1">בדוק שוב מאוחר יותר — משרות חדשות מתפרסמות כל הזמן</p>
+          <p className="text-sm mt-1">בדוק שוב מאוחר יותר - משרות חדשות מתפרסמות כל הזמן</p>
           <AppButton
             variant="secondary"
             className="mt-4 gap-2"

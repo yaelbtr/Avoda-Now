@@ -60,7 +60,7 @@ function publicCtx(): TrpcContext {
 
 // ── DAY_NAME_TO_NUM mapping tests ──────────────────────────────────────────────
 
-describe("DAY_NAME_TO_NUM — JS day-number convention", () => {
+describe("DAY_NAME_TO_NUM - JS day-number convention", () => {
   /**
    * The client maps day-name strings to JS numbers (0=Sun, 1=Mon, ..., 6=Sat).
    * These values are sent as-is to the tRPC procedures.
@@ -116,9 +116,9 @@ describe("DAY_NAME_TO_NUM — JS day-number convention", () => {
   });
 });
 
-// ── jobs.list — dayOfWeek parameter passing ────────────────────────────────────
+// ── jobs.list - dayOfWeek parameter passing ────────────────────────────────────
 
-describe("jobs.list — dayOfWeek parameter forwarding", () => {
+describe("jobs.list - dayOfWeek parameter forwarding", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(db.getActiveJobs).mockResolvedValue(EMPTY_RESULT as never);
@@ -209,9 +209,9 @@ describe("jobs.list — dayOfWeek parameter forwarding", () => {
   });
 });
 
-// ── jobs.search — dayOfWeek parameter passing ─────────────────────────────────
+// ── jobs.search - dayOfWeek parameter passing ─────────────────────────────────
 
-describe("jobs.search — dayOfWeek parameter forwarding", () => {
+describe("jobs.search - dayOfWeek parameter forwarding", () => {
   // Use total:1 so the fallback branch is NOT triggered (fallback only fires when total===0 and no filters)
   const ONE_RESULT = { rows: [{ id: 1, title: "Test", description: "", category: "cleaning", address: "", city: "", latitude: 32, longitude: 34, salary: null, salaryType: null, contactPhone: null, contactName: null, businessName: null, workingHours: null, startTime: null, workersNeeded: 1, activeDuration: null, expiresAt: null, postedBy: 1, status: "active", reportCount: 0, jobTags: null, createdAt: new Date(), updatedAt: new Date(), jobDate: null, workStartTime: null, workEndTime: null, distance: 1 }], total: 1 };
   beforeEach(() => {
@@ -359,7 +359,7 @@ describe("MySQL DAYOFWEEK() conversion", () => {
 
 // ── Edge cases ─────────────────────────────────────────────────────────────────
 
-describe("dayOfWeek — edge cases", () => {
+describe("dayOfWeek - edge cases", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(db.getActiveJobs).mockResolvedValue(EMPTY_RESULT as never);
@@ -373,7 +373,7 @@ describe("dayOfWeek — edge cases", () => {
     await caller.jobs.list({ dayOfWeek: [] });
 
     const callArgs = vi.mocked(db.getActiveJobs).mock.calls[0]!;
-    // Empty array is passed through — DB helper handles it with length check
+    // Empty array is passed through - DB helper handles it with length check
     expect(callArgs[5]).toEqual([]);
   });
 

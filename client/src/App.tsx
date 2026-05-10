@@ -25,7 +25,7 @@ import { useAuth } from "./contexts/AuthContext";
 import { trpc } from "./lib/trpc";
 import { REFERRAL_SOURCE_KEY, UTM_CAMPAIGN_KEY, UTM_MEDIUM_KEY } from "@shared/const";
 
-// ─── Critical pages (loaded eagerly — needed on first paint) ─────────────────
+// ─── Critical pages (loaded eagerly - needed on first paint) ─────────────────
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import MaintenancePage from "./pages/MaintenancePage";
@@ -110,6 +110,7 @@ function PageLoader() {
 
 const REFERRAL_KEY = "avodago_ref";
 const DEV_MAINTENANCE_BYPASS_KEY = "avodago_dev_maintenance_bypass";
+const IS_BOT = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|Applebot|GPTBot|anthropic-ai|ClaudeBot/i.test(navigator.userAgent);
 
 /**
  * Captures UTM/referral params on first visit and stores in localStorage.
@@ -127,7 +128,7 @@ function ReferralSourceCapture() {
     const params = new URLSearchParams(window.location.search);
 
     // When arriving via any campaign/referral entry point, clear the cached
-    // guest role so the role selection screen is always shown — the user must
+    // guest role so the role selection screen is always shown - the user must
     // explicitly choose their role instead of being silently routed to a
     // previously cached one from sessionStorage.
     const isFromCampaign =
@@ -140,7 +141,7 @@ function ReferralSourceCapture() {
       try { sessionStorage.removeItem("avoda_now_guest_role"); } catch {}
     }
 
-    // Capture referral source once — never overwrite
+    // Capture referral source once - never overwrite
     if (!localStorage.getItem(REFERRAL_SOURCE_KEY)) {
       let source: string | null = null;
       // ?ref=<code> from managed referral links (/r/:code redirect) takes highest priority
@@ -151,12 +152,12 @@ function ReferralSourceCapture() {
       else if (params.get("utm_source")) source = params.get("utm_source")!.slice(0, 64);
       if (source) localStorage.setItem(REFERRAL_SOURCE_KEY, source);
     }
-    // Capture utm_campaign once — never overwrite
+    // Capture utm_campaign once - never overwrite
     if (!localStorage.getItem(UTM_CAMPAIGN_KEY)) {
       const campaign = params.get("utm_campaign");
       if (campaign) localStorage.setItem(UTM_CAMPAIGN_KEY, campaign.slice(0, 128));
     }
-    // Capture utm_medium once — never overwrite
+    // Capture utm_medium once - never overwrite
     if (!localStorage.getItem(UTM_MEDIUM_KEY)) {
       const medium = params.get("utm_medium");
       if (medium) localStorage.setItem(UTM_MEDIUM_KEY, medium.slice(0, 64));
@@ -250,7 +251,7 @@ function Router() {
   // Detect campaign/referral entry on first render only.
   // When a user arrives via a campaign link (?ref=, ?utm_*, ?fbclid, ?gclid),
   // we force the role selection screen regardless of any cached role in
-  // localStorage or sessionStorage — the user must explicitly choose their role.
+  // localStorage or sessionStorage - the user must explicitly choose their role.
   // We use a local flag (not resetUserMode) to avoid sending a server mutation
   // that would permanently clear the user's saved role in the database.
   const isCampaignEntry = useMemo(() => {
@@ -262,7 +263,7 @@ function Router() {
       p.has("utm_source") ||
       p.has("utm_campaign")
     );
-  }, []); // stable — URL params don't change after mount
+  }, []); // stable - URL params don't change after mount
 
   // campaignRoleSelected: becomes true once the user explicitly picks a role
   // during this campaign-link session, so the flag stops overriding showRoleSelection.
@@ -288,7 +289,7 @@ function Router() {
     );
   }
 
-  // Maintenance gate: non-blocking — render the page immediately.
+  // Maintenance gate: non-blocking - render the page immediately.
   // Only redirect to MaintenancePage once we have a confirmed active=true response.
   // Errors and loading states are treated as "not in maintenance" to avoid
   // blocking the initial render on a DB round-trip (Step 4 of perf skill).
@@ -304,6 +305,7 @@ function Router() {
   const hasRole = userMode !== null;
   const isAdminRoute = location.startsWith("/admin");
   const showRoleSelection =
+    !IS_BOT &&
     !isAdminRoute &&
     (needsRoleSelection ||
       (isRootPath && !hasRole) ||
@@ -406,7 +408,7 @@ function Router() {
                   <Route path="/about" component={AboutPage} />
                   <Route path="/faq-general" component={FAQGeneralPage} />
                   <Route path="/reviews" component={ReviewsPage} />
-                  {/* Programmatic SEO: /category/city[-intent] — 6 categories × 10 cities × 3 intents
+                  {/* Programmatic SEO: /category/city[-intent] - 6 categories × 10 cities × 3 intents
                       Single route per category; ProgrammaticPageWrapper parses intent from the city slug suffix:
                       no suffix → how_to | -בדחיפות → urgent | -מחיר → price */}
                   <Route path="/cleaning/:city">{(p) => <Suspense fallback={<PageLoader />}><ProgrammaticPageWrapper categorySlug="cleaning" rawCitySlug={p.city ?? ""} /></Suspense>}</Route>
@@ -430,6 +432,22 @@ function Router() {
                   <Route path="/דרושה-מנקה-מהיום">{() => <KeywordLandingPage />}</Route>
                   <Route path="/כמה-עולה-עוזרת-בית">{() => <KeywordLandingPage />}</Route>
                   <Route path="/מנקה-לבית-חד-פעמי">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-ללא-ניסיון">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-במזומן">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-גמישה">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לסופש">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-יומית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-חד-פעמית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-דחופה">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לפי-שעה">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-מהבית">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לאמהות">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לחיילים-משוחררים">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-לערב">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/מחפש-עובד-עכשיו">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-בתל-אביב">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-בירושלים">{() => <KeywordLandingPage />}</Route>
+                  <Route path="/עבודה-ללא-קורות-חיים">{() => <KeywordLandingPage />}</Route>
                   <Route path="/my-applications" component={MyApplications} />
                   <Route path="/matched-workers" component={MatchedWorkers} />
                   <Route path="/my-referrals" component={MyReferrals} />

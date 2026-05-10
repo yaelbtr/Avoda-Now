@@ -106,7 +106,7 @@ describe("createInMemoryRateLimiter", () => {
     expect(limiter.check(key).allowed).toBe(true);  // send 2
     expect(limiter.check(key).allowed).toBe(true);  // send 3
     const blocked = limiter.check(key);
-    expect(blocked.allowed).toBe(false);            // send 4 — blocked
+    expect(blocked.allowed).toBe(false);            // send 4 - blocked
     if (!blocked.allowed) {
       const minutes = Math.ceil(blocked.retryAfterMs / 60_000);
       expect(minutes).toBeGreaterThanOrEqual(1);

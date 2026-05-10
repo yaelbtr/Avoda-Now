@@ -10,7 +10,7 @@ interface PhoneChangeModalProps {
   onClose: () => void;
   /** Called after phone is successfully verified and updated in DB */
   onSuccess: (newPhoneVal: PhoneValue) => void;
-  /** ערך התחלתי לשדה הטלפון בתוך המודאל — חוסך הקלדה כפולה */
+  /** ערך התחלתי לשדה הטלפון בתוך המודאל - חוסך הקלדה כפולה */
   initialPhone?: PhoneValue;
 }
 
@@ -64,7 +64,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess, initialPhone }: Pho
     try {
       const res = await requestOtp.mutateAsync({ phone: combined });
       if (res.smsFailed) {
-        // SMS failed — show fallback screen
+        // SMS failed - show fallback screen
         setNormalizedPhone(res.normalizedPhone);
         setHasEmailFallback(res.hasEmailFallback);
         setStep("sms_failed");
@@ -212,7 +212,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess, initialPhone }: Pho
           </div>
         )}
 
-        {/* ── SMS failed — offer email fallback ── */}
+        {/* ── SMS failed - offer email fallback ── */}
         {step === "sms_failed" && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
@@ -304,7 +304,7 @@ export function PhoneChangeModal({ open, onClose, onSuccess, initialPhone }: Pho
               </div>
             </div>
 
-            {/* 6 OTP digit boxes — LTR order for digits */}
+            {/* 6 OTP digit boxes - LTR order for digits */}
             <div className="flex gap-2 justify-center" dir="ltr">
               {otp.map((digit, i) => (
                 <input

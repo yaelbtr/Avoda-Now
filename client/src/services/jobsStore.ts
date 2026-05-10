@@ -1,5 +1,5 @@
 // ── Jobs snapshot store ──────────────────────────────────────────────────────
-// Module-level singleton — שורד navigation בין עמודים.
+// Module-level singleton - שורד navigation בין עמודים.
 // מאחסן את רשימת המשרות שנטענה ב-FindJobs + filter key, TTL: 5 דקות.
 
 const SNAPSHOT_TTL = 5 * 60 * 1000;
@@ -62,7 +62,7 @@ export function restoreSnapshot(filterKey: string): JobsSnapshot | null {
   return snapshot;
 }
 
-// ── Event bus — עדכוני SSE ───────────────────────────────────────────────────
+// ── Event bus - עדכוני SSE ───────────────────────────────────────────────────
 
 export function subscribeToNewJobs(listener: NewJobListener): () => void {
   listeners.add(listener);

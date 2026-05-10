@@ -27,7 +27,7 @@ export default function CookieSettingsModal({
   onSave,
   onClose,
 }: CookieSettingsModalProps) {
-  // Internal toggle state — controlled externally if onToggleAnalytics provided
+  // Internal toggle state - controlled externally if onToggleAnalytics provided
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -59,7 +59,7 @@ export default function CookieSettingsModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
-      {/* Panel — glass-modal matches LoginModal style */}
+      {/* Panel - glass-modal matches LoginModal style */}
       <div
         className="glass-modal relative w-full sm:max-w-md shadow-2xl"
         style={{
@@ -94,7 +94,7 @@ export default function CookieSettingsModal({
 
         {/* Cookie rows */}
         <div className="space-y-3 mb-6">
-          {/* Essential — always on */}
+          {/* Essential - always on */}
           <div
             className="flex items-start gap-3 rounded-xl p-4"
             style={{
@@ -120,7 +120,7 @@ export default function CookieSettingsModal({
             </span>
           </div>
 
-          {/* Analytics — toggleable */}
+          {/* Analytics - toggleable */}
           <div
             className="flex items-start gap-3 rounded-xl p-4"
             style={{
@@ -132,10 +132,10 @@ export default function CookieSettingsModal({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold" style={{ color: BRAND_OLIVE }}>עוגיות אנליטיקה</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                עוזרות לנו לשפר את הפלטפורמה (Umami — ללא מעקב אישי).
+                עוזרות לנו לשפר את הפלטפורמה (Umami - ללא מעקב אישי).
               </p>
             </div>
-            {/* Toggle — brand olive when active */}
+            {/* Toggle - brand olive when active */}
             <button
               role="switch"
               aria-checked={analyticsEnabled}
@@ -175,7 +175,7 @@ export default function CookieSettingsModal({
           </a>
         </p>
 
-        {/* Save button — CTA variant */}
+        {/* Save button - CTA variant */}
         <AppButton
           variant="cta"
           size="lg"

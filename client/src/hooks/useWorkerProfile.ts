@@ -1,5 +1,5 @@
 /**
- * useWorkerProfile — shared hook for fetching a worker's public profile.
+ * useWorkerProfile - shared hook for fetching a worker's public profile.
  *
  * Caching strategy (two layers):
  *  1. tRPC / React-Query cache: `staleTime` of 10 minutes means the same
@@ -32,7 +32,7 @@ export type WorkerPublicProfile = NonNullable<
 
 // ─── Module-level in-memory cache ─────────────────────────────────────────────
 // Keyed by userId. Survives React re-renders and component unmounts.
-// Cleared only on full page reload (intentional — profiles rarely change mid-session).
+// Cleared only on full page reload (intentional - profiles rarely change mid-session).
 
 const profileMemCache = new Map<number, WorkerPublicProfile>();
 
@@ -66,7 +66,7 @@ export function useWorkerProfile(
     { userId: userId! },
     {
       enabled: enabled && userId != null && userId > 0,
-      // 10 minutes — profiles are effectively immutable within a session
+      // 10 minutes - profiles are effectively immutable within a session
       staleTime: 10 * 60 * 1000,
       // Keep data in React-Query cache for 30 minutes after last use
       gcTime: 30 * 60 * 1000,

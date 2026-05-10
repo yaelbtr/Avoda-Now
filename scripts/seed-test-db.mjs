@@ -4,7 +4,7 @@
  * Seeds the isolated test database with deterministic synthetic data.
  * NO real user data, phone numbers, emails, or production records are used.
  *
- * All synthetic emails use the `.invalid` TLD (RFC 2606) — they can never
+ * All synthetic emails use the `.invalid` TLD (RFC 2606) - they can never
  * be delivered to real inboxes.
  *
  * Run:
@@ -12,7 +12,7 @@
  *   pnpm db:seed:test
  *
  * Environment:
- *   TEST_DATABASE_URL — defaults to local jobnow_test DB
+ *   TEST_DATABASE_URL - defaults to local jobnow_test DB
  */
 
 import pg from "pg";
@@ -50,7 +50,7 @@ const TEST_SYSTEM_SETTINGS = [
   { key: "max_active_jobs_per_employer",  value: "5"     },
 ];
 
-// Synthetic test users — all emails use `.invalid` TLD (RFC 2606)
+// Synthetic test users - all emails use `.invalid` TLD (RFC 2606)
 const TEST_USERS = [
   {
     openId:          "test-worker-001",
@@ -208,7 +208,7 @@ async function seed() {
     const testJobs = [
       {
         title: "שליח/ה לתל אביב (TEST)",
-        description: "משרת בדיקה — אין להגיש מועמדות אמיתית",
+        description: "משרת בדיקה - אין להגיש מועמדות אמיתית",
         category: "delivery",
         city: "תל אביב",
         address: "תל אביב (TEST)",
@@ -223,7 +223,7 @@ async function seed() {
       },
       {
         title: "עובד/ת מטבח (TEST)",
-        description: "משרת בדיקה — אין להגיש מועמדות אמיתית",
+        description: "משרת בדיקה - אין להגיש מועמדות אמיתית",
         category: "kitchen",
         city: "ירושלים",
         address: "ירושלים (TEST)",
@@ -237,7 +237,7 @@ async function seed() {
         status: "active",
       },
       {
-        title: "עובד/ת ניקיון (TEST — סגור)",
+        title: "עובד/ת ניקיון (TEST - סגור)",
         description: "משרת בדיקה סגורה",
         category: "cleaning",
         city: "חיפה",

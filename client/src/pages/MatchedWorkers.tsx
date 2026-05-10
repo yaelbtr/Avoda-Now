@@ -76,7 +76,7 @@ function WorkerMatchCard({
   jobId: number;
   onOfferSent: (workerId: number) => void;
   onCardClick: (workerId: number) => void;
-  /** When true, the send-offer button is hidden — job cap already reached */
+  /** When true, the send-offer button is hidden - job cap already reached */
   isCapReached?: boolean;
 }) {
   const [offerSent, setOfferSent] = useState(false);
@@ -119,7 +119,7 @@ function WorkerMatchCard({
       style={{ background: "white", border: `1px solid ${C_BORDER}` }}
       onClick={() => onCardClick(worker.worker_id)}
     >
-      {/* Avatar — profile photo if available, letter-avatar fallback + availability dot */}
+      {/* Avatar - profile photo if available, letter-avatar fallback + availability dot */}
       <div className="relative flex-shrink-0">
         {worker.profilePhoto ? (
           <img
@@ -142,7 +142,7 @@ function WorkerMatchCard({
             )}
           </div>
         )}
-        {/* Green pulsing dot — shown when worker is currently available */}
+        {/* Green pulsing dot - shown when worker is currently available */}
         {worker.availabilityStatus === "available_now" && (
           <span
             className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
@@ -221,7 +221,7 @@ function WorkerMatchCard({
         </div>
       </div>
 
-      {/* Action button — stop propagation so click doesn't open modal */}
+      {/* Action button - stop propagation so click doesn't open modal */}
       {isCapReached ? null : offerSent ? (
         <div
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold flex-shrink-0"
@@ -325,7 +325,7 @@ export default function MatchedWorkers() {
     { enabled: workerIds.length > 0, staleTime: 5 * 60 * 1000 }
   );
 
-  // Real-time availability refresh — polls every 60s so green dots stay accurate
+  // Real-time availability refresh - polls every 60s so green dots stay accurate
   // without re-running the full matching algorithm.
   const availabilityQuery = trpc.user.getWorkersAvailabilityStatus.useQuery(
     { workerIds },
@@ -487,7 +487,7 @@ export default function MatchedWorkers() {
                       <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "oklch(0.45 0.18 160)" }} />
                       <div>
                         <p className="text-sm font-bold" style={{ color: "oklch(0.35 0.14 160)" }}>
-                          המשרה הושלמה — קיבלת 3 מועמדים
+                          המשרה הושלמה - קיבלת 3 מועמדים
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: "oklch(0.50 0.10 160)" }}>
                           לא ניתן לשלוח הצעות נוספות למשרה זו.

@@ -3,7 +3,7 @@
  *
  * Admin-only view of a job application.
  * Shows ALL fields (including worker phone) without employer role restriction.
- * Reuses the existing jobs.getApplication procedure — the server already allows
+ * Reuses the existing jobs.getApplication procedure - the server already allows
  * admin access (ctx.user.role === "admin" bypasses the employer ownership check).
  */
 
@@ -334,7 +334,7 @@ export default function AdminApplicationView() {
 
         {/* Contact + admin info card */}
         <div className="flex flex-col gap-4">
-          {/* Phone — always visible for admin */}
+          {/* Phone - always visible for admin */}
           <div
             style={{
               background: "#fff",
@@ -461,7 +461,7 @@ export default function AdminApplicationView() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">קטגוריית משרה</span>
-                <span className="font-semibold">{app.jobCategory ?? "—"}</span>
+                <span className="font-semibold">{app.jobCategory ?? "-"}</span>
               </div>
             </div>
           </div>

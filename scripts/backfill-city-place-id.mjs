@@ -18,7 +18,7 @@
  * - Deduplicates city names before hitting the API → O(distinct cities) calls,
  *   not O(jobs).
  * - Skips cities that look like full addresses (contain digits or are longer
- *   than 40 chars) — those are not valid city names and would return garbage
+ *   than 40 chars) - those are not valid city names and would return garbage
  *   place_ids.
  * - Dry-run mode: set DRY_RUN=1 to print what would happen without writing.
  * - Rate-limited to 5 API calls/second to stay within Maps quota.
@@ -88,13 +88,13 @@ async function resolvePlaceId(cityName) {
     return data.predictions[0].place_id;
   }
   if (data.status === "ZERO_RESULTS") return null;
-  throw new Error(`Maps API status: ${data.status} — ${data.error_message ?? ""}`);
+  throw new Error(`Maps API status: ${data.status} - ${data.error_message ?? ""}`);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\n🗺  cityPlaceId backfill ${DRY_RUN ? "(DRY RUN — no DB writes)" : ""}`);
+  console.log(`\n🗺  cityPlaceId backfill ${DRY_RUN ? "(DRY RUN - no DB writes)" : ""}`);
   console.log("─".repeat(60));
 
   // 1. Fetch all distinct city names that still need a placeId
@@ -125,7 +125,7 @@ async function main() {
 
   for (const { city } of cityRows) {
     if (!isCityLike(city)) {
-      console.log(`⏭  Skipping "${city}" — looks like an address, not a city name`);
+      console.log(`⏭  Skipping "${city}" - looks like an address, not a city name`);
       skipped.push(city);
       continue;
     }
@@ -148,7 +148,7 @@ async function main() {
 
   // 3. Write resolved place_ids back to the DB
   if (resolved.size === 0) {
-    console.log("\nNo place_ids resolved — nothing to write.");
+    console.log("\nNo place_ids resolved - nothing to write.");
   } else if (DRY_RUN) {
     console.log(`\n[DRY RUN] Would update jobs for ${resolved.size} city name(s).`);
   } else {

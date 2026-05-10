@@ -172,7 +172,7 @@ export default function GuidePage() {
           </div>
         </div>
 
-        {/* ── Primary CTA — link to /jobs/{category} ── */}
+        {/* ── Primary CTA - link to /jobs/{category} ── */}
         <div
           className="rounded-2xl p-6 mb-8 text-center"
           style={{
@@ -233,7 +233,7 @@ export default function GuidePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                        {rel.title.replace(" — המדריך המלא", "")}
+                        {rel.title.replace(" - המדריך המלא", "")}
                       </p>
                     </div>
                     <ArrowLeft className="h-4 w-4 text-gray-300 group-hover:text-blue-400 shrink-0 transition-colors" />

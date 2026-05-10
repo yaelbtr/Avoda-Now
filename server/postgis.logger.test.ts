@@ -3,7 +3,7 @@
  *
  * We verify:
  * 1. The helper calls postgisLogger.error with the correct structured fields.
- * 2. It never throws — logging must not break the primary request path.
+ * 2. It never throws - logging must not break the primary request path.
  * 3. It correctly extracts pgCode and message from various error shapes.
  * 4. It handles undefined userId gracefully.
  */

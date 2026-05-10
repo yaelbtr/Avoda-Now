@@ -1,5 +1,5 @@
 /**
- * BelowFold — deferred hydration for below-the-fold sections.
+ * BelowFold - deferred hydration for below-the-fold sections.
  *
  * Strategy (Step 6 + 7 of react-performance-optimization skill):
  *   1. Uses IntersectionObserver to detect when the section enters the viewport.
@@ -13,7 +13,7 @@
  *     <HeavySection />
  *   </BelowFold>
  *
- * DRY note: this is the single shared implementation — do not duplicate
+ * DRY note: this is the single shared implementation - do not duplicate
  * IntersectionObserver + requestIdleCallback patterns elsewhere.
  */
 import { useEffect, useRef, useState } from "react";
@@ -24,7 +24,7 @@ interface BelowFoldProps {
   minHeight?: string;
   /** Optional skeleton shown while waiting for intersection. */
   skeleton?: React.ReactNode;
-  /** IntersectionObserver rootMargin — how far before viewport to trigger. */
+  /** IntersectionObserver rootMargin - how far before viewport to trigger. */
   rootMargin?: string;
 }
 

@@ -21,7 +21,7 @@ function HomeLoading() {
   return <SectionLoader label="טוען..." />;
 }
 
-/** Shown when userMode is undefined — user hasn't chosen a role yet (shouldn't normally appear) */
+/** Shown when userMode is undefined - user hasn't chosen a role yet (shouldn't normally appear) */
 function HomeGuest() {
   const [, navigate] = useLocation();
   return (
@@ -56,10 +56,10 @@ function HomeGuest() {
           </div>
         </div>
       </section>
-      {/* SEO: H2 introduces the two main user paths — required for on-page keyword structure */}
+      {/* SEO: H2 introduces the two main user paths - required for on-page keyword structure */}
       <section className="bg-background py-6 px-4 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
-          מצא עבודה זמנית קרוב אליך — או פרסם משרה ומצא עובדים עכשיו
+          מצא עבודה זמנית קרוב אליך - או פרסם משרה ומצא עובדים עכשיו
         </h2>
         <p className="text-sm text-muted-foreground max-w-lg mx-auto">
           AvodaGo מחברת בין עובדים פנויים למעסיקים בכל רחבי ישראל, ללא עמלות ובלי בירוקרטיה.
@@ -78,8 +78,8 @@ export default function Home() {
 
   // Page-level SEO: title (30-60 chars), description, keywords
   useSEO({
-    title: "AvodaGo — עבודות זמניות בישראל",
-    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. מעסיקים — פרסם משרה ומצא עובדים זמינים קרוב אליך.",
+    title: "עבודות זמניות בישראל | מצא עבודה עכשיו",
+    description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. מעסיקים - פרסם משרה ומצא עובדים זמינים קרוב אליך.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
   });

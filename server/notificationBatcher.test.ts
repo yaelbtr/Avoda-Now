@@ -72,7 +72,7 @@ describe("recordApplicationAndNotify", () => {
 
     expect(db.createNotificationBatch).toHaveBeenCalledWith(42, "+972501234567", BATCH_WINDOW_MS);
     expect(db.incrementBatchCount).not.toHaveBeenCalled();
-    // SMS not sent yet — window hasn't elapsed
+    // SMS not sent yet - window hasn't elapsed
     expect(smsModule.sendSms).not.toHaveBeenCalled();
   });
 
@@ -84,7 +84,7 @@ describe("recordApplicationAndNotify", () => {
 
     expect(db.createNotificationBatch).not.toHaveBeenCalled();
     expect(db.incrementBatchCount).toHaveBeenCalledWith(1);
-    // Count is 2, threshold is 3 — no immediate flush
+    // Count is 2, threshold is 3 - no immediate flush
     expect(db.markBatchSent).not.toHaveBeenCalled();
     expect(smsModule.sendSms).not.toHaveBeenCalled();
   });
@@ -146,7 +146,7 @@ describe("recordApplicationAndNotify", () => {
 
     expect(smsModule.sendSms).toHaveBeenCalledTimes(1); // flushed once
 
-    // Timer fires — but batch is already cancelled (timer was cleared)
+    // Timer fires - but batch is already cancelled (timer was cleared)
     await vi.runAllTimersAsync();
 
     // Still only one SMS

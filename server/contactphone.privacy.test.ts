@@ -55,7 +55,7 @@ function makeCtx(user: { id: number; role: string; phone?: string | null } | nul
   return { user } as any;
 }
 
-describe("contactPhone privacy — server-side stripping", () => {
+describe("contactPhone privacy - server-side stripping", () => {
   describe("jobs.list", () => {
     it("strips contactPhone for unauthenticated users", async () => {
       const { appRouter } = await import("./routers");

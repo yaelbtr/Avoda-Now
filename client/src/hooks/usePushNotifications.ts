@@ -36,7 +36,7 @@ export function usePushNotifications() {
     setError(null);
 
     if (!vapidData?.publicKey) {
-      setError("מפתח VAPID לא זמין — נסה שוב בעוד רגע");
+      setError("מפתח VAPID לא זמין - נסה שוב בעוד רגע");
       return;
     }
 
@@ -61,14 +61,14 @@ export function usePushNotifications() {
       try {
         reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
       } catch {
-        // SW may already be registered — use existing
+        // SW may already be registered - use existing
         reg = await navigator.serviceWorker.ready;
       }
 
       // Wait for SW to become active
       await navigator.serviceWorker.ready;
 
-      // 3. Subscribe to push — pass Uint8Array directly (NOT .buffer)
+      // 3. Subscribe to push - pass Uint8Array directly (NOT .buffer)
       const keyBytes = urlBase64ToUint8Array(vapidData.publicKey);
       // PushManager expects ArrayBuffer; copy Uint8Array into a fresh ArrayBuffer
       const applicationServerKey = keyBytes.buffer.slice(
@@ -97,9 +97,9 @@ export function usePushNotifications() {
       const msg = (e as Error)?.message ?? "שגיאה ברישום להתראות";
       // Translate common DOMException messages to Hebrew
       if (msg.includes("denied") || msg.includes("permission")) {
-        setError("ההרשאה נדחתה — אפשר התראות בהגדרות הדפדפן");
+        setError("ההרשאה נדחתה - אפשר התראות בהגדרות הדפדפן");
       } else if (msg.includes("network") || msg.includes("fetch")) {
-        setError("שגיאת רשת — בדוק חיבור לאינטרנט ונסה שוב");
+        setError("שגיאת רשת - בדוק חיבור לאינטרנט ונסה שוב");
       } else {
         setError(msg);
       }

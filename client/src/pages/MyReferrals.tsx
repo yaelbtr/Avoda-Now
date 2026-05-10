@@ -236,7 +236,7 @@ export default function MyReferrals() {
             </li>
             <li className="flex items-start gap-2">
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5" style={{ background: "oklch(0.55 0.14 84)" }}>3</span>
-              <span>ההפניה נרשמת לחשבונך — בקרוב יהיו פרסים!</span>
+              <span>ההפניה נרשמת לחשבונך - בקרוב יהיו פרסים!</span>
             </li>
           </ol>
         </div>

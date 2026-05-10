@@ -26,10 +26,10 @@ export const SPECIAL_CATEGORIES = [
   { value: "volunteer", label: "התנדבות", icon: "💚", color: "green" },
 ] as const;
 
-// Categories that are wartime/emergency related — shown with priority banner
+// Categories that are wartime/emergency related - shown with priority banner
 export const WARTIME_CATEGORIES = ["emergency_support", "reserve_families"] as const;
 
-// Categories that are seasonal (Passover) — shown with seasonal banner
+// Categories that are seasonal (Passover) - shown with seasonal banner
 export const SEASONAL_CATEGORIES = ["passover_jobs"] as const;
 
 export type CategoryValue = (typeof JOB_CATEGORIES)[number]["value"];
@@ -111,7 +111,7 @@ export function isJobToday(
   jobDate?: string | null
 ): boolean {
   if (startTime === "today") return true;
-  // Check jobDate (YYYY-MM-DD) — most reliable for scheduled jobs
+  // Check jobDate (YYYY-MM-DD) - most reliable for scheduled jobs
   if (jobDate) {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;

@@ -74,7 +74,7 @@ describe("validateEmail (frontend mirror)", () => {
 });
 
 // ─── checkEmailAvailable logic ────────────────────────────────────────────────
-describe("checkEmailAvailable — availability logic", () => {
+describe("checkEmailAvailable - availability logic", () => {
   const users: UserRow[] = [
     { id: 1, email: "existing@example.com", loginMethod: "phone" },
     { id: 2, email: "google@example.com", loginMethod: "google" },
@@ -177,7 +177,7 @@ describe("Google button pre-redirect guard", () => {
         return { states, finalAction, errorMessage };
       }
 
-      // Email is free — would redirect
+      // Email is free - would redirect
       finalAction = "redirect";
     } catch {
       finalAction = "show_toast";

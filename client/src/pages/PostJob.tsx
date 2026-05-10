@@ -254,7 +254,7 @@ export default function PostJob() {
   useEffect(() => {
     if (!employerProfile) return;
 
-    // Contact fields — always fill if empty (draft may not have contactName)
+    // Contact fields - always fill if empty (draft may not have contactName)
     const currentContact = getValues("contactName");
     if (!currentContact || currentContact.trim() === "") {
       const profileName = (employerProfile.name ?? "").trim() || (user?.name ?? "").trim();
@@ -262,7 +262,7 @@ export default function PostJob() {
     }
     // Init phone display from user account (locked if user has phone)
     if (user?.phone) setContactPhone(parseIsraeliPhone(user.phone));
-    // Worker search preferences — only autofill if still at default values
+    // Worker search preferences - only autofill if still at default values
     if (employerProfile.workerSearchLocationMode) {
       setJobLocationMode(employerProfile.workerSearchLocationMode as "radius" | "city");
     }
@@ -324,12 +324,12 @@ export default function PostJob() {
     if (remaining <= 0) { toast.error("ניתן להעלות עד 5 תמונות"); return; }
     const toUpload = files.slice(0, remaining);
     setUploadingImages(true);
-    const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB — must match server tRPC limit (5mb)
+    const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB - must match server tRPC limit (5mb)
     try {
       const urls: string[] = [];
       for (const file of toUpload) {
         if (file.size > MAX_IMAGE_SIZE) {
-          toast.error(`"${file.name}" גדולה מדי — מקסימום 4MB לתמונה (הקובץ הנוכחי: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+          toast.error(`"${file.name}" גדולה מדי - מקסימום 4MB לתמונה (הקובץ הנוכחי: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
           continue;
         }
         if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast.error("סוג קובץ לא נתמך. השתמש ב-JPG, PNG או WEBP"); continue; }
@@ -570,7 +570,7 @@ export default function PostJob() {
         <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-amber-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — בקרוב</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה - בקרוב</h2>
         <p className="text-muted-foreground mb-4">
           בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
           אפשרות פרסום מודעות למעסיקים תיפתח בקרוב.
@@ -586,7 +586,7 @@ export default function PostJob() {
         <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
           <Briefcase className="h-8 w-8 text-orange-600" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה — למעסיקים</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">פרסום מודעה - למעסיקים</h2>
         <p className="text-muted-foreground mb-6">
           אתה מחובר כ<strong>מחפש עבודה</strong>. כדי לפרסם מודעה, עבור למצב מעסיק.
         </p>
@@ -697,9 +697,9 @@ export default function PostJob() {
 
   const handleTabClick = async (targetId: TabId) => {
     const targetIndex = TABS.findIndex(t => t.id === targetId);
-    // מעבר אחורה — תמיד מותר
+    // מעבר אחורה - תמיד מותר
     if (targetIndex <= tabIndex) { setActiveTab(targetId); return; }
-    // מעבר קדימה — ולידציה של הטאב הנוכחי
+    // מעבר קדימה - ולידציה של הטאב הנוכחי
     saveDraftNow(collectDraftData());
     const ok = await validateCurrentTab();
     if (!ok) return;
@@ -971,7 +971,7 @@ export default function PostJob() {
               {/* Tab 2: מיקום ושעות */}
               {activeTab === "location" && (
                 <div className="space-y-5">
-                  {/* Location — two sub-tabs */}
+                  {/* Location - two sub-tabs */}
                   <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
                     <h2 className="font-bold text-foreground flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-primary" />
@@ -1067,7 +1067,7 @@ export default function PostJob() {
                     {/* Sub-tab 2: job address */}
                     {locationSubTab === "address" && (
                       <div className="space-y-3">
-                        {/* Inline location error — shown until a valid location is selected */}
+                        {/* Inline location error - shown until a valid location is selected */}
                         {mapError && (
                           <p className="flex items-center gap-1.5 text-xs font-medium text-red-500" dir="rtl">
                             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0">
@@ -1149,7 +1149,7 @@ export default function PostJob() {
                     <div>
                       <AppLabel>שעות עבודה <span style={{ color: "#ef4444", fontSize: 12, fontWeight: 600 }}>*</span></AppLabel>
 
-                      {/* Sub-tab bar — same style as location sub-tabs */}
+                      {/* Sub-tab bar - same style as location sub-tabs */}
                       <div className="flex flex-row-reverse gap-1 mt-2 mb-3" onClick={() => setHoursError(false)}>
                         {(["presets", "fields"] as const).map(tab => {
                           const label = tab === "fields" ? "שעת התחלה וסיום" : "בחירת משמרת";
@@ -1236,7 +1236,7 @@ export default function PostJob() {
                         </p>
                       )}
 
-                      {/* Youth employment law warning — shown when end time is after 22:00 or shift is overnight */}
+                      {/* Youth employment law warning - shown when end time is after 22:00 or shift is overnight */}
                       {(shouldWarnLateJob(workEndTime) || isOvernightShift(workStartTime, workEndTime)) && workStartTime && workEndTime && (
                         <div
                           className="flex items-start gap-2 rounded-xl px-3 py-2.5 mt-2 text-xs font-medium"
@@ -1312,7 +1312,7 @@ export default function PostJob() {
                           id="salary-volunteer"
                           label="התנדבות"
                           type="text"
-                          placeholder="—"
+                          placeholder="-"
                           disabled
                           dir="ltr"
                         />
@@ -1366,7 +1366,7 @@ export default function PostJob() {
                       />
                                     </div>
 
-                    {/* Urgent toggle — shown first, emphasized with amber */}
+                    {/* Urgent toggle - shown first, emphasized with amber */}
                     <div
                       onClick={() => setValue("isUrgent", !isUrgent)}
                       className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -1377,7 +1377,7 @@ export default function PostJob() {
                     >
                       <div>
                         <p className={`font-bold text-sm ${isUrgent ? "text-amber-700" : "text-foreground"}`}>
-                          ⚡ צריך עובד עכשיו — <span className={isUrgent ? "text-amber-600" : "text-amber-500"}>משרה דחופה</span>
+                          ⚡ צריך עובד עכשיו - <span className={isUrgent ? "text-amber-600" : "text-amber-500"}>משרה דחופה</span>
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">יוצג ראשון ברשימה · תפוג אחרי 12 שעות</p>
                       </div>
@@ -1394,8 +1394,8 @@ export default function PostJob() {
                       className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${isVolunteer ? "border-green-400 bg-green-50" : "border-border hover:border-green-300"}`}
                     >
                       <div>
-                        <p className={`font-semibold text-sm ${isVolunteer ? "text-green-700" : "text-foreground"}`}>💚 זו עבודת התנדבות — ללא תשלום</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">משרה התנדבותית — עזרה לקהילה, חירום, משפחות מילואימניקים</p>
+                        <p className={`font-semibold text-sm ${isVolunteer ? "text-green-700" : "text-foreground"}`}>💚 זו עבודת התנדבות - ללא תשלום</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">משרה התנדבותית - עזרה לקהילה, חירום, משפחות מילואימניקים</p>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isVolunteer ? "border-green-500 bg-green-500" : "border-muted-foreground"}`}>
                         {isVolunteer && <span className="text-white text-xs">✓</span>}
@@ -1528,7 +1528,7 @@ export default function PostJob() {
                     )}
                   </div>
 
-                  {/* Contact — auto-filled from employer profile */}
+                  {/* Contact - auto-filled from employer profile */}
                   {(() => {
                     const profileLocked = !!(user?.phone && user?.name);
                     return (
@@ -1607,7 +1607,7 @@ export default function PostJob() {
                     </div>
                   )}
 
-                  {/* Legal checkbox — single combined confirmation */}
+                  {/* Legal checkbox - single combined confirmation */}
                   {!user?.termsAcceptedAt && (
                     <div dir="rtl" className="rounded-xl border p-4" style={{ borderColor: legalCheckboxError ? "#dc2626" : "#d6c99a", background: "#fefcf4" }}>
                       <label className="flex items-start gap-2.5 cursor-pointer">

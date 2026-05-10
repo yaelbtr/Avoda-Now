@@ -1,5 +1,5 @@
 /**
- * AppFormField — Shared design-system form controls
+ * AppFormField - Shared design-system form controls
  *
  * Provides AppInput, AppTextarea, and AppSelect with the same visual language
  * as IsraeliPhoneInput:

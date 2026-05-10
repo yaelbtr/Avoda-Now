@@ -55,7 +55,7 @@ function birthdateForAge(years: number): string {
 }
 
 // ── Tests ────────────────────────────────────────────────────────────────────
-describe("user.updateProfile — minor night-slot stripping", () => {
+describe("user.updateProfile - minor night-slot stripping", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("strips 'night' from preferredTimeSlots when user is 16 (minor)", async () => {

@@ -1,5 +1,5 @@
 /**
- * server/backup.ts — Automated Database Backup
+ * server/backup.ts - Automated Database Backup
  * ──────────────────────────────────────────────
  * Exports a `runDatabaseBackup()` function that:
  *   1. Exports all critical tables as JSON via Drizzle queries

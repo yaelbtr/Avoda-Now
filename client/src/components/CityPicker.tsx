@@ -53,7 +53,7 @@ interface CityPickerProps {
 }
 
 /**
- * CityPicker — search-and-select for cities.
+ * CityPicker - search-and-select for cities.
  *
  * The dropdown is rendered with `position: fixed` so it escapes any
  * `overflow-hidden` ancestor (e.g. accordion animation containers).
@@ -119,7 +119,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
     };
   }, [open, updateDropdownPosition]);
 
-  // Filter cities based on search query — only show when user has typed something
+  // Filter cities based on search query - only show when user has typed something
   const suggestions = useMemo(() => {
     const q = search.trim();
     if (!q) return [];
@@ -145,7 +145,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
     if (onCitySelect) {
       const city = allCities.find((c) => c.id === id);
       if (city) {
-        // Fire-and-forget placeId resolution — call onCitySelect immediately with what we have,
+        // Fire-and-forget placeId resolution - call onCitySelect immediately with what we have,
         // then call again with placeId once resolved (callers should handle both calls).
         const basePayload = { id: city.id, nameHe: city.nameHe, latitude: city.latitude ?? null, longitude: city.longitude ?? null };
         onCitySelect(basePayload);
@@ -207,7 +207,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
           onChange={(e) => {
             const v = e.target.value;
             setSearch(v);
-            // Validate inline — only flag once user has typed enough (≥ 4 chars)
+            // Validate inline - only flag once user has typed enough (≥ 4 chars)
             if (v.trim().length >= 4) {
               const { error } = validateCityName(v);
               setSearchError(error);
@@ -258,7 +258,7 @@ export function CityPicker({ selectedCityIds, onChange, maxCities, onCitySelect 
         </div>
       )}
 
-      {/* Dropdown — rendered with position:fixed to escape overflow:hidden ancestors */}
+      {/* Dropdown - rendered with position:fixed to escape overflow:hidden ancestors */}
       {open && (suggestions.length > 0 || search.trim()) && (
         <div
           ref={dropdownRef}

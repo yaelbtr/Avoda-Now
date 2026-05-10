@@ -1,30 +1,30 @@
 ﻿import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import TextMarquee from "@/components/ui/text-marque";
 import { useLocation } from "wouter";
 import { useSEO } from "@/hooks/useSEO";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { AppButton } from "@/components/ui";
+import { ShinyButton } from "@/components/ui/shiny-button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { useAuthQuery } from "@/hooks/useAuthQuery";
 import {
   ChevronLeft, Zap, Search,
-  Briefcase, BadgePercent, Clock, UserPlus, Lock, Bell,
+  Briefcase, BadgePercent, Clock, UserPlus, ReceiptText, Bell,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { NavPill } from "@/components/ui/NavPill";
-import { AnimatedBorderButton } from "@/components/ui/button-border";
 import { WorkerRegionBanner } from "@/components/WorkerRegionBanner";
 import BelowFold from "@/components/BelowFold";
 import { toast } from "sonner";
 import { useCountdown } from "@/hooks/useCountdown";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import workerHeroCollage from "@/assets/homeWork.png";
-// סקציות חדשות — שלב collecting workers
+import workerHeroCollage from "@/assets/homeWork2.png";
+// סקציות חדשות - שלב collecting workers
 import { HowItWorksSimple } from "@/components/home/HowItWorksSimple";
+import { TrustGrid } from "@/components/home/TrustGrid";
 // Lazy: נטען רק אחרי גלילה
 const StickyBottomCta = lazy(() =>
   import("@/components/home/StickyBottomCta").then((m) => ({ default: m.StickyBottomCta }))
@@ -96,26 +96,34 @@ const editorial = {
 };
 
 function renderHighlightedSubtitle(text: string) {
-  return text.split(/(עכשיו|ללא עמלות|ללא עמלה)/g).map((part, index) => {
-    const isHighlight = part === "עכשיו" || part === "ללא עמלות" || part === "ללא עמלה";
+  return text.split(/(עכשיו|ללא עמלות|ללא עמלה|חינם)/g).map((part, index) => {
+    const isHighlight = part === "עכשיו" || part === "ללא עמלות" || part === "ללא עמלה" || part === "חינם";
     if (!isHighlight) return part;
 
     return (
       <span
         key={`${part}-${index}`}
         style={{
-          color: "#7A3E06",
-          fontWeight: 900,
-          textDecoration: "underline",
-          textDecorationColor: "rgb(122 62 6 / 0.50)",
+          color: "oklch(0.59 0.18 55)",
+          fontWeight: 700,
+          fontSize:"15px",
           textDecorationThickness: 2,
-          textUnderlineOffset: 3,
-          textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
-          background: "rgb(184 105 20 / 0.11)",
           borderRadius: 4,
           padding: "0 3px",
         }}
       >
+        {part}
+      </span>
+    );
+  });
+}
+
+function renderHighlightedSubtitleLight(text: string) {
+  return text.split(/(עכשיו|ללא עמלות|ללא עמלה|חינם)/g).map((part, index) => {
+    const isHighlight = part === "עכשיו" || part === "ללא עמלות" || part === "ללא עמלה" || part === "חינם";
+    if (!isHighlight) return part;
+    return (
+      <span key={`${part}-${index}`} style={{ color: "oklch(0.91 0.21 98.84)", fontWeight: 900 }}>
         {part}
       </span>
     );
@@ -216,7 +224,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "קבל הצעות עבודה ממעסיקים",
-    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה — אתה מחליט אם לאשר.",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה - אתה מחליט אם לאשר.",
     imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
     reverse: true,
   },
@@ -247,9 +255,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   const [durationOpen, setDurationOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<number>(4);
   const [customHours, setCustomHours] = useState<string>("");
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
-  const [ctaHovered, setCtaHovered] = useState(false);
-  // Sticky CTA — נטען רק אחרי גלילה כדי לחסוך באנדל
+  // Sticky CTA - נטען רק אחרי גלילה כדי לחסוך באנדל
   const [showStickyCta, setShowStickyCta] = useState(false);
   // כותרת משנית מתחלפת
   const [subtitleIndex, setSubtitleIndex] = useState(0);
@@ -261,27 +267,22 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     "בחרו תחום ואזור - ומעסיקים ימצאו אתכם",
   ];
 
-  const handlePrimaryCtaClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const id = Date.now();
-    setRipples(prev => [...prev, { id, x, y }]);
-    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
+  const handlePrimaryCtaClick = () => {
     if (!isAuthenticated) {
       onLoginRequired("כדי ליצור פרופיל יש להתחבר תחילה");
       return;
     }
     navigate("/worker-profile");
   };
+
   useSEO({
-    title: "AvodaGo — עבודות זמניות בישראל",
-    description: "הצטרפו לאלפי עובדים שכבר רשומים. בחרו תחומים ואזור — וקבלו הצעות ממעסיקים ישירות. ללא עמלות.",
+    title: "AvodaGo - עבודות זמניות בישראל",
+    description: "הצטרפו לאלפי עובדים שכבר רשומים. בחרו תחומים ואזור - וקבלו הצעות ממעסיקים ישירות. ללא עמלות.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
   });
 
-  // ── Sticky CTA scroll detection — ההורה שולט מתי לטעון את הצ'אנק ──
+  // ── Sticky CTA scroll detection - ההורה שולט מתי לטעון את הצ'אנק ──
   useEffect(() => {
     if (showStickyCta) return;
     const onScroll = () => {
@@ -382,332 +383,291 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
 
-      {/* ── MOBILE Hero (< md): new layout with floating stats ── */}
-      <section className="relative overflow-hidden md:hidden" style={{ background: editorial.background, minHeight: 432 }}>
+      {/* ── MOBILE Hero (< md): redesigned ── */}
+      <section
+        className="relative overflow-hidden md:hidden"
+        style={{
+          height: "min(calc(100svh - 76px), 150vw)",
+          minHeight: 560,
+          maxHeight: 650,
+          background: editorial.background,
+        }}
+      >
 
-        {/* ── אזור הטקסט ── */}
-        <div style={{ position: "relative", zIndex: 10, padding: "28px 24px 238px", direction: "rtl", textAlign: "center" }}>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            style={{
-              fontSize: 34, lineHeight: 1.04, fontWeight: 800,
-              color: "white",
-              fontFamily: editorial.displayFont,
-              letterSpacing: 0,
-              textShadow: "0 2px 18px rgb(0 0 0 / 0.34)",
-
-            }}
-          >
-            <span style={{ opacity: 0.75, fontWeight: 800 }}>מעסיקים באזורך</span><br />
-            <span style={{ color: "white", fontWeight: 950, fontSize: 36, textShadow: "0 2px 14px rgb(0 0 0 / 0.38)" }}>מחפשים אותך</span>
-          </motion.h1>
-
-          <div style={{ height: 46, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={subtitleIndex}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -14 }}
-                transition={{ duration: 0.38, ease: "easeInOut" }}
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "rgb(27 28 26 / 0.94)",
-                  fontFamily: editorial.uiFont,
-                  lineHeight: 1.55,
-                  maxWidth: 300,
-                  margin: 0,
-                  textAlign: "center",
-                  textShadow: "0 2px 12px rgb(255 255 255 / 0.72)",
-
-                }}
-              >
-                {renderHighlightedSubtitle(heroSubtitles[subtitleIndex])}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* ── Image + floating stats ── */}
-        <div style={{ position: "absolute", top: -76, left: 0, right: 0, bottom: 0, zIndex: 1 }}>
-          <img
-            src={workerHeroCollage}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            width={1456}
-            height={816}
-            style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              width: "100%", height: "100%",
-              objectFit: "cover",
-              objectPosition: "center 32%",
-              filter: "brightness(0.74) saturate(0.82) blur(2.8px)",
-              transform: "scale(1.024)",
-            }}
-          />
-          <div aria-hidden style={{
-            position: "absolute", inset: 0,
-            background: "rgb(27 28 26 / 0.07)",
-            zIndex: 1,
-            pointerEvents: "none",
-          }} />
-          <div aria-hidden style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(90deg, rgb(27 28 26 / 0.18) 0%, rgb(27 28 26 / 0.06) 20%, transparent 38%, transparent 62%, rgb(27 28 26 / 0.08) 80%, rgb(27 28 26 / 0.20) 100%)",
-            zIndex: 2,
-            pointerEvents: "none",
-          }} />
-          <div aria-hidden style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            width: "46%",
-            background: "linear-gradient(to right, rgb(27 28 26 / 0.30) 0%, rgb(27 28 26 / 0.16) 42%, transparent 100%)",
-            zIndex: 2,
-            pointerEvents: "none",
-          }} />
-          <div aria-hidden style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            right: 0,
-            width: "34%",
-            backdropFilter: "blur(2px)",
-            WebkitBackdropFilter: "blur(2px)",
-            maskImage: "linear-gradient(to left, black 20%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to left, black 20%, transparent 100%)",
-            zIndex: 2,
-            pointerEvents: "none",
-          }} />
+        {/* אזור תמונה עם overlay */}
+        <div style={{ position: "absolute", inset: 0 }}>
           <img
             src={workerHeroCollage}
             alt={WORKER_HOME_HERO_ALT}
             loading="eager"
             fetchPriority="high"
             decoding="async"
-            width={1456}
-            height={816}
             style={{
               position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              width: "100%", height: "100%",
+              top: -2,
+              right: -2,
+              bottom: -4,
+              left: -2,
+              width: "calc(100% + 4px)",
+              height: "calc(100% + 6px)",
               objectFit: "cover",
-              objectPosition: "center 32%",
-              zIndex: 3,
-              WebkitMaskImage: "radial-gradient(ellipse 42% 35% at 50% 54%, #000 0 58%, rgb(0 0 0 / 0.66) 68%, transparent 83%)",
-              maskImage: "radial-gradient(ellipse 42% 35% at 50% 54%, #000 0 58%, rgb(0 0 0 / 0.66) 68%, transparent 83%)",
+              objectPosition: "center 46%",
             }}
           />
+          {/* warm light overlay למעלה — רקע בהיר/חמים לטקסט כהה */}
           <div aria-hidden style={{
             position: "absolute",
-            left: "18%", top: "28%",
-            width: "58%", height: "34%",
-            background: "radial-gradient(ellipse at center, rgb(255 246 224 / 0.22) 0%, rgb(220 232 179 / 0.10) 42%, transparent 74%)",
-            mixBlendMode: "soft-light",
-            zIndex: 4,
-            pointerEvents: "none",
-          }} />
-          {/* Fade top of image into bg — מכסה את אזור הטקסט */}
-          <div aria-hidden style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: "50%",
+            inset: 0,
             background: [
               "linear-gradient(to bottom,",
-              "rgb(0 0 0 / 0.48) 0%,",
-              "rgb(0 0 0 / 0.28) 34%,",
-              "rgb(0 0 0 / 0) 100%)",
-              ",",
-              "linear-gradient(to bottom,",
-              "rgb(250 249 245 / 0.62) 0%,",
-              "rgb(250 249 245 / 0.26) 44%,",
-              "transparent 100%)",
+              "rgb(132 111 84 / 0.58) 0%,",
+              "rgb(183 155 116 / 0.38) 20%,",
+              "rgb(238 221 195 / 0.08) 45%,",
+              "transparent 62%)",
             ].join(" "),
-            zIndex: 5, pointerEvents: "none",
+            zIndex: 1,
           }} />
-          {/* Fade bottom of image into bg — מכסה את אזור הכפתורים */}
+          {/* fade לכיוון הקרם בתחתית */}
           <div aria-hidden style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: "46%",
+            position: "absolute",
+            bottom: -6, left: 0, right: 0, height: "64%",
             background: [
               "linear-gradient(to top,",
-              `${editorial.background} 0%,`,
-              `${editorial.background} 34%,`,
-              "rgb(250 249 245 / 0.82) 58%,",
+              "var(--editorial-background) 0%,",
+              "var(--editorial-background) 12%,",
+              "rgb(250 249 245 / 0.96) 28%,",
+              "rgb(250 249 245 / 0.56) 62%,",
               "transparent 100%)",
             ].join(" "),
-            zIndex: 5, pointerEvents: "none",
+            zIndex: 2,
           }} />
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: -8,
+              height: 34,
+              background: editorial.background,
+              zIndex: 3,
+              pointerEvents: "none",
+            }}
+          />
 
-        </div>
+          {/* כותרת ובדג' */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, zIndex: 10,
+            padding: "20px 18px 0",
+            direction: "rtl", textAlign: "center",
+          }}>
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{ margin: 0 }}
+            >
+              <span
+                style={{
+                  display: "block",
+                  fontFamily: editorial.displayFont,
+                  fontSize: "35px",
+                  fontWeight: 800,
+                  lineHeight: 1.0,
+                  color: "#ffffffbf",
+                  letterSpacing: 0,
+                }}
+              >
+                מעסיקים באזור
+              </span>
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 0,
+                  fontFamily: editorial.displayFont,
+                  fontSize: "45px",
+                  fontWeight: 800,
+                  lineHeight: 1.0,
+                  color: "#ffffff",
+                  textShadow: "0 5px 20px rgb(42 30 18 / 0.20)",
+                  letterSpacing: 0,
+                }}
+              >
+                מחפשים אותך
+              </span>
+            </motion.h1>
 
-        {/* ── כפתורי פעולה ── */}
-        <div style={{ position: "relative", zIndex: 10, padding: "28px 14px 22px", direction: "rtl" }}>
-          <motion.div
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
-            className="w-full flex flex-col  "
-          >
-            {/* ── טיקר נוסע ── */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.18 }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.45, delay: 0.18 }}
               style={{
-                width: "100%",
-                marginBottom: 12,
-              //  color: "rgb(255 255 255 / 0.90)",
-                // border: "1px solid rgb(199 199 186 / 0.32)",
-                // borderRadius: 12,
-                overflow: "hidden",
-                fontFamily: editorial.uiFont,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                marginTop: 10,
+                padding: "5px 12px",
+                background: "oklch(0.99 0 0 / 0.77)",
+                borderRadius: 100,
+                // border: "1px solid rgb(255 255 255 / 0.72)",
+                boxShadow: "0 12px 30px rgb(42 30 18 / 0.12)",
+                minWidth: "min(292px, calc(100vw - 44px))",
+                justifyContent: "center",
               }}
             >
-              <div style={{
-                color: "#7A3E06",
-                fontWeight: 900,
-                
-                textDecorationColor: "rgb(122 62 6 / 0.50)",
-                textDecorationThickness: 2,
-                textUnderlineOffset: 3,
-                textShadow: "0 1px 6px rgb(255 255 255 / 0.90)",
-              }}>
-                <TextMarquee
-                  baseVelocity={-3}
-                  delay={400}
-                  startFromRight
-                  clasname="text-[14px] font-semibold tracking-normal leading-[34px]"
-                >
+             
+              <div style={{ height: 20, overflow: "hidden", display: "flex", alignItems: "center" }}>
+                <AnimatePresence mode="wait">
                   <motion.span
-                    style={{ display: "inline-block", transformOrigin: "top center" }}
-                    animate={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0], scale: [1, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1] }}
-                    transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
-                  >🔔</motion.span>{" נרשמים עכשיו ומקבלים עדיפות לעבודות ראשונות ✦ "}<motion.span
-                    style={{ display: "inline-block", transformOrigin: "top center" }}
-                    animate={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0], scale: [1, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1] }}
-                    transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut", delay: 1.4 }}
-                  >🔔</motion.span>{" נשלח לך ברגע שעולה עבודה באזור שלך ✦"}
-                </TextMarquee>
-              
-              {/* <TextMarquee
-                baseVelocity={2}
-                delay={400}
-                startFromRight
-                clasname="text-[14px] font-medium   tracking-normal leading-[34px]"
-              >
-            </TextMarquee> */}
+                    key={subtitleIndex}
+                    initial={{ opacity: 0, y: 9 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -9 }}
+                    transition={{ duration: 0.32, ease: "easeInOut" }}
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 700,
+                      color: "rgb(35 32 28 / 0.92)",
+                      fontFamily: editorial.uiFont,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {renderHighlightedSubtitle(heroSubtitles[subtitleIndex])}
+                  </motion.span>
+                </AnimatePresence>
               </div>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.25 }}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: 8,
-                width: "100%",
-                marginBottom: 54,
-                fontFamily: editorial.uiFont,
-              }}
-            >
-              {[
-                { Icon: Briefcase, value: `+${animatedRegisteredWorkers}`, label: "עובדים רשומים", description: null, featured: false, secure: false },
-                { Icon: BadgePercent, value: `${animatedCommissionPercent}%`, label: "ללא עמלות", description: null, featured: true, secure: false },
-                { Icon: Lock, value: "פרופיל", label: "מאובטח", description: "הטלפון מוסתר עד שתאשרו", featured: false, secure: true },
-              ].map(({ Icon, value, label, description, featured, secure }) => (
-                <div
-                  key={label}
-                  style={{
-                    minWidth: 0,
-                    minHeight: 66,
-                    borderRadius: 16,
-                    background: featured ? "rgb(220 232 179 / 0.52)" : "rgb(255 255 255 / 0.44)",
-                    border: featured ? `1px solid rgb(49 59 21 / 0.28)` : "1px solid rgb(199 199 186 / 0.22)",
-                    boxShadow: featured ? "0 8px 18px rgb(49 59 21 / 0.07)" : "none",
-                    opacity: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 2,
-                    padding: "8px 6px",
-                  }}
-                >
-                  <Icon size={secure ? 16 : 15} strokeWidth={2.1} style={{ color: featured ? editorial.primary : "rgb(55 56 48 / 0.82)" }} />
-                  <span style={{ fontSize: description ? 14 : 17, fontWeight: featured ? 850 : 700, color: featured ? editorial.onSurface : "rgb(27 28 26 / 0.92)", lineHeight: 1.05, letterSpacing: 0 }}>
-                    {value}
-                  </span>
-                  <span style={{ fontSize: secure ? 10 : 9.5, fontWeight: featured ? 700 : 600, color: featured ? editorial.primary : "rgb(55 56 48 / 0.78)", lineHeight: 1.2, textAlign: "center", whiteSpace: "nowrap" }}>
-                    {label}
-                  </span>
-                  {description && (
-                    <span style={{ fontSize: 9.5, fontWeight: 600, color: "rgb(44 45 38 / 0.82)", lineHeight: 1.3, textAlign: "center", maxWidth: 86 }}>
-                      {description}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </motion.div>
-
-            <AnimatedBorderButton
-              onClick={handlePrimaryCtaClick}
-              onHoverStart={() => setCtaHovered(true)}
-              onHoverEnd={() => setCtaHovered(false)}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                width: "92%", height: 57,
-                margin: "0 auto",
-                background: "#B86914",
-                color: "white",
-                borderRadius: 22, fontSize: 14, fontWeight: 700,
-                border: "none",
-                boxShadow: "0 12px 32px rgba(184,105,20,0.35)",
-                cursor: "pointer", letterSpacing: "-0.2px",
-                fontFamily: editorial.uiFont,
-                transform: "translateY(0)",
-              }}
-              whileHover={{ scale: 1.02, backgroundColor: "#9E5F10", y: -1 }}
-              whileTap={{ scale: 0.95, y: 1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            >
-              <motion.span
-                aria-hidden
-                animate={{ x: ctaHovered ? "220%" : "-110%", opacity: ctaHovered ? 1 : 0 }}
-                transition={{ duration: 0.58, ease: "easeInOut" }}
-                style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(105deg, transparent 28%, rgb(255 255 255 / 0.26) 50%, transparent 72%)", pointerEvents: "none", zIndex: 1 }}
-              />
-              <UserPlus size={14} />
-              צור פרופיל והתפרסם
-              {ripples.map(r => (
-                <motion.span
-                  key={r.id}
-                  initial={{ scale: 0, opacity: 0.5 }}
-                  animate={{ scale: 4, opacity: 0 }}
-                  transition={{ duration: 0.65, ease: "easeOut" }}
-                  style={{ position: "absolute", left: r.x, top: r.y, width: 40, height: 40, borderRadius: "50%", background: "rgb(255 255 255 / 0.30)", transform: "translate(-50%, -50%)", pointerEvents: "none", zIndex: 1 }}
-                />
-              ))}
-            </AnimatedBorderButton>
-          </motion.div>
+          </div>
         </div>
+
+        {/* חלק תחתון - כרטיסי סטטיסטיקות ו-CTA */}
         <div
-          aria-hidden
           style={{
             position: "absolute",
             left: 0,
             right: 0,
-            bottom: -2,
-            height: 128,
-            background: `linear-gradient(to top, ${editorial.background} 0%, ${editorial.background} 70%, transparent 100%)`,
-            zIndex: 6,
-            pointerEvents: "none",
+            bottom: 0,
+            zIndex: 12,
+            padding: "0 18px max(12px, env(safe-area-inset-bottom))",
+            direction: "rtl",
           }}
-        />
+        >
+
+          {/* כרטיסי נתונים */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.3, staggerChildren: 0.08 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              alignItems: "stretch",
+              gap: 9,
+              marginBottom: 20,
+              fontFamily: editorial.uiFont,
+            }}
+          >
+            {/* עובדים ממתינים */}
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24, delay: 0.34 }}
+              style={{
+              background: "oklch(0.995 0.004 84 / 0.95)",
+              backdropFilter: "blur(12px) saturate(1.08)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.08)",
+              borderRadius: 19,
+              padding: "10px 6px 9px",
+              display: "grid",
+              gridTemplateRows: "22px 28px 34px",
+              justifyItems: "center",
+              alignItems: "center",
+              boxShadow: "0 12px 24px rgb(48 34 18 / 0.11)",
+              height: 110,
+              minHeight: 110,
+            }}>
+              <Briefcase size={16} strokeWidth={1.9} style={{ color: "rgb(42 42 36 / 0.84)" }} />
+              <span dir="ltr" style={{ display: "block", fontSize: "18px", fontWeight: 800, color: "rgb(58 73 28)", lineHeight: 0.94, fontFamily: editorial.displayFont }}>
+                {animatedRegisteredWorkers}+
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 400, color: "rgb(58 73 28)", lineHeight: 1.22, textAlign: "center", maxWidth: 82 }}>
+                עובדים כבר מחכים לעבודות הראשונות
+              </span>
+            </motion.div>
+
+            {/* 100% ללא עמלה - מודגש */}
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 340, damping: 24, delay: 0.42 }}
+              style={{
+              background: "oklch(0.91 0.065 119 / 0.70)",
+              border: "1px solid oklch(0.48 0.08 120 / 0.20)",
+              backdropFilter: "blur(14px) saturate(1.12)",
+              WebkitBackdropFilter: "blur(14px) saturate(1.12)",
+              borderRadius: 19,
+              padding: "10px 6px 9px",
+              display: "grid",
+              gridTemplateRows: "22px 28px 34px",
+              justifyItems: "center",
+              alignItems: "center",
+              height: 110,
+              minHeight: 110,
+              boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.50), 0 14px 26px rgb(48 34 18 / 0.10)",
+            }}>
+              <BadgePercent size={16} strokeWidth={1.9} style={{ color: "rgb(58 73 28)" }} />
+              <span dir="ltr" style={{ display: "block", fontSize: "18px", fontWeight: 800, color: "rgb(58 73 28)", lineHeight: 0.92, fontFamily: editorial.displayFont }}>
+                {animatedCommissionPercent}%
+              </span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: "oklch(0.30 0.06 118)", lineHeight: 1.08, textAlign: "center" }}>
+                ללא עמלה
+              </span>
+            </motion.div>
+
+            {/* ללא דמי רישום */}
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24, delay: 0.5 }}
+              style={{
+              background: "oklch(0.995 0.004 84 / 0.95)",
+              backdropFilter: "blur(12px) saturate(1.08)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.08)",
+              borderRadius: 19,
+              padding: "10px 6px 9px",
+              display: "grid",
+              gridTemplateRows: "22px 38px 22px",
+              justifyItems: "center",
+              alignItems: "center",
+              boxShadow: "0 12px 24px rgb(48 34 18 / 0.11)",
+              height: 110,
+              minHeight: 110,
+            }}>
+              <ReceiptText size={18} strokeWidth={1.9} style={{ color: "rgb(58 73 28)" }} />
+              <span style={{ fontSize: 15, fontWeight: 800, color: "rgb(58 73 28)", lineHeight: 1.08, textAlign: "center", fontFamily: editorial.displayFont }}>
+                ללא דמי<br />רישום
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: "rgb(58 73 28 / 0.86)", lineHeight: 1.1, textAlign: "center", whiteSpace: "nowrap" }}>
+                בלי אותיות קטנות
+              </span>
+            </motion.div>
+          </motion.div>
+
+          <ShinyButton
+            onClick={handlePrimaryCtaClick}
+            className="worker-jobs-cta"
+            style={{     fontSize: 16,  height: 52, fontFamily: editorial.uiFont }}
+          >
+            <UserPlus size={21} strokeWidth={2.2} />
+           אני רוצה לקבל עבודות ראשונות
+          </ShinyButton>
+        </div>
       </section>
 
       {/* ── DESKTOP Hero (≥ md): full-bleed image with text overlay ── */}
@@ -752,7 +712,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, var(--editorial-surface-container) 100%)" }}
         />
 
-        {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
+        {/* Content - text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
         <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "460px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -765,7 +725,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             <Zap className="h-3 w-3" style={{ color: editorial.primary }} />
             <span className="text-[11px] font-bold" style={{ color: editorial.primary, letterSpacing: 0, fontFamily: editorial.uiFont }}>
-              עבודות בית ואירועים — תוך דקות
+              עבודות בית ואירועים - תוך דקות
             </span>
           </motion.div>
 
@@ -780,7 +740,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               textShadow: "0 1px 0 rgb(255 255 255 / 0.90), 0 14px 30px rgb(27 28 26 / 0.18)",
             }}
           >
-            הגדר זמינות —<br />
+            הגדר זמינות -<br />
             <span style={{ color: editorial.primary, textShadow: "0 1px 0 rgb(255 255 255 / 0.80), 0 12px 26px rgb(49 59 21 / 0.22)" }}>
               קבל פניות ממעסיקים
             </span>
@@ -850,31 +810,36 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── How it works ────────────── */}
       <HowItWorksSimple />
 
+      {/* ── יתרונות לעובד ────────────── */}
+      <TrustGrid />
+
       {/* ── Worker action tiles ─────────────────────────────────────────────────────────────────── */}
       {isAuthenticated && profileQuery.data && (
         <div className="relative z-10 px-4 mb-5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-3">
             {(!profileQuery.data.preferredCategories?.length ||
               (!profileQuery.data.preferredCity && !profileQuery.data.workerLatitude)) && (
               <button
                 onClick={() => navigate("/worker-profile")}
-                className="flex flex-col items-center justify-center text-center"
+                className="flex flex-row items-center gap-4 text-right"
                 style={{
-                  minHeight: 146,
                   background: "var(--editorial-surface-container-lowest)",
                   border: "1px solid rgb(199 199 186 / 0.20)",
                   borderRadius: 24,
                   boxShadow: "0 14px 28px rgb(27 28 26 / 0.06)",
                   fontFamily: editorial.uiFont,
-                  padding: 16,
+                  padding: "16px 20px",
+                  width: "100%",
                 }}
               >
-                <span className="flex items-center justify-center mb-3" style={{ width: 46, height: 46, background: editorial.primaryFixed, borderRadius: 16 }}>
+                <span className="flex items-center justify-center flex-shrink-0" style={{ width: 46, height: 46, background: editorial.primaryFixed, borderRadius: 16 }}>
                   <Briefcase className="h-5 w-5" style={{ color: editorial.primary }} />
                 </span>
-                <span className="text-[15px] font-semibold" style={{ color: editorial.onSurface, letterSpacing: 0 }}>השלם את הפרופיל שלך</span>
-                <span className="text-[11px]" style={{ color: editorial.onSurfaceVariant, lineHeight: 1.45, marginTop: 5 }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</span>
-                <span className="mt-3 px-4 py-2 text-xs font-semibold" style={{ background: editorial.ctaGradient, color: "white", borderRadius: 999, boxShadow: "0 10px 20px rgb(49 59 21 / 0.12)" }}>עדכן עכשיו</span>
+                <div className="flex flex-col flex-1 gap-0.5">
+                  <span className="text-[15px] font-semibold" style={{ color: editorial.onSurface, letterSpacing: 0 }}>השלם את הפרופיל שלך</span>
+                  <span className="text-[11px]" style={{ color: editorial.onSurfaceVariant, lineHeight: 1.45 }}>הוסף קטגוריות ומיקום כדי לקבל הצעות מתאימות</span>
+                </div>
+                <span className="flex-shrink-0 px-4 py-2 text-xs font-semibold" style={{ background: editorial.ctaGradient, color: "white", borderRadius: 999, boxShadow: "0 10px 20px rgb(49 59 21 / 0.12)" }}>עדכן עכשיו</span>
               </button>
             )}
 
@@ -882,23 +847,25 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <button
                 onClick={pushNotifications.subscribe}
                 disabled={pushNotifications.isLoading}
-                className="flex flex-col items-center justify-center text-center disabled:opacity-60"
+                className="flex flex-row items-center gap-4 text-right disabled:opacity-60"
                 style={{
-                  minHeight: 146,
                   background: "var(--editorial-surface-container-lowest)",
                   border: "1px solid rgb(199 199 186 / 0.20)",
                   borderRadius: 24,
                   boxShadow: "0 14px 28px rgb(27 28 26 / 0.06)",
                   fontFamily: editorial.uiFont,
-                  padding: 16,
+                  padding: "16px 20px",
+                  width: "100%",
                 }}
               >
-                <span className="flex items-center justify-center mb-3" style={{ width: 46, height: 46, background: "oklch(0.91 0.21 98.84 / 0.98)", borderRadius: 16 }}>
+                <span className="flex items-center justify-center flex-shrink-0" style={{ width: 46, height: 46, background: "oklch(0.91 0.21 98.84 / 0.98)", borderRadius: 16 }}>
                   <Bell className="h-5 w-5" style={{ color: editorial.primary }} />
                 </span>
-                <span className="text-[15px] font-semibold" style={{ color: editorial.onSurface, letterSpacing: 0 }}>הפעל התראות משרות</span>
-                <span className="text-[11px]" style={{ color: editorial.onSurfaceVariant, lineHeight: 1.45, marginTop: 5 }}>קבל התראה מיידית על משרות מתאימות</span>
-                <span className="mt-3 px-4 py-2 text-xs font-semibold" style={{ background: "oklch(0.91 0.21 98.84 / 0.98)", color: editorial.primary, borderRadius: 999, boxShadow: "0 10px 20px rgb(49 59 21 / 0.12)" }}>{pushNotifications.isLoading ? "..." : "הפעל"}</span>
+                <div className="flex flex-col flex-1 gap-0.5">
+                  <span className="text-[15px] font-semibold" style={{ color: editorial.onSurface, letterSpacing: 0 }}>הפעל התראות משרות</span>
+                  <span className="text-[11px]" style={{ color: editorial.onSurfaceVariant, lineHeight: 1.45 }}>קבל התראה מיידית על משרות מתאימות</span>
+                </div>
+                <span className="flex-shrink-0 px-4 py-2 text-xs font-semibold" style={{ background: "oklch(0.91 0.21 98.84 / 0.98)", color: editorial.primary, borderRadius: 999, boxShadow: "0 10px 20px rgb(49 59 21 / 0.12)" }}>{pushNotifications.isLoading ? "..." : "הפעל"}</span>
               </button>
             )}
           </div>
@@ -913,7 +880,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
        {/* ── חדש בסביבה / Latest jobs ─────────────────────────────────── */}
 
 
-      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      {/* ── Region Landing Pages CTA + SEO sections (deferred - below fold) ─── */}
       <BelowFold minHeight="120px" rootMargin="400px 0px">
       <section
         dir="rtl"
@@ -993,7 +960,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                 <span>
                   מעסיקים באזורך רואים אותך ברשימת העובדים הזמינים ויכולים לפנות אליך ישירות.
                   {countdown
-                    ? <> זמן שנותר: <strong className="font-mono">{countdown}</strong>.</>  
+                    ? <> זמן שנותר: <strong className="font-mono">{countdown}</strong>.</>
                     : " הזמינות עומדת לפוג בקרוב."
                   }
                   {" "}לחץ שוב על הכפתור לביטול מיידי.

@@ -26,26 +26,26 @@ function buildMessage(item: FeedItem): string {
     const loc = item.city ? ` ב${item.city}` : "";
     const salary =
       item.salaryType === "volunteer"
-        ? " — התנדבות"
+        ? " - התנדבות"
         : (item.salary || item.hourlyRate)
-        ? ` — ${formatSalary(item.salary ?? null, item.salaryType ?? "hourly", item.hourlyRate ?? null)}`
+        ? ` - ${formatSalary(item.salary ?? null, item.salaryType ?? "hourly", item.hourlyRate ?? null)}`
         : "";
     const prefix = item.isUrgent ? "⚡ דרוש עובד דחוף" : "📢 עבודה חדשה";
     return `${prefix}: ${item.title}${loc}${salary}`;
   } else {
     const loc = item.city ? ` ב${item.city}` : "";
-    return `👷 עובד פנוי עכשיו${loc}${item.note ? ` — ${item.note}` : ""}`;
+    return `👷 עובד פנוי עכשיו${loc}${item.note ? ` - ${item.note}` : ""}`;
   }
 }
 
 const FALLBACK_MESSAGES = [
-  "📢 עבודה חדשה: שליחויות בתל אביב — 60₪ לשעה",
+  "📢 עבודה חדשה: שליחויות בתל אביב - 60₪ לשעה",
   "⚡ דרוש עובד למחסן היום בפתח תקווה",
   "👷 עובד פנוי עכשיו ברמת גן",
-  "📢 עבודה חדשה: עוזר מטבח בירושלים — 55₪ לשעה",
+  "📢 עבודה חדשה: עוזר מטבח בירושלים - 55₪ לשעה",
   "🆘 סיוע דחוף: חלוקת מזון בבאר שבע",
   "👷 עובד פנוי עכשיו בחיפה",
-  "📢 עבודה חדשה: ניקיון לפסח בנתניה — 70₪ לשעה",
+  "📢 עבודה חדשה: ניקיון לפסח בנתניה - 70₪ לשעה",
   "⚡ דרוש שליח דחוף בתל אביב",
 ];
 

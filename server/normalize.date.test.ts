@@ -16,7 +16,7 @@ describe("normalizeDateInput", () => {
     expect(normalizeDateInput("7/1/2000")).toBe("2000-01-07");
   });
 
-  // ── DD.MM.YYYY (dot — Samsung Galaxy) ─────────────────────────────────────
+  // ── DD.MM.YYYY (dot - Samsung Galaxy) ─────────────────────────────────────
   it("converts DD.MM.YYYY to YYYY-MM-DD", () => {
     expect(normalizeDateInput("07.11.1995")).toBe("1995-11-07");
   });

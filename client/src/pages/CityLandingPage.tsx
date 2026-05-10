@@ -1,8 +1,8 @@
 /**
- * CityLandingPage — /עבודה-זמנית/:city
+ * CityLandingPage - /עבודה-זמנית/:city
  *
  * Programmatic SEO landing pages targeting long-tail keywords:
- * "עבודה זמנית [עיר]" — e.g. "עבודה זמנית תל אביב"
+ * "עבודה זמנית [עיר]" - e.g. "עבודה זמנית תל אביב"
  *
  * Architecture mirrors KeywordLandingPage to maintain DRY principle:
  * - useSEO for title/description/canonical/keywords
@@ -79,7 +79,7 @@ export default function CityLandingPage() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
 
-  // ── Live job query — filtered by city ────────────────────────────────────
+  // ── Live job query - filtered by city ────────────────────────────────────
   const { data: jobsData, isLoading } = trpc.jobs.list.useQuery(
     { city: page?.cityName, limit: 12 },
     { enabled: !!page }
@@ -377,7 +377,7 @@ export default function CityLandingPage() {
         {/* FAQ */}
         <section className="mb-10" aria-label="שאלות נפוצות">
           <h2 className="font-bold text-base mb-4" style={{ color: "#1a2010" }}>
-            שאלות נפוצות — עבודה זמנית ב{page.cityName}
+            שאלות נפוצות - עבודה זמנית ב{page.cityName}
           </h2>
           <div
             className="rounded-xl px-4"

@@ -68,13 +68,13 @@ export interface JobCardProps {
   onApply?: (jobId: number, message: string | undefined, origin: string) => void;
   isApplyPending?: boolean;
   onLoginRequired?: (message: string) => void;
-  /** Called when card or "צפה במשרה" is clicked — opens bottom sheet */
+  /** Called when card or "צפה במשרה" is clicked - opens bottom sheet */
   onCardClick?: (job: JobCardJob) => void;
-  /** compact: minimal card for carousel — shows only WhatsApp + "צפה במשרה" */
+  /** compact: minimal card for carousel - shows only WhatsApp + "צפה במשרה" */
   variant?: "default" | "compact";
-  /** Called when the category pill is clicked — lets FindJobs add the category to active filters */
+  /** Called when the category pill is clicked - lets FindJobs add the category to active filters */
   onCategoryClick?: (category: string) => void;
-  /** Set of currently active category filter values — pill is highlighted when job.category is included */
+  /** Set of currently active category filter values - pill is highlighted when job.category is included */
   activeCategories?: string[];
 }
 
@@ -318,7 +318,7 @@ export function JobCard({
   const isVolunteer = job.salaryType === "volunteer";
   const cityDisplay = job.city ?? "";
   const isToday = isJobToday(job.startDateTime, job.startTime, job.jobDate);
-  // Check if job is specifically scheduled for today (via jobDate field) — shows green badge
+  // Check if job is specifically scheduled for today (via jobDate field) - shows green badge
   const isJobDateToday = (() => {
     if (!job.jobDate) return false;
     const today = new Date();
@@ -328,11 +328,11 @@ export function JobCard({
   // contactPhone is always null for workers (stripped server-side)
   const hasPhone = false;
   const countdown = expiryCountdown(job.expiresAt);
-  // groupName-based flags — driven by DB categories (groupName = "wartime" / "seasonal")
+  // groupName-based flags - driven by DB categories (groupName = "wartime" / "seasonal")
   // job.categoryGroupName is populated server-side; falls back to false if not present
   const isWartime = (job as { categoryGroupName?: string }).categoryGroupName === "wartime";
   const isSeasonal = (job as { categoryGroupName?: string }).categoryGroupName === "seasonal";
-  // Minor restriction badge — driven by allowedForMinors field in DB categories table
+  // Minor restriction badge - driven by allowedForMinors field in DB categories table
   const { bySlug: catBySlug } = useCategories();
   const isMinorRestricted = job.category ? catBySlug[job.category]?.allowedForMinors === false : false;
   const isExpired = job.expiresAt && new Date(job.expiresAt) < new Date();
@@ -413,7 +413,7 @@ export function JobCard({
         dir="rtl"
         onClick={onCardClick ? handleCardClick : undefined}
       >
-        {/* "New" green pulsing dot — top-left corner */}
+        {/* "New" green pulsing dot - top-left corner */}
         {isNew && (
           <span
             className="absolute top-2 left-2 z-10 flex items-center justify-center"
@@ -672,7 +672,7 @@ export function JobCard({
       dir="rtl"
       onClick={onCardClick ? handleCardClick : undefined}
     >
-      {/* Urgent right border accent — uses border-radius to match card corners without needing overflow-hidden */}
+      {/* Urgent right border accent - uses border-radius to match card corners without needing overflow-hidden */}
       {job.isUrgent && (
         <div className="absolute top-0 right-0 w-[3px] h-full"
           style={{ background: `linear-gradient(180deg, ${C_DANGER_HEX} 0%, #f97316 100%)`, borderRadius: "0 16px 16px 0" }} />
@@ -680,7 +680,7 @@ export function JobCard({
 
       <div className="p-5 flex flex-col gap-4">
 
-        {/* ── Row 1: Header — title + action icons ── */}
+        {/* ── Row 1: Header - title + action icons ── */}
         <div className="flex items-start justify-between gap-3">
 
           {/* Right: title + business name */}
@@ -694,7 +694,7 @@ export function JobCard({
                 {job.businessName}
               </p>
             )}
-            {/* Category badge — per-category color, clickable to filter, highlighted when active */}
+            {/* Category badge - per-category color, clickable to filter, highlighted when active */}
             {(() => {
               const catColor = getCategoryColor(job.category);
               const isActive = activeCategories?.includes(job.category) ?? false;

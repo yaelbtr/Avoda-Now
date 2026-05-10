@@ -251,7 +251,7 @@ async function startServer() {
     }
   });
 
-  // ── SEO: sitemap.xml (dynamic — includes /jobs/* routes with real job counts) ────────────────
+  // ── SEO: sitemap.xml (dynamic - includes /jobs/* routes with real job counts) ────────────────
   // In-process cache: regenerate at most once every 10 minutes
   let _sitemapCache: { xml: string; ts: number } | null = null;
   const SITEMAP_CACHE_TTL = 10 * 60 * 1000;
@@ -313,12 +313,12 @@ async function startServer() {
       for (const cat of fallbackCats) urls.push(`<url><loc>${baseUrl}/jobs/${encodeURIComponent(cat)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
 
-    // /jobs/today, /jobs/evening, /jobs/weekend, /jobs/immediate — time-based pages
+    // /jobs/today, /jobs/evening, /jobs/weekend, /jobs/immediate - time-based pages
     const TIME_FILTERS = ["today", "evening", "weekend", "immediate"];
     for (const tf of TIME_FILTERS) {
       urls.push(`<url><loc>${baseUrl}/jobs/${tf}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
-    // /jobs/{time}/{city} — time + city combos for top cities
+    // /jobs/{time}/{city} - time + city combos for top cities
     const TOP_CITIES = ["תל אביב","ירושלים","חיפה","ראשון לציון","פתח תקווה","אשדוד","נתניה","באר שבע","בני ברק","רמת גן"];
     for (const tf of TIME_FILTERS) {
       for (const city of TOP_CITIES) {
@@ -326,31 +326,31 @@ async function startServer() {
       }
     }
 
-    // /guide/temporary-jobs hub + all category sub-pages (always included — static content)
+    // /guide/temporary-jobs hub + all category sub-pages (always included - static content)
     const GUIDE_CATEGORIES = ["delivery","warehouse","kitchen","cleaning","childcare","eldercare","security","construction","retail","events","agriculture"];
     urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
     for (const cat of GUIDE_CATEGORIES) {
       urls.push(`<url><loc>${baseUrl}/guide/temporary-jobs/${cat}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
     }
 
-    // /guide/:topic — standalone guide pages
+    // /guide/:topic - standalone guide pages
     const GUIDE_TOPICS = ["student-jobs", "delivery-salary", "passover-jobs"];
     for (const topic of GUIDE_TOPICS) {
       urls.push(`<url><loc>${baseUrl}/guide/${topic}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
     }
 
-    // /faq/:slug — FAQ pages
+    // /faq/:slug - FAQ pages
     const FAQ_SLUGS = ["jobs", "delivery-jobs", "student-jobs"];
     for (const slug of FAQ_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/faq/${slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`);
     }
 
-    // /best/:slug — curated best-jobs pages
+    // /best/:slug - curated best-jobs pages
     const BEST_SLUGS = ["delivery-jobs", "student-jobs", "evening-jobs", "weekend-jobs", "immediate-jobs"];
     for (const slug of BEST_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/best/${slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`);
     }
-    // Hebrew keyword SEO landing pages — priority 0.9 (just below homepage)
+    // Hebrew keyword SEO landing pages - priority 0.9 (just below homepage)
     const KEYWORD_SLUGS = [
       "עבודה-זמנית",
       "עבודה-מיידית",
@@ -364,11 +364,27 @@ async function startServer() {
       "דרושה-מנקה-מהיום",
       "כמה-עולה-עוזרת-בית",
       "מנקה-לבית-חד-פעמי",
+      "עבודה-ללא-ניסיון",
+      "עבודה-במזומן",
+      "עבודה-גמישה",
+      "עבודה-לסופש",
+      "עבודה-יומית",
+      "עבודה-חד-פעמית",
+      "עבודה-דחופה",
+      "עבודה-לפי-שעה",
+      "עבודה-מהבית",
+      "עבודה-לאמהות",
+      "עבודה-לחיילים-משוחררים",
+      "עבודה-לערב",
+      "מחפש-עובד-עכשיו",
+      "עבודה-בתל-אביב",
+      "עבודה-בירושלים",
+      "עבודה-ללא-קורות-חיים",
     ];
     for (const slug of KEYWORD_SLUGS) {
       urls.push(`<url><loc>${baseUrl}/${encodeURIComponent(slug)}</loc><lastmod>${todayStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`);
     }
-    // City-specific keyword landing pages: /עבודה-זמנית/:city — priority 0.8
+    // City-specific keyword landing pages: /עבודה-זמנית/:city - priority 0.8
     const CITY_LANDING_SLUGS = [
       "תל-אביב",
       "חיפה",
@@ -414,12 +430,13 @@ async function startServer() {
     }
     // ── Programmatic SEO pages: /category/city, /category/city-בדחיפות, /category/city-מחיר
     const PROG_CATEGORIES = ["cleaning","dog-walker","moving","babysitter","delivery","events"];
-    const PROG_CITIES_SLUGS = ["תל-%D7%90ביב","ירושלים","חיפה","ראשון-%D7%9Cציון","פתח-%D7%AAקווה","אשדוד","נתניה","באר-%D7%A9בע","בני-%D7%91רק","רמת-%D7%92ן"];
+    const PROG_CITIES_SLUGS = ["תל-אביב","ירושלים","חיפה","ראשון-לציון","פתח-תקווה","אשדוד","נתניה","באר-שבע","בני-ברק","רמת-גן"];
     const PROG_INTENTS = ["", "-בדחיפות", "-מחיר"];
     for (const cat of PROG_CATEGORIES) {
       for (const city of PROG_CITIES_SLUGS) {
         for (const intent of PROG_INTENTS) {
-          urls.push(`<url><loc>${baseUrl}/${cat}/${city}${intent}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>${intent === "" ? "0.8" : "0.7"}</priority></url>`);
+          const encodedCity = encodeURIComponent(city);
+          urls.push(`<url><loc>${baseUrl}/${cat}/${encodedCity}${intent}</loc><lastmod>${todayStr}</lastmod><changefreq>weekly</changefreq><priority>${intent === "" ? "0.8" : "0.7"}</priority></url>`);
         }
       }
     }
@@ -505,7 +522,7 @@ async function startServer() {
       "Allow: /jobs",
       "Allow: /jobs/",
       "",
-      "# Private pages — require login, no SEO value",
+      "# Private pages - require login, no SEO value",
       "Disallow: /post-job",
       "Disallow: /my-jobs",
       "Disallow: /my-applications",
@@ -547,7 +564,7 @@ async function startServer() {
       router: appRouter,
       createContext,
       onError({ error, path, ctx }) {
-        // Only log unexpected server errors — skip client errors (BAD_REQUEST,
+        // Only log unexpected server errors - skip client errors (BAD_REQUEST,
         // UNAUTHORIZED, FORBIDDEN, NOT_FOUND) which are expected business-logic
         // rejections and should not pollute the error log.
         const clientCodes = new Set(["BAD_REQUEST", "UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "CONFLICT", "PRECONDITION_FAILED", "METHOD_NOT_SUPPORTED", "TIMEOUT", "TOO_MANY_REQUESTS"]);
@@ -566,10 +583,10 @@ async function startServer() {
       },
     })
   );
-  // כשמריצים סרבר בנפרד (STANDALONE_SERVER=true) Vite רץ בתהליך נפרד — אין צורך בstatic
+  // כשמריצים סרבר בנפרד (STANDALONE_SERVER=true) Vite רץ בתהליך נפרד - אין צורך בstatic
   const isStandalone = process.env.STANDALONE_SERVER === "true";
   if (isStandalone) {
-    // לא מגישים כלום — Vite על 5173 מטפל בקלינט
+    // לא מגישים כלום - Vite על 5173 מטפל בקלינט
   } else if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
@@ -600,7 +617,7 @@ async function startServer() {
   const onListen = async () => {
     console.log(`Server running on http://localhost:${activePort}/`);
   // ── DB warm-up: establish the connection pool before the first HTTP request ──
-  // getDb() is lazy — without this, the very first request pays the full TCP +
+  // getDb() is lazy - without this, the very first request pays the full TCP +
   // SSL handshake cost (~2-3 s on Neon), which shows up as TTFB 3.3 s in
   // Lighthouse. Pre-connecting here moves that cost to startup time so all
   // subsequent requests hit an already-open connection.

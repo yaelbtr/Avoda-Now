@@ -7,7 +7,7 @@
  *  3. ASCII digit guard
  *  4. Hebrew ordinal suffix guard
  *  5. Address keyword guard (non-allowlisted)
- *  6. CITY_ALLOWLIST — allowlisted names must pass despite containing keywords
+ *  6. CITY_ALLOWLIST - allowlisted names must pass despite containing keywords
  *  7. Valid city names (must NOT produce errors)
  *  8. Zod refine helper
  */
@@ -128,7 +128,7 @@ describe("address keyword guard (non-allowlisted)", () => {
 
 // ─── 6. CITY_ALLOWLIST ────────────────────────────────────────────────────────
 
-describe("CITY_ALLOWLIST — allowlisted names bypass keyword guard", () => {
+describe("CITY_ALLOWLIST - allowlisted names bypass keyword guard", () => {
   it("CITY_ALLOWLIST is a non-empty Set", () => {
     expect(CITY_ALLOWLIST.size).toBeGreaterThan(0);
   });

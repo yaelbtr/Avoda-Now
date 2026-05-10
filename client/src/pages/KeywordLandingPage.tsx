@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useLocation, Link } from "wouter";
 import { ChevronRight, ChevronDown, ChevronUp, Briefcase, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -115,14 +116,11 @@ function injectScript(id: string, schema: object) {
   el.textContent = JSON.stringify(schema);
 }
 
-// ── FAQ Item ──────────────────────────────────────────────────────────────────
+// ── FAQ Item (animated) ───────────────────────────────────────────────────────
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div
-      className="border-b last:border-b-0"
-      style={{ borderColor: T.border }}
-    >
+    <div className="border-b last:border-b-0" style={{ borderColor: T.border }}>
       <button
         className="w-full flex items-center justify-between gap-3 py-4 text-right font-semibold text-sm"
         style={{ color: "#1a2010" }}
@@ -130,16 +128,26 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         aria-expanded={open}
       >
         <span>{question}</span>
-        {open
-          ? <ChevronUp className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
-          : <ChevronDown className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
-        }
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-4 w-4 shrink-0" style={{ color: T.brand }} />
+        </motion.span>
       </button>
-      {open && (
-        <p className="pb-4 text-sm leading-relaxed" style={{ color: "#4F583B" }}>
-          {answer}
-        </p>
-      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <p className="pb-4 text-sm leading-relaxed" style={{ color: "#4F583B" }}>
+              {answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -309,11 +317,14 @@ export default function KeywordLandingPage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
 
         {/* ── Breadcrumb ─────────────────────────────────────────────────── */}
-        <nav
+        <motion.nav
           aria-label="ניווט אתר"
           className="flex items-center gap-1 text-sm mb-5 flex-wrap"
           style={{ color: "#9aaa7a" }}
           dir="rtl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
         >
           <Link href="/" className="hover:underline transition-colors">בית</Link>
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
@@ -322,22 +333,27 @@ export default function KeywordLandingPage() {
           <span style={{ color: "#1a2010" }} className="font-medium truncate max-w-[200px]">
             {page.h1}
           </span>
-        </nav>
+        </motion.nav>
 
         {/* ── Hero ───────────────────────────────────────────────────────── */}
-        <header className="mb-6">
+        <motion.header
+          className="mb-6"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
           <h1 className="text-2xl font-bold mb-3" style={{ color: "#1a2010" }}>
             {page.h1}
           </h1>
           <p className="text-sm leading-relaxed" style={{ color: "#4F583B" }}>
             {page.intro}
           </p>
-        </header>
+        </motion.header>
 
         {/* ── Highlights bar ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          {page.highlights.map((h) => (
-            <div
+          {page.highlights.map((h, i) => (
+            <motion.div
               key={h.label}
               className="rounded-xl p-3 text-center"
               style={{
@@ -345,16 +361,25 @@ export default function KeywordLandingPage() {
                 border: `1px solid ${T.border}`,
                 boxShadow: T.cardShadow,
               }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 + i * 0.07, ease: "easeOut" }}
             >
               <div className="text-xl mb-1">{h.icon}</div>
               <div className="text-xs font-semibold" style={{ color: "#1a2010" }}>{h.value}</div>
               <div className="text-xs" style={{ color: "#9aaa7a" }}>{h.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* ── Live job listings ──────────────────────────────────────────── */}
-        <section aria-label="משרות פנויות" className="mb-10">
+        <motion.section
+          aria-label="משרות פנויות"
+          className="mb-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.35, ease: "easeOut" }}
+        >
           <div className="flex items-center gap-2 mb-4">
             <Briefcase className="h-4 w-4" style={{ color: T.brand }} />
             <h2 className="font-bold text-base" style={{ color: "#1a2010" }}>
@@ -366,9 +391,14 @@ export default function KeywordLandingPage() {
             <JobCardSkeletonList count={4} />
           ) : jobCards.length > 0 ? (
             <div className="flex flex-col gap-3">
-              {jobCards.map((job) => (
-                <JobCard
+              {jobCards.map((job, idx) => (
+                <motion.div
                   key={job.id}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: idx * 0.06, ease: "easeOut" }}
+                >
+                <JobCard
                   job={job}
                   onCardClick={(j) => {
                     setSelectedJob({
@@ -386,12 +416,13 @@ export default function KeywordLandingPage() {
                       createdAt: j.createdAt,
                       expiresAt: j.expiresAt,
                     });
-                    // description stored in rawJobs — look up by id
+                    // description stored in rawJobs - look up by id
                     const raw = rawJobs.find(r => r.id === j.id);
                     if (raw) setSelectedJob(prev => prev ? { ...prev, description: raw.description ?? null } : prev);
                     setSheetOpen(true);
                   }}
                 />
+                </motion.div>
               ))}
             </div>
           ) : (
@@ -426,10 +457,16 @@ export default function KeywordLandingPage() {
               </Link>
             </div>
           )}
-        </section>
+        </motion.section>
 
         {/* ── FAQ ────────────────────────────────────────────────────────── */}
-        <section aria-label="שאלות נפוצות" className="mb-10">
+        <motion.section
+          aria-label="שאלות נפוצות"
+          className="mb-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.5, ease: "easeOut" }}
+        >
           <h2 className="font-bold text-base mb-4" style={{ color: "#1a2010" }}>
             שאלות נפוצות
           </h2>
@@ -445,21 +482,34 @@ export default function KeywordLandingPage() {
               <FAQItem key={faq.question} question={faq.question} answer={faq.answer} />
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* ── Internal links ─────────────────────────────────────────────── */}
-        <section aria-label="קישורים קשורים" className="mb-8">
+        <motion.section
+          aria-label="קישורים קשורים"
+          className="mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.65 }}
+        >
           <h2 className="font-bold text-base mb-3" style={{ color: "#1a2010" }}>
             חיפושים קשורים
           </h2>
           <div className="flex flex-wrap gap-2">
-            {page.relatedLinks.map((link) => (
-              <NavPill key={link.href} href={link.href}>
-                {link.label}
-              </NavPill>
+            {page.relatedLinks.map((link, i) => (
+              <motion.span
+                key={link.href}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2, delay: 0.65 + i * 0.04 }}
+              >
+                <NavPill href={link.href}>
+                  {link.label}
+                </NavPill>
+              </motion.span>
             ))}
           </div>
-        </section>
+        </motion.section>
 
       </div>
 

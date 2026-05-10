@@ -1,5 +1,5 @@
 /**
- * Tests for jobs.getWorkerDashboard — the unified single-call dashboard query.
+ * Tests for jobs.getWorkerDashboard - the unified single-call dashboard query.
  *
  * Verifies:
  * 1. Returns all 4 panel arrays (urgent, today, latest, nearby)

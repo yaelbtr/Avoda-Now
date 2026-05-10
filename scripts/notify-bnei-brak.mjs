@@ -12,15 +12,15 @@ const BNEI_BRAK_REGION_ID = 4;
 
 // The 2 open jobs in Bnei Brak (status=active)
 const JOBS = [
-  { id: 60014, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '60', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח — פרדס כץ' },
-  { id: 60015, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '80', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח — פרדס כץ' },
+  { id: 60014, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '60', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח - פרדס כץ' },
+  { id: 60015, title: 'ניקיון בית', city: 'בני ברק', hourlyRate: '80', jobDate: '2026-03-29', description: 'ניקיון יסודי לפסח - פרדס כץ' },
 ];
 
 const APP_URL = 'https://avoda-go.co.il';
 
 function buildJobMessage(jobs) {
   const lines = jobs.map(j =>
-    `• ${j.title} — ${j.city} | ₪${j.hourlyRate}/שעה | ${j.jobDate}`
+    `• ${j.title} - ${j.city} | ₪${j.hourlyRate}/שעה | ${j.jobDate}`
   );
   return {
     title: `🔔 ${jobs.length} משרות פתוחות בבני ברק`,
@@ -85,7 +85,7 @@ async function logNotificationBatch(jobId, workerCount) {
 }
 
 async function main() {
-  console.log('=== AvodaNow — Bnei Brak Notification Dispatch (via worker_regions) ===\n');
+  console.log('=== AvodaNow - Bnei Brak Notification Dispatch (via worker_regions) ===\n');
 
   // Find all workers registered to Bnei Brak region
   const workersResult = await pool.query(`
@@ -167,7 +167,7 @@ async function main() {
 
     results.push(workerResult);
     const status = workerResult.sent.length > 0 ? '✅' : '❌';
-    console.log(`${status} [${worker.name}] prefs=${prefs} → sent: [${workerResult.sent.join(',')||'—'}] failed: [${workerResult.failed.join(',')||'—'}]`);
+    console.log(`${status} [${worker.name}] prefs=${prefs} → sent: [${workerResult.sent.join(',')||'-'}] failed: [${workerResult.failed.join(',')||'-'}]`);
   }
 
   // Log batches

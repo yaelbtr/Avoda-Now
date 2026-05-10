@@ -6,8 +6,8 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=5" />
-    <title>AvodaGo — עבודות זמניות בישראל | מצא עבודה עכשיו</title>
-    <meta name="description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך — שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
+    <title>AvodaGo - עבודות זמניות בישראל | מצא עבודה עכשיו</title>
+    <meta name="description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך - שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
     <meta name="keywords" content="עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל" />
     <meta name="theme-color" content="#2e3c0f" />
     <meta name="robots" content="index,follow" />
@@ -17,7 +17,7 @@
     <meta property="og:site_name" content="AvodaGo" />
     <meta property="og:locale" content="he_IL" />
     <meta property="og:title" content="AvodaGo | מוצאים עבודה זמנית או עובדים – תוך דקות" />
-    <meta property="og:description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך — שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
+    <meta property="og:description" content="הפלטפורמה לעבודות זמניות בישראל. מצא עבודות קרוב אליך - שליחויות, מחסן, מטבח ועוד. התחבר ישירות למעסיקים ללא עמלות." />
     <meta property="og:url" content="https://avoda-go.co.il/" />
     <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png" />
 
@@ -29,6 +29,61 @@
 <meta name="google-site-verification" content="PR4bClBBvy_Tw0vMQdnPJW-YrDwqI2tH63pkkmVF-8Q" />
     <!-- Canonical -->
     <link rel="canonical" href="https://avoda-go.co.il/" />
+
+    <!-- Structured Data: Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://avoda-go.co.il/#organization",
+          "name": "AvodaGo",
+          "url": "https://avoda-go.co.il",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://avoda-go.co.il/full-logo.svg"
+          },
+          "description": "הפלטפורמה לעבודות זמניות בישראל - חיבור ישיר בין עובדים למעסיקים ללא עמלות",
+          "areaServed": {
+            "@type": "Country",
+            "name": "Israel"
+          },
+          "inLanguage": "he"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://avoda-go.co.il/#website",
+          "url": "https://avoda-go.co.il",
+          "name": "AvodaGo",
+          "publisher": { "@id": "https://avoda-go.co.il/#organization" },
+          "inLanguage": "he",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://avoda-go.co.il/find-jobs?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "JobPosting",
+          "title": "עבודות זמניות בישראל",
+          "description": "מצא עבודות זמניות קרוב אליך - שליחויות, מחסן, מטבח, ניקיון ועוד. הירשם עכשיו ותתחיל לעבוד.",
+          "hiringOrganization": { "@id": "https://avoda-go.co.il/#organization" },
+          "jobLocationType": "TELECOMMUTE",
+          "applicantLocationRequirements": {
+            "@type": "Country",
+            "name": "Israel"
+          },
+          "employmentType": "TEMPORARY",
+          "url": "https://avoda-go.co.il/find-jobs",
+          "validThrough": "2026-12-31"
+        }
+      ]
+    }
+    </script>
 
     <!-- Performance: Preconnect & DNS-prefetch hints -->
     <!-- CDN (static assets, OG images) -->
@@ -47,7 +102,7 @@
     <!--
       SSR shell: full above-fold layout visible before JS loads.
       Renders navbar + hero heading + subtitle + CTA immediately on HTML parse.
-      Fades out once React mounts. OUTSIDE #root — no hydration conflict.
+      Fades out once React mounts. OUTSIDE #root - no hydration conflict.
     -->
     <script>
       // Route-aware SSR shell: inject correct content based on current pathname
@@ -71,7 +126,7 @@
           + '<div style="width:32px;height:32px;border-radius:50%;background:oklch(0.35 0.08 84.0)"></div>'
           + '</nav>';
 
-        // Skeleton card factory — shimmer animation for perceived performance
+        // Skeleton card factory - shimmer animation for perceived performance
         function skeletonCard(delay) {
           var d = delay || 0;
           return '<div style="background:#fff;border-radius:12px;padding:1rem;margin-bottom:0.75rem;box-shadow:0 1px 4px rgba(0,0,0,0.07);animation:ssr-fade-in 0.3s ease both;animation-delay:' + d + 'ms">'
@@ -123,7 +178,7 @@
             + '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem 2rem;text-align:center;min-height:calc(100vh - 56px)">'
             + '<div style="display:inline-block;padding:0.35rem 1rem;background:' + BRAND_LIGHT + ';border-radius:9999px;font-size:0.8rem;font-weight:600;color:' + BRAND + ';margin-bottom:1.25rem">הפלטפורמה לעבודות זמניות בישראל ⚡</div>'
             + '<h1 style="font-size:clamp(2rem,6vw,3rem);font-weight:900;color:' + TEXT_DARK + ';line-height:1.15;margin:0 0 1rem;max-width:600px">מצא עבודה<br/>או עובדים עכשיו</h1>'
-            + '<p style="font-size:clamp(1rem,2.5vw,1.2rem);color:' + TEXT_MID + ';margin:0 0 2rem;max-width:440px;line-height:1.6">חיבור ישיר בין עובדים למעסיקים — ללא עמלות, ללא מתווכים</p>'
+            + '<p style="font-size:clamp(1rem,2.5vw,1.2rem);color:' + TEXT_MID + ';margin:0 0 2rem;max-width:440px;line-height:1.6">חיבור ישיר בין עובדים למעסיקים - ללא עמלות, ללא מתווכים</p>'
             + '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center">'
             + '<a href="/find-jobs" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:' + BRAND + ';color:#fff;border-radius:9999px;font-size:1rem;font-weight:700;text-decoration:none">מצא עבודה עכשיו ←</a>'
             + '<a href="/post-job" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:transparent;color:' + BRAND + ';border:2px solid ' + BRAND + ';border-radius:9999px;font-size:1rem;font-weight:700;text-decoration:none">פרסם משרה</a>'

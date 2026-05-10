@@ -117,7 +117,7 @@ const baseJobInput = {
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
-describe("push notifications — job creation fan-out", () => {
+describe("push notifications - job creation fan-out", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("calls sendJobPushNotifications with matching worker IDs after job creation", async () => {

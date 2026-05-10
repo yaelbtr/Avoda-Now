@@ -11,7 +11,7 @@ const FG_MUTED    = "oklch(0.9904 0.0107 95.3 / 0.45)";
 const ACCENT      = "var(--citrus)";
 const DIVIDER     = "oklch(1 0 0 / 0.08)";
 
-// SEO cities — real Hebrew city names used as URL params
+// SEO cities - real Hebrew city names used as URL params
 const SEO_CITIES = [
   "תל אביב",
   "ירושלים",
@@ -265,6 +265,50 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* ── Keyword landing pages ── */}
+        <div className="mb-6" style={{ borderTop: `1px solid ${DIVIDER}` }}>
+          <h2
+            className="font-bold text-[11px] uppercase mb-3 mt-6 text-right"
+            style={{ color: ACCENT, letterSpacing: "0.12em" }}
+          >
+            מידע שימושי
+          </h2>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 justify-end">
+            {[
+              { href: "/עבודה-זמנית", label: "עבודה זמנית" },
+              { href: "/עבודה-מיידית", label: "עבודה מיידית" },
+              { href: "/עבודה-ללא-ניסיון", label: "עבודה ללא ניסיון" },
+              { href: "/עבודה-לסטודנטים", label: "עבודה לסטודנטים" },
+              { href: "/עבודה-לנוער", label: "עבודה לנוער" },
+              { href: "/עבודה-לפי-שעה", label: "עבודה לפי שעה" },
+              { href: "/עבודה-גמישה", label: "עבודה גמישה" },
+              { href: "/עבודה-לסופש", label: "עבודה לסופש" },
+              { href: "/עבודה-יומית", label: "עבודה יומית" },
+              { href: "/עבודה-דחופה", label: "עבודה דחופה" },
+              { href: "/עבודה-מהבית", label: "עבודה מהבית" },
+              { href: "/עבודה-לאמהות", label: "עבודה לאמהות" },
+              { href: "/עבודה-לחיילים-משוחררים", label: "עבודה לחיילים משוחררים" },
+              { href: "/עבודה-לערב", label: "עבודה לערב" },
+              { href: "/עבודה-בתל-אביב", label: "עבודה בתל אביב" },
+              { href: "/עבודה-בירושלים", label: "עבודה בירושלים" },
+              { href: "/מחפש-עובד-עכשיו", label: "מחפש עובד עכשיו" },
+              { href: "/עבודה-ללא-קורות-חיים", label: "עבודה ללא קורות חיים" },
+            ].map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-[13px] transition-colors"
+                  style={{ color: FG_PRIMARY }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "white")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = FG_PRIMARY)}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* ── Guide links ── */}
         <div className="mb-8" style={{ borderTop: `1px solid ${DIVIDER}` }}>
           <h2
@@ -371,7 +415,7 @@ export default function Footer() {
               </span>
             ))}
           </div>
-          {/* Cookie settings button — GDPR requirement */}
+          {/* Cookie settings button - GDPR requirement */}
           <button
             onClick={() => setShowCookieSettings(true)}
             className="text-[12px] transition-colors text-right w-fit"

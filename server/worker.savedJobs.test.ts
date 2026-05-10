@@ -23,7 +23,7 @@ function applyOptimisticUnsave(prevIds: number[], jobId: number): number[] {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("WorkerJobsContext — savedIds optimistic updates", () => {
+describe("WorkerJobsContext - savedIds optimistic updates", () => {
   it("save adds jobId to the set", () => {
     const prev = [1, 2, 3];
     const result = applyOptimisticSave(prev, 4);
@@ -31,7 +31,7 @@ describe("WorkerJobsContext — savedIds optimistic updates", () => {
     expect(result).toHaveLength(4);
   });
 
-  it("save is idempotent — does not duplicate existing jobId", () => {
+  it("save is idempotent - does not duplicate existing jobId", () => {
     const prev = [1, 2, 3];
     const result = applyOptimisticSave(prev, 2);
     expect(result).toHaveLength(3);
@@ -69,7 +69,7 @@ describe("WorkerJobsContext — savedIds optimistic updates", () => {
     expect(rolledBack).toContain(2);
   });
 
-  it("Set.has() lookup is O(1) — correct for memoised savedIds", () => {
+  it("Set.has() lookup is O(1) - correct for memoised savedIds", () => {
     const ids = new Set([1, 2, 3, 4, 5]);
     expect(ids.has(3)).toBe(true);
     expect(ids.has(99)).toBe(false);

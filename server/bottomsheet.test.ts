@@ -71,7 +71,7 @@ vi.mock("./db", () => ({
   countRecentPhoneChangeFailures: vi.fn().mockResolvedValue(0),
   rateWorker: vi.fn(),
   getExistingRating: vi.fn().mockResolvedValue(null),
-  // Age gate helpers — default to adult (passes all age checks)
+  // Age gate helpers - default to adult (passes all age checks)
   getWorkerBirthDate: vi.fn().mockResolvedValue(new Date("2000-01-01")),
   logLegalAcknowledgement: vi.fn().mockResolvedValue(undefined),
   getWorkersMinorStatus: vi.fn().mockResolvedValue({}),
@@ -159,7 +159,7 @@ function makeAuthUser(overrides: Partial<NonNullable<TrpcContext["user"]>> = {})
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("Job Details Bottom Sheet — getById procedure", () => {
+describe("Job Details Bottom Sheet - getById procedure", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns full job details including description and expiresAt for authenticated users", async () => {
@@ -186,7 +186,7 @@ describe("Job Details Bottom Sheet — getById procedure", () => {
   });
 });
 
-describe("Job Details Bottom Sheet — checkApplied procedure", () => {
+describe("Job Details Bottom Sheet - checkApplied procedure", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns applied=true when application exists", async () => {
@@ -204,7 +204,7 @@ describe("Job Details Bottom Sheet — checkApplied procedure", () => {
   });
 });
 
-describe("Job Details Bottom Sheet — applyToJob procedure", () => {
+describe("Job Details Bottom Sheet - applyToJob procedure", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("creates application successfully when job is active and user not applied", async () => {

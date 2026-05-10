@@ -1,5 +1,5 @@
 /**
- * BestJobsPage — renders /best/:slug pages.
+ * BestJobsPage - renders /best/:slug pages.
  * Curated job pages designed for AI-based search visibility.
  * Each page includes:
  *   - Editorial intro + highlights

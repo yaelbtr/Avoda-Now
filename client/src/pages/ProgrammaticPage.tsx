@@ -1,5 +1,5 @@
 /**
- * ProgrammaticPage — Hybrid SEO/AEO page template.
+ * ProgrammaticPage - Hybrid SEO/AEO page template.
  *
  * Static content (H1, intro, sections, FAQ, schema.org) is rendered
  * immediately from the content engine, making it fully crawlable.
@@ -293,7 +293,7 @@ export default function ProgrammaticPage({ page }: Props) {
                   מוכנים למצוא {page.category.nameHeWithArticle} ב{page.city.name}?
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  פרסמו משרה בחינם — עובדים יפנו אליכם תוך דקות
+                  פרסמו משרה בחינם - עובדים יפנו אליכם תוך דקות
                 </p>
                 <Link href="/post-job">
                   <Button size="lg" className="gap-2">

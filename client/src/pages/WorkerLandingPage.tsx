@@ -1,5 +1,5 @@
 /**
- * WorkerLandingPage — /work/:slug
+ * WorkerLandingPage - /work/:slug
  *
  * Pre-activation landing page for a specific region.
  * Workers can join before employers are activated, building a supply-side
@@ -65,7 +65,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-700 border border-amber-200">
       <Clock className="h-4 w-4" />
-      בהרצה — נפתח בקרוב
+      בהרצה - נפתח בקרוב
     </span>
   );
 }
@@ -221,7 +221,7 @@ export default function WorkerLandingPage() {
             <Zap className="h-7 w-7 text-amber-600" />
           </div>
           <h2 className="text-xl font-bold text-olive-800 mb-2">
-            {isActive ? "האזור פעיל — הגש מועמדות עכשיו!" : "הצטרף לרשימת המתנה"}
+            {isActive ? "האזור פעיל - הגש מועמדות עכשיו!" : "הצטרף לרשימת המתנה"}
           </h2>
           <p className="text-olive-500 mb-5 text-sm">
             {isActive
@@ -254,7 +254,7 @@ export default function WorkerLandingPage() {
             {[
               { icon: "⚡", title: "עבודות מיידיות", desc: "קבל הצעות עבודה ישירות לטלפון ברגע שמעסיק מפרסם" },
               { icon: "📍", title: "קרוב לבית", desc: `עבודות ב${region.name} ובסביבה, בתוך רדיוס של ${region.activationRadiusKm} ק\"מ` },
-              { icon: "💰", title: "תשלום הוגן", desc: "ניקיון, אירועים, גינון, תיקונים ועוד — בתעריפים שוק" },
+              { icon: "💰", title: "תשלום הוגן", desc: "ניקיון, אירועים, גינון, תיקונים ועוד - בתעריפים שוק" },
               { icon: "🌟", title: "בנה מוניטין", desc: "צבור ביקורות חיוביות ותהיה הבחירה הראשונה של מעסיקים" },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3">

@@ -1,5 +1,5 @@
 /**
- * Feature flag — set to true when the system is ready to accept employers.
+ * Feature flag - set to true when the system is ready to accept employers.
  * When false, FindJobs shows a translucent "coming soon" overlay and
  * blocks all user interaction. Single source of truth for this gate.
  */
@@ -47,7 +47,7 @@ export const SIGNUP_REQUIRED_ERR_MSG = 'Registration required (10004)';
  * Version format: "YYYY-MM" (year-month of last update)
  *
  * כשמעדכנים גרסה: חובה לעדכן גם את LEGAL_DOCUMENT_PUBLISHED_AT
- * עם תאריך הפרסום בפועל — הוא נמדד מול users.lastSignedIn לצורך re-consent.
+ * עם תאריך הפרסום בפועל - הוא נמדד מול users.lastSignedIn לצורך re-consent.
  */
 export const LEGAL_DOCUMENT_VERSIONS = {
   terms: "2026-03",
@@ -64,7 +64,7 @@ export type LegalConsentType = keyof typeof LEGAL_DOCUMENT_VERSIONS;
 /**
  * תאריך פרסום של כל גרסה נוכחית (ISO string, UTC).
  * משמש בשרת להשוות מול users.lastSignedIn:
- * אם publishedAt > lastSignedIn — המשתמש לא ראה את הגרסה הזו עדיין.
+ * אם publishedAt > lastSignedIn - המשתמש לא ראה את הגרסה הזו עדיין.
  *
  * הערך המקורי 2026-03-01 מבטיח שמשתמשים שנכנסו אחרי מרץ 2026
  * לא יוצגו להם re-consent על הגרסה הנוכחית.
@@ -143,7 +143,7 @@ export const SHIFT_PRESETS: readonly ShiftPreset[] = [
 /**
  * Human-readable Hebrew labels for each application/offer status.
  * Used in MyJobs applicant rows, JobApplications, and MyApplications cards.
- * Single source of truth — do not duplicate in individual components.
+ * Single source of truth - do not duplicate in individual components.
  *
  * Fields:
  *  - workerLabel    : Short badge text from the worker's perspective
@@ -260,6 +260,6 @@ export function normalizePhoneForWhatsApp(phone: string): string {
   if (digits.startsWith("972")) return digits;
   // Starts with leading 0 (Israeli local format)
   if (digits.startsWith("0")) return "972" + digits.slice(1);
-  // Bare number without prefix — assume Israeli
+  // Bare number without prefix - assume Israeli
   return "972" + digits;
 }

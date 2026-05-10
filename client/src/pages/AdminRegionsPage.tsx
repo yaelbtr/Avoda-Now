@@ -1,5 +1,5 @@
 /**
- * AdminRegionsPage — /admin/regions
+ * AdminRegionsPage - /admin/regions
  *
  * Standalone admin page for managing regions.
  * Displays a full table with Create / Edit / Activate / Pause / Delete actions.
@@ -127,7 +127,7 @@ export default function AdminRegionsPage() {
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Shield className="w-10 h-10 text-destructive mx-auto" />
-            <p className="font-semibold">גישה מוגבלת — אדמינים בלבד</p>
+            <p className="font-semibold">גישה מוגבלת - אדמינים בלבד</p>
             <AppButton variant="secondary" onClick={() => navigate("/admin")}>חזרה לפאנל</AppButton>
           </CardContent>
         </Card>
@@ -400,8 +400,8 @@ export default function AdminRegionsPage() {
               label="סטטוס"
               value={dialog.form.status}
               options={[
-                { value: "collecting_workers", label: "בהרצה — אוסף עובדים" },
-                { value: "active", label: "פעיל — מעסיקים יכולים לפרסם" },
+                { value: "collecting_workers", label: "בהרצה - אוסף עובדים" },
+                { value: "active", label: "פעיל - מעסיקים יכולים לפרסם" },
                 { value: "paused", label: "מושהה" },
               ]}
               onChange={(e) => setF({ status: e.target.value as RegionStatus })}

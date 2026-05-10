@@ -1,5 +1,5 @@
 /**
- * CityAutocomplete — Hebrew city search backed by the platform's cities table.
+ * CityAutocomplete - Hebrew city search backed by the platform's cities table.
  *
  * Primary source: `trpc.user.searchCities` (DB lookup, always works).
  * Enhancement: Google Maps Places Autocomplete (loaded lazily, used when available).
@@ -125,7 +125,7 @@ export default function CityAutocomplete({
         setMapsReady(true);
       })
       .catch(() => {
-        // Maps unavailable — DB results are the sole source, which is fine
+        // Maps unavailable - DB results are the sole source, which is fine
       });
   }, []);
 
@@ -187,7 +187,7 @@ export default function CityAutocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     onChange(v);
-    // Validate inline — only show error once the user has typed enough to be
+    // Validate inline - only show error once the user has typed enough to be
     // clearly entering an address (≥ 4 chars), to avoid false positives on
     // partial city names.
     if (v.trim().length >= 4) {
@@ -220,7 +220,7 @@ export default function CityAutocomplete({
       return;
     }
 
-    // Google Places result without lat/lng — geocode it
+    // Google Places result without lat/lng - geocode it
     if (suggestion.placeId) {
       const cached = getCachedGeo(suggestion.placeId);
       if (cached) {
@@ -238,7 +238,7 @@ export default function CityAutocomplete({
         });
       }
     } else {
-      // No lat/lng available at all — pass 0,0 as fallback
+      // No lat/lng available at all - pass 0,0 as fallback
       onSelect(suggestion.nameHe, 0, 0, undefined);
     }
   };

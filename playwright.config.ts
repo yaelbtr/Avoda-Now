@@ -9,7 +9,7 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
   expect: { timeout: 8_000 },
-  fullyParallel: false, // role-selection tests share server state — run serially
+  fullyParallel: false, // role-selection tests share server state - run serially
   retries: 1,
   reporter: [["list"], ["html", { open: "never", outputFolder: "e2e/report" }]],
 
@@ -28,7 +28,7 @@ export default defineConfig({
     },
   ],
 
-  // Dev server is already running — no webServer block needed.
+  // Dev server is already running - no webServer block needed.
   // If you want Playwright to start it automatically, uncomment:
   // webServer: {
   //   command: "pnpm dev",

@@ -88,7 +88,7 @@ async function resetSequences(pgClient, tables) {
       await pgClient.query(
         `SELECT setval(pg_get_serial_sequence('"${t}"', 'id'), COALESCE((SELECT MAX(id) FROM "${t}"), 0) + 1, false)`
       );
-    } catch { /* tables with text PK like system_settings — skip */ }
+    } catch { /* tables with text PK like system_settings - skip */ }
   }
 }
 

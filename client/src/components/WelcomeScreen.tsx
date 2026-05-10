@@ -34,7 +34,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
     { enabled: mode === "employer" }
   );
 
-  /** Shared exit helper — navigates immediately, then removes overlay after animation */
+  /** Shared exit helper - navigates immediately, then removes overlay after animation */
   const exitTo = (path: string) => {
     // Navigate first so the correct page is already mounted behind the overlay
     navigate(path);
@@ -44,10 +44,10 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
     }, 400);
   };
 
-  /** X button / "עבור לדף הבית" — always goes to home */
+  /** X button / "עבור לדף הבית" - always goes to home */
   const handleDismiss = () => exitTo("/");
 
-  /** Primary CTA — worker → home, employer → post-job */
+  /** Primary CTA - worker → home, employer → post-job */
   const handleCTA = () => {
     if (mode === "worker") exitTo("/");
     else exitTo("/post-job");
@@ -89,8 +89,8 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
           </h1>
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
             {isWorker
-              ? "הנה העבודות הדחופות ביותר כרגע — מצא עבודה ותתחיל לעבוד היום"
-              : "הנה עובדים זמינים באזורך — פרסם משרה ומצא עובד תוך דקות"}
+              ? "הנה העבודות הדחופות ביותר כרגע - מצא עבודה ותתחיל לעבוד היום"
+              : "הנה עובדים זמינים באזורך - פרסם משרה ומצא עובד תוך דקות"}
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Briefcase className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">אין עבודות דחופות כרגע — בדוק שוב בקרוב</p>
+                <p className="text-sm">אין עבודות דחופות כרגע - בדוק שוב בקרוב</p>
               </div>
             )}
           </div>
@@ -165,7 +165,7 @@ export default function WelcomeScreen({ mode, onDismiss }: WelcomeScreenProps) {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <HardHat className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">אין עובדים זמינים כרגע — פרסם משרה ועובדים יפנו אליך</p>
+                <p className="text-sm">אין עובדים זמינים כרגע - פרסם משרה ועובדים יפנו אליך</p>
               </div>
             )}
           </div>

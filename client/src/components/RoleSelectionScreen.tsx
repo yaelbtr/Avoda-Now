@@ -90,7 +90,7 @@ function RoleCard({
     >
       {/* Top image strip */}
       <div className="relative overflow-hidden" style={{ height: "180px" }}>
-        {/* Skeleton placeholder — visible until image loads */}
+        {/* Skeleton placeholder - visible until image loads */}
         <motion.div
           className="absolute inset-0"
           style={{ background: "oklch(0.93 0.01 84.0)" }}
@@ -107,7 +107,7 @@ function RoleCard({
             }}
           />
         </motion.div>
-        {/* Preload image to trigger fade-in once loaded — fetchPriority=high for LCP */}
+        {/* Preload image to trigger fade-in once loaded - fetchPriority=high for LCP */}
         <img
           src={image}
           alt=""
@@ -131,7 +131,7 @@ function RoleCard({
             background: "linear-gradient(to bottom, oklch(0 0 0 / 0.0) 30%, oklch(0 0 0 / 0.55) 100%)",
           }}
         />
-        {/* Privacy badge — shown at bottom-left */}
+        {/* Privacy badge - shown at bottom-left */}
         {privacyBadge && (
           <motion.div
             className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
@@ -359,7 +359,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const setModeMutation = trpc.user.setMode.useMutation({
     onSuccess: (_, vars) => {
-      // Notify parent — parent will remove this component from DOM,
+      // Notify parent - parent will remove this component from DOM,
       // triggering the exit animation via parent's AnimatePresence.
       onSelected(vars.mode);
     },
@@ -381,7 +381,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
 
   const handleLoginSuccess = () => {
     if (!pendingMode) return;
-    // עדכן מצב מקומי מיידית — מונע הצגה חוזרת של RoleSelectionScreen בזמן שה-mutation רץ
+    // עדכן מצב מקומי מיידית - מונע הצגה חוזרת של RoleSelectionScreen בזמן שה-mutation רץ
     setLocalModeOnly(pendingMode);
     setLoading(pendingMode);
     setModeMutation.mutate({ mode: pendingMode });
@@ -424,7 +424,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
             )}
           </AnimatePresence>
 
-          {/* Role selection cards — shown after greeting (or immediately for guests) */}
+          {/* Role selection cards - shown after greeting (or immediately for guests) */}
           <AnimatePresence>
             {cardsVisible && (
               <motion.div
@@ -503,7 +503,7 @@ export default function RoleSelectionScreen({ onSelected }: RoleSelectionScreenP
                     role="employer"
                     image={EMPLOYER_IMG}
                     icon={<Briefcase className="h-3.5 w-3.5" style={{ color: C_BRAND }} />}
-                    title={employerLock ? "פרסום מודעה — בקרוב" : "מחפש עובדים?"}
+                    title={employerLock ? "פרסום מודעה - בקרוב" : "מחפש עובדים?"}
                     subtitle="למעסיקים"
                     description={employerLock
                       ? "בשלב זה הפלטפורמה פתוחה לעובדים בלבד. אפשרות פרסום משרות תיפתח בקרוב."

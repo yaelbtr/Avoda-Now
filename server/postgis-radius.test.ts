@@ -138,7 +138,7 @@ function fakeJobRow(overrides: Record<string, unknown> = {}) {
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
-describe("PostGIS Radius Search — jobs.search procedure", () => {
+describe("PostGIS Radius Search - jobs.search procedure", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("passes lat/lng/radiusKm to getJobsNearLocation", async () => {
@@ -267,7 +267,7 @@ describe("PostGIS Radius Search — jobs.search procedure", () => {
   });
 });
 
-describe("PostGIS Radius Search — getNearbyWorkers distance computation", () => {
+describe("PostGIS Radius Search - getNearbyWorkers distance computation", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("passes lat/lng/radiusKm to getNearbyWorkers (no age filter)", async () => {
@@ -276,7 +276,7 @@ describe("PostGIS Radius Search — getNearbyWorkers distance computation", () =
 
     await caller.workers.nearby({ lat: 32.0853, lng: 34.7818, radiusKm: 20 });
 
-    // 5th arg is minAge — null when not supplied
+    // 5th arg is minAge - null when not supplied
     expect(db.getNearbyWorkers).toHaveBeenCalledWith(32.0853, 34.7818, 20, 50, null);
   });
 
@@ -352,7 +352,7 @@ describe("PostGIS Radius Search — getNearbyWorkers distance computation", () =
   });
 });
 
-describe("PostGIS distance — spatial math invariants", () => {
+describe("PostGIS distance - spatial math invariants", () => {
   it("distance from Tel Aviv to Jerusalem is ~60 km (sanity check)", () => {
     // Haversine reference: Tel Aviv (32.0853, 34.7818) → Jerusalem (31.7683, 35.2137)
     const R = 6371;
@@ -400,10 +400,10 @@ describe("PostGIS distance — spatial math invariants", () => {
   });
 });
 
-describe("getWorkersMatchingJob — PostGIS ST_DWithin radius filtering", () => {
+describe("getWorkersMatchingJob - PostGIS ST_DWithin radius filtering", () => {
   /**
    * These tests verify the router-level behavior of getWorkersMatchingJob.
-   * The actual ST_DWithin SQL is tested implicitly via the mock — we verify
+   * The actual ST_DWithin SQL is tested implicitly via the mock - we verify
    * that the function is called with the correct arguments and that the router
    * correctly passes job lat/lng through.
    */

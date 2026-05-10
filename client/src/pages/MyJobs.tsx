@@ -66,7 +66,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
   },
 };
 
-// ── Card style — AvodaGo design system ──────────────────────────────────────
+// ── Card style - AvodaGo design system ──────────────────────────────────────
 const cardStyle: React.CSSProperties = {
   background: "oklch(0.97 0.012 100)",
   borderBottom: "1px solid oklch(0.92 0.02 100)",
@@ -184,7 +184,7 @@ type Applicant = {
   createdAt: Date;
   /** CDN URL of the worker's profile photo, null if not set */
   workerProfilePhoto?: string | null;
-  /** Worker's current availability status — used to show the green dot */
+  /** Worker's current availability status - used to show the green dot */
   workerAvailabilityStatus?: string | null;
 };
 
@@ -245,7 +245,7 @@ function SwipeableApplicantCard({
       {/* Background hint icons */}
       {isPending && (
         <>
-          {/* Accept hint — right side */}
+          {/* Accept hint - right side */}
           <motion.div
             style={{ opacity: acceptOpacity }}
             className="absolute inset-y-0 right-3 flex items-center pointer-events-none"
@@ -255,7 +255,7 @@ function SwipeableApplicantCard({
               <span className="text-xs font-bold">קבל</span>
             </div>
           </motion.div>
-          {/* Reject hint — left side */}
+          {/* Reject hint - left side */}
           <motion.div
             style={{ opacity: rejectOpacity }}
             className="absolute inset-y-0 left-3 flex items-center pointer-events-none"
@@ -316,7 +316,7 @@ function SwipeableApplicantCard({
                 {app.workerName?.charAt(0)?.toUpperCase() ?? "?"}
               </div>
             )}
-            {/* Green pulsing dot — shown when worker is currently available */}
+            {/* Green pulsing dot - shown when worker is currently available */}
             {app.workerAvailabilityStatus === "available_now" && (
               <span
                 className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 animate-pulse"
@@ -618,7 +618,7 @@ export default function MyJobs() {
           <Briefcase className="h-8 w-8" style={{ color: "oklch(0.38 0.07 125.0)" }} />
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2" style={{ color: "oklch(0.20 0.04 120)" }}>ניהול מודעות — בקרוב</h2>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "oklch(0.20 0.04 120)" }}>ניהול מודעות - בקרוב</h2>
           <p className="text-sm" style={{ color: "oklch(0.50 0.04 120)" }}>
             בשלב זה הפלטפורמה פתוחה <strong>לעובדים בלבד</strong>.<br />
             אפשרות ניהול מודעות למעסיקים תיפתח בקרוב.
@@ -787,7 +787,7 @@ export default function MyJobs() {
               }}
             >
               <Bell className="h-3.5 w-3.5 shrink-0" />
-              <span className="flex-1">התראות פעילות — תקבל עדכון על כל מועמד חדש</span>
+              <span className="flex-1">התראות פעילות - תקבל עדכון על כל מועמד חדש</span>
               <button
                 onClick={push.unsubscribe}
                 className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
@@ -876,10 +876,10 @@ export default function MyJobs() {
                     borderBottom: "1px solid oklch(0.92 0.02 100)",
                     padding: "1.25rem",
                   }}>
-                  {/* ── Hero header — matches HomeEmployer job card style ── */}
+                  {/* ── Hero header - matches HomeEmployer job card style ── */}
                   {/* RTL layout: briefcase icon RIGHT, title+status CENTER, action buttons LEFT */}
                   <div className="flex items-center gap-3 mb-3" dir="rtl">
-                    {/* Title + status — fills available space */}
+                    {/* Title + status - fills available space */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5" dir="rtl">
                         <p className="font-bold text-[15px] truncate" style={{ color: "oklch(0.22 0.06 122)" }}>{job.title}</p>
@@ -896,7 +896,7 @@ export default function MyJobs() {
 
                     </div>
 
-                    {/* Action buttons — left side (last in RTL DOM) */}
+                    {/* Action buttons - left side (last in RTL DOM) */}
                     <div className="flex gap-1.5 shrink-0">
                       <button
                         onClick={() => navigate(`/job/${job.id}`)}
@@ -939,7 +939,7 @@ export default function MyJobs() {
                     </div>
                   </div>
 
-                  {/* ── Chips — 2×2 grid, equal width, same layout as analytics bento ── */}
+                  {/* ── Chips - 2×2 grid, equal width, same layout as analytics bento ── */}
                   <div className="grid grid-cols-2 gap-2 mb-4" dir="rtl">
                     {/* Salary chip */}
                     <span
@@ -957,7 +957,7 @@ export default function MyJobs() {
                       <MapPin className="h-3 w-3 shrink-0" />
                       <span className="truncate">{job.address.split(",")[0]}</span>
                     </span>
-                    {/* Expiry chip — red when expiring soon, otherwise workers count */}
+                    {/* Expiry chip - red when expiring soon, otherwise workers count */}
                     {daysLeft !== null && job.status === "active" ? (
                       <span
                         className="flex items-center justify-center gap-1.5 text-[11px] font-bold px-2 py-1.5 rounded-full"
@@ -989,7 +989,7 @@ export default function MyJobs() {
                     </span>
                   </div>
 
-                  {/* ── Analytics bento — same style as HomeEmployer StatsRow ── */}
+                  {/* ── Analytics bento - same style as HomeEmployer StatsRow ── */}
                   <div className="grid grid-cols-2 gap-2 mb-3" dir="rtl">
                     {/* RIGHT (first in RTL DOM): מועמדים סה"כ */}
                     <div
@@ -1027,7 +1027,7 @@ export default function MyJobs() {
                     </div>
                   </div>
 
-                  {/* Matched workers link — centered */}
+                  {/* Matched workers link - centered */}
                   {job.status === "active" && (
                     <div className="flex justify-center mb-1">
                       <motion.button
@@ -1056,7 +1056,7 @@ export default function MyJobs() {
                   )}
                   </div>{/* end job details section */}
 
-                  {/* ── Applicants section — only shown when there are applicants ── */}
+                  {/* ── Applicants section - only shown when there are applicants ── */}
                   {totalApplicationCount > 0 && (<div style={{ padding: "0 1.25rem 1.25rem" }}>
                     {/* Section header with collapse toggle */}
                     <button

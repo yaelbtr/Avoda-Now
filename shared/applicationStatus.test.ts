@@ -43,9 +43,9 @@ describe("APPLICATION_STATUS_LABELS", () => {
   });
 });
 
-// ─── getApplicationStatusLabel — employer perspective (default) ───────────────
+// ─── getApplicationStatusLabel - employer perspective (default) ───────────────
 
-describe("getApplicationStatusLabel — employer perspective (default)", () => {
+describe("getApplicationStatusLabel - employer perspective (default)", () => {
   it("returns the correct employerLabel for 'pending'", () => {
     const cfg = getApplicationStatusLabel("pending");
     expect(cfg.label).toBe("הגיש בקשה");
@@ -95,9 +95,9 @@ describe("getApplicationStatusLabel — employer perspective (default)", () => {
   });
 });
 
-// ─── getApplicationStatusLabel — worker perspective ───────────────────────────
+// ─── getApplicationStatusLabel - worker perspective ───────────────────────────
 
-describe("getApplicationStatusLabel — worker perspective", () => {
+describe("getApplicationStatusLabel - worker perspective", () => {
   it("returns the correct workerLabel for 'pending'", () => {
     const cfg = getApplicationStatusLabel("pending", "worker");
     expect(cfg.label).toBe("הגשתי בקשה");
@@ -146,7 +146,7 @@ describe("getApplicationStatusLabel — worker perspective", () => {
 
 // ─── Perspective symmetry ─────────────────────────────────────────────────────
 
-describe("getApplicationStatusLabel — perspective symmetry", () => {
+describe("getApplicationStatusLabel - perspective symmetry", () => {
   it("worker and employer labels differ for 'pending'", () => {
     const worker   = getApplicationStatusLabel("pending", "worker");
     const employer = getApplicationStatusLabel("pending", "employer");

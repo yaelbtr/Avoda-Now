@@ -114,7 +114,7 @@ describe("Region selection logic (pure)", () => {
   }
 
   it("finds Tel Aviv region for coordinates inside Tel Aviv", () => {
-    // Ramat Gan is ~3 km from Tel Aviv center — within 15 km radius
+    // Ramat Gan is ~3 km from Tel Aviv center - within 15 km radius
     const region = findNearest(32.0684, 34.8248);
     expect(region?.slug).toBe("tel-aviv");
   });
@@ -130,13 +130,13 @@ describe("Region selection logic (pure)", () => {
   });
 
   it("returns the nearest region when two regions overlap", () => {
-    // Bnei Brak is very close to Tel Aviv — should pick Tel Aviv (closer center)
+    // Bnei Brak is very close to Tel Aviv - should pick Tel Aviv (closer center)
     const region = findNearest(32.0841, 34.8338);
     expect(region?.slug).toBe("tel-aviv");
   });
 
   it("returns undefined when coordinates are outside all radii", () => {
-    // Dead Sea area — far from all regions
+    // Dead Sea area - far from all regions
     const region = findNearest(31.5, 35.5);
     expect(region).toBeUndefined();
   });
@@ -274,7 +274,7 @@ function simulateSyncWorkerRegions(
   return results;
 }
 
-describe("syncWorkerRegions — multi-region matching logic (pure)", () => {
+describe("syncWorkerRegions - multi-region matching logic (pure)", () => {
   it("matches a single GPS region when worker is within radius", () => {
     const matches = simulateSyncWorkerRegions(
       { lat: 32.0853, lng: 34.7818, searchRadiusKm: 15 },

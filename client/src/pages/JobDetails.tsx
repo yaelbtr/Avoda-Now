@@ -453,7 +453,7 @@ export default function JobDetails() {
                 <span>{(job as any).workStartTime ?? ""}{(job as any).workStartTime && (job as any).workEndTime ? " עד " : ""}{(job as any).workEndTime ?? ""}</span>
               </div>
             )}
-            {/* Salary — full width */}
+            {/* Salary - full width */}
             <div className="col-span-2 flex items-center gap-2 pt-1" style={{ borderTop: `1px dashed ${T.border}` }}>
               <span className="text-lg">💰</span>
               <span className="font-bold text-base" style={{ color: isVolunteer ? "oklch(0.38 0.14 145)" : T.brand }}>
@@ -519,7 +519,7 @@ export default function JobDetails() {
               <MapPin className="h-3.5 w-3.5" style={{ color: T.sectionIconColor }} />
             </div>
             <h2 className="font-bold text-sm" style={{ color: "#1a2010" }}>
-              מיקום — {job.address}
+              מיקום - {job.address}
             </h2>
           </div>
           <MapView
@@ -629,7 +629,7 @@ export default function JobDetails() {
                 disabled={markFilledMutation.isPending}
               >
                 {markFilledMutation.isPending ? <BrandLoader size="sm" /> : <CheckCircle2 className="h-5 w-5" />}
-                מצאתי עובד — סגור משרה
+                מצאתי עובד - סגור משרה
               </button>
             </motion.div>
           )}
@@ -760,7 +760,7 @@ export default function JobDetails() {
           <DialogHeader>
             <DialogTitle>דיווח על משרה</DialogTitle>
             <DialogDescription>
-              אם המשרה נראית חשודה, מטעה, או בלתי הולמת — אנא דווח לנו.
+              אם המשרה נראית חשודה, מטעה, או בלתי הולמת - אנא דווח לנו.
             </DialogDescription>
           </DialogHeader>
           <AppTextarea

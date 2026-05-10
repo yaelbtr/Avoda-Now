@@ -1,5 +1,5 @@
 /**
- * AEORoutes — thin route wrappers that resolve slug → AEOPage data
+ * AEORoutes - thin route wrappers that resolve slug → AEOPage data
  * and render AEOPageComponent.
  *
  * Routes handled:
@@ -94,7 +94,7 @@ export function QuestionsHub() {
   useSEO({
     title: "שאלות ותשובות על עבודה זמנית בישראל | AvodaGo",
     description:
-      "תשובות לשאלות הנפוצות ביותר על עבודה זמנית בישראל — כמה מרוויחים, איך מוצאים עבודה, ומה הזכויות.",
+      "תשובות לשאלות הנפוצות ביותר על עבודה זמנית בישראל - כמה מרוויחים, איך מוצאים עבודה, ומה הזכויות.",
   });
   const pages = getAEOPagesByType("question");
   return (
@@ -125,7 +125,7 @@ export function CompareHub() {
   useSEO({
     title: "השוואות פלטפורמות עבודה זמנית | AvodaGo",
     description:
-      "השוואות מפורטות בין AvodaGo לחלופות — יד2, פייסבוק, חברות כוח אדם.",
+      "השוואות מפורטות בין AvodaGo לחלופות - יד2, פייסבוק, חברות כוח אדם.",
   });
   const pages = getAEOPagesByType("compare");
   return (
@@ -136,7 +136,7 @@ export function CompareHub() {
             <ChevronRight className="h-3 w-3" /> דף הבית
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-            השוואות — AvodaGo לעומת חלופות
+            השוואות - AvodaGo לעומת חלופות
           </h1>
           <p className="text-sm text-gray-600">
             השוואות מפורטות בין AvodaGo לפלטפורמות אחרות למציאת עבודה זמנית.
@@ -154,9 +154,9 @@ export function CompareHub() {
 
 export function AudienceHub() {
   useSEO({
-    title: "AvodaGo — למי זה מיועד | AvodaGo",
+    title: "AvodaGo - למי זה מיועד | AvodaGo",
     description:
-      "AvodaGo מתאימה לעובדים, מעסיקים, סטודנטים, הורים ועוד — גלה איך הפלטפורמה עוזרת לך.",
+      "AvodaGo מתאימה לעובדים, מעסיקים, סטודנטים, הורים ועוד - גלה איך הפלטפורמה עוזרת לך.",
   });
   const pages = getAEOPagesByType("audience");
   return (
@@ -167,7 +167,7 @@ export function AudienceHub() {
             <ChevronRight className="h-3 w-3" /> דף הבית
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-            AvodaGo — למי זה מיועד?
+            AvodaGo - למי זה מיועד?
           </h1>
           <p className="text-sm text-gray-600">
             AvodaGo מתאימה לכל מי שמחפש עבודה זמנית או צריך עובד זמני.

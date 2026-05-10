@@ -33,7 +33,7 @@ export function useAuth(options?: UseAuthOptions) {
         error instanceof TRPCClientError &&
         error.data?.code === "UNAUTHORIZED"
       ) {
-        // already logged out — still clear state and redirect
+        // already logged out - still clear state and redirect
       } else {
         throw error;
       }

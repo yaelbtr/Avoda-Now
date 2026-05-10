@@ -147,7 +147,7 @@ describe("platform.settings bypass logic", () => {
 describe("employer lock edge cases", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("isEmployerLockActive is idempotent — same key read twice returns consistent value", async () => {
+  it("isEmployerLockActive is idempotent - same key read twice returns consistent value", async () => {
     mockIsEmployerLockActive.mockResolvedValue(true);
     const a = await isEmployerLockActive();
     const b = await isEmployerLockActive();

@@ -43,7 +43,7 @@ export async function assertMinorEligible(
   const birthDate = await getWorkerBirthDate(userId);
   const age = calcAge(birthDate);
 
-  // If no birthdate on record the age gate cannot be evaluated — block.
+  // If no birthdate on record the age gate cannot be evaluated - block.
   if (age === null) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
@@ -59,11 +59,11 @@ export async function assertMinorEligible(
     });
   }
 
-  // 3. Minor (age 16–17) — blocked until parental approval feature is live
+  // 3. Minor (age 16–17) - blocked until parental approval feature is live
   if (isMinor(age)) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "דרוש אישור הורי — הפיצ'ר יושק בקרוב",
+      message: "דרוש אישור הורי - הפיצ'ר יושק בקרוב",
       cause: { code: "parental_approval_required" },
     });
   }

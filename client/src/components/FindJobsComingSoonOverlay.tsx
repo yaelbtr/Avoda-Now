@@ -7,7 +7,7 @@ import { saveReturnPath } from "@/const";
 import LoginModal from "@/components/LoginModal";
 
 /**
- * Global "coming soon" overlay — covers the entire app when FIND_JOBS_OPEN is false.
+ * Global "coming soon" overlay - covers the entire app when FIND_JOBS_OPEN is false.
  * Rendered via createPortal at document.body level in App.tsx so it escapes all
  * stacking contexts and covers every page (Home, role selection, FindJobs, etc.).
  *
@@ -17,7 +17,7 @@ import LoginModal from "@/components/LoginModal";
  *
  * Bypass rules:
  * - Admin (role === 'admin'): full access for testing.
- * - Worker (userMode === 'worker'): FindJobs is the worker's primary page — never blocked.
+ * - Worker (userMode === 'worker'): FindJobs is the worker's primary page - never blocked.
  * - Employer / unauthenticated: shown when FIND_JOBS_OPEN is false.
  */
 export default function FindJobsComingSoonOverlay() {
@@ -26,7 +26,7 @@ export default function FindJobsComingSoonOverlay() {
   const [loginOpen, setLoginOpen] = useState(false);
 
   // Admins and workers bypass the overlay entirely.
-  // FindJobs is the worker's primary job-search page — the lock is for employers only.
+  // FindJobs is the worker's primary job-search page - the lock is for employers only.
   const isAdmin = isAuthenticated && user?.role === "admin";
   const isWorker = isAuthenticated && user?.userMode === "worker";
   if (isAdmin || isWorker) return null;
@@ -58,7 +58,7 @@ export default function FindJobsComingSoonOverlay() {
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        /* Solid fallback — always visible on all browsers including mobile */
+        /* Solid fallback - always visible on all browsers including mobile */
         background: "rgba(15, 22, 8, 0.72)",
         /* Frosted-glass enhancement for browsers that support it */
         backdropFilter: "blur(8px) saturate(0.6)",
@@ -180,7 +180,7 @@ export default function FindJobsComingSoonOverlay() {
           הגדר התראות
         </button>
 
-        {/* Back to home button — secondary style */}
+        {/* Back to home button - secondary style */}
         <button
           onClick={() => navigate("/")}
           style={{
@@ -217,7 +217,7 @@ export default function FindJobsComingSoonOverlay() {
           חזרה לדף הבית
         </button>
 
-        {/* Admin hint — shown only when logged in but not admin */}
+        {/* Admin hint - shown only when logged in but not admin */}
         {isAuthenticated && !isAdmin && (
           <p
             style={{
@@ -237,7 +237,7 @@ export default function FindJobsComingSoonOverlay() {
       </motion.div>
     </motion.div>
 
-    {/* Login modal — opens when unauthenticated user clicks הגדר התראות */}
+    {/* Login modal - opens when unauthenticated user clicks הגדר התראות */}
     <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );

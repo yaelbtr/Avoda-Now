@@ -161,7 +161,7 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "קבל הצעות עבודה ממעסיקים",
-    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה — אתה מחליט אם לאשר.",
+    desc: "מעסיקים שמחפשים עובדים באזור שלך רואים שאתה זמין ושולחים לך הצעת עבודה - אתה מחליט אם לאשר.",
     imgUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/how-it-works-step2_64b352ff.webp",
     reverse: true,
   },
@@ -229,7 +229,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     navigate("/worker-profile");
   };
   useSEO({
-    title: "AvodaGo — עבודות זמניות בישראל",
+    title: "AvodaGo - עבודות זמניות בישראל",
     description: "מצא עבודות זמניות, עבודה מיידית ומשרות לסטודנטים באזור שלך בלי עמלות. הגדר זמינות, קבל עבודה קרוב אליך, התחבר ישירות למעסיקים.",
     keywords: "עבודה זמנית, עבודה מיידית, משרות זמניות, עבודות לסטודנטים, עבודה לנוער, עבודות מזדמנות, פרסום משרה, חיפוש עבודה בישראל",
     canonical: "/",
@@ -273,7 +273,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
   // Age-gate: fetch birth date info to warn minors about late availability
   const birthDateInfoQuery = trpc.user.getBirthDateInfo.useQuery(undefined, authQuery({ staleTime: 5 * 60 * 1000 }));
   const workerIsMinor = birthDateInfoQuery.data?.isMinor === true;
-  // savedIds + save/unsave come from WorkerJobsContext (DRY — shared with FindJobs)
+  // savedIds + save/unsave come from WorkerJobsContext (DRY - shared with FindJobs)
   const utils = trpc.useUtils();
   // Applied job IDs (from myApplications)
   const myApplicationsQuery = trpc.jobs.myApplications.useQuery(undefined, authQuery());
@@ -386,7 +386,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
     }
   };
 
-  // Step 7 (perf skill): memoize carousel job list — filter+map on every render is O(n²)
+  // Step 7 (perf skill): memoize carousel job list - filter+map on every render is O(n²)
   // due to the .some() inner loop. Recompute only when urgentJobs or todayJobs change.
   const allCarouselJobs = useMemo(() => [
     ...urgentJobs.map((j) => ({ job: j, badge: "urgent" as const })),
@@ -402,7 +402,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
       {/* ── MOBILE Hero (< md): image at original size, stats+CTA below with glass continuation ── */}
       <section className="relative overflow-hidden md:hidden">
 
-        {/* Image block — landscape hero with text over the quieter side */}
+        {/* Image block - landscape hero with text over the quieter side */}
         <div className="relative w-full" style={{ aspectRatio: "1456 / 816" }}>
           <img
             src={workerHeroCollage}
@@ -424,7 +424,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               background: "oklch(0.08 0.02 124.11 / 0.09)",
             }}
           />
-          {/* Badge — kept on the quieter side of the photo */}
+          {/* Badge - kept on the quieter side of the photo */}
           {(activeJobCount === null || activeJobCount >= 10) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -722,7 +722,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </motion.div>
         </div>
 
-        {/* Stats + CTAs — on page-bg, seamlessly below the faded image */}
+        {/* Stats + CTAs - on page-bg, seamlessly below the faded image */}
         <div className="relative z-10 flex flex-col items-center text-center px-4 pt-0 pb-6">
           <StatsRow />
           <motion.div
@@ -780,7 +780,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
               <TooltipTrigger asChild>
                 <motion.button
                   onClick={handleAvailabilityToggle}
-                  aria-label="הגדר זמינות עכשיו — מעסיקים רואים רק עובדים זמינים, הגדר עכשיו וקבל פניות היום"
+                  aria-label="הגדר זמינות עכשיו - מעסיקים רואים רק עובדים זמינים, הגדר עכשיו וקבל פניות היום"
                   className=""
                   style={{
                     display: "flex",
@@ -821,7 +821,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
                   boxShadow: "0 8px 32px oklch(0.75 0.18 84 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.60)",
                 }}
               >
-                <span style={{ color: "oklch(0.32 0.06 84)" }}>מעסיקים רואים רק עובדים זמינים —</span>
+                <span style={{ color: "oklch(0.32 0.06 84)" }}>מעסיקים רואים רק עובדים זמינים -</span>
                 <br />
                 <span style={{ color: "oklch(0.38 0.12 60)", fontWeight: 700 }}>הגדר עכשיו וקבל פניות היום</span>
               </TooltipContent>
@@ -874,7 +874,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           style={{ height: "120px", background: "linear-gradient(to bottom, transparent 0%, oklch(0.95 0.03 91.6) 100%)" }}
         />
 
-        {/* Content — text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
+        {/* Content - text on LEFT side (RTL: visually left side of screen), woman visible on RIGHT */}
         <div className="relative z-10 flex flex-col justify-center items-start text-right px-6 pt-14 pb-20" style={{ minHeight: "520px", maxWidth: "460px", marginRight: "auto" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
@@ -887,7 +887,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           >
             <Zap className="h-3 w-3" style={{ color: "oklch(0.85 0.16 80)" }} />
             <span className="text-[11px] font-bold tracking-wide" style={{ color: "oklch(0.92 0.04 80)", letterSpacing: "0.05em" }}>
-              עבודות בית ואירועים — תוך דקות
+              עבודות בית ואירועים - תוך דקות
             </span>
           </motion.div>
 
@@ -896,7 +896,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="text-[42px] leading-[1.1] font-black mb-4"
             style={{ color: "oklch(0.12 0.06 122)", fontFamily: "'Frank Ruhl Libre', 'Heebo', serif", textShadow: "0 1px 12px oklch(0.97 0.02 91 / 0.80), 0 2px 20px oklch(0.97 0.02 91 / 0.60)" }}
           >
-            הגדר זמינות —<br />
+            הגדר זמינות -<br />
             <span style={{ color: "oklch(0.68 0.14 80.8)", textShadow: "0 0 20px oklch(0.68 0.14 80.8 / 0.3)" }}>
               קבל פניות ממעסיקים
             </span>
@@ -907,7 +907,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             className="text-[15px] font-semibold leading-relaxed mb-5 max-w-[280px]"
             style={{ color: "oklch(0.18 0.06 122)", textShadow: "0 1px 8px oklch(0.97 0.02 91 / 0.70), 0 2px 16px oklch(0.97 0.02 91 / 0.50)" }}
           >
-            ניקיון, אירועים, תיקונים ועוד — מעסיקים יפנו אליך ישירות
+            ניקיון, אירועים, תיקונים ועוד - מעסיקים יפנו אליך ישירות
           </motion.p>
 
           <StatsRow />
@@ -1033,7 +1033,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
             <p style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 500 }}>שלושה צעדים פשוטים למציאת עבודה</p>
           </motion.div>
 
-          {/* צעדים — כרטיסים */}
+          {/* צעדים - כרטיסים */}
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {HOW_IT_WORKS.map(({ step, title, desc }, idx) => (
               <motion.div
@@ -1102,7 +1102,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
-              {/* outer slow pulse ring — only when available */}
+              {/* outer slow pulse ring - only when available */}
               {isAvailable && (
                 <span
                   className="absolute rounded-full"
@@ -1704,7 +1704,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── Region Landing Pages CTA + SEO sections (deferred — below fold) ─── */}
+      {/* ── Region Landing Pages CTA + SEO sections (deferred - below fold) ─── */}
       <BelowFold minHeight="120px" rootMargin="400px 0px">
       <section
         dir="rtl"
@@ -1735,7 +1735,7 @@ export default function HomeWorker({ onLoginRequired }: HomeWorkerProps) {
         </div>
       </section>
 
-      {/* ── שירותי בית וניקיון — SEO internal links ─────────────────────────── */}
+      {/* ── שירותי בית וניקיון - SEO internal links ─────────────────────────── */}
       <section
         dir="rtl"
         className="relative z-10"

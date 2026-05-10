@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 // AvodaGo design tokens
-const BRAND = "oklch(0.50 0.14 85)";          // #4a5d23 — brand primary
-const BRAND_LIGHT = "oklch(0.92 0.04 122)";   // light olive tint — range middle
+const BRAND = "oklch(0.50 0.14 85)";          // #4a5d23 - brand primary
+const BRAND_LIGHT = "oklch(0.92 0.04 122)";   // light olive tint - range middle
 const BRAND_RING = "oklch(0.55 0.12 140 / 0.18)"; // focus ring
 const LABEL_COLOR = "#4F583B";
 
@@ -172,7 +172,7 @@ function CalendarDayButton({
 
   return (
     <div className="relative flex items-center justify-center w-full aspect-square">
-      {/* Dashed circle for today — only when not selected */}
+      {/* Dashed circle for today - only when not selected */}
       {isToday && !isSelected && (
         <span
           aria-hidden="true"

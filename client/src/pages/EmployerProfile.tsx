@@ -189,7 +189,7 @@ export default function EmployerProfile() {
     const isPhoneEditable = user?.loginMethod !== "phone_otp";
     const phoneChanged = combinePhone(phoneVal) !== combinePhone(originalPhoneVal);
 
-    // אם הוזן/שונה מספר טלפון תקין — חובה לאמת ב-OTP לפני שמירה
+    // אם הוזן/שונה מספר טלפון תקין - חובה לאמת ב-OTP לפני שמירה
     if (isPhoneEditable && phoneChanged && isValidPhoneValue(phoneVal)) {
       setPhoneChangeModalOpen(true);
       return;
@@ -205,7 +205,7 @@ export default function EmployerProfile() {
       workerSearchCity: workerSearchMode === "city" ? (workerSearchCity.trim() || null) : null,
       workerSearchCityId: workerSearchMode === "city" ? workerSearchCityId : null,
       workerSearchRadiusKm: workerSearchMode === "radius" ? workerSearchRadiusKm : null,
-      // Always persist coordinates regardless of mode — city selection also sets these
+      // Always persist coordinates regardless of mode - city selection also sets these
       workerSearchLatitude: workerSearchLatitude,
       workerSearchLongitude: workerSearchLongitude,
       defaultJobCity: defaultJobCity.trim() || null,
@@ -421,7 +421,7 @@ export default function EmployerProfile() {
 
               {/* Company details */}
               <SectionCard>
-                <SectionHeader icon={Building2} title="פרטי חברה" subtitle="אופציונלי — יוצג לעובדים" />
+                <SectionHeader icon={Building2} title="פרטי חברה" subtitle="אופציונלי - יוצג לעובדים" />
                 <div className="space-y-3">
                   <AppInput
                     label="שם חברה"
@@ -436,7 +436,7 @@ export default function EmployerProfile() {
                       label="אודות"
                       value={employerBio}
                       onChange={(e) => setEmployerBio(e.target.value)}
-                      placeholder="ספר קצת על העסק שלך — תחום, גודל, אווירה..."
+                      placeholder="ספר קצת על העסק שלך - תחום, גודל, אווירה..."
                       dir="rtl"
                       rows={3}
                       maxLength={500}
@@ -839,7 +839,7 @@ export default function EmployerProfile() {
         onClose={() => setPhoneChangeModalOpen(false)}
         initialPhone={phoneVal}
         onSuccess={(newPhoneVal) => {
-          // הטלפון נשמר ב-DB דרך verifyPhoneChangeOtp — מעדכנים מצב מקומי וממשיכים לשמור שאר השדות
+          // הטלפון נשמר ב-DB דרך verifyPhoneChangeOtp - מעדכנים מצב מקומי וממשיכים לשמור שאר השדות
           setOriginalPhoneVal(newPhoneVal);
           setPhoneVal(newPhoneVal);
           profileQuery.refetch();

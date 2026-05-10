@@ -37,9 +37,9 @@ describe("normalizeIsraeliPhone", () => {
   });
 
   it("throws for clearly invalid numbers", () => {
-    // "123" has 3 digits — too short for any Israeli format
+    // "123" has 3 digits - too short for any Israeli format
     expect(() => normalizeIsraeliPhone("123")).toThrow();
-    // "abcdefgh" strips to empty string — also throws
+    // "abcdefgh" strips to empty string - also throws
     // Note: the function strips non-digit chars, so "abcdefgh" → "" → throws
     expect(() => normalizeIsraeliPhone("abc")).toThrow();
   });
@@ -105,7 +105,7 @@ describe("cross-format duplicate detection logic", () => {
     const stored = ["0559258668"];
     expect(simulateLookup(stored, "+972559258668")).toBeUndefined();
     // Note: exact match fails, normalized(+972...) === +972... so no second attempt
-    // This is correct — after migration all phones are E.164
+    // This is correct - after migration all phones are E.164
   });
 
   it("finds a user when input already matches stored E.164 exactly", () => {

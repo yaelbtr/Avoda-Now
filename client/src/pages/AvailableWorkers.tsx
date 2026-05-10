@@ -1,7 +1,7 @@
 /**
- * AvailableWorkers — Performance-optimized page
+ * AvailableWorkers - Performance-optimized page
  *
- * Fix 1: Immediate shell render — header + controls + skeleton cards shown
+ * Fix 1: Immediate shell render - header + controls + skeleton cards shown
  *         instantly, BEFORE any API response arrives.
  * Fix 2: Workers fetched AFTER initial paint (query enabled=true but UI
  *         shows skeleton while isLoading, not a blank BrandLoader fullscreen).
@@ -333,7 +333,7 @@ type WorkerCardProps = {
   onOfferSent: (workerId: number, jobId: number) => void;
 };
 
-/** Memoized worker card — prevents re-render when unrelated state changes */
+/** Memoized worker card - prevents re-render when unrelated state changes */
 const WorkerCard = ({ worker, dist, hasAnyOffer, offeredJobIds, isAuthenticated, isEmployer, activeJobs, myJobsLoading, onLoginRequired, onOfferSent }: WorkerCardProps) => {
   return (
     <div
@@ -347,7 +347,7 @@ const WorkerCard = ({ worker, dist, hasAnyOffer, offeredJobIds, isAuthenticated,
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Avatar — initials only (profilePhoto not in nearby API response) */}
+          {/* Avatar - initials only (profilePhoto not in nearby API response) */}
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary shrink-0">
             {worker.userName?.charAt(0) ?? "?"}
           </div>
@@ -434,7 +434,7 @@ export default function AvailableWorkers() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); },
-        () => {} // silent fail — falls back to default coords
+        () => {} // silent fail - falls back to default coords
       );
     }
   }, []);
@@ -508,7 +508,7 @@ export default function AvailableWorkers() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [secondsAgo, setSecondsAgo] = useState(0);
 
-  // Fix 2: workers query always enabled — UI shows skeleton while loading
+  // Fix 2: workers query always enabled - UI shows skeleton while loading
   const workersQuery = trpc.workers.nearby.useQuery(
     { lat: effectiveLat, lng: effectiveLng, radiusKm, limit: 50, minWorkerAge },
     {
@@ -562,7 +562,7 @@ export default function AvailableWorkers() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }, [userLat, userLng]);
 
-  // Fix 3: Progressive rendering — render PAGE_SIZE workers at a time,
+  // Fix 3: Progressive rendering - render PAGE_SIZE workers at a time,
   // load more when the sentinel div scrolls into view (IntersectionObserver).
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -587,7 +587,7 @@ export default function AvailableWorkers() {
 
   return (
     <div dir="rtl" className="max-w-2xl mx-auto px-4 py-6">
-      {/* Fix 1: Header renders immediately — no API dependency */}
+      {/* Fix 1: Header renders immediately - no API dependency */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Users className="h-6 w-6 text-primary" />
@@ -712,7 +712,7 @@ export default function AvailableWorkers() {
             </p>
           </div>
 
-          {/* Fix 3: Progressive rendering — render PAGE_SIZE at a time, load more on scroll */}
+          {/* Fix 3: Progressive rendering - render PAGE_SIZE at a time, load more on scroll */}
           <div className="space-y-3">
             {visibleWorkers.map((worker) => {
               const dist = calcDistance(worker.latitude, worker.longitude);

@@ -4,7 +4,7 @@ import LoginModal from "@/components/LoginModal";
 import { AppButton } from "@/components/ui";
 
 /**
- * MaintenancePage — shown to all non-admin users when maintenance mode is active.
+ * MaintenancePage - shown to all non-admin users when maintenance mode is active.
  * Admins can log in via the login button; after successful OTP the maintenance gate
  * in App.tsx re-checks and lets them through automatically.
  * Non-admins who log in are shown an error and returned here.
@@ -66,7 +66,7 @@ export default function MaintenancePage() {
         כניסת מנהל
       </AppButton>
 
-      {/* Login modal — maintenanceMode=true ensures non-admins are bounced back */}
+      {/* Login modal - maintenanceMode=true ensures non-admins are bounced back */}
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}

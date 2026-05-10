@@ -280,7 +280,7 @@ class TwilioVerifyProvider implements SmsProvider {
 }
 
 // ─── Dev bypass provider ──────────────────────────────────────────────────────
-// בסביבת dev ללא קרדנשיאלים של Twilio — קוד 123456 תמיד מתקבל
+// בסביבת dev ללא קרדנשיאלים של Twilio - קוד 123456 תמיד מתקבל
 
 const DEV_OTP_CODE = "123456";
 
@@ -365,7 +365,7 @@ export function normalizeIsraeliPhone(raw: string): string {
 /**
  * Validate that a phone is in E.164 format and plausibly Israeli.
  * Accepts mobile (05X) and landline (02/03/04/08/09) numbers.
- * Deliberately permissive — Twilio will reject truly invalid numbers.
+ * Deliberately permissive - Twilio will reject truly invalid numbers.
  */
 export function isValidIsraeliPhone(e164: string): boolean {
   // Must start with +972 and have 11-13 total chars

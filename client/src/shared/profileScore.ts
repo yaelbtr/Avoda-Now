@@ -1,5 +1,5 @@
 /**
- * Shared profile completion score utility — single source of truth.
+ * Shared profile completion score utility - single source of truth.
  * Used by both FindJobs and WorkerProfile to ensure consistent score display.
  *
  * Checks (7 total, each worth ~14%):

@@ -44,7 +44,7 @@ function detectOutdatedConsents(
 
 // ─── Blocking modal trigger conditions ───────────────────────────────────────
 
-describe("ReConsentModal — trigger conditions", () => {
+describe("ReConsentModal - trigger conditions", () => {
   it("does NOT show for users with all current consents", () => {
     const consents = [
       { consentType: "terms" as LegalConsentType, documentVersion: LEGAL_DOCUMENT_VERSIONS.terms },
@@ -94,7 +94,7 @@ describe("ReConsentModal — trigger conditions", () => {
 
 // ─── Non-blocking policy documents ───────────────────────────────────────────
 
-describe("ReConsentModal — policy docs do NOT trigger blocking", () => {
+describe("ReConsentModal - policy docs do NOT trigger blocking", () => {
   const policyTypes: LegalConsentType[] = [
     "job_posting_policy",
     "safety_policy",
@@ -104,7 +104,7 @@ describe("ReConsentModal — policy docs do NOT trigger blocking", () => {
   ];
 
   it("never includes policy documents in the outdated list", () => {
-    // No consents at all — only terms and privacy should be flagged
+    // No consents at all - only terms and privacy should be flagged
     const outdated = detectOutdatedConsents([], LEGAL_DOCUMENT_VERSIONS);
     for (const policyType of policyTypes) {
       expect(outdated, `${policyType} should not trigger the blocking modal`).not.toContain(policyType);

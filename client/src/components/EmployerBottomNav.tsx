@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: "/available-workers", label: "עובדים זמינים", icon: Users },
 ] as const;
 
-/** Animated pulse ring — shown only on the active /post-job tab */
+/** Animated pulse ring - shown only on the active /post-job tab */
 function PulseRing() {
   return (
     <>
@@ -77,7 +77,7 @@ export default function EmployerBottomNav() {
                     }
                   }}
                 >
-                  {/* Icon wrapper — pulse rings live here when on /post-job */}
+                  {/* Icon wrapper - pulse rings live here when on /post-job */}
                   <span className="relative flex items-center justify-center w-6 h-6">
                     {isPostJob && isActive && <PulseRing />}
                     <motion.span

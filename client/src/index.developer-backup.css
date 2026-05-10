@@ -57,34 +57,34 @@
    * TS constants mirror these in client/src/lib/colors.ts
    * ─────────────────────────────────────────────────────────────────────── */
 
-  /* Header / Footer background — #2e3c0f dark forest olive */
+  /* Header / Footer background - #2e3c0f dark forest olive */
   --header-bg:       oklch(0.3329 0.0694 124.9); /* #2e3c0f */
   --footer-bg:       oklch(0.3329 0.0694 124.9); /* #2e3c0f */
   --header-fg:       oklch(0.9904 0.0107 95.3);  /* #fefcf4 warm cream text */
 
-  /* Primary — Olive Grove (deepened) */
+  /* Primary - Olive Grove (deepened) */
   --brand:           oklch(0.38 0.07 125.0);   /* deep rich olive */
   --brand-dark:      oklch(0.30 0.07 125.0);   /* very dark olive */
   --brand-mid:       oklch(0.50 0.07 125.0);   /* mid olive tint */
   --brand-light:     oklch(0.96 0.02 122.3);   /* very light olive bg */
   --brand-subtle:    oklch(0.44 0.07 125.0);   /* slightly brighter olive */
 
-  /* Accent — Amber Harvest #D9A450 */
+  /* Accent - Amber Harvest #D9A450 */
   --amber:           oklch(0.75 0.12 76.7);    /* #D9A450 */
   --amber-dark:      oklch(0.65 0.13 76.7);    /* darker amber */
   --amber-light:     oklch(0.75 0.12 76.7 / 0.15); /* tinted bg */
 
-  /* Highlight — Sun-Kissed Citrus #F4B840 */
-  --citrus:          oklch(0.82 0.15 80.8);    /* #F4B840 — use on dark backgrounds */
+  /* Highlight - Sun-Kissed Citrus #F4B840 */
+  --citrus:          oklch(0.82 0.15 80.8);    /* #F4B840 - use on dark backgrounds */
   --citrus-dark:     oklch(0.72 0.15 80.8);    /* darker citrus */
-  --citrus-on-light: oklch(0.68 0.15 80.8);    /* WCAG AA on light bg — contrast ≥3:1 */
+  --citrus-on-light: oklch(0.68 0.15 80.8);    /* WCAG AA on light bg - contrast ≥3:1 */
   --citrus-light:    oklch(0.82 0.15 80.8 / 0.15);
 
-  /* Neutral warm — Honey Wheat #EAD7B2 */
+  /* Neutral warm - Honey Wheat #EAD7B2 */
   --honey:           oklch(0.89 0.05 84.0);    /* #EAD7B2 */
   --honey-dark:      oklch(0.80 0.06 84.0);    /* darker honey */
 
-  /* Background — #fefcf4 warm cream (single source of truth) */
+  /* Background - #fefcf4 warm cream (single source of truth) */
   --page-bg:          oklch(0.96 0.012 125);       /* light olive tinted bg */
   --page-bg-gradient: linear-gradient(
     160deg,
@@ -120,11 +120,11 @@
   --whatsapp:        #25D366;
   --whatsapp-dark:   #1da851;
 
-  /* Rose accent — urgency badges, notification dots */
+  /* Rose accent - urgency badges, notification dots */
   --accent-rose:     oklch(0.75 0.18 358);
   --accent-rose-light: oklch(0.75 0.18 358 / 0.12);
 
-  /* Light theme — Olive Grove primary */
+  /* Light theme - Olive Grove primary */
   --background: oklch(0.9904 0.0107 95.3);     /* #fefcf4 warm cream */
   --foreground: oklch(0.22 0.03 122.3);         /* dark olive text */
   --card: oklch(1 0 0);                         /* white */
@@ -514,9 +514,9 @@
   }
 
   /**
-   * NavPill — כפתור ניווט אחיד לקישורי SEO (עיר, קטגוריה, מדריך).
+   * NavPill - כפתור ניווט אחיד לקישורי SEO (עיר, קטגוריה, מדריך).
    * שימוש: <NavPill href="..." icon="📍">...</NavPill>
-   * לא לשימוש עבור toggle-filters — להשתמש ב-AppButton pill-active/pill-inactive.
+   * לא לשימוש עבור toggle-filters - להשתמש ב-AppButton pill-active/pill-inactive.
    */
   .nav-pill {
     display: inline-flex;
@@ -580,7 +580,7 @@
   /* color set inline per variant */
 }
 
-/* ── Frosted Glass — Milky Glass Effect ─────────────────────────────────────
+/* ── Frosted Glass - Milky Glass Effect ─────────────────────────────────────
    Single source of truth for the frosted-glass look.
    Usage:
      Cards:   add className="glass-card" (or it's applied via card.tsx default)
@@ -732,7 +732,7 @@
   }
 }
 
-/* ── Shake animation — used on map container when location is missing ─────── */
+/* ── Shake animation - used on map container when location is missing ─────── */
 @keyframes shake {
   0%   { transform: translateX(0); }
   15%  { transform: translateX(-6px); }

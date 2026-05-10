@@ -1,5 +1,5 @@
 /**
- * Unit tests for TwilioVerifyProvider — verifies that the correct
+ * Unit tests for TwilioVerifyProvider - verifies that the correct
  * parameters (Locale=he, CustomFriendlyName=JobNow) are sent to Twilio.
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";

@@ -79,7 +79,7 @@ vi.mock("./adminDb", () => ({
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe("admin RBAC — unauthenticated access", () => {
+describe("admin RBAC - unauthenticated access", () => {
   it("blocks guest from admin.stats", async () => {
     const caller = appRouter.createCaller(makeCtx(null));
     await expect(caller.admin.stats()).rejects.toThrow();
@@ -96,7 +96,7 @@ describe("admin RBAC — unauthenticated access", () => {
   });
 });
 
-describe("admin RBAC — regular user access", () => {
+describe("admin RBAC - regular user access", () => {
   it("blocks regular user from admin.stats", async () => {
     const caller = appRouter.createCaller(makeCtx("user"));
     await expect(caller.admin.stats()).rejects.toThrow();
@@ -118,7 +118,7 @@ describe("admin RBAC — regular user access", () => {
   });
 });
 
-describe("admin RBAC — admin user access", () => {
+describe("admin RBAC - admin user access", () => {
   it("allows admin to get stats", async () => {
     const caller = appRouter.createCaller(makeCtx("admin"));
     const stats = await caller.admin.stats();

@@ -3,17 +3,17 @@
 
 User-agent: *
 
-# Private / authenticated pages — do not index
+# Private / authenticated pages - do not index
 Disallow: /post-job
 Disallow: /my-jobs
 Disallow: /profile
 Disallow: /my-applications
 Disallow: /worker-profile
 
-# Admin panel — never crawl
+# Admin panel - never crawl
 Disallow: /admin
 
-# Internal API — never crawl
+# Internal API - never crawl
 Disallow: /api/
 
 # Allow all public pages

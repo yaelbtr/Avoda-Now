@@ -21,7 +21,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function GuideHub() {
   useSEO({
-    title: "מדריך עבודות זמניות — כל מה שצריך לדעת | AvodaGo",
+    title: "מדריך עבודות זמניות - כל מה שצריך לדעת | AvodaGo",
     description:
       "המדריך המקיף לעבודות זמניות בישראל: שליחויות, מטבח, ניקיון, בנייה, טיפול בילדים ועוד. טיפים מעשיים, שכר ריאלי ולינקים למשרות פעילות.",
     canonical: "https://avoda-go.co.il/guide/temporary-jobs",
@@ -88,7 +88,7 @@ export default function GuideHub() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <h2 className="text-base font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
-                        {entry.title.replace(" — המדריך המלא", "")}
+                        {entry.title.replace(" - המדריך המלא", "")}
                       </h2>
                       <ArrowLeft className="h-4 w-4 text-gray-300 group-hover:text-blue-400 shrink-0 transition-colors" />
                     </div>
@@ -111,7 +111,7 @@ export default function GuideHub() {
         >
           <p className="text-white font-bold text-lg mb-1">מוכנים להתחיל לעבוד?</p>
           <p className="text-blue-200 text-sm mb-4">
-            אלפי משרות זמניות מחכות לכם — הגישו מועמדות תוך דקות
+            אלפי משרות זמניות מחכות לכם - הגישו מועמדות תוך דקות
           </p>
           <Link
             href="/find-jobs"

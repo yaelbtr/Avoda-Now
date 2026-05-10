@@ -1,5 +1,5 @@
 /**
- * server/logger.ts — Centralized Structured Logger
+ * server/logger.ts - Centralized Structured Logger
  * ──────────────────────────────────────────────────
  * Single source of truth for all server-side logging.
  * Uses pino for structured JSON logs in production and pretty-printed logs in dev.
@@ -60,18 +60,18 @@ export const authLogger = logger.child({ component: "auth" });
 export const dbLogger = logger.child({ component: "db" });
 
 // ── PostGIS-specific child logger ────────────────────────────────────────────
-// Dedicated channel for spatial query errors — makes it trivial to filter
+// Dedicated channel for spatial query errors - makes it trivial to filter
 // PostGIS failures in log aggregation tools (e.g. grep component=postgis).
 export const postgisLogger = logger.child({ component: "postgis" });
 
 // ─── PostGIS Error Logger ─────────────────────────────────────────────────────
 /**
- * logPostgisError — structured error logger for PostGIS spatial operations.
+ * logPostgisError - structured error logger for PostGIS spatial operations.
  *
  * Centralises all PostGIS failure logging so production diagnostics are
  * consistent and filterable (component=postgis in log aggregators).
  *
- * Never throws — logging must never break the primary request path.
+ * Never throws - logging must never break the primary request path.
  *
  * @param operation  Machine-readable name, e.g. "setWorkerAvailable", "updateUserProfile"
  * @param coords     Spatial context: { lat, lng } (raw values before parseFloat)

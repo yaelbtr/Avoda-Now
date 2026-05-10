@@ -1,5 +1,5 @@
 /**
- * useCountdown — returns a live countdown string (HH:MM:SS) for a future Date.
+ * useCountdown - returns a live countdown string (HH:MM:SS) for a future Date.
  * Updates every second. Returns null when targetDate is null/undefined or in the past.
  *
  * Usage:

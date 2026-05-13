@@ -574,6 +574,29 @@ async function startServer() {
   let _lpWorkerCount = 1247;
   let _lpWorkerCountTs = 0;
   const LP_WORKER_COUNT_TTL = 5 * 60 * 1000;
+  async function getLandingWorkerCount(): Promise<number> {
+    const now = Date.now();
+    if (now - _lpWorkerCountTs <= LP_WORKER_COUNT_TTL) return _lpWorkerCount;
+
+    try {
+      const { getHeroStats } = await import("../db");
+      const stats = await getHeroStats();
+      if (stats.registeredWorkers > 0) {
+        _lpWorkerCount = stats.registeredWorkers;
+        _lpWorkerCountTs = now;
+      }
+    } catch {
+      // שומרים את הערך האחרון כדי שעמוד הנחיתה לא יישבר כשיש תקלה זמנית במסד.
+    }
+
+    return _lpWorkerCount;
+  }
+
+  app.get("/api/landing/live-workers-count", async (_req, res) => {
+    const registeredWorkers = await getLandingWorkerCount();
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ registeredWorkers });
+  });
 
   app.get("/lp/:slug", async (req, res, next) => {
     const slug = req.params.slug;
@@ -581,22 +604,12 @@ async function startServer() {
     if (!htmlPath) return next();
 
     try {
-      let liveCount = _lpWorkerCount;
-      const now = Date.now();
-      if (now - _lpWorkerCountTs > LP_WORKER_COUNT_TTL) {
-        try {
-          const { getHeroStats } = await import("../db");
-          const stats = await getHeroStats();
-          if (stats.registeredWorkers > 0) {
-            _lpWorkerCount = stats.registeredWorkers;
-            _lpWorkerCountTs = now;
-            liveCount = stats.registeredWorkers;
-          }
-        } catch { /* keep cached value */ }
-      }
+      const liveCount = await getLandingWorkerCount();
 
       let html = fs.readFileSync(htmlPath, "utf-8");
-      html = html.replace(/\{\{LIVE_WORKERS_COUNT\}\}/g, liveCount.toLocaleString("he-IL"));
+      html = html
+        .replace(/\{\{LIVE_WORKERS_COUNT_RAW\}\}/g, String(liveCount))
+        .replace(/\{\{LIVE_WORKERS_COUNT\}\}/g, liveCount.toLocaleString("he-IL"));
 
       if (process.env.NODE_ENV === "production") {
         const nonce = nanoid(24);

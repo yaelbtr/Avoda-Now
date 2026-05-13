@@ -10,8 +10,9 @@ Disallow: /profile
 Disallow: /my-applications
 Disallow: /worker-profile
 
-# Admin panel - never crawl
+# Admin / Dashboard - never crawl
 Disallow: /admin
+Disallow: /dashboard
 
 # Internal API - never crawl
 Disallow: /api/

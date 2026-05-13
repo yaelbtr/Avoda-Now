@@ -140,6 +140,10 @@ const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     title: "אודות AvodaGo | הפלטפורמה לעבודות זמניות",
     description: "AvodaGo היא הפלטפורמה הישראלית לעבודות זמניות. חיבור ישיר בין עובדים למעסיקים, ללא עמלות.",
   },
+  "/lp/henidman": {
+    title: "הצטרף כנותן שירות | AvodaGo - עבודות זמניות בישראל",
+    description: "הצטרף ל-AvodaGo כנותן שירות עצמאי ותתחיל לעבוד בימים הקרובים. מאות מעסיקים מחפשים עובדים כמוך.",
+  },
 };
 
 // Hebrew paths are often URL-decoded in req.path - support both forms

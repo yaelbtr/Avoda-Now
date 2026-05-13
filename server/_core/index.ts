@@ -1,8 +1,10 @@
 import "dotenv/config";
 import compression from "compression";
 import express from "express";
+import fs from "fs";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { ENV } from "./env";
@@ -272,6 +274,7 @@ async function startServer() {
       `<url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`,
       `<url><loc>${baseUrl}/find-jobs</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>`,
       `<url><loc>${baseUrl}/post-job</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`,
+      `<url><loc>${baseUrl}/lp/henidman</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`,
     ];
 
     try {
@@ -521,6 +524,7 @@ async function startServer() {
       "Allow: /find-jobs",
       "Allow: /jobs",
       "Allow: /jobs/",
+      "Allow: /lp/",
       "",
       "# Private pages - require login, no SEO value",
       "Disallow: /post-job",
@@ -554,6 +558,51 @@ async function startServer() {
     // Redirect to homepage; pass ?ref=<code> so the frontend can write
     // referralSource to localStorage for registration attribution.
     res.redirect(302, `/?ref=${encodeURIComponent(code)}`);
+  });
+
+  // ── Landing pages: serve HTML directly for full SEO (no iframe wrapper) ────
+  // Reads the source HTML, injects live worker count, and serves it at /lp/:slug.
+  // In dev: reads from client/src/landingPage/. In prod: reads from dist/lp/ (copied by Vite plugin).
+  const LP_PATHS: Record<string, string> = {
+    henidman: process.env.NODE_ENV === "development"
+      ? path.resolve(process.cwd(), "client/src/landingPage/HenidmanLandingPage.html")
+      : path.resolve(import.meta.dirname, "../lp/henidman.html"),
+  };
+
+  let _lpWorkerCount = 1247;
+  let _lpWorkerCountTs = 0;
+  const LP_WORKER_COUNT_TTL = 5 * 60 * 1000;
+
+  app.get("/lp/:slug", async (req, res, next) => {
+    const slug = req.params.slug;
+    const htmlPath = LP_PATHS[slug];
+    if (!htmlPath) return next();
+
+    try {
+      let liveCount = _lpWorkerCount;
+      const now = Date.now();
+      if (now - _lpWorkerCountTs > LP_WORKER_COUNT_TTL) {
+        try {
+          const { getHeroStats } = await import("../db");
+          const stats = await getHeroStats();
+          if (stats.registeredWorkers > 0) {
+            _lpWorkerCount = stats.registeredWorkers;
+            _lpWorkerCountTs = now;
+            liveCount = stats.registeredWorkers;
+          }
+        } catch { /* keep cached value */ }
+      }
+
+      let html = fs.readFileSync(htmlPath, "utf-8");
+      html = html.replace(/\{\{LIVE_WORKERS_COUNT\}\}/g, liveCount.toLocaleString("he-IL"));
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=300");
+      res.send(html);
+    } catch (err) {
+      console.error(`[lp] Failed to serve /lp/${slug}:`, err);
+      next();
+    }
   });
 
   registerGoogleAuthRoutes(app);

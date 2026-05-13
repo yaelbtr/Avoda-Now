@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useUserMode } from "@/contexts/UserModeContext";
 import henidmanLandingHtml from "@/landingPage/HenidmanLandingPage.html?raw";
+import henidmanLandingScriptUrl from "@/landingPage/henidmanLandingPage.js?url";
 import workerImageUrl from "@/assets/worker.png";
 import systemLogoUrl from "@/assets/full logo1.svg";
 
@@ -15,6 +16,7 @@ const LANDING_PAGES = {
       "assets/avodago-logo-light.png": systemLogoUrl,
       "assets/worker.png": workerImageUrl,
       "../assets/worker.png": workerImageUrl,
+      "assets/henidman-landing.js": henidmanLandingScriptUrl,
     },
   },
 } as const;
@@ -113,18 +115,27 @@ export default function StandaloneLandingPage() {
   }
 
   return (
-    <iframe
-      ref={iframeRef}
-      title={LANDING_PAGES[slug].title}
-      srcDoc={srcDoc}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
-      style={{
-        width: "100%",
-        height: "100dvh",
-        border: 0,
-        display: "block",
-        background: "#fdfcf8",
-      }}
-    />
+    <main
+      dir="rtl"
+      className="flex min-h-dvh items-stretch justify-center bg-[#efe9dc] px-0 sm:px-4 sm:py-4"
+    >
+      <div
+        className="w-full overflow-hidden bg-[#fdfcf8] sm:max-w-[430px] sm:rounded-[28px] sm:shadow-[0_24px_80px_rgba(37,42,21,0.18)]"
+      >
+        <iframe
+          ref={iframeRef}
+          title={LANDING_PAGES[slug].title}
+          srcDoc={srcDoc}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+          style={{
+            width: "100%",
+            height: "100dvh",
+            border: 0,
+            display: "block",
+            background: "#fdfcf8",
+          }}
+        />
+      </div>
+    </main>
   );
 }

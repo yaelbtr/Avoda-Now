@@ -19,16 +19,6 @@
   <meta name="twitter:title" content="הצטרף כנותן שירות | AvodaGo" />
   <meta name="twitter:description" content="הצטרף ל-AvodaGo כנותן שירות עצמאי ותתחיל לעבוד בימים הקרובים." />
   <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663359495587/REsBLBseSeXTZwj6TLp8WJ/og-default-29zavHYfF5qrQJEhQy9iTk.png" />
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "הצטרף כנותן שירות | AvodaGo",
-    "description": "הצטרף ל-AvodaGo כנותן שירות עצמאי ותתחיל לעבוד בימים הקרובים. מאות מעסיקים מחפשים עובדים כמוך.",
-    "url": "https://avoda-go.co.il/lp/henidman",
-    "isPartOf": { "@type": "WebSite", "name": "AvodaGo", "url": "https://avoda-go.co.il" }
-  }
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -420,7 +410,7 @@
     .hero h1 {
       font-weight: 600;
       font-family: var(--font-display);
-      font-size: clamp(38px, 6vw, 72px);
+      font-size: clamp(34px, 5vw, 72px);
       line-height: .98;
       color: var(--brand-darker);
       margin: 0 0 22px;
@@ -2356,7 +2346,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
 
       .hero h1 {
         line-height: 1.3;
-        font-size: clamp(34px, 9vw, 44px);
+        font-size: clamp(32px, 8vw, 44px);
         margin-bottom: 16px;
       }
 
@@ -2867,7 +2857,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
     /* Extra-small screens */
     @media (max-width: 380px) {
       .hero h1 {
-        font-size: 26px;
+        font-size: 22px;
         font-weight: 800;
         font-family: var(--font-rubik);
         letter-spacing: 0;
@@ -3670,190 +3660,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
     </div>
   </footer>
 
-    <script>
-    // ── "ללא עמלה" gradient tracing animation ────────────
-    (function () {
-      const grad = document.getElementById('noFeeTraceGrad');
-      if (!grad) return;
-      const W = 300;
-      const duration = 1800;
-      const spotHalfWidth = 110;
-      let start = null;
-
-      function tick(ts) {
-        if (!start) start = ts;
-        const t = ((ts - start) % duration) / duration;
-        // סריקה מימין לשמאל (כיוון קריאה עברי)
-        const center = W + spotHalfWidth - t * (W + spotHalfWidth * 2);
-        grad.setAttribute('x1', String(center - spotHalfWidth));
-        grad.setAttribute('x2', String(center + spotHalfWidth));
-        requestAnimationFrame(tick);
-      }
-
-      // התחל אחרי שהקו מופיע
-      setTimeout(() => requestAnimationFrame(tick), 1700);
-    })();
-
-    // ── Marquee categories ────────────────────────────────
-    const cats = [
-      "חשמלאות", "אינסטלציה", "הרכבות", "צבע וסיוד", "גינון", "ניקיון", "שיפוצים",
-      "תיקוני בית", "הובלות", "טכנאי מזגנים", "דברציות", "סורגים", "הדברה", "שיש ופלסטיק"
-    ];
-    const tool = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>';
-    const html = cats.map(c => `<span class="marq-item">${tool}${c}</span>`).join('');
-    const marqEl = document.getElementById('marqTrack'); if (marqEl) marqEl.innerHTML = html + html;
-
-    // ── Reveal on scroll ──────────────────────────────────
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    // ── Counters ─────────────────────────────────────────
-    function fmt(n, decimals = 0) {
-      if (decimals) return n.toFixed(decimals);
-      return Math.round(n).toLocaleString('he-IL');
-    }
-    function animateCount(el) {
-      const target = parseFloat(el.dataset.count);
-      const isDecimal = !Number.isInteger(target);
-      const suffix = el.dataset.suffix || '';
-      const prefix = el.dataset.prefix || '';
-      const dur = 1400;
-      const start = performance.now();
-      function tick(now) {
-        const t = Math.min(1, (now - start) / dur);
-        const ease = 1 - Math.pow(1 - t, 3);
-        const val = target * ease;
-        el.innerHTML = prefix + fmt(val, isDecimal ? 1 : 0) + (suffix ? `<small>${suffix}</small>` : '');
-        if (t < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }
-    const cio = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          if (e.target.dataset.count !== undefined) animateCount(e.target);
-          cio.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.4 });
-    document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
-
-    // ── Calculator ───────────────────────────────────────
-    const rJobs = document.getElementById('rngJobs');
-    const rRate = document.getElementById('rngRate');
-    const rHours = document.getElementById('rngHours');
-    const out = document.getElementById('calcOut');
-    const wkly = document.getElementById('calcWeekly');
-    const daily = document.getElementById('calcDaily');
-    const vJ = document.getElementById('valJobs');
-    const vR = document.getElementById('valRate');
-    const vH = document.getElementById('valHours');
-    const bar1 = document.getElementById('bar1');
-    const bar2 = document.getElementById('bar2');
-    const bar3 = document.getElementById('bar3');
-
-    function pct(input) {
-      return ((input.value - input.min) / (input.max - input.min) * 100) + '%';
-    }
-
-    function recalc() {
-      const j = +rJobs.value;
-      const r = +rRate.value;
-      const h = +rHours.value;
-      rJobs.style.setProperty('--p', pct(rJobs));
-      rRate.style.setProperty('--p', pct(rRate));
-      rHours.style.setProperty('--p', pct(rHours));
-
-      // weekly = jobs * rate; tweak by hours availability factor
-      const hFactor = 0.6 + (h / 12) * 0.6; // 0.7..1.2
-      const weekly = Math.round(j * r * (hFactor / 0.95));
-      const monthly = weekly * 4;
-      const dailyVal = Math.round(weekly / 7);
-      out.textContent = monthly.toLocaleString('he-IL');
-      wkly.textContent = weekly.toLocaleString('he-IL');
-      daily.textContent = dailyVal.toLocaleString('he-IL');
-
-      vJ.innerHTML = `${j} <small>קריאות</small>`;
-      vR.innerHTML = `${r.toLocaleString('he-IL')} <small>₪</small>`;
-      vH.innerHTML = `${h} <small>שעות</small>`;
-
-      // bar mix shifts by rate (higher rate -> more repairs)
-      const a = Math.round(40 + (r - 120) / (900 - 120) * 35); // 40..75 repairs
-      const b = Math.round(45 - (r - 120) / (900 - 120) * 20); // 45..25 assemblies
-      const c = Math.max(5, 100 - a - b);
-      bar1.style.width = a + '%';
-      bar2.style.width = b + '%';
-      bar3.style.width = c + '%';
-      bar1.parentElement.nextElementSibling.textContent = a + '%';
-      bar2.parentElement.nextElementSibling.textContent = b + '%';
-      bar3.parentElement.nextElementSibling.textContent = c + '%';
-    }
-    if (rJobs && rRate && rHours) { [rJobs, rRate, rHours].forEach(el => el.addEventListener('input', recalc)); recalc(); }
-
-    // גלילה לעוגן בתוך ה-iframe (מונע ניווט של חלון ה-parent)
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-      link.addEventListener('click', function (e) {
-        const hash = this.getAttribute('href');
-        if (!hash || hash === '#') return;
-        const target = document.querySelector(hash);
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // ── Worker join CTA bridge (iframe -> parent app) ─────
-    (function () {
-      function notifyWorkerJoin() {
-        const payload = { type: "avodago:worker-join" };
-        try {
-          if (window.parent && window.parent !== window) {
-            window.parent.postMessage(payload, "*");
-          }
-        } catch (_) {}
-      }
-
-      document.querySelectorAll('[data-worker-join="true"]').forEach((el) => {
-        el.addEventListener('click', (event) => {
-          event.preventDefault();
-          notifyWorkerJoin();
-        });
-      });
-    })();
-
-    // ── Phone amount mini-tick (subtle aliveness) ────────
-    const pa = document.getElementById('phoneAmount');
-    let base = 3840;
-    if (pa) setInterval(() => { base += Math.floor(Math.random() * 30); pa.innerHTML = base.toLocaleString('he-IL') + ' <span class="unit">₪</span>'; }, 4500);
-
-    // ── Fit handwrite oval to title text ─────────────────────
-    (function () {
-      const wrap = document.querySelector('.handwrite-wrap');
-      const svg  = wrap && wrap.querySelector('.handwrite-svg');
-      const h2   = wrap && wrap.querySelector('.section-title');
-      if (!wrap || !svg || !h2) return;
-
-      function fitOval() {
-        const pH = 80, pV = 55;
-        svg.style.width     = (h2.offsetWidth  + pH * 2) + 'px';
-        svg.style.height    = (h2.offsetHeight + pV * 2) + 'px';
-        svg.style.top       = -pV + 'px';
-        svg.style.left      = -50 + 'px';
-        svg.style.transform = 'none';
-      }
-
-      fitOval();
-      window.addEventListener('resize', fitOval);
-    })();
-  </script>
+  <script src="assets/henidman-landing.js" defer></script>
 
 </body>
 

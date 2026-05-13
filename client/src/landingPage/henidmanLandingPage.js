@@ -61,8 +61,42 @@
     return Math.round(value).toLocaleString("he-IL");
   }
 
-  function animateCount(element) {
-    const target = parseFloat(element.dataset.count ?? "0");
+  function parseCountValue(value) {
+    if (!value) return NaN;
+    return Number(String(value).replace(/,/g, ""));
+  }
+
+  let liveWorkersCountPromise = null;
+
+  async function fetchLiveWorkersCount() {
+    if (!liveWorkersCountPromise) {
+      liveWorkersCountPromise = fetch("/api/landing/live-workers-count", {
+        headers: { Accept: "application/json" },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Could not load live workers count");
+          return response.json();
+        })
+        .then((data) => parseCountValue(data?.registeredWorkers));
+    }
+
+    return liveWorkersCountPromise;
+  }
+
+  async function resolveCountTarget(element) {
+    const target = parseCountValue(element.dataset.count);
+    if (Number.isFinite(target)) return target;
+
+    if (element.dataset.liveStat === "workers") {
+      const liveTarget = await fetchLiveWorkersCount().catch(() => NaN);
+      if (Number.isFinite(liveTarget)) return liveTarget;
+    }
+
+    return 0;
+  }
+
+  async function animateCount(element) {
+    const target = await resolveCountTarget(element);
     const isDecimal = !Number.isInteger(target);
     const suffix = element.dataset.suffix || "";
     const prefix = element.dataset.prefix || "";

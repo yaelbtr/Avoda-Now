@@ -583,6 +583,26 @@ export default function Admin() {
             {referralStatsQuery.data && (() => {
               const rs = referralStatsQuery.data;
               const pct = (n: number) => rs.total > 0 ? Math.round((n / rs.total) * 100) : 0;
+              const isLandingSource = (source: string) => source === "landing-page" || source.startsWith("lp:");
+              const landing = rs.breakdown
+                .filter((b) => isLandingSource(b.source))
+                .reduce((sum, b) => sum + b.count, 0);
+              const other = rs.breakdown
+                .filter((b) => b.source !== "facebook" && b.source !== "google" && b.source !== "organic" && !isLandingSource(b.source) && b.source)
+                .reduce((sum, b) => sum + b.count, 0);
+              const extraSources = rs.breakdown.filter(
+                (b) => b.source !== "facebook" && b.source !== "google" && b.source !== "organic" && b.count > 0,
+              );
+
+              const formatSourceLabel = (source: string) => {
+                if (source === "landing-page") return "דף נחיתה";
+                if (source.startsWith("lp:")) {
+                  const slug = source.slice(3).trim();
+                  return slug ? `דף נחיתה (${slug})` : "דף נחיתה";
+                }
+                return source;
+              };
+
               return (
                 <Card className="mt-4">
                   <CardHeader className="pb-2">
@@ -608,18 +628,23 @@ export default function Admin() {
                         <div className="text-xs text-green-600 mt-1"><Globe className="inline w-3 h-3" /> אורגני</div>
                         <div className="text-xs text-muted-foreground">{pct(rs.organic)}%</div>
                       </div>
+                      <div className="rounded-lg bg-amber-50 p-3 text-center">
+                        <div className="text-2xl font-bold text-amber-700">{landing}</div>
+                        <div className="text-xs text-amber-600 mt-1">🧭 דף נחיתה</div>
+                        <div className="text-xs text-muted-foreground">{pct(landing)}%</div>
+                      </div>
                       <div className="rounded-lg bg-gray-50 p-3 text-center">
-                        <div className="text-2xl font-bold text-gray-700">{rs.other}</div>
+                        <div className="text-2xl font-bold text-gray-700">{other}</div>
                         <div className="text-xs text-gray-600 mt-1">🔗 אחר</div>
-                        <div className="text-xs text-muted-foreground">{pct(rs.other)}%</div>
+                        <div className="text-xs text-muted-foreground">{pct(other)}%</div>
                       </div>
                     </div>
-                    {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic" && b.count > 0).length > 0 && (
+                    {extraSources.length > 0 && (
                       <div className="border-t pt-3">
                         <p className="text-xs text-muted-foreground mb-2">מקורות נוספים:</p>
                         <div className="flex flex-wrap gap-2">
-                          {rs.breakdown.filter(b => b.source !== "facebook" && b.source !== "google" && b.source !== "organic").map(b => (
-                            <Badge key={b.source} variant="outline" className="text-xs">{b.source}: {b.count}</Badge>
+                          {extraSources.map(b => (
+                            <Badge key={b.source} variant="outline" className="text-xs">{formatSourceLabel(b.source)}: {b.count}</Badge>
                           ))}
                         </div>
                       </div>

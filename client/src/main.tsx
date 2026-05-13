@@ -79,6 +79,8 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+const isStandaloneLandingRoute = window.location.pathname.startsWith("/lp/");
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
@@ -97,8 +99,8 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <div className="desktop-wrapper">
-        <div id="mobile-root" className="mobile-wrapper">
+      <div className={`desktop-wrapper${isStandaloneLandingRoute ? " standalone-landing-root" : ""}`}>
+        <div id="mobile-root" className={`mobile-wrapper${isStandaloneLandingRoute ? " standalone-landing-root" : ""}`}>
           <App />
         </div>
       </div>

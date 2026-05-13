@@ -762,6 +762,19 @@
   overflow-x: hidden;
 }
 
+.desktop-wrapper.standalone-landing-root {
+  display: block;
+  background: transparent;
+}
+
+.mobile-wrapper.standalone-landing-root {
+  max-width: none;
+  min-height: 100dvh;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .desktop-wrapper {
     display: block;

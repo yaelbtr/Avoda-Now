@@ -59,6 +59,7 @@ const PassoverLandingPage = lazy(() => import("./pages/PassoverLandingPage"));
 const WorkerLandingPage = lazy(() => import("./pages/WorkerLandingPage"));
 const BestJobsPage = lazy(() => import("./pages/BestJobsPage"));
 const AvailableWorkers = lazy(() => import("./pages/AvailableWorkers"));
+const StandaloneLandingPage = lazy(() => import("./pages/StandaloneLandingPage"));
 
 // Guide / FAQ
 const GuideHub = lazy(() => import("./pages/GuideHub"));
@@ -110,13 +111,14 @@ function PageLoader() {
 
 const REFERRAL_KEY = "avodago_ref";
 const DEV_MAINTENANCE_BYPASS_KEY = "avodago_dev_maintenance_bypass";
+const CAMPAIGN_ROLE_SELECTED_KEY = "avoda_now_campaign_role_selected";
 const IS_BOT = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|Applebot|GPTBot|anthropic-ai|ClaudeBot/i.test(navigator.userAgent);
 
 /**
  * Captures UTM/referral params on first visit and stores in localStorage.
  * Each key is captured independently and never overwritten on subsequent visits.
  *
- * referralSource: fbclid → "facebook", gclid → "google", utm_source → raw value
+ * referralSource: /lp/:slug → "lp:<slug>", fbclid → "facebook", gclid → "google", utm_source → raw value
  * utmCampaign   : utm_campaign raw value (e.g. "summer_promo")
  * utmMedium     : utm_medium raw value (e.g. "cpc", "social", "email")
  *
@@ -126,6 +128,7 @@ const IS_BOT = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|Appleb
 function ReferralSourceCapture() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname || "";
 
     // When arriving via any campaign/referral entry point, clear the cached
     // guest role so the role selection screen is always shown - the user must
@@ -144,9 +147,12 @@ function ReferralSourceCapture() {
     // Capture referral source once - never overwrite
     if (!localStorage.getItem(REFERRAL_SOURCE_KEY)) {
       let source: string | null = null;
+      const landingMatch = pathname.match(/^\/lp\/([^/?#]+)/i);
+      const landingSlug = landingMatch?.[1]?.trim();
       // ?ref=<code> from managed referral links (/r/:code redirect) takes highest priority
       const refCode = params.get("ref");
       if (refCode) source = refCode.slice(0, 64);
+      else if (landingSlug) source = `lp:${landingSlug}`.slice(0, 64);
       else if (params.has("fbclid")) source = "facebook";
       else if (params.has("gclid")) source = "google";
       else if (params.get("utm_source")) source = params.get("utm_source")!.slice(0, 64);
@@ -243,7 +249,7 @@ function JobsStreamProvider() {
   return null;
 }
 
-function Router() {
+function AppRouter() {
   const { needsRoleSelection, setUserMode, setLocalModeOnly, userMode } = useUserMode();
   const [location, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
@@ -267,7 +273,13 @@ function Router() {
 
   // campaignRoleSelected: becomes true once the user explicitly picks a role
   // during this campaign-link session, so the flag stops overriding showRoleSelection.
-  const [campaignRoleSelected, setCampaignRoleSelected] = useState(false);
+  const [campaignRoleSelected, setCampaignRoleSelected] = useState(() => {
+    try {
+      return sessionStorage.getItem(CAMPAIGN_ROLE_SELECTED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   // Maintenance mode gate: show MaintenancePage to all non-admin users
   const maintenanceQuery = trpc.maintenance.status.useQuery(undefined, {
@@ -322,7 +334,12 @@ function Router() {
       setUserMode(mode);
     }
     // Mark campaign role as selected so showRoleSelection stops overriding
-    if (isCampaignEntry) setCampaignRoleSelected(true);
+    if (isCampaignEntry) {
+      setCampaignRoleSelected(true);
+      try {
+        sessionStorage.setItem(CAMPAIGN_ROLE_SELECTED_KEY, "1");
+      } catch {}
+    }
     if (location !== "/" && location !== "") {
       navigate("/");
     }
@@ -468,8 +485,23 @@ function Router() {
       <div className="hidden md:block">
         <Footer />
       </div>
+      <CookieConsentBanner />
     </div>
   );
+}
+
+function Router() {
+  const [location] = useLocation();
+
+  if (location.startsWith("/lp/")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <StandaloneLandingPage />
+      </Suspense>
+    );
+  }
+
+  return <AppRouter />;
 }
 
 function App() {
@@ -487,7 +519,6 @@ function App() {
                 <IdleLogoutManager />
                 <JobsStreamProvider />
                 <Router />
-                <CookieConsentBanner />
               </WorkerJobsProvider>
             </UserModeProvider>
           </AuthProvider>

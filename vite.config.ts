@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import fs from "node:fs";
 import path from "node:path";
 import { defineConfig } from "vite";
 
@@ -49,7 +50,24 @@ export default defineConfig(async ({ command }) => {
   }
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: "copy-landing-pages",
+        apply: "build" as const,
+        closeBundle() {
+          const src = path.resolve(import.meta.dirname, "client/src/landingPage/HenidmanLandingPage.html");
+          const dest = path.resolve(import.meta.dirname, "dist/lp/henidman.html");
+          try {
+            fs.mkdirSync(path.dirname(dest), { recursive: true });
+            fs.copyFileSync(src, dest);
+          } catch (err) {
+            console.warn("[build] Could not copy landing page HTML:", err);
+          }
+        },
+      },
+    ],
     resolve: {
       alias: {
         "@": path.resolve(import.meta.dirname, "client", "src"),

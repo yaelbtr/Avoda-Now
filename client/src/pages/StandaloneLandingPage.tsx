@@ -37,14 +37,22 @@ function formatNumber(value: number) {
   return value.toLocaleString("he-IL");
 }
 
-function buildStandaloneHtml(slug: LandingPageSlug, runtimeData: LandingRuntimeData) {
+function buildStandaloneHtml(
+  slug: LandingPageSlug,
+  runtimeData: LandingRuntimeData,
+  nonce?: string,
+) {
   const page = LANDING_PAGES[slug];
   const htmlWithAssets = Object.entries(page.assets).reduce(
     (html, [assetPath, assetUrl]) => html.replaceAll(assetPath, assetUrl),
     page.html,
   );
 
-  return htmlWithAssets.replaceAll(
+  const htmlWithNonce = nonce
+    ? htmlWithAssets.replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`)
+    : htmlWithAssets;
+
+  return htmlWithNonce.replaceAll(
     "{{LIVE_WORKERS_COUNT}}",
     formatNumber(runtimeData.liveWorkersCount),
   );
@@ -60,10 +68,14 @@ export default function StandaloneLandingPage() {
     staleTime: 5 * 60 * 1000,
   });
   const liveWorkersCount = heroStatsQuery.data?.registeredWorkers ?? 1247;
+  const cspNonce =
+    typeof document !== "undefined"
+      ? (document.querySelector("script[nonce]") as HTMLScriptElement | null)?.nonce
+      : undefined;
 
   const srcDoc = useMemo(
-    () => (slug ? buildStandaloneHtml(slug, { liveWorkersCount }) : ""),
-    [slug, liveWorkersCount],
+    () => (slug ? buildStandaloneHtml(slug, { liveWorkersCount }, cspNonce) : ""),
+    [slug, liveWorkersCount, cspNonce],
   );
 
   useEffect(() => {

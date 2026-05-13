@@ -188,18 +188,40 @@
   });
 
   function notifyWorkerJoin() {
+    let sentToParent = false;
     const payload = { type: "avodago:worker-join" };
     try {
       if (window.parent && window.parent !== window) {
         window.parent.postMessage(payload, "*");
+        sentToParent = true;
       }
     } catch {}
+    return sentToParent;
   }
 
   document.querySelectorAll('[data-worker-join="true"]').forEach((element) => {
     element.addEventListener("click", (event) => {
       event.preventDefault();
-      notifyWorkerJoin();
+      const fallbackHref =
+        element instanceof HTMLAnchorElement && element.getAttribute("href")
+          ? element.getAttribute("href")
+          : "/";
+
+      const delivered = notifyWorkerJoin();
+      if (!delivered) {
+        window.location.assign(fallbackHref || "/");
+        return;
+      }
+
+      setTimeout(() => {
+        try {
+          if (window.top && window.top !== window) {
+            window.top.location.assign(fallbackHref || "/");
+            return;
+          }
+        } catch {}
+        window.location.assign(fallbackHref || "/");
+      }, 220);
     });
   });
 
@@ -214,17 +236,50 @@
 
   const handwriteWrap = document.querySelector(".handwrite-wrap");
   const handwriteSvg = handwriteWrap?.querySelector(".handwrite-svg");
+  const handwritePath = handwriteWrap?.querySelector(".handwrite-path");
   const sectionTitle = handwriteWrap?.querySelector(".section-title");
 
-  if (handwriteWrap && handwriteSvg instanceof HTMLElement && sectionTitle instanceof HTMLElement) {
+  if (
+    handwriteWrap &&
+    handwriteSvg instanceof SVGElement &&
+    handwritePath instanceof SVGPathElement &&
+    sectionTitle instanceof HTMLElement
+  ) {
     function fitOval() {
-      const paddingHorizontal = 80;
-      const paddingVertical = 55;
-      handwriteSvg.style.width = sectionTitle.offsetWidth + paddingHorizontal * 2 + "px";
-      handwriteSvg.style.height = sectionTitle.offsetHeight + paddingVertical * 2 + "px";
-      handwriteSvg.style.top = -paddingVertical + "px";
-      handwriteSvg.style.left = "-50px";
+      const titleWidth = sectionTitle.offsetWidth;
+      const titleHeight = sectionTitle.offsetHeight;
+      const paddingHorizontal = Math.max(30, Math.min(96, Math.round(titleWidth * 0.13)));
+      const paddingVertical = Math.max(18, Math.min(52, Math.round(titleHeight * 0.68)));
+      const shiftRight = Math.max(58, Math.round(titleWidth * 0.115));
+      const svgWidth = titleWidth + paddingHorizontal * 2;
+      const svgHeight = titleHeight + paddingVertical * 2;
+      const cx = svgWidth / 2;
+      const cy = svgHeight / 2;
+      const rx = Math.max(22, svgWidth / 2 - 4);
+      const ry = Math.max(18, svgHeight / 2 - 4);
+      const startX = cx + rx * 0.96;
+      const startY = cy - ry * 0.58;
+      const controlPull = Math.max(10, Math.round(svgWidth * 0.02));
+      const upperLift = Math.max(10, Math.round(svgHeight * 0.12));
+      const lowerDrop = Math.max(8, Math.round(svgHeight * 0.1));
+
+      handwriteSvg.style.width = svgWidth + "px";
+      handwriteSvg.style.height = svgHeight + "px";
+      handwriteSvg.style.top = -paddingVertical+ 15 + "px";
+      handwriteSvg.style.left = -paddingHorizontal + shiftRight-10 + "px";
       handwriteSvg.style.transform = "none";
+
+      handwriteSvg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+      handwritePath.setAttribute(
+        "d",
+        [
+          `M ${startX.toFixed(1)} ${startY.toFixed(1)}`,
+          `C ${(cx + rx + controlPull).toFixed(1)} ${(cy + upperLift).toFixed(1)}, ${(cx + rx * 0.55).toFixed(1)} ${(cy + ry).toFixed(1)}, ${cx.toFixed(1)} ${(cy + ry).toFixed(1)}`,
+          `C ${(cx - rx * 0.7).toFixed(1)} ${(cy + ry).toFixed(1)}, ${(cx - rx - controlPull).toFixed(1)} ${(cy + lowerDrop).toFixed(1)}, ${(cx - rx).toFixed(1)} ${cy.toFixed(1)}`,
+          `C ${(cx - rx).toFixed(1)} ${(cy - ry + upperLift).toFixed(1)}, ${(cx - rx * 0.5).toFixed(1)} ${(cy - ry).toFixed(1)}, ${cx.toFixed(1)} ${(cy - ry).toFixed(1)}`,
+          `C ${(cx + rx * 0.62).toFixed(1)} ${(cy - ry).toFixed(1)}, ${(cx + rx + controlPull).toFixed(1)} ${(cy - upperLift).toFixed(1)}, ${(cx + rx * 0.88).toFixed(1)} ${(cy - ry * 0.28).toFixed(1)}`,
+        ].join(" "),
+      );
     }
 
     fitOval();

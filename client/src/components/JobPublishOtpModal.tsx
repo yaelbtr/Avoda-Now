@@ -269,7 +269,7 @@ export default function JobPublishOtpModal({
 
                   {/* Channel cards - full-width radio style like LoginModal */}
                   <div className="space-y-3">
-                    {(pendingContactPhone ? ["sms"] : ["sms", "email"] as OtpChannel[]).map((ch) => {
+                    {((pendingContactPhone ? ["sms"] : ["sms", "email"]) as OtpChannel[]).map((ch) => {
                       const isSelected = channel === ch;
                       const hasSmsTarget = !!(user?.phone || pendingContactPhone);
                       const isDisabled = ch === "sms" ? !hasSmsTarget : !user?.email;

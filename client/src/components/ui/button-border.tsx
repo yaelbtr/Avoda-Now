@@ -2,7 +2,8 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 
-type AnimatedBorderButtonProps = React.ComponentProps<typeof motion.button> & {
+type AnimatedBorderButtonProps = Omit<React.ComponentProps<typeof motion.button>, "children"> & {
+  children?: React.ReactNode;
   borderRadius?: number;
   glowColor?: string;
 };

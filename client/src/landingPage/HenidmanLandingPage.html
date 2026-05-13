@@ -1181,6 +1181,35 @@
       margin-bottom: 56px;
     }
 
+    /* ── Why section centered layout ───────────────────────── */
+    #why .section-head {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      justify-items: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #why .section-tag {
+      justify-content: center;
+    }
+
+    #why .handwrite-wrap {
+      display: inline-block;
+    }
+
+    #why .section-title {
+      margin-left: 10px ;
+      text-align: center;
+      max-width: 26ch;
+    }
+
+    #why .section-sub {
+      margin: 0 auto;
+      text-align: center;
+      max-width: 64ch;
+    }
+
     @media (max-width: 760px) {
       .section-head {
         grid-template-columns: 1fr;
@@ -2066,10 +2095,20 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
 
     .foot-grid {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      flex-direction: column;
       gap: 40px;
       flex-wrap: wrap;
-      align-items: flex-start;
+      align-items: center;
+      text-align: center;
+    }
+
+    .foot-copy {
+      font-size: 13.5px;
+      max-width: 36ch;
+      margin: 16px auto 0;
+      line-height: 1.55;
+      text-align: center;
     }
 
     .foot-grid .logo {
@@ -2095,6 +2134,8 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       gap: 28px;
       flex-wrap: wrap;
       font-size: 14px;
+      justify-content: center;
+      text-align: center;
     }
 
     .foot-links a:hover {
@@ -2106,7 +2147,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       padding-top: 22px;
       border-top: 1px solid rgba(253, 252, 248, .1);
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      flex-direction: column;
       flex-wrap: wrap;
       gap: 14px;
       font-size: 12.5px;
@@ -2378,7 +2422,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       .hero-meta {
         gap: 8px;
         font-size: 12.5px;
-        margin-left: 20px;
+        margin-left: 55px;
    
         margin-top: 62px;
         margin-right: -160px;
@@ -2617,7 +2661,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .section-title {
-        font-size: clamp(24px, 6vw, 34px);
+        font-size: clamp(22px, 5vw, 34px);
       }
 
       .section-sub {
@@ -2985,6 +3029,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
     .handwrite-wrap {
       position: relative;
       display: block;
+      overflow: visible;
     }
     .handwrite-svg {
       position: absolute;
@@ -3641,7 +3686,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <div class="logo">
             <img src="/logo-light.svg" alt="AvodaGo" class="logo-img logo-img-light" />
           </div>
-          <p style="font-size:13.5px; max-width: 36ch; margin: 16px 0 0; line-height: 1.55;">הפלטפורמה הישראלית של בעלי
+          <p class="foot-copy">הפלטפורמה הישראלית של בעלי
             מקצוע. מחברת לקוחות לבעלי מקצוע מאומתים -בלי תיווך מיותר.</p>
         </div>
         <div class="foot-links">
@@ -3657,7 +3702,6 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       <div class="foot-bottom">
         <span>© 2026 AvodaGo · נבנה בישראל</span>
         <span>  <a href="mailto:support@avoda-go.co.il">support@avoda-go.co.il</a></span>
-      </div>
     </div>
   </footer>
 

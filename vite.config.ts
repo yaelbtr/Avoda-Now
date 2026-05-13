@@ -59,9 +59,23 @@ export default defineConfig(async ({ command }) => {
         closeBundle() {
           const src = path.resolve(import.meta.dirname, "client/src/landingPage/HenidmanLandingPage.html");
           const dest = path.resolve(import.meta.dirname, "dist/lp/henidman.html");
+          const assetsDir = path.resolve(import.meta.dirname, "dist/public/assets");
           try {
             fs.mkdirSync(path.dirname(dest), { recursive: true });
-            fs.copyFileSync(src, dest);
+            let html = fs.readFileSync(src, "utf-8");
+
+            const landingScriptFile = fs
+              .readdirSync(assetsDir)
+              .find((name) => /^henidmanLandingPage-.*\.js$/i.test(name));
+
+            if (landingScriptFile) {
+              html = html.replace(
+                /<script\s+src="assets\/henidman-landing\.js"\s+defer><\/script>/i,
+                `<script src="/assets/${landingScriptFile}" defer></script>`,
+              );
+            }
+
+            fs.writeFileSync(dest, html, "utf-8");
           } catch (err) {
             console.warn("[build] Could not copy landing page HTML:", err);
           }

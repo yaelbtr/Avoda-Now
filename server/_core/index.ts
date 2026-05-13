@@ -6,6 +6,7 @@ import { createServer } from "http";
 import net from "net";
 import path from "path";
 import multer from "multer";
+import { nanoid } from "nanoid";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { ENV } from "./env";
 import { registerGoogleAuthRoutes } from "./googleAuth";
@@ -14,6 +15,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import {
   securityHeaders,
+  buildCspDirectives,
   corsMiddleware,
   globalRateLimit,
   jobsListRateLimit,
@@ -595,6 +597,22 @@ async function startServer() {
 
       let html = fs.readFileSync(htmlPath, "utf-8");
       html = html.replace(/\{\{LIVE_WORKERS_COUNT\}\}/g, liveCount.toLocaleString("he-IL"));
+
+      if (process.env.NODE_ENV === "production") {
+        const nonce = nanoid(24);
+        html = html.replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
+
+        const directives = buildCspDirectives(nonce);
+        const cspHeader = Object.entries(directives)
+          .map(([key, values]) => {
+            const kebab = key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+            const directiveValues = Array.isArray(values) ? values : [];
+            return directiveValues.length > 0 ? `${kebab} ${directiveValues.join(" ")}` : kebab;
+          })
+          .join("; ");
+
+        res.setHeader("Content-Security-Policy", cspHeader);
+      }
 
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       res.setHeader("Cache-Control", "public, max-age=300");

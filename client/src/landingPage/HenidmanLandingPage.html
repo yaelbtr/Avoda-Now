@@ -153,7 +153,7 @@
     }
 
     .hero-copy {
-      margin-top: 50px;
+      margin-top: 30px;
     }
 
     .logo {
@@ -293,7 +293,7 @@
     }
 
     .btn-primary {
-      background: #ba8601;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-mid) 100%);
       color: white;
       /* box-shadow: var(--shadow-glow); */
       position: relative;
@@ -346,6 +346,58 @@
     .btn .arrow svg {
       width: 11px;
       height: 11px;
+    }
+
+    /* ── כפתור CTA ראשי – הדגשה ──────────────────────────────── */
+    @keyframes heroBtnPulse {
+      0% {
+        box-shadow:
+          0 6px 28px rgba(54, 61, 31, .38),
+          0 0 0 0   rgba(201, 154, 46, 0.5),
+          0 0 0 0   rgba(201, 154, 46, 0.25);
+      }
+      60% {
+        box-shadow:
+          0 12px 44px rgba(54, 61, 31, .52),
+          0 0 0 10px rgba(201, 154, 46, 0.1),
+          0 0 0 24px rgba(201, 154, 46, 0.04);
+      }
+      100% {
+        box-shadow:
+          0 6px 28px rgba(54, 61, 31, .38),
+          0 0 0 0   rgba(201, 154, 46, 0),
+          0 0 0 0   rgba(201, 154, 46, 0);
+      }
+    }
+
+    @keyframes heroBtnArrowBounce {
+      0%, 100% { transform: translateX(0); }
+      45%       { transform: translateX(-4px); }
+      65%       { transform: translateX(-2px); }
+    }
+
+    .hero-ctas .btn-primary {
+      animation: heroBtnPulse 2.6s ease-out infinite;
+      font-size: 17px;
+      padding: 18px 32px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(140deg, var(--brand-darker) 0%, var(--brand-mid) 100%);
+    }
+
+    .hero-ctas .btn-primary .arrow {
+      animation: heroBtnArrowBounce 2s ease-in-out infinite;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .hero-ctas .btn-primary:hover {
+      animation: none;
+      transform: translateY(-3px);
+      box-shadow: 0 18px 48px rgba(54, 61, 31, .5), 0 0 0 4px rgba(201, 154, 46, .18);
+    }
+
+    .hero-ctas .btn-primary:hover .arrow {
+      animation: none;
     }
 
     /* ── HERO ─────────────────────────────────────────────────── */
@@ -472,14 +524,22 @@
       margin-bottom: 20px;
     }
 
+    .hero-cta-note {
+      margin: -8px 0 24px;
+      color: var(--ink-mute);
+      font-size: 12.5px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
     .hero-meta {
       margin-top: 32px;
       display: flex;
       flex-direction: column;
       gap: 10px;
       align-items: flex-start;
-      color: var(--ink-mute);
-      font-size: 13.5px;
+      color: #252a15;
+      
     }
 
     @keyframes checkSlideIn {
@@ -499,7 +559,7 @@
       gap: 10px;
       font-weight: 600;
       font-size: 14px;
-      margin-bottom: 17px;
+      margin-bottom:7px;
       opacity: 0;
       animation: checkSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
@@ -875,16 +935,17 @@
     /* Floating notif card */
     .notif {
       position: absolute;
-      top: 80px;
+      top: 220px;
       right: -30px;
-      background: white;
+        color: white;
+    background: var(--plum);
       border-radius: 16px;
       padding: 12px 14px;
       width: 240px;
-      box-shadow: var(--shadow-lift);
+       
       border: 1px solid rgba(54, 61, 31, .08);
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: flex-start;
       z-index: 3;
       animation: notifIn .8s 1.2s both, notifFloat 4s 2s ease-in-out infinite;
@@ -915,31 +976,79 @@
       }
     }
 
+    @keyframes notifCFloat {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-7deg);
+      }
+
+      50% {
+        transform: translateY(-6px) rotate(-7deg);
+      }
+    }
+
+    @keyframes locFloat {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-6px) rotate(0deg);
+      }
+    }
+
     .notif .icon {
       width: 32px;
       height: 32px;
       border-radius: 0;
       background: transparent;
-      color: var(--brand-darker);
+      color: #e9ad17;
       display: grid;
       place-items: center;
       flex-shrink: 0;
     }
 
-    .notif b {
+    .notif .icon svg {
+      width: 21px;
+      height: 21px;
+      animation: bellRing 1.6s 1.8s ease-in-out infinite;
+      transform-origin: 50% 10%;
+    }
+
+    @keyframes bellRing {
+      0%, 45%, 100% {
+        transform: rotate(0deg);
+      }
+      5%, 15%, 25% {
+        transform: rotate(12deg);
+      }
+      10%, 20%, 30% {
+        transform: rotate(-12deg);
+      }
+      35% {
+        transform: rotate(6deg);
+      }
+      40% {
+        transform: rotate(-4deg);
+      }
+    }
+
+    /* .notif b {
       display: block;
       font-size: 13px;
       color: var(--brand-darker);
-    }
+    } */
 
-    .notif span {
+    /* .notif span {
       font-size: 11.5px;
       color:#2a2c0d;
-    }
+    } */
 
     .badge-card {
       position: absolute;
-      bottom: 60px;
+      bottom: 70px;
       left: -30px;
       background: white;
       border-radius: 16px;
@@ -950,8 +1059,24 @@
       gap: 10px;
       align-items: center;
       z-index: 3;
-      animation: badgeIn 1s 1.4s both, notifFloat 5s 2.4s ease-in-out infinite reverse;
-      transform: rotate(-3deg);
+      animation:  notifCFloat 5s 2.4s ease-in-out infinite reverse;
+      transform: rotate(-7deg);
+    }
+
+    .badge-card .badge-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 0;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      color: #e9ad17;
+      flex-shrink: 0;
+    }
+
+    .badge-card .badge-icon svg {
+      width: 21px;
+      height: 21px;
     }
 
     @keyframes badgeIn {
@@ -979,6 +1104,66 @@
 
     .badge-card span {
       font-size: 11px;
+      color: var(--ink-mute);
+    }
+
+    /* ── Location notif bubble ──────────────────────────────── */
+    .location-notif {
+      position: absolute;
+      bottom: 70px;
+      right: -28px;
+    color: white;
+    
+    background: #656654;
+      border-radius: 16px;
+      padding: 10px 14px;
+      min-width: 190px;
+      box-shadow: var(--shadow-lift);
+      border: 1px solid rgba(54, 61, 31, .08);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 3;
+      animation: locIn .8s 2s both, locFloat 4.5s 2.8s ease-in-out infinite;
+      transform-origin: right center;
+    }
+
+    @keyframes locIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) rotate(0deg);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+      }
+    }
+
+    .location-notif .loc-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 0;
+      background: transparent;
+      display: grid;
+      place-items: center;
+      color: #e9ad17;
+      flex-shrink: 0;
+    }
+
+    .location-notif .loc-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .location-notif b {
+      display: block;
+      font-size: 12.5px;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .location-notif span {
+      font-size: 10.5px;
       color: var(--ink-mute);
     }
 
@@ -1012,10 +1197,11 @@
       border: 1px solid rgba(54, 61, 31, .09);
       border-radius: 20px;
       padding: 22px 18px 18px;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: 48px minmax(48px, auto) minmax(34px, auto);
       align-items: center;
-      justify-content: center;
+      justify-items: center;
+      align-content: start;
       gap: 4px;
       text-align: center;
       position: relative;
@@ -1035,7 +1221,7 @@
     .trust-cell:nth-child(3) { transition-delay: .16s; }
 
     .trust-cell.featured {
-      background: linear-gradient(155deg, var(--plum-dark) 0%, var(--plum-darker) 100%);
+      background: linear-gradient(155deg, #614461 0%, #442f43 100%);
       border-color: transparent;
     }
 
@@ -1158,7 +1344,7 @@
 
     .section-title {
       font-family: var(--font-display);
-      font-size: clamp(20px, 3.0vw, 48px);
+      font-size: clamp(12px, 3.0vw, 48px);
       color: var(--amber);
       margin: 20px;
       line-height: 1.05;
@@ -2169,44 +2355,34 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       transform: translateY(0);
     }
 
-    /* ── Marquee categories ──────────────────────────────────── */
-    .categories {
-      background: var(--brand-dark);
-      color:   white;
-      padding: 2px 0;
+    /* ── Category chips ──────────────────────────────────────── */
+    .category-chips {
+      background: #422e420f;
+      padding: 10px 0;
       overflow: hidden;
-      position: relative;
+      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
     }
 
-    .categories::before,
-    .categories::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 80px;
-      z-index: 2;
-      pointer-events: none;
+    .category-chips::-webkit-scrollbar {
+      display: none;
     }
 
-    .categories::before {
-      right: 0;
-      /* background: linear-gradient(-90deg, var(--brand-darker), transparent); */
-    }
-
-    .categories::after {
-      left: 0;
-      /* background: linear-gradient(90deg, var(--brand-darker), transparent); */
-    }
-
-    .marq-track {
+    .category-chips-inner {
       display: flex;
-      gap: 56px;
+      gap: 8px;
+      padding: 0 16px;
       width: max-content;
-      animation: marq 38s linear infinite;
+      direction: rtl;
+      animation: chipDriveRight 18s linear infinite;
+      will-change: transform;
     }
 
-    @keyframes marq {
+    .category-chips:hover .category-chips-inner {
+      animation-play-state: paused;
+    }
+
+    @keyframes chipDriveRight {
       from {
         transform: translateX(0);
       }
@@ -2216,20 +2392,54 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
     }
 
-    .marq-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-display);
-      font-size: 22px;
-      color: rgba(253, 252, 248, .85);
+    @media (prefers-reduced-motion: reduce) {
+      .category-chips-inner {
+        animation: none;
+      }
     }
 
-    .marq-item svg {
-      width: 18px;
-      height: 18px;
-      color: var(--cream);
-      opacity: .9;
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .32)),
+        rgba(250, 249, 245, .34);
+      border: 1px solid #e8d5a89c;
+      border-radius: 9999px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .76),
+        inset 0 -1px 0 rgba(74, 51, 73, .08),
+        0 8px 24px rgba(54, 61, 31, .08);
+      color: #9d7300;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 13px 5px 11px;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+      backdrop-filter: blur(14px) saturate(135%);
+      -webkit-backdrop-filter: blur(14px) saturate(135%);
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+    
+    .chip:hover {
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .42)),
+        rgba(250, 249, 245, .48);
+      border-color:#e8d5a89c;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .9),
+        inset 0 -1px 0 rgba(74, 51, 73, .08),
+        0 10px 28px rgba(54, 61, 31, .12);
+      transform: translateY(-1px);
+    }
+
+    .chip svg {
+      width: 13px;
+      height: 13px;
+      opacity: 0.75;
+      flex-shrink: 0;
     }
 
     /* ── CTA Strip ───────────────────────────────────────────── */
@@ -2382,6 +2592,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         gap: 36px;
       }
 
+      .hero-copy {
+        text-align: center;
+      }
+
       .eyebrow {
         font-size: 12.5px;
         padding: 6px 12px;
@@ -2390,7 +2604,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
 
       .hero h1 {
         line-height: 1.3;
-        font-size: clamp(32px, 8vw, 44px);
+        font-size: clamp(25px, 6.2vw, 34px);
         margin-bottom: 16px;
       }
 
@@ -2398,10 +2612,19 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         font-size: 13px;
         margin-bottom: 36px;
         margin-top: 36px;
+        margin-inline: auto;
       }
 
       .hero-ctas {
         width: 100%;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+
+      .hero-cta-note {
+        margin: -6px auto 22px;
+        text-align: center;
+        font-size: 12px;
       }
 
       .hero-ctas .btn {
@@ -2420,13 +2643,14 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .hero-meta {
-        gap: 8px;
+        position: absolute;
+        top: 60px;
+        right: -10px;
+        z-index: 3;
+        gap: 2px;
         font-size: 12.5px;
-        margin-left: 55px;
-   
-        margin-top: 62px;
-        margin-right: -160px;
-        width: 150px;
+        margin: 0;
+        width: 200px;
       }
 
       /* Hero art - make phone smaller and contain floats */
@@ -2519,10 +2743,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
 
       /* Floats - inset to not overflow viewport */
       .notif {
-        top: 80px;
+        top: 225px;
         right: -10px;
-        width: 200px;
-        padding: 10px 12px;
+        width: 140px;
+        padding: 5px;
       }
 
       .notif .icon {
@@ -2530,18 +2754,49 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         height: 28px;
       }
 
+      .notif .icon svg {
+        width: 20px;
+        height: 20px;
+      }
+
       .notif b {
-        font-size: 12px;
+        font-size: 11.5px;
       }
 
       .notif span {
-        font-size: 12.5px;
+        font-size: 11.5px;
       }
 
       .badge-card {
-        bottom: 30px;
+        bottom: 100px;
         left: -10px;
-        padding: 10px 12px;
+        min-width: 168px;
+        padding: 9px 10px;
+        gap: 8px;
+        border-radius: 18px;
+      }
+
+      .location-notif {
+        bottom: 40px;
+        right: -10px;
+        min-width: 0;
+        padding: 5px 5px;
+      }
+
+      .location-notif b {
+        font-size: 11.5px;
+      }
+
+    
+
+      .badge-card .badge-icon svg {
+        width: 23px;
+        height: 23px;
+      }
+
+      .location-notif .loc-icon svg {
+        width: 20px;
+        height: 20px;
       }
 
       .badge-card .stars {
@@ -2549,11 +2804,12 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .badge-card b {
-        font-size: 12px;
+        font-size: 12.8px;
+        line-height: 1.25;
       }
 
       .badge-card span {
-        font-size: 10.5px;
+        font-size: 11.2px;
       }
 
       .blob.b1 {
@@ -2618,8 +2874,9 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .trust-cell {
-        padding: 12px 10px 10px;
+        padding:10px 2px 10px;;
         border-radius: 14px;
+        grid-template-rows: 24px minmax(28px, auto) minmax(20px, auto);
       }
 
       .trust-icon {
@@ -2633,7 +2890,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .trust-num {
-        font-size: 22px;
+        font-size: 16px;
       }
 
       .trust-num--text {
@@ -2661,7 +2918,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       }
 
       .section-title {
-        font-size: clamp(22px, 5vw, 34px);
+        font-size: clamp(12px, 5vw, 34px);
       }
 
       .section-sub {
@@ -2883,13 +3140,14 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         gap: 8px;
       }
 
-      /* Marquee */
-      .marq-item {
-        font-size: 18px;
+      /* Chips - mobile */
+      .category-chips {
+        padding: 8px 0;
       }
 
-      .marq-track {
-        gap: 38px;
+      .chip {
+        font-size: 14px;
+        padding: 4px 11px 4px 9px;
       }
 
       /* Reveal - reduce travel on mobile */
@@ -2901,7 +3159,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
     /* Extra-small screens */
     @media (max-width: 380px) {
       .hero h1 {
-        font-size: clamp(32px, 8vw, 44px);
+        font-size: clamp(24px, 6.2vw, 32px);
         line-height: 1.3;
         font-weight: 800;
         font-family: var(--font-rubik);
@@ -2946,7 +3204,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
     }
 
     .no-fee-text {
-      font-size: 32px;
+      font-size: 0.9em;
       font-weight: 800;
       position: relative;
       z-index: 2;
@@ -3067,7 +3325,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         <span><span id="liveWorkersCount">{{LIVE_WORKERS_COUNT}}</span> בעלי מקצוע פעילים השבוע</span>
       </div> -->
         <h1>  
-            הנדימן, רוצה לקבל עבודות נוספות
+          הנדימן? קבל פניות מלקוחות
           <span class="no-fee"><span class="no-fee-text">ללא עמלה</span><svg class="no-fee-underline"
               viewBox="0 0 300 22" preserveAspectRatio="none" aria-hidden="true" id="noFeeUnderlineSvg">
               <defs>
@@ -3083,13 +3341,13 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               </defs>
               <path d="M3 14 C 60 4, 140 4, 200 12 S 280 18, 297 8" fill="none" stroke="#C99A2E" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
               <path d="M3 14 C 60 4, 140 4, 200 12 S 280 18, 297 8" fill="none" stroke="url(#noFeeTraceGrad)" stroke-width="6" stroke-linecap="round" filter="url(#noFeeGlowFilter)"/>
-            </svg></span> ?
+            </svg></span>  
         </h1>
-        <p class="lead">AvodaGo מחבר אותך -הנדימן, חשמלאי, אינסטלטור, מרכיב רהיטים - ישירות ללקוחות שמחפשים אותך עכשיו,
-          באזורך, <span class="lead-emphasis">בלי תיווך, בלי עמלות</span>, ובלי לרדוף אחרי טלפונים.</p>
+        <p class="lead">לקוחות מחפשים עכשיו הנדימנים, מובילים, מתקיני מזגנים, חשמלאים ועוד.
+         <span class="lead-emphasis"> הצטרפו עכשיו בחינם וקבלו הצעות עבודה ישירות לטלפון.  </span></p>
         <div class="hero-ctas">
           <a class="btn btn-primary" href="/" data-worker-join="true">
-            התחל לקבל עבודות
+         שלחו לי לקוחות
             <span class="arrow">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -3098,6 +3356,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </a>
           <!-- <a class="btn btn-ghost" href="#how">איך זה עובד?</a> -->
         </div>
+        <div class="hero-cta-note">ללא הרשמה בתשלום • ללא התחייבות</div>
 
       </div>
 
@@ -3198,16 +3457,39 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </div>
           <div>
             <b>הצעה חדשה לידך</b>
-            <span>  לקוח אישר 480 ש"ח רמת גן</span> 
+            <span> תליית טלוויזיה - 480₪</span> 
           </div>
         </div>
 
         <div class="badge-card">
-          <div class="quote-avatar" style="width:36px;height:36px;font-size:14px">★</div>
+          <div class="badge-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="12" rx="2"/>
+              <path d="M8 21h8"/>
+              <path d="M12 17v4"/>
+              <path d="M7.5 9h5"/>
+              <path d="M7.5 12h3"/>
+              <path d="M16 9.5c.9 0 1.6.45 1.6 1s-.7 1-1.6 1-1.6.45-1.6 1 .7 1 1.6 1"/>
+              <path d="M16 8.6v5.8"/>
+            </svg>
+          </div>
+         
+             
+            <b>לקוח ביקש הצעת <br>מחיר 
+לפרוק ארון</b>
+            
+           
+        </div>
+
+        <div class="location-notif">
+          <div class="loc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
           <div>
-            <div class="stars">★★★★★</div>
-            <b>4.9 דירוג ממוצע</b>
-            <span>מ-2,300+ לקוחות</span>
+            <b>עבודה במרחק 12 דקות ממך</b>
           </div>
         </div>
       </div>
@@ -3221,7 +3503,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <div class="trust-num" data-count="{{LIVE_WORKERS_COUNT_RAW}}" data-live-stat="workers" data-prefix="+">+0</div>
-          <div class="trust-label">עובדים כבר מחכים לעבודות הראשונות</div>
+          <div class="trust-label">עובדים רשומים </div>
         </div>
 
         <div class="trust-cell featured reveal">
@@ -3231,8 +3513,8 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
             </svg>
           </div>
-          <div class="trust-num">100%</div>
-          <div class="trust-label">ללא עמלה</div>
+          <div class="trust-num">ללא עמלות  </div>
+       
         </div>
 
         <div class="trust-cell reveal">
@@ -3255,10 +3537,65 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
  
    
 
-  <!-- ─── CATEGORIES MARQUEE ─────────────────────────────── -->
-  <div class="categories" aria-hidden="true">
-    <div class="marq-track" id="marqTrack">
-      <!-- filled by JS to duplicate -->
+  <!-- ─── CATEGORY CHIPS ──────────────────────────────────── -->
+  <div class="category-chips" dir="rtl">
+    <div class="category-chips-inner">
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        תיקונים
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        הובלות
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+        ניקיון
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        שליחויות
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        שיפוצים
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        אינסטלציה
+      </span>
+      <span class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        גינון
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        תיקונים
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        הובלות
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+        ניקיון
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        שליחויות
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        שיפוצים
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        אינסטלציה
+      </span>
+      <span class="chip" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        גינון
+      </span>
     </div>
   </div>
 

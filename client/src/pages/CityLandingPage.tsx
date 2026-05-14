@@ -96,7 +96,7 @@ export default function CityLandingPage() {
     workingHours?: string | null; startTime?: string | null;
     jobDate?: string | null; minAge?: number | null;
   };
-  const rawJobs: RawJob[] = (jobsData as { rows?: RawJob[] })?.rows ?? [];
+  const rawJobs: RawJob[] = (jobsData as { jobs?: RawJob[] })?.jobs ?? [];
 
   // ── JobPosting ItemList JSON-LD ───────────────────────────────────────────
   useEffect(() => {

@@ -867,7 +867,6 @@ export const AEO_PAGES: AEOPage[] = [
     cta: { label: "הצטרף ל-AvodaGo", href: "/find-jobs" },
     relatedLinks: [
       { label: "שאלות נפוצות", href: "/faq-general" },
-      { label: "חווות דעה של משתמשים", href: "/reviews" },
     ],
   },
   {

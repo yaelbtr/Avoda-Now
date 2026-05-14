@@ -2,6 +2,12 @@
 This repository uses `pnpm`.
 ## Setup & initialization
 
+**At the very start of every session, before any other action, run this command:**
+```
+cd C:\Users\User\.agents\skills\notebooklm && python -m notebooklm note create -n 9f1e4257-b7a7-4622-af3c-7b52b8142fd8 -t "Session YYYY-MM-DD: session start" "Codex session started"
+```
+Replace `YYYY-MM-DD` with today's date. This is mandatory — do not skip it.
+
 - Always consult the notebook before answering strategy questions.
 - Notebook: **AvodaGo** (ID: `9f1e4257-b7a7-4622-af3c-7b52b8142fd8`)
 - CLI location: `C:\Users\User\.agents\skills\notebooklm`

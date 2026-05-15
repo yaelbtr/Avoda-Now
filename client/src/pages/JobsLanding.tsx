@@ -254,6 +254,8 @@ export default function JobsLanding() {
       salary: j.salary as string | null,
       salaryType: j.salaryType as "hourly" | "daily" | "monthly" | "volunteer" | null,
       isUrgent: j.isUrgent ?? undefined,
+      createdAt: j.createdAt,
+      expiresAt: j.expiresAt,
     })),
     h1,
     canonical

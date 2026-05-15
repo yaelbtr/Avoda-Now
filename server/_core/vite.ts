@@ -336,7 +336,6 @@ export function serveStatic(app: Express) {
   //  1. Generate a fresh nonce for every HTML response
   //  2. Inject it into all inline <script nonce="..."> tags in index.html
   //  3. Set the Content-Security-Policy header with the same nonce
-  const isProduction = process.env.NODE_ENV === "production";
   const indexHtmlPath = path.resolve(distPath, "index.html");
 
   // Cache the index.html template in memory so we don't hit the disk on every
@@ -353,12 +352,6 @@ export function serveStatic(app: Express) {
 
   app.use("*", (req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
-    if (!isProduction) {
-      // In development Vite serves HTML directly; this branch is a safety fallback.
-      res.sendFile(indexHtmlPath);
-      return;
-    }
 
     try {
       let html = getIndexHtml();

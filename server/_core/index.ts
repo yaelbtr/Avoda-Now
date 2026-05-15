@@ -564,7 +564,7 @@ async function startServer() {
   const LP_PATHS: Record<string, string> = {
     henidman: process.env.NODE_ENV === "development"
       ? path.resolve(process.cwd(), "client/src/landingPage/HenidmanLandingPage.html")
-      : path.resolve(import.meta.dirname, "../lp/henidman.html"),
+      : path.resolve(import.meta.dirname, "lp/henidman.html"),
   };
 
   let _lpWorkerCount = 1247;

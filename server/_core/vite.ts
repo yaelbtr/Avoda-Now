@@ -14,7 +14,7 @@ const KW_PAGE_MAP = new Map(
 );
 
 // ── SEO: Bot detection ────────────────────────────────────────────────────────
-const BOT_UA_RE = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|facebot|ia_archiver|AhrefsBot|SemrushBot|MJ12bot|DotBot|Applebot|GPTBot|anthropic-ai|ClaudeBot|PetalBot|DataForSeoBot/i;
+const BOT_UA_RE = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|facebot|facebookexternalhit|whatsapp|ia_archiver|AhrefsBot|SemrushBot|MJ12bot|DotBot|Applebot|GPTBot|anthropic-ai|ClaudeBot|PetalBot|DataForSeoBot/i;
 function isBotRequest(ua: string): boolean {
   return BOT_UA_RE.test(ua);
 }

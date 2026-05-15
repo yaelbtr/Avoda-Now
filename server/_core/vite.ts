@@ -195,8 +195,7 @@ function getRouteMeta(rawPath: string): RouteMeta | null {
   );
 }
 
-function injectMetaForBot(html: string, pathname: string): string {
-  // תמיד מתקן canonical ו-og:url לפי הנתיב האמיתי, גם כשאין meta ספציפי לדף
+function injectMeta(html: string, pathname: string): string {
   const canonical = `https://avoda-go.co.il${pathname}`;
   html = html.replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/i, `$1${canonical}$2`);
   html = html.replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/i, `$1${canonical}$2`);
@@ -215,11 +214,16 @@ function injectMetaForBot(html: string, pathname: string): string {
     }
   }
 
-  // הזרקת תוכן סמנטי (H1 + מבוא) לבוטים — מונע "נסרק אך לא נכלל באינדקס"
+  return html;
+}
+
+function injectMetaForBot(html: string, pathname: string): string {
+  html = injectMeta(html, pathname);
+
+  // הזרקת תוכן סמנטי (H1 + מבוא) לבוטים בלבד — מונע "נסרק אך לא נכלל באינדקס"
   const decoded = (() => { try { return decodeURIComponent(pathname); } catch { return pathname; } })();
   const kwPage = KW_PAGE_MAP.get(decoded) ?? KW_PAGE_MAP.get(pathname);
   if (kwPage) {
-    // תוכן גלוי לבוטים בלבד — משתמשים רגילים לא מקבלים HTML זה (isBotRequest בלעדי)
     const safeH1 = kwPage.h1.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const safeIntro = kwPage.intro.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const contentBlock = `\n<div id="seo-body"><h1>${safeH1}</h1><p>${safeIntro}</p></div>`;
@@ -367,10 +371,12 @@ export function serveStatic(app: Express) {
       // יורשה תחת strict-dynamic ולא רק הסקריפטים ה-inline של ה-SSR shell.
       html = html.replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
 
-      // הזרקת meta tags לבוטים של מנועי חיפוש - לפני ש-JS רץ
+      // meta (canonical, og:url, og:image וכו') מוזרקים לכל בקשה — useSEO ידרוס בצד הלקוח
       const ua = req.get("user-agent") ?? "";
       if (isBotRequest(ua)) {
-        html = injectMetaForBot(html, req.path);
+        html = injectMetaForBot(html, req.path); // meta + תוכן H1 סמנטי
+      } else {
+        html = injectMeta(html, req.path); // meta בלבד
       }
 
       // Build the full CSP directive set with this request's nonce.

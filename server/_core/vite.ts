@@ -6,6 +6,12 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { buildCspDirectives } from "../security";
 import viteConfig from "../../vite.config";
+import { KEYWORD_LANDING_PAGES } from "../../client/src/data/keywordLandingData";
+
+// מפה: /slug → נתוני דף נחיתה (לשימוש בהזרקת תוכן לבוטים)
+const KW_PAGE_MAP = new Map(
+  KEYWORD_LANDING_PAGES.map((p) => [`/${p.slug}`, p])
+);
 
 // ── SEO: Bot detection ────────────────────────────────────────────────────────
 const BOT_UA_RE = /googlebot|bingbot|yandexbot|slurp|duckduckbot|baiduspider|facebot|ia_archiver|AhrefsBot|SemrushBot|MJ12bot|DotBot|Applebot|GPTBot|anthropic-ai|ClaudeBot|PetalBot|DataForSeoBot/i;
@@ -14,7 +20,7 @@ function isBotRequest(ua: string): boolean {
 }
 
 // ── SEO: Per-route meta definitions for server-side injection ─────────────────
-interface RouteMeta { title: string; description: string; }
+interface RouteMeta { title: string; description: string; ogImage?: string; }
 const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   "/": {
     title: "AvodaGo - עבודות זמניות בישראל | מצא עבודה עכשיו",
@@ -142,7 +148,8 @@ const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   "/lp/henidman": {
     title: "הצטרף כנותן שירות | AvodaGo - עבודות זמניות בישראל",
-    description: "הצטרף ל-AvodaGo כנותן שירות עצמאי ותתחיל לעבוד בימים הקרובים. מאות מעסיקים מחפשים עובדים כמוך.",
+    description: "עבודות להנדימן באזור שלך | AvodaGo",
+    ogImage: "https://avoda-go.co.il/og/henidman.png",
   },
 };
 
@@ -189,19 +196,36 @@ function getRouteMeta(rawPath: string): RouteMeta | null {
 }
 
 function injectMetaForBot(html: string, pathname: string): string {
-  const meta = getRouteMeta(pathname);
-  if (!meta) return html;
-
-  const safeTitle = meta.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const safeDesc = meta.description.replace(/"/g, "&quot;");
+  // תמיד מתקן canonical ו-og:url לפי הנתיב האמיתי, גם כשאין meta ספציפי לדף
   const canonical = `https://avoda-go.co.il${pathname}`;
-
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${safeTitle}</title>`);
-  html = html.replace(/(<meta\s+name="description"\s+content=")[^"]*(")/i, `$1${safeDesc}$2`);
-  html = html.replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/i, `$1${safeTitle}$2`);
-  html = html.replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/i, `$1${safeDesc}$2`);
-  html = html.replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/i, `$1${canonical}$2`);
   html = html.replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/i, `$1${canonical}$2`);
+  html = html.replace(/(<meta\s+property="og:url"\s+content=")[^"]*(")/i, `$1${canonical}$2`);
+
+  const meta = getRouteMeta(pathname);
+  if (meta) {
+    const safeTitle = meta.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeDesc = meta.description.replace(/"/g, "&quot;");
+    html = html.replace(/<title>[^<]*<\/title>/, `<title>${safeTitle}</title>`);
+    html = html.replace(/(<meta\s+name="description"\s+content=")[^"]*(")/i, `$1${safeDesc}$2`);
+    html = html.replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/i, `$1${safeTitle}$2`);
+    html = html.replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/i, `$1${safeDesc}$2`);
+    if (meta.ogImage) {
+      html = html.replace(/(<meta\s+property="og:image"\s+content=")[^"]*(")/i, `$1${meta.ogImage}$2`);
+      html = html.replace(/(<meta\s+name="twitter:image"\s+content=")[^"]*(")/i, `$1${meta.ogImage}$2`);
+    }
+  }
+
+  // הזרקת תוכן סמנטי (H1 + מבוא) לבוטים — מונע "נסרק אך לא נכלל באינדקס"
+  const decoded = (() => { try { return decodeURIComponent(pathname); } catch { return pathname; } })();
+  const kwPage = KW_PAGE_MAP.get(decoded) ?? KW_PAGE_MAP.get(pathname);
+  if (kwPage) {
+    // תוכן גלוי לבוטים בלבד — משתמשים רגילים לא מקבלים HTML זה (isBotRequest בלעדי)
+    const safeH1 = kwPage.h1.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeIntro = kwPage.intro.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const contentBlock = `\n<div id="seo-body"><h1>${safeH1}</h1><p>${safeIntro}</p></div>`;
+    html = html.replace("</body>", `${contentBlock}\n</body>`);
+  }
+
   return html;
 }
 

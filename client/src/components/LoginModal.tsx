@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { getGoogleLoginUrl, isGoogleLoginEnabled, logGoogleAuthDiagnostics, popReturnPath } from "@/const";
 import { AppButton, AppInput, AppLabel, GoogleAuthButton } from "@/components/ui";
+import { isInAppBrowser } from "@/lib/browserDetect";
 import { IsraeliPhoneInput, isValidPhoneValue, toE164, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -52,6 +53,7 @@ export default function LoginModal({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const googleLoginEnabled = isGoogleLoginEnabled();
+  const inAppBrowser = isInAppBrowser();
   const { refetch } = useAuth();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -346,7 +348,22 @@ export default function LoginModal({
               )}
 
               {googleLoginEnabled && (
-                <GoogleAuthButton label="המשך עם Google" onClick={handleGoogleLogin} />
+                inAppBrowser ? (
+                  <div
+                    className="rounded-xl px-4 py-3 text-sm text-center leading-relaxed"
+                    style={{
+                      background: "oklch(0.96 0.02 95)",
+                      border: "1px solid oklch(0.88 0.04 122)",
+                      color: "#555",
+                    }}
+                  >
+                    כדי להיכנס עם Google,{" "}
+                    <strong>פתחו את הדף בדפדפן Chrome או Safari</strong>{" "}
+                    (לא ניתן להתחבר עם Google מתוך Facebook/Instagram)
+                  </div>
+                ) : (
+                  <GoogleAuthButton label="המשך עם Google" onClick={handleGoogleLogin} />
+                )
               )}
 
               <div className="flex items-center gap-3">

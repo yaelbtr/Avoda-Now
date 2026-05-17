@@ -9,7 +9,7 @@ import { isInAppBrowser } from "@/lib/browserDetect";
 import { IsraeliPhoneInput, isValidPhoneValue, toE164, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Mail, RefreshCw, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Copy, Loader2, Mail, RefreshCw, X } from "lucide-react";
 
 interface LoginModalProps {
   open: boolean;
@@ -207,6 +207,16 @@ export default function LoginModal({
     window.location.assign(getGoogleLoginUrl(returnPath));
   };
 
+  const handleOpenInBrowser = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("הקישור הועתק — הדביקו אותו ב-Chrome או Safari");
+    } catch {
+      toast.info(`פתחו את הדפדפן והדביקו: ${url}`);
+    }
+  };
+
   const handleBackToEntry = () => {
     setStep("entry");
     setEmail("");
@@ -350,16 +360,28 @@ export default function LoginModal({
               {googleLoginEnabled && (
                 inAppBrowser ? (
                   <div
-                    className="rounded-xl px-4 py-3 text-sm text-center leading-relaxed"
+                    className="rounded-xl px-4 py-3 flex flex-col gap-3"
                     style={{
                       background: "oklch(0.96 0.02 95)",
                       border: "1px solid oklch(0.88 0.04 122)",
-                      color: "#555",
                     }}
                   >
-                    כדי להיכנס עם Google,{" "}
-                    <strong>פתחו את הדף בדפדפן Chrome או Safari</strong>{" "}
-                    (לא ניתן להתחבר עם Google מתוך Facebook/Instagram)
+                    <p className="text-sm text-center leading-relaxed" style={{ color: "#555" }}>
+                      Google לא מאפשרת כניסה מתוך Facebook/Instagram.
+                      {" "}<strong>פתחו את הדף בדפדפן Chrome או Safari</strong>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleOpenInBrowser}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors"
+                      style={{
+                        background: "oklch(0.42 0.08 130)",
+                        color: "oklch(0.97 0.02 95)",
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                      העתק קישור לדפדפן
+                    </button>
                   </div>
                 ) : (
                   <GoogleAuthButton label="המשך עם Google" onClick={handleGoogleLogin} />

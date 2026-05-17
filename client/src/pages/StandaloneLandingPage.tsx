@@ -11,6 +11,7 @@ const LANDING_PAGES = {
   henidman: {
     title: "AvodaGo - דף נחיתה לנותני שירות",
     html: henidmanLandingHtml,
+    directRedirect: true, // מנתב ישירות למסך בית לעובד, ללא הצגת דף הנחיתה
     assets: {
       "assets/avodago-logo.png": systemLogoUrl,
       "assets/avodago-logo-light.png": systemLogoUrl,
@@ -63,8 +64,9 @@ export default function StandaloneLandingPage() {
   const { setUserMode } = useUserMode();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const slug = getLandingSlug(location);
+  const page = slug ? LANDING_PAGES[slug] : null;
   const heroStatsQuery = trpc.live.heroStats.useQuery(undefined, {
-    enabled: !!slug,
+    enabled: !!slug && !(page && "directRedirect" in page && page.directRedirect),
     staleTime: 5 * 60 * 1000,
   });
   const liveWorkersCount = heroStatsQuery.data?.registeredWorkers ?? 1247;
@@ -78,8 +80,24 @@ export default function StandaloneLandingPage() {
     [slug, liveWorkersCount, cspNonce],
   );
 
+  // הפניה מיידית לדפי נחיתה עם directRedirect — ללא הצגת ה-iframe
   useEffect(() => {
-    if (!slug) return;
+    if (!slug || !page || !("directRedirect" in page) || !page.directRedirect) return;
+
+    let isMounted = true;
+    void (async () => {
+      try {
+        try { sessionStorage.setItem(CAMPAIGN_ROLE_SELECTED_KEY, "1"); } catch {}
+        await setUserMode("worker");
+      } finally {
+        if (isMounted) navigate("/");
+      }
+    })();
+    return () => { isMounted = false; };
+  }, [slug, page, navigate, setUserMode]);
+
+  useEffect(() => {
+    if (!slug || (page && "directRedirect" in page && page.directRedirect)) return;
 
     let isMounted = true;
 
@@ -113,7 +131,7 @@ export default function StandaloneLandingPage() {
       isMounted = false;
       window.removeEventListener("message", onMessage);
     };
-  }, [slug, navigate, setUserMode]);
+  }, [slug, page, navigate, setUserMode]);
 
   if (!slug) {
     return (
@@ -123,6 +141,15 @@ export default function StandaloneLandingPage() {
           <p className="mt-2 text-sm text-[#46483d]">בדקו שהקישור נכון ונסו שוב.</p>
         </div>
       </main>
+    );
+  }
+
+  // הנחיה ישירה — מוצג רגע קצר עד שה-useEffect מנתב
+  if (page && "directRedirect" in page && page.directRedirect) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-[#faf9f5]">
+        <div className="w-8 h-8 rounded-full border-4 border-[#556b2f] border-t-transparent animate-spin" />
+      </div>
     );
   }
 

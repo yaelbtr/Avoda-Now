@@ -66,11 +66,11 @@ export default defineConfig(async ({ command }) => {
 
             const landingScriptFile = fs
               .readdirSync(assetsDir)
-              .find((name) => /^henidmanLandingPage-.*\.js$/i.test(name));
+              .find((name) => /^landing-.*\.js$/i.test(name));
 
             if (landingScriptFile) {
               html = html.replace(
-                /<script\s+src="assets\/henidman-landing\.js"\s+defer><\/script>/i,
+                /<script\s+src="assets\/landing\.js"\s+defer><\/script>/i,
                 `<script src="/assets/${landingScriptFile}" defer></script>`,
               );
             }

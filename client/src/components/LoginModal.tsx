@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { getGoogleLoginUrl, isGoogleLoginEnabled, logGoogleAuthDiagnostics, popReturnPath } from "@/const";
 import { AppButton, AppInput, AppLabel, GoogleAuthButton } from "@/components/ui";
+import { IsraeliPhoneInput, isValidPhoneValue, toE164, type PhoneValue } from "@/components/IsraeliPhoneInput";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2, Mail, RefreshCw, X } from "lucide-react";
@@ -18,7 +19,16 @@ interface LoginModalProps {
   onLoginSuccess?: () => void;
 }
 
-type Step = "entry" | "sent" | "success";
+type Step = "entry" | "register" | "sent" | "success";
+type Mode = "login" | "register";
+
+const DEFAULT_PHONE: PhoneValue = { prefix: "050", number: "" };
+
+const validateEmail = (val: string, touched = false): string | null => {
+  if (!val.trim()) return touched ? "אימייל הוא שדה חובה" : null;
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(val) ? null : "כתובת מייל לא תקינה";
+};
 
 export default function LoginModal({
   open,
@@ -29,8 +39,12 @@ export default function LoginModal({
   onLoginSuccess,
 }: LoginModalProps) {
   const [step, setStep] = useState<Step>("entry");
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("login");
+  const [phone, setPhone] = useState<PhoneValue>(DEFAULT_PHONE);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [sentPhone, setSentPhone] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const [sendCooldown, setSendCooldown] = useState(0);
 
@@ -48,8 +62,12 @@ export default function LoginModal({
     if (!open) {
       const t = setTimeout(() => {
         setStep("entry");
-        setLoginEmail("");
-        setLoginEmailError(null);
+        setMode("login");
+        setPhone(DEFAULT_PHONE);
+        setPhoneError(null);
+        setSentPhone("");
+        setEmail("");
+        setEmailError(null);
         setDigits(Array(6).fill(""));
         setSendCooldown(0);
         if (sendCooldownRef.current) clearInterval(sendCooldownRef.current);
@@ -76,26 +94,25 @@ export default function LoginModal({
     }, 1000);
   }, []);
 
-  const validateEmail = (val: string, touched = false): string | null => {
-    if (!val.trim()) return touched ? "אימייל הוא שדה חובה" : null;
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(val) ? null : "כתובת מייל לא תקינה";
+  const maskPhone = (e164: string) => {
+    const d = e164.replace(/\D/g, "");
+    return d.length >= 4 ? `***-***-${d.slice(-4)}` : e164;
   };
 
-  const sendEmailCode = trpc.auth.sendEmailCode.useMutation({
-    onSuccess: () => {
+  const sendOtp = trpc.auth.sendOtp.useMutation({
+    onSuccess: (data) => {
+      setSentPhone(data.phone);
       setStep("sent");
       setDigits(Array(6).fill(""));
       startSendCooldown();
-      const masked = loginEmail.includes("@")
-        ? (() => {
-            const [local, domain] = loginEmail.split("@");
-            return `${local.slice(0, 2)}***@${domain}`;
-          })()
-        : loginEmail;
-      toast.success(`קוד נשלח למייל ${masked}`);
+      toast.success(`קוד נשלח ב-SMS למספר ${maskPhone(data.phone)}`);
     },
     onError: (error) => {
+      if (error.data?.code === "NOT_FOUND") {
+        // טלפון לא רשום — עוברים לשלב הרשמה לאיסוף מייל
+        setStep("register");
+        return;
+      }
       if (error.data?.code === "TOO_MANY_REQUESTS") {
         const match = error.message.match(/(\d+)/);
         const seconds = match ? parseInt(match[1], 10) : 60;
@@ -105,7 +122,7 @@ export default function LoginModal({
     },
   });
 
-  const verifyEmailCode = trpc.auth.verifyEmailCode.useMutation({
+  const verifyOtp = trpc.auth.verifyOtp.useMutation({
     onSuccess: async (data) => {
       if (maintenanceMode && data.user?.role !== "admin" && data.user?.role !== "test") {
         await refetch();
@@ -141,17 +158,45 @@ export default function LoginModal({
     }
   }, [step]);
 
-  const handleSendEmailCode = () => {
-    const error = validateEmail(loginEmail, true);
-    if (error) {
-      setLoginEmailError(error);
+  const handleSendCode = () => {
+    if (!isValidPhoneValue(phone)) {
+      setPhoneError("נא להזין מספר טלפון ישראלי תקין");
       return;
     }
+    setPhoneError(null);
+    setMode("login");
+    sendOtp.mutate({ phone: toE164(phone), isRegistration: false, channel: "sms" });
+  };
 
-    setLoginEmailError(null);
-    sendEmailCode.mutate({
-      email: loginEmail,
+  const handleRegister = () => {
+    const err = validateEmail(email, true);
+    if (err) {
+      setEmailError(err);
+      return;
+    }
+    setEmailError(null);
+    setMode("register");
+    sendOtp.mutate({
+      phone: toE164(phone),
+      email: email.trim(),
+      isRegistration: true,
+      termsAccepted: true,
+      channel: "sms",
     });
+  };
+
+  const resend = () => {
+    if (mode === "register") {
+      sendOtp.mutate({
+        phone: toE164(phone),
+        email: email.trim(),
+        isRegistration: true,
+        termsAccepted: true,
+        channel: "sms",
+      });
+    } else {
+      sendOtp.mutate({ phone: toE164(phone), isRegistration: false, channel: "sms" });
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -162,6 +207,9 @@ export default function LoginModal({
 
   const handleBackToEntry = () => {
     setStep("entry");
+    setEmail("");
+    setEmailError(null);
+    setMode("login");
     setDigits(Array(6).fill(""));
   };
 
@@ -177,9 +225,11 @@ export default function LoginModal({
 
     const code = next.join("");
     if (code.length === 6 && !next.includes("")) {
-      verifyEmailCode.mutate({
-        email: loginEmail.trim(),
+      verifyOtp.mutate({
+        phone: sentPhone,
         code,
+        termsAccepted: true,
+        email: mode === "register" ? email.trim() : undefined,
       });
     }
   };
@@ -202,9 +252,11 @@ export default function LoginModal({
     inputRefs.current[targetIndex]?.focus();
 
     if (pasted.length === 6) {
-      verifyEmailCode.mutate({
-        email: loginEmail.trim(),
+      verifyOtp.mutate({
+        phone: sentPhone,
         code: pasted,
+        termsAccepted: true,
+        email: mode === "register" ? email.trim() : undefined,
       });
     }
   };
@@ -215,10 +267,11 @@ export default function LoginModal({
       toast.error("יש להזין קוד בן 6 ספרות");
       return;
     }
-
-    verifyEmailCode.mutate({
-      email: loginEmail.trim(),
+    verifyOtp.mutate({
+      phone: sentPhone,
       code,
+      termsAccepted: true,
+      email: mode === "register" ? email.trim() : undefined,
     });
   };
 
@@ -277,7 +330,7 @@ export default function LoginModal({
 
             <div className="px-5 pt-1 pb-6 flex flex-col gap-4">
               <p className="text-sm text-center" style={{ color: "#888" }}>
-                כניסה מהירה עם Google או קוד חד-פעמי למייל
+                כניסה מהירה עם Google או קוד חד-פעמי ב-SMS
               </p>
 
               {message && (
@@ -298,52 +351,27 @@ export default function LoginModal({
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
-                <span className="text-xs" style={{ color: "#999" }}>או עם אימייל</span>
+                <span className="text-xs" style={{ color: "#999" }}>או עם SMS</span>
                 <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.04 122)" }} />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <AppLabel htmlFor="login-email">אימייל</AppLabel>
-                <div className="relative">
-                  <AppInput
-                    id="login-email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="אימייל"
-                    value={loginEmail}
-                    onChange={(e) => {
-                      setLoginEmail(e.target.value);
-                      if (loginEmailError) {
-                        setLoginEmailError(validateEmail(e.target.value));
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSendEmailCode();
-                    }}
-                    dir="ltr"
-                    className="pr-10"
-                  />
-                  <Mail
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
-                    style={{ color: "#aaa" }}
-                  />
-                </div>
-                {loginEmailError && (
-                  <p className="text-xs" style={{ color: "oklch(0.55 0.18 30)" }}>
-                    {loginEmailError}
-                  </p>
-                )}
-              </div>
+              <IsraeliPhoneInput
+                value={phone}
+                onChange={(val) => {
+                  setPhone(val);
+                  if (phoneError) setPhoneError(null);
+                }}
+                error={phoneError ?? undefined}
+              />
 
               <AppButton
                 variant="cta"
                 size="lg"
-                onClick={handleSendEmailCode}
-                disabled={sendEmailCode.isPending || sendCooldown > 0}
+                onClick={handleSendCode}
+                disabled={sendOtp.isPending || sendCooldown > 0}
                 className="w-full"
               >
-                {sendEmailCode.isPending ? (
+                {sendOtp.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin ml-2" />
                     שולח קוד...
@@ -355,7 +383,150 @@ export default function LoginModal({
                     שניות
                   </>
                 ) : (
-                  "שלחו לי קוד למייל"
+                  "שלחו לי קוד ב-SMS"
+                )}
+              </AppButton>
+
+              <p className="text-center text-xs leading-relaxed" style={{ color: "#999" }}>
+                בהמשך, את/ה מאשר/ת את{" "}
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                  style={{ color: "#667" }}
+                >
+                  תנאי השימוש
+                </a>{" "}
+                ו
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                  style={{ color: "#667" }}
+                >
+                  מדיניות הפרטיות
+                </a>
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {step === "register" && (
+        <motion.div
+          key="login-register-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[60] flex items-end justify-center"
+          style={{ background: "oklch(0 0 0 / 0.5)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+          dir="rtl"
+        >
+          <motion.div
+            key="login-register-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="w-full max-w-lg flex flex-col"
+            style={{
+              borderRadius: "20px 20px 0 0",
+              background: "var(--page-bg-gradient)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            }}
+          >
+            <div className="flex justify-center pt-2.5 pb-0 flex-shrink-0" aria-hidden="true">
+              <div
+                className="rounded-full"
+                style={{ background: "rgba(0,0,0,0.22)", width: 40, height: 4 }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between px-4 pt-2 pb-1 flex-shrink-0">
+              <button
+                onClick={handleBackToEntry}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ color: "#666" }}
+                aria-label="חזור"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <h2 className="text-lg font-bold" style={{ color: "#556b2f" }}>
+                הרשמה מהירה
+              </h2>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full"
+                style={{ color: "#666" }}
+                aria-label="סגור"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="px-5 pt-1 pb-6 flex flex-col gap-4">
+              <p className="text-sm text-center" style={{ color: "#888" }}>
+                לא מצאנו חשבון עם המספר הזה — נרשמים מהר, רק צריך מייל
+              </p>
+
+              <IsraeliPhoneInput
+                value={phone}
+                onChange={() => {}}
+                disabled
+              />
+
+              <div className="flex flex-col gap-1.5">
+                <AppLabel htmlFor="register-email">אימייל</AppLabel>
+                <div className="relative">
+                  <AppInput
+                    id="register-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError(validateEmail(e.target.value));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRegister();
+                    }}
+                    dir="ltr"
+                    className="pr-10"
+                  />
+                  <Mail
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
+                    style={{ color: "#aaa" }}
+                  />
+                </div>
+                {emailError && (
+                  <p className="text-xs" style={{ color: "oklch(0.55 0.18 30)" }}>
+                    {emailError}
+                  </p>
+                )}
+              </div>
+
+              <AppButton
+                variant="cta"
+                size="lg"
+                onClick={handleRegister}
+                disabled={sendOtp.isPending}
+                className="w-full"
+              >
+                {sendOtp.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                    שולח קוד...
+                  </>
+                ) : (
+                  "המשך"
                 )}
               </AppButton>
 
@@ -439,13 +610,13 @@ export default function LoginModal({
                 />
               </div>
               <p className="text-sm" style={{ color: "#666" }}>
-                שלחנו קוד חד-פעמי לכתובת
+                שלחנו קוד חד-פעמי ב-SMS למספר
               </p>
               <p className="font-medium text-sm" style={{ color: "#222" }}>
-                {loginEmail}
+                {maskPhone(sentPhone)}
               </p>
               <p className="text-xs leading-relaxed" style={{ color: "#999" }}>
-                הזינו את הקוד שקיבלתם במייל. הקוד תקף ל-5 דקות.
+                הזינו את הקוד שקיבלתם ב-SMS. הקוד תקף ל-10 דקות.
               </p>
             </div>
 
@@ -464,7 +635,7 @@ export default function LoginModal({
                   inputMode="numeric"
                   autoComplete={index === 0 ? "one-time-code" : "off"}
                   maxLength={1}
-                  disabled={verifyEmailCode.isPending}
+                  disabled={verifyOtp.isPending}
                   className="w-11 h-14 rounded-xl border-2 text-center text-2xl font-bold bg-background text-foreground"
                   style={{ borderColor: digit ? "oklch(0.50 0.09 124.9)" : "oklch(0.88 0.04 122)" }}
                 />
@@ -475,10 +646,10 @@ export default function LoginModal({
               variant="cta"
               size="lg"
               onClick={handleVerifyClick}
-              disabled={verifyEmailCode.isPending || digits.includes("")}
+              disabled={verifyOtp.isPending || digits.includes("")}
               className="w-full"
             >
-              {verifyEmailCode.isPending ? (
+              {verifyOtp.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin ml-2" />
                   מאמת...
@@ -494,11 +665,11 @@ export default function LoginModal({
             <AppButton
               variant="outline"
               size="lg"
-              onClick={handleSendEmailCode}
-              disabled={sendEmailCode.isPending || sendCooldown > 0}
+              onClick={resend}
+              disabled={sendOtp.isPending || sendCooldown > 0}
               className="w-full"
             >
-              {sendEmailCode.isPending ? (
+              {sendOtp.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin ml-2" />
                   שולח שוב...

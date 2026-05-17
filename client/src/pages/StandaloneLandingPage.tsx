@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useUserMode } from "@/contexts/UserModeContext";
 import henidmanLandingHtml from "@/landingPage/HenidmanLandingPage.html?raw";
-import henidmanLandingScriptUrl from "@/landingPage/henidmanLandingPage.js?url";
+import landingScriptUrl from "@/landingPage/shared/landing.js?url";
 import workerImageUrl from "@/assets/worker.png";
 import systemLogoUrl from "@/assets/full logo1.svg";
 
@@ -16,7 +16,7 @@ const LANDING_PAGES = {
       "assets/avodago-logo-light.png": systemLogoUrl,
       "assets/worker.png": workerImageUrl,
       "../assets/worker.png": workerImageUrl,
-      "assets/henidman-landing.js": henidmanLandingScriptUrl,
+      "assets/landing.js": landingScriptUrl,
     },
   },
 } as const;

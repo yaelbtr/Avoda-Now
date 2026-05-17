@@ -238,6 +238,7 @@ export default function Admin() {
   // Queries
   const statsQuery = trpc.admin.stats.useQuery(undefined, { enabled: !!user && user.role === "admin" });
   const referralStatsQuery = trpc.admin.referralStats.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "stats" });
+  const landingVisitsQuery = trpc.admin.landingVisits.useQuery(undefined, { enabled: !!user && user.role === "admin" && activeTab === "stats" });
   const jobsQuery = trpc.admin.listJobs.useQuery(
     { status: jobStatusFilter === "all" ? undefined : jobStatusFilter, limit: 100 },
     { enabled: !!user && user.role === "admin" && activeTab === "jobs" }
@@ -576,6 +577,12 @@ export default function Admin() {
                 <StatCard title="סה״כ משתמשים" value={stats.totalUsers} icon={Users} color="bg-purple-100 text-purple-600" />
                 <StatCard title="סה״כ דיווחים" value={stats.totalReports} icon={Flag} color="bg-orange-100 text-orange-600" />
                 <StatCard title="משתמשים חדשים היום" value={stats.newUsersToday} icon={UserCheck} color="bg-teal-100 text-teal-600" />
+                <StatCard
+                  title="ביקורים מפייסבוק — Henidman"
+                  value={landingVisitsQuery.data?.find((r) => r.slug === "henidman" && r.source === "facebook")?.count ?? 0}
+                  icon={Share2}
+                  color="bg-blue-50 text-blue-700"
+                />
               </div>
             ) : null}
 

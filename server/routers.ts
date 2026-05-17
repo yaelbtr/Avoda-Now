@@ -79,6 +79,12 @@ import {
   getJobCountByCityAndCategory,
   getActiveCategories,
   getAllCategories,
+  getCategoryWorkerCounts,
+  mergeCategorySlugs,
+  getCategoryGroups,
+  createCategoryGroup,
+  updateCategoryGroup,
+  deleteCategoryGroup,
   createCategory,
   updateCategory,
   toggleCategoryActive,
@@ -177,6 +183,7 @@ import {
   getJobsWithNotificationStats,
   getNotificationLogsForJob,
   getNotificationBatchSummaryForJob,
+  adminGetLandingPageVisits,
 } from "./adminDb";
 import {
   isValidIsraeliPhone,
@@ -268,9 +275,9 @@ const authRouter = router({
             message: "מספר הטלפון כבר רשום במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.",
           });
         }
-        // Email duplicate check (only if email provided)
+        // Email duplicate check (only if email provided) — lowercase for case-insensitive match
         if (input.email) {
-          const emailUser = await getUserByEmail(input.email);
+          const emailUser = await getUserByEmail(input.email.toLowerCase());
           if (emailUser) {
             // Provide a context-aware message based on how the existing account was created
             const isGoogleAccount = isGoogleLoginMethod(emailUser.loginMethod);
@@ -442,8 +449,28 @@ const authRouter = router({
             message: "יש לאשר את תנאי השימוש לפני ההרשמה.",
           });
         }
+        // Email required for new registrations — prevents duplicate accounts
+        if (!input.email) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "יש להזין כתובת מייל להרשמה.",
+          });
+        }
+        const emailLc = input.email.toLowerCase();
+        const emailUser = await getUserByEmail(emailLc);
+        if (emailUser) {
+          const isGoogleAccount = isGoogleLoginMethod(emailUser.loginMethod);
+          const message = isGoogleAccount
+            ? "המייל כבר קשור לחשבון קיים שנפתח באמצעות Google. אנא התחבר עם Google במקום."
+            : "כתובת המייל כבר רשומה במערכת. אם אתה משתמש קיים, נסה להתחבר או פנה למנהל המערכת.";
+          void logEvent("warn", "signup.email_duplicate", "Email duplicate blocked at verifyOtp", {
+            phone,
+            meta: { emailLc, existingUserId: emailUser.id, loginMethod: emailUser.loginMethod },
+          });
+          throw new TRPCError({ code: "CONFLICT", message });
+        }
         try {
-          user = await createUserByPhone(phone, input.name, input.email, true, normalizeIsraeliPhone, input.referralSource, input.utmCampaign, input.utmMedium);
+          user = await createUserByPhone(phone, input.name, emailLc, true, normalizeIsraeliPhone, input.referralSource, input.utmCampaign, input.utmMedium);
           void logEvent("info", "signup.user_created", "New user created via phone OTP", {
             phone,
             userId: user?.id,
@@ -2024,6 +2051,9 @@ const adminRouter = router({
   /** Dashboard statistics */
   stats: adminProcedure.query(async () => adminGetStats()),
 
+  /** ביקורים לדפי נחיתה לפי מקור (facebook וכד') */
+  landingVisits: adminProcedure.query(async () => adminGetLandingPageVisits()),
+
   /** Registration source breakdown (fbclid / gclid / utm_source) */
   referralStats: adminProcedure.query(async () => adminGetReferralStats()),
 
@@ -3420,7 +3450,8 @@ const categoriesRouter = router({
   /** Get all categories including inactive (admin only) */
   adminList: protectedProcedure.query(async ({ ctx }) => {
     if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-    return getAllCategories();
+    const [cats, workerCounts] = await Promise.all([getAllCategories(), getCategoryWorkerCounts()]);
+    return cats.map((cat) => ({ ...cat, workerCount: workerCounts[cat.slug] ?? 0 }));
   }),
   /** Create a new category (admin only) */
   create: protectedProcedure
@@ -3488,6 +3519,45 @@ const categoriesRouter = router({
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const inserted = await syncMissingCategories();
       return { inserted, count: inserted.length };
+    }),
+
+  /** מזג fromSlug לתוך toSlug: מעדכן משרות ועובדים, מוחק את fromSlug */
+  merge: protectedProcedure
+    .input(z.object({ fromSlug: z.string().min(1), toSlug: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (input.fromSlug === input.toSlug) throw new TRPCError({ code: "BAD_REQUEST", message: "לא ניתן למזג קטגוריה עם עצמה" });
+      await mergeCategorySlugs(input.fromSlug, input.toSlug);
+      return { success: true };
+    }),
+});
+
+// ─── Category Groups Router ────────────────────────────────────────────────────
+
+const categoryGroupsRouter = router({
+  list: publicProcedure.query(async () => getCategoryGroups()),
+
+  create: protectedProcedure
+    .input(z.object({ slug: z.string().min(2).max(64).regex(/^[a-z0-9_]+$/), name: z.string().min(1).max(100), sortOrder: z.number().int().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      return createCategoryGroup(input);
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ id: z.number().int(), name: z.string().min(1).max(100).optional(), sortOrder: z.number().int().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { id, ...data } = input;
+      return updateCategoryGroup(id, data);
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      await deleteCategoryGroup(input.id);
+      return { success: true };
     }),
 });
 
@@ -3839,6 +3909,7 @@ export const appRouter = router({
   ratings: ratingsRouter,
   seo: seoRouter,
   categories: categoriesRouter,
+  categoryGroups: categoryGroupsRouter,
   regions: regionsRouter,
   referral: referralRouter,
   support: supportRouter,

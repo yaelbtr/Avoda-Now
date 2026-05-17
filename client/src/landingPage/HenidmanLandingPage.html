@@ -1,13 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 
 <head>
+  <!-- @partial:head-meta START -->
+  <!-- @page-specific: title, description, canonical, og:url, og:image, og:description, twitter:* -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>הצטרף כנותן שירות | AvodaGo - עבודות זמניות בישראל</title>
   <meta name="description" content="הצטרף ל-AvodaGo כנותן שירות עצמאי ותתחיל לעבוד בימים הקרובים. מאות מעסיקים מחפשים עובדים כמוך - ניקיון, שליחויות, מטבח ועוד. הרשמה חינמית ומהירה." />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://avoda-go.co.il/lp/henidman" />
+  <meta property="fb:app_id" content="1433439365136310" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="AvodaGo" />
   <meta property="og:locale" content="he_IL" />
@@ -19,3300 +22,24 @@
   <meta name="twitter:title" content="הצטרף כנותן שירות | AvodaGo" />
   <meta name="twitter:description" content="עבודות להנדימן באזור שלך | AvodaGo" />
   <meta name="twitter:image" content="https://avoda-go.co.il/og/henidman.png" />
+  <!-- @partial:head-meta END -->
+
+  <!-- @partial:head-fonts START (shared — Rubik + Secular One) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Secular+One&display=swap"
     rel="stylesheet">
-  <style>
-    /* ── Tokens ───────────────────────────────────────────────── */
-    :root {
-      --brand: #48522A;
-      --brand-dark: #363D1F;
-      --brand-darker: #252A15;
-      --brand-mid: #5E6A3D;
-      --amber: #8B6914;
-      --citrus: #C99A2E;
-      --honey: #E8D5A8;
-      --honey-soft: #F0E2BC;
-      --linen: #F3F0E5;
-      --cream: #FDFCF8;
-      --plum: #614461;
-      --plum-soft: #7E5C7E;
-      --plum-dark: #4A3349;
-      --plum-darker: #2E1F2E;
-      --ink: #1b1c1a;
-      --ink-soft: #46483d;
-      --ink-mute: #77786c;
+  <!-- @partial:head-fonts END -->
 
-      --font-display: 'Secular One', system-ui, sans-serif;
-      --font-body: 'Rubik', system-ui, sans-serif;
-      --font-rubik: 'Rubik', system-ui, sans-serif;
-      --shadow-card: 0 1px 2px rgba(27, 28, 26, .04), 0 8px 28px rgba(27, 28, 26, .07);
-      --shadow-lift: 0 14px 38px rgba(54, 61, 31, .18);
-      --shadow-glow: 0 12px 40px rgba(139, 105, 20, .32);
-
-      --radius-sm: 10px;
-      --radius: 18px;
-      --radius-lg: 26px;
-      --radius-pill: 999px;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: var(--font-body);
-      color: var(--ink);
-      background: var(--cream);
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
-    }
-
-    img,
-    svg {
-      display: block;
-      max-width: 100%;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button {
-      font-family: inherit;
-      cursor: pointer;
-      border: none;
-      background: none;
-    }
-
-    /* ── Decorative paper-grain background ───────────────────── */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      /* background-image:
-      radial-gradient(1200px 600px at 80% -10%, rgba(139,105,20,.18), transparent 60%),
-      radial-gradient(900px 500px at -10% 30%, rgba(232,213,168,.45), transparent 60%),
-      radial-gradient(700px 400px at 120% 90%, rgba(97,68,97,.16), transparent 60%); */
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: .35;
-      /* background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); */
-    }
-
-    /* ── Layout ───────────────────────────────────────────────── */
-    .container {
-      padding: 10px;
-      padding-top: 0;
-      width: min(1200px, 92%);
-      margin-inline: auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ── Nav ──────────────────────────────────────────────────── */
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: var(--cream);
-      backdrop-filter: saturate(140%) blur(14px);
-      -webkit-backdrop-filter: saturate(140%) blur(14px);
-    }
-
-    .nav-inner {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      padding: 14px 0;
-      gap: 24px;
-    }
-
-    .hero-copy {
-      margin-top: 30px;
-    }
-
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      grid-column: 2;
-      justify-self: center;
-      font-family: var(--font-display);
-      color: var(--brand-dark);
-      font-size: 22px;
-    }
-
-    .logo-img {
-      height: 66px;
-      width: auto;
-      display: block;
-      margin-top: 20px;
-    }
-
-    .logo-img-light {
-      height: 66px;
-    }
-
-    .nav .logo {
-      width: 230px;
-      height: 56px;
-      overflow: hidden;
-    }
-
-    .nav .logo-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center center;
-      transform: scale(1.55);
-      transform-origin: center center;
-    }
-
-    .logo-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: var(--brand-dark);
-      color: var(--citrus);
-      display: grid;
-      place-items: center;
-      font-family: var(--font-display);
-      font-size: 18px;
-      box-shadow: 0 4px 14px rgba(54, 61, 31, .25);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .logo-mark::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(80% 60% at 30% 20%, rgba(201, 154, 46, .22), transparent 60%);
-    }
-
-    .logo b {
-      font-weight: 400;
-    }
-
-    .logo-tag {
-      font-family: var(--font-body);
-      font-weight: 500;
-      color: var(--ink-mute);
-      font-size: 12px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: rgba(54, 61, 31, .06);
-      margin-inline-start: 4px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      align-items: center;
-      grid-column: 3;
-      justify-self: end;
-    }
-
-    .nav-links a {
-      font-size: 14.5px;
-      color: var(--ink-soft);
-      font-weight: 500;
-      transition: color .18s;
-    }
-
-    .nav-links a:hover {
-      color: var(--brand-dark);
-    }
-
-    @media (max-width: 760px) {
-      .nav-links {
-        display: none;
-      }
-    }
-
-    .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--brand-dark);
-      color: var(--cream);
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 14.5px;
-      transition: transform .18s, box-shadow .18s;
-    }
-
-    .nav-cta:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(54, 61, 31, .25);
-    }
-
-    .nav-cta svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    /* ── Buttons ──────────────────────────────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 28px;
-      border-radius: var(--radius-pill);
-      font-weight: 700;
-      font-size: 16px;
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-mid) 100%);
-      color: white;
-      /* box-shadow: var(--shadow-glow); */
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-primary::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, .55) 50%, transparent 70%);
-      transform: translateX(120%);
-      transition: transform .9s;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 48px rgba(139, 105, 20, .45);
-    }
-
-    .btn-primary:hover::after {
-      transform: translateX(-120%);
-    }
-
-    .btn-ghost {
-      color: var(--brand-dark);
-      background: rgba(54, 61, 31, .06);
-      border: 1px solid rgba(54, 61, 31, .12);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(54, 61, 31, .1);
-      transform: translateY(-1px);
-    }
-
-    .btn .arrow {
-      width: 20px;
-      height: 20px;
-      border-radius: 999px;
-      background: rgba(54, 61, 31, .2);
-      display: grid;
-      place-items: center;
-      transition: transform .2s;
-    }
-
-    .btn:hover .arrow {
-      transform: translateX(-4px);
-    }
-
-    .btn .arrow svg {
-      width: 11px;
-      height: 11px;
-    }
-
-    /* ── כפתור CTA ראשי – הדגשה ──────────────────────────────── */
-    @keyframes heroBtnPulse {
-      0% {
-        box-shadow:
-          0 6px 28px rgba(54, 61, 31, .38),
-          0 0 0 0   rgba(201, 154, 46, 0.5),
-          0 0 0 0   rgba(201, 154, 46, 0.25);
-      }
-      60% {
-        box-shadow:
-          0 12px 44px rgba(54, 61, 31, .52),
-          0 0 0 10px rgba(201, 154, 46, 0.1),
-          0 0 0 24px rgba(201, 154, 46, 0.04);
-      }
-      100% {
-        box-shadow:
-          0 6px 28px rgba(54, 61, 31, .38),
-          0 0 0 0   rgba(201, 154, 46, 0),
-          0 0 0 0   rgba(201, 154, 46, 0);
-      }
-    }
-
-    @keyframes heroBtnArrowBounce {
-      0%, 100% { transform: translateX(0); }
-      45%       { transform: translateX(-4px); }
-      65%       { transform: translateX(-2px); }
-    }
-
-    .hero-ctas .btn-primary {
-      animation: heroBtnPulse 2.6s ease-out infinite;
-      font-size: 17px;
-      padding: 18px 32px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      background: linear-gradient(140deg, var(--brand-darker) 0%, var(--brand-mid) 100%);
-    }
-
-    .hero-ctas .btn-primary .arrow {
-      animation: heroBtnArrowBounce 2s ease-in-out infinite;
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .hero-ctas .btn-primary:hover {
-      animation: none;
-      transform: translateY(-3px);
-      box-shadow: 0 18px 48px rgba(54, 61, 31, .5), 0 0 0 4px rgba(201, 154, 46, .18);
-    }
-
-    .hero-ctas .btn-primary:hover .arrow {
-      animation: none;
-    }
-
-    /* ── HERO ─────────────────────────────────────────────────── */
-    .hero {
-      position: relative;
-      /* padding: 42px 0 90px; */
-      overflow: hidden;
-      background: rgb(0 0 0 / 0.05);
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 64px;
-      align-items: center;
-    }
-
-    @media (max-width: 940px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-        gap: 48px;
-      }
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(54, 61, 31, .07);
-      border: 1px solid rgba(54, 61, 31, .12);
-      padding: 7px 14px;
-      border-radius: 999px;
-      font-weight: 500;
-      font-size: 13.5px;
-      color: var(--brand-dark);
-      margin-bottom: 28px;
-    }
-
-    .eyebrow .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #2fa467;
-      box-shadow: 0 0 0 0 rgba(47, 164, 103, .6);
-      animation: pulse 1.8s infinite;
-    }
-
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(47, 164, 103, .6);
-      }
-
-      70% {
-        box-shadow: 0 0 0 10px rgba(47, 164, 103, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(47, 164, 103, 0);
-      }
-    }
-
-    .hero h1 {
-      font-weight: 600;
-      font-family: var(--font-display);
-      font-size: clamp(34px, 5vw, 72px);
-      line-height: .98;
-      color: var(--brand-darker);
-      margin: 0 0 22px;
-      letter-spacing: -0.01em;
-    }
-
-    .hero h1 .accent {
-      background: linear-gradient(180deg, transparent 65%, rgba(201, 154, 46, .55) 65%);
-      padding: 0 4px;
-    }
-
-    .hero h1 .swap {
-      display: inline-block;
-      color: var(--amber);
-      position: relative;
-    }
-
-    .hero h1 .swap::after {
-      content: "";
-      position: absolute;
-      inset-inline-start: 0;
-      inset-inline-end: 0;
-      bottom: -6px;
-      height: 5px;
-      background: var(--amber);
-      border-radius: 4px;
-      transform: scaleX(0);
-      transform-origin: right;
-      animation: underline 1.4s .8s ease forwards;
-    }
-
-    @keyframes underline {
-      to {
-        transform: scaleX(1);
-      }
-    }
-
-    .hero p.lead {
-      font-size: clamp(17px, 1.45vw, 20px);
-      color: var(--ink-soft);
-      line-height: 1.55;
-      max-width: 560px;
-      margin: 0 0 36px;
-    }
-
-    .lead-emphasis {
-      
-      font-weight: 800;
-      color: #a57f1e;
-   
-    font-size: 14px;
-    }
-
-    .hero-ctas {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .hero-cta-note {
-      margin: -8px 0 24px;
-      color: var(--ink-mute);
-      font-size: 12.5px;
-      font-weight: 500;
-      line-height: 1.5;
-    }
-
-    .hero-meta {
-      margin-top: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-start;
-      color: #252a15;
-      
-    }
-
-    @keyframes checkSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .hero-meta .check {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      margin-bottom:7px;
-      opacity: 0;
-      animation: checkSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-
-    .hero-meta .check:nth-child(1) { animation-delay: 0.25s; }
-    .hero-meta .check:nth-child(2) { animation-delay: 0.45s; }
-    .hero-meta .check:nth-child(3) { animation-delay: 0.65s; }
-
-    .check-icon {
-   width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #48522a26;
-    color: #48522a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    }
-
-    .check-icon svg {
-      width: 15px;
-      height: 15px;
-      stroke:#48522a;
-    }
-
-    /* Hero card stack - animated phone mock */
-    .hero-art {
-      position: relative;
-      height: 580px;
-      display: grid;
-      place-items: center;
-    }
-
-    @media (max-width: 940px) {
-      .hero-art {
-        height: 480px;
-      }
-    }
-
-    /* Worker portrait - the human anchor */
-    .worker-stage {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .worker-disc {
-      position: absolute;
-      width: 460px;
-      height: 460px;
-      bottom: 30px;
-      inset-inline-start: -20px;
-      border-radius: 50%;
-      background:
-        radial-gradient(circle at 65% 30%, rgba(232, 213, 168, .6), rgba(232, 213, 168, .18) 55%, transparent 75%),
-        radial-gradient(circle at 30% 80%, rgba(97, 68, 97, .2), transparent 65%);
-      z-index: 0;
-      animation: discPulse 6s ease-in-out infinite;
-    }
-
-    @keyframes discPulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.04);
-      }
-    }
-
-    .worker-img {
-      position: absolute;
-      bottom: -10px;
-      inset-inline-start: -40px;
-      height: 108%;
-      width: auto;
-      z-index: 1;
-      filter: drop-shadow(-12px 22px 28px rgba(54, 61, 31, .25));
-      -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
-      mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
-      animation: workerIn 1s .2s ease-out both;
-    }
-
-    @keyframes workerIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(60px);
-      z-index: 0;
-    }
-
-    .blob.b1 {
-      width: 380px;
-      height: 380px;
-      background: rgba(139, 105, 20, .38);
-      top: -20px;
-      left: -40px;
-      animation: float1 9s ease-in-out infinite;
-      z-index: 0;
-    }
-
-    .blob.b2 {
-      width: 320px;
-      height: 320px;
-      background: rgba(97, 68, 97, .28);
-      bottom: 20px;
-      right: 0;
-      animation: float2 11s ease-in-out infinite;
-      z-index: 0;
-    }
-
-    @keyframes float1 {
-      50% {
-        transform: translate(20px, 30px);
-      }
-    }
-
-    @keyframes float2 {
-      50% {
-        transform: translate(-30px, -20px);
-      }
-    }
-
-    .phone {
-      position: relative;
-      z-index: 2;
-      width: 300px;
-      height: 510px;
-      background: linear-gradient(160deg, #25311a 0%, #1a2310 100%);
-      border-radius: 44px;
-      padding: 14px;
-      box-shadow:
-        0 30px 80px rgba(54, 61, 31, .4),
-        0 0 0 1px rgba(201, 154, 46, .1) inset,
-        0 0 0 8px rgba(255, 255, 255, .04);
-      transform: translateX(28%) rotate(-5deg);
-    }
-
-    .phone-screen {
-      width: 100%;
-      height: 100%;
-      border-radius: 32px;
-      background: var(--cream);
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .phone-statusbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--brand-darker);
-    }
-
-    .phone-statusbar .icons {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-    }
-
-    .phone-statusbar .icons span {
-      display: inline-block;
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: var(--brand-darker);
-    }
-
-    .phone-header {
-      padding: 8px 18px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .phone-header .greet {
-      font-size: 13px;
-      color: var(--ink-mute);
-    }
-
-    .phone-header .greet b {
-      display: block;
-      color: var(--brand-darker);
-      font-size: 16px;
-      font-family: var(--font-display);
-      margin-top: 2px;
-    }
-
-    .phone-header .avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--amber), var(--citrus));
-      color: var(--brand-darker);
-      font-weight: 700;
-      display: grid;
-      place-items: center;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(139, 105, 20, .35);
-    }
-
-    .phone-balance {
-      margin: 0 16px;
-      background: var(--brand-dark);
-      color: var(--cream);
-      border-radius: 20px;
-      padding: 16px 18px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .phone-balance::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(80% 80% at 100% 0%, rgba(201, 154, 46, .25), transparent 60%);
-    }
-
-    .phone-balance .label {
-      font-size: 12px;
-      opacity: .7;
-    }
-
-    .phone-balance .amount {
-      font-family: var(--font-display);
-      font-size: 30px;
-      margin-top: 4px;
-      letter-spacing: -.01em;
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .phone-balance .amount span.unit {
-      font-size: 16px;
-      opacity: .85;
-    }
-
-    .phone-balance .delta {
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--citrus);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .phone-list {
-      padding: 16px;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .phone-list h4 {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ink-mute);
-      margin: 0 0 10px;
-      letter-spacing: .03em;
-    }
-
-    .job-card {
-      background: white;
-      border: 1px solid rgba(54, 61, 31, .08);
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(27, 28, 26, .04);
-      opacity: 0;
-      animation: jobIn .6s forwards;
-    }
-
-    .job-card:nth-child(2) {
-      animation-delay: .2s;
-    }
-
-    .job-card:nth-child(3) {
-      animation-delay: .4s;
-    }
-
-    .job-card:nth-child(4) {
-      animation-delay: .6s;
-    }
-
-    @keyframes jobIn {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .job-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 0;
-      display: grid;
-      place-items: center;
-      background: transparent;
-      color: var(--brand-dark);
-      flex-shrink: 0;
-    }
-
-    .job-icon.amber {
-      background: transparent;
-      color: #8a5a17;
-    }
-
-    .job-icon.citrus {
-      background: transparent;
-      color: #8a5a17;
-    }
-
-    .job-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .job-info .title {
-      font-weight: 600;
-      font-size: 13.5px;
-      color: var(--brand-darker);
-    }
-
-    .job-info .meta {
-      font-size: 11.5px;
-      color: var(--ink-mute);
-      margin-top: 2px;
-    }
-
-    .job-price {
-      font-family: var(--font-display);
-      font-size: 16px;
-      color: var(--brand-darker);
-    }
-
-    .job-price small {
-      font-size: 11px;
-      color: var(--ink-mute);
-      display: block;
-    }
-
-    /* Floating notif card */
-    .notif {
-      position: absolute;
-      top: 220px;
-      right: -30px;
-        color: white;
-    background: var(--plum);
-      border-radius: 16px;
-      padding: 12px 14px;
-      width: 240px;
-       
-      border: 1px solid rgba(54, 61, 31, .08);
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-      z-index: 3;
-      animation: notifIn .8s 1.2s both, notifFloat 4s 2s ease-in-out infinite;
-      transform-origin: right center;
-    }
-
-    @keyframes notifIn {
-      from {
-        opacity: 0;
-        transform: translateY(-12px) rotate(4deg);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) rotate(2deg);
-      }
-    }
-
-    @keyframes notifFloat {
-
-      0%,
-      100% {
-        transform: translateY(0) rotate(2deg);
-      }
-
-      50% {
-        transform: translateY(-6px) rotate(2deg);
-      }
-    }
-
-    @keyframes notifCFloat {
-
-      0%,
-      100% {
-        transform: translateY(0) rotate(-7deg);
-      }
-
-      50% {
-        transform: translateY(-6px) rotate(-7deg);
-      }
-    }
-
-    @keyframes locFloat {
-      0%,
-      100% {
-        transform: translateY(0) rotate(0deg);
-      }
-
-      50% {
-        transform: translateY(-6px) rotate(0deg);
-      }
-    }
-
-    .notif .icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 0;
-      background: transparent;
-      color: #e9ad17;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-
-    .notif .icon svg {
-      width: 21px;
-      height: 21px;
-      animation: bellRing 1.6s 1.8s ease-in-out infinite;
-      transform-origin: 50% 10%;
-    }
-
-    @keyframes bellRing {
-      0%, 45%, 100% {
-        transform: rotate(0deg);
-      }
-      5%, 15%, 25% {
-        transform: rotate(12deg);
-      }
-      10%, 20%, 30% {
-        transform: rotate(-12deg);
-      }
-      35% {
-        transform: rotate(6deg);
-      }
-      40% {
-        transform: rotate(-4deg);
-      }
-    }
-
-    /* .notif b {
-      display: block;
-      font-size: 13px;
-      color: var(--brand-darker);
-    } */
-
-    /* .notif span {
-      font-size: 11.5px;
-      color:#2a2c0d;
-    } */
-
-    .badge-card {
-      position: absolute;
-      bottom: 70px;
-      left: -30px;
-      background: white;
-      border-radius: 16px;
-      padding: 12px 14px;
-      box-shadow: var(--shadow-lift);
-      border: 1px solid rgba(54, 61, 31, .08);
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      z-index: 3;
-      animation:  notifCFloat 5s 2.4s ease-in-out infinite reverse;
-      transform: rotate(-7deg);
-    }
-
-    .badge-card .badge-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 0;
-      background: transparent;
-      display: grid;
-      place-items: center;
-      color: #e9ad17;
-      flex-shrink: 0;
-    }
-
-    .badge-card .badge-icon svg {
-      width: 21px;
-      height: 21px;
-    }
-
-    @keyframes badgeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px) rotate(-6deg);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) rotate(-3deg);
-      }
-    }
-
-    .badge-card .stars {
-      color: var(--amber);
-      font-size: 13px;
-    }
-
-    .badge-card b {
-      display: block;
-      font-size: 13px;
-      color: var(--brand-darker);
-    }
-
-    .badge-card span {
-      font-size: 11px;
-      color: var(--ink-mute);
-    }
-
-    /* ── Location notif bubble ──────────────────────────────── */
-    .location-notif {
-      position: absolute;
-      bottom: 70px;
-      right: -28px;
-    color: white;
-    
-    background: #656654;
-      border-radius: 16px;
-      padding: 10px 14px;
-      min-width: 190px;
-      box-shadow: var(--shadow-lift);
-      border: 1px solid rgba(54, 61, 31, .08);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      z-index: 3;
-      animation: locIn .8s 2s both, locFloat 4.5s 2.8s ease-in-out infinite;
-      transform-origin: right center;
-    }
-
-    @keyframes locIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px) rotate(0deg);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) rotate(0deg);
-      }
-    }
-
-    .location-notif .loc-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 0;
-      background: transparent;
-      display: grid;
-      place-items: center;
-      color: #e9ad17;
-      flex-shrink: 0;
-    }
-
-    .location-notif .loc-icon svg {
-      width: 21px;
-      height: 21px;
-    }
-
-    .location-notif b {
-      display: block;
-      font-size: 12.5px;
-      color: white;
-      white-space: nowrap;
-    }
-
-    .location-notif span {
-      font-size: 10.5px;
-      color: var(--ink-mute);
-    }
-
-    /* ── Trust cards ─────────────────────────────────────────── */
-    .trust {
-      padding: 56px 0;
-      border-block: 1px solid rgba(54, 61, 31, .1);
-      background:
-        radial-gradient(420px 200px at 85% 50%, rgba(97, 68, 97, .07), transparent 70%),
-        linear-gradient(0deg, rgba(232, 213, 168, .2), rgba(232, 213, 168, .08));
-      position: relative;
-      z-index: 1;
-    }
-
-    .trust-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    @media (max-width: 760px) {
-      .trust-grid {
-              margin-top: 30px;
-        gap: 8px;
-          margin-bottom: 20px;
-      }
-    }
-
-    .trust-cell {
-      background: white;
-      border: 1px solid rgba(54, 61, 31, .09);
-      border-radius: 20px;
-      padding: 22px 18px 18px;
-      display: grid;
-      grid-template-rows: 48px minmax(48px, auto) minmax(34px, auto);
-      align-items: center;
-      justify-items: center;
-      align-content: start;
-      gap: 4px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      transition: transform .25s ease, box-shadow .25s ease;
-      transition-delay: 0s;
-    }
-
-    .trust-cell:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lift);
-    }
-
-    /* stagger on reveal */
-    .trust-cell:nth-child(1) { transition-delay: 0s; }
-    .trust-cell:nth-child(2) { transition-delay: .08s; }
-    .trust-cell:nth-child(3) { transition-delay: .16s; }
-
-    .trust-cell.featured {
-      background: linear-gradient(155deg, #614461 0%, #442f43 100%);
-      border-color: transparent;
-    }
-
-    .trust-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 0;
-      background: transparent;
-      color: var(--brand);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-bottom: 2px;
-    }
-
-    .trust-cell.featured .trust-icon {
-      background: transparent;
-      color: var(--honey);
-    }
-
-    .trust-icon svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    .trust-num {
-      font-family: var(--font-display);
-      font-size: clamp(28px, 3.5vw, 42px);
-      color: var(--brand-darker);
-      letter-spacing: -.01em;
-      line-height: 1;
-    }
-
-    .trust-num--text {
-      font-size: clamp(18px, 2vw, 24px);
-      line-height: 1.15;
-    }
-
-    .trust-cell.featured .trust-num {
-      color: var(--honey);
-    }
-
-    .trust-num small {
-      font-size: .52em;
-      color: var(--plum);
-      margin-inline-start: 2px;
-      font-family: var(--font-body);
-      font-weight: 500;
-    }
-
-    .trust-cell.featured .trust-num small {
-      color: rgba(253, 252, 248, .65);
-    }
-
-    .trust-label {
-      font-size: 12px;
-      color: var(--ink-mute);
-      font-weight: 400;
-      line-height: 1.4;
-    }
-
-    .trust-cell.featured .trust-label {
-      color: rgba(253, 252, 248, .55);
-      font-size: 13px;
-    }
-
-    .trust-badge {
-      margin-top: auto;
-      padding-top: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--brand-mid);
-    }
-
-    .trust-badge svg {
-      width: 12px;
-      height: 12px;
-      flex-shrink: 0;
-    }
-
-    .trust-cell.featured .trust-badge {
-      color: rgba(253, 252, 248, .7);
-    }
-
-    /* ── Section base ────────────────────────────────────────── */
-    section.block {
-      padding: 110px 0;
-      position: relative;
-    }
-
-    @media (max-width: 760px) {
-      section.block {
-        padding: 80px 0;
-      }
-    }
-
-    .section-tag {
-      font-family: var(--font-body);
-      font-weight: 600;
-      font-size: 13px;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .section-tag::before {
-      content: "";
-      width: 10px;
-      height: 1px;
-      background: var(--amber);
-    }
-
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(12px, 3.0vw, 48px);
-      color: var(--amber);
-      margin: 20px;
-      line-height: 1.05;
-      max-width: 22ch;
-    }
-
-    .section-sub {
-      font-size: 17px;
-      color: var(--ink-soft);
-      line-height: 1.55;
-      max-width: 60ch;
-      margin: 0;
-    }
-
-    .section-head {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: end;
-      margin-bottom: 56px;
-    }
-
-    /* ── Why section centered layout ───────────────────────── */
-    #why .section-head {
-      grid-template-columns: 1fr;
-      gap: 16px;
-      justify-items: center;
-      align-items: center;
-      text-align: center;
-    }
-
-    #why .section-tag {
-      justify-content: center;
-    }
-
-    #why .handwrite-wrap {
-      display: inline-block;
-    }
-
-    #why .section-title {
-      margin-left: 10px ;
-      text-align: center;
-      max-width: 26ch;
-    }
-
-    #why .section-sub {
-      margin: 0 auto;
-      text-align: center;
-      max-width: 64ch;
-    }
-
-    @media (max-width: 760px) {
-      .section-head {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        margin-bottom: 36px;
-      }
-    }
-
-    /* ── Benefits ─────────────────────────────────────────────── */
-    .benefits-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
-
-    @media (max-width: 940px) {
-      .benefits-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .benefits-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .benefit {
-      background: white;
-      border: 1px solid rgba(54, 61, 31, .08);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow-card);
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      column-gap: 12px;
-      align-items: center;
-      transition: transform .25s, box-shadow .25s, border-color .25s;
-    }
-
-    .benefit:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lift);
-      border-color: rgba(139, 105, 20, .35);
-    }
-
-    .benefit::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(60% 60% at 100% 0%, rgba(139, 105, 20, .22), transparent 70%);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .25s;
-    }
-
-    .benefit:hover::before {
-      opacity: 1;
-    }
-
-    .benefit.featured {
-      background: linear-gradient(160deg, var(--plum-dark) 0%, var(--plum-darker) 100%);
-      color: var(--cream);
-      border-color: transparent;
-    }
-
-    .benefit.featured .benefit-title {
-      color: var(--cream);
-    }
-
-    .benefit.featured .benefit-text {
-      color: rgba(253, 252, 248, .78);
-    }
-
-    .benefit.featured::before {
-      background:  radial-gradient(60% 60% at 100% 0%, var(--plum), transparent 70%);  
-          opacity: 1;
-    }
-
-    .benefit-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 0;
-      background: transparent;
-      color: #8a5a17;
-      display: grid;
-      place-items: center;
-    }
-
-    .benefit.featured .benefit-icon {
-      background: transparent;
-      color: var(--honey);
-      box-shadow: none;
-    }
-
-    .benefit-icon svg {
-      width: 26px;
-      height: 26px;
-    }
-
-    .benefit-title {
-      font-family: var(--font-display);
-      font-size: 22px;
-      color: var(--brand-darker);
-      margin: 0;
-      align-self: center;
-      line-height: 1.15;
-    }
-
-    .benefit-text {
-      grid-column: 1 / -1;
-      font-size: 15px;
-      color: var(--ink-soft);
-      line-height: 1.55;
-      margin: 14px 0 0;
-    }
-
-    .benefit-stat {
-      grid-column: 1 / -1;
-      margin-top: 18px;
-      font-family: var(--font-display);
-      font-size: 28px;
-      color: var(--amber);
-    }
-
-    .benefit.featured .benefit-stat {
-      color: var(--citrus);
-    }
-
-    .benefit-stat small {
-      font-size: .55em;
-      color: rgba(253, 252, 248, .6);
-      margin-inline-start: 4px;
-      font-family: var(--font-body);
-    }
-
-    .benefit:not(.featured) .benefit-stat small {
-      color: var(--ink-mute);
-    }
-
-    /* ── Steps ───────────────────────────────────────────────── */
-    .steps-section {
-      background: linear-gradient(
-357deg, transparent, rgb(94 106 61 / 18%));
-      border-block: 1px solid rgba(54, 61, 31, .08);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* ── Steps hero header ──────────────────────────────────── */
-    .steps-hero {
-      text-align: center;
-      margin-bottom: 56px;
-    }
-
-    .steps-hero .section-tag {
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-
-    .steps-hero .section-title {
-      max-width: none;
-      margin: 0 0 18px;
-      font-size: clamp(28px, 4.2vw, 56px);
-    }
-
-    .steps-hero .section-title .accent-num {
-      color: var(--citrus);
-      font-size: 1.1em;
-    }
-
-    .steps-hero .section-sub {
-      max-width: 54ch;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 600px) {
-      .steps-hero {
-        margin-bottom: 36px;
-      }
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
-      position: relative;
-    }
-
-    @media (max-width: 880px) {
-      .steps {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* קו חיבור בין הכרטיסים */
-    .steps::before {
-      content: "";
-      position: absolute;
-      top: 40px;
-      inset-inline: 14%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--citrus), var(--citrus), transparent);
-      opacity: .28;
-      z-index: 0;
-    }
-
-    @media (max-width: 880px) {
-      .steps::before {
-        display: none;
-      }
-    }
-
-    .step {
-      background: var(--cream);
-      border: 1px solid rgba(54, 61, 31, .08);
-      border-radius: var(--radius-lg);
-      padding: 28px 24px;
-      text-align: start;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-      z-index: 1;
-      box-shadow: 0 2px 16px rgba(54, 61, 31, .06), 0 1px 4px rgba(54, 61, 31, .04);
-      overflow: hidden;
-      transition: transform .22s ease, box-shadow .22s ease;
-    }
-
-    .step:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 36px rgba(54, 61, 31, .13), 0 2px 8px rgba(54, 61, 31, .06);
-    }
-
-    /* פס עליון קבוע */
-    .step::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, rgba(201, 154, 46, .1) 0%, rgba(201, 154, 46, .6) 50%, rgba(201, 154, 46, .1) 100%);
-    }
-
-    /* פס תחתון שמופיע ב-hover */
-    .step::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--brand), var(--citrus));
-      transform: scaleX(0);
-      transform-origin: right;
-      transition: transform .28s ease;
-    }
-
-    .step:hover::after {
-      transform: scaleX(1);
-      transform-origin: left;
-    }
-
-    /* ── שורת אייקון ומספר ──────────────────────────────────── */
-    .step-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin-bottom: 18px;
-    }
-
-    .step-icon-wrap {
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-mid) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--honey);
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(54, 61, 31, .22);
-      transition: transform .2s ease;
-    }
-
-    .step:hover .step-icon-wrap {
-      transform: scale(1.07);
-    }
-
-    .step-icon-wrap svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    .step-num {
-      font-family: var(--font-display);
-      font-size: 15px;
-      color: var(--brand-darker);
-      background: linear-gradient(135deg, var(--citrus) 0%, var(--amber) 100%);
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(139, 105, 20, .4);
-      flex-shrink: 0;
-      line-height: 1;
-    }
-
-    .step h3 {
-      font-family: var(--font-display);
-      font-size: 21px;
-      color: var(--brand-darker);
-      margin: 0 0 10px;
-      line-height: 1.2;
-    }
-
-    .step p {
-      font-size: 15px;
-      color: var(--ink-soft);
-      line-height: 1.55;
-      margin: 0;
-      flex: 1;
-    }
-
-    .step .step-time {
-      margin-top: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--amber);
-      background: rgba(139, 105, 20, .08);
-      border: 1px solid rgba(139, 105, 20, .18);
-      padding: 5px 12px;
-      border-radius: 999px;
-    }
-
-    /* ── Earnings calculator ─────────────────────────────────── */
-    .calc-section {
-      background: linear-gradient(165deg, #d8c1d7 0%, var(--plum-darker) 100%);;
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .calc-section::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(800px 500px at 100% 100%, #634563, transparent 60%);
-    }
-
-    .calc-section .section-title {
-      color: #2E1F2A;
-    }
-
-    .calc-section .section-sub {
-      color: white;
-    }
-
-    .calc-section .section-tag {
-      color: var(--cream);
-    }
-
-    .calc-section .section-tag::before {
-      background: #ffb200;
-    }
-
-    .calc-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 56px;
-      align-items: center;
-      position: relative;
-    }
-
-    @media (max-width: 880px) {
-      .calc-grid {
-        grid-template-columns: 1fr;
-        gap: 36px;
-      }
-    }
-
-    .calc-controls {
-      display: grid;
-      gap: 24px;
-    }
-
-    .control {
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid rgba(255, 255, 255, .08);
-      border-radius: var(--radius);
-      padding: 22px;
-    }
-
-    .control-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 14px;
-    }
-
-    .control-label .name {
-      font-size: 14px;
-      color:white;
-    }
-
-    .control-label .val {
-      font-family: var(--font-display);
-      font-size: 22px;
-      color: #ffb200;
-    }
-
-    .control-label .val small {
-      font-size: .6em;
-      color: white;
-      margin-inline-start: 4px;
-      font-family: var(--font-body);
-    }
-
-    input[type=range] {
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-    }
-
-    input[type=range]::-webkit-slider-runnable-track {
-      height: 6px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--citrus) var(--p, 50%), rgba(255, 255, 255, .12) var(--p, 50%));
-    }
-
-    input[type=range]::-moz-range-track {
-      height: 6px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--citrus) var(--p, 50%), rgba(255, 255, 255, .12) var(--p, 50%));
-    }
-
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      margin-top: -8px;
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: var(--cream);
-      border: 4px solid var(--citrus);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
-      cursor: pointer;
-    }
-
-    input[type=range]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: var(--cream);
-      border: 4px solid var(--citrus);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
-      cursor: pointer;
-    }
-
-    .calc-card {
-      background: linear-gradient(160deg, var(--cream) 0%, var(--linen) 100%);
-      color: var(--brand-darker);
-      border-radius: var(--radius-lg);
-      padding: 36px;
-      position: relative;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
-    }
-
-    .calc-card::before {
-      content: "";
-      position: absolute;
-      top: -1px;
-      left: 24px;
-      right: 24px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--citrus), transparent);
-    }
-
-    .calc-card .small {
-      font-size: 13px;
-      color: var(--ink-mute);
-      font-weight: 500;
-    }
-
-    .calc-card .big {
-      font-family: var(--font-display);
-      font-size: clamp(48px, 6vw, 78px);
-      line-height: 1;
-      margin: 8px 0 4px;
-      color: var(--brand-darker);
-      letter-spacing: -.02em;
-    }
-
-    .calc-card .big .currency {
-      color: var(--amber);
-      margin-inline-start: 8px;
-      font-size: .55em;
-      vertical-align: middle;
-    }
-
-    .calc-card .per {
-      font-size: 14px;
-      color: var(--ink-mute);
-    }
-
-    .calc-bars {
-      margin-top: 28px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .calc-bar {
-      display: grid;
-      grid-template-columns: 90px 1fr 60px;
-      gap: 14px;
-      align-items: center;
-      font-size: 13px;
-    }
-
-    .calc-bar .name {
-      color: var(--ink-soft);
-      font-weight: 500;
-    }
-
-    .calc-bar .track {
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(54, 61, 31, .08);
-      overflow: hidden;
-    }
-
-    .calc-bar .fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--amber), var(--citrus));
-      width: 0;
-      transition: width .6s cubic-bezier(.2, .8, .2, 1);
-    }
-
-    .calc-bar .num {
-      text-align: end;
-      font-family: var(--font-display);
-      color: var(--brand-darker);
-    }
-
-    /* ── Testimonials ────────────────────────────────────────── */
-    .quotes {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr;
-      gap: 22px;
-    }
-
-    @media (max-width: 940px) {
-      .quotes {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .quotes .q1 {
-        grid-column: 1 / -1;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .quotes {
-        grid-template-columns: 1fr;
-      }
-
-      .quotes .q1 {
-        grid-column: auto;
-      }
-    }
-
-    .quote {
-      background: white;
-      border: 1px solid rgba(54, 61, 31, .08);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      box-shadow: var(--shadow-card);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      position: relative;
-    }
-
-    .quote.q1 {
-      background: linear-gradient(160deg, var(--plum-dark) 0%, var(--plum-darker) 100%);
-      color: var(--cream);
-      border-color: transparent;
-    }
-
-    .quote-mark {
-      font-family: var(--font-display);
-      font-size: 80px;
-      line-height: .6;
-      color: var(--amber);
-      margin-bottom: -28px;
-    }
-
-    .quote.q1 .quote-mark {
-      color: var(--citrus);
-    }
-
-    .quote-text {
-      font-size: 17px;
-      line-height: 1.55;
-      color: var(--ink);
-      margin: 0;
-      flex: 1;
-    }
-
-    .quote.q1 .quote-text {
-      color: var(--cream);
-      font-size: 19px;
-    }
-
-    .quote-foot {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: auto;
-    }
-
-    .quote-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--amber), var(--citrus));
-      display: grid;
-      place-items: center;
-      font-family: var(--font-display);
-      color: var(--brand-darker);
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .quote.q1 .quote-avatar {
-      background: var(--citrus);
-    }
-
-    .quote-foot b {
-      font-size: 14px;
-      color: var(--brand-darker);
-      display: block;
-    }
-
-    .quote.q1 .quote-foot b {
-      color: var(--cream);
-    }
-
-    .quote-foot span {
-      font-size: 12px;
-      color: var(--ink-mute);
-    }
-
-    .quote.q1 .quote-foot span {
-      color: rgba(253, 252, 248, .65);
-    }
-
-    .quote-stars {
-      color: var(--amber);
-      font-size: 14px;
-      letter-spacing: 2px;
-    }
-
-    .quote.q1 .quote-stars {
-      color: var(--citrus);
-    }
-
-    /* ── FAQ ─────────────────────────────────────────────────── */
-    .faq {
-      display: grid;
-      gap: 12px;
-      max-width: 820px;
-      margin: 0 auto;
-    }
-
-    .faq-item {
-      background: white;
-      border: 1px solid rgba(54, 61, 31, .1);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: border-color .2s, box-shadow .2s;
-    }
-
-    .faq-item[open] {
-      border-color: rgba(139, 105, 20, .45);
-      box-shadow: var(--shadow-card);
-    }
-
-    .faq-item summary {
-      list-style: none;
-      padding: 22px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      font-family: var(--font-display);
-      font-size: 18px;
-      color: var(--brand-darker);
-    }
-
-    .faq-item summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .faq-item summary .plus {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      background: rgba(54, 61, 31, .06);
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      transition: transform .25s, background .2s;
-    }
-
-    .faq-item[open] summary .plus {
-      transform: rotate(45deg);
-      background: var(--amber);
-      color: var(--cream);
-    }
-
-    .faq-item summary .plus svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    .faq-body {
-      padding: 0 24px 22px;
-      color: var(--ink-soft);
-      font-size: 15.5px;
-      line-height: 1.6;
-    }
-
-    /* ── Final CTA ───────────────────────────────────────────── */
-    .final {
-      padding: 110px 0;
-      position: relative;
-    }
-
-    .final-card {
-      background:linear-gradient(357deg, transparent, rgb(94 106 61 / 18%));
-      border-radius: 36px;
-      padding: 80px 60px;
-      text-align: center;
-      color: var(--brand);
-      position: relative;
-      overflow: hidden;
-      box-shadow:  0 40px 100px rgb(148 160 137 / 45%), 0 0 0 1px rgba(201, 154, 46, .12);
-    }
-
-    @media (max-width: 760px) {
-      .final-card {
-        padding: 60px 28px;
-      }
-    }
-
-    /* רקע: גרידת נקודות + הילות חמות + זוהר תחתון על כפתור */
-    .final-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:linear-gradient(
-357deg, transparent, rgb(94 106 61 / 18%))
-    }
-
-    /* סמן חי */
-    .final-live {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(74, 222, 128, .1);
-      border: 1px solid rgb(74 222 128 / 38%);
-      border-radius: 999px;
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      color: rgb(70 139 91 / 95%);
-;
-      margin-bottom: 28px;
-      position: relative;
-    }
-
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: rgb(70 139 91 / 95%);
-;
-      flex-shrink: 0;
-      animation: livePulse 2.2s ease infinite;
-    }
-
-    @keyframes livePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, .55); }
-      60% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-    }
-
-    .final-card h2 {
-      font-family: var(--font-display);
-      font-size: clamp(34px, 5vw, 60px);
-      line-height: 1.05;
-      margin: 0 0 20px;
-      position: relative;
-      color: var(--brand-dark);
-    }
-
-    .final-card h2 .h-accent {
-      color: var(--citrus);
-    }
-
-    .final-card p {
-      font-size: 18px;
-      color: var(--ink-soft);
-      max-width: 46ch;
-      margin: 0 auto 40px;
-      position: relative;
-      line-height: 1.65;
-    }
-
-    /* פעימת זוהר על כפתור ה-CTA */
-    @keyframes btnGlow {
-      0%, 100% { box-shadow: 0 8px 28px rgba(139, 105, 20, .4); }
-      50% { box-shadow: 0 10px 36px rgba(217, 190, 121, 0.486), 0 0 0 2px rgba(201, 154, 46, .15); }
-    }
-
-    .final-card .btn-primary {
-      background: var(--amber);
-      color: white;
-      position: relative;
-      font-size: 18px;
-      padding: 20px 42px;
-      animation: btnGlow 2.8s ease infinite;
-    }
-
-    .final-meta {
-      margin-top: 32px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      position: relative;
-    }
-
-    .final-meta span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgb(240 226 188 / 45%);
-      border: 1px solid var(--honey);
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 13px;
-      color: var(--brand-dark);
-    }
-
-    .final-meta svg {
-      width: 12px;
-      height: 12px;
-      color: #4ade80;
-    }
-
-    /* ── Footer ──────────────────────────────────────────────── */
-    footer {
-      background: var(--brand-darker);
-      color: rgba(253, 252, 248, .7);
-      padding: 50px 0 30px;
-    }
-
-    .foot-grid {
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      gap: 40px;
-      flex-wrap: wrap;
-      align-items: center;
-      text-align: center;
-    }
-
-    .foot-copy {
-      font-size: 13.5px;
-      max-width: 36ch;
-      margin: 16px auto 0;
-      line-height: 1.55;
-      text-align: center;
-    }
-
-    .foot-grid .logo {
-      color: var(--cream);
-      width: 240px;
-      height: auto;
-      overflow: visible;
-    }
-
-    .foot-grid .logo-img {
-      width: 100%;
-      height: auto;
-      margin-top: 0;
-      transform: none;
-    }
-
-    .foot-grid .logo-img-light {
-      height: auto;
-    }
-
-    .foot-links {
-      display: flex;
-      gap: 28px;
-      flex-wrap: wrap;
-      font-size: 14px;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .foot-links a:hover {
-      color: var(--citrus);
-    }
-
-    .foot-bottom {
-      margin-top: 30px;
-      padding-top: 22px;
-      border-top: 1px solid rgba(253, 252, 248, .1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      flex-direction: column;
-      flex-wrap: wrap;
-      gap: 14px;
-      font-size: 12.5px;
-      color: rgba(253, 252, 248, .5);
-    }
-
-    /* ── Reveal animation ────────────────────────────────────── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity .8s ease, transform .8s ease;
-    }
-
-    .reveal.in {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── Category chips ──────────────────────────────────────── */
-    .category-chips {
-      background: #422e420f;
-      padding: 10px 0;
-      overflow: hidden;
-      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-    }
-
-    .category-chips::-webkit-scrollbar {
-      display: none;
-    }
-
-    .category-chips-inner {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px;
-      width: max-content;
-      direction: rtl;
-      animation: chipDriveRight 18s linear infinite;
-      will-change: transform;
-    }
-
-    .category-chips:hover .category-chips-inner {
-      animation-play-state: paused;
-    }
-
-    @keyframes chipDriveRight {
-      from {
-        transform: translateX(0);
-      }
-
-      to {
-        transform: translateX(50%);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .category-chips-inner {
-        animation: none;
-      }
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .32)),
-        rgba(250, 249, 245, .34);
-      border: 1px solid #e8d5a89c;
-      border-radius: 9999px;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .76),
-        inset 0 -1px 0 rgba(74, 51, 73, .08),
-        0 8px 24px rgba(54, 61, 31, .08);
-      color: #9d7300;
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 5px 13px 5px 11px;
-      white-space: nowrap;
-      letter-spacing: 0.01em;
-      backdrop-filter: blur(14px) saturate(135%);
-      -webkit-backdrop-filter: blur(14px) saturate(135%);
-      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-    }
-    
-    .chip:hover {
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .42)),
-        rgba(250, 249, 245, .48);
-      border-color:#e8d5a89c;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .9),
-        inset 0 -1px 0 rgba(74, 51, 73, .08),
-        0 10px 28px rgba(54, 61, 31, .12);
-      transform: translateY(-1px);
-    }
-
-    .chip svg {
-      width: 13px;
-      height: 13px;
-      opacity: 0.75;
-      flex-shrink: 0;
-    }
-
-    /* ── CTA Strip ───────────────────────────────────────────── */
-    .cta-strip {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 28px 16px;
-      background: var(--cream);
-    }
-
-
-    @keyframes ctaSparkle {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: .3; }
-    }
-
-    .cta-main-btn {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 15px 40px;
-      border-radius: 100px;
-      background: linear-gradient(135deg, var(--plum-dark) 0%, var(--plum-darker) 100%);
-      color: #F5C842;
-      font-family: var(--font-display);
-      font-size: clamp(17px, 2.2vw, 21px);
-      font-weight: 500;
-      text-decoration: none;
-      overflow: hidden;
-      transition: box-shadow .22s ease, opacity .22s ease;
-      box-shadow: 0 6px 28px rgba(88, 56, 124, .38);
-      cursor: pointer;
-      will-change: box-shadow;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-    }
-
-    .cta-main-btn:hover {
-      box-shadow: 0 10px 36px rgba(88, 56, 124, .55);
-      opacity: .92;
-    }
-
-    .cta-main-btn:active {
-      opacity: .8;
-    }
-
-
-    .cta-inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .cta-spark {
-      font-size: 15px;
-      line-height: 1;
-      animation: ctaSparkle 1.9s ease-in-out infinite;
-    }
-
-    .cta-spark:last-child { animation-delay: .95s; }
-
-    /* ── MOBILE OVERRIDES ────────────────────────────────────── */
-    @media (max-width: 760px) {
-      .container {
-        width: min(1200px, 92%);
-      }
-
-      /* Nav */
-      .nav-inner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 11px 0;
-        gap: 10px;
-        text-align: center;
-      }
-
-      .logo {
-        display: flex;
-        grid-column: auto;
-        justify-self: center;
-        margin-inline: auto;
-        width: 184px;
-        height: 44px;
-        font-size: 18px;
-        gap: 8px;
-      }
-
-      .hero .logo {
-        margin: 0 auto 18px;
-        overflow: hidden;
-      }
-
-      .logo-mark {
-        width: 32px;
-        height: 32px;
-        font-size: 15px;
-        border-radius: 10px;
-      }
-
-      .logo-img {
-        width: 100%;
-        height: 100%;
-        margin-inline: auto;
-        transform: scale(1.25);
-      }
-
-      .logo-img-light {
-        height: 58px;
-      }
-
-      .foot-grid .logo {
-        width: 210px;
-        height: auto;
-        overflow: visible;
-      }
-
-      .foot-grid .logo-img {
-        width: 100%;
-        height: auto;
-        margin-inline: 0;
-        transform: none;
-      }
-
-      .foot-grid .logo-img-light {
-        height: auto;
-      }
-
-      .logo-tag {
-        display: none;
-      }
-
-      .nav-cta {
-        padding: 9px 14px;
-        font-size: 13px;
-      }
-
-      .nav-cta svg {
-        width: 12px;
-        height: 12px;
-      }
-
-      /* Hero */
-      /* .hero { padding: 28px 0 50px; } */
-      .hero-grid {
-        gap: 36px;
-      }
-
-      .hero-copy {
-        text-align: center;
-      }
-
-      .eyebrow {
-        font-size: 12.5px;
-        padding: 6px 12px;
-        margin-bottom: 18px;
-      }
-
-      .hero h1 {
-        line-height: 1.3;
-        font-size: clamp(25px, 6.2vw, 34px);
-        margin-bottom: 16px;
-      }
-
-      .hero p.lead {
-        font-size: 13px;
-        margin-bottom: 36px;
-        margin-top: 36px;
-        margin-inline: auto;
-      }
-
-      .hero-ctas {
-        width: 100%;
-        justify-content: center;
-        margin-bottom: 16px;
-      }
-
-      .hero-cta-note {
-        margin: -6px auto 22px;
-        text-align: center;
-        font-size: 12px;
-      }
-
-      .hero-ctas .btn {
-        flex: 1;
-        justify-content: center;
-      }
-
-      .btn {
-        padding: 10px 20px;
-        font-size: 15px;
-      }
-
-      .btn .arrow {
-        width: 18px;
-        height: 18px;
-      }
-
-      .hero-meta {
-        position: absolute;
-        top: 60px;
-        right: -10px;
-        z-index: 3;
-        gap: 2px;
-        font-size: 12.5px;
-        margin: 0;
-        width: 200px;
-      }
-
-      /* Hero art - make phone smaller and contain floats */
-      .hero-art {
-        height: 460px;
-        padding: 12px;
-        overflow: visible;
-      }
-
-      .phone {
-        width: 270px;
-        height: 480px;
-        border-radius: 38px;
-        padding: 12px;
-        transform: rotate(-2deg);
-      }
-
-      .phone-screen {
-        border-radius: 28px;
-      }
-
-      .phone-statusbar {
-        padding: 12px 16px 4px;
-        font-size: 11px;
-      }
-
-      .phone-header {
-        padding: 6px 14px 10px;
-      }
-
-      .phone-header .greet {
-        font-size: 12px;
-      }
-
-      .phone-header .greet b {
-        font-size: 14px;
-      }
-
-      .phone-header .avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-      }
-
-      .phone-balance {
-        margin: 0 12px;
-        padding: 14px 16px;
-        border-radius: 16px;
-      }
-
-      .phone-balance .amount {
-        font-size: 26px;
-      }
-
-      .phone-list {
-        padding: 12px;
-      }
-
-      .job-card {
-        padding: 10px 12px;
-        gap: 10px;
-        margin-bottom: 8px;
-      }
-
-      .job-icon {
-        width: 34px;
-        height: 34px;
-      }
-
-      .job-icon svg {
-        width: 16px;
-        height: 16px;
-      }
-
-      .job-info .title {
-        font-size: 12.5px;
-      }
-
-      .job-info .meta {
-        font-size: 10.5px;
-      }
-
-      .job-price {
-        font-size: 14px;
-      }
-
-      .job-price small {
-        font-size: 9.5px;
-      }
-
-      /* Floats - inset to not overflow viewport */
-      .notif {
-        top: 225px;
-        right: -10px;
-        width: 140px;
-        padding: 5px;
-      }
-
-      .notif .icon {
-        width: 28px;
-        height: 28px;
-      }
-
-      .notif .icon svg {
-        width: 20px;
-        height: 20px;
-      }
-
-      .notif b {
-        font-size: 11.5px;
-      }
-
-      .notif span {
-        font-size: 11.5px;
-      }
-
-      .badge-card {
-        bottom: 100px;
-        left: -10px;
-        min-width: 168px;
-        padding: 9px 10px;
-        gap: 8px;
-        border-radius: 18px;
-      }
-
-      .location-notif {
-        bottom: 40px;
-        right: -10px;
-        min-width: 0;
-        padding: 5px 5px;
-      }
-
-      .location-notif b {
-        font-size: 11.5px;
-      }
-
-    
-
-      .badge-card .badge-icon svg {
-        width: 23px;
-        height: 23px;
-      }
-
-      .location-notif .loc-icon svg {
-        width: 20px;
-        height: 20px;
-      }
-
-      .badge-card .stars {
-        font-size: 12px;
-      }
-
-      .badge-card b {
-        font-size: 12.8px;
-        line-height: 1.25;
-      }
-
-      .badge-card span {
-        font-size: 11.2px;
-      }
-
-      .blob.b1 {
-        width: 240px;
-        height: 240px;
-        top: 0;
-        left: -20px;
-      }
-
-      .blob.b2 {
-        width: 220px;
-        height: 220px;
-        bottom: 0;
-        right: -20px;
-      }
-
-      /* Worker - hide on mobile, phone is the focus */
-      .worker-stage {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-
-      .worker-disc {
-        width: 330px;
-        height: 330px;
-        bottom: 44px;
-        /* inset-inline-start: 50%; */
-        transform: translateX(-50%);
-        animation: none;
-      }
-
-      .worker-img {
-        bottom: -8px;
-        /* inset-inline-start: 50%; */
-        height: 96%;
-        transform: translateX(-50%);
-        max-width: 92vw;
-        object-fit: contain;
-        animation: workerInMobile 1s .2s ease-out both;
-      }
-
-      @keyframes workerInMobile {
-        from {
-          opacity: 0;
-          transform: translateX(-50%) translateY(20px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-      }
-
-      .phone {
-        transform: rotate(-2deg);
-      }
-
-      /* Trust cards mobile */
-      .trust {
-        padding: 28px 0;
-      }
-
-      .trust-cell {
-        padding:10px 2px 10px;;
-        border-radius: 14px;
-        grid-template-rows: 24px minmax(28px, auto) minmax(20px, auto);
-      }
-
-      .trust-icon {
-        width: 36px;
-        height: 36px;
-      }
-
-      .trust-icon svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      .trust-num {
-        font-size: 16px;
-      }
-
-      .trust-num--text {
-        font-size: 15px;
-      }
-
-      .trust-label {
-        font-size: 11px;
-        line-height: 1.3;
-      }
-
-      .trust-badge {
-        font-size: 11px;
-        padding-top: 10px;
-      }
-
-      /* Sections */
-      section.block {
-        padding: 34px 0;
-      }
-
-      .section-tag {
-        font-size: 12px;
-        margin-bottom: 12px;
-      }
-
-      .section-title {
-        font-size: clamp(12px, 5vw, 34px);
-      }
-
-      .section-sub {
-        font-size: 15.5px;
-      }
-
-      .section-head {
-        gap: 14px;
-        margin-bottom: 30px;
-      }
-
-      /* Benefits */
-      .benefits-grid {
-        gap: 14px;
-      }
-
-      .benefit {
-        padding: 22px;
-        border-radius: 20px;
-        column-gap: 10px;
-      }
-
-      .benefit-icon {
-        width: 48px;
-        height: 48px;
-      }
-
-      .benefit-icon svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .benefit-title {
-        font-size: 19px;
-      }
-
-      .benefit-text {
-        font-size: 14.5px;
-      }
-
-      .benefit-stat {
-        font-size: 24px;
-        margin-top: 14px;
-      }
-
-      /* Steps */
-      .steps {
-        gap: 38px;
-      }
-
-      .step {
-        padding: 24px 20px;
-        border-radius: 20px;
-      }
-
-      .step-icon-wrap {
-        width: 46px;
-        height: 46px;
-        border-radius: 13px;
-      }
-
-      .step-num {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
-      }
-
-      .step h3 {
-        font-size: 19px;
-      }
-
-      .step p {
-        font-size: 14.5px;
-      }
-
-      /* Calculator */
-      .calc-controls {
-        gap: 16px;
-      }
-
-      .control {
-        padding: 18px;
-        border-radius: 14px;
-      }
-
-      .control-label .name {
-        font-size: 13px;
-      }
-
-      .control-label .val {
-        font-size: 19px;
-      }
-
-      .calc-card {
-        padding: 26px;
-        border-radius: 22px;
-      }
-
-      .calc-card .big {
-        font-size: clamp(44px, 11vw, 56px);
-      }
-
-      .calc-bar {
-        grid-template-columns: 70px 1fr 46px;
-        gap: 10px;
-        font-size: 12px;
-      }
-
-      /* Quotes */
-      .quotes {
-        gap: 14px;
-      }
-
-      .quote {
-        padding: 24px;
-        border-radius: 20px;
-        gap: 14px;
-      }
-
-      .quote-mark {
-        font-size: 60px;
-        margin-bottom: -22px;
-      }
-
-      .quote-text {
-        font-size: 15px;
-      }
-
-      .quote.q1 .quote-text {
-        font-size: 16px;
-      }
-
-      .quote-avatar {
-        width: 38px;
-        height: 38px;
-        font-size: 15px;
-      }
-
-      /* FAQ */
-      .faq-item summary {
-        padding: 18px 20px;
-        font-size: 16px;
-        gap: 12px;
-      }
-
-      .faq-item summary .plus {
-        width: 28px;
-        height: 28px;
-      }
-
-      .faq-item summary .plus svg {
-        width: 12px;
-        height: 12px;
-      }
-
-      .faq-body {
-        padding: 0 20px 18px;
-        font-size: 14.5px;
-      }
-
-      /* Final CTA */
-      .final {
-        padding: 70px 0;
-      }
-
-      .final-card {
-        padding: 48px 24px;
-        border-radius: 28px;
-      }
-
-      .final-card h2 {
-        font-size: clamp(28px, 7.5vw, 38px);
-      }
-
-      .final-card p {
-        font-size: 16px;
-        margin-bottom: 28px;
-      }
-
-      .final-card .btn-primary {
-        font-size: 16px;
-        padding: 17px 28px;
-        width: 100%;
-        justify-content: center;
-      }
-
-      .final-live {
-        font-size: 12px;
-        padding: 5px 12px;
-        margin-bottom: 22px;
-      }
-
-      .final-meta {
-        gap: 8px;
-      }
-
-      .final-meta span {
-        font-size: 12px;
-        padding: 5px 11px;
-      }
-
-      /* Footer */
-      footer {
-        padding: 38px 0 24px;
-      }
-
-      .foot-grid {
-        gap: 24px;
-      }
-
-      .foot-links {
-        gap: 16px 22px;
-        font-size: 13px;
-      }
-
-      .foot-bottom {
-        font-size: 11.5px;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      /* Chips - mobile */
-      .category-chips {
-        padding: 8px 0;
-      }
-
-      .chip {
-        font-size: 14px;
-        padding: 4px 11px 4px 9px;
-      }
-
-      /* Reveal - reduce travel on mobile */
-      .reveal {
-        transform: translateY(18px);
-      }
-    }
-
-    /* Extra-small screens */
-    @media (max-width: 380px) {
-      .hero h1 {
-        font-size: clamp(24px, 6.2vw, 32px);
-        line-height: 1.3;
-        font-weight: 800;
-        font-family: var(--font-rubik);
-        letter-spacing: 0;
-        color: #444937
-      }
-
-      .phone {
-        width: 240px;
-        height: 440px;
-      }
-
-      .notif {
-        width: 170px;
-        right: -4px;
-      }
-
-      .badge-card {
-        left: -4px;
-      }
-
-      .nav-cta {
-        padding: 8px 12px;
-        font-size: 12.5px;
-      }
-
-      .nav-cta svg {
-        display: none;
-      }
-    }
-
-    /* ── "ללא עמלה" emphasis animation ───────────────────────── */
-    .no-fee {
-      position: relative;
-      display: inline-block;
-      color: var(--amber);
-      white-space: nowrap;
-      padding: 0 .12em .08em;
-      transform-origin: center bottom;
-      animation: noFeePop 0.6s 0.4s cubic-bezier(.34, 1.56, .64, 1) both;
-      will-change: transform;
-    }
-
-    .no-fee-text {
-      font-size: 0.9em;
-      font-weight: 800;
-      position: relative;
-      z-index: 2;
-      background: linear-gradient(160deg, #F5C842 0%, var(--amber) 45%, var(--citrus) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-      /* filter: drop-shadow(0 0 18px rgba(201, 154, 46, .55)) drop-shadow(0 2px 8px rgba(139, 105, 20, .4)); */
-      letter-spacing: -0.01em;
-    }
-
-    .no-fee::before {
-      content: "";
-      position: absolute;
-      inset: 8% -8% 12% -8%;
-      background: radial-gradient(60% 80% at 50% 50%, rgba(201, 154, 46, .28), transparent 70%);
-      z-index: 0;
-      border-radius: 20px;
-      opacity: 0;
-      animation: noFeeGlow 1.2s 1.6s ease forwards;
-    }
-
-    .no-fee-underline {
-      position: absolute;
-      inset-inline: 2%;
-      bottom: -.06em;
-      width: 96%;
-      height: .32em;
-      z-index: 1;
-      overflow: visible;
-      opacity: 0;
-      animation: noFeeUnderlineFadeIn 0.3s 1.6s ease forwards;
-    }
-
-    @keyframes noFeeUnderlineFadeIn {
-      to { opacity: 1; }
-    }
-
-    @keyframes noFeePop {
-      0% {
-        opacity: 0;
-        transform: translateY(14px) scale(.85) rotate(-2deg);
-      }
-
-      60% {
-        opacity: 1;
-        transform: translateY(-3px) scale(1.06) rotate(.5deg);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1) rotate(0);
-      }
-    }
-
-    @keyframes noFeeGlow {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
-
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-
-      *,
-      *::before,
-      *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
-      }
-    }
-
-    /* ── HandWritten title animation ────────────────────────── */
-    .handwrite-wrap {
-      position: relative;
-      display: block;
-      overflow: visible;
-    }
-    .handwrite-svg {
-      position: absolute;
-      pointer-events: none;
-      overflow: visible;
-    }
-    .handwrite-path {
-      stroke-dasharray: 2600;
-      stroke-dashoffset: 2600;
-    }
-    .section-head.in .handwrite-path {
-      animation: draw-handwrite 2.5s cubic-bezier(0.43, 0.13, 0.23, 0.96) 0.4s forwards;
-    }
-    @keyframes draw-handwrite {
-      to { stroke-dashoffset: 0; }
-    }
-  </style>
+  <!-- Shared styles for all landing pages -->
+  <link rel="stylesheet" href="/assets/landing-shared.css">
 </head>
 
-<body style="background-color: rgb(255, 255, 255)">
+<body>
 
-  <!-- ─── NAV ─────────────────────────────────────────────── -->
-
-
-  <!-- ─── HERO ────────────────────────────────────────────── -->
+  <!-- @partial:hero START -->
+  <!-- @page-specific: logo-tag text, h1 content, lead text, CTA label, hero-meta checks, notif/badge/location text, trust stats -->
   <header class="hero">
     <div class="container">
       <a class="logo" href="#">
@@ -3320,11 +47,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         <span class="logo-tag">לנותני שירות</span>
       </a>
       <div class="hero-copy">
-        <!-- <div class="eyebrow">
-        <span class="dot"></span>
-        <span><span id="liveWorkersCount">{{LIVE_WORKERS_COUNT}}</span> בעלי מקצוע פעילים השבוע</span>
-      </div> -->
-        <h1>  
+        <h1>
           הנדימן? קבל פניות מלקוחות
           <span class="no-fee"><span class="no-fee-text">ללא עמלה</span><svg class="no-fee-underline"
               viewBox="0 0 300 22" preserveAspectRatio="none" aria-hidden="true" id="noFeeUnderlineSvg">
@@ -3341,23 +64,21 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               </defs>
               <path d="M3 14 C 60 4, 140 4, 200 12 S 280 18, 297 8" fill="none" stroke="#C99A2E" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
               <path d="M3 14 C 60 4, 140 4, 200 12 S 280 18, 297 8" fill="none" stroke="url(#noFeeTraceGrad)" stroke-width="6" stroke-linecap="round" filter="url(#noFeeGlowFilter)"/>
-            </svg></span>  
+            </svg></span>
         </h1>
         <p class="lead">לקוחות מחפשים עכשיו הנדימנים, מובילים, מתקיני מזגנים, חשמלאים ועוד.
-         <span class="lead-emphasis"> הצטרפו עכשיו בחינם וקבלו הצעות עבודה ישירות לטלפון.  </span></p>
+          <span class="lead-emphasis"> הצטרפו עכשיו בחינם וקבלו הצעות עבודה ישירות לטלפון. </span></p>
         <div class="hero-ctas">
           <a class="btn btn-primary" href="/" data-worker-join="true">
-         שלחו לי לקוחות
+            שלחו לי לקוחות
             <span class="arrow">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </span>
           </a>
-          <!-- <a class="btn btn-ghost" href="#how">איך זה עובד?</a> -->
         </div>
-        <div class="hero-cta-note">ללא הרשמה בתשלום • ללא התחייבות</div>
-
+        <div class="hero-cta-note"> הרשמה ללא תשלום • ללא התחייבות</div>
       </div>
 
       <div class="hero-art" aria-hidden="true">
@@ -3368,59 +89,6 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <img class="worker-img" src="/worker.png" alt="עובד זמיני" />
         </div>
 
-        <!-- <div class="phone">
-        <div class="phone-screen">
-          <div class="phone-statusbar">
-            <span>9:41</span>
-            <div class="icons"><span></span><span></span><span></span></div>
-          </div>
-          <div class="phone-header">
-            <div class="greet">בוקר טוב,<b>יוסי 👋</b></div>
-            <div class="avatar">י</div>
-          </div>
-          <div class="phone-balance">
-            <div class="label">הכנסה השבוע</div>
-            <div class="amount" id="phoneAmount">3,840 <span class="unit">₪</span></div>
-            <div class="delta">▲ 22% מהשבוע שעבר</div>
-          </div>
-          <div class="phone-list">
-            <h4>הצעות חדשות באזור שלך</h4>
-            <div class="job-card">
-              <div class="job-icon amber">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-              </div>
-              <div class="job-info">
-                <div class="title">תיקון דוד שמש</div>
-                <div class="meta">רמת גן · 1.4 ק״מ · דחוף</div>
-              </div>
-              <div class="job-price">450ש“ח
-הערכה</div>
-            </div>
-            <div class="job-card">
-              <div class="job-icon citrus">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <div class="job-info">
-                <div class="title">הרכבת ארון איקאה</div>
-                <div class="meta">גבעתיים · 2.8 ק״מ · היום</div>
-              </div>
-              <div class="job-price">320ש“ח
-הצעה</div>
-            </div>
-            <div class="job-card">
-              <div class="job-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h6M9 13h6M9 17h6"/></svg>
-              </div>
-              <div class="job-info">
-                <div class="title">החלפת ברז במטבח</div>
-                <div class="meta">תל-אביב · 3.1 ק״מ · מחר</div>
-              </div>
-              <div class="job-price">280ש“ח
-הצעה</div>
-            </div>
-          </div>
-        </div>
-      </div> -->
         <div class="hero-meta">
           <div class="check">
             <span class="check-icon">
@@ -3431,14 +99,14 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </span>
             הרשמה ב-2 דקות
           </div>
-          <div class="check" style="color: #ba8601;">
-            <span class="check-icon" >
-              <svg style="stroke: #ba8601;" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="check">
+            <span class="check-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/>
                 <path d="M9.5 12l2 2 3.5-3.5"/>
               </svg>
             </span>
-          ללא אותיות קטנות
+            ללא אותיות קטנות
           </div>
           <div class="check">
             <span class="check-icon">
@@ -3449,6 +117,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             התשלום מועבר אליך ישירות
           </div>
         </div>
+
         <div class="notif">
           <div class="icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -3457,7 +126,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </div>
           <div>
             <b>הצעה חדשה לידך</b>
-            <span> תליית טלוויזיה - 480₪</span> 
+            <span> תליית טלוויזיה - 480₪</span>
           </div>
         </div>
 
@@ -3473,12 +142,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               <path d="M16 8.6v5.8"/>
             </svg>
           </div>
-         
-             
-            <b>לקוח ביקש הצעת <br>מחיר 
-לפרוק ארון</b>
-            
-           
+          <b>לקוח ביקש הצעת <br>מחיר לפרוק ארון</b>
         </div>
 
         <div class="location-notif">
@@ -3493,8 +157,8 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </div>
         </div>
       </div>
-    <div class="trust-grid">
 
+      <div class="trust-grid">
         <div class="trust-cell reveal">
           <div class="trust-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3503,7 +167,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <div class="trust-num" data-count="{{LIVE_WORKERS_COUNT_RAW}}" data-live-stat="workers" data-prefix="+">+0</div>
-          <div class="trust-label">עובדים רשומים </div>
+          <div class="trust-label">עובדים רשומים</div>
         </div>
 
         <div class="trust-cell featured reveal">
@@ -3513,8 +177,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
             </svg>
           </div>
-          <div class="trust-num">ללא עמלות  </div>
-       
+          <div class="trust-num">ללא עמלות</div>
         </div>
 
         <div class="trust-cell reveal">
@@ -3530,14 +193,13 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <div class="trust-num trust-num--text">ללא דמי רישום</div>
           <div class="trust-label">בלי אותיות קטנות</div>
         </div>
-
       </div>
     </div>
   </header>
- 
-   
+  <!-- @partial:hero END -->
 
-  <!-- ─── CATEGORY CHIPS ──────────────────────────────────── -->
+  <!-- @partial:category-chips START -->
+  <!-- @page-specific: chip labels and icons -->
   <div class="category-chips" dir="rtl">
     <div class="category-chips-inner">
       <span class="chip">
@@ -3568,6 +230,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
         גינון
       </span>
+      <!-- שכפול aria-hidden לאנימציית marquee -->
       <span class="chip" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
         תיקונים
@@ -3598,8 +261,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       </span>
     </div>
   </div>
+  <!-- @partial:category-chips END -->
 
-  <!-- ─── CTA STRIP ────────────────────────────────────────── -->
+  <!-- @partial:cta-strip START -->
+  <!-- @page-specific: button label -->
   <div class="cta-strip">
     <a href="/" class="cta-main-btn" data-worker-join="true">
       <span class="cta-inner">
@@ -3609,8 +274,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       </span>
     </a>
   </div>
+  <!-- @partial:cta-strip END -->
 
-  <!-- ─── BENEFITS ───────────────────────────────────────── -->
+  <!-- @partial:benefits START -->
+  <!-- @page-specific: section-tag text, section-title, section-sub, benefit cards (icon, title, text, stat) -->
   <section class="block" id="why">
     <div class="container">
       <div class="section-head reveal">
@@ -3634,7 +301,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
         </div>
         <p class="section-sub">
           בנינו את AvodaGo בשיתוף עם בעלי מקצוע - מהשטח, כל פיצ'ר במערכת נולד מבעיה אמיתית של חשמלאים,
-          אינסטלטורים והנדימנים שהתעייפו מ“לוחות עבודה“ שגובים אלפי שקלים בחודש על לידים גרועים.
+          אינסטלטורים והנדימנים שהתעייפו מ"לוחות עבודה" שגובים אלפי שקלים בחודש על לידים גרועים.
         </p>
       </div>
 
@@ -3646,8 +313,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <h3 class="benefit-title">לידים בזמן אמת</h3>
-          <p class="benefit-text">התראה מיידית לטלפון כשמישהו ברדיוס שלך מחפש עזרה. אתה הראשון לראות, אתה הראשון לסגור.
-          </p>
+          <p class="benefit-text">התראה מיידית לטלפון כשמישהו ברדיוס שלך מחפש עזרה. אתה הראשון לראות, אתה הראשון לסגור.</p>
           <div class="benefit-stat">פחות מ-90<small>שניות תגובה ממוצעת</small></div>
         </div>
 
@@ -3657,9 +323,8 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
             </svg>
           </div>
-          <h3 class="benefit-title" style="font-size: 30px;">כל הכסף אצלך</h3>
-          <p class="benefit-text">בלי 30% שנאכלים בעמלת פלטפורמה. הלקוח משלם לך ישירות, ההסכם בידיים שלך, וכך גם המחיר.
-          </p>
+          <h3 class="benefit-title">כל הכסף אצלך</h3>
+          <p class="benefit-text">בלי 30% שנאכלים בעמלת פלטפורמה. הלקוח משלם לך ישירות, ההסכם בידיים שלך, וכך גם המחיר.</p>
           <div class="benefit-stat">0%<small>עמלה על העבודה</small></div>
         </div>
 
@@ -3671,8 +336,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <h3 class="benefit-title">אתה קובע מתי לעבוד</h3>
-          <p class="benefit-text">סמן את שעות הזמינות שלך, הענף, והמרחק שמתאים לך. תקבל רק קריאות שבאמת רלוונטיות לך.
-          </p>
+          <p class="benefit-text">סמן את שעות הזמינות שלך, הענף, והמרחק שמתאים לך. תקבל רק קריאות שבאמת רלוונטיות לך.</p>
           <div class="benefit-stat">100%<small>שליטה ביומן</small></div>
         </div>
 
@@ -3683,8 +347,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <h3 class="benefit-title">בנה מוניטין שעובד בשבילך</h3>
-          <p class="benefit-text">כל לקוח מרוצה זה כוכב נוסף בפרופיל שלך. תוך חודשיים תהיה בראש הרשימה ותקבל קריאות לפני
-            כולם.</p>
+          <p class="benefit-text">כל לקוח מרוצה זה כוכב נוסף בפרופיל שלך. תוך חודשיים תהיה בראש הרשימה ותקבל קריאות לפני כולם.</p>
           <div class="benefit-stat">x3.4<small>יותר עבודות לבעלי 5 כוכבים</small></div>
         </div>
 
@@ -3696,17 +359,16 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </svg>
           </div>
           <h3 class="benefit-title">קרוב לבית, חוסך דלק</h3>
-          <p class="benefit-text">הצעות באזור שאתה בוחר. בלי לבזבז שעה בנסיעה לעבודה של 80 שקל. רוב הקריאות עד 5 ק״מ.
-          </p>
+          <p class="benefit-text">הצעות באזור שאתה בוחר. בלי לבזבז שעה בנסיעה לעבודה של 80 שקל. רוב הקריאות עד 5 ק״מ.</p>
           <div class="benefit-stat">87%<small>מהעבודות באזור הקרוב</small></div>
         </div>
-
-        
       </div>
     </div>
   </section>
+  <!-- @partial:benefits END -->
 
-  <!-- ─── HOW IT WORKS ───────────────────────────────────── -->
+  <!-- @partial:how-it-works START -->
+  <!-- @page-specific: section-title, section-sub, step cards (icon, title, text, time) -->
   <section class="block steps-section" id="how">
     <div class="container">
       <div class="steps-hero reveal">
@@ -3766,8 +428,10 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       </div>
     </div>
   </section>
+  <!-- @partial:how-it-works END -->
 
-  <!-- ─── EARNINGS CALCULATOR ────────────────────────────── -->
+  <!-- @partial:earnings-calculator START -->
+  <!-- @page-specific: section-sub, slider labels (valJobs/valRate/valHours), bar category names -->
   <section class="block calc-section" id="earn">
     <div class="container">
       <div class="section-head reveal">
@@ -3776,8 +440,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <h2 class="section-title">כמה אפשר להרוויח? תזיז את החיצים.</h2>
         </div>
         <p class="section-sub">
-          מבוסס על תעריפי שוק ממוצעים של 2026 ועל נתוני 1,200 בעלי מקצוע פעילים בפלטפורמה. ההערכה היא שמרנית - רוב
-          המשתמשים מדווחים על הכנסה גבוהה יותר.
+          מבוסס על תעריפי שוק ממוצעים של 2026 ועל נתוני 1,200 בעלי מקצוע פעילים בפלטפורמה. ההערכה היא שמרנית - רוב המשתמשים מדווחים על הכנסה גבוהה יותר.
         </p>
       </div>
 
@@ -3832,9 +495,12 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       </div>
     </div>
   </section>
+  <!-- @partial:earnings-calculator END -->
 
-  <!-- ─── TESTIMONIALS ───────────────────────────────────── -->
-  <!-- <section class="block" id="stories">
+  <!-- @partial:testimonials START -->
+  <!-- @page-specific: quote texts, names, roles — currently commented out -->
+  <!--
+  <section class="block" id="stories">
     <div class="container">
       <div class="section-head reveal">
         <div>
@@ -3845,65 +511,30 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           זה לא PR. זה בעלי מקצוע שעבדו עם הפלטפורמה לפחות 3 חודשים, ושיתפו אותנו במספרים שלהם.
         </p>
       </div>
-
       <div class="quotes">
         <div class="quote q1 reveal">
-          <div class="quote-mark">“</div>
-          <p class="quote-text">
-            עברתי מ-3 קבוצות וואטסאפ של “עבודות לתת“ לאפליקציה אחת. בחודש הראשון סגרתי 18 עבודות נוספות, וזה בלי לפרסם
-            בגוגל אפילו שקל. הזמן שחסכתי על שיחות סרק לבד שווה זהב.
-          </p>
+          <div class="quote-mark">"</div>
+          <p class="quote-text">עברתי מ-3 קבוצות וואטסאפ של "עבודות לתת" לאפליקציה אחת. בחודש הראשון סגרתי 18 עבודות נוספות.</p>
           <div class="quote-foot">
             <div class="quote-avatar">ד</div>
-            <div>
-              <b>דניאל אבישר</b>
-              <span>הנדימן · רמת גן · 8 חודשים בפלטפורמה</span>
-            </div>
-          </div>
-          <div class="quote-stars">★★★★★</div>
-        </div>
-
-        <div class="quote reveal">
-          <div class="quote-mark">“</div>
-          <p class="quote-text">
-            ההבדל הכי גדול: הלקוחות באים מוכנים. הם רואים את הדירוג שלי, את התמונות מעבודות קודמות, ואת המחיר ההתחלתי -
-            ולכן השיחה הראשונה כבר על תיאום, לא על מיקוח.
-          </p>
-          <div class="quote-foot">
-            <div class="quote-avatar">מ</div>
-            <div>
-              <b>מאור כהן</b>
-              <span>אינסטלטור · רחובות</span>
-            </div>
-          </div>
-          <div class="quote-stars">★★★★★</div>
-        </div>
-
-        <div class="quote reveal">
-          <div class="quote-mark">“</div>
-          <p class="quote-text">
-            אני אבא לשלושה. עכשיו אני בוחר מתי לעבוד ומתי לא. סוגר באמצע השבוע, מפנה ערב לילדים. בעבר זה היה בלתי אפשרי.
-          </p>
-          <div class="quote-foot">
-            <div class="quote-avatar">ע</div>
-            <div>
-              <b>עידן בן-דוד</b>
-              <span>חשמלאי מוסמך · חיפה</span>
-            </div>
+            <div><b>דניאל אבישר</b><span>הנדימן · רמת גן · 8 חודשים בפלטפורמה</span></div>
           </div>
           <div class="quote-stars">★★★★★</div>
         </div>
       </div>
     </div>
-  </section> -->
+  </section>
+  -->
+  <!-- @partial:testimonials END -->
 
-  <!-- ─── FAQ ────────────────────────────────────────────── -->
-  <section class="block" id="faq" style="background: linear-gradient(180deg, transparent, rgba(232,213,168,.25));">
+  <!-- @partial:faq START -->
+  <!-- @page-specific: Q&A pairs -->
+  <section class="block" id="faq">
     <div class="container">
-      <div class="section-head reveal" style="grid-template-columns: 1fr; text-align: center;">
+      <div class="section-head reveal">
         <div>
-          <div class="section-tag" style="justify-content: center;">שאלות נפוצות</div>
-          <h2 class="section-title" style="margin-inline: auto;">דברים שכדאי לדעת לפני שמצטרפים</h2>
+          <div class="section-tag">שאלות נפוצות</div>
+          <h2 class="section-title">דברים שכדאי לדעת לפני שמצטרפים</h2>
         </div>
       </div>
 
@@ -3918,8 +549,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </span>
           </summary>
           <div class="faq-body">
-            כן. אין דמי הצטרפות, אין דמי מנוי, ואין עמלה על עבודות שאתה סוגר. אנחנו מרוויחים מהמעסיקים שמשלמים על שירותי
-            שדרוג (פרסום עבודה דחוף, חיפוש מוקד וכד'). אתה מקבל את כל הסכום מהלקוח, ישירות.
+            כן. אין דמי הצטרפות, אין דמי מנוי, ואין עמלה על עבודות שאתה סוגר. אנחנו מרוויחים מהמעסיקים שמשלמים על שירותי שדרוג. אתה מקבל את כל הסכום מהלקוח, ישירות.
           </div>
         </details>
         <details class="faq-item">
@@ -3932,11 +562,9 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </span>
           </summary>
           <div class="faq-body">
-            אין שום מחויבות בלעדית. רוב בעלי המקצוע אצלנו ממשיכים לעבוד גם במסגרות אחרות, ופשוט בודקים בכל בוקר באיזו
-            פלטפורמה יש להם יותר הצעות. תוך חודש-חודשיים - רובם בוחרים להישאר רק כאן.
+            אין שום מחויבות בלעדית. רוב בעלי המקצוע אצלנו ממשיכים לעבוד גם במסגרות אחרות, ופשוט בודקים בכל בוקר באיזו פלטפורמה יש להם יותר הצעות.
           </div>
         </details>
-       
         <details class="faq-item">
           <summary>
             <span>אני לא חזק בטכנולוגיה. האפליקציה מסובכת?</span>
@@ -3947,7 +575,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </span>
           </summary>
           <div class="faq-body">
-            בנינו אותה קודם כל לבעלי מקצוע - לא לאנשי תוכנה. כל פעולה היא 1-2 לחיצות. תוכל להעזר דרכינו ברישום, אם אתה תקוע באמצע משהו.
+            בנינו אותה קודם כל לבעלי מקצוע - לא לאנשי תוכנה. כל פעולה היא 1-2 לחיצות.
           </div>
         </details>
         <details class="faq-item">
@@ -3960,8 +588,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
             </span>
           </summary>
           <div class="faq-body">
-            בהחלט - וזה אחד הדברים שהכי משפיעים על אחוז הסגירה. הפרופיל שלך כולל גלריה, ביוגרפיה קצרה, רישיונות והסמכות,
-            ותגיות לתחומים. ככל שהפרופיל מלא יותר, כך אתה זוכה ביותר הצעות.
+            בהחלט - וזה אחד הדברים שהכי משפיעים על אחוז הסגירה. הפרופיל שלך כולל גלריה, ביוגרפיה קצרה, רישיונות והסמכות, ותגיות לתחומים.
           </div>
         </details>
         <details class="faq-item">
@@ -3975,14 +602,15 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </summary>
           <div class="faq-body">
             בכלל לא. כל הצעה היא הזמנה לדבר עם הלקוח, לבדוק את העבודה, ולקבוע מחיר. אם זה לא מתאים - אתה פשוט לא עונה.
-            אבל אנחנו ממליצים: ככל שאתה עונה מהר יותר, כך אתה זוכה ביותר עבודות.
           </div>
         </details>
       </div>
     </div>
   </section>
+  <!-- @partial:faq END -->
 
-  <!-- ─── FINAL CTA ──────────────────────────────────────── -->
+  <!-- @partial:final-cta START -->
+  <!-- @page-specific: live-count text, h2, body text, CTA label, meta badges -->
   <section class="final" id="join">
     <div class="container">
       <div class="final-card reveal">
@@ -3990,8 +618,8 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <span class="live-dot"></span>
           2,840 בעלי מקצוע הצטרפו החודש
         </div>
-        <h2><span class="h-accent">היום</span> או בעוד שבוע -<br>העבודות יבואו .</h2>
-        <p>   נרשמים ראשונים - ומקבלים   <strong style="color:#c99a2e;font-weight:700;">עבודות ראשונות </strong> . אין סיבה שאתה תהיה יוצא מן הכלל.</p>
+        <h2><span class="h-accent">היום</span> או בעוד שבוע -<br>העבודות יבואו.</h2>
+        <p>נרשמים ראשונים - ומקבלים <strong class="final-accent">עבודות ראשונות</strong>. אין סיבה שאתה תהיה יוצא מן הכלל.</p>
         <a class="btn btn-primary" href="/" data-worker-join="true">
           הצטרפות בחינם - לוקח 2 דקות
           <span class="arrow">
@@ -4001,21 +629,17 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           </span>
         </a>
         <div class="final-meta">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path d="M20 6L9 17l-5-5" />
-            </svg> בלי כרטיס אשראי</span>
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path d="M20 6L9 17l-5-5" />
-            </svg> בלי דמי מנוי</span>
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path d="M20 6L9 17l-5-5" />
-            </svg> ביטול בקליק</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg> בלי כרטיס אשראי</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg> בלי דמי מנוי</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg> ביטול בקליק</span>
         </div>
       </div>
     </div>
   </section>
+  <!-- @partial:final-cta END -->
 
-  <!-- ─── FOOTER ─────────────────────────────────────────── -->
+  <!-- @partial:footer START -->
+  <!-- @page-specific: tagline, nav links (anchor targets match section IDs), support email -->
   <footer>
     <div class="container">
       <div class="foot-grid">
@@ -4023,8 +647,7 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
           <div class="logo">
             <img src="/logo-light.svg" alt="AvodaGo" class="logo-img logo-img-light" />
           </div>
-          <p class="foot-copy">הפלטפורמה הישראלית של בעלי
-            מקצוע. מחברת לקוחות לבעלי מקצוע מאומתים -בלי תיווך מיותר.</p>
+          <p class="foot-copy">הפלטפורמה הישראלית של בעלי מקצוע. מחברת לקוחות לבעלי מקצוע מאומתים - בלי תיווך מיותר.</p>
         </div>
         <div class="foot-links">
           <a href="#why">למה אנחנו</a>
@@ -4038,34 +661,14 @@ radial-gradient(700px 400px at 0% 0%, #8b698b, #00000000 60%), radial-gradient(8
       </div>
       <div class="foot-bottom">
         <span>© 2026 AvodaGo · נבנה בישראל</span>
-        <span>  <a href="mailto:support@avoda-go.co.il">support@avoda-go.co.il</a></span>
+        <span><a href="mailto:support@avoda-go.co.il">support@avoda-go.co.il</a></span>
+      </div>
     </div>
   </footer>
+  <!-- @partial:footer END -->
 
-  <script src="assets/henidman-landing.js" defer></script>
+  <script src="assets/landing.js" defer></script>
 
 </body>
 
 </html>
-
-<style id="__om-edit-overrides">
-  :is(h1, h2, h3, h4, h5, h6)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption) {
-    padding: 4px 0px 0px !important
-  }
-
-  :is(h1, h2, h3, h4, h5, h6)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption) {
-    padding: 44444px 0px 0px !important
-  }
-
-  :is(h1, h2, h3, h4, h5, h6)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption) {
-    padding: 4px 0px 0px !important
-  }
-
-  :is(h1, h2, h3, h4, h5, h6)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption) {
-    margin: 5px !important
-  }
-
-  :is(h1, h2, h3, h4, h5, h6)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption)>:is(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, span, a, em, strong, small, td, th, caption) {
-    margin: 2px !important
-  }
-</style>

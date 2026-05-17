@@ -1,0 +1,71 @@
+<!-- earnings-calculator.html — interactive earnings calculator -->
+<!-- @page-specific: section-sub, slider labels in JS (valJobs/valRate/valHours labels),
+     bar category names (תיקונים/הרכבות/תחזוקה), bar percentages formula in shared/landing.js -->
+<!-- The JS formula for bar percentages in landing.js assumes 3 categories (bar1/bar2/bar3).
+     If your page has different categories, update the recalculate() function logic. -->
+
+<section class="block calc-section" id="earn">
+  <div class="container">
+    <div class="section-head reveal">
+      <div>
+        <div class="section-tag">חישוב מהיר</div>
+        <h2 class="section-title">כמה אפשר להרוויח? תזיז את החיצים.</h2>
+      </div>
+      <!-- @page-specific: section-sub (data year, worker count reference) -->
+      <p class="section-sub">
+        מבוסס על תעריפי שוק ממוצעים של 2026 ועל נתוני 1,200 בעלי מקצוע פעילים בפלטפורמה.
+      </p>
+    </div>
+
+    <div class="calc-grid reveal">
+      <div class="calc-controls">
+        <div class="control">
+          <div class="control-label">
+            <span class="name">עבודות בשבוע</span>
+            <span class="val" id="valJobs">8 <small>קריאות</small></span>
+          </div>
+          <input type="range" id="rngJobs" min="2" max="25" value="8" style="--p: 26%" />
+        </div>
+        <div class="control">
+          <div class="control-label">
+            <span class="name">תעריף ממוצע לעבודה</span>
+            <span class="val" id="valRate">320 <small>₪</small></span>
+          </div>
+          <input type="range" id="rngRate" min="120" max="900" step="10" value="320" style="--p: 26%" />
+        </div>
+        <div class="control">
+          <div class="control-label">
+            <span class="name">שעות זמינות ביום</span>
+            <span class="val" id="valHours">7 <small>שעות</small></span>
+          </div>
+          <input type="range" id="rngHours" min="2" max="12" value="7" style="--p: 50%" />
+        </div>
+      </div>
+
+      <div class="calc-card">
+        <div class="small">פוטנציאל הכנסה חודשית</div>
+        <div class="big"><span class="currency">₪</span><span id="calcOut">10,240</span></div>
+        <div class="per">≈ <span id="calcWeekly">2,560</span> ₪ בשבוע · <span id="calcDaily">365</span> ₪ ליום</div>
+
+        <div class="calc-bars">
+          <!-- @page-specific: bar category names -->
+          <div class="calc-bar">
+            <span class="name">תיקונים</span>
+            <span class="track"><span class="fill" id="bar1" style="width:55%"></span></span>
+            <span class="num">55%</span>
+          </div>
+          <div class="calc-bar">
+            <span class="name">הרכבות</span>
+            <span class="track"><span class="fill" id="bar2" style="width:30%"></span></span>
+            <span class="num">30%</span>
+          </div>
+          <div class="calc-bar">
+            <span class="name">תחזוקה</span>
+            <span class="track"><span class="fill" id="bar3" style="width:15%"></span></span>
+            <span class="num">15%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

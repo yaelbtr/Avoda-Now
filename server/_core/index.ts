@@ -599,6 +599,16 @@ async function startServer() {
     const htmlPath = LP_PATHS[slug];
     if (!htmlPath) return next();
 
+    // זיהוי ביקור מפייסבוק לפי fbclid או Referer — לא חוסם את הגשת הדף
+    const hasFbclid = typeof req.query.fbclid === "string" && req.query.fbclid.length > 0;
+    const referer = (req.get("referer") || "").toLowerCase();
+    const fromFacebook = hasFbclid || /facebook\.com|fb\.com|fb\.me|m\.facebook|l\.facebook/.test(referer);
+    if (fromFacebook) {
+      import("../adminDb")
+        .then((m) => m.incrementLandingPageVisit(slug, "facebook"))
+        .catch((err) => console.error("[lp:track] facebook visit increment failed:", err));
+    }
+
     try {
       const liveCount = await getLandingWorkerCount();
 

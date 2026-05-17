@@ -10,6 +10,7 @@ import {
   pushSubscriptions, savedJobs, workerRatings,
   workerAvailability, legalAcknowledgements,
   referralLinks, type ReferralLink,
+  landingPageVisits, type LandingPageVisit,
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { normalizeIsraeliPhone } from "./smsProvider";
@@ -660,6 +661,33 @@ export {
  * Returns all users whose userMode = 'employer', enriched with job-posting stats.
  * Uses a LEFT JOIN + GROUP BY so users with 0 jobs are still included.
  */
+// ─── Landing Page Visits ──────────────────────────────────────────────────────
+
+/** מגדיל אטומית את המונה של (slug, source). יוצר שורה חדשה אם לא קיימת. */
+export async function incrementLandingPageVisit(slug: string, source: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .insert(landingPageVisits)
+    .values({ slug, source, count: 1 })
+    .onConflictDoUpdate({
+      target: [landingPageVisits.slug, landingPageVisits.source],
+      set: {
+        count: sql`${landingPageVisits.count} + 1`,
+        updatedAt: sql`now()`,
+      },
+    });
+}
+
+/** מחזיר את כל שורות המונה עבור כל הדפים והמקורות. */
+export async function adminGetLandingPageVisits(): Promise<LandingPageVisit[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(landingPageVisits).orderBy(desc(landingPageVisits.updatedAt));
+}
+
+// ─── Employers Admin ──────────────────────────────────────────────────────────
+
 export async function adminGetAllEmployers(limit = 300) {
   const db = await getDb();
   if (!db) return [];

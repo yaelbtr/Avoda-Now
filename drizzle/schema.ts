@@ -604,6 +604,16 @@ export const categories = pgTable("categories", {
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;
 
+/** קבוצות קטגוריות — מוחזקות ב-DB במקום hardcoded */
+export const categoryGroups = pgTable("category_groups", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  sortOrder: integer("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+});
+export type CategoryGroup = typeof categoryGroups.$inferSelect;
+
 /**
  * Regional activation system.
  * Each region has a center city with GPS coordinates.
@@ -909,3 +919,22 @@ export const notificationLogs = pgTable(
 );
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
+
+// ─── Landing Page Visits ──────────────────────────────────────────────────────
+/**
+ * landing_page_visits - מונה מצטבר של ביקורים לדפי נחיתה לפי מקור.
+ * שורה אחת לכל (slug, source). count מוגדל אטומית בכל ביקור מהמקור.
+ */
+export const landingPageVisits = pgTable(
+  "landing_page_visits",
+  {
+    id: serial("id").primaryKey(),
+    slug: varchar("slug", { length: 64 }).notNull(),
+    source: varchar("source", { length: 32 }).notNull(),
+    count: integer("count").default(0).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("landing_page_visits_slug_source_idx").on(t.slug, t.source)]
+);
+export type LandingPageVisit = typeof landingPageVisits.$inferSelect;
+export type InsertLandingPageVisit = typeof landingPageVisits.$inferInsert;

@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, RefreshCw, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Tag, Merge, FolderPlus } from "lucide-react";
 
 type Category = {
   id: number;
@@ -41,17 +41,18 @@ type Category = {
   isActive: boolean;
   allowedForMinors: boolean;
   sortOrder: number;
+  workerCount: number;
   createdAt: Date;
   updatedAt: Date;
 };
 
-const GROUP_OPTIONS = [
-  { value: "home", label: "עבודות בית" },
-  { value: "events", label: "אירועים" },
-  { value: "care", label: "טיפול" },
-  { value: "general", label: "כללי" },
-  { value: "special", label: "מיוחד" },
-];
+type CategoryGroup = {
+  id: number;
+  slug: string;
+  name: string;
+  sortOrder: number;
+  createdAt: Date;
+};
 
 const EMPTY_FORM = {
   slug: "",
@@ -70,10 +71,19 @@ export function AdminCategoriesTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [mergeFrom, setMergeFrom] = useState<Category | null>(null);
+  const [mergeToSlug, setMergeToSlug] = useState("");
+
+  // ניהול קבוצות
+  const [groupDialogOpen, setGroupDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<CategoryGroup | null>(null);
+  const [groupForm, setGroupForm] = useState({ slug: "", name: "", sortOrder: 0 });
+  const [deleteGroupId, setDeleteGroupId] = useState<number | null>(null);
 
   const utils = trpc.useUtils();
 
   const { data: cats = [], isLoading } = trpc.categories.adminList.useQuery();
+  const { data: groups = [] } = trpc.categoryGroups.list.useQuery();
 
   const createMut = trpc.categories.create.useMutation({
     onSuccess: () => {
@@ -122,6 +132,30 @@ export function AdminCategoriesTab() {
     onError: (e) => toast.error(e.message),
   });
 
+  const mergeMut = trpc.categories.merge.useMutation({
+    onSuccess: () => {
+      toast.success("הקטגוריות אוחדו בהצלחה");
+      utils.categories.adminList.invalidate();
+      utils.categories.list.invalidate();
+      setMergeFrom(null);
+      setMergeToSlug("");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const createGroupMut = trpc.categoryGroups.create.useMutation({
+    onSuccess: () => { toast.success("קבוצה נוצרה"); utils.categoryGroups.list.invalidate(); setGroupDialogOpen(false); },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateGroupMut = trpc.categoryGroups.update.useMutation({
+    onSuccess: () => { toast.success("קבוצה עודכנה"); utils.categoryGroups.list.invalidate(); setGroupDialogOpen(false); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteGroupMut = trpc.categoryGroups.delete.useMutation({
+    onSuccess: () => { toast.success("קבוצה נמחקה"); utils.categoryGroups.list.invalidate(); utils.categories.adminList.invalidate(); setDeleteGroupId(null); },
+    onError: (e) => toast.error(e.message),
+  });
+
   const syncMut = trpc.categories.syncMissing.useMutation({
     onSuccess: (res) => {
       if (res.count === 0) {
@@ -134,6 +168,29 @@ export function AdminCategoriesTab() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  const groupOptions = groups.map((g) => ({ value: g.slug, label: g.name }));
+  const groupLabel = (slug: string | null) => groups.find((g) => g.slug === slug)?.name ?? slug ?? "כללי";
+
+  function openCreateGroup() {
+    setEditingGroup(null);
+    setGroupForm({ slug: "", name: "", sortOrder: groups.length });
+    setGroupDialogOpen(true);
+  }
+  function openEditGroup(g: CategoryGroup) {
+    setEditingGroup(g);
+    setGroupForm({ slug: g.slug, name: g.name, sortOrder: g.sortOrder });
+    setGroupDialogOpen(true);
+  }
+  function handleGroupSubmit() {
+    if (!groupForm.name) { toast.error("שם הקבוצה הוא שדה חובה"); return; }
+    if (editingGroup) {
+      updateGroupMut.mutate({ id: editingGroup.id, name: groupForm.name, sortOrder: groupForm.sortOrder });
+    } else {
+      if (!groupForm.slug) { toast.error("Slug הוא שדה חובה"); return; }
+      createGroupMut.mutate(groupForm);
+    }
+  }
 
   function openCreate() {
     setEditingId(null);
@@ -168,7 +225,6 @@ export function AdminCategoriesTab() {
     }
   }
 
-  const groupLabel = (g: string | null) => GROUP_OPTIONS.find(o => o.value === g)?.label ?? g ?? "כללי";
 
   return (
     <div dir="rtl">
@@ -199,12 +255,37 @@ export function AdminCategoriesTab() {
             <RefreshCw className="h-4 w-4 ml-1" />
             טען ברירת מחדל
           </AppButton>
+          <AppButton variant="outline" size="sm" onClick={openCreateGroup}>
+            <FolderPlus className="h-4 w-4 ml-1" />
+            קבוצה חדשה
+          </AppButton>
           <AppButton size="sm" onClick={openCreate}>
             <Plus className="h-4 w-4 ml-1" />
             קטגוריה חדשה
           </AppButton>
         </div>
       </div>
+
+      {/* Groups section */}
+      {groups.length > 0 && (
+        <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+          <p className="text-sm font-medium mb-3 text-muted-foreground">קבוצות קטגוריות</p>
+          <div className="flex flex-wrap gap-2">
+            {groups.map((g) => (
+              <div key={g.id} className="flex items-center gap-1 bg-background border rounded-full px-3 py-1 text-sm">
+                <span>{g.name}</span>
+                <span className="text-xs text-muted-foreground font-mono">({g.slug})</span>
+                <button onClick={() => openEditGroup(g)} className="text-muted-foreground hover:text-foreground ml-1">
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button onClick={() => setDeleteGroupId(g.id)} className="text-destructive/60 hover:text-destructive">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Table / Empty state */}
       {isLoading ? (
@@ -231,6 +312,7 @@ export function AdminCategoriesTab() {
                   <TableHead className="text-right">Slug</TableHead>
                   <TableHead className="text-right">קבוצה</TableHead>
                   <TableHead className="text-right">סדר</TableHead>
+                  <TableHead className="text-right">נרשמו</TableHead>
                   <TableHead className="text-right">פעיל</TableHead>
                   <TableHead className="text-right">קטינים</TableHead>
                   <TableHead className="text-right">פעולות</TableHead>
@@ -247,6 +329,11 @@ export function AdminCategoriesTab() {
                       <Badge variant="outline" className="text-xs">{groupLabel(cat.groupName)}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{cat.sortOrder}</TableCell>
+                    <TableCell>
+                      <Badge variant={cat.workerCount > 0 ? "secondary" : "outline"} className="text-xs">
+                        {cat.workerCount}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Switch
                         checked={cat.isActive}
@@ -266,6 +353,14 @@ export function AdminCategoriesTab() {
                       <div className="flex gap-1">
                         <AppButton variant="outline" size="sm" onClick={() => openEdit(cat)}>
                           <Pencil className="h-3.5 w-3.5" />
+                        </AppButton>
+                        <AppButton
+                          variant="outline"
+                          size="sm"
+                          title="מזג לתוך קטגוריה אחרת"
+                          onClick={() => { setMergeFrom(cat); setMergeToSlug(""); }}
+                        >
+                          <Merge className="h-3.5 w-3.5" />
                         </AppButton>
                         <AppButton
                           variant="outline"
@@ -299,6 +394,9 @@ export function AdminCategoriesTab() {
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">{groupLabel(cat.groupName)}</Badge>
                         <span className="text-xs text-muted-foreground">סדר: {cat.sortOrder}</span>
+                        <Badge variant={cat.workerCount > 0 ? "secondary" : "outline"} className="text-xs">
+                          {cat.workerCount} נרשמו
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -319,6 +417,14 @@ export function AdminCategoriesTab() {
                     <div className="flex gap-1">
                       <AppButton variant="outline" size="sm" onClick={() => openEdit(cat)}>
                         <Pencil className="h-3.5 w-3.5" />
+                      </AppButton>
+                      <AppButton
+                        variant="outline"
+                        size="sm"
+                        title="מזג לתוך קטגוריה אחרת"
+                        onClick={() => { setMergeFrom(cat); setMergeToSlug(""); }}
+                      >
+                        <Merge className="h-3.5 w-3.5" />
                       </AppButton>
                       <AppButton
                         variant="outline"
@@ -374,7 +480,7 @@ export function AdminCategoriesTab() {
               <AppSelect
                 label="קבוצה"
                 value={form.groupName}
-                options={GROUP_OPTIONS}
+                options={groupOptions}
                 onChange={(e) => setForm(f => ({ ...f, groupName: e.target.value }))}
               />
               <AppInput
@@ -420,6 +526,112 @@ export function AdminCategoriesTab() {
               disabled={createMut.isPending || updateMut.isPending}
             >
               {editingId ? "שמור שינויים" : "צור קטגוריה"}
+            </AppButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create / Edit Group Dialog */}
+      <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
+        <DialogContent className="max-w-sm" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>{editingGroup ? "עריכת קבוצה" : "קבוצה חדשה"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <AppInput
+              id="group-name"
+              label="שם הקבוצה"
+              required
+              value={groupForm.name}
+              onChange={(e) => setGroupForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="עבודות בית"
+              dir="rtl"
+            />
+            {!editingGroup && (
+              <AppInput
+                id="group-slug"
+                label="Slug (אותיות קטנות, קו תחתון)"
+                value={groupForm.slug}
+                onChange={(e) => setGroupForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_") }))}
+                placeholder="home_services"
+                dir="ltr"
+              />
+            )}
+            <AppInput
+              id="group-order"
+              label="סדר תצוגה"
+              type="number"
+              value={groupForm.sortOrder}
+              onChange={(e) => setGroupForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
+              min={0}
+              dir="ltr"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <AppButton variant="outline" onClick={() => setGroupDialogOpen(false)}>ביטול</AppButton>
+            <AppButton onClick={handleGroupSubmit} disabled={createGroupMut.isPending || updateGroupMut.isPending}>
+              {editingGroup ? "שמור" : "צור קבוצה"}
+            </AppButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Group Confirm */}
+      <Dialog open={deleteGroupId !== null} onOpenChange={() => setDeleteGroupId(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader><DialogTitle>מחיקת קבוצה</DialogTitle></DialogHeader>
+          <p className="text-muted-foreground text-sm">
+            הקבוצה תימחק. קטגוריות השייכות אליה יועברו אוטומטית לקבוצה "כללי".
+          </p>
+          <DialogFooter className="gap-2">
+            <AppButton variant="outline" onClick={() => setDeleteGroupId(null)}>ביטול</AppButton>
+            <AppButton
+              variant="destructive"
+              disabled={deleteGroupMut.isPending}
+              onClick={() => deleteGroupId && deleteGroupMut.mutate({ id: deleteGroupId })}
+            >
+              מחק קבוצה
+            </AppButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Merge Dialog */}
+      <Dialog open={mergeFrom !== null} onOpenChange={() => setMergeFrom(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>מזג קטגוריה</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground text-sm">
+            קטגוריה <strong>{mergeFrom?.name}</strong> תימחק.
+            כל המשרות והעובדים שהיו בה יועברו לקטגוריה שתבחר.
+          </p>
+          <div className="space-y-2">
+            <Label>מזג אל</Label>
+            <Select value={mergeToSlug} onValueChange={setMergeToSlug}>
+              <SelectTrigger dir="rtl">
+                <SelectValue placeholder="בחר קטגוריית יעד..." />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                {cats
+                  .filter((c) => c.slug !== mergeFrom?.slug)
+                  .map((c) => (
+                    <SelectItem key={c.slug} value={c.slug}>
+                      {c.icon} {c.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="gap-2">
+            <AppButton variant="outline" onClick={() => setMergeFrom(null)}>ביטול</AppButton>
+            <AppButton
+              variant="destructive"
+              disabled={!mergeToSlug || mergeMut.isPending}
+              onClick={() => mergeFrom && mergeMut.mutate({ fromSlug: mergeFrom.slug, toSlug: mergeToSlug })}
+            >
+              <Merge className="h-4 w-4 ml-1" />
+              מזג ומחק
             </AppButton>
           </DialogFooter>
         </DialogContent>

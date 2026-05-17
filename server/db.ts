@@ -44,6 +44,8 @@ import {
   notificationLogs,
   NotificationLog,
   InsertNotificationLog,
+  categoryGroups as categoryGroupsTable,
+  CategoryGroup,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { calcAge, isMinor as calcIsMinor } from "../shared/ageUtils";
@@ -2639,6 +2641,87 @@ export async function getAllCategories(): Promise<Category[]> {
     .select()
     .from(categoriesTable)
     .orderBy(categoriesTable.sortOrder, categoriesTable.id);
+}
+
+/** מזג קטגוריה אחת לתוך שניה: מעדכן משרות, העדפות עובדים, ומוחק את הישנה */
+export async function mergeCategorySlugs(fromSlug: string, toSlug: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  // עדכון משרות
+  await db.execute(sql`UPDATE jobs SET category = ${toSlug} WHERE category = ${fromSlug}`);
+
+  // עדכון preferredCategories של עובדים — מחליף fromSlug ב-toSlug וגם מסיר כפילויות
+  await db.execute(sql`
+    UPDATE users
+    SET "preferredCategories" = (
+      SELECT jsonb_agg(DISTINCT CASE WHEN elem = ${fromSlug} THEN ${toSlug} ELSE elem END)
+      FROM jsonb_array_elements_text("preferredCategories"::jsonb) AS elem
+    )
+    WHERE "preferredCategories" IS NOT NULL
+      AND jsonb_typeof("preferredCategories"::jsonb) = 'array'
+      AND "preferredCategories"::jsonb @> ${JSON.stringify([fromSlug])}::jsonb
+  `);
+
+  // מחיקת הקטגוריה הישנה
+  await db.delete(categoriesTable).where(eq(categoriesTable.slug, fromSlug));
+}
+
+/** Count workers registered per category slug */
+export async function getCategoryWorkerCounts(): Promise<Record<string, number>> {
+  const db = await getDb();
+  if (!db) return {};
+  const rows = await db.execute<{ slug: string; cnt: string }>(sql`
+    SELECT cat_slug AS slug, COUNT(*) AS cnt
+    FROM users,
+         jsonb_array_elements_text(
+           CASE WHEN "preferredCategories" IS NOT NULL
+                THEN "preferredCategories"::jsonb
+                ELSE '[]'::jsonb
+           END
+         ) AS cat_slug
+    WHERE "preferredCategories" IS NOT NULL
+      AND jsonb_typeof("preferredCategories"::jsonb) = 'array'
+    GROUP BY cat_slug
+  `);
+  const result: Record<string, number> = {};
+  for (const row of rows.rows) {
+    result[row.slug] = parseInt(row.cnt, 10);
+  }
+  return result;
+}
+
+// ─── Category Groups ───────────────────────────────────────────────────────────
+
+export async function getCategoryGroups(): Promise<CategoryGroup[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(categoryGroupsTable).orderBy(categoryGroupsTable.sortOrder, categoryGroupsTable.id);
+}
+
+export async function createCategoryGroup(data: { slug: string; name: string; sortOrder?: number }): Promise<CategoryGroup> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const rows = await db.insert(categoryGroupsTable).values({ ...data, sortOrder: data.sortOrder ?? 0 }).returning();
+  return rows[0];
+}
+
+export async function updateCategoryGroup(id: number, data: Partial<{ name: string; slug: string; sortOrder: number }>): Promise<CategoryGroup> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const rows = await db.update(categoryGroupsTable).set(data).where(eq(categoryGroupsTable.id, id)).returning();
+  return rows[0];
+}
+
+export async function deleteCategoryGroup(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  // העברת קטגוריות בקבוצה זו ל-general לפני מחיקה
+  const group = await db.select().from(categoryGroupsTable).where(eq(categoryGroupsTable.id, id)).limit(1);
+  if (group[0]) {
+    await db.update(categoriesTable).set({ groupName: "general" }).where(eq(categoriesTable.groupName, group[0].slug));
+  }
+  await db.delete(categoryGroupsTable).where(eq(categoryGroupsTable.id, id));
 }
 
 /** Get a single category by slug */
